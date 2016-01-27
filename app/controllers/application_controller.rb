@@ -1,0 +1,23 @@
+class ApplicationController < ActionController::Base
+  # Prevent CSRF attacks by raising an exception.
+  # For APIs, you may want to use :null_session instead.
+  protect_from_forgery :with => :exception
+
+  def require_user
+    unless current_user
+      # Make sure we get redirected back to the page we were asking for.
+      redirect_to "/auth/orcid?origin=#{env['REQUEST_URI']}"
+    end
+  end
+
+  def require_admin_user
+    redirect_to '/sessions/new' unless (current_user && current_user.admin?)
+  end
+
+private
+
+  def current_user
+    @current_user ||= User.find(session[:user_id]) if session[:user_id]
+  end
+  helper_method :current_user
+end

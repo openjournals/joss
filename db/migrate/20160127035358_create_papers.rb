@@ -5,8 +5,10 @@ class CreatePapers < ActiveRecord::Migration
       t.string      :state
       t.string      :repository_url
       t.string      :archive_doi
+      t.string      :sha
       t.text        :body
-      t.timestamps null: false
+      t.column      :user_id, :integer
+      t.timestamps  :null => false
     end
   end
 end

@@ -16,14 +16,20 @@ class Paper < ActiveRecord::Base
     state :rejected
   end
 
+  VISIBLE_STATES = [
+    "accepted",
+    "superceded"
+  ]
+
   scope :recent, lambda { where('created_at > ?', 1.week.ago) }
+  scope :visible, -> { where(:state => VISIBLE_STATES) }
 
   before_create :set_sha
 
   def to_param
     sha
   end
-  
+
 private
 
   def set_sha

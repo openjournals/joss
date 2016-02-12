@@ -43,6 +43,9 @@ group :development, :test do
   gem 'mocha', '~> 1.1.0'
   gem 'rspec-rails', '~> 3.1.0'
   gem 'shoulda-matchers', '~> 2.7.0'
+end
+
+group :test do
   gem 'webmock', '~> 1.19.0'
 end
 

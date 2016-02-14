@@ -28,7 +28,7 @@ class PapersController < ApplicationController
     if @paper.save
       redirect_to paper_path(@paper)
     else
-      # TODO: do something with the (un)happy path
+      render :action => :new
     end
   end
 

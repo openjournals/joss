@@ -2,13 +2,13 @@ module ApplicationHelper
   def flash_class_for(flash_level)
     case flash_level
     when 'error'
-      'alert-danger'
+      'flash-error'
     when 'warning'
-      'alert-warning'
+      'flash-warn'
     when 'notice'
-      'alert-success'
+      'flash-messages'
     else
-      'alert-info'
+      'flash-messages'
     end
   end
 

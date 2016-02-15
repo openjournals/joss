@@ -4,7 +4,7 @@ describe PapersController, :type => :controller do
   render_views
 
   describe "GET #index" do
-    it "should render recent papers" do
+    it "should render all visible papers" do
       get :index, :format => :html
       expect(response).to be_success
     end

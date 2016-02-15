@@ -1,6 +1,12 @@
 Rails.application.routes.draw do
 
-  resources :papers
+  resources :papers do
+    collection do
+      get 'recent'
+      get 'popular'
+      get 'submitted'
+    end
+  end
 
   get '/about', :to => 'home#about', :as => 'about'
   get '/editors', :to => 'home#editors', :as => 'editors'

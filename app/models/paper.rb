@@ -22,6 +22,7 @@ class Paper < ActiveRecord::Base
   ]
 
   scope :recent, lambda { where('created_at > ?', 1.week.ago) }
+  scope :submitted, lambda { where('state = ?', 'submitted') }
   scope :visible, -> { where(:state => VISIBLE_STATES) }
 
   before_create :set_sha
@@ -33,6 +34,25 @@ class Paper < ActiveRecord::Base
 
   def to_param
     sha
+  end
+
+  def pretty_repository_name
+    if repository_url.include?('github.com')
+      name, owner = repository_url.scan(/(?<=github.com\/).*/i).first.split('/')
+      return "#{name} / #{owner}"
+    else
+      return repository_url
+    end
+  end
+
+  def pretty_doi
+    matches = archive_doi.scan(/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/).flatten
+
+    if matches.any?
+      return matches.first
+    else
+      return archive_doi
+    end
   end
 
 private

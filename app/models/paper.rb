@@ -32,6 +32,15 @@ class Paper < ActiveRecord::Base
   validates_presence_of :archive_doi, :message => "^DOI can't be blank"
   validates_presence_of :body, :message => "^Description can't be blank"
 
+  def self.featured
+    # TODO: Make this a thing
+    Paper.first
+  end
+
+  def self.popular
+    recent
+  end
+
   def to_param
     sha
   end

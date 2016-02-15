@@ -1,4 +1,7 @@
 class User < ActiveRecord::Base
+
+  has_many :papers
+
   before_create :set_sha
 
   def self.from_omniauth(auth)
@@ -30,7 +33,7 @@ class User < ActiveRecord::Base
     "http://orcid.org/" + uid
   end
 
-  private
+private
 
   def set_sha
     self.sha = SecureRandom.hex

@@ -9,11 +9,19 @@ class Paper < ActiveRecord::Base
 
   aasm :column => :state do
     state :submitted, :initial => true
-    state :under_review
+    state :under_review, :before_enter => :create_review_issue
     state :review_completed
     state :superceded
     state :accepted
     state :rejected
+
+    event :reject do
+      transitions :to => :rejected
+    end
+
+    event :start_review do
+      transitions :from => :submitted, :to => :under_review
+    end
   end
 
   VISIBLE_STATES = [
@@ -62,6 +70,35 @@ class Paper < ActiveRecord::Base
     else
       return archive_doi
     end
+  end
+
+  def create_review_issue
+    return false if review_issue_id
+    issue = GITHUB.create_issue("arfon/joss",
+                                "Submission: #{self.title}",
+                                review_body,
+                                { :labels => "review" })
+
+    set_review_issue(issue)
+  end
+
+  def set_review_issue(issue)
+    self.update_attribute(:review_issue_id, issue.number)
+  end
+
+  def update_review_issue(comment)
+    GITHUB.add_comment("arfon/joss", self.review_issue_id, comment)
+  end
+
+  def review_url
+    "https://github.com/arfon/joss/issues/#{self.review_issue_id}"
+  end
+
+  def review_body
+    ActionView::Base.new(Rails.configuration.paths['app/views']).render(
+      :template => 'shared/review_body', :format => :txt,
+      :locals => { :paper => self }
+    )
   end
 
 private

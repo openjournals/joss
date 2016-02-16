@@ -1,5 +1,6 @@
 class PapersController < ApplicationController
   before_filter :require_user, :only => %w(new edit create submit update)
+  before_filter :require_admin_user, :only => %w(start_review archive)
 
   def recent
     @papers = Paper.recent.visible.paginate(
@@ -59,6 +60,30 @@ class PapersController < ApplicationController
       format.atom { render :template => 'papers/index' }
       format.json { render :json => @papers }
       format.html { render :template => 'papers/index' }
+    end
+  end
+
+  def start_review
+    @paper = Paper.find_by_sha(params[:id])
+
+    if @paper.start_review!
+      flash[:notice] = "Review started"
+      redirect_to paper_path(@paper)
+    else
+      flash[:error] = "Review could not be started"
+      redirect_to paper_path(@paper)
+    end
+  end
+
+  def reject
+    @paper = Paper.find_by_sha(params[:id])
+
+    if @paper.reject!
+      flash[:notice] = "Paper rejected"
+      redirect_to paper_path(@paper)
+    else
+      flash[:error] = "Paper could not be rejected"
+      redirect_to paper_path(@paper)
     end
   end
 

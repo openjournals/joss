@@ -98,6 +98,8 @@ class PapersController < ApplicationController
   def create
     @paper = Paper.new(paper_params)
 
+    @paper.submitting_author = current_user
+
     if @paper.save
       redirect_to paper_path(@paper)
     else

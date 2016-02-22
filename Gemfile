@@ -16,7 +16,7 @@ gem 'jquery-rails'
 
 gem 'custom_error_message', '~> 1.1', '>= 1.1.1'
 # Use Unicorn as the app server
-# gem 'unicorn'
+gem 'unicorn'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

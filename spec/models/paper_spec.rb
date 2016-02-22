@@ -36,4 +36,43 @@ describe Paper do
 
     expect(Paper.visible).to contain_exactly(visible_paper_1, visible_paper_2)
   end
+
+  # GitHub stuff
+  it "should know how to return a pretty repo name with owner" do
+    paper = create(:paper, :repository_url => "https://github.com/arfon/joss")
+
+    expect(paper.pretty_repository_name).to eq("arfon / joss")
+  end
+
+  it "should know how to return a pretty DOI" do
+    paper = create(:paper, :archive_doi => "http://dx.doi.org/10.6084/m9.figshare.828487")
+
+    expect(paper.pretty_doi).to eq("10.6084/m9.figshare.828487")
+  end
+
+  it "should know how to generate its review url" do
+    paper = create(:paper, :review_issue_id => 999)
+
+    expect(paper.review_url).to eq("https://github.com/arfon/joss/issues/999")
+  end
+
+  context "when rejected" do
+    it "should change the paper state" do
+      paper = create(:paper, :state => "submitted")
+      paper.reject!
+
+      expect(paper.state).to eq('rejected')
+    end
+  end
+
+  context "when starting review" do
+    it "should change the paper state" do
+      user = create(:user)
+      paper = create(:paper, :state => "submitted", :submitting_author => user)
+      paper.stub(:set_review_issue) { true }
+
+      paper.start_review!
+      expect(paper.state).to eq('under_review')
+    end
+  end
 end

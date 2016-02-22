@@ -1,5 +1,6 @@
 class PapersController < ApplicationController
   before_filter :require_user, :only => %w(new edit create submit update)
+  before_filter :require_admin_user, :only => %w(start_review archive)
 
   def recent
     @papers = Paper.recent.visible.paginate(
@@ -62,6 +63,30 @@ class PapersController < ApplicationController
     end
   end
 
+  def start_review
+    @paper = Paper.find_by_sha(params[:id])
+
+    if @paper.start_review!
+      flash[:notice] = "Review started"
+      redirect_to paper_path(@paper)
+    else
+      flash[:error] = "Review could not be started"
+      redirect_to paper_path(@paper)
+    end
+  end
+
+  def reject
+    @paper = Paper.find_by_sha(params[:id])
+
+    if @paper.reject!
+      flash[:notice] = "Paper rejected"
+      redirect_to paper_path(@paper)
+    else
+      flash[:error] = "Paper could not be rejected"
+      redirect_to paper_path(@paper)
+    end
+  end
+
   def new
     @paper = Paper.new
   end
@@ -72,6 +97,8 @@ class PapersController < ApplicationController
 
   def create
     @paper = Paper.new(paper_params)
+
+    @paper.submitting_author = current_user
 
     if @paper.save
       redirect_to paper_path(@paper)

@@ -93,6 +93,9 @@ WebMock.disable_net_connect!(allow_localhost: true)
 
 RSpec.configure do |config|
   config.before(:each) do
-    # Webmock here...
+    stub_request(:post, "https://api.github.com/repos/arfon/joss/issues").
+             with(:body => "{\"labels\":[\"review\"],\"title\":\"Submission: arfon / fidgit\",\"body\":\"- Submitting author: http://orcid.org/0000-0000-0000-1234\\n- Repository: http://github.com/arfon/fidgit\\n\"}",
+                  :headers => {'Accept'=>'application/vnd.github.beta+json', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'User-Agent'=>'Octokit Ruby Gem 2.1.1'}).
+             to_return(:status => 200, :body => "", :headers => {})
   end
 end

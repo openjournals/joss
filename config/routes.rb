@@ -1,6 +1,11 @@
 Rails.application.routes.draw do
 
   resources :papers do
+    member do
+      post 'start_review'
+      post 'reject'
+    end
+
     collection do
       get 'recent'
       get 'popular'

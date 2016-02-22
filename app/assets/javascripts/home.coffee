@@ -18,3 +18,12 @@ switchTabs = ->
   $('#' + target_div).removeClass('hidden')
 
 $(document).on 'click', '.tabnav-tab', switchTabs
+
+menuClick = ->
+  # Remove the 'selected' class from all tabs
+  $('.menu a').removeClass('selected')
+
+  # Add the 'selected' class from all tabs
+  $(this).addClass('selected')
+
+$(document).on 'click', '.menu a', menuClick

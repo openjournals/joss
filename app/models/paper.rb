@@ -74,7 +74,7 @@ class Paper < ActiveRecord::Base
 
   def create_review_issue
     return false if review_issue_id
-    issue = GITHUB.create_issue("arfon/joss",
+    issue = GITHUB.create_issue("arfon/joss-reviews",
                                 "Submission: #{self.title}",
                                 review_body,
                                 { :labels => "review" })
@@ -87,11 +87,11 @@ class Paper < ActiveRecord::Base
   end
 
   def update_review_issue(comment)
-    GITHUB.add_comment("arfon/joss", self.review_issue_id, comment)
+    GITHUB.add_comment("arfon/joss-reviews", self.review_issue_id, comment)
   end
 
   def review_url
-    "https://github.com/arfon/joss/issues/#{self.review_issue_id}"
+    "https://github.com/arfon/joss-reviews/issues/#{self.review_issue_id}"
   end
 
   def review_body

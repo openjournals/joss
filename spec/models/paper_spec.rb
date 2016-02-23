@@ -39,7 +39,7 @@ describe Paper do
 
   # GitHub stuff
   it "should know how to return a pretty repo name with owner" do
-    paper = create(:paper, :repository_url => "https://github.com/arfon/joss")
+    paper = create(:paper, :repository_url => "https://github.com/arfon/joss-reviews")
 
     expect(paper.pretty_repository_name).to eq("arfon / joss")
   end
@@ -53,7 +53,7 @@ describe Paper do
   it "should know how to generate its review url" do
     paper = create(:paper, :review_issue_id => 999)
 
-    expect(paper.review_url).to eq("https://github.com/arfon/joss/issues/999")
+    expect(paper.review_url).to eq("https://github.com/arfon/joss-reviews/issues/999")
   end
 
   context "when rejected" do

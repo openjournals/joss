@@ -41,7 +41,7 @@ describe Paper do
   it "should know how to return a pretty repo name with owner" do
     paper = create(:paper, :repository_url => "https://github.com/arfon/joss-reviews")
 
-    expect(paper.pretty_repository_name).to eq("arfon / joss")
+    expect(paper.pretty_repository_name).to eq("arfon / joss-reviews")
   end
 
   it "should know how to return a pretty DOI" do

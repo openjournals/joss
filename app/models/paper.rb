@@ -101,6 +101,10 @@ class Paper < ActiveRecord::Base
     )
   end
 
+  def pretty_state
+    state.humanize.downcase
+  end
+
 private
 
   def set_sha

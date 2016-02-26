@@ -4,7 +4,7 @@ Rails.application.routes.draw do
     member do
       post 'start_review'
       post 'reject'
-      get 'state'
+      get 'status'
     end
 
     collection do

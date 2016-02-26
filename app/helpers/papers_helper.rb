@@ -5,7 +5,7 @@ module PapersHelper
     end
   end
 
-  def state_badge_for(paper)
+  def status_badge_for(paper)
     return 'badges/unknown.svg' unless paper
 
     case paper.state

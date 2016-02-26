@@ -42,4 +42,25 @@ describe PapersController, :type => :controller do
       expect(Paper.count).to eq(paper_count)
     end
   end
+
+  describe "status badges" do
+    it "should return the correct status badge for a submitted paper" do
+      submitted_paper = create(:paper, :state => 'submitted')
+
+      get :status, :id => submitted_paper.sha
+      expect(response.body).to match /badges\/submitted/
+    end
+
+    it "should return the correct status badge for an accepted paper" do
+      submitted_paper = create(:paper, :state => 'accepted')
+
+      get :status, :id => submitted_paper.sha
+      expect(response.body).to match /badges\/accepted/
+    end
+
+    it "should return the correct status badge for an unknown paper" do
+      get :status, :id => 'foo'
+      expect(response.body).to match /badges\/unknown/
+    end
+  end
 end

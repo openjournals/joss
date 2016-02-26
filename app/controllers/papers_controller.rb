@@ -107,7 +107,7 @@ class PapersController < ApplicationController
     end
   end
 
-  def state
+  def status
     @paper = Paper.find_by_sha(params[:id])
 
     if stale?(@paper)

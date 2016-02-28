@@ -1,5 +1,6 @@
 class PapersController < ApplicationController
-  before_filter :require_user, :only => %w(new edit create submit update)
+  before_filter :require_user, :only => %w(new create update)
+  before_filter :require_email, :only => %w(create)
   before_filter :require_admin_user, :only => %w(start_review archive)
 
   def recent

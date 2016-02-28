@@ -41,6 +41,18 @@ describe PapersController, :type => :controller do
       expect(response.body).to match /Your paper could not be saved/
       expect(Paper.count).to eq(paper_count)
     end
+
+    it "LOGGED IN without a email on the submitting author account" do
+      user = create(:user, :email => nil)
+      allow(controller).to receive_message_chain(:current_user).and_return(user)
+      paper_count = Paper.count
+      request.env["HTTP_REFERER"] = new_paper_path
+
+      paper_params = {:title => "Yeah whateva", :body => "something", :repository_url => "https://github.com/foo/bar", :archive_doi => "http://dx.doi.org/10.6084/m9.figshare.828487"}
+      post :create, :paper => paper_params
+      expect(response).to be_redirect # as it's redirected us
+      expect(Paper.count).to eq(paper_count)
+    end
   end
 
   describe "status badges" do

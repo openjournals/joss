@@ -13,4 +13,18 @@ class HomeController < ApplicationController
   def editors
     render :text => 'Ya, we have editors'
   end
+
+  def update_email
+    raise "No user" unless current_user
+    if current_user.update_attributes(user_params)
+      redirect_to(:back, :notice => "Email saved.")
+    end
+  end
+
+
+private
+
+  def user_params
+    params.require(:user).permit(:email)
+  end
 end

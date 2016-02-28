@@ -28,4 +28,14 @@ describe User do
 
     expect(user.nice_name).to eq("Albert Einstein")
   end
+
+  it "should know whether it's profile is complete" do
+    complete_profile_user = create(:user, :email => "a@b.com", :github_username => "@foo")
+    user_without_email = create(:user, :email => nil)
+    user_without_github_username = create(:user, :github_username => nil)
+
+    assert complete_profile_user.profile_complete?
+    assert !user_without_email.profile_complete?
+    assert !user_without_github_username.profile_complete?
+  end
 end

@@ -18,16 +18,16 @@ describe HomeController, :type => :controller do
 
       get :index, :format => :html
       expect(response).to be_success
-      expect(response.body).to match /Please add an email address to your account before continuing/
+      expect(response.body).to match /Please updated your profile before continuing/
     end
 
-    it "should render home page and ask for our email if we don't have one" do
-      user = create(:user, :email => 'arfon@example.com')
+    it "should render home page and ask for a profile update if we don't have a github username" do
+      user = create(:user, :email => 'arfon@example.com', :github_username => nil)
       allow(controller).to receive_message_chain(:current_user).and_return(user)
 
       get :index, :format => :html
       expect(response).to be_success
-      expect(response.body).should_not match /Please add an email address to your account before continuing/
+      expect(response.body).to match /Please updated your profile before continuing/
     end
   end
 
@@ -39,25 +39,28 @@ describe HomeController, :type => :controller do
     end
   end
 
-
-  describe "POST #update_email" do
-    it "should update their email address" do
-      user = create(:user, :email => nil)
+  describe "GET #profile" do
+    it "should render profile page without 'update my profile banner'" do
+      user = create(:user, :email => nil, :github_username => nil)
       allow(controller).to receive_message_chain(:current_user).and_return(user)
-      params = {:email => "albert@gmail.com"}
-      request.env["HTTP_REFERER"] = papers_path
 
-      post :update_email, :user => params
-      expect(response).to be_redirect # as it's updated the email
-      expect(user.reload.email).to eq("albert@gmail.com")
+      get :profile, :format => :html
+      expect(response).to be_success
+      expect(response.body).should_not match /Please updated your profile before continuing/
     end
   end
 
-  describe "GET #editors" do
-    it "should render editors page" do
-      get :editors, :format => :html
-      expect(response).to be_success
-      expect(response.body).to match /Ya, we have editors/
+  describe "POST #update_profile" do
+    it "should update their email address" do
+      user = create(:user, :email => nil, :github_username => nil)
+      allow(controller).to receive_message_chain(:current_user).and_return(user)
+      params = {:email => "albert@gmail.com", :github_username => "@jimmy"}
+      request.env["HTTP_REFERER"] = papers_path
+
+      post :update_profile, :user => params
+      expect(response).to be_redirect # as it's updated the email
+      expect(user.reload.email).to eq("albert@gmail.com")
+      expect(user.reload.github_username).to eq("@jimmy")
     end
   end
 end

@@ -14,9 +14,9 @@ Rails.application.routes.draw do
     end
   end
 
-  post '/update_email', :to => "home#update_email"
+  post '/update_profile', :to => "home#update_profile"
   get '/about', :to => 'home#about', :as => 'about'
-  get '/editors', :to => 'home#editors', :as => 'editors'
+  get '/profile', :to => 'home#profile', :as => 'profile'
   get '/auth/:provider/callback', :to => 'sessions#create'
   get "/signout" => "sessions#destroy", :as => :signout
 

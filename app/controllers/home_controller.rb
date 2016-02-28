@@ -1,4 +1,6 @@
 class HomeController < ApplicationController
+  before_filter :require_user, :only => %w(profile update_profile)
+
   def index
     @featured = Paper.featured
     @papers = Paper.visible.limit(10)
@@ -10,21 +12,19 @@ class HomeController < ApplicationController
 
   end
 
-  def editors
-    render :text => 'Ya, we have editors'
-  end
-
-  def update_email
-    raise "No user" unless current_user
+  def update_profile
     if current_user.update_attributes(user_params)
-      redirect_to(:back, :notice => "Email saved.")
+      redirect_to(:back, :notice => "Profile updated")
     end
   end
 
+  def profile
+    @user = current_user
+  end
 
 private
 
   def user_params
-    params.require(:user).permit(:email)
+    params.require(:user).permit(:email, :github_username)
   end
 end

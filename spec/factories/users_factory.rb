@@ -5,6 +5,7 @@ FactoryGirl.define do
     created_at  { Time.now }
     email 'john@apple.com'
     uid '0000-0000-0000-1234'
+    github_username "@foobar"
 
     factory :admin_user do
       admin true

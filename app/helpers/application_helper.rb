@@ -19,4 +19,16 @@ module ApplicationHelper
       link_to link_text, link_path
     end
   end
+
+  # Decide whether to show the 'update your profile' link
+  def show_profile_banner?
+    return false unless current_user
+    return false if controller.action_name == "profile"
+
+    if current_user.profile_complete?
+      return false
+    else
+      return true
+    end
+  end
 end

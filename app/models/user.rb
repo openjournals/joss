@@ -33,6 +33,10 @@ class User < ActiveRecord::Base
     "http://orcid.org/" + uid
   end
 
+  def profile_complete?
+    email.present? && github_username.present?
+  end
+
 private
 
   def set_sha

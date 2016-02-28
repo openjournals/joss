@@ -14,8 +14,8 @@ class ApplicationController < ActionController::Base
     redirect_to '/sessions/new' unless (current_user && current_user.admin?)
   end
 
-  def require_email
-    if current_user.email.blank?
+  def require_complete_profile
+    if !current_user.profile_complete?
       redirect_to(:back, :notice => "Please add an email address to your account before submitting")
     end
   end

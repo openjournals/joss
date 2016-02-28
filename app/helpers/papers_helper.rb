@@ -4,23 +4,4 @@ module PapersHelper
       "selected"
     end
   end
-
-  def status_badge_for(paper)
-    return 'badges/unknown.svg' unless paper
-
-    case paper.state
-      when "submitted"
-        'badges/submitted.svg'
-      when "under_review"
-        'badges/under_review.svg'
-      when "review_completed"
-        'badges/review_completed.svg'
-      when "accepted"
-        'badges/accepted.svg'
-      when "rejected"
-        'badges/rejected.svg'
-      else
-        'badges/unknown.svg'
-    end
-  end
 end

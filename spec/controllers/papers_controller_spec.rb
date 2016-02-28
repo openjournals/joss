@@ -59,20 +59,20 @@ describe PapersController, :type => :controller do
     it "should return the correct status badge for a submitted paper" do
       submitted_paper = create(:paper, :state => 'submitted')
 
-      get :status, :id => submitted_paper.sha
-      expect(response.body).to match /badges\/submitted/
+      get :status, :id => submitted_paper.sha, :format => "svg"
+      expect(response.body).to match /Submitted/
     end
 
     it "should return the correct status badge for an accepted paper" do
       submitted_paper = create(:paper, :state => 'accepted')
 
-      get :status, :id => submitted_paper.sha
-      expect(response.body).to match /badges\/accepted/
+      get :status, :id => submitted_paper.sha, :format => "svg"
+      expect(response.body).to match /Accepted/
     end
 
     it "should return the correct status badge for an unknown paper" do
-      get :status, :id => 'foo'
-      expect(response.body).to match /badges\/unknown/
+      get :status, :id => "asdasd", :format => "svg"
+      expect(response.body).to match /Unknown/
     end
   end
 end

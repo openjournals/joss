@@ -68,7 +68,10 @@ describe Paper do
   context "when starting review" do
     it "should change the paper state" do
       user = create(:user)
-      paper = create(:paper, :state => "submitted", :submitting_author => user)
+      paper = create(:paper, :sha => "48d24b0158528e85ac7706aecd8cddc4", :state => "submitted", :submitting_author => user)
+      # TODO work out why this needs to be done.
+      paper.sha = "48d24b0158528e85ac7706aecd8cddc4"
+      paper.save
       paper.stub(:set_review_issue) { true }
 
       paper.start_review!

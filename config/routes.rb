@@ -4,7 +4,6 @@ Rails.application.routes.draw do
     member do
       post 'start_review'
       post 'reject'
-      get 'status'
     end
 
     collection do
@@ -14,6 +13,7 @@ Rails.application.routes.draw do
     end
   end
 
+  get '/papers/:id/status.svg', :to => "papers#status", :format => "svg", :as => 'status_badge'
   post '/update_profile', :to => "home#update_profile"
   get '/about', :to => 'home#about', :as => 'about'
   get '/profile', :to => 'home#profile', :as => 'profile'

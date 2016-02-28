@@ -19,7 +19,7 @@ class PapersController < ApplicationController
   end
 
   def index
-    @papers = Paper.visible.paginate(
+    @papers = Paper.everything.paginate(
                 :page => params[:page],
                 :per_page => 10
               )

@@ -29,9 +29,16 @@ class Paper < ActiveRecord::Base
     "superceded"
   ]
 
+  IN_PROGRESS_STATES = [
+    "submitted",
+    "under_review"
+  ]
+
   scope :recent, lambda { where('created_at > ?', 1.week.ago) }
   scope :submitted, lambda { where('state = ?', 'submitted') }
+  scope :in_progress, -> { where(:state => IN_PROGRESS_STATES) }
   scope :visible, -> { where(:state => VISIBLE_STATES) }
+  scope :everything, lambda { where('state != ?', 'rejected') }
 
   before_create :set_sha
 

@@ -50,7 +50,7 @@ class PapersController < ApplicationController
   end
 
   def submitted
-    @papers = Paper.submitted.paginate(
+    @papers = Paper.in_progress.paginate(
                 :page => params[:page],
                 :per_page => 10
               )

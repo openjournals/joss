@@ -28,6 +28,6 @@ We have libraries in Python, R and Ruby to help you prepare your submission. If 
 - A reviewer is assigned and the review is carried out on your code-hosting platform of choice
 - Upon (successful) completion of the review, your paper is deposited in CrossRef and archived in Zenodo.org
 
-And that's it.
+And that's it!
 
 1. After all, this is just advertising http://statweb.stanford.edu/~wavelab/Wavelab_850/wavelab.pdf

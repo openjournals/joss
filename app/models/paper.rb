@@ -45,6 +45,7 @@ class Paper < ActiveRecord::Base
   validates_presence_of :title
   validates_presence_of :repository_url, :message => "^Repository address can't be blank"
   validates_presence_of :archive_doi, :message => "^DOI can't be blank"
+  validates_presence_of :software_version, :message => "^Version can't be blank"
   validates_presence_of :body, :message => "^Description can't be blank"
 
   def self.featured
@@ -81,7 +82,7 @@ class Paper < ActiveRecord::Base
 
   def create_review_issue
     return false if review_issue_id
-    issue = GITHUB.create_issue("arfon/joss-reviews",
+    issue = GITHUB.create_issue("openjournals/joss-reviews",
                                 "Submission: #{self.title}",
                                 review_body,
                                 { :labels => "review" })
@@ -94,11 +95,11 @@ class Paper < ActiveRecord::Base
   end
 
   def update_review_issue(comment)
-    GITHUB.add_comment("arfon/joss-reviews", self.review_issue_id, comment)
+    GITHUB.add_comment("openjournals/joss-reviews", self.review_issue_id, comment)
   end
 
   def review_url
-    "https://github.com/arfon/joss-reviews/issues/#{self.review_issue_id}"
+    "https://github.com/openjournals/joss-reviews/issues/#{self.review_issue_id}"
   end
 
   def review_body

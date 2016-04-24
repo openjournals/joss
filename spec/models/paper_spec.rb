@@ -53,7 +53,7 @@ describe Paper do
   it "should know how to generate its review url" do
     paper = create(:paper, :review_issue_id => 999)
 
-    expect(paper.review_url).to eq("https://github.com/arfon/joss-reviews/issues/999")
+    expect(paper.review_url).to eq("https://github.com/openjournals/joss-reviews/issues/999")
   end
 
   context "when rejected" do

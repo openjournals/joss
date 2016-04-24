@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'aasm'
+gem 'honeybadger'
 gem 'omniauth-orcid'
 gem 'octokit'
 gem 'pg'

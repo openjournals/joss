@@ -20,7 +20,7 @@ As academics, it's important for us to be able to measure the impact of our work
 
 In the long term we should move away from closed/proprietary solutions such as Scopus and Web of Science that primarily track papers and their citations, and instead move to tools that can track things without DOIs such as http://depsy.org. However, that's the long-term fix, and not the one that helps the [research software engineers](http://www.rse.ac.uk/who.html) of today.
 
-If software papers are currently the best solution for gaining career credit for software, then shouldn't we make it as easy as possible to create a software paper? Building high quality software is already a lot of work—what if we could make the process of writing a software paper take less than an hour?
+If software papers are currently the best solution for gaining career credit for software, then shouldn't we make it as easy as possible to create a software paper? Building high quality software is already a lot of work — what if we could make the process of writing a software paper take less than an hour?
 
 ## The Journal of Open Source Software
 
@@ -59,7 +59,7 @@ Great! There are two main ways you can help:
 1. Cite JOSS software papers when they exist for a piece of software you've used, and
 2. Perhaps [volunteer to review some stuff](https://github.com/openjournals/joss/issues/new?title=I%27d%20like%20to%20review%20for%20JOSS) for us?
 
-And, of course, you might like to submit something—take a look at our [author guidelines](http://joss.theoj.org/about#author_guidelines) and let us know what you think.
+And, of course, you might like to submit something — take a look at our [author guidelines](http://joss.theoj.org/about#author_guidelines) and let us know what you think.
 
 ## Thanks
 

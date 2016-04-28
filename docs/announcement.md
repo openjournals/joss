@@ -14,19 +14,19 @@ The problem with software papers though is exactly what I wrote earlier: _they'r
 
 > An article about computational science in a scientific publication is not the scholarship itself, it is merely advertising of the scholarship. The actual scholarship is the complete software development environment and the complete set of instructions which generated the figures.
 
-As academics, it's important for us to be able to measure the impact of our work, but the tools & metrics we have available to us right now are woefully lacking when it comes to tracking research output that doesn't look like a paper. A [2009 survey of more than 2000 researchers](http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=5069155) found that > 90% of them consider software important or very important to their work but even if you've followed this [GitHub guide](https://guides.github.com/activities/citable-code/) for archiving a GitHub repository with Zenodo (and acquired a DOI in the process), citations to your work [probably aren't being counted](http://www.carlboettiger.info/2013/06/03/DOI-citable.html) by the people that matter.
+As academics, it's important for us to be able to measure the impact of our work, but available tools & metrics are woefully lacking when it comes to tracking research output that doesn't look like a paper. A [2009 survey of more than 2000 researchers](http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=5069155) found that > 90% of them consider software important or very important to their work---but even if you've followed this [GitHub guide](https://guides.github.com/activities/citable-code/) for archiving a GitHub repository with Zenodo (and acquired a DOI in the process), citations to your work [probably aren't being counted](http://www.carlboettiger.info/2013/06/03/DOI-citable.html) by the people that matter.
 
 ## Embracing the hack
 
-In the long term we should moving away from closed/proprietary solutions such as Scopus and Web of Science which primarily track papers and their citations and moving to tools that can track things without DOIs such as http://depsy.org. That's the long-term fix though and not the one that helps the [researchers software engineers](http://www.rse.ac.uk/who.html) of today.
+In the long term we should move away from closed/proprietary solutions such as Scopus and Web of Science that primarily track papers and their citations, and instead move to tools that can track things without DOIs such as http://depsy.org. However, that's the long-term fix, and not the one that helps the [research software engineers](http://www.rse.ac.uk/who.html) of today.
 
-If software papers are the current best solution for gaining career credit for software then shouldn't we be making it as easy as possible to create a software paper? Building high quality software is already a lot of work, what if we could make the process of writing a software paper take less than an hour?
+If software papers are currently the best solution for gaining career credit for software, then shouldn't we make it as easy as possible to create a software paper? Building high quality software is already a lot of work—what if we could make the process of writing a software paper take less than an hour?
 
 ## The Journal of Open Source Software
 
-The Journal of Open Source Software is a developer friendly journal for research software packages. It's designed to make it as easy as possible to create a software paper for your work. If a piece of software is already well documented then paper preparation (and submission) should take no more than an hour.
+The Journal of Open Source Software is a developer-friendly journal for research software packages. It's designed to make it as easy as possible to create a software paper for your work. If a piece of software is already well documented, then paper preparation (and submission) should take no more than an hour.
 
-The JOSS 'paper' is deliberately extremely short and is only allowed to include:
+The JOSS "paper" is deliberately extremely short and only allowed to include:
 
 - A short abstract describing the high-level functionality of the software
 - A list of the authors of the software (together with their affiliations)
@@ -36,29 +36,34 @@ Paper are not allowed to include other things such as descriptions of API functi
 
 ## Oh cool. You're going to publish crappy papers!
 
-Not at all. Remember software papers are just advertising and JOSS 'papers' are essentially just abstracts that point to a software repository. The primary purpose of a JOSS paper is to enable citation credit to be given to authors of research software.
+Not at all. Remember, software papers are just advertising and JOSS "papers" are essentially just abstracts that point to a software repository. The primary purpose of a JOSS paper is to enable citation credit to be given to authors of research software.
 
-We're also not going to just let any old software through: JOSS has a [rigorous peer review process](http://joss.theoj.org/about#reviewer_guidelines) and a first-class [editorial board](http://joss.theoj.org/about#editorial_board) each highly experienced at building (and reviewing) high-quality research software.
+We're also not going to let just any old software through: JOSS has a [rigorous peer review process](http://joss.theoj.org/about#reviewer_guidelines) and a first-class [editorial board](http://joss.theoj.org/about#editorial_board) highly experienced at building (and reviewing) high-quality research software.
 
 ## So what's the review for?
 
-JOSS reviews are designed to improve the software being submitted. Our review process is based upon the tried-and-tested approach taken by the [rOpenSci collaboration](https://github.com/ropensci) and happens [on GitHub](https://github.com/openjournals/joss-reviews). Reviews of software papers rarely improve the codebase<sup>3</sup> _but they do improve documentation_ - a critical part of making usable software so our review process is about making sure the pieces are in place for open, (re)usable, well-documented code.
+JOSS reviews are designed to improve the software being submitted. Our review process is based upon the tried-and-tested approach taken by the [rOpenSci collaboration](https://github.com/ropensci) and happens openly [on GitHub](https://github.com/openjournals/joss-reviews). Reviews of software papers rarely improve the codebase<sup>3</sup> _but they do improve documentation_—a critical part of making usable software—so our review process is about making sure the pieces are in place for open, (re)usable, well-documented code.
 
 ## To the future!
 
 Let me be clear, I think software papers are a nasty hack on a broken credit system for academia and that the ideal solution is to move away from papers as the only creditable research product.
 
-None of this helps the students/postdocs/early career researchers of _today_ who are having to make very hard decisions about whether to spend time improving the software they've written for their research (and others in their community) or whether they should crank out a few papers to make them look like a 'productive' researcher.
+None of this helps the students/postdocs/early career researchers of _today_ who have to make very hard decisions about whether to spend time improving the software they've written for their research (and others in their community) or whether they should crank out a few papers to make them look like a "productive" researcher.
 
 JOSS exists because we believe that after you've done the hard work of writing great software, it shouldn't take weeks and months to write a paper about your work.
 
 ## I'm in, how can I help?
 
-Great! There are two main ways you can help 1) Cite JOSS software papers when they exist for a piece of software you've used 2) Perhaps [volunteer to review some stuff](https://github.com/openjournals/joss/issues/new?title=I%27d%20like%20to%20review%20for%20JOSS) for us? And of course, you might like to submit something - take a look at our [author guidelines](http://joss.theoj.org/about#author_guidelines) and let us know what you think.
+Great! There are two main ways you can help:
+
+1. Cite JOSS software papers when they exist for a piece of software you've used, and
+2. Perhaps [volunteer to review some stuff](https://github.com/openjournals/joss/issues/new?title=I%27d%20like%20to%20review%20for%20JOSS) for us?
+
+And, of course, you might like to submit something—take a look at our [author guidelines](http://joss.theoj.org/about#author_guidelines) and let us know what you think.
 
 ## Thanks
 
-Finally, I'd like to say thanks to all the people who've helped shape JOSS into its current form. Thanks to Karthik Ram, Kevin M. Moerman and all the people who've agreed to be on the [editorial board](http://joss.theoj.org/about#editorial_board).
+Finally, I'd like to say thanks to all the people who've helped shape JOSS into its current form. Thanks to Karthik Ram, Kevin M. Moerman, and all the people who've agreed to be on the [editorial board](http://joss.theoj.org/about#editorial_board).
 
 <sup>1.</sup> You can of course cite other things, they just don't necessarily count towards your h-index.  
 <sup>2.</sup> This assumes of course that authors remember to cite your software paper.  

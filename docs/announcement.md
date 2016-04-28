@@ -32,7 +32,7 @@ The JOSS "paper" is deliberately extremely short and only allowed to include:
 - A list of the authors of the software (together with their affiliations)
 - A list of key references including a link to the software archive
 
-Paper are not allowed to include other things such as descriptions of API functionality as this should be included in the software documentation. You can see an example of a paper [here](https://github.com/arfon/fidgit/blob/master/paper/paper.pdf).
+Paper are not allowed to include other things such as descriptions of API functionality, as this should be included in the software documentation. You can see an example of a paper [here](https://github.com/arfon/fidgit/blob/master/paper/paper.pdf).
 
 ## Oh cool. You're going to publish crappy papers!
 

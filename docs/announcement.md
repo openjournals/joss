@@ -42,7 +42,7 @@ We're also not going to let just any old software through: JOSS has a [rigorous 
 
 ## So what's the review for?
 
-JOSS reviews are designed to improve the software being submitted. Our review process is based upon the tried-and-tested approach taken by the [rOpenSci collaboration](https://github.com/ropensci) and happens openly [on GitHub](https://github.com/openjournals/joss-reviews). Reviews of software papers rarely improve the codebase<sup>3</sup> _but they do improve documentation_—a critical part of making usable software—so our review process is about making sure the pieces are in place for open, (re)usable, well-documented code.
+JOSS reviews are designed to improve the software being submitted. Our review process is based upon the tried-and-tested approach taken by the [rOpenSci collaboration](https://github.com/ropensci) and happens openly [on GitHub](https://github.com/openjournals/joss-reviews). Reviews of software papers rarely improve the codebase<sup>3</sup> _but they do improve documentation_, a critical part of making usable software, so our review process is about making sure the pieces are in place for open, (re)usable, well-documented code.
 
 ## To the future!
 

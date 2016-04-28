@@ -10,7 +10,7 @@ If an author of research software is interested in writing a paper describing th
 
 ## The big problem with software papers
 
-The problem with software papers though is exactly what I wrote earlier: _they're the only sure way for authors to gaining career credit<sup>2</sup>_. Or, put differently, they're a necessary hack for a crappy metrics system. Buckheit & Donoho nailed it in their article about [reproducible research](http://statweb.stanford.edu/~wavelab/Wavelab_850/wavelab.pdf) when they said:
+The problem with software papers though is exactly what I wrote earlier: _they're the only sure way for authors to gain career credit<sup>2</sup>_. Or, put differently, they're a necessary hack for a crappy metrics system. Buckheit & Donoho nailed it in their article about [reproducible research](http://statweb.stanford.edu/~wavelab/Wavelab_850/wavelab.pdf) when they said:
 
 > An article about computational science in a scientific publication is not the scholarship itself, it is merely advertising of the scholarship. The actual scholarship is the complete software development environment and the complete set of instructions which generated the figures.
 

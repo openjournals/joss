@@ -61,7 +61,7 @@ And, of course, you might like to submit something — take a look at our [autho
 
 ## Thanks
 
-Finally, I'd like to say thanks to all the people who've helped shape JOSS into its current form. Thanks to Karthik Ram, Kevin M. Moerman, Dan Katz and Kyle Niemeyer who've helped refine what JOSS is (and isn't) and all the people who've agreed to be on the [editorial board](http://joss.theoj.org/about#editorial_board).
+Finally, I'd like to say thanks to all the people who've helped shape JOSS into its current form. Thanks to Karthik Ram, Kevin M. Moerman, Dan Katz, and Kyle Niemeyer who've helped refine what JOSS is (and isn't) and all the people who've agreed to be on the [editorial board](http://joss.theoj.org/about#editorial_board).
 
 <sup>1.</sup> You can of course cite other things, they just don't necessarily count towards your h-index.  
 <sup>2.</sup> This assumes of course that authors remember to cite your software paper.  

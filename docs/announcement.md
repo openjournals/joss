@@ -2,7 +2,7 @@
 
 [The Journal of Open Source Software](http://joss.theoj.org) (JOSS) is a new take on an idea that's been gaining some traction over the last few years, that is, to publish papers _about_ software.
 
-On the face of it, writing papers about software is a weird thing to do, especially if there's a public software repository, documentation and perhaps even a website for users of the software. But writing a papers about software is currently the only sure way for authors to gaining career credit as it creates a citable entity<sup>1</sup> (a paper) that can be referenced by other authors.
+On the face of it, writing papers about software is a weird thing to do, especially if there's a public software repository, documentation and perhaps even a website for users of the software. But writing a papers about software is currently the only sure way for authors to gain career credit as it creates a citable entity<sup>1</sup> (a paper) that can be referenced by other authors.
 
 If an author of research software is interested in writing a paper describing their work then there are a number of journals such as [Journal of Open Research Software](http://openresearchsoftware.metajnl.com/) and [SoftwareX](http://www.journals.elsevier.com/softwarex/) dedicated to reviewing such papers. In addition, professional societies such as the [American Astronomical Society](https://aas.org/) have explicitly stated that software papers [are welcome in their journals](http://journals.aas.org/policy/software.html). In most cases though, submissions to these journals are full-length papers that conflate two things: 1) A description of the software and 2) Some novel research results generated using the software.
 
@@ -16,7 +16,7 @@ As academics, it's important for us to be able to measure the impact of our work
 
 ## Embracing the hack
 
-In the long term we should move away from closed/proprietary solutions such as Scopus and Web of Science that primarily track papers and their citations, and instead move to tools that can track things without DOIs such as http://depsy.org. However, that's the long-term fix, and not the one that helps [research software engineers](http://www.rse.ac.uk/who.html) and researchers who are already spending significant amounts of time writing code.
+In the long term we should move away from closed/proprietary solutions such as Scopus and Web of Science that primarily track papers and their citations, and instead move to tools that can track things without DOIs such as http://depsy.org. However, that's the long-term fix, and not the one that helps [research software engineers](http://www.rse.ac.uk/who.html) and researchers who are already spending significant amounts of time writing code today.
 
 If software papers are currently the best solution for gaining career credit for software, then shouldn't we make it as easy as possible to create a software paper? Building high quality software is already a lot of work — what if we could make the process of writing a software paper take less than an hour?
 

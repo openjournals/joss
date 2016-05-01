@@ -80,6 +80,20 @@ class Paper < ActiveRecord::Base
     end
   end
 
+  # Make sure that DOIs have a full http URL
+  # e.g. turn 10.6084/m9.figshare.828487 into http://dx.doi.org/10.6084/m9.figshare.828487
+  def doi_with_url
+    bare_doi = archive_doi[/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/]
+
+    if archive_doi.include?("http://dx.doi.org/")
+      return archive_doi
+    elsif bare_doi
+      return "http://dx.doi.org/#{bare_doi}"
+    else
+      return archive_doi
+    end
+  end
+
   def create_review_issue
     return false if review_issue_id
     issue = GITHUB.create_issue("openjournals/joss-reviews",

@@ -50,6 +50,19 @@ describe Paper do
     expect(paper.pretty_doi).to eq("10.6084/m9.figshare.828487")
   end
 
+
+  it "should know how to return a DOI with a full URL" do
+    paper = create(:paper, :archive_doi => "10.6084/m9.figshare.828487")
+
+    expect(paper.doi_with_url).to eq("http://dx.doi.org/10.6084/m9.figshare.828487")
+  end
+
+  it "should bail creating a full DOI URL if if can't figure out what to do" do
+    paper = create(:paper, :archive_doi => "http://foobar.com")
+
+    expect(paper.doi_with_url).to eq("http://foobar.com")
+  end
+
   it "should know how to generate its review url" do
     paper = create(:paper, :review_issue_id => 999)
 

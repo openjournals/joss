@@ -17,3 +17,15 @@ We built this journal because we believe that after you've done the hard work of
 We have a simple submission workflow and extensive documentation to help you prepare your submission. If your software is already well documented then paper preparation should take no more than an hour.
 
 1. After all, this is just advertising.
+
+## Contributing
+
+[![Build Status](https://travis-ci.org/openjournals/joss.svg?branch=master)](https://travis-ci.org/openjournals/joss)
+
+If you want a better idea of how dotenv works, check out the [Ruby Rogues Code Reading of dotenv](https://www.youtube.com/watch?v=lKmY_0uY86s).
+
+1. Fork it
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Added some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create new Pull Request

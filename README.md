@@ -16,7 +16,15 @@ We built this journal because we believe that after you've done the hard work of
 
 We have a simple submission workflow and extensive documentation to help you prepare your submission. If your software is already well documented then paper preparation should take no more than an hour.
 
-1. After all, this is just advertising.
+<sup>1</sup> After all, this is just advertising.
+
+## The site
+
+The JOSS submission tool is hosted at http://joss.theoj.org
+
+## JOSS Reviews
+
+If you're looking for the JOSS reviews repository head over here: https://github.com/openjournals/joss-reviews/issues
 
 ## Contributing
 

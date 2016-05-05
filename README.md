@@ -1,6 +1,6 @@
 # The Journal of Open Source Software
 
-The Journal of Open Source Software (JOSS) is a developer friendly journal for research software packages.
+The [Journal of Open Source Software](http://joss.theoj.org) (JOSS) is a developer friendly journal for research software packages.
 
 ### What exactly do you mean by 'journal'
 

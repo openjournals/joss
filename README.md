@@ -22,8 +22,6 @@ We have a simple submission workflow and extensive documentation to help you pre
 
 [![Build Status](https://travis-ci.org/openjournals/joss.svg?branch=master)](https://travis-ci.org/openjournals/joss)
 
-If you want a better idea of how dotenv works, check out the [Ruby Rogues Code Reading of dotenv](https://www.youtube.com/watch?v=lKmY_0uY86s).
-
 1. Fork it
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Added some feature'`)

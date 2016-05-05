@@ -1,33 +1,29 @@
 # The Journal of Open Source Software
 
-The Journal of Open Source Software (JOSS) is a developer friendly journal for research codes.
+The Journal of Open Source Software (JOSS) is a developer friendly journal for research software packages.
 
-### What _exactly_ do you mean by 'journal'
+### What exactly do you mean by 'journal'
 
-The Journal of Open Source Software (JOSS) is a legitimate academic journal. We have a rigorous peer review process and a first-class editorial board. Upon acceptance into JOSS, a CrossRef DOIs is minted and we archive your work with Zenodo.org.
+The Journal of Open Source Software (JOSS) is a legitimate academic journal. We have a rigorous peer review process and a first-class editorial board. Upon acceptance into JOSS, a CrossRef DOI is minted and we list your paper on the JOSS website.
 
 ### Don't we have enough journals already?
 
-Perhaps, and in a perfect world we'd rather papers about software we're necessary but we recognize that for most researchers, papers and not software are the currency of academic research and that citations are required for a good career.
+Perhaps, and in a perfect world we'd rather papers about software weren't necessary but we recognize that for most researchers, papers and not software are the currency of academic research and that citations are required for a good career.
 
-We built this journal because we believe that after you've done the hard work of writing great software, it shouldn't take weeks and months to create a paper<sup>1</sup> about your work.
+We built this journal because we believe that after you've done the hard work of writing great software, it shouldn't take weeks and months to write a paper<sup>1</sup> about your work.
 
 ### You said developer friendly, what do you mean?
 
-We have libraries in Python, R and Ruby to help you prepare your submission. If your software is already documented then paper preparation should take no more than an hour.
+We have a simple submission workflow and extensive documentation to help you prepare your submission. If your software is already well documented then paper preparation should take no more than an hour.
 
-### What are your requirements for submission?
+1. After all, this is just advertising.
 
-- Your software should be open source and available in a public software repository and contain a PAPER.md file describing the overall design of your software
-- Documentation describing the core API/software functionality, installation instructions and dependencies
-- A [metadata](https://github.com/codemeta/codemeta/blob/master/example-codemeta.json) file listing authors, citations and key dependencies
+## Contributing
 
-### What does the submission & review process look like?
+[![Build Status](https://travis-ci.org/openjournals/joss.svg?branch=master)](https://travis-ci.org/openjournals/joss)
 
-- Fill in the short form at [joss.theoj.org](http://joss.theoj.org)
-- A reviewer is assigned and the review is carried out on your code-hosting platform of choice
-- Upon (successful) completion of the review, your paper is deposited in CrossRef and archived in Zenodo.org
-
-And that's it.
-
-1. After all, this is just advertising http://statweb.stanford.edu/~wavelab/Wavelab_850/wavelab.pdf
+1. Fork it
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Added some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create new Pull Request

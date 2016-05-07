@@ -5,7 +5,7 @@ module PapersHelper
     end
   end
 
-    def formatted_body(paper, length=nil)
+  def formatted_body(paper, length=nil)
     pipeline = HTML::Pipeline.new [
       HTML::Pipeline::MarkdownFilter,
       HTML::Pipeline::SanitizationFilter
@@ -16,7 +16,7 @@ module PapersHelper
     else
       body = paper.body
     end
-    
+
     result = pipeline.call(body)
     result[:output].to_s.html_safe
   end

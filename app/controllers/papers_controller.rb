@@ -4,7 +4,7 @@ class PapersController < ApplicationController
   before_filter :require_admin_user, :only => %w(start_review archive)
 
   def recent
-    @papers = Paper.recent.visible.paginate(
+    @papers = Paper.visible.paginate(
                 :page => params[:page],
                 :per_page => 10
               )

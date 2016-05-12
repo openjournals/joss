@@ -22,6 +22,10 @@ class Paper < ActiveRecord::Base
     event :start_review do
       transitions :from => :submitted, :to => :under_review
     end
+
+    event :accept do
+      transitions :to => :accepted
+    end
   end
 
   VISIBLE_STATES = [

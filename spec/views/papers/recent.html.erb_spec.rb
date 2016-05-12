@@ -12,7 +12,7 @@ describe 'papers/recent.html.erb' do
       render :template => "papers/index.html.erb"
 
       expect(rendered).to have_selector('.paper-title', :count => 3)
-      expect(rendered).to have_content "Recent papers (3)"
+      expect(rendered).to have_content "Accepted papers (3)"
     end
   end
 end

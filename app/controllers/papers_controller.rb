@@ -132,7 +132,11 @@ class PapersController < ApplicationController
   end
 
   def status
-    @paper = Paper.find_by_sha(params[:id])
+    if params[:doi] && valid_doi?
+      @paper = Paper.find_by_doi(params[:doi])
+    else
+      @paper = Paper.find_by_sha(params[:id])
+    end
 
     # TODO: Remove these SVGs from the controller
     if @paper
@@ -142,9 +146,7 @@ class PapersController < ApplicationController
     end
 
     if stale?(@paper)
-      respond_to do |format|
-        format.svg { render :inline => svg }
-      end
+      render :inline => svg
     end
   end
 

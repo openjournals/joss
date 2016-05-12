@@ -22,6 +22,10 @@ class Paper < ActiveRecord::Base
     event :start_review do
       transitions :from => :submitted, :to => :under_review
     end
+
+    event :accept do
+      transitions :to => :accepted
+    end
   end
 
   VISIBLE_STATES = [
@@ -127,6 +131,11 @@ class Paper < ActiveRecord::Base
     state.humanize.downcase
   end
 
+  # Returns DOI with URL e.g. "http://dx.doi.org/10.21105/joss.00001"
+  def cross_ref_doi_url
+    "http://dx.doi.org/#{doi}"
+  end
+
   def status_badge
     case self.state.to_s
     when "submitted"
@@ -136,7 +145,7 @@ class Paper < ActiveRecord::Base
     when "review_completed"
       '<svg xmlns="http://www.w3.org/2000/svg" width="150" height="20"><linearGradient id="b" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><mask id="a"><rect width="150" height="20" rx="3" fill="#fff"/></mask><g mask="url(#a)"><path fill="#555" d="M0 0h40v20H0z"/><path fill="#dfb317" d="M40 0h110v20H40z"/><path fill="url(#b)" d="M0 0h150v20H0z"/></g><g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11"><text x="20" y="15" fill="#010101" fill-opacity=".3">JOSS</text><text x="20" y="14">JOSS</text><text x="94" y="15" fill="#010101" fill-opacity=".3">Review Complete</text><text x="94" y="14">Review Complete</text></g></svg>'
     when "accepted"
-      '<svg xmlns="http://www.w3.org/2000/svg" width="102" height="20"><linearGradient id="b" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><mask id="a"><rect width="102" height="20" rx="3" fill="#fff"/></mask><g mask="url(#a)"><path fill="#555" d="M0 0h40v20H0z"/><path fill="#4c1" d="M40 0h62v20H40z"/><path fill="url(#b)" d="M0 0h102v20H0z"/></g><g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11"><text x="20" y="15" fill="#010101" fill-opacity=".3">JOSS</text><text x="20" y="14">JOSS</text><text x="70" y="15" fill="#010101" fill-opacity=".3">Accepted</text><text x="70" y="14">Accepted</text></g></svg>'
+      "<svg xmlns='http://www.w3.org/2000/svg' width='168' height='20'><linearGradient id='b' x2='0' y2='100%'><stop offset='0' stop-color='#bbb' stop-opacity='.1'/><stop offset='1' stop-opacity='.1'/></linearGradient><mask id='a'><rect width='168' height='20' rx='3' fill='#fff'/></mask><g mask='url(#a)'><path fill='#555' d='M0 0h39v20H0z'/><path fill='#4c1' d='M39 0h129v20H39z'/><path fill='url(#b)' d='M0 0h168v20H0z'/></g><g fill='#fff' text-anchor='middle' font-family='DejaVu Sans,Verdana,Geneva,sans-serif' font-size='11'><text x='19.5' y='15' fill='#010101' fill-opacity='.3'>JOSS</text><text x='19.5' y='14'>JOSS</text><text x='102.5' y='15' fill='#010101' fill-opacity='.3'>#{self.doi}</text><text x='102.5' y='14'>#{self.doi}</text></g></svg>"
     when "rejected"
       '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="20"><linearGradient id="b" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><mask id="a"><rect width="100" height="20" rx="3" fill="#fff"/></mask><g mask="url(#a)"><path fill="#555" d="M0 0h40v20H0z"/><path fill="#e05d44" d="M40 0h60v20H40z"/><path fill="url(#b)" d="M0 0h100v20H0z"/></g><g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11"><text x="20" y="15" fill="#010101" fill-opacity=".3">JOSS</text><text x="20" y="14">JOSS</text><text x="69" y="15" fill="#010101" fill-opacity=".3">Rejected</text><text x="69" y="14">Rejected</text></g></svg>'
     else

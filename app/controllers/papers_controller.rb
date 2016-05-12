@@ -93,7 +93,19 @@ class PapersController < ApplicationController
   end
 
   def show
-    @paper = Paper.find_by_sha(params[:id])
+    if params[:doi] && valid_doi?
+      @paper = Paper.find_by_doi(params[:doi])
+    else
+      @paper = Paper.find_by_sha(params[:id])
+    end
+  end
+
+  def valid_doi?
+    if params[:doi] && params[:doi].include?("10.21105")
+      return true
+    else
+      return false
+    end
   end
 
   def create

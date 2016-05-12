@@ -24,6 +24,17 @@ class PapersController < ApplicationController
                 :per_page => 10
               )
 
+    @popular_papers = Paper.visible.paginate(
+                :page => params[:page],
+                :per_page => 10
+              )
+
+    @recent_papers = @popular_papers
+
+    @submitted_papers = Paper.in_progress.paginate(
+                :page => params[:page],
+                :per_page => 10
+              )
     @selected = "all"
 
     respond_to do |format|

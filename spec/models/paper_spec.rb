@@ -85,7 +85,7 @@ describe Paper do
       # TODO work out why this needs to be done.
       paper.sha = "48d24b0158528e85ac7706aecd8cddc4"
       paper.save
-      paper.stub(:set_review_issue) { true }
+      allow(paper).to receive(:set_review_issue) { true }
 
       paper.start_review!
       expect(paper.state).to eq('under_review')

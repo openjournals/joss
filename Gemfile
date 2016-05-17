@@ -8,7 +8,7 @@ gem 'omniauth-orcid'
 gem 'octokit'
 gem 'pg'
 gem 'will_paginate', '~> 3.1'
-gem 'rails', '4.2.5.1'
+gem 'rails', '4.2.6'
 gem 'newrelic_rpm'
 gem 'sanitize'
 gem 'sass-rails', '~> 5.0'
@@ -28,7 +28,7 @@ group :development, :test do
   gem 'capybara', '~> 2.4.4'
   gem 'factory_girl_rails', '~> 4.4.1'
   gem 'mocha', '~> 1.1.0'
-  gem 'rspec-rails', '~> 3.1.0'
+  gem 'rspec-rails', '~> 3.4.2'
   gem 'shoulda-matchers', '~> 2.7.0'
 end
 

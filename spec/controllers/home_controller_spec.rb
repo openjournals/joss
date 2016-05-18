@@ -46,7 +46,7 @@ describe HomeController, :type => :controller do
 
       get :profile, :format => :html
       expect(response).to be_success
-      expect(response.body).should_not match /Please updated your profile before continuing/
+      expect(response.body).not_to match /Please updated your profile before continuing/
     end
   end
 

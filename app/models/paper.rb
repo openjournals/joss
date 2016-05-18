@@ -38,6 +38,7 @@ class Paper < ActiveRecord::Base
     "under_review"
   ]
 
+  default_scope  { order(:created_at => :desc) }
   scope :recent, lambda { where('created_at > ?', 1.week.ago) }
   scope :submitted, lambda { where('state = ?', 'submitted') }
   scope :in_progress, -> { where(:state => IN_PROGRESS_STATES) }

@@ -5,6 +5,14 @@ module PapersHelper
     end
   end
 
+  def badge_link(paper)
+    if paper.accepted?
+      return paper.cross_ref_doi_url
+    else
+      return paper.review_url
+    end
+  end
+
   def formatted_body(paper, length=nil)
     pipeline = HTML::Pipeline.new [
       HTML::Pipeline::MarkdownFilter,

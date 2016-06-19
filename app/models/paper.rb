@@ -49,7 +49,6 @@ class Paper < ActiveRecord::Base
 
   validates_presence_of :title
   validates_presence_of :repository_url, :message => "^Repository address can't be blank"
-  validates_presence_of :archive_doi, :message => "^DOI can't be blank"
   validates_presence_of :software_version, :message => "^Version can't be blank"
   validates_presence_of :body, :message => "^Description can't be blank"
 

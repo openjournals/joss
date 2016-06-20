@@ -75,7 +75,7 @@ class Paper < ActiveRecord::Base
   end
 
   def pretty_doi
-    return "" unless archive_doi
+    return "DOI pending" unless archive_doi
 
     matches = archive_doi.scan(/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/).flatten
 
@@ -89,8 +89,8 @@ class Paper < ActiveRecord::Base
   # Make sure that DOIs have a full http URL
   # e.g. turn 10.6084/m9.figshare.828487 into http://dx.doi.org/10.6084/m9.figshare.828487
   def doi_with_url
-    return "" unless archive_doi
-    
+    return "DOI pending" unless archive_doi
+
     bare_doi = archive_doi[/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/]
 
     if archive_doi.include?("http://dx.doi.org/")

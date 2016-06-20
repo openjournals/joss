@@ -75,6 +75,8 @@ class Paper < ActiveRecord::Base
   end
 
   def pretty_doi
+    return "" unless archive_doi
+    
     matches = archive_doi.scan(/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/).flatten
 
     if matches.any?

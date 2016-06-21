@@ -46,11 +46,17 @@ class Paper < ActiveRecord::Base
   scope :everything, lambda { where('state != ?', 'rejected') }
 
   before_create :set_sha
+  after_create :notify_editors
+
 
   validates_presence_of :title
   validates_presence_of :repository_url, :message => "^Repository address can't be blank"
   validates_presence_of :software_version, :message => "^Version can't be blank"
   validates_presence_of :body, :message => "^Description can't be blank"
+
+  def notify_editors
+    Notifications.submission_email(self).deliver_now
+  end
 
   def self.featured
     # TODO: Make this a thing

@@ -91,4 +91,10 @@ describe Paper do
       expect(paper.state).to eq('under_review')
     end
   end
+
+  it "should email the editor when submitted" do
+    paper = build(:paper)
+
+    expect {paper.save}.to change { ActionMailer::Base.deliveries.count }.by(1)
+  end
 end

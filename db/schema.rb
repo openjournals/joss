@@ -29,7 +29,6 @@ ActiveRecord::Schema.define(version: 20160512023304) do
     t.datetime "updated_at",       null: false
     t.integer  "review_issue_id"
     t.string   "software_version"
-    t.string   "paper_location"
     t.string   "doi"
     t.text     "paper_body"
   end

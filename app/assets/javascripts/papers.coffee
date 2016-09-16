@@ -12,3 +12,7 @@ authorCheck = ->
     $("#author-submit").prop('disabled', true)
 
 $(document).on 'change', '#author-check', authorCheck
+
+$ ->
+  $("form#new_paper").submit ->
+    e.preventDefault()

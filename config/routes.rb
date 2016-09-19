@@ -8,6 +8,7 @@ Rails.application.routes.draw do
     end
 
     collection do
+      post 'api_start_review'
       get 'recent'
       get 'popular'
       get 'submitted'

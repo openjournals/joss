@@ -1,7 +1,8 @@
 class PapersController < ApplicationController
   before_filter :require_user, :only => %w(new create update)
   before_filter :require_complete_profile, :only => %w(create)
-  before_filter :require_admin_user, :only => %w(start_review archive)
+  before_filter :require_admin_user, :only => %w(start_meta_review archive)
+  protect_from_forgery :except => [ :api_start_review ]
 
   def recent
     @papers = Paper.visible.paginate(
@@ -84,6 +85,19 @@ class PapersController < ApplicationController
     else
       flash[:error] = "Review could not be started"
       redirect_to paper_path(@paper)
+    end
+  end
+
+  def api_start_review
+    if params[:secret] == ENV['WHEDON_SECRET']
+      @paper = Paper.find_by_meta_review_issue_id(params[:id])
+      if @paper.start_review!(nil, params[:reviewer], params[:editor])
+        render :text => @paper.to_json, :status => '201'
+      else
+        render :nothing => true, :status => '422'
+      end
+    else
+      render :nothing => true, :status => '403'
     end
   end
 

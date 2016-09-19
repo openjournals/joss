@@ -92,7 +92,7 @@ class PapersController < ApplicationController
     if params[:secret] == ENV['WHEDON_SECRET']
       @paper = Paper.find_by_meta_review_issue_id(params[:id])
       if @paper.start_review!(nil, params[:reviewer], params[:editor])
-        render :text => @paper.to_json, :status => '201'
+        render :json => @paper.to_json, :status => '201'
       else
         render :nothing => true, :status => '422'
       end

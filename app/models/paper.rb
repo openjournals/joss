@@ -1,4 +1,18 @@
 class Paper < ActiveRecord::Base
+  EDITORS = %w{
+    acabunoc
+    arfon
+    cMadan
+    danielskatz
+    jakevdp
+    karthik
+    katyhuff
+    kyleniemeyer
+    labarba
+    mgymrek
+    pjotrp
+    tracykteal
+  }.freeze
 
   belongs_to  :submitting_author,
               :class_name => 'User',
@@ -9,7 +23,8 @@ class Paper < ActiveRecord::Base
 
   aasm :column => :state do
     state :submitted, :initial => true
-    state :under_review, :before_enter => :create_review_issue
+    state :review_pending
+    state :under_review
     state :review_completed
     state :superceded
     state :accepted
@@ -19,8 +34,12 @@ class Paper < ActiveRecord::Base
       transitions :to => :rejected
     end
 
+    event :start_meta_review do
+      transitions :from => :submitted, :to => :review_pending, :after => :create_meta_review_issue
+    end
+
     event :start_review do
-      transitions :from => :submitted, :to => :under_review
+      transitions :from => :review_pending, :to => :under_review, :after => :create_review_issue
     end
 
     event :accept do
@@ -31,12 +50,12 @@ class Paper < ActiveRecord::Base
   VISIBLE_STATES = [
     "accepted",
     "superceded"
-  ]
+  ].freeze
 
   IN_PROGRESS_STATES = [
     "submitted",
     "under_review"
-  ]
+  ].freeze
 
   default_scope  { order(:created_at => :desc) }
   scope :recent, lambda { where('created_at > ?', 1.week.ago) }
@@ -47,7 +66,6 @@ class Paper < ActiveRecord::Base
 
   before_create :set_sha
   after_create :notify_editors
-
 
   validates_presence_of :title
   validates_presence_of :repository_url, :message => "^Repository address can't be blank"
@@ -108,33 +126,63 @@ class Paper < ActiveRecord::Base
     end
   end
 
-  def create_review_issue
+  def review_body(editor, reviewer)
+    ActionView::Base.new(Rails.configuration.paths['app/views']).render(
+      :template => 'shared/review_body', :format => :txt,
+      :locals => { :paper => self, :editor => "@#{editor}", :reviewer => "@#{reviewer}" }
+    )
+  end
+
+  # Create a review issue (we know the reviewer and editor at this point)
+  def create_review_issue(editor, reviewer)
     return false if review_issue_id
-    issue = GITHUB.create_issue("openjournals/joss-reviews",
-                                "Submission: #{self.title}",
-                                review_body,
+    issue = GITHUB.create_issue(Rails.configuration.joss_review_repo,
+                                "[REVIEW]: #{self.title}",
+                                review_body(editor, reviewer),
                                 { :labels => "review" })
 
     set_review_issue(issue)
   end
 
+  # Update the Paper review_issue_id field
   def set_review_issue(issue)
     self.update_attribute(:review_issue_id, issue.number)
   end
 
-  def update_review_issue(comment)
-    GITHUB.add_comment("openjournals/joss-reviews", self.review_issue_id, comment)
+  def meta_review_body(editor)
+    ActionView::Base.new(Rails.configuration.paths['app/views']).render(
+      :template => 'shared/meta_view_body', :format => :txt,
+      :locals => { :paper => self, :editor => "@#{editor}" }
+    )
+  end
+
+  # Create a review meta-issue for assigning reviewers
+  def create_meta_review_issue(params)
+    return false if meta_review_issue_id
+    issue = GITHUB.create_issue(Rails.configuration.joss_review_repo,
+                                "[PRE REVIEW]: #{self.title}",
+                                meta_review_body(params),
+                                { :assignee => params,
+                                  :labels => "pre-review" })
+
+    set_meta_review_issue(issue)
+  end
+
+  # Update the Paper meta_review_issue_id field
+  def set_meta_review_issue(issue)
+    self.update_attribute(:meta_review_issue_id, issue.number)
+  end
+
+  def meta_review_url
+    "https://github.com/#{Rails.configuration.joss_review_repo}/issues/#{self.meta_review_issue_id}"
   end
 
   def review_url
-    "https://github.com/openjournals/joss-reviews/issues/#{self.review_issue_id}"
+    "https://github.com/#{Rails.configuration.joss_review_repo}/issues/#{self.review_issue_id}"
   end
 
-  def review_body
-    ActionView::Base.new(Rails.configuration.paths['app/views']).render(
-      :template => 'shared/review_body', :format => :txt,
-      :locals => { :paper => self }
-    )
+  def update_review_issue(comment)
+    GITHUB.add_comment(Rails.configuration.joss_review_repo, self.review_issue_id, comment)
   end
 
   def pretty_state

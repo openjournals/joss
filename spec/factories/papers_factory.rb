@@ -16,5 +16,16 @@ FactoryGirl.define do
     factory :submitted_paper do
       state 'submitted'
     end
+
+    factory :submitted_paper_with_sha do
+      sha '48d24b0158528e85ac7706aecd8cddc4'
+      state 'submitted'
+    end
+
+    factory :review_pending_paper do
+      sha '48d24b0158528e85ac7706aecd8cddc4'
+      state 'review_pending'
+      meta_review_issue_id 100
+    end
   end
 end

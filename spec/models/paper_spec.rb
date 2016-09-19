@@ -66,7 +66,7 @@ describe Paper do
   it "should know how to generate its review url" do
     paper = create(:paper, :review_issue_id => 999)
 
-    expect(paper.review_url).to eq("https://github.com/openjournals/joss-reviews/issues/999")
+    expect(paper.review_url).to eq("https://github.com/#{Rails.configuration.joss_review_repo}/issues/999")
   end
 
   context "when rejected" do
@@ -79,15 +79,21 @@ describe Paper do
   end
 
   context "when starting review" do
-    it "should change the paper state" do
-      user = create(:user)
-      paper = create(:paper, :sha => "48d24b0158528e85ac7706aecd8cddc4", :state => "submitted", :submitting_author => user)
-      # TODO work out why this needs to be done.
-      paper.sha = "48d24b0158528e85ac7706aecd8cddc4"
-      paper.save
-      allow(paper).to receive(:set_review_issue) { true }
+    let(:user) { create(:user) }
 
-      paper.start_review!
+    it "should initially change the paper state to review_pending" do
+      paper = create(:submitted_paper_with_sha, :submitting_author => user)
+      allow(paper).to receive(:create_meta_review_issue) { true }
+
+      paper.start_meta_review(nil, 'arfon')
+      expect(paper.state).to eq('review_pending')
+    end
+
+    it "should then allow for the paper to be moved into the under_review state" do
+      paper = create(:review_pending_paper, :submitting_author => user)
+      allow(paper).to receive(:create_review_issue) { true }
+
+      paper.start_review(nil, 'arfoneditor', 'bobthereviewer')
       expect(paper.state).to eq('under_review')
     end
   end

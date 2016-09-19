@@ -78,7 +78,19 @@ class PapersController < ApplicationController
   def start_review
     @paper = Paper.find_by_sha(params[:id])
 
-    if @paper.start_review!
+    if @paper.start_review!(nil, params[:reviewer], params[:editor])
+      flash[:notice] = "Review started"
+      redirect_to paper_path(@paper)
+    else
+      flash[:error] = "Review could not be started"
+      redirect_to paper_path(@paper)
+    end
+  end
+
+  def start_meta_review
+    @paper = Paper.find_by_sha(params[:id])
+
+    if @paper.start_meta_review!(nil, params[:editor])
       flash[:notice] = "Review started"
       redirect_to paper_path(@paper)
     else

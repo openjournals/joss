@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   resources :papers do
     member do
       post 'start_review'
+      post 'start_meta_review'
       post 'reject'
     end
 

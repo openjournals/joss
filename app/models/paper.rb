@@ -2,11 +2,13 @@ class Paper < ActiveRecord::Base
   EDITORS = %w{
     acabunoc
     arfon
+    biorelated
     cMadan
     danielskatz
     jakevdp
     karthik
     katyhuff
+    Kevin-Mattheus-Moerman
     kyleniemeyer
     labarba
     mgymrek

@@ -32,7 +32,7 @@ class PapersController < ApplicationController
 
     @recent_papers = @popular_papers
 
-    @submitted_papers = Paper.in_progress.paginate(
+    @active_papers = Paper.in_progress.paginate(
                 :page => params[:page],
                 :per_page => 10
               )
@@ -61,13 +61,13 @@ class PapersController < ApplicationController
     end
   end
 
-  def submitted
+  def active
     @papers = Paper.in_progress.paginate(
                 :page => params[:page],
                 :per_page => 10
               )
 
-    @selected = "submitted"
+    @selected = "active"
 
     respond_to do |format|
       format.atom { render :template => 'papers/index' }

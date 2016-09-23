@@ -14,7 +14,7 @@ describe 'papers/submitted.html.erb' do
       render :template => "papers/index.html.erb"
 
       expect(rendered).to have_selector('.paper-title', :count => 1)
-      expect(rendered).to have_content "Submitted papers (1)"
+      expect(rendered).to have_content "Active papers (1)"
     end
   end
 end

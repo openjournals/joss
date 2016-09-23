@@ -11,7 +11,7 @@ Rails.application.routes.draw do
       post 'api_start_review'
       get 'recent'
       get 'popular'
-      get 'submitted'
+      get 'active'
     end
   end
 

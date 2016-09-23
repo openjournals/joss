@@ -56,7 +56,8 @@ class Paper < ActiveRecord::Base
 
   IN_PROGRESS_STATES = [
     "submitted",
-    "under_review"
+    "under_review",
+    "review_pending"
   ].freeze
 
   default_scope  { order(:created_at => :desc) }

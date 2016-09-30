@@ -144,12 +144,12 @@ class Paper < ActiveRecord::Base
                                 review_body(editor, reviewer),
                                 { :labels => "review" })
 
-    set_review_issue(issue)
+    set_review_issue(issue.number)
   end
 
   # Update the Paper review_issue_id field
-  def set_review_issue(issue)
-    self.update_attribute(:review_issue_id, issue.number)
+  def set_review_issue(issue_number)
+    self.update_attribute(:review_issue_id, issue_number)
   end
 
   def meta_review_body(editor)
@@ -168,12 +168,12 @@ class Paper < ActiveRecord::Base
                                 { :assignee => params,
                                   :labels => "pre-review" })
 
-    set_meta_review_issue(issue)
+    set_meta_review_issue(issue.number)
   end
 
   # Update the Paper meta_review_issue_id field
-  def set_meta_review_issue(issue)
-    self.update_attribute(:meta_review_issue_id, issue.number)
+  def set_meta_review_issue(issue_number)
+    self.update_attribute(:meta_review_issue_id, issue_number)
   end
 
   def meta_review_url

@@ -18,6 +18,59 @@ describe PapersController, :type => :controller do
     end
   end
 
+  describe "#start_meta_review" do
+    it "NOT LOGGED IN responds with redirect" do
+      post :start_meta_review, :id => 'nothing much'
+      expect(response).to be_redirect
+    end
+
+    it "LOGGED IN and with correct params" do
+      user = create(:admin_user)
+      allow(controller).to receive_message_chain(:current_user).and_return(user)
+
+      author = create(:user)
+      paper = create(:paper, :user_id => author.id)
+      paper.sha = '48d24b0158528e85ac7706aecd8cddc4'
+      paper.save
+
+      fake_issue = Object.new
+      allow(fake_issue).to receive(:number).and_return(1)
+      allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
+
+      post :start_meta_review, :id => paper.sha, :editor => "joss"
+      expect(response).to be_redirect
+    end
+  end
+
+  describe "POST #api_start_review" do
+    ENV["WHEDON_SECRET"] = "mooo"
+
+    it "with no API key" do
+      post :api_start_review
+      expect(response).to be_forbidden
+    end
+
+    it "with the wrong API key" do
+      post :api_start_review, :secret => "fooo"
+      expect(response).to be_forbidden
+    end
+
+    it "with the correct API key" do
+      user = create(:user)
+      paper = create(:review_pending_paper, :state => "review_pending", :meta_review_issue_id => 1234, :user_id => user.id)
+      # TODO - work out how to skip callback so we don't have to set the SHA again for WebMock
+      paper.sha = '48d24b0158528e85ac7706aecd8cddc4'
+      paper.save
+
+      fake_issue = Object.new
+      allow(fake_issue).to receive(:number).and_return(1)
+      allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
+
+      post :api_start_review, { :secret => "mooo", :id => 1234, :reviewer => "mickey", :editor => "mouse" }
+      expect(response).to be_created
+    end
+  end
+
   describe "POST #create" do
     it "LOGGED IN responds with success" do
       user = create(:user)

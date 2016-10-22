@@ -18,7 +18,7 @@ describe HomeController, :type => :controller do
 
       get :index, :format => :html
       expect(response).to be_success
-      expect(response.body).to match /Please updated your profile before continuing/
+      expect(response.body).to match /Please update your profile before continuing/
     end
 
     it "should render home page and ask for a profile update if we don't have a github username" do

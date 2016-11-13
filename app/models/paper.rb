@@ -154,7 +154,7 @@ class Paper < ActiveRecord::Base
 
   def meta_review_body(editor)
     if editor.strip.empty?
-      locals = { :paper => self, :editor => "" }
+      locals = { :paper => self, :editor => "Pending" }
     else
       locals = { :paper => self, :editor => "#{editor}" }
     end

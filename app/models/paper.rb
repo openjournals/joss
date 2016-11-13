@@ -153,9 +153,14 @@ class Paper < ActiveRecord::Base
   end
 
   def meta_review_body(editor)
+    if editor.strip.empty?
+      locals = { :paper => self, :editor => "" }
+    else
+      locals = { :paper => self, :editor => "#{editor}" }
+    end
     ActionView::Base.new(Rails.configuration.paths['app/views']).render(
       :template => 'shared/meta_view_body', :format => :txt,
-      :locals => { :paper => self, :editor => "@#{editor}" }
+      :locals => locals
     )
   end
 

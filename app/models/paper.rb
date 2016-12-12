@@ -31,6 +31,7 @@ class Paper < ActiveRecord::Base
     state :superceded
     state :accepted
     state :rejected
+    state :withdrawn
 
     event :reject do
       transitions :to => :rejected
@@ -46,6 +47,10 @@ class Paper < ActiveRecord::Base
 
     event :accept do
       transitions :to => :accepted
+    end
+
+    event :withdraw do
+      transitions :to => :withdrawn
     end
   end
 

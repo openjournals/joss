@@ -103,4 +103,12 @@ describe Paper do
 
     expect {paper.save}.to change { ActionMailer::Base.deliveries.count }.by(1)
   end
+
+  it "should be able to be withdrawn at any time" do
+    paper = create(:paper, :state => "accepted")
+    assert Paper.visible.include?(paper)
+
+    paper.withdraw!
+    refute Paper.visible.include?(paper)
+  end
 end

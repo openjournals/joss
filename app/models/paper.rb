@@ -2,6 +2,7 @@ class Paper < ActiveRecord::Base
   EDITORS = %w{
     acabunoc
     arfon
+    arokem
     biorelated
     cMadan
     danielskatz

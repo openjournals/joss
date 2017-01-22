@@ -1,5 +1,5 @@
 class Notifications < ApplicationMailer
-  EDITOR_EMAILS = ["joss.theoj@gmail.com "]
+  EDITOR_EMAILS = ["joss.theoj@gmail.com"]
 
   def submission_email(paper)
     @url  = "http://joss.theoj.org/papers/#{paper.sha}"
@@ -10,6 +10,6 @@ class Notifications < ApplicationMailer
   def editor_weekly_email(editor, pending_issues, assigned_issues)
     @pending_issues = pending_issues
     @assigned_issues = assigned_issues
-    mail(:to => editor["email"], :subject => "JOSS weekly editor update for #{editor['login']}")
+    mail(:to => editor["email"], :bcc => "arfon.smith@gmail.com", :subject => "JOSS weekly editor update for #{editor['login']}")
   end
 end

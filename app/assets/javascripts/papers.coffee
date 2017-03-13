@@ -4,14 +4,15 @@
 
 # Disable the form if the author hasn't checked the certify checkbox
 authorCheck = ->
-  if $("#author-check:checked").length > 0
-    $("#author-submit").toggleClass('disabled')
+  checkBoxCount = $(".pre-check:checked").length
+  if checkBoxCount == 2
+    $("#author-submit").removeClass('disabled')
     $("#author-submit").prop('disabled', false)
   else
-    $("#author-submit").toggleClass('disabled')
+    $("#author-submit").addClass('disabled')
     $("#author-submit").prop('disabled', true)
 
-$(document).on 'change', '#author-check', authorCheck
+$(document).on 'change', '.pre-check', authorCheck
 
 $ ->
   $("form#new_paper").submit ->

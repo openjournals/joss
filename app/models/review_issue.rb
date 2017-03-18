@@ -27,6 +27,22 @@ class ReviewIssue
     return review_issues.sort_by! {|i| i.created_at }
   end
 
+  # Download all the completed (closed) review issues
+  def self.download_completed_reviews(review_repo)
+    complete_issues = GITHUB.list_issues(review_repo, :state => 'closed')
+
+    # Loop through open issues and create ReviewIssues for future manipulation
+    review_issues = []
+
+    complete_issues.each do |issue|
+      if issue.title.match(/\[REVIEW\]/)
+        review_issues << ReviewIssue.new(issue, state="closed")
+      end
+    end
+
+    return review_issues.sort_by! {|i| i.closed_at }
+  end
+
   # Filter the review issues for editor
   def self.review_issues_for_editor(review_issues, editor)
     editor_issues = []
@@ -45,13 +61,14 @@ class ReviewIssue
   end
 
   attr_accessor :title, :body, :comments, :labels, :state, :open, :number, :created_at,
-                :comment_count, :last_comment
+                :closed_at, :comment_count, :last_comment
 
   def initialize(raw_issue, state)
     @title = raw_issue['title']
     @body = raw_issue['body']
     @number = raw_issue['number']
     @created_at = raw_issue['created_at']
+    @closed_at = raw_issue['closed_at']
     @state = state
   end
 

@@ -62,5 +62,17 @@ describe HomeController, :type => :controller do
       expect(user.reload.email).to eq("albert@gmail.com")
       expect(user.reload.github_username).to eq("@jimmy")
     end
+
+    it "should add an @ to their GitHub username if they don't use one" do
+      user = create(:user, :email => nil, :github_username => nil)
+      allow(controller).to receive_message_chain(:current_user).and_return(user)
+      params = {:email => "albert@gmail.com", :github_username => "jimmy_no_at"}
+      request.env["HTTP_REFERER"] = papers_path
+
+      post :update_profile, :user => params
+      expect(response).to be_redirect # as it's updated the email
+      expect(user.reload.email).to eq("albert@gmail.com")
+      expect(user.reload.github_username).to eq("@jimmy_no_at")
+    end
   end
 end

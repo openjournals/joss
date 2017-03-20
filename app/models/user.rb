@@ -21,6 +21,10 @@ class User < ActiveRecord::Base
     sha
   end
 
+  def is_admin
+    return admin
+  end
+
   def nice_name
     if name
       return name.split(',').collect(&:strip).reverse.join(' ')

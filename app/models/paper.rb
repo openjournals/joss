@@ -1,20 +1,20 @@
 class Paper < ActiveRecord::Base
   EDITORS = %w{
-    acabunoc
-    arfon
-    arokem
-    biorelated
-    cMadan
-    danielskatz
-    jakevdp
-    karthik
-    katyhuff
-    Kevin-Mattheus-Moerman
-    kyleniemeyer
-    labarba
-    mgymrek
-    pjotrp
-    tracykteal
+    @acabunoc
+    @arfon
+    @arokem
+    @biorelated
+    @cMadan
+    @danielskatz
+    @jakevdp
+    @karthik
+    @katyhuff
+    @Kevin-Mattheus-Moerman
+    @kyleniemeyer
+    @labarba
+    @mgymrek
+    @pjotrp
+    @tracykteal
   }.freeze
 
   belongs_to  :submitting_author,

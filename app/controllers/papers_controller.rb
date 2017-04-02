@@ -179,6 +179,6 @@ class PapersController < ApplicationController
   private
 
   def paper_params
-    params.require(:paper).permit(:title, :repository_url, :archive_doi, :software_version, :body)
+    params.require(:paper).permit(:title, :repository_url, :archive_doi, :software_version, :suggested_editor, :body)
   end
 end

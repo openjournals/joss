@@ -171,12 +171,18 @@ class Paper < ActiveRecord::Base
   end
 
   # Create a review meta-issue for assigning reviewers
-  def create_meta_review_issue(params)
+  def create_meta_review_issue(editor_handle)
+    if editor_handle
+      striped_handle = editor_handle.gsub('@', '')
+    else
+      striped_handle = editor_handle
+    end
+
     return false if meta_review_issue_id
     issue = GITHUB.create_issue(Rails.configuration.joss_review_repo,
                                 "[PRE REVIEW]: #{self.title}",
-                                meta_review_body(params),
-                                { :assignee => params,
+                                meta_review_body(editor_handle),
+                                { :assignee => striped_handle,
                                   :labels => "pre-review" })
 
     set_meta_review_issue(issue.number)

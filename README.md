@@ -4,7 +4,7 @@ The [Journal of Open Source Software](http://joss.theoj.org) (JOSS) is a develop
 
 ### What exactly do you mean by 'journal'
 
-The Journal of Open Source Software (JOSS) is a legitimate academic journal. We have a rigorous peer review process and a first-class editorial board. Upon acceptance into JOSS, a CrossRef DOI is minted and we list your paper on the JOSS website.
+The Journal of Open Source Software (JOSS) is an academic journal with a formal peer review process that is designed to _improve the quality of the software submitted_. Upon acceptance into JOSS, a CrossRef DOI is minted and we list your paper on the JOSS website.
 
 ### Don't we have enough journals already?
 

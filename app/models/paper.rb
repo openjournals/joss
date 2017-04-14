@@ -4,6 +4,7 @@ class Paper < ActiveRecord::Base
     @arfon
     @arokem
     @biorelated
+    @brainstorm
     @cMadan
     @danielskatz
     @jakevdp

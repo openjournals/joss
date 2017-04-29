@@ -48,7 +48,7 @@ class ReviewIssue
     editor_issues = []
     review_issues.each do |issue|
       if issue.body.match(/\*\*Editor:\*\*\s*(@\S*|Pending)/i)
-        if issue.editor == editor["login"]
+        if issue.editor.downcase == editor["login"].downcase
           comments = GITHUB.issue_comments(ENV['REVIEW_REPO'], issue.number)
           issue.last_comment = comments.last
           issue.comment_count = comments.count

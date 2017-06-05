@@ -103,13 +103,17 @@ class PapersController < ApplicationController
 
   def start_meta_review
     @paper = Paper.find_by_sha(params[:id])
-
-    if @paper.start_meta_review!(nil, params[:editor])
-      flash[:notice] = "Review started"
-      redirect_to paper_path(@paper)
+    if current_user.is_admin
+      if @paper.start_meta_review!(nil, params[:editor])
+        flash[:notice] = "Review started"
+        redirect_to paper_path(@paper)
+      else
+        flash[:error] = "Review could not be started"
+        redirect_to paper_path(@paper)
+      end
     else
-      flash[:error] = "Review could not be started"
-      redirect_to paper_path(@paper)
+        flash[:notice] = "Access denied"
+        redirect_to paper_path(@paper)
     end
   end
 

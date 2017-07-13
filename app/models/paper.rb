@@ -234,9 +234,12 @@ class Paper < ActiveRecord::Base
     end
   end
 
-private
+  private
 
   def set_sha
-    self.sha = SecureRandom.hex
+    loop do
+      self.sha = SecureRandom.hex
+      break unless self.class.exists?(sha: sha)
+    end
   end
 end

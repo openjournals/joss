@@ -1,5 +1,7 @@
 # The Journal of Open Source Software
 
+[![Join the chat at https://gitter.im/openjournals/joss](https://badges.gitter.im/openjournals/joss.svg)](https://gitter.im/openjournals/joss?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 The [Journal of Open Source Software](http://joss.theoj.org) (JOSS) is a developer friendly journal for research software packages.
 
 ### What exactly do you mean by 'journal'

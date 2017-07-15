@@ -5,9 +5,9 @@ module PapersHelper
 
   def badge_link(paper)
     if paper.accepted?
-      paper.cross_ref_doi_url
+      return paper.cross_ref_doi_url
     else
-      paper.review_url
+      return paper.review_url
     end
   end
 

@@ -102,9 +102,9 @@ class Paper < ActiveRecord::Base
   def pretty_repository_name
     if repository_url.include?('github.com')
       name, owner = repository_url.scan(/(?<=github.com\/).*/i).first.split('/')
-      "#{name} / #{owner}"
+      return "#{name} / #{owner}"
     else
-      repository_url
+      return repository_url
     end
   end
 

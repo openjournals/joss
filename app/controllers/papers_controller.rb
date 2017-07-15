@@ -136,9 +136,9 @@ class PapersController < ApplicationController
 
   def valid_doi?
     if params[:doi] && params[:doi].include?('10.21105')
-      true
+      return true
     else
-      false
+      return false
     end
   end
 

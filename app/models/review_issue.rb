@@ -23,7 +23,7 @@ class ReviewIssue
       end
     end
 
-    review_issues.sort_by!(&:created_at)
+    return review_issues.sort_by!(&:created_at)
   end
 
   # Download all the completed (closed) review issues
@@ -39,7 +39,7 @@ class ReviewIssue
       end
     end
 
-    review_issues.sort_by!(&:closed_at)
+    return review_issues.sort_by!(&:closed_at)
   end
 
   # Filter the review issues for editor
@@ -54,7 +54,7 @@ class ReviewIssue
       editor_issues << issue
     end
 
-    editor_issues
+    return editor_issues
   end
 
   attr_accessor :title, :body, :comments, :labels, :state, :open, :number, :created_at,

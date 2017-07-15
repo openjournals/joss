@@ -26,6 +26,6 @@ module ApplicationHelper
     return false if controller.action_name == 'profile'
 
     return false if current_user.profile_complete?
-    true
+    return true
   end
 end

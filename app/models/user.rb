@@ -22,9 +22,9 @@ class User < ActiveRecord::Base
 
   def nice_name
     if name
-      name.split(',').collect(&:strip).reverse.join(' ')
+      return name.split(',').collect(&:strip).reverse.join(' ')
     else
-      'Missing Name'
+      return 'Missing Name'
     end
   end
 

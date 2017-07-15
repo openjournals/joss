@@ -1,5 +1,5 @@
 class HomeController < ApplicationController
-  before_filter :require_user, :only => %w(profile update_profile)
+  before_filter :require_user, only: %w[profile update_profile]
 
   def index
     @featured = Paper.featured
@@ -9,31 +9,26 @@ class HomeController < ApplicationController
     @popular_papers = Paper.popular.visible.recent.limit(10)
   end
 
-  def about
-
-  end
+  def about; end
 
   def update_profile
     check_github_username
 
-    if current_user.update_attributes(user_params)
-      redirect_to(:back, :notice => "Profile updated")
-    end
+    return unless current_user.update_attributes(user_params)
+    redirect_to(:back, notice: 'Profile updated')
   end
 
   def profile
     @user = current_user
   end
 
-private
+  private
 
   def check_github_username
-    if user_params.has_key?('github_username')
-      if !user_params['github_username'].strip.start_with?('@')
-        old = user_params['github_username']
-        user_params['github_username'] = old.prepend('@')
-      end
-    end
+    return unless user_params.key?('github_username')
+    return if user_params['github_username'].strip.start_with?('@')
+    old = user_params['github_username']
+    user_params['github_username'] = old.prepend('@')
   end
 
   def user_params

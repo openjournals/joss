@@ -15,7 +15,7 @@ module ApplicationHelper
   def nav_link(link_text, link_path)
     class_name = current_page?(link_path) ? 'active' : ''
 
-    content_tag(:li, :class => class_name) do
+    content_tag(:li, class: class_name) do
       link_to link_text, link_path
     end
   end
@@ -23,12 +23,9 @@ module ApplicationHelper
   # Decide whether to show the 'update your profile' link
   def show_profile_banner?
     return false unless current_user
-    return false if controller.action_name == "profile"
+    return false if controller.action_name == 'profile'
 
-    if current_user.profile_complete?
-      return false
-    else
-      return true
-    end
+    return false if current_user.profile_complete?
+    true
   end
 end

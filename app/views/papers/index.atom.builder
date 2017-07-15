@@ -1,6 +1,6 @@
 atom_feed do |feed|
-  feed.title("The Journal of Open Source Software")
-  feed.updated(@papers[0].created_at) if @papers.length > 0
+  feed.title('The Journal of Open Source Software')
+  feed.updated(@papers[0].created_at) unless @papers.empty?
 
   @papers.each do |paper|
     feed.entry(paper) do |entry|

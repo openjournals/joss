@@ -8,7 +8,7 @@ class CreatePapers < ActiveRecord::Migration
       t.string      :sha
       t.text        :body
       t.column      :user_id, :integer
-      t.timestamps  :null => false
+      t.timestamps  null: false
     end
   end
 end

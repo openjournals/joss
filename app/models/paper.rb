@@ -13,6 +13,7 @@ class Paper < ActiveRecord::Base
     @Kevin-Mattheus-Moerman
     @kyleniemeyer
     @labarba
+    @lheagy
     @mgymrek
     @pjotrp
     @tracykteal

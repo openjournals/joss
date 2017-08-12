@@ -8,6 +8,7 @@ class Paper < ActiveRecord::Base
     @cMadan
     @danielskatz
     @jakevdp
+    @jasonclark
     @karthik
     @katyhuff
     @Kevin-Mattheus-Moerman

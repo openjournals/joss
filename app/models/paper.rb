@@ -124,16 +124,16 @@ class Paper < ActiveRecord::Base
   end
 
   # Make sure that DOIs have a full http URL
-  # e.g. turn 10.6084/m9.figshare.828487 into http://dx.doi.org/10.6084/m9.figshare.828487
+  # e.g. turn 10.6084/m9.figshare.828487 into https://doi.org/10.6084/m9.figshare.828487
   def doi_with_url
     return "DOI pending" unless archive_doi
 
     bare_doi = archive_doi[/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/]
 
-    if archive_doi.include?("http://dx.doi.org/")
+    if archive_doi.include?("https://doi.org/")
       return archive_doi
     elsif bare_doi
-      return "http://dx.doi.org/#{bare_doi}"
+      return "https://doi.org/#{bare_doi}"
     else
       return archive_doi
     end
@@ -213,9 +213,9 @@ class Paper < ActiveRecord::Base
     state.humanize.downcase
   end
 
-  # Returns DOI with URL e.g. "http://dx.doi.org/10.21105/joss.00001"
+  # Returns DOI with URL e.g. "https://doi.org/10.21105/joss.00001"
   def cross_ref_doi_url
-    "http://dx.doi.org/#{doi}"
+    "https://doi.org/#{doi}"
   end
 
   def status_badge

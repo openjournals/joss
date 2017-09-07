@@ -152,7 +152,8 @@ class Paper < ActiveRecord::Base
     issue = GITHUB.create_issue(Rails.configuration.joss_review_repo,
                                 "[REVIEW]: #{self.title}",
                                 review_body(editor, reviewer),
-                                { :labels => "review" })
+                                { :assignee => editor,
+                                  :labels => "review" })
 
     set_review_issue(issue.number)
   end

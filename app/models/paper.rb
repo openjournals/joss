@@ -1,26 +1,4 @@
 class Paper < ActiveRecord::Base
-  EDITORS = %w{
-    @acabunoc
-    @arfon
-    @arokem
-    @biorelated
-    @brainstorm
-    @cMadan
-    @danielskatz
-    @jakevdp
-    @jasonclark
-    @karthik
-    @katyhuff
-    @Kevin-Mattheus-Moerman
-    @kyleniemeyer
-    @labarba
-    @leeper
-    @lheagy
-    @mgymrek
-    @pjotrp
-    @tracykteal
-  }.freeze
-
   belongs_to  :submitting_author,
               :class_name => 'User',
               :validate => true,

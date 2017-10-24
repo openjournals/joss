@@ -1,6 +1,10 @@
 require 'rails_helper'
 
 describe 'papers/show.html.erb' do
+  before(:each) do
+    allow(Repository).to receive(:editors).and_return ["@user1", "@user2"]
+  end
+
   context 'rendering paper status partial' do
     it "displays correctly for submitted paper" do
       user = create(:user)

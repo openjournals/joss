@@ -3,6 +3,10 @@ require 'rails_helper'
 describe PapersController, :type => :controller do
   render_views
 
+  before(:each) do
+    allow(Repository).to receive(:editors).and_return ["@user1", "@user2"]
+  end
+
   describe "GET #index" do
     it "should render all visible papers" do
       get :index, :format => :html

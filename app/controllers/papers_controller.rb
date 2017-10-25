@@ -1,7 +1,7 @@
 class PapersController < ApplicationController
   before_filter :require_user, :only => %w(new create update)
   before_filter :require_complete_profile, :only => %w(create)
-  before_filter :require_admin_user, :only => %w(start_meta_review archive)
+  before_filter :require_admin_user, :only => %w(start_meta_review archive reject)
   protect_from_forgery :except => [ :api_start_review ]
 
   def recent

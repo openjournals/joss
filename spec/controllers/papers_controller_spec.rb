@@ -71,6 +71,28 @@ describe PapersController, :type => :controller do
     end
   end
 
+  describe "Paper rejection" do
+    it "should work for an administrator" do
+      user = create(:admin_user)
+      allow(controller).to receive_message_chain(:current_user).and_return(user)
+      submitted_paper = create(:paper, :state => 'submitted')
+
+      post :reject, :id => submitted_paper.sha
+      expect(response).to be_redirect # as it's rejected the paper
+      expect(Paper.rejected.count).to eq(1)
+    end
+
+    it "should fail for a standard user" do
+      user = create(:user)
+      allow(controller).to receive_message_chain(:current_user).and_return(user)
+      submitted_paper = create(:paper, :state => 'submitted')
+
+      post :reject, :id => submitted_paper.sha
+      expect(response).to be_redirect # as it's rejected the paper
+      expect(Paper.rejected.count).to eq(0)
+    end
+  end
+
   describe "POST #create" do
     it "LOGGED IN responds with success" do
       user = create(:user)

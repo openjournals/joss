@@ -3,7 +3,7 @@ FactoryGirl.define do
     title             'arfon / fidgit'
     body              'An ungodly union of GitHub and Figshare http://fidgit.arfon.org'
     repository_url    'http://github.com/arfon/fidgit'
-    archive_doi       'http://dx.doi.org/10.0001/zenodo.12345'
+    archive_doi       'https://doi.org/10.0001/zenodo.12345'
     software_version  'v1.0.0'
 
     created_at  { Time.now }

@@ -5,6 +5,7 @@ Rails.application.routes.draw do
       post 'start_review'
       post 'start_meta_review'
       post 'reject'
+      post 'withdraw'
     end
 
     collection do

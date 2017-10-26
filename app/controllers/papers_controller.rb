@@ -1,7 +1,7 @@
 class PapersController < ApplicationController
-  before_filter :require_user, :only => %w(new create update)
+  before_filter :require_user, :only => %w(new create update withdraw)
   before_filter :require_complete_profile, :only => %w(create)
-  before_filter :require_admin_user, :only => %w(start_meta_review archive)
+  before_filter :require_admin_user, :only => %w(start_meta_review archive reject)
   protect_from_forgery :except => [ :api_start_review ]
 
   def recent
@@ -121,6 +121,22 @@ class PapersController < ApplicationController
       redirect_to paper_path(@paper)
     else
       flash[:error] = "Paper could not be rejected"
+      redirect_to paper_path(@paper)
+    end
+  end
+
+  def withdraw
+    @paper = Paper.find_by_sha(params[:id])
+
+    unless current_user.is_owner_of?(@paper) || current_user.admin?
+      redirect_to paper_path(@paper) and return
+    end
+
+    if @paper.withdraw!
+      flash[:notice] = "Paper withdrawn"
+      redirect_to paper_path(@paper)
+    else
+      flash[:error] = "Paper could not be withdrawn"
       redirect_to paper_path(@paper)
     end
   end

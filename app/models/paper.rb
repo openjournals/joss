@@ -127,7 +127,7 @@ class Paper < ActiveRecord::Base
   # Create a review issue (we know the reviewer and editor at this point)
   def create_review_issue(editor, reviewer)
     return false if review_issue_id
-    issue = GITHUB.create_issue(Rails.configuration.joss_review_repo,
+    issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[REVIEW]: #{self.title}",
                                 review_body(editor, reviewer),
                                 { :assignee => editor,
@@ -162,7 +162,7 @@ class Paper < ActiveRecord::Base
     end
 
     return false if meta_review_issue_id
-    issue = GITHUB.create_issue(Rails.configuration.joss_review_repo,
+    issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[PRE REVIEW]: #{self.title}",
                                 meta_review_body(editor_handle),
                                 { :assignee => striped_handle,
@@ -177,15 +177,15 @@ class Paper < ActiveRecord::Base
   end
 
   def meta_review_url
-    "https://github.com/#{Rails.configuration.joss_review_repo}/issues/#{self.meta_review_issue_id}"
+    "https://github.com/#{Rails.application.settings["reviews"]}/issues/#{self.meta_review_issue_id}"
   end
 
   def review_url
-    "https://github.com/#{Rails.configuration.joss_review_repo}/issues/#{self.review_issue_id}"
+    "https://github.com/#{Rails.application.settings["reviews"]}/issues/#{self.review_issue_id}"
   end
 
   def update_review_issue(comment)
-    GITHUB.add_comment(Rails.configuration.joss_review_repo, self.review_issue_id, comment)
+    GITHUB.add_comment(Rails.application.settings["reviews"], self.review_issue_id, comment)
   end
 
   def pretty_state

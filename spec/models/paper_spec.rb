@@ -44,17 +44,16 @@ describe Paper do
     expect(paper.pretty_repository_name).to eq("arfon / joss-reviews")
   end
 
-  it "should know how to return a pretty DOI" do
-    paper = create(:paper, :archive_doi => "http://dx.doi.org/10.6084/m9.figshare.828487")
+  it 'should know how to return a pretty DOI' do
+    paper = create(:paper, archive_doi: 'https://doi.org/10.6084/m9.figshare.828487')
 
     expect(paper.pretty_doi).to eq("10.6084/m9.figshare.828487")
   end
 
+  it 'should know how to return a DOI with a full URL' do
+    paper = create(:paper, archive_doi: '10.6084/m9.figshare.828487')
 
-  it "should know how to return a DOI with a full URL" do
-    paper = create(:paper, :archive_doi => "10.6084/m9.figshare.828487")
-
-    expect(paper.doi_with_url).to eq("http://dx.doi.org/10.6084/m9.figshare.828487")
+    expect(paper.doi_with_url).to eq('https://doi.org/10.6084/m9.figshare.828487')
   end
 
   it "should bail creating a full DOI URL if if can't figure out what to do" do

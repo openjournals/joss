@@ -41,6 +41,28 @@ describe 'papers/show.html.erb' do
       expect(rendered).to have_selector("input[type=submit][value='Reject paper']")
     end
 
+    it "shows the withdraw button to paper owners" do
+      user = create(:user)
+      allow(view).to receive_message_chain(:current_user).and_return(user)
+
+      paper = create(:paper, :state => "submitted", :submitting_author => user)
+      assign(:paper, paper)
+
+      render :template => "papers/show.html.erb"
+      expect(rendered).to have_selector("input[type=submit][value='Withdraw paper']")
+    end
+
+    it "shows the withdraw button to admins" do
+      user = create(:user, :admin => true)
+      allow(view).to receive_message_chain(:current_user).and_return(user)
+
+      paper = create(:paper, :state => "submitted")
+      assign(:paper, paper)
+
+      render :template => "papers/show.html.erb"
+      expect(rendered).to have_selector("input[type=submit][value='Withdraw paper']")
+    end
+
     it "doesn't displays buttons when there's a GitHub issue" do
       user = create(:user, :admin => true)
       allow(view).to receive_message_chain(:current_user).and_return(user)

@@ -71,13 +71,67 @@ describe PapersController, :type => :controller do
     end
   end
 
+  describe "Paper rejection" do
+    it "should work for an administrator" do
+      user = create(:admin_user)
+      allow(controller).to receive_message_chain(:current_user).and_return(user)
+      submitted_paper = create(:paper, :state => 'submitted')
+
+      post :reject, :id => submitted_paper.sha
+      expect(response).to be_redirect # as it's rejected the paper
+      expect(Paper.rejected.count).to eq(1)
+    end
+
+    it "should fail for a standard user" do
+      user = create(:user)
+      allow(controller).to receive_message_chain(:current_user).and_return(user)
+      submitted_paper = create(:paper, :state => 'submitted')
+
+      post :reject, :id => submitted_paper.sha
+      expect(response).to be_redirect # as it's rejected the paper
+      expect(Paper.rejected.count).to eq(0)
+    end
+  end
+
+  describe "Paper withdrawing" do
+    it "should work for an administrator" do
+      user = create(:admin_user)
+      allow(controller).to receive_message_chain(:current_user).and_return(user)
+      submitted_paper = create(:paper, :state => 'submitted')
+
+      post :withdraw, :id => submitted_paper.sha
+      expect(response).to be_redirect # as it's rejected the paper
+      expect(Paper.withdrawn.count).to eq(1)
+    end
+
+    it "should fail for a user who doesn't own the paper" do
+      user = create(:user)
+      allow(controller).to receive_message_chain(:current_user).and_return(user)
+      submitted_paper = create(:paper, :state => 'submitted')
+
+      post :withdraw, :id => submitted_paper.sha
+      expect(response).to be_redirect
+      expect(Paper.withdrawn.count).to eq(0)
+    end
+
+    it "should work for a user who owns the paper" do
+      user = create(:user)
+      allow(controller).to receive_message_chain(:current_user).and_return(user)
+      submitted_paper = create(:paper, :state => 'submitted', :submitting_author => user)
+
+      post :withdraw, :id => submitted_paper.sha
+      expect(response).to be_redirect
+      expect(Paper.withdrawn.count).to eq(1)
+    end
+  end
+
   describe "POST #create" do
     it "LOGGED IN responds with success" do
       user = create(:user)
       allow(controller).to receive_message_chain(:current_user).and_return(user)
       paper_count = Paper.count
 
-      paper_params = {:title => "Yeah whateva", :body => "something", :repository_url => "https://github.com/foo/bar", :archive_doi => "http://dx.doi.org/10.6084/m9.figshare.828487", :software_version => "v1.0.1"}
+      paper_params = {:title => "Yeah whateva", :body => "something", :repository_url => "https://github.com/foo/bar", :archive_doi => "https://doi.org/10.6084/m9.figshare.828487", :software_version => "v1.0.1"}
       post :create, :paper => paper_params
       expect(response).to be_redirect # as it's created the thing
       expect(Paper.count).to eq(paper_count + 1)
@@ -88,7 +142,7 @@ describe PapersController, :type => :controller do
       allow(controller).to receive_message_chain(:current_user).and_return(user)
       paper_count = Paper.count
 
-      paper_params = {:title => "Yeah whateva", :body => "something", :repository_url => "", :archive_doi => "http://dx.doi.org/10.6084/m9.figshare.828487"}
+      paper_params = {:title => "Yeah whateva", :body => "something", :repository_url => "", :archive_doi => "https://doi.org/10.6084/m9.figshare.828487"}
       post :create, :paper => paper_params
 
       expect(response.body).to match /Your paper could not be saved/
@@ -101,7 +155,7 @@ describe PapersController, :type => :controller do
       paper_count = Paper.count
       request.env["HTTP_REFERER"] = new_paper_path
 
-      paper_params = {:title => "Yeah whateva", :body => "something", :repository_url => "https://github.com/foo/bar", :archive_doi => "http://dx.doi.org/10.6084/m9.figshare.828487", :software_version => "v1.0.1"}
+      paper_params = {:title => "Yeah whateva", :body => "something", :repository_url => "https://github.com/foo/bar", :archive_doi => "https://doi.org/10.6084/m9.figshare.828487", :software_version => "v1.0.1"}
       post :create, :paper => paper_params
       expect(response).to be_redirect # as it's redirected us
       expect(Paper.count).to eq(paper_count)

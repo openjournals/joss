@@ -29,6 +29,10 @@ class User < ActiveRecord::Base
     end
   end
 
+  def is_owner_of?(paper)
+    paper.submitting_author == self
+  end
+
   def orcid_url
     "http://orcid.org/" + uid
   end

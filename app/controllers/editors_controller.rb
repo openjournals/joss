@@ -1,6 +1,5 @@
 class EditorsController < ApplicationController
-  # TODO: This is a holdover from before orcid/auth
-  # before_action :require_admin_user
+  before_action :require_admin_user
   before_action :set_editor, only: [:show, :edit, :update, :destroy]
 
   def index

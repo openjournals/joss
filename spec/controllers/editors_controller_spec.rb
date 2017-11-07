@@ -1,18 +1,31 @@
 require 'rails_helper'
 
 RSpec.describe EditorsController, type: :controller do
-  let(:valid_attributes) do
-    []
-  end
-
-  let(:invalid_attributes) do
-    []
-  end
-
-  let(:current_user) { create(:user) }
+  let(:current_user) { create(:admin_user) }
 
   before(:each) do
     allow(controller).to receive(:current_user).and_return(current_user)
+  end
+
+  context "when not logged in" do
+    let(:current_user) { nil }
+    it "redirects to login" do
+      get :index
+      expect(response).to redirect_to %r(test.host/auth/orcid)
+    end
+  end
+
+  context "when logged in as a non-admin user" do
+    let(:current_user) { create(:user) }
+    it "redirects to the root" do
+      get :index
+      expect(response).to redirect_to root_path
+    end
+
+    it "sets the flash" do
+      get :index
+      expect(flash[:error]).to eql "You are not permitted to view that page"
+    end
   end
 
   describe "#index" do

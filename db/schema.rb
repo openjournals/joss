@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171104191755) do
+ActiveRecord::Schema.define(version: 20171107021538) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -48,6 +48,7 @@ ActiveRecord::Schema.define(version: 20171104191755) do
     t.text     "paper_body"
     t.integer  "meta_review_issue_id"
     t.string   "suggested_editor"
+    t.string   "kind"
   end
 
   add_index "papers", ["sha"], name: "index_papers_on_sha", using: :btree

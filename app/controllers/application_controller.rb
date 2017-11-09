@@ -7,11 +7,17 @@ class ApplicationController < ActionController::Base
     unless current_user
       # Make sure we get redirected back to the page we were asking for.
       redirect_to "/auth/orcid?origin=#{env['REQUEST_URI']}"
+      false # throw :abort
     end
   end
 
   def require_admin_user
-    redirect_to '/sessions/new' unless (current_user && current_user.admin?)
+    require_user
+    if current_user && !current_user.admin?
+      flash[:error] = "You are not permitted to view that page"
+      redirect_to(:root)
+      false # throw :abort
+    end
   end
 
   def require_complete_profile

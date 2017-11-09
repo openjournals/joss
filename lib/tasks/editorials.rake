@@ -4,12 +4,13 @@ namespace :editorials do
     # We run this task daily on Heroku but only want the email
     # sent once per week (on a Sunday)
     if Time.now.sunday?
-      review_issues = ReviewIssue.download_review_issues(ENV['REVIEW_REPO'])
+      reviews_repo = Rails.application.settings["reviews"]
+      review_issues = ReviewIssue.download_review_issues(reviews_repo)
       # Sort issues in place in order of date created
 
       pending_issues = review_issues.select { |i| i.editor == "Pending" }
 
-      closed_issues = ReviewIssue.download_completed_reviews(ENV['REVIEW_REPO'])
+      closed_issues = ReviewIssue.download_completed_reviews(reviews_repo)
 
       recently_closed_issues = closed_issues.select { |i| i.closed_at > 1.week.ago }
 

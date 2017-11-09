@@ -28,4 +28,8 @@ module PapersHelper
     result = pipeline.call(body)
     result[:output].to_s.html_safe
   end
+
+  def paper_types
+    Rails.application.settings["paper_types"]
+  end
 end

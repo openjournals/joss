@@ -162,6 +162,20 @@ describe PapersController, :type => :controller do
     end
   end
 
+  describe "four oh four" do
+    it "should 404 when passed an invalid sha" do
+      get :show, :id => SecureRandom.hex, :format => "html"
+      expect(response.body).to match /404 Not Found/
+      expect(response.status).to eq(404)
+    end
+
+    it "should 404 when passed an invalid DOI" do
+      get :show, :id => "10.21105/1234", :format => "html"
+      expect(response.body).to match /404 Not Found/
+      expect(response.status).to eq(404)
+    end
+  end
+
   describe "status badges" do
     it "should return the correct status badge for a submitted paper" do
       submitted_paper = create(:paper, :state => 'submitted')

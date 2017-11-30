@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/openjournals/joss.svg?branch=master)](https://travis-ci.org/openjournals/joss) [![Powered by NumFOCUS](https://img.shields.io/badge/powered%20by-NumFOCUS-orange.svg?style=flat&colorA=E1523D&colorB=007D8A)](http://numfocus.org) [![Join the chat at https://gitter.im/openjournals/joss](https://badges.gitter.im/openjournals/joss.svg)](https://gitter.im/openjournals/joss?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-The [Journal of Open Source Software](http://joss.theoj.org) (JOSS) is a developer friendly journal for research software packages.
+The [Journal of Open Source Software](https://joss.theoj.org) (JOSS) is a developer friendly journal for research software packages.
 
 ### What exactly do you mean by 'journal'
 
@@ -22,7 +22,7 @@ We have a simple submission workflow and extensive documentation to help you pre
 
 ## The site
 
-The JOSS submission tool is hosted at http://joss.theoj.org
+The JOSS submission tool is hosted at https://joss.theoj.org
 
 ## JOSS Reviews
 
@@ -32,7 +32,7 @@ If you're looking for the JOSS reviews repository head over here: https://github
 
 In order to have a more open and welcoming community, JOSS adheres to a code of conduct adapted from the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
 
-Please adhere to this code of conduct in any interactions you have in the JOSS community. It is strictly enforced on all official JOSS repositories, the JOSS website, and resources. If you encounter someone violating these terms, please let the Editor-in-Chief ([@arfon](https://github.com/arfon)) or someone on the [editorial board](http://joss.theoj.org/about#editorial_board) know and we will address it as soon as possible.
+Please adhere to this code of conduct in any interactions you have in the JOSS community. It is strictly enforced on all official JOSS repositories, the JOSS website, and resources. If you encounter someone violating these terms, please let the Editor-in-Chief ([@arfon](https://github.com/arfon)) or someone on the [editorial board](https://joss.theoj.org/about#editorial_board) know and we will address it as soon as possible.
 
 ## Contributing
 

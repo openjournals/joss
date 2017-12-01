@@ -176,6 +176,22 @@ describe PapersController, :type => :controller do
     end
   end
 
+  describe "paper lookup" do
+    it "should return the created_at date for a paper" do
+      submitted_paper = create(:paper, :state => 'submitted', :created_at => 3.days.ago, :meta_review_issue_id => 123)
+
+      get :lookup, :id => 123
+      expect(response.body).to eq(3.days.ago.strftime('%d %B %Y'))
+    end
+
+    it "should 404 when passed an invalid id" do
+      get :lookup, :id => 12345
+
+      expect(response.body).to match /404 Not Found/
+      expect(response.status).to eq(404)
+    end
+  end
+
   describe "status badges" do
     it "should return the correct status badge for a submitted paper" do
       submitted_paper = create(:paper, :state => 'submitted')

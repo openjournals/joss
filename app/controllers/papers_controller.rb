@@ -153,6 +153,11 @@ class PapersController < ApplicationController
     end
   end
 
+  def lookup
+    paper = Paper.where('review_issue_id = ? OR meta_review_issue_id = ?', params[:id], params[:id]).first!
+    render :text => paper.created_at.strftime('%d %B %Y')
+  end
+
   def valid_doi?
     if params[:doi] && params[:doi].include?("10.21105")
       return true

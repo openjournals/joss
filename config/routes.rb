@@ -6,6 +6,7 @@ Rails.application.routes.draw do
       post 'start_meta_review'
       post 'reject'
       post 'withdraw'
+      get 'lookup'
     end
 
     collection do

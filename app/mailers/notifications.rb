@@ -7,10 +7,10 @@ class Notifications < ApplicationMailer
     mail(:to => EDITOR_EMAILS, :subject => "New submission: #{paper.title}")
   end
 
-  def editor_weekly_email(editor, pending_issues, assigned_issues, recently_closed_issues)
+  def editor_weekly_email(editor_email, pending_issues, assigned_issues, recently_closed_issues)
     @pending_issues = pending_issues
     @assigned_issues = assigned_issues
     @closed_issues = recently_closed_issues
-    mail(:to => editor["email"], :bcc => "arfon.smith@gmail.com", :subject => "#{Rails.application.settings["abbreviation"]} weekly editor update for #{editor['login']}")
+    mail(:to => editor_email, :bcc => "arfon.smith@gmail.com", :subject => "#{Rails.application.settings["abbreviation"]} weekly editor update for #{editor['login']}")
   end
 end

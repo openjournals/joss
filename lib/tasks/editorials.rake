@@ -15,9 +15,9 @@ namespace :editorials do
       recently_closed_issues = closed_issues.select { |i| i.closed_at > 1.week.ago }
 
       # Loop through editors and send them their weekly email :-)
-      YAML.load(ENV['EDITORS']).each do |editor|
-        editor_issues = ReviewIssue.review_issues_for_editor(review_issues, editor)
-        Notifications.editor_weekly_email(editor, pending_issues, editor_issues, recently_closed_issues).deliver_now!
+      Editors.all.each do |editor|
+        editor_issues = ReviewIssue.review_issues_for_editor(review_issues, editor.login)
+        Notifications.editor_weekly_email(editor.email, pending_issues, editor_issues, recently_closed_issues).deliver_now!
       end
     end
   end

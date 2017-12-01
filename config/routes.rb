@@ -16,10 +16,10 @@ Rails.application.routes.draw do
     end
   end
 
+  get '/papers/lookup/:id', :to => "papers#lookup"
   get '/papers/:id/status.svg', :to => "papers#status", :format => "svg", :as => 'status_badge'
   get '/papers/:doi/status.svg', :to => "papers#status", :format => "svg", :constraints => { :doi => /10.21105\/joss\.\d{5}/}
   get '/papers/:doi', :to => "papers#show", :constraints => {:doi => /.*/}
-  get '/papers/lookup/:id', :to => "papers#lookup"
 
   post '/update_profile', :to => "home#update_profile"
   get '/about', :to => 'home#about', :as => 'about'

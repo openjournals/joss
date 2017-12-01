@@ -1,5 +1,5 @@
 module ConsoleExtensions
-  def dat(review_issue_id)
-    return Paper.find_by_review_issue_id(review_issue_id)
+  def dat(id)
+    return Paper.where('review_issue_id = ? OR meta_review_issue_id = ?', id, id).first
   end
 end

@@ -147,9 +147,9 @@ class PapersController < ApplicationController
 
   def show
     if params[:doi] && valid_doi?
-      @paper = Paper.find_by_doi(params[:doi])
+      @paper = Paper.find_by_doi!(params[:doi])
     else
-      @paper = Paper.find_by_sha(params[:id])
+      @paper = Paper.find_by_sha!(params[:id])
     end
   end
 

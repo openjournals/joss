@@ -139,6 +139,19 @@ class Paper < ActiveRecord::Base
     end
   end
 
+  # A 5-figure integer used to produce the JOSS DOI
+  def joss_id
+    id = "%05d" % review_issue_id
+    "joss.#{id}"
+  end
+
+  # Where to find the PDF for this paper
+  def pdf_url
+    doi_to_file = doi.gsub('/', '.')
+
+    "http://www.theoj.org/joss-papers/#{joss_id}/#{doi_to_file}.pdf"
+  end
+
   def review_body(editor, reviewer)
     ActionView::Base.new(Rails.configuration.paths['app/views']).render(
       :template => 'shared/review_body', :format => :txt,

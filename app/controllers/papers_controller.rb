@@ -151,6 +151,8 @@ class PapersController < ApplicationController
     else
       @paper = Paper.find_by_sha!(params[:id])
     end
+
+    render :layout => false
   end
 
   def lookup

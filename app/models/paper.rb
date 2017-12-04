@@ -149,7 +149,7 @@ class Paper < ActiveRecord::Base
   def pdf_url
     doi_to_file = doi.gsub('/', '.')
 
-    "http://www.theoj.org/joss-papers/#{joss_id}/#{doi_to_file}.pdf"
+    "https://www.theoj.org/joss-papers/#{joss_id}/#{doi_to_file}.pdf"
   end
 
   def review_body(editor, reviewer)

@@ -252,8 +252,7 @@ class Paper < ActiveRecord::Base
   end
 
   def status_badge_url
-    # "http://joss.theoj.org/papers/10.21105/joss.#{joss_id}/status.svg"
-    "https://joss.theoj.org/papers/b15a14310643cf6fa2c307e907620d65/status.svg"
+    "http://joss.theoj.org/papers/10.21105/joss.#{joss_id}/status.svg"
   end
 
   def markdown_code

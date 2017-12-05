@@ -151,6 +151,13 @@ class PapersController < ApplicationController
     else
       @paper = Paper.find_by_sha!(params[:id])
     end
+
+    render :layout => false
+  end
+
+  def lookup
+    paper = Paper.where('review_issue_id = ? OR meta_review_issue_id = ?', params[:id], params[:id]).first!
+    render :text => paper.created_at.strftime('%d %B %Y')
   end
 
   def valid_doi?

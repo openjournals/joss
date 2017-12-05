@@ -128,7 +128,7 @@ class Paper < ActiveRecord::Base
   def pdf_url
     doi_to_file = doi.gsub('/', '.')
 
-    "https://www.theoj.org/joss-papers/#{joss_id}/#{doi_to_file}.pdf"
+    "#{Rails.application.settings["papers_html_url"]}/#{joss_id}/#{doi_to_file}.pdf"
   end
 
   def review_body(editor, reviewer)
@@ -231,7 +231,7 @@ class Paper < ActiveRecord::Base
   end
 
   def status_badge_url
-    "http://joss.theoj.org/papers/10.21105/#{joss_id}/status.svg"
+    "#{Rails.application.settings["url"]}/papers/10.21105/#{joss_id}/status.svg"
   end
 
   def markdown_code

@@ -51,6 +51,7 @@ ActiveRecord::Schema.define(version: 20171202233444) do
     t.string   "kind"
     t.text     "authors"
     t.text     "citation_string"
+    t.datetime "accepted_at"
   end
 
   add_index "papers", ["sha"], name: "index_papers_on_sha", using: :btree

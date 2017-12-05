@@ -139,6 +139,19 @@ class Paper < ActiveRecord::Base
     end
   end
 
+  # A 5-figure integer used to produce the JOSS DOI
+  def joss_id
+    id = "%05d" % review_issue_id
+    "joss.#{id}"
+  end
+
+  # Where to find the PDF for this paper
+  def pdf_url
+    doi_to_file = doi.gsub('/', '.')
+
+    "https://www.theoj.org/joss-papers/#{joss_id}/#{doi_to_file}.pdf"
+  end
+
   def review_body(editor, reviewer)
     ActionView::Base.new(Rails.configuration.paths['app/views']).render(
       :template => 'shared/review_body', :format => :txt,
@@ -236,6 +249,14 @@ class Paper < ActiveRecord::Base
     else
       '<svg xmlns="http://www.w3.org/2000/svg" width="102" height="20"><linearGradient id="b" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><mask id="a"><rect width="102" height="20" rx="3" fill="#fff"/></mask><g mask="url(#a)"><path fill="#555" d="M0 0h40v20H0z"/><path fill="#9f9f9f" d="M40 0h62v20H40z"/><path fill="url(#b)" d="M0 0h102v20H0z"/></g><g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11"><text x="20" y="15" fill="#010101" fill-opacity=".3">JOSS</text><text x="20" y="14">JOSS</text><text x="70" y="15" fill="#010101" fill-opacity=".3">Unknown</text><text x="70" y="14">Unknown</text></g></svg>'
     end
+  end
+
+  def status_badge_url
+    "http://joss.theoj.org/papers/10.21105/#{joss_id}/status.svg"
+  end
+
+  def markdown_code
+    "[![DOI](#{status_badge_url})](https://doi.org/#{doi})"
   end
 
 private

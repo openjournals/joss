@@ -57,7 +57,7 @@ describe HomeController, :type => :controller do
       params = {:email => "albert@gmail.com", :github_username => "@jimmy"}
       request.env["HTTP_REFERER"] = papers_path
 
-      post :update_profile, :user => params
+      post :update_profile, params: {:user => params}
       expect(response).to be_redirect # as it's updated the email
       expect(user.reload.email).to eq("albert@gmail.com")
       expect(user.reload.github_username).to eq("@jimmy")
@@ -69,7 +69,7 @@ describe HomeController, :type => :controller do
       params = {:email => "albert@gmail.com", :github_username => "jimmy_no_at"}
       request.env["HTTP_REFERER"] = papers_path
 
-      post :update_profile, :user => params
+      post :update_profile, params: {:user => params}
       expect(response).to be_redirect # as it's updated the email
       expect(user.reload.email).to eq("albert@gmail.com")
       expect(user.reload.github_username).to eq("@jimmy_no_at")

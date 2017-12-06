@@ -1,7 +1,10 @@
 require 'rails_helper'
 
 describe User do
-  it { should have_many(:papers) }
+  it "has many papers" do
+    association = User.reflect_on_association(:papers)
+    expect(association.macro).to eq(:has_many)
+  end
 
   it "should initialize properly" do
     user = create(:user)

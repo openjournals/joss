@@ -1,5 +1,5 @@
 class HomeController < ApplicationController
-  before_filter :require_user, :only => %w(profile update_profile)
+  before_action :require_user, :only => %w(profile update_profile)
 
   def index
     @featured = Paper.featured
@@ -17,7 +17,7 @@ class HomeController < ApplicationController
     check_github_username
 
     if current_user.update_attributes(user_params)
-      redirect_to(:back, :notice => "Profile updated")
+      redirect_back(:notice => "Profile updated", :fallback_location => root_path)
     end
   end
 

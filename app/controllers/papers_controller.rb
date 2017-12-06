@@ -1,7 +1,7 @@
 class PapersController < ApplicationController
-  before_filter :require_user, :only => %w(new create update withdraw)
-  before_filter :require_complete_profile, :only => %w(create)
-  before_filter :require_admin_user, :only => %w(start_meta_review archive reject)
+  before_action :require_user, :only => %w(new create update withdraw)
+  before_action :require_complete_profile, :only => %w(create)
+  before_action :require_admin_user, :only => %w(start_meta_review archive reject)
   protect_from_forgery :except => [ :api_start_review ]
 
   def recent
@@ -94,10 +94,10 @@ class PapersController < ApplicationController
       if @paper.start_review!(nil, params[:editor], params[:reviewer])
         render :json => @paper.to_json, :status => '201'
       else
-        render :nothing => true, :status => '422'
+        head :unprocessable_entity
       end
     else
-      render :nothing => true, :status => '403'
+      head :forbidden
     end
   end
 
@@ -157,7 +157,7 @@ class PapersController < ApplicationController
 
   def lookup
     paper = Paper.where('review_issue_id = ? OR meta_review_issue_id = ?', params[:id], params[:id]).first!
-    render :text => paper.created_at.strftime('%d %B %Y')
+    render :plain => paper.created_at.strftime('%d %B %Y')
   end
 
   def valid_doi?

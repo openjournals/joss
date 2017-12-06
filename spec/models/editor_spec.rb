@@ -36,4 +36,12 @@ RSpec.describe Editor, type: :model do
       }.from("chief").to(nil)
     end
   end
+
+  describe "#format_login" do
+    let(:editor) { build(:editor, login: "@somebody") }
+
+    it "removes @'s" do
+      expect { editor.save }.to change { editor.login }.to "somebody"
+    end
+  end
 end

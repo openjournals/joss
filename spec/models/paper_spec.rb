@@ -5,7 +5,10 @@ describe Paper do
     Paper.destroy_all
   end
 
-  it { should belong_to(:submitting_author) }
+  it "belongs to the submitting author" do
+    association = Paper.reflect_on_association(:submitting_author)
+    expect(association.macro).to eq(:belongs_to)
+  end
 
   it "should know how to parameterize itself properly" do
     paper = create(:paper)

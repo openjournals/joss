@@ -39,14 +39,14 @@ RSpec.describe EditorsController, type: :controller do
   describe "#show" do
     it "assigns the requested editor as @editor" do
       editor = create(:editor)
-      get :show, {:id => editor.to_param}
+      get :show, params: {:id => editor.to_param}
       expect(assigns(:editor)).to eq(editor)
     end
   end
 
   describe "#new" do
     it "assigns a new editor as @editor" do
-      get :new, {}
+      get :new, params: {}
       expect(assigns(:editor)).to be_a_new(Editor)
     end
   end
@@ -54,7 +54,7 @@ RSpec.describe EditorsController, type: :controller do
   describe "#edit" do
     it "assigns the requested editor as @editor" do
       editor = create(:editor)
-      get :edit, {:id => editor.to_param}
+      get :edit, params: {:id => editor.to_param}
       expect(assigns(:editor)).to eq(editor)
     end
   end
@@ -63,30 +63,30 @@ RSpec.describe EditorsController, type: :controller do
     context "with valid params" do
       it "creates a new Editor" do
         expect {
-          post :create, {:editor => build(:editor).attributes}
+          post :create, params: {:editor => build(:editor).attributes}
         }.to change(Editor, :count).by(1)
       end
 
       it "assigns a newly created editor as @editor" do
-        post :create, {:editor => build(:editor).attributes}
+        post :create, params: {:editor => build(:editor).attributes}
         expect(assigns(:editor)).to be_a(Editor)
         expect(assigns(:editor)).to be_persisted
       end
 
       it "redirects to the created editor" do
-        post :create, {:editor => build(:editor).attributes}
+        post :create, params: {:editor => build(:editor).attributes}
         expect(response).to redirect_to(Editor.last)
       end
     end
 
     context "with invalid params" do
       it "assigns a newly created but unsaved editor as @editor" do
-        post :create, {:editor => {login: nil}}
+        post :create, params: {:editor => {login: nil}}
         expect(assigns(:editor)).to be_a_new(Editor)
       end
 
       it "re-renders the 'new' template" do
-        post :create, {:editor => {login: nil}}
+        post :create, params: {:editor => {login: nil}}
         expect(response).to render_template("new")
       end
     end
@@ -96,20 +96,20 @@ RSpec.describe EditorsController, type: :controller do
     context "with valid params" do
       it "updates the requested editor" do
         editor = create(:editor)
-        put :update, {:id => editor.to_param, :editor => {first_name: "Different"}}
+        put :update, params: {:id => editor.to_param, :editor => {first_name: "Different"}}
         editor.reload
         expect(editor.first_name).to eql("Different")
       end
 
       it "assigns the requested editor as @editor" do
         editor = create(:editor)
-        put :update, {:id => editor.to_param, :editor => {first_name: "Different"}}
+        put :update, params: {:id => editor.to_param, :editor => {first_name: "Different"}}
         expect(assigns(:editor)).to eq(editor)
       end
 
       it "redirects to the editor" do
         editor = create(:editor)
-        put :update, {:id => editor.to_param, :editor => {first_name: "Different"}}
+        put :update, params: {:id => editor.to_param, :editor => {first_name: "Different"}}
         expect(response).to redirect_to(editor)
       end
     end
@@ -117,13 +117,13 @@ RSpec.describe EditorsController, type: :controller do
     context "with invalid params" do
       it "assigns the editor as @editor" do
         editor = create(:editor)
-        put :update, {:id => editor.to_param, :editor => {login: nil}}
+        put :update, params: {:id => editor.to_param, :editor => {login: nil}}
         expect(assigns(:editor)).to eq(editor)
       end
 
       it "re-renders the 'edit' template" do
         editor = create(:editor)
-        put :update, {:id => editor.to_param, :editor => {login: nil}}
+        put :update, params: {:id => editor.to_param, :editor => {login: nil}}
         expect(response).to render_template("edit")
       end
     end
@@ -133,13 +133,13 @@ RSpec.describe EditorsController, type: :controller do
     it "destroys the requested editor" do
       editor = create(:editor)
       expect {
-        delete :destroy, {:id => editor.to_param}
+        delete :destroy, params: {:id => editor.to_param}
       }.to change(Editor, :count).by(-1)
     end
 
     it "redirects to the editors list" do
       editor = create(:editor)
-      delete :destroy, {:id => editor.to_param}
+      delete :destroy, params: {:id => editor.to_param}
       expect(response).to redirect_to(editors_url)
     end
   end

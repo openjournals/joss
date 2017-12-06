@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :editor do
     kind "topic"
     first_name "Person"

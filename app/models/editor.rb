@@ -5,6 +5,7 @@ class Editor < ActiveRecord::Base
   validates :login, presence: true
 
   before_save :clear_title, if: :board_removed?
+  before_save :format_login, if: :login_changed?
 
   scope :board, -> { where(kind: "board") }
   scope :topic, -> { where(kind: "topic") }
@@ -31,5 +32,9 @@ class Editor < ActiveRecord::Base
 
   def board_removed?
     kind_changed? && kind_was == "board"
+  end
+
+  def format_login
+    login.gsub!(/^@/, "")
   end
 end

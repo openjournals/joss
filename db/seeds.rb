@@ -18,6 +18,7 @@ Editor.create(
 )
 
 Editor.create(
+  kind: "topic",
   first_name: "Lorena A",
   last_name: "Barba",
   login: "labarba",
@@ -34,6 +35,7 @@ Editor.create(
 )
 
 Editor.create(
+  kind: "topic",
   first_name: "Jason",
   last_name: "Clark",
   login: "jasonclark",
@@ -52,6 +54,7 @@ Editor.create(
 )
 
 Editor.create(
+  kind: "topic",
   first_name: "George",
   last_name: "Githinji",
   login: "biorelated",
@@ -71,6 +74,7 @@ Editor.create(
 )
 
 Editor.create(
+  kind: "topic",
   first_name: "Melissa",
   last_name: "Gymrek",
   login: "mgymrek",
@@ -87,6 +91,7 @@ Editor.create(
 )
 
 Editor.create(
+  kind: "topic",
   first_name: "Lindsey",
   last_name: "Heagy",
   login: "lheagy",
@@ -103,6 +108,7 @@ Editor.create(
 )
 
 Editor.create(
+  kind: "topic",
   first_name: "Kathryn",
   last_name: "Huff",
   login: "katyhuff",
@@ -119,6 +125,7 @@ Editor.create(
 )
 
 Editor.create(
+  kind: "topic",
   first_name: "Daniel S.",
   last_name: "Katz",
   login: "danielskatz",
@@ -138,6 +145,7 @@ Editor.create(
 )
 
 Editor.create(
+  kind: "topic",
   first_name: "Thomas J.",
   last_name: "Leeper",
   login: "leeper",
@@ -156,6 +164,7 @@ Editor.create(
 )
 
 Editor.create(
+  kind: "topic",
   first_name: "Christopher R.",
   last_name: "Madan",
   login: "cMadan",
@@ -173,6 +182,7 @@ Editor.create(
 )
 
 Editor.create(
+  kind: "topic",
   first_name: "Abigail Cabunoc",
   last_name: "Mayes",
   login: "acabunoc",
@@ -189,6 +199,7 @@ Editor.create(
 )
 
 Editor.create(
+  kind: "topic",
   first_name: "Kevin M.",
   last_name: "Moerman",
   login: "Kevin-Mattheus-Moerman",
@@ -204,6 +215,7 @@ Editor.create(
 )
 
 Editor.create(
+  kind: "topic",
   first_name: "Kyle",
   last_name: "Niemeyer",
   login: "kyleniemeyer",
@@ -217,6 +229,7 @@ Editor.create(
 )
 
 Editor.create(
+  kind: "topic",
   first_name: "Pjotr",
   last_name: "Prins",
   login: "pjotrp",
@@ -239,6 +252,7 @@ Editor.create(
 )
 
 Editor.create(
+  kind: "topic",
   first_name: "Karthik",
   last_name: "Ram",
   login: "karthik",
@@ -254,6 +268,7 @@ Editor.create(
 )
 
 Editor.create(
+  kind: "topic",
   first_name: "Ariel",
   last_name: "Rokem",
   login: "arokem",
@@ -271,6 +286,7 @@ Editor.create(
 )
 
 Editor.create(
+  kind: "topic",
   first_name: "Tracy",
   last_name: "Teal",
   login: "tracykteal",
@@ -288,6 +304,7 @@ Editor.create(
 )
 
 Editor.create(
+  kind: "topic",
   first_name: "Roman Valls",
   last_name: "Guimera",
   login: "brainstorm",
@@ -307,6 +324,7 @@ Editor.create(
 )
 
 Editor.create(
+  kind: "topic",
   first_name: "Jake",
   last_name: "Vanderplas",
   login: "jakevdp",

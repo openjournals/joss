@@ -8,6 +8,7 @@ describe 'papers/recent.html.erb' do
       end
 
       assign(:papers, Paper.all.paginate(:page => 1, :per_page => 10))
+      allow(view).to receive(:search_scope) { |paper_scope| paper_scope }
 
       render :template => "papers/index.html.erb"
 

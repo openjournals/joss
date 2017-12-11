@@ -10,6 +10,7 @@ describe 'papers/submitted.html.erb' do
       create(:paper, :state => "submitted")
 
       assign(:papers, Paper.submitted.paginate(:page => 1, :per_page => 10))
+      allow(view).to receive(:search_scope) { |paper_scope| paper_scope }
 
       render :template => "papers/index.html.erb"
 

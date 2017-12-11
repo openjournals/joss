@@ -31,5 +31,6 @@ module Joss
     config.eager_load_paths += [
       "#{config.root}/lib"
     ]
+    config.active_record.schema_format = :sql
   end
 end

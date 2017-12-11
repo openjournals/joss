@@ -1,10 +1,6 @@
 require 'rails_helper'
 
 describe Paper do
-  before(:each) do
-    Paper.destroy_all
-  end
-
   it "belongs to the submitting author" do
     association = Paper.reflect_on_association(:submitting_author)
     expect(association.macro).to eq(:belongs_to)
@@ -143,6 +139,40 @@ describe Paper do
       it { is_expected.to match /Does installation proceed as outlined/ }
       it { is_expected.to match /Are there automated tests/ }
       it { is_expected.to match /Does the `paper.md` file include a list of authors/ }
+    end
+  end
+
+  describe "searching" do
+    let(:paper1) { create(:paper, title: "Something awesome", body: "Awesomely descriptive") }
+    let(:paper2) { create(:paper, title: "Not very awesome", body: "Vaguely descriptive") }
+
+    before(:each) do
+      # wait up to 0.5 seconds for the trigger to run
+      5.times do
+        [paper1, paper2].each(&:reload)
+        break if paper1.tsv.present? && paper2.tsv.present?
+        sleep 0.1
+      end
+      fail "Postgres search trigger failed to run" unless paper1.tsv.present? && paper2.tsv.present?
+    end
+
+    it "sets the tsv column" do
+      expect(paper1.tsv).to include "someth"
+      expect(paper1.tsv).to include "awesom"
+      expect(paper1.tsv).to include "descript"
+    end
+
+    it "is searchable" do
+      expect(Paper.search("something")).to match_array([paper1])
+    end
+
+    it "stems searches" do
+      expect(Paper.search("something")).to match_array([paper1])
+      expect(Paper.search("description")).to match_array([paper1, paper2])
+    end
+
+    it "ranks searches" do
+      expect(Paper.search("awesome description").to_a).to eq([paper1, paper2])
     end
   end
 end

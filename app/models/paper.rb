@@ -5,6 +5,7 @@ class Paper < ActiveRecord::Base
               :foreign_key => "user_id"
 
   include AASM
+  include PgSearch
 
   aasm :column => :state do
     state :submitted, :initial => true
@@ -37,6 +38,13 @@ class Paper < ActiveRecord::Base
     end
   end
 
+  pg_search_scope :search, against: "tsv", using: {
+    tsearch: {
+      tsvector_column: "tsv",
+      dictionary: "english"
+    }
+  }
+
   VISIBLE_STATES = [
     "accepted",
     "superceded"
@@ -48,7 +56,7 @@ class Paper < ActiveRecord::Base
     "review_pending"
   ].freeze
 
-  default_scope  { order(:created_at => :desc) }
+  scope :by_date, -> { order(:created_at => :desc) }
   scope :recent, lambda { where('created_at > ?', 1.week.ago) }
   scope :submitted, lambda { where('state = ?', 'submitted') }
   scope :in_progress, -> { where(:state => IN_PROGRESS_STATES) }

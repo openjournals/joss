@@ -3,9 +3,10 @@ class PapersController < ApplicationController
   before_action :require_complete_profile, :only => %w(create)
   before_action :require_admin_user, :only => %w(start_meta_review archive reject)
   protect_from_forgery :except => [ :api_start_review ]
+  helper_method :search_scope
 
   def recent
-    @papers = Paper.visible.paginate(
+    @papers = Paper.visible.by_date.paginate(
                 :page => params[:page],
                 :per_page => 10
               )
@@ -20,22 +21,7 @@ class PapersController < ApplicationController
   end
 
   def index
-    @papers = Paper.everything.paginate(
-                :page => params[:page],
-                :per_page => 10
-              )
-
-    @popular_papers = Paper.visible.paginate(
-                :page => params[:page],
-                :per_page => 10
-              )
-
-    @recent_papers = @popular_papers
-
-    @active_papers = Paper.in_progress.paginate(
-                :page => params[:page],
-                :per_page => 10
-              )
+    @papers = paginated_search_scope(Paper.everything)
     @selected = "all"
 
     respond_to do |format|
@@ -47,11 +33,7 @@ class PapersController < ApplicationController
 
   def popular
     # TODO: Need to order by popularity here
-    @papers = Paper.visible.paginate(
-                :page => params[:page],
-                :per_page => 10
-              )
-
+    @papers = paginated_search_scope(Paper.visible)
     @selected = "popular"
 
     respond_to do |format|
@@ -62,11 +44,7 @@ class PapersController < ApplicationController
   end
 
   def active
-    @papers = Paper.in_progress.paginate(
-                :page => params[:page],
-                :per_page => 10
-              )
-
+    @papers = paginated_search_scope(Paper.in_progress)
     @selected = "active"
 
     respond_to do |format|
@@ -199,9 +177,21 @@ class PapersController < ApplicationController
     end
   end
 
+  def search_scope(paper_scope)
+    if params[:query].present?
+      paper_scope.search(params[:query])
+    else
+      paper_scope.by_date
+    end
+  end
+
   private
 
   def paper_params
     params.require(:paper).permit(:title, :repository_url, :archive_doi, :software_version, :suggested_editor, :body)
+  end
+
+  def paginated_search_scope(paper_scope)
+    search_scope(paper_scope).paginate(page: params[:page], per_page: 10)
   end
 end

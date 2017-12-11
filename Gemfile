@@ -10,6 +10,7 @@ gem 'octicons_helper', '~> 4.0'
 gem 'omniauth-orcid', '~> 2.0.2'
 gem 'octokit', '~> 4.3.0'
 gem 'pg', '~> 0.21.0'
+gem 'pg_search', '~> 2.1.1'
 gem 'will_paginate', '~> 3.1.6'
 gem 'rails', '5.1.4'
 gem 'newrelic_rpm', '~> 4.6.0'
@@ -35,6 +36,7 @@ group :development, :test do
 end
 
 group :test do
+  gem 'database_cleaner'
   gem 'webmock', '~> 3.1.1'
 end
 

@@ -15,6 +15,7 @@
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 
+require 'database_cleaner'
 require 'capybara/rspec'
 
 RSpec.configure do |config|
@@ -40,6 +41,17 @@ RSpec.configure do |config|
     # `true` in RSpec 4.
     # GAAAAAHHHHH https://github.com/rspec/rspec-rails/issues/1076
     mocks.verify_partial_doubles = false
+  end
+
+  config.before(:suite) do
+    DatabaseCleaner.strategy = :deletion
+    DatabaseCleaner.clean_with(:deletion)
+  end
+
+  config.around(:each) do |example|
+    DatabaseCleaner.cleaning do
+      example.run
+    end
   end
 
 # The settings below are suggested to provide a good initial experience

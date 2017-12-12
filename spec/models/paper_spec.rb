@@ -37,6 +37,14 @@ describe Paper do
     expect(Paper.visible).to contain_exactly(visible_paper_1, visible_paper_2)
   end
 
+  it "should exclude withdrawn and rejected papers" do
+    rejected_paper = create(:paper, :state => "rejected")
+    withdrawn_paper = create(:paper, :state => "withdrawn")
+    paper = create(:paper, :state => "accepted")
+
+    expect(Paper.everything).to contain_exactly(paper)
+  end
+
   # GitHub stuff
   it "should know how to return a pretty repo name with owner" do
     paper = create(:paper, :repository_url => "https://github.com/arfon/joss-reviews")

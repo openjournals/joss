@@ -75,7 +75,7 @@ class Paper < ActiveRecord::Base
   scope :submitted, lambda { where('state = ?', 'submitted') }
   scope :in_progress, -> { where(:state => IN_PROGRESS_STATES) }
   scope :visible, -> { where(:state => VISIBLE_STATES) }
-  scope :everything, lambda { where('state != ?', 'rejected') }
+  scope :everything, lambda { where('state NOT IN (?)', ['rejected', 'withdrawn']) }
 
   before_create :set_sha
   after_create :notify_editors

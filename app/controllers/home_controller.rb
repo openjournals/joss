@@ -2,11 +2,7 @@ class HomeController < ApplicationController
   before_filter :require_user, :only => %w(profile update_profile)
 
   def index
-    @featured = Paper.featured
-    @papers = Paper.everything.limit(10)
-    @recent_papers = Paper.visible.recent.limit(10)
-    @submitted_papers = Paper.in_progress.limit(10)
-    @popular_papers = Paper.popular.visible.recent.limit(10)
+    @papers = Paper.visible.limit(10)
   end
 
   def about

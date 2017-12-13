@@ -18,4 +18,5 @@ $ ->
   $("form#new_paper").submit ->
     e.preventDefault()
 
-  clipboard = new Clipboard('.clippy')
+  if window.Clipboard
+    clipboard = new Clipboard('.clippy')

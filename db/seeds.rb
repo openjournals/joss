@@ -5,7 +5,7 @@ Editor.create(
   last_name: "Smith",
   login: "arfon",
   email: "",
-  avatar_url: "http://joss.theoj.org/assets/editors/arfon-33e4ac87ed2e073216fda0d3383b25fc3a15cc7ac5e70aab3e9f85f68b3d4a65.jpg",
+  avatar_url: "assets/editors/arfon-33e4ac87ed2e073216fda0d3383b25fc3a15cc7ac5e70aab3e9f85f68b3d4a65.jpg",
   categories: [],
   url: "http://arfon.org/",
   description: <<-STR.strip_heredoc()
@@ -23,7 +23,7 @@ Editor.create(
   last_name: "Barba",
   login: "labarba",
   email: "",
-  avatar_url: "http://joss.theoj.org/assets/editors/lorena-ac22212e9dd478fc2190ab583cd2f12f6870e25e5666641381bb1c9463fc366d.png",
+  avatar_url: "assets/editors/lorena-ac22212e9dd478fc2190ab583cd2f12f6870e25e5666641381bb1c9463fc366d.png",
   categories: ["Computational Science and Engineering", "High-performance Computing"],
   url: "http://lorenabarba.com/",
   description: <<-STR.strip_heredoc()
@@ -40,7 +40,7 @@ Editor.create(
   last_name: "Clark",
   login: "jasonclark",
   email: "",
-  avatar_url: "http://joss.theoj.org/assets/editors/jason-4aca9e8821dd02f8ea26b8fe499cccddd9758707f9a3d711ecc7a71e6a76f6af.jpg",
+  avatar_url: "assets/editors/jason-4aca9e8821dd02f8ea26b8fe499cccddd9758707f9a3d711ecc7a71e6a76f6af.jpg",
   categories: ["Information Sciences", "Semantic Web"],
   url: "http://www.jasonclark.info/",
   description: <<-STR.strip_heredoc()
@@ -59,7 +59,7 @@ Editor.create(
   last_name: "Githinji",
   login: "biorelated",
   email: "",
-  avatar_url: "http://joss.theoj.org/assets/editors/george-d24f98577bcc40a745b81f7ee5c4b6a3e5f150b563f940cb792ba92f88ed6483.jpg",
+  avatar_url: "assets/editors/george-d24f98577bcc40a745b81f7ee5c4b6a3e5f150b563f940cb792ba92f88ed6483.jpg",
   categories: ["Bioinformatics"],
   url: "http://virec-group.org/george-githinji",
   description: <<-STR.strip_heredoc()

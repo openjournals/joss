@@ -1,4 +1,4 @@
-class CreateEditors < ActiveRecord::Migration
+class CreateEditors < ActiveRecord::Migration[5.0]
   def change
     create_table :editors do |t|
       t.string :kind, null: false, default: "topic"

@@ -31,4 +31,16 @@ module ApplicationHelper
       return true
     end
   end
+
+  def setting(*paths)
+    Rails.application.settings.dig(*paths).html_safe
+  end
+
+  def link_to_query(body, url, query)
+    link_to(body, [url, query.to_param].join("?")).html_safe
+  end
+
+  def name_and_tagline
+    "#{setting(:name)} (#{setting(:abbreviation)}) is #{setting(:tagline)}".html_safe
+  end
 end

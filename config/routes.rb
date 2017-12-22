@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
 
+  resources :editors
   resources :papers do
     member do
       post 'start_review'

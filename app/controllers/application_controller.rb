@@ -8,17 +8,23 @@ class ApplicationController < ActionController::Base
   def require_user
     unless current_user
       # Make sure we get redirected back to the page we were asking for.
-      redirect_to "/auth/orcid?origin=#{env['REQUEST_URI']}"
+      redirect_to "/auth/orcid?origin=#{ENV['REQUEST_URI']}"
+      false # throw :abort
     end
   end
 
   def require_admin_user
-    redirect_to '/sessions/new' unless (current_user && current_user.admin?)
+    require_user
+    if current_user && !current_user.admin?
+      flash[:error] = "You are not permitted to view that page"
+      redirect_to(:root)
+      false # throw :abort
+    end
   end
 
   def require_complete_profile
     if !current_user.profile_complete?
-      redirect_to(:back, :notice => "Please add an email address to your account before submitting")
+      redirect_back(:notice => "Please add an email address to your account before submitting", :fallback_location => root_path)
     end
   end
 
@@ -30,6 +36,6 @@ private
   helper_method :current_user
 
   def record_not_found
-    render :text => "404 Not Found", :status => 404
+    render :plain => "404 Not Found", :status => 404
   end
 end

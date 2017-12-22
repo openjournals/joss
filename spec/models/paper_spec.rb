@@ -5,7 +5,10 @@ describe Paper do
     Paper.destroy_all
   end
 
-  it { should belong_to(:submitting_author) }
+  it "belongs to the submitting author" do
+    association = Paper.reflect_on_association(:submitting_author)
+    expect(association.macro).to eq(:belongs_to)
+  end
 
   it "should know how to parameterize itself properly" do
     paper = create(:paper)
@@ -73,7 +76,7 @@ describe Paper do
   it "should know how to generate its review url" do
     paper = create(:paper, :review_issue_id => 999)
 
-    expect(paper.review_url).to eq("https://github.com/#{Rails.configuration.joss_review_repo}/issues/999")
+    expect(paper.review_url).to eq("https://github.com/#{Rails.application.settings["reviews"]}/issues/999")
   end
 
   context "when rejected" do
@@ -117,5 +120,37 @@ describe Paper do
 
     paper.withdraw!
     refute Paper.visible.include?(paper)
+  end
+
+  describe "#review_body" do
+    let(:author) { create(:user) }
+    let(:paper) do
+      instance = build(:paper, user_id: author.id, kind: kind)
+      instance.save(validate: false)
+      instance
+    end
+    subject { paper.review_body("editor_name", "reviewer_name") }
+
+    context "with a paper type" do
+      let(:kind) { "something_else" }
+
+      it "renders the type-specific checklist" do
+        expect {
+          subject
+        }.to raise_error(
+          ActionView::Template::Error,
+          %r(Missing partial content/github/_something_else_review_checklist)
+        )
+      end
+    end
+
+    context "with no paper type" do
+      let(:kind) { nil }
+      it { is_expected.to match /JOSS conflict of interest policy/ }
+      it { is_expected.to match /Does the repository contain a plain-text LICENSE file/ }
+      it { is_expected.to match /Does installation proceed as outlined/ }
+      it { is_expected.to match /Are there automated tests/ }
+      it { is_expected.to match /Does the `paper.md` file include a list of authors/ }
+    end
   end
 end

@@ -1,26 +1,4 @@
 class Paper < ActiveRecord::Base
-  EDITORS = %w{
-    @acabunoc
-    @arfon
-    @arokem
-    @biorelated
-    @brainstorm
-    @cMadan
-    @danielskatz
-    @jakevdp
-    @jasonclark
-    @karthik
-    @katyhuff
-    @Kevin-Mattheus-Moerman
-    @kyleniemeyer
-    @labarba
-    @leeper
-    @lheagy
-    @mgymrek
-    @pjotrp
-    @tracykteal
-  }.freeze
-
   belongs_to  :submitting_author,
               :class_name => 'User',
               :validate => true,
@@ -84,6 +62,7 @@ class Paper < ActiveRecord::Base
   validates_presence_of :repository_url, :message => "^Repository address can't be blank"
   validates_presence_of :software_version, :message => "^Version can't be blank"
   validates_presence_of :body, :message => "^Description can't be blank"
+  validates :kind, inclusion: { in: Rails.application.settings["paper_types"] }, allow_nil: true
 
   def notify_editors
     Notifications.submission_email(self).deliver_now
@@ -149,7 +128,7 @@ class Paper < ActiveRecord::Base
   def pdf_url
     doi_to_file = doi.gsub('/', '.')
 
-    "https://www.theoj.org/joss-papers/#{joss_id}/#{doi_to_file}.pdf"
+    "#{Rails.application.settings["papers_html_url"]}/#{joss_id}/#{doi_to_file}.pdf"
   end
 
   def review_body(editor, reviewer)
@@ -162,7 +141,7 @@ class Paper < ActiveRecord::Base
   # Create a review issue (we know the reviewer and editor at this point)
   def create_review_issue(editor, reviewer)
     return false if review_issue_id
-    issue = GITHUB.create_issue(Rails.configuration.joss_review_repo,
+    issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[REVIEW]: #{self.title}",
                                 review_body(editor, reviewer),
                                 { :assignee => editor,
@@ -197,7 +176,7 @@ class Paper < ActiveRecord::Base
     end
 
     return false if meta_review_issue_id
-    issue = GITHUB.create_issue(Rails.configuration.joss_review_repo,
+    issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[PRE REVIEW]: #{self.title}",
                                 meta_review_body(editor_handle),
                                 { :assignee => striped_handle,
@@ -212,15 +191,15 @@ class Paper < ActiveRecord::Base
   end
 
   def meta_review_url
-    "https://github.com/#{Rails.configuration.joss_review_repo}/issues/#{self.meta_review_issue_id}"
+    "https://github.com/#{Rails.application.settings["reviews"]}/issues/#{self.meta_review_issue_id}"
   end
 
   def review_url
-    "https://github.com/#{Rails.configuration.joss_review_repo}/issues/#{self.review_issue_id}"
+    "https://github.com/#{Rails.application.settings["reviews"]}/issues/#{self.review_issue_id}"
   end
 
   def update_review_issue(comment)
-    GITHUB.add_comment(Rails.configuration.joss_review_repo, self.review_issue_id, comment)
+    GITHUB.add_comment(Rails.application.settings["reviews"], self.review_issue_id, comment)
   end
 
   def pretty_state
@@ -252,7 +231,7 @@ class Paper < ActiveRecord::Base
   end
 
   def status_badge_url
-    "http://joss.theoj.org/papers/10.21105/#{joss_id}/status.svg"
+    "#{Rails.application.settings["url"]}/papers/10.21105/#{joss_id}/status.svg"
   end
 
   def markdown_code

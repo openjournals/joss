@@ -3,6 +3,10 @@ require 'rails_helper'
 describe PapersController, :type => :controller do
   render_views
 
+  before(:each) do
+    allow(Repository).to receive(:editors).and_return ["@user1", "@user2"]
+  end
+
   describe "GET #index" do
     it "should render all visible papers" do
       get :index, :format => :html
@@ -13,14 +17,14 @@ describe PapersController, :type => :controller do
   describe "POST #create" do
     it "NOT LOGGED IN responds with redirect" do
       paper_params = {:title => "Yeah whateva", :body => "something"}
-      post :create, :paper => paper_params
+      post :create, params: {:paper => paper_params}
       expect(response).to be_redirect
     end
   end
 
   describe "#start_meta_review" do
     it "NOT LOGGED IN responds with redirect" do
-      post :start_meta_review, :id => 'nothing much'
+      post :start_meta_review, params: {:id => 'nothing much'}
       expect(response).to be_redirect
     end
 
@@ -37,7 +41,7 @@ describe PapersController, :type => :controller do
       allow(fake_issue).to receive(:number).and_return(1)
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
-      post :start_meta_review, :id => paper.sha, :editor => "joss"
+      post :start_meta_review, params: {:id => paper.sha, :editor => "joss"}
       expect(response).to be_redirect
     end
   end
@@ -51,7 +55,7 @@ describe PapersController, :type => :controller do
     end
 
     it "with the wrong API key" do
-      post :api_start_review, :secret => "fooo"
+      post :api_start_review, params: {:secret => "fooo"}
       expect(response).to be_forbidden
     end
 
@@ -66,7 +70,7 @@ describe PapersController, :type => :controller do
       allow(fake_issue).to receive(:number).and_return(1)
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
-      post :api_start_review, { :secret => "mooo", :id => 1234, :reviewer => "mickey", :editor => "mouse" }
+      post :api_start_review, params: {:secret => "mooo", :id => 1234, :reviewer => "mickey", :editor => "mouse"}
       expect(response).to be_created
     end
   end
@@ -77,7 +81,7 @@ describe PapersController, :type => :controller do
       allow(controller).to receive_message_chain(:current_user).and_return(user)
       submitted_paper = create(:paper, :state => 'submitted')
 
-      post :reject, :id => submitted_paper.sha
+      post :reject, params: {:id => submitted_paper.sha}
       expect(response).to be_redirect # as it's rejected the paper
       expect(Paper.rejected.count).to eq(1)
     end
@@ -87,7 +91,7 @@ describe PapersController, :type => :controller do
       allow(controller).to receive_message_chain(:current_user).and_return(user)
       submitted_paper = create(:paper, :state => 'submitted')
 
-      post :reject, :id => submitted_paper.sha
+      post :reject, params: {:id => submitted_paper.sha}
       expect(response).to be_redirect # as it's rejected the paper
       expect(Paper.rejected.count).to eq(0)
     end
@@ -99,7 +103,7 @@ describe PapersController, :type => :controller do
       allow(controller).to receive_message_chain(:current_user).and_return(user)
       submitted_paper = create(:paper, :state => 'submitted')
 
-      post :withdraw, :id => submitted_paper.sha
+      post :withdraw, params: {:id => submitted_paper.sha}
       expect(response).to be_redirect # as it's rejected the paper
       expect(Paper.withdrawn.count).to eq(1)
     end
@@ -109,7 +113,7 @@ describe PapersController, :type => :controller do
       allow(controller).to receive_message_chain(:current_user).and_return(user)
       submitted_paper = create(:paper, :state => 'submitted')
 
-      post :withdraw, :id => submitted_paper.sha
+      post :withdraw, params: {:id => submitted_paper.sha}
       expect(response).to be_redirect
       expect(Paper.withdrawn.count).to eq(0)
     end
@@ -119,7 +123,7 @@ describe PapersController, :type => :controller do
       allow(controller).to receive_message_chain(:current_user).and_return(user)
       submitted_paper = create(:paper, :state => 'submitted', :submitting_author => user)
 
-      post :withdraw, :id => submitted_paper.sha
+      post :withdraw, params: {:id => submitted_paper.sha}
       expect(response).to be_redirect
       expect(Paper.withdrawn.count).to eq(1)
     end
@@ -132,7 +136,7 @@ describe PapersController, :type => :controller do
       paper_count = Paper.count
 
       paper_params = {:title => "Yeah whateva", :body => "something", :repository_url => "https://github.com/foo/bar", :archive_doi => "https://doi.org/10.6084/m9.figshare.828487", :software_version => "v1.0.1"}
-      post :create, :paper => paper_params
+      post :create, params: {:paper => paper_params}
       expect(response).to be_redirect # as it's created the thing
       expect(Paper.count).to eq(paper_count + 1)
     end
@@ -143,7 +147,7 @@ describe PapersController, :type => :controller do
       paper_count = Paper.count
 
       paper_params = {:title => "Yeah whateva", :body => "something", :repository_url => "", :archive_doi => "https://doi.org/10.6084/m9.figshare.828487"}
-      post :create, :paper => paper_params
+      post :create, params: {:paper => paper_params}
 
       expect(response.body).to match /Your paper could not be saved/
       expect(Paper.count).to eq(paper_count)
@@ -156,7 +160,7 @@ describe PapersController, :type => :controller do
       request.env["HTTP_REFERER"] = new_paper_path
 
       paper_params = {:title => "Yeah whateva", :body => "something", :repository_url => "https://github.com/foo/bar", :archive_doi => "https://doi.org/10.6084/m9.figshare.828487", :software_version => "v1.0.1"}
-      post :create, :paper => paper_params
+      post :create, params: {:paper => paper_params}
       expect(response).to be_redirect # as it's redirected us
       expect(Paper.count).to eq(paper_count)
     end
@@ -164,13 +168,13 @@ describe PapersController, :type => :controller do
 
   describe "four oh four" do
     it "should 404 when passed an invalid sha" do
-      get :show, :id => SecureRandom.hex, :format => "html"
+      get :show, params: {:id => SecureRandom.hex}, :format => "html"
       expect(response.body).to match /404 Not Found/
       expect(response.status).to eq(404)
     end
 
     it "should 404 when passed an invalid DOI" do
-      get :show, :id => "10.21105/1234", :format => "html"
+      get :show, params: {:id => "10.21105/1234"}, :format => "html"
       expect(response.body).to match /404 Not Found/
       expect(response.status).to eq(404)
     end
@@ -180,12 +184,12 @@ describe PapersController, :type => :controller do
     it "should return the created_at date for a paper" do
       submitted_paper = create(:paper, :state => 'submitted', :created_at => 3.days.ago, :meta_review_issue_id => 123)
 
-      get :lookup, :id => 123
+      get :lookup, params: {:id => 123}
       expect(response.body).to eq(3.days.ago.strftime('%d %B %Y'))
     end
 
     it "should 404 when passed an invalid id" do
-      get :lookup, :id => 12345
+      get :lookup, params: {:id => 12345}
 
       expect(response.body).to match /404 Not Found/
       expect(response.status).to eq(404)
@@ -196,19 +200,19 @@ describe PapersController, :type => :controller do
     it "should return the correct status badge for a submitted paper" do
       submitted_paper = create(:paper, :state => 'submitted')
 
-      get :status, :id => submitted_paper.sha, :format => "svg"
+      get :status, params: {:id => submitted_paper.sha}, :format => "svg"
       expect(response.body).to match /Submitted/
     end
 
     it "should return the correct status badge for an accepted paper" do
       submitted_paper = create(:paper, :state => 'accepted', :doi => "10.21105/joss.12345")
 
-      get :status, :id => submitted_paper.sha, :format => "svg"
+      get :status, params: {:id => submitted_paper.sha}, :format => "svg"
       expect(response.body).to match /10.21105/
     end
 
     it "should return the correct status badge for an unknown paper" do
-      get :status, :id => "asdasd", :format => "svg"
+      get :status, params: {:id => "asdasd"}, :format => "svg"
       expect(response.body).to match /Unknown/
     end
   end

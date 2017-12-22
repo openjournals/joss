@@ -36,9 +36,7 @@ Rails.application.configure do
 
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
-
-  config.joss_review_repo = "openjournals/joss-reviews-testing"
-  
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
+  config.cache_store = :memory_store
 end

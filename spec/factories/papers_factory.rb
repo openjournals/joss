@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :paper do
     title             'arfon / fidgit'
     body              'An ungodly union of GitHub and Figshare http://fidgit.arfon.org'

@@ -8,6 +8,9 @@ Bundler.require(*Rails.groups)
 
 module Joss
   class Application < Rails::Application
+    attr_accessor :settings
+    self.settings = YAML.load_file(Rails.root.join("config/settings.yml")).with_indifferent_access
+
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
@@ -21,8 +24,12 @@ module Joss
     # config.i18n.default_locale = :de
 
     # Do not swallow errors in after_commit/after_rollback callbacks.
-    config.active_record.raise_in_transactional_callbacks = true
-
     config.assets.precompile += %w(*.svg *.eot *.woff *.ttf)
+    config.autoload_paths += [
+      "#{config.root}/lib"
+    ]
+    config.eager_load_paths += [
+      "#{config.root}/lib"
+    ]
   end
 end

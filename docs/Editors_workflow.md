@@ -1,5 +1,9 @@
 # JOSS Editor workflow
 
+Editors will manage the review workflow with the help of our bot, `@whedon`.
+The bot is summoned with commands typed directly on the GitHub issues.
+For a list of commands, type: `@whedon commands` (Also listed below.)
+
 1. An author submits a paper. They can select or not select an editor.
 
 2. If you are selected as an editor you get @’d in the pre-review issue. 
@@ -42,6 +46,30 @@ The reviewer potentially asks for changes and the author makes changes. Everyone
 
 13. Celebrate publication! Tweet! Thank reviewers! Say thank you on issue.
 
-*Extras:*
+**Extras:**
+
 * If you need to change the reviewer: (@whedon assign @reviewer as reviewer) 
 This can be done in the PRE REVIEW or the REVIEW issue.
+
+**Whedon commands**
+
+```# List all of Whedon's capabilities
+@whedon commands
+
+# Assign a GitHub user as the reviewer of this submission
+@whedon assign @username as reviewer
+
+# List the GitHub usernames of the JOSS editors
+@whedon list editors
+
+# List of JOSS reviewers together with programming language preferences and domain expertise
+@whedon list reviewers
+
+# Change editorial assignment
+@whedon assign @username as editor
+
+# Set the software archive DOI at the top of the issue e.g.
+@whedon set 10.0000/zenodo.00000 as archive
+
+# Open the review issue
+@whedon start review```

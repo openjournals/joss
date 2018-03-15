@@ -27,5 +27,12 @@ FactoryBot.define do
       state 'review_pending'
       meta_review_issue_id 100
     end
+
+    factory :under_review_paper do
+      sha '48d24b0158528e85ac7706aecd8cddc4'
+      state 'under_review'
+      meta_review_issue_id 100
+      review_issue_id 101
+    end
   end
 end

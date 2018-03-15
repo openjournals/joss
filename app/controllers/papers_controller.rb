@@ -101,6 +101,29 @@ class PapersController < ApplicationController
     end
   end
 
+  def api_deposit
+    if params[:secret] == ENV['WHEDON_SECRET']
+      @paper = Paper.find_by_review_issue_id(params[:id])
+
+      @paper.update_attributes(
+        :doi => params[:doi],
+        :archive_doi => params[:archive_doi],
+        :accepted_at => Time.now,
+        :citation_string => params[:citation_string],
+        :authors => params[:authors],
+        :title => params[:title]
+      )
+
+      if @paper.accept!
+        render :json => @paper.to_json, :status => '201'
+      else
+        head :unprocessable_entity
+      end
+    else
+      head :forbidden
+    end
+  end
+
   def start_meta_review
     @paper = Paper.find_by_sha(params[:id])
 
@@ -202,6 +225,6 @@ class PapersController < ApplicationController
   private
 
   def paper_params
-    params.require(:paper).permit(:title, :repository_url, :archive_doi, :software_version, :suggested_editor, :body)
+    params.require(:paper).permit(:authors, :accepted_at, :archive_doi, :citation_string, :doi, :title, :repository_url, :software_version, :suggested_editor, :body)
   end
 end

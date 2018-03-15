@@ -75,6 +75,34 @@ describe PapersController, :type => :controller do
     end
   end
 
+  describe "POST #api_deposit" do
+    ENV["WHEDON_SECRET"] = "mooo"
+
+    it "with no API key" do
+      post :api_deposit
+      expect(response).to be_forbidden
+    end
+
+    it "with the correct API key" do
+      user = create(:user)
+      paper = create(:under_review_paper, :review_issue_id => 1234, :user_id => user.id)
+      # TODO - work out how to skip callback so we don't have to set the SHA again for WebMock
+      paper.sha = '48d24b0158528e85ac7706aecd8cddc4'
+      paper.save
+
+      post :api_deposit, params: {:secret => "mooo",
+                                  :id => 1234,
+                                  :doi => "10.0001/joss.01234",
+                                  :archive_doi => "10.0001/zenodo.01234",
+                                  :citation_string => "Smith et al., 2008, JOSS, etc.",
+                                  :authors => "Arfon Smith, Mickey Mouse",
+                                  :title => "Foo, bar, baz"
+                                  }
+      expect(response).to be_success
+      expect(paper.reload.state).to eql('accepted')
+    end
+  end
+
   describe "Paper rejection" do
     it "should work for an administrator" do
       user = create(:admin_user)

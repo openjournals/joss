@@ -11,7 +11,6 @@ Rails.application.routes.draw do
 
     collection do
       post 'api_start_review'
-      post 'api_deposit'
       get 'recent'
       get 'popular'
       get 'accepted', to: 'papers#popular'

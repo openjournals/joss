@@ -102,6 +102,8 @@ class PapersController < ApplicationController
   end
 
   def api_deposit
+    Rails.logger.info "PARAMS ARE: #{params}"
+
     if params[:secret] == ENV['WHEDON_SECRET']
       @paper = Paper.find_by_review_issue_id(params[:id])
 

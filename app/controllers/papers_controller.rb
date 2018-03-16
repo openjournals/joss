@@ -2,7 +2,7 @@ class PapersController < ApplicationController
   before_action :require_user, :only => %w(new create update withdraw)
   before_action :require_complete_profile, :only => %w(create)
   before_action :require_admin_user, :only => %w(start_meta_review archive reject)
-  protect_from_forgery :except => [ :api_start_review ]
+  protect_from_forgery :except => [ :api_start_review, :api_deposit ]
 
   def recent
     @papers = Paper.visible.paginate(
@@ -102,8 +102,6 @@ class PapersController < ApplicationController
   end
 
   def api_deposit
-    puts "PARAMS ARE: #{params}"
-
     if params[:secret] == ENV['WHEDON_SECRET']
       @paper = Paper.find_by_review_issue_id(params[:id])
 
@@ -227,6 +225,6 @@ class PapersController < ApplicationController
   private
 
   def paper_params
-    params.require(:paper).permit(:authors, :accepted_at, :archive_doi, :citation_string, :doi, :title, :repository_url, :software_version, :suggested_editor, :body)
+    params.require(:paper).permit(:authors, :title, :repository_url, :software_version, :suggested_editor, :body)
   end
 end

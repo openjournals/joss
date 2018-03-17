@@ -166,7 +166,7 @@ describe Paper do
 
     context "with no paper type" do
       let(:kind) { nil }
-      it { is_expected.to match /Reviewers:/ }
+      it { is_expected.to match /Reviewer:/ }
       it { is_expected.to match /Review checklist for @mickey/ }
       it { is_expected.to match /Review checklist for @mouse/ }
     end

@@ -70,7 +70,7 @@ describe PapersController, :type => :controller do
       allow(fake_issue).to receive(:number).and_return(1)
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
-      post :api_start_review, params: {:secret => "mooo", :id => 1234, :reviewer => "mickey", :editor => "mouse"}
+      post :api_start_review, params: {:secret => "mooo", :id => 1234, :reviewers => "mickey", :editor => "mouse"}
       expect(response).to be_created
     end
   end

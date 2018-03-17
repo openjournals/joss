@@ -59,7 +59,7 @@ describe PapersController, :type => :controller do
       expect(response).to be_forbidden
     end
 
-    it "with the correct API key" do
+    it "with the correct API key and a single reviewer" do
       user = create(:user)
       paper = create(:review_pending_paper, :state => "review_pending", :meta_review_issue_id => 1234, :user_id => user.id)
       # TODO - work out how to skip callback so we don't have to set the SHA again for WebMock
@@ -71,6 +71,21 @@ describe PapersController, :type => :controller do
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
       post :api_start_review, params: {:secret => "mooo", :id => 1234, :reviewers => "mickey", :editor => "mouse"}
+      expect(response).to be_created
+    end
+
+    it "with the correct API key and multiple reviewers" do
+      user = create(:user)
+      paper = create(:review_pending_paper, :state => "review_pending", :meta_review_issue_id => 1234, :user_id => user.id)
+      # TODO - work out how to skip callback so we don't have to set the SHA again for WebMock
+      paper.sha = '48d24b0158528e85ac7706aecd8cddc4'
+      paper.save
+
+      fake_issue = Object.new
+      allow(fake_issue).to receive(:number).and_return(1)
+      allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
+
+      post :api_start_review, params: {:secret => "mooo", :id => 1234, :reviewers => "mickey,minnie", :editor => "mouse"}
       expect(response).to be_created
     end
   end

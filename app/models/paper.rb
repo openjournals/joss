@@ -134,7 +134,7 @@ class Paper < ActiveRecord::Base
   # 'reviewers' should be a string (and may be comma-separated)
   def review_body(editor, reviewers)
     reviewers = reviewers.split(',').each {|r| r.prepend('@')}
-    
+
     ActionView::Base.new(Rails.configuration.paths['app/views']).render(
       :template => 'shared/review_body', :format => :txt,
       :locals => { :paper => self, :editor => "@#{editor}", :reviewers => reviewers }
@@ -244,6 +244,6 @@ class Paper < ActiveRecord::Base
 private
 
   def set_sha
-    self.sha = SecureRandom.hex
+    self.sha ||= SecureRandom.hex
   end
 end

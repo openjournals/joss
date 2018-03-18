@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'aasm', '~> 4.1.0'
+gem 'bootsnap', require: false
 gem 'dotenv', '~> 2.2.1'
 gem 'github-markdown', '~> 0.6.9'
 gem 'honeybadger', '~> 3.2.0'

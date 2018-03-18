@@ -44,4 +44,5 @@ group :development do
   gem 'web-console', '~> 3.5.1'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
+  gem 'spring-commands-rspec', group: :development
 end

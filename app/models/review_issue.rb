@@ -36,6 +36,9 @@ class ReviewIssue
 
     complete_issues.each do |issue|
       if issue.title.match(/\[REVIEW\]/)
+        next if issue.labels.collect(&:name).include?('withdrawn')
+        next if issue.labels.collect(&:name).include?('rejected')
+        
         review_issues << ReviewIssue.new(issue, state="closed")
       end
     end

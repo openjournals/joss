@@ -122,7 +122,7 @@ describe Paper do
     refute Paper.visible.include?(paper)
   end
 
-  describe "#review_body" do
+  describe "#review_body with a single author" do
     let(:author) { create(:user) }
     let(:paper) do
       instance = build(:paper, user_id: author.id, kind: kind)
@@ -146,11 +146,29 @@ describe Paper do
 
     context "with no paper type" do
       let(:kind) { nil }
+      it { is_expected.to match /Reviewer:/ }
       it { is_expected.to match /JOSS conflict of interest policy/ }
       it { is_expected.to match /Does the repository contain a plain-text LICENSE file/ }
       it { is_expected.to match /Does installation proceed as outlined/ }
       it { is_expected.to match /Are there automated tests/ }
       it { is_expected.to match /Does the `paper.md` file include a list of authors/ }
+    end
+  end
+
+  describe "#review_body with multiple reviewers" do
+    let(:author) { create(:user) }
+    let(:paper) do
+      instance = build(:paper, user_id: author.id, kind: kind)
+      instance.save(validate: false)
+      instance
+    end
+    subject { paper.review_body("editor_name", "mickey,mouse") }
+
+    context "with no paper type" do
+      let(:kind) { nil }
+      it { is_expected.to match /Reviewer:/ }
+      it { is_expected.to match /Review checklist for @mickey/ }
+      it { is_expected.to match /Review checklist for @mouse/ }
     end
   end
 end

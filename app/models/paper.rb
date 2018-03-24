@@ -131,19 +131,22 @@ class Paper < ActiveRecord::Base
     "#{Rails.application.settings["papers_html_url"]}/#{joss_id}/#{doi_to_file}.pdf"
   end
 
-  def review_body(editor, reviewer)
+  # 'reviewers' should be a string (and may be comma-separated)
+  def review_body(editor, reviewers)
+    reviewers = reviewers.split(',').each {|r| r.prepend('@')}
+
     ActionView::Base.new(Rails.configuration.paths['app/views']).render(
       :template => 'shared/review_body', :format => :txt,
-      :locals => { :paper => self, :editor => "@#{editor}", :reviewer => "@#{reviewer}" }
+      :locals => { :paper => self, :editor => "@#{editor}", :reviewers => reviewers }
     )
   end
 
   # Create a review issue (we know the reviewer and editor at this point)
-  def create_review_issue(editor, reviewer)
+  def create_review_issue(editor, reviewers)
     return false if review_issue_id
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[REVIEW]: #{self.title}",
-                                review_body(editor, reviewer),
+                                review_body(editor, reviewers),
                                 { :assignee => editor,
                                   :labels => "review" })
 
@@ -241,6 +244,6 @@ class Paper < ActiveRecord::Base
 private
 
   def set_sha
-    self.sha = SecureRandom.hex
+    self.sha ||= SecureRandom.hex
   end
 end

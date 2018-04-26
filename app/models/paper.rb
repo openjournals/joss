@@ -118,6 +118,10 @@ class Paper < ActiveRecord::Base
     end
   end
 
+  def clean_archive_doi
+    archive_doi.gsub(/\"/, "")
+  end
+
   # A 5-figure integer used to produce the JOSS DOI
   def joss_id
     id = "%05d" % review_issue_id

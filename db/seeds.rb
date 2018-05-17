@@ -36,6 +36,23 @@ Editor.create(
 
 Editor.create(
   kind: "topic",
+  first_name: "Jed",
+  last_name: "Brown",
+  login: "jedbrown",
+  email: "",
+  avatar_url: "assets/editors/jed-4e9277bfbf99d46c8a98d669e265df1fe8e1b61a20a702af414d854b0fa1f477.jpg",
+  categories: ["Computational Science and Engineering", "Geophysics", "High-performance Computing"],
+  url: "https://jedbrown.org",
+  description: <<-STR.strip_heredoc()
+    Assistant Professor of Computer Science at the University of Colorado Boulder leading a research
+    group developing scalable algorithms and sustainable software for prediction, inference, and
+    design via high-fidelity and multiscale physically-based models.  He is a core developer of
+    <a href="https://mcs.anl.gov/petsc/">PETSc</a>.
+  STR
+)
+
+Editor.create(
+  kind: "topic",
   first_name: "Jason",
   last_name: "Clark",
   login: "jasonclark",

@@ -1,4 +1,6 @@
 module ApplicationHelper
+  include SettingsHelper
+
   def flash_class_for(flash_level)
     case flash_level
     when 'error'
@@ -30,10 +32,6 @@ module ApplicationHelper
     else
       return true
     end
-  end
-
-  def setting(*paths)
-    Rails.application.settings.dig(*paths).html_safe
   end
 
   def link_to_query(body, url, query)

@@ -31,7 +31,7 @@ to be an editor in the issue thread type the command `@whedon assign @yourhandle
     * or solicit reviewers outside the list. Send an email to people describing what JOSS is 
     and asking if they would be interested in reviewing.
 
-8. Editor tells whedon to assign the reviewer to the paper: use `@whedon assign @reviewer as reviewer`
+8. Editor tells whedon to assign the reviewer to the paper: use `@whedon assign @reviewer as reviewer`. If there are multiple reviewers, add additional reviewers with `@whedon add @reviewer2 as reviewer`.
 
 9. Create the actual review issue: `@whedon start review magic-word=bananas`
     * An issue is created with the review checklist, e.g. https://github.com/openjournals/joss-reviews/issues/307 

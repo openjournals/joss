@@ -175,4 +175,4 @@ def setup(app):
         'enable_auto_doc_ref': True,
         'character_level_inline_markup': False,
     }, True)
-#    app.add_transform(AutoStructify)
+    app.add_transform(AutoStructify)

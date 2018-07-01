@@ -57,14 +57,6 @@ Reviewers should check that the software API is documented to a suitable level.
 .. note:: The decision on API documentation is left largely to the discretion of the reviewer and their experience of evaluating the software.
 ```
 
-#### Tests
-
-Authors are strongly encouraged to include an automated test suite covering the core functionality of their software.
-
-> **Good:** An automated test suite hooked up to an external service such as Travis-CI or similar<br />
-> **OK:** Documented manual steps that can be followed to check the expected functionality of the software (e.g. a sample input file to assert behaviour)<br />
-> **Bad (not acceptable):** No way for you the reviewer to check whether the software works
-
 #### Community guidelines
 
 There should be clear guidelines for third-parties wishing to:
@@ -73,9 +65,17 @@ There should be clear guidelines for third-parties wishing to:
 - Report issues or problems with the software
 - Seek support
 
-#### Functionality
+### Functionality
 
 Reviewers are expected to install the software they are reviewing and to verify the core functionality of the software.
+
+### Tests
+
+Authors are strongly encouraged to include an automated test suite covering the core functionality of their software.
+
+> **Good:** An automated test suite hooked up to an external service such as Travis-CI or similar<br />
+> **OK:** Documented manual steps that can be followed to check the expected functionality of the software (e.g. a sample input file to assert behaviour)<br />
+> **Bad (not acceptable):** No way for you the reviewer to check whether the software works
 
 ## Other considerations
 

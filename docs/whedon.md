@@ -3,7 +3,7 @@ Interacting with Whedon
 
 Whedon or `@whedon` on GitHub, is our editorial bot that interacts with authors, reviewers, and editors on JOSS reviews.
 
-`@whedon` can do a bunch of different things. If you want to ask `@whedon` what he can do, simply type the following in a JOSS `review` or `pre-review` issue:
+`@whedon` can do a bunch of different things. If you want to ask `@whedon` what it can do, simply type the following in a JOSS `review` or `pre-review` issue:
 
 ```text
 @whedon commands
@@ -51,7 +51,7 @@ This will return an output something like this:
 
 When a `pre-review` or `review` issue is opened, `@whedon` will try to compile the JOSS paper by looking for a `paper.md` file in the repository specified when the paper was submitted.
 
-If he can't find the `paper.md` file he'll say as much in the review issue. If he can't compile the paper (i.e. there's some kind of Pandoc error), he'll try and report that error back in the thread too.
+If it can't find the `paper.md` file it will say as much in the review issue. If it can't compile the paper (i.e. there's some kind of Pandoc error), it will try and report that error back in the thread too.
 
 ```eval_rst
 .. note:: If you want to see what command ``@whedon`` is running when compiling the JOSS paper, take a look at the code `here <https://github.com/openjournals/whedon/blob/195e6d124d0fbd5346b87659e695325df9a18334/lib/whedon/processor.rb#L109-L132>`_.

@@ -60,8 +60,8 @@ When a submission is accepted, we ask that the authors create an archive (on [Ze
 Dear Dr. Jekyll,
 
 I found you following links from the page of The Super Project and/or on Twitter. This
-message is to ask if you can help us out with a submission to JOSE (The Journal of Open
-Source Software), where I’m editor.
+message is to ask if you can help us out with a submission to JOSS (The Journal of Open
+Source Software), where I’m an editor.
 
 JOSS publishes articles about open source research software. The submission I'd like you
 to review is titled: "great software name here"
@@ -69,19 +69,19 @@ to review is titled: "great software name here"
 and the submission repository is at: https://github.com/< … >
 
 JOSS is a free, open-source, community driven and developer-friendly online journal
-(no publisher seeking to make revenue from the volunteer labor of researchers!).
+(no publisher is seeking to raise revenue from the volunteer labor of researchers!).
 
 The review process at JOSS is unique: it is open and author-reviewer-editor conversations
 are encouraged.
 
 JOSS reviews involve downloading and installing the software, and inspecting the repository
-for key elements. See http://joss.theoj.org/about#reviewer_guidelines
+and submitted paper for key elements. See http://joss.theoj.org/about#reviewer_guidelines
 
-Editors and reviewers post comments on the REVIEW issue, and authors respond to the comments
+Editors and reviewers post comments on the Review issue, and authors respond to the comments
 and improve their submission until acceptance (or withdrawal, if they feel unable to
 satisfy the review).
 
-Would you be able to review the great submission for JOSS? Or, if not, could you recommend
+Would you be able to review this submission for JOSS? If not, can you recommend
 someone from your team to help out?
 
 Kind regards,
@@ -105,7 +105,7 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 
 - There’s a general description of the software
 - The software is within scope as research software
-- It has an OSI approved license
+- It has an OSI-approved license
 
 **Step 5: The editor responds to the author saying that things look in line (or not) and will search for reviewer**
 

@@ -14,7 +14,8 @@ This site contains documentation for authors interested in submitting to JOSS, r
 If you're interested in learning more about JOSS, you might want to read:
 
 - `Our announcement blog post <http://www.arfon.org/announcing-the-journal-of-open-source-software>`_ describing some of the motivations for starting a new journal
-- `This paper in PeerJ-CS <https://peerj.com/articles/cs-147/>`_ describing the first year of JOSS
+- `This paper in Computing in Science and Engineering <https://doi.org/10.1109/MCSE.2018.03221930/>`_ introducing JOSS
+- `This paper in PeerJ CS <https://doi.org/10.7717/peerj-cs.147>`_ describing the first year of JOSS
 - The `about page <http://joss.theoj.org/about>`_ on the main JOSS site
 
 Submitting a paper to JOSS

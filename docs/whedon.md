@@ -107,7 +107,7 @@ Reviewers should be assigned by using the following commands:
 Once the reviewer(s) and editor have been assigned in the `pre-review` issue, the editor starts the review with:
 
 ```text
-@whedon start review magic-word=bananas
+@whedon start review
 ```
 
 ```eval_rst

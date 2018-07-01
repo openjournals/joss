@@ -37,7 +37,7 @@ Once a reviewer accepts, the handling editor runs the command `@whedon assign @u
 
 ### Starting the review
 
-Next, run the command `@whedon start review magic-word=bananas`. If you forget the magic word, `@whedon` will remind you. This will open the `REVIEW` issue, with prepared review checklists for each reviewer, and instructions. The editor should close the `PRE-REVIEW` issue, at this point, and move the conversation to the separate `REVIEW` issue.
+Next, run the command `@whedon start review`. If you haven't assigned an editor and reviewer, this command will fail and `@whedon` will tell you this. This will open the `REVIEW` issue, with prepared review checklists for each reviewer, and instructions. The editor should close the `PRE-REVIEW` issue, at this point, and move the conversation to the separate `REVIEW` issue.
 
 ## Review
 
@@ -126,7 +126,7 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 
 **Step 8: Create the actual review issue**
 
-- Use `@whedon start review magic-word=bananas`
+- Use `@whedon start review`
 - An issue is created with the review checklist, one per reviewer, e.g. https://github.com/openjournals/joss-reviews/issues/717
 
 **Step 9: Close the pre-review issue**

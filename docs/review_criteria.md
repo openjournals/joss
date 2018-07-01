@@ -1,0 +1,94 @@
+Review criteria
+===============
+
+## The JOSS paper
+
+As outlined in the [submission guidelines provided to authors](submitting.html#what-should-my-paper-contain), the JOSS paper (the compiled PDF associated with this submission) should only include:
+
+- A list of the authors of the software
+- Author affiliations
+- A summary describing the high-level functionality and purpose of the software for a diverse, non-specialist audience
+- A clear statement of need that illustrates the purpose of the software
+- Mentions (if applicable) of any ongoing research projects using the software or recent scholarly publications enabled by it
+- A list of key references including a link to the software archive
+
+```eval_rst
+.. important:: Note the paper *should not* include software documentation such as API (Application Programming Interface) functionality, as this should be outlined in the software documentation.
+```
+
+## Review items
+
+### Software license
+
+There should be an [OSI approved](https://opensource.org/licenses/alphabetical) license included in the repository. Common licenses such as those listed on http://choosealicense.com are preferred. Note there should be an actual license file present in the repository not just a reference to the license.
+
+> **Acceptable:** A plain-text LICENSE file with the contents of an OSI approved license<br />            
+> **Not acceptable:** A phrase such as 'MIT license' in a README file
+
+### Documentation
+
+There should be sufficient documentation for you, the reviewer to understand the core functionality of the software under review. A high-level overview of this documentation should be included in a `README` file (or equivalent). There should be:
+
+#### A statement of need
+
+The authors should clearly state what problems the software is designed to solve and who the target audience is.
+
+#### Installation instructions
+
+There should be a clearly-stated list of dependencies. Ideally these should be handled with an automated package management solution.
+
+> **Good:** A package management file such as a Gemfile or package.json or equivalent<br />
+> **OK:** A list of dependencies to install<br />
+> **Bad (not acceptable):** Reliance on other software not listed by the authors
+
+#### Example usage
+
+The authors should include examples of how to use the software (ideally to solve real-world analysis problems).
+
+#### API documentation
+
+Reviewers should check that the software API is documented to a suitable level.
+
+> **Good:** All functions/methods are documented including example inputs and outputs<br />
+> **OK:** Core API functionality is documented<br />
+> **Bad (not acceptable):** API is undocumented
+
+```eval_rst
+.. note:: The decision on API documentation is left largely to the discretion of the reviewer and their experience of evaluating the software.
+```
+
+#### Tests
+
+Authors are strongly encouraged to include an automated test suite covering the core functionality of their software.
+
+> **Good:** An automated test suite hooked up to an external service such as Travis-CI or similar<br />
+> **OK:** Documented manual steps that can be followed to check the expected functionality of the software (e.g. a sample input file to assert behaviour)<br />
+> **Bad (not acceptable):** No way for you the reviewer to check whether the software works
+
+#### Community guidelines
+
+There should be clear guidelines for third-parties wishing to:
+
+- Contribute to the software
+- Report issues or problems with the software
+- Seek support
+
+#### Functionality
+
+Reviewers are expected to install the software they are reviewing and to verify the core functionality of the software.
+
+## Other considerations
+
+### An important note about 'novel' software
+
+Submissions that implement solutions already solved in other software packages are accepted into JOSS provided that they meet the criteria listed above and cite prior similar work.
+
+### What happens if the software I'm reviewing doesn't meet the JOSS criteria?
+
+We ask that reviewers grade submissions in one of three categories: 1) Accept 2) Minor Revisions 3) Major Revisions. Unlike some journals we do not reject outright submissions requiring major revisions - we're more than happy to give the author as long as they need to make these modifications/improvements.
+
+### What about submissions that rely upon proprietary languages/development environments?
+
+As outlined in our author guidelines, submissions that rely upon a proprietary/closed source language or development environment are acceptable provided that they meet the other submission requirements and that you, the reviewer, are able to install the software & verify the functionality of the submission as required by our reviewer guidelines.
+
+If an open source or free variant of the programming language exists, feel free to encourage the submitting author to consider making their software compatible with the open source/free variant.

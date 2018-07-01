@@ -6,7 +6,7 @@ The Journal of Open Source Software (JOSS) conducts all peer review and editoria
 JOSS editors manage the review workflow with the help of our bot, `@whedon`. The bot is summoned with commands typed directly on the GitHub review issues. For a list of commands, type: `@whedon commands`.
 
 ```eval_rst
-.. note:: To learn more about ``@whedon``'s functionalities, take a look at our `dedicated guide </whedon.html>`_.
+.. note:: To learn more about ``@whedon``'s functionalities, take a look at our `dedicated guide <whedon.html>`_.
 ```
 
 ## Pre-review

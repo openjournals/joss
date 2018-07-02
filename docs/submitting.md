@@ -23,7 +23,7 @@ In addition, your paper should include:
 - A list of key references including a link to the software archive
 - Mentions (if applicable) of any ongoing research projects using the software or recent scholarly publications enabled by it
 
-As this short list shows, JOSS papers are only permitted to contain a limited set of metadata (see header below), Statement of Need, Summary, and Reference sections. You can see an example accepted paper [here](https://raw.githubusercontent.com/adrn/gala/f6bb2532afeed3c0b0feea3037bf71a3f42b2a12/paper/paper.md). Given this paper format it is not permitted to write a "full length" paper i.e. one that includes software documentation such as API (Application Programming Interface) functionality, as this should instead be outlined in the software documentation.
+As this short list shows, JOSS papers are only permitted to contain a limited set of metadata (see header below), Statement of Need, Summary, and Reference sections. You can see an example accepted paper [here](https://raw.githubusercontent.com/adrn/gala/f6bb2532afeed3c0b0feea3037bf71a3f42b2a12/paper/paper.md). Given this paper format, a "full length" paper is not permitted, e.g., software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation.
 
 ## Example paper and bibliography
 
@@ -169,6 +169,9 @@ Example `paper.bib` file:
     adsurl = {http://adsabs.harvard.edu/abs/2013A%26A...558A..33A}
 }
 ```
+
+Note that the paper ends with a References heading, and the references are built automatically from the content in the .bib file when they are mentioned in the paper body.
+
 
 ## Submitting your paper
 

@@ -56,7 +56,6 @@ When a submission is accepted, we ask that the authors create an archive (on [Ze
 ## Sample letter to invite reviewers
 
 ```
-
 Dear Dr. Jekyll,
 
 I found you following links from the page of The Super Project and/or on Twitter. This
@@ -75,7 +74,7 @@ The review process at JOSS is unique: it is open and author-reviewer-editor conv
 are encouraged.
 
 JOSS reviews involve downloading and installing the software, and inspecting the repository
-and submitted paper for key elements. See http://joss.theoj.org/about#reviewer_guidelines
+and submitted paper for key elements. See https://joss.readthedocs.io/en/latest/review_criteria.html
 
 Editors and reviewers post comments on the Review issue, and authors respond to the comments
 and improve their submission until acceptance (or withdrawal, if they feel unable to

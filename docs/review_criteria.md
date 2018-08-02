@@ -79,6 +79,10 @@ Authors are strongly encouraged to include an automated test suite covering the 
 
 ## Other considerations
 
+### Authorship
+
+Purely financial contributions are not considered sufficient for co-authorship of JOSS submissions, but project direction and other forms of non-code contributions are. The authors themselves assume responsibility for deciding who should be credited with co-authorship, and always co-authors must agree to be listed.
+
 ### An important note about 'novel' software
 
 Submissions that implement solutions already solved in other software packages are accepted into JOSS provided that they meet the criteria listed above and cite prior similar work.

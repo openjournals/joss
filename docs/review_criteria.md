@@ -81,7 +81,9 @@ Authors are strongly encouraged to include an automated test suite covering the 
 
 ### Authorship
 
-Purely financial contributions are not considered sufficient for co-authorship of JOSS submissions, but project direction and other forms of non-code contributions are. The authors themselves assume responsibility for deciding who should be credited with co-authorship, and always co-authors must agree to be listed.
+As part of the review process, you are asked to check whether the submitting author has made a 'substantial contribution' to the submitted software (as determined by the commit history) and to check that 'the full list of paper authors seems appropriate and complete?'
+
+As noted in the [submission guidelines for authors](submitting.html#authorship), authorship is a complex topic and ultimately the authors themselves assume responsibility for deciding who should be credited with co-authorship. Your job as the reviewer is to check that the list of authors looks reasonable, and if it's not obviously complete/correct, to raise this as a question during the review.
 
 ### An important note about 'novel' software
 

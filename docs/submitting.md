@@ -87,9 +87,25 @@ scientific explorations of forthcoming data releases from the *Gaia* mission
 [@gaia] by students and experts alike. The source code for ``Gala`` has been
 archived to Zenodo with the linked DOI: [@zenodo]
 
+# Mathematics
+
+Single dollars ($) are required for inline mathematics e.g. $f(x) = e^{\pi/x}$
+
+Double dollars make self-standing equations:
+
+$$\Theta(x) = \left\{\begin{array}{l}
+0\textrm{ if } x < 0\cr
+1\textrm{ else}
+\end{array}\right.$$
+
+
+# Citations
+
 Citations to entries in paper.bib should be in
 [rMarkdown](http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html)
 format.
+
+# Figures
 
 Figures can be included like this: ![Example figure.](figure.png)
 

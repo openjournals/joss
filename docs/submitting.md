@@ -25,6 +25,10 @@ In addition, your paper should include:
 
 As this short list shows, JOSS papers are only permitted to contain a limited set of metadata (see header below), Statement of Need, Summary, and Reference sections. You can see an example accepted paper [here](https://raw.githubusercontent.com/adrn/gala/f6bb2532afeed3c0b0feea3037bf71a3f42b2a12/paper/paper.md). Given this paper format, a "full length" paper is not permitted, e.g., software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation.
 
+```eval_rst
+.. important:: You paper will be reviewed by one or more reviewers in a public GitHub issue. Take a look at the `reviewer guidelines <reviewer_guidelines.html>`_ to better understand how your submission will be reviewed.
+```
+
 ## Example paper and bibliography
 
 This example `paper.md` is adapted from _Gala: A Python package for galactic dynamics_ by Adrian M. Price-Whelan [http://doi.org/10.21105/joss.00388](http://doi.org/10.21105/joss.00388):

@@ -25,6 +25,10 @@ In addition, your paper should include:
 
 As this short list shows, JOSS papers are only permitted to contain a limited set of metadata (see header below), Statement of Need, Summary, and Reference sections. You can see an example accepted paper [here](https://raw.githubusercontent.com/adrn/gala/f6bb2532afeed3c0b0feea3037bf71a3f42b2a12/paper/paper.md). Given this paper format, a "full length" paper is not permitted, e.g., software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation.
 
+```eval_rst
+.. important:: You paper will be reviewed by one or more reviewers in a public GitHub issue. Take a look at the `review criteria <review_criteria.html>`_ to better understand how your submission will be reviewed.
+```
+
 ## Example paper and bibliography
 
 This example `paper.md` is adapted from _Gala: A Python package for galactic dynamics_ by Adrian M. Price-Whelan [http://doi.org/10.21105/joss.00388](http://doi.org/10.21105/joss.00388):
@@ -87,9 +91,25 @@ scientific explorations of forthcoming data releases from the *Gaia* mission
 [@gaia] by students and experts alike. The source code for ``Gala`` has been
 archived to Zenodo with the linked DOI: [@zenodo]
 
+# Mathematics
+
+Single dollars ($) are required for inline mathematics e.g. $f(x) = e^{\pi/x}$
+
+Double dollars make self-standing equations:
+
+$$\Theta(x) = \left\{\begin{array}{l}
+0\textrm{ if } x < 0\cr
+1\textrm{ else}
+\end{array}\right.$$
+
+
+# Citations
+
 Citations to entries in paper.bib should be in
 [rMarkdown](http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html)
 format.
+
+# Figures
 
 Figures can be included like this: ![Example figure.](figure.png)
 

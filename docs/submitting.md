@@ -200,7 +200,7 @@ JOSS publishes articles about research software. This definition includes softwa
 
 ### Authorship
 
-Purely financial contributions are not considered sufficient for co-authorship of JOSS submissions, but project direction and other forms of non-code contributions are. The authors themselves assume responsibility for deciding who should be credited with co-authorship, and co-authors must always agree to be listed.
+Purely financial (such as being named on an award) and organizational (such as general supervision of a research group) contributions are not considered sufficient for co-authorship of JOSS submissions, but active project direction and other forms of non-code contributions are. The authors themselves assume responsibility for deciding who should be credited with co-authorship, and co-authors must always agree to be listed. In addition, co-authors agree to be accountable for all aspects of the work.
 
 ### Submissions using proprietary languages/dev environments
 

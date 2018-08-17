@@ -1,5 +1,6 @@
 class HomeController < ApplicationController
   before_action :require_user, :only => %w(profile update_profile)
+  before_action :require_editor, :only => %w(dashboard)
 
   def index
     @papers = Paper.visible.limit(10)
@@ -7,6 +8,10 @@ class HomeController < ApplicationController
 
   def about
 
+  end
+
+  def dashboard
+    @accepted_papers = Paper.unscoped.visible.group_by_month(:accepted_at).count
   end
 
   def update_profile

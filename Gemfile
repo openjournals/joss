@@ -1,9 +1,11 @@
 source 'https://rubygems.org'
 
 gem 'aasm', '~> 4.1.0'
+gem "chartkick"
 gem 'bootsnap', require: false
 gem 'dotenv', '~> 2.2.1'
 gem 'github-markdown', '~> 0.6.9'
+gem 'groupdate'
 gem 'honeybadger', '~> 3.2.0'
 gem 'html-pipeline', '~> 2.7.1'
 gem 'commonmarker', '~> 0.17.7'

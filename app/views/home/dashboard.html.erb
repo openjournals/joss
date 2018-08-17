@@ -1,0 +1,46 @@
+<div class="wrapper">
+  <div class="tabnav">
+    <nav class="tabnav-tabs">
+      <%= link_to "Accepted papers", accepted_papers_path, :class => "tabnav-tab #{selected_class('popular')}" %>
+      <%= link_to "Papers by editor", active_papers_path, :class => "tabnav-tab #{selected_class('active')}" %>
+      <%= link_to "All papers (#{Paper.everything.count})", papers_path, :class => "tabnav-tab #{selected_class('index')}" %>
+    </nav>
+  </div>
+
+<table class="editor-stats">
+  <tr>
+    <th width="25%">Editor</th><th width="15%">Week</th><th width="15%">Month</th><th width="15%">Quarter</th><th width="15%">Year</th><th width="15%">All time</th>
+  </tr>
+  <% Editor.all.each do |editor| %>
+  <tr class="<%= cycle('odd', 'even') -%>">
+    <td><%= editor.login %></td>
+    <td><%= editor.papers.visible.since(1.week.ago).count %></td>
+    <td><%= editor.papers.visible.since(1.month.ago).count %></td>
+    <td><%= editor.papers.visible.since(3.months.ago).count %></td>
+    <td><%= editor.papers.visible.since(1.year.ago).count %></td>
+    <td><%= editor.papers.visible.since(100.year.ago).count %></td>
+  </tr>
+  <% end %>
+  <tr style="font-weight: bolder;">
+    <td>Totals</td>
+    <td><%= Paper.visible.since(1.week.ago).count %></td>
+    <td><%= Paper.visible.since(1.month.ago).count %></td>
+    <td><%= Paper.visible.since(3.months.ago).count %></td>
+    <td><%= Paper.visible.since(1.year.ago).count %></td>
+    <td><%= Paper.visible.since(100.year.ago).count %></td>
+  </tr>
+</table>
+<%= column_chart [
+  { name: "Accepted papers by month", data: @accepted_papers }
+], width: "1000px", height: "500px" %>
+
+<br />
+
+<p style="font-weight: bolder; padding-left: 40px;">Select editor: <%= select_tag 'editors', options_from_collection_for_select(Editor.all, "login", "login", params[:editor].blank? ? current_user.editor.login : params[:editor]),
+    :onchange => "top.location.href='/dashboard?editor=' + this.options[this.selectedIndex].value + '#editor';" %></p>
+
+<%= column_chart [
+  {name: "Papers edited by #{@editor.login} by month", data: @editor_papers }
+], width: "1000px", height: "500px", colors: ["#8FBC8F"], :id => "editor" %>
+
+</div>

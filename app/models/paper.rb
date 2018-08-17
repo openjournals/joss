@@ -6,6 +6,8 @@ class Paper < ActiveRecord::Base
               :validate => true,
               :foreign_key => "user_id"
 
+  belongs_to  :editor
+
   include AASM
 
   aasm :column => :state do
@@ -53,6 +55,8 @@ class Paper < ActiveRecord::Base
   default_scope  { order(:created_at => :desc) }
   scope :recent, lambda { where('created_at > ?', 1.week.ago) }
   scope :submitted, lambda { where('state = ?', 'submitted') }
+
+  scope :since, -> (date) { where('accepted_at >= ?', date) }
   scope :in_progress, -> { where(:state => IN_PROGRESS_STATES) }
   scope :visible, -> { where(:state => VISIBLE_STATES) }
   scope :everything, lambda { where('state NOT IN (?)', ['rejected', 'withdrawn']) }
@@ -148,15 +152,25 @@ class Paper < ActiveRecord::Base
   end
 
   # Create a review issue (we know the reviewer and editor at this point)
-  def create_review_issue(editor, reviewers)
+  # Return false if the review_issue_id is already set
+  # Return false if the editor login doesn't match one of the known editors
+  def create_review_issue(editor_handle, reviewers)
     return false if review_issue_id
+    return false unless editor = Editor.find_by_login(editor_handle)
+
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[REVIEW]: #{self.title}",
-                                review_body(editor, reviewers),
-                                { :assignee => editor,
+                                review_body(editor_handle, reviewers),
+                                { :assignee => editor_handle,
                                   :labels => "review" })
 
     set_review_issue(issue.number)
+    set_editor(editor)
+  end
+
+  # Updated the paper with the editor_id
+  def set_editor(editor)
+    self.update_attribute(:editor_id, editor.id)
   end
 
   # Update the Paper review_issue_id field

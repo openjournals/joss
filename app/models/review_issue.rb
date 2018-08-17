@@ -86,8 +86,8 @@ class ReviewIssue
     body.match(/\*\*Editor:\*\*\s*(@\S*|Pending)/i)[1]
   end
 
-  # Extract the Reviewer from the issue body
-  def reviewer
-    body.match(/\*\*Reviewer:\*\*\s*(@\S*|Pending)/i)[1]
+  # Extract the Reviewers from the issue body
+  def reviewers
+    body.match(/Reviewers?:\*\*\s*(.+?)\r?\n/)[1].split(", ") - ["Pending"]
   end
 end

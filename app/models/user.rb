@@ -1,7 +1,8 @@
 class User < ActiveRecord::Base
 
   has_many :papers
-
+  has_one :editor
+  
   before_create :set_sha
 
   def self.from_omniauth(auth)

@@ -11,7 +11,14 @@ class HomeController < ApplicationController
   end
 
   def dashboard
+    if params[:editor]
+      @editor = Editor.find_by_login(params[:editor])
+    else
+      @editor = Editor.first
+    end
+
     @accepted_papers = Paper.unscoped.visible.group_by_month(:accepted_at).count
+    @editor_papers = Paper.unscoped.where(:editor => @editor).visible.group_by_month(:accepted_at).count
   end
 
   def update_profile

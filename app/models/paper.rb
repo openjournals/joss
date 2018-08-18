@@ -25,11 +25,11 @@ class Paper < ActiveRecord::Base
     end
 
     event :start_meta_review do
-      transitions :from => :submitted, :to => :review_pending, :after => :create_meta_review_issue
+      transitions :from => :submitted, :to => :review_pending, :if => :create_meta_review_issue
     end
 
     event :start_review do
-      transitions :from => :review_pending, :to => :under_review, :after => :create_review_issue
+      transitions :from => :review_pending, :to => :under_review, :if => :create_review_issue
     end
 
     event :accept do
@@ -199,6 +199,8 @@ class Paper < ActiveRecord::Base
     end
 
     return false if meta_review_issue_id
+    return false unless editor = Editor.find_by_login(striped_handle)
+
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[PRE REVIEW]: #{self.title}",
                                 meta_review_body(editor_handle),
@@ -206,6 +208,7 @@ class Paper < ActiveRecord::Base
                                   :labels => "pre-review" })
 
     set_meta_review_issue(issue.number)
+    set_editor(editor)
   end
 
   # Update the Paper meta_review_issue_id field

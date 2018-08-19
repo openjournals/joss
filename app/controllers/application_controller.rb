@@ -22,6 +22,15 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def require_editor
+    require_user
+    if current_user && current_user.editor.nil?
+      flash[:error] = "You are not permitted to view that page"
+      redirect_to(:root)
+      false # throw :abort
+    end
+  end
+
   def require_complete_profile
     if !current_user.profile_complete?
       redirect_back(:notice => "Please add an email address to your account before submitting", :fallback_location => root_path)

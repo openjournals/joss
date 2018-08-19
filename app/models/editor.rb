@@ -4,6 +4,9 @@ class Editor < ActiveRecord::Base
   validates :last_name, presence: true
   validates :login, presence: true
 
+  belongs_to :user
+  has_many :papers
+
   before_save :clear_title, if: :board_removed?
   before_save :format_login, if: :login_changed?
 

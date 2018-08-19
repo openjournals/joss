@@ -45,6 +45,7 @@ namespace :utils do
         end
 
         paper.update_attribute(:editor_id, editor.id)
+        paper.update_attribute(:reviewers, review.reviewers)
       end
     end
   end

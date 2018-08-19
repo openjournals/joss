@@ -166,6 +166,13 @@ class Paper < ActiveRecord::Base
 
     set_review_issue(issue.number)
     set_editor(editor)
+    set_reviewers(reviewers)
+  end
+
+  # Update the paper with the reviewer GitHub handles
+  def set_reviewers(reviewers)
+    reviewers = reviewers.split(',')
+    self.update_attribute(:reviewers, reviewers)
   end
 
   # Updated the paper with the editor_id

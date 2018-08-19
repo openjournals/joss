@@ -109,6 +109,7 @@ describe PapersController, :type => :controller do
 
       expect(response).to be_created
       expect(editor.papers.count).to eq(1)
+      expect(paper.reload.reviewers).to eq(['mickey'])
     end
 
     it "with the correct API key and multiple reviewers" do
@@ -124,6 +125,7 @@ describe PapersController, :type => :controller do
       post :api_start_review, params: {:secret => "mooo", :id => 1234, :reviewers => "mickey,minnie", :editor => "mouse"}
       expect(response).to be_created
       expect(editor.papers.count).to eq(1)
+      expect(paper.reload.reviewers).to eq(['mickey', 'minnie'])
     end
   end
 

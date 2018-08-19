@@ -1,6 +1,5 @@
 require "util/console_extensions"
 include ConsoleExtensions
-require 'pry'
 
 namespace :utils do
 

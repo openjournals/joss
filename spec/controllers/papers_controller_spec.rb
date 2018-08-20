@@ -28,22 +28,6 @@ describe PapersController, :type => :controller do
       expect(response).to be_redirect
     end
 
-    it "LOGGED IN and with correct params BUT with invalid editor handle" do
-      user = create(:admin_user)
-      allow(controller).to receive_message_chain(:current_user).and_return(user)
-
-      author = create(:user)
-      paper = create(:paper, :user_id => author.id)
-
-      fake_issue = Object.new
-      allow(fake_issue).to receive(:number).and_return(1)
-      allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
-
-      expect {
-        post :start_meta_review, params: {:id => paper.sha, :editor => "joss"}
-      }.to raise_error(AASM::InvalidTransition)
-    end
-
     it "LOGGED IN and with correct params" do
       user = create(:admin_user)
       editor = create(:editor, :login => "josseditor")

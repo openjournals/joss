@@ -171,7 +171,7 @@ class Paper < ActiveRecord::Base
 
   # Update the paper with the reviewer GitHub handles
   def set_reviewers(reviewers)
-    reviewers = reviewers.split(',')
+    reviewers = reviewers.split(',').each {|r| r.prepend('@') unless r.start_with?('@') }
     self.update_attribute(:reviewers, reviewers)
   end
 

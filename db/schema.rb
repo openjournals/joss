@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180816192335) do
+ActiveRecord::Schema.define(version: 20180820150654) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -30,6 +30,7 @@ ActiveRecord::Schema.define(version: 20180816192335) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id"
+    t.index ["user_id"], name: "index_editors_on_user_id"
   end
 
   create_table "papers", id: :serial, force: :cascade do |t|
@@ -54,6 +55,8 @@ ActiveRecord::Schema.define(version: 20180816192335) do
     t.string "kind"
     t.integer "editor_id"
     t.string "reviewers", default: [], array: true
+    t.index ["editor_id"], name: "index_papers_on_editor_id"
+    t.index ["reviewers"], name: "index_papers_on_reviewers", using: :gin
     t.index ["sha"], name: "index_papers_on_sha"
     t.index ["user_id"], name: "index_papers_on_user_id"
   end

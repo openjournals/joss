@@ -111,6 +111,22 @@ describe PapersController, :type => :controller do
       expect(editor.papers.count).to eq(1)
       expect(paper.reload.reviewers).to eq(['@mickey', '@minnie'])
     end
+
+    it "with the correct API key and multiple reviewers should strip whitespace" do
+      user = create(:user)
+      editor = create(:editor, :login => "mouse")
+      editing_user = create(:user, :editor => editor)
+
+      paper = create(:review_pending_paper, :state => "review_pending", :meta_review_issue_id => 1234, :user_id => user.id)
+      fake_issue = Object.new
+      allow(fake_issue).to receive(:number).and_return(1)
+      allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
+
+      post :api_start_review, params: {:secret => "mooo", :id => 1234, :reviewers => "  white   ,space   ", :editor => "mouse"}
+      expect(response).to be_created
+      expect(editor.papers.count).to eq(1)
+      expect(paper.reload.reviewers).to eq(['@white', '@space'])
+    end
   end
 
   describe "POST #api_deposit" do

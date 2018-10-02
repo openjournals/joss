@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180820150654) do
+ActiveRecord::Schema.define(version: 20180929182512) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -55,6 +55,7 @@ ActiveRecord::Schema.define(version: 20180820150654) do
     t.string "kind"
     t.integer "editor_id"
     t.string "reviewers", default: [], array: true
+    t.text "activities"
     t.index ["editor_id"], name: "index_papers_on_editor_id"
     t.index ["reviewers"], name: "index_papers_on_reviewers", using: :gin
     t.index ["sha"], name: "index_papers_on_sha"

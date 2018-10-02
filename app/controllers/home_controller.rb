@@ -1,13 +1,13 @@
 class HomeController < ApplicationController
   before_action :require_user, :only => %w(profile update_profile)
-  before_action :require_editor, :only => %w(dashboard)
+  before_action :require_editor, :only => %w(dashboard reviews incoming stats all)
+  layout "dashboard", :only =>  %w(dashboard reviews incoming stats all)
 
   def index
     @papers = Paper.visible.limit(10)
   end
 
   def about
-
   end
 
   def dashboard
@@ -22,6 +22,39 @@ class HomeController < ApplicationController
 
     @accepted_papers = Paper.unscoped.visible.group_by_month(:accepted_at).count
     @editor_papers = Paper.unscoped.where(:editor => @editor).visible.group_by_month(:accepted_at).count
+  end
+
+  def incoming
+    @active_tab = "incoming"
+    @papers = Paper.in_progress.where(:editor => nil).paginate(
+                :page => params[:page],
+                :per_page => 10
+              )
+    render template: "home/reviews"
+  end
+
+  def reviews
+    if params[:editor]
+      @active_tab =
+      @editor = Editor.find_by_login(params[:editor])
+      @papers = Paper.in_progress.where(:editor => @editor).paginate(
+                  :page => params[:page],
+                  :per_page => 10
+                )
+    else
+      @papers = Paper.everything.paginate(
+                  :page => params[:page],
+                  :per_page => 10
+                )
+    end
+  end
+
+  def all
+    @papers = Paper.everything.paginate(
+                :page => params[:page],
+                :per_page => 10
+              )
+    render template: "home/reviews"
   end
 
   def update_profile

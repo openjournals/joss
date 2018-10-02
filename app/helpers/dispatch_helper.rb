@@ -1,0 +1,120 @@
+module DispatchHelper
+
+  def handle(payload)
+    parser = PayloadParser.new(payload)
+
+    # Exit early if the paper doesn't exist
+    return false unless parser.paper
+
+    parser.parse_payload!
+  end
+
+  class PayloadParser
+    attr_accessor :payload
+    attr_accessor :issue_number
+    attr_accessor :action
+
+    def initialize(payload)
+      @payload = payload
+      @issue_number = payload['issue']['number']
+      @action = payload['action']
+
+      initialize_activities if (paper && paper.activities.empty?)
+    end
+
+    def paper
+      @paper ||= Paper.where('review_issue_id = ? OR meta_review_issue_id = ?',
+                              issue_number,
+                              issue_number).first
+    end
+
+    def sender
+      payload['sender']['login']
+    end
+
+    def title
+      payload['issue']['title']
+    end
+
+    def comment_body
+      payload['comment']['body']
+    end
+
+    def commented_at
+      payload['comment']['created_at']
+    end
+
+    def comment_url
+      payload['comment']['created_at']
+    end
+
+    def pre_review?
+      title.match(/^\[PRE REVIEW\]:/)
+    end
+
+    # Has the review issue just been opened? If so, don't do anything.
+    def opened?
+      action == 'opened'
+    end
+
+    def initialize_activities
+      activities = {
+        'issues' => {
+          'commenters' => {
+            'pre-review' => {},
+            'review' => {}
+          },
+          'comments' => []
+        }
+      }
+
+      paper.activities = activities
+      paper.save
+    end
+
+    # Parse the incoming payload and do something with it...
+    def parse_payload!
+      return if opened?
+      if pre_review?
+        kind = 'pre-review'
+        return if issue_number != paper.meta_review_issue_id
+      else
+        kind = 'review'
+        return if issue_number != paper.review_issue_id
+      end
+
+      issues['comments'].unshift(
+        'author' => sender,
+        'comment' => comment_body,
+        'commented_at' => commented_at,
+        'comment_url' => comment_url,
+        'kind' => kind
+      )
+
+      # Something has gone wrong if this isn't the case...
+      if issues['commenters'][kind].has_key?(sender)
+        issues['commenters'][kind][sender] += 1
+      else
+        issues['commenters'][kind].merge!(sender => 1)
+      end
+
+      # Only keep the last 5 comments
+      issues['comments'] = issues['comments'].take(5)
+
+      paper.save
+    end
+
+    # For each author,
+    def update_comment_counts
+      paper.activities
+    end
+
+    def issues
+      paper.activities['issues']
+    end
+
+    def update_comments(comment)
+
+    end
+  end
+end

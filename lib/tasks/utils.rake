@@ -3,6 +3,116 @@ include ConsoleExtensions
 
 namespace :utils do
 
+  def utils_initialize_activities(paper)
+    activities = {
+      'issues' => {
+        'commenters' => {
+          'pre-review' => {},
+          'review' => {}
+        },
+        'comments' => []
+      }
+    }
+
+    paper.activities = activities
+    paper.save
+  end
+
+  # Parse the incoming payload and do something with it...
+  def utils_parse_payload!(paper, comment, pre_review)
+    sender = comment.user.login
+    comment_body = comment.body
+    commented_at = comment.created_at
+    comment_url = comment.html_url
+
+    issues = paper.activities['issues']
+
+    if pre_review
+      kind = 'pre-review'
+    else
+      kind = 'review'
+    end
+
+    issues['comments'].unshift(
+      'author' => sender,
+      'comment' => comment_body,
+      'commented_at' => commented_at,
+      'comment_url' => comment_url,
+      'kind' => kind
+    )
+
+    # Something has gone wrong if this isn't the case...
+    if issues['commenters'][kind].has_key?(sender)
+      issues['commenters'][kind][sender] += 1
+    else
+      issues['commenters'][kind].merge!(sender => 1)
+    end
+
+    # Only keep the last 5 comments
+    issues['comments'] = issues['comments'].take(5)
+
+    # Finally save the paper
+    paper.save
+  end
+
+  desc "Populate activities"
+  task :populate_activities => :environment do
+    reviews_repo = Rails.application.settings["reviews"]
+
+    puts "Starting with in progress papers"
+    Paper.in_progress.each do |paper|
+      puts "Working with #{paper.meta_review_issue_id} "
+
+      pre_review_comments = GITHUB.issue_comments(reviews_repo, paper.meta_review_issue_id)
+      utils_initialize_activities(paper)
+
+      pre_review_comments.each do |comment|
+        utils_parse_payload!(paper, comment, pre_review=true)
+      end
+
+      next if paper.review_issue_id.nil?
+
+      review_comments = GITHUB.issue_comments(reviews_repo, paper.review_issue_id)
+      review_comments.each do |comment|
+        utils_parse_payload!(paper, comment, pre_review=false)
+      end
+    end
+
+    puts "Next doing accepted papers"
+    Paper.visible.each do |paper|
+      puts "Working with #{paper.id}"
+
+      utils_initialize_activities(paper)
+
+      if paper.meta_review_issue_id
+        # Initialize the activities hash
+
+        pre_review_comments = GITHUB.issue_comments(reviews_repo, paper.meta_review_issue_id)
+
+        pre_review_comments.each do |comment|
+          utils_parse_payload!(paper, comment, pre_review=true)
+        end
+      end
+
+      # Skip if there's no review issue
+      next if paper.review_issue_id.nil?
+
+      review_comments = GITHUB.issue_comments(reviews_repo, paper.review_issue_id)
+      review_comments.each do |comment|
+        utils_parse_payload!(paper, comment, pre_review=false)
+      end
+    end
+  end
+
+  desc "Clear activities"
+  task :clear_activities => :environment do
+    Paper.all.each do |paper|
+      paper.activities = nil
+      paper.save
+    end
+  end
+
+
   desc "Add user_ids to editors"
   task :add_user_ids => :environment do
     Editor.all.each do |e|

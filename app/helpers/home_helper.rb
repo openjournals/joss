@@ -5,7 +5,7 @@ module HomeHelper
   end
 
   def card_activity(paper)
-    return "No activity" if paper.activities['issues'].empty?
+    return "No activity" if paper.activities.nil?
     return "No activity" if paper.activities['issues']['commenters'].empty?
     capture do
       if !paper.activities['issues']['comments'].empty?

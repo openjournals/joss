@@ -1,8 +1,20 @@
 module HomeHelper
-
   def current_class?(test_path)
     return 'nav-link active' if request.path == test_path
     'nav-link'
+  end
+
+  def card_activity(paper)
+    return "No activity" if paper.activities['issues']['commenters'].empty?
+    capture do
+      if !paper.activities['issues']['comments'].empty?
+        concat content_tag(:strong, "Recent comments", :style => "padding-bottom: 5px;")
+        paper.activities['issues']['comments'].each do |comment|
+          concat(content_tag(:p, truncate(comment['comment'], :length => 120), :style => "padding: 0px; margin-bottom: 0px;"))
+          concat(content_tag(:p, "#{time_ago_in_words(comment['commented_at']).capitalize} ago (@#{comment['author']}). #{comment_link(comment)}".html_safe, :style => "padding: 0px; margin: 0px 0px 10px 0px; font-style: italic;"))
+        end
+      end
+    end
   end
 
   def last_comment_for(paper)
@@ -11,7 +23,7 @@ module HomeHelper
     last_comment = comments.sort_by {|c| c['commented_at']}.last
 
     if last_comment
-      "#{github_user(last_comment['author'])} #{time_ago_in_words(last_comment ['commented_at'])} ago. #{comment_link(last_comment)}".html_safe
+      "#{github_user(last_comment['author'])} #{time_ago_in_words(last_comment ['commented_at'])} ago,  #{comment_link(last_comment)}".html_safe
     else
       return "No recent comments"
     end

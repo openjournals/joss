@@ -62,6 +62,7 @@ namespace :utils do
     puts "Starting with in progress papers"
     Paper.in_progress.each do |paper|
       puts "Working with #{paper.meta_review_issue_id} "
+      next unless paper.meta_review_issue_id
 
       pre_review_comments = GITHUB.issue_comments(reviews_repo, paper.meta_review_issue_id)
       utils_initialize_activities(paper)

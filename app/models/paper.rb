@@ -206,6 +206,7 @@ class Paper < ActiveRecord::Base
     end
 
     return false if meta_review_issue_id
+    return false unless editor = Editor.find_by_login(editor_handle)
 
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[PRE REVIEW]: #{self.title}",
@@ -213,6 +214,7 @@ class Paper < ActiveRecord::Base
                                 { :assignee => striped_handle,
                                   :labels => "pre-review" })
 
+    set_editor(editor) unless striped_handle == "Pending"
     set_meta_review_issue(issue.number)
   end
 

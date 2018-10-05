@@ -217,7 +217,6 @@ class Paper < ActiveRecord::Base
         return false
       end
     end
-    return false unless editor = Editor.find_by_login(editor_handle)
 
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[PRE REVIEW]: #{self.title}",

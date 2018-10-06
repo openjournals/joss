@@ -58,7 +58,7 @@ namespace :utils do
   desc "Populate editors and reviewers"
   task :populate_editors_and_reviewers => :environment do
     reviews_repo = Rails.application.settings["reviews"]
-    Paper.everything.where('id < 255').each do |paper|
+    Paper.everything.each do |paper|
       puts "Paper: #{paper.id}"
       if paper.review_issue_id
         issue = GITHUB.issue(reviews_repo, paper.review_issue_id)

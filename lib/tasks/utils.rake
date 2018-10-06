@@ -55,6 +55,41 @@ namespace :utils do
     paper.save
   end
 
+  desc "Populate editors and reviewers"
+  task :populate_editors_and_reviewers => :environment do
+    reviews_repo = Rails.application.settings["reviews"]
+    Paper.everything.where('id < 255').each do |paper|
+      puts "Paper: #{paper.id}"
+      if paper.review_issue_id
+        issue = GITHUB.issue(reviews_repo, paper.review_issue_id)
+
+        editor_handle = issue.body.match(/\*\*Editor:\*\*\s*.@(\S*)/)[1]
+        reviewers = issue.body.match(/Reviewers?:\*\*\s*(.+?)\r?\n/)[1].split(", ") - ["Pending"]
+
+        if editor_handle == "biorelated"
+          editor = Editor.find_by_login "george-githinji"
+        else
+          editor = Editor.find_by_login(editor_handle)
+        end
+
+        if paper.editor && (paper.editor.login != editor.login)
+          puts "WARNING: Changing editor from #{paper.editor.login} to #{editor.login}"
+        end
+
+        if paper.reviewers != reviewers.each(&:strip!)
+          puts "WARNING: Changing reviewers from #{paper.reviewers} to #{reviewers.each(&:strip!)}"
+        end
+
+        paper.set_editor(editor)
+        paper.set_reviewers(reviewers.join(','))
+
+        puts "Paper: #{paper.id}, Editor: #{editor.login}, Reviewers: #{reviewers}"
+      else
+        puts "No review_issue_id for #{paper.id}"
+      end
+    end
+  end
+
   desc "Populate activities"
   task :populate_activities => :environment do
     reviews_repo = Rails.application.settings["reviews"]

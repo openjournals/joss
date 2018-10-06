@@ -4,7 +4,7 @@ describe Paper do
   before(:each) do
     Paper.destroy_all
   end
-
+  
   it "belongs to the submitting author" do
     association = Paper.reflect_on_association(:submitting_author)
     expect(association.macro).to eq(:belongs_to)
@@ -89,22 +89,33 @@ describe Paper do
   end
 
   context "when starting review" do
-    let(:user) { create(:user) }
-
     it "should initially change the paper state to review_pending" do
-      paper = create(:submitted_paper_with_sha, :submitting_author => user)
-      allow(paper).to receive(:create_meta_review_issue) { true }
+      editor = create(:editor, :login => "arfon")
+      user = create(:user, :editor => editor)
+      submitting_author = create(:user)
+
+      paper = create(:submitted_paper_with_sha, :submitting_author => submitting_author)
+      fake_issue = Object.new
+      allow(fake_issue).to receive(:number).and_return(1)
+      allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
       paper.start_meta_review(nil, 'arfon')
       expect(paper.state).to eq('review_pending')
+      expect(paper.editor).to eq(editor)
     end
 
     it "should then allow for the paper to be moved into the under_review state" do
-      paper = create(:review_pending_paper, :submitting_author => user)
-      allow(paper).to receive(:create_review_issue) { true }
+      editor = create(:editor, :login => "arfoneditor")
+      user = create(:user, :editor => editor)
+      submitting_author = create(:user)
+      paper = create(:review_pending_paper, :submitting_author => submitting_author)
+      fake_issue = Object.new
+      allow(fake_issue).to receive(:number).and_return(1)
+      allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
       paper.start_review(nil, 'arfoneditor', 'bobthereviewer')
       expect(paper.state).to eq('under_review')
+      expect(paper.editor).to eq(editor)
     end
   end
 

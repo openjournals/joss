@@ -208,6 +208,17 @@ class Paper < ActiveRecord::Base
 
     return false if meta_review_issue_id
 
+    # If an editor handle has been passed then look up the editor
+    if !editor_handle.blank?
+      if editor = Editor.find_by_login(editor_handle)
+        set_editor(editor)
+      else
+        # If we've been passed an editor handle but can't find the editor we
+        # should fail here.
+        return false
+      end
+    end
+
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[PRE REVIEW]: #{self.title}",
                                 meta_review_body(editor_handle),

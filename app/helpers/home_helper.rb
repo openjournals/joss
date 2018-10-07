@@ -9,7 +9,7 @@ module HomeHelper
     return "No activity" if paper.activities['issues']['commenters'].empty?
     capture do
       if !paper.activities['issues']['comments'].empty?
-        if paper.activities['issues']['last_edits'].keys.any?
+        if paper.activities['issues']['last_edits'] && paper.activities['issues']['last_edits'].keys.any?
           concat content_tag(:strong, "Recent activity", :style => "padding-bottom: 5px;")
           paper.activities['issues']['last_edits'].each do |user,time|
             concat(content_tag(:p, "#{user}, #{time_ago_in_words(time)} ago", :style => "padding: 0px; margin: 0px 0px 10px 0px;"))

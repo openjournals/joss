@@ -57,6 +57,10 @@ module DispatchHelper
       action == 'opened'
     end
 
+    def edited?
+      action == 'edited'
+    end
+
     def initialize_activities
       activities = {
         'issues' => {
@@ -64,7 +68,8 @@ module DispatchHelper
             'pre-review' => {},
             'review' => {}
           },
-          'comments' => []
+          'comments' => [],
+          'last_edits' => {}
         }
       }
 
@@ -75,6 +80,17 @@ module DispatchHelper
     # Parse the incoming payload and do something with it...
     def parse_payload!
       return if opened?
+
+      if edited?
+        if issues.has_key?('last_edits')
+          issues['last_edits'][sender] = payload['issue']['updated_at']
+        else
+          issues['last_edits'] = {}
+          issues['last_edits'][sender] = payload['issue']['updated_at']
+        end
+        paper.save and return
+      end
+
       if pre_review?
         kind = 'pre-review'
         return if issue_number != paper.meta_review_issue_id

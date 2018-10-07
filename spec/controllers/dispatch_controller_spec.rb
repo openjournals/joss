@@ -14,6 +14,7 @@ describe DispatchController, :type => :controller do
   let(:whedon_review_opened) { json_fixture('whedon-review-opened.json') }
   let(:whedon_review_comment) { json_fixture('whedon-review-comment.json') }
   let(:editor_review_comment) { json_fixture('editor-review-comment.json') }
+  let(:whedon_review_edit) { json_fixture('whedon-review-edit.json') }
 
   let(:whedon_pre_review_comment_random) { json_fixture('whedon-pre-review-comment-random-review.json') }
 
@@ -27,7 +28,7 @@ describe DispatchController, :type => :controller do
 
     it "should initialize the activities when an issue is opened" do
       expect(response).to be_ok
-      expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[]}})
+      expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[], "last_edits"=>{}}})
     end
 
     it "should UPDATE the activities when an issue is then commented on" do
@@ -53,7 +54,20 @@ describe DispatchController, :type => :controller do
 
     it "should initialize the activities when a review issue is opened" do
       expect(response).to be_ok
-      expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[]}})
+      expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[], "last_edits"=>{}}})
+    end
+  end
+
+  describe "POST #github_recevier for REVIEW", :type => :request do
+    before do
+      @paper = create(:paper, :meta_review_issue_id => 78, :review_issue_id => 79)
+      post '/dispatch', params: whedon_review_edit, headers: { 'CONTENT_TYPE' => 'application/json', 'ACCEPT' => 'application/json' }
+      @paper.reload
+    end
+
+    it "should update the last_edits key" do
+      expect(response).to be_ok
+      expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[], "last_edits"=>{"comment-editor"=>"2018-10-06T16:18:56Z"}}})
     end
   end
 

@@ -12,7 +12,7 @@ module HomeHelper
         if paper.activities['issues']['last_edits'] && paper.activities['issues']['last_edits'].keys.any?
           concat content_tag(:strong, "Recent activity", :style => "padding-bottom: 5px;")
           paper.activities['issues']['last_edits'].each do |user,time|
-            concat(content_tag(:p, "#{user}, #{time_ago_in_words(time)} ago", :style => "padding: 0px; margin: 0px 0px 10px 0px;"))
+            concat(content_tag(:p, "Checklist edit by #{user}, #{time_ago_in_words(time)} ago", :style => "padding: 0px; margin: 0px 0px 10px 0px;"))
           end
         end
         concat content_tag(:strong, "Recent comments", :style => "padding-bottom: 5px;")

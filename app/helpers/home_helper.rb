@@ -15,7 +15,6 @@ module HomeHelper
             concat(content_tag(:p, "#{user}, #{time_ago_in_words(time)} ago"), :style => "padding: 0px; margin: 0px 0px 10px 0px;"))
           end
         end
-        paper.activities
         concat content_tag(:strong, "Recent comments", :style => "padding-bottom: 5px;")
         paper.activities['issues']['comments'].each do |comment|
           concat(content_tag(:p, truncate(comment['comment'], :length => 120), :style => "padding: 0px; margin-bottom: 0px;"))

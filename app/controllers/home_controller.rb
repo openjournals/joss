@@ -1,7 +1,7 @@
 class HomeController < ApplicationController
   before_action :require_user, :only => %w(profile update_profile)
   before_action :require_editor, :only => %w(dashboard reviews incoming stats all)
-  layout "dashboard", :only =>  %w(dashboard reviews incoming stats all)
+  layout "dashboard", :only =>  %w(dashboard reviews incoming stats all in_progress)
 
   def index
     @papers = Paper.visible.limit(10)
@@ -49,8 +49,16 @@ class HomeController < ApplicationController
     end
   end
 
+  def in_progress
+    @papers = Paper.in_progress.paginate(
+                :page => params[:page],
+                :per_page => 10
+              )
+    render template: "home/reviews"
+  end
+
   def all
-    @papers = Paper.everything.paginate(
+    @papers = Paper.all.paginate(
                 :page => params[:page],
                 :per_page => 10
               )

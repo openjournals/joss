@@ -25,7 +25,9 @@ Rails.application.routes.draw do
 
   get '/dashboard/all', :to => "home#all"
   get '/dashboard/incoming', :to => "home#incoming"
+  get '/dashboard/in_progress', :to => "home#in_progress"
   get '/dashboard', :to => "home#dashboard"
+
   get '/dashboard/*editor', :to => "home#reviews"
 
   post '/update_profile', :to => "home#update_profile"

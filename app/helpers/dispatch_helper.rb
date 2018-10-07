@@ -88,8 +88,7 @@ module DispatchHelper
           issues['last_edits'] = {}
           issues['last_edits'][sender] = payload['issue']['updated_at']
         end
-        paper.save
-        return
+        paper.save and return
       end
 
       if pre_review?

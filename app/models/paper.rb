@@ -209,7 +209,7 @@ class Paper < ActiveRecord::Base
 
     # If an editor handle has been passed then look up the editor
     if !editor_handle.blank?
-      if editor = Editor.find_by_login(editor_handle)
+      if editor = Editor.find_by_login(striped_handle)
         set_editor(editor)
       else
         # If we've been passed an editor handle but can't find the editor we

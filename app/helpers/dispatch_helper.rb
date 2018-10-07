@@ -45,7 +45,7 @@ module DispatchHelper
     end
 
     def comment_url
-      payload['comment']['created_at']
+      payload['comment']['html_url']
     end
 
     def pre_review?

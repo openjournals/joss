@@ -57,6 +57,11 @@ module DispatchHelper
       action == 'opened'
     end
 
+    # Has the review issue just been closed? If so, don't do anything.
+    def closed?
+      action == 'closed'
+    end
+
     def edited?
       action == 'edited'
     end
@@ -80,6 +85,7 @@ module DispatchHelper
     # Parse the incoming payload and do something with it...
     def parse_payload!
       return if opened?
+      return if closed?
 
       if edited?
         if issues.has_key?('last_edits')

@@ -67,7 +67,7 @@ module DispatchHelper
     end
 
     def assigned?
-      action == 'assigned'
+      action == 'assigned' || action == 'unassigned'
     end
 
     def labeled?

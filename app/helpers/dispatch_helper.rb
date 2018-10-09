@@ -70,6 +70,10 @@ module DispatchHelper
       action == 'assigned'
     end
 
+    def labeled?
+      action == 'labeled'
+    end
+
     def initialize_activities
       activities = {
         'issues' => {
@@ -89,6 +93,7 @@ module DispatchHelper
     # Parse the incoming payload and do something with it...
     def parse_payload!
       return if assigned?
+      return if labeled?
       return if opened?
       return if closed?
 

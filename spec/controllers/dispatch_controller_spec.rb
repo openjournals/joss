@@ -183,6 +183,89 @@ describe DispatchController, :type => :controller do
     end
   end
 
+  describe "POST #api_assign_editor" do
+    ENV["WHEDON_SECRET"] = "mooo"
+
+    it "with no API key" do
+      post :api_assign_editor
+      expect(response).to be_forbidden
+    end
+
+    it "with the correct API key and valid editor" do
+      editor = create(:editor, :login => "jimmy")
+      paper = create(:review_pending_paper, :state => "review_pending", :meta_review_issue_id => 1234)
+
+      post :api_assign_editor, params: {:secret => "mooo",
+                                        :id => 1234,
+                                        :editor => "jimmy"
+                                        }
+
+      expect(response).to be_success
+      expect(paper.reload.editor).to eql(editor)
+    end
+
+    it "with the correct API key and invalid editor" do
+      editor = create(:editor, :login => "jimmy")
+      paper = create(:review_pending_paper, :state => "review_pending", :meta_review_issue_id => 1234)
+
+      post :api_assign_editor, params: {:secret => "mooo",
+                                        :id => 1234,
+                                        :editor => "joey"
+                                        }
+
+      expect(response).to be_unprocessable
+      expect(paper.reload.editor).to be_nil
+    end
+
+    it "with the correct API key and invalid paper" do
+      editor = create(:editor, :login => "jimmy")
+      paper = create(:review_pending_paper, :state => "review_pending", :meta_review_issue_id => 1234)
+
+      post :api_assign_editor, params: {:secret => "mooo",
+                                        :id => 12345,
+                                        :editor => "jimmy"
+                                        }
+
+      expect(response).to be_unprocessable
+      expect(paper.reload.editor).to be_nil
+    end
+  end
+
+  describe "POST #api_assign_reviewers" do
+    ENV["WHEDON_SECRET"] = "mooo"
+
+    it "with no API key" do
+      post :api_assign_reviewers
+      expect(response).to be_forbidden
+    end
+
+    it "with the correct API key" do
+      editor = create(:editor, :login => "jimmy")
+      paper = create(:review_pending_paper, :state => "review_pending", :meta_review_issue_id => 1234)
+
+      post :api_assign_reviewers, params: {:secret => "mooo",
+                                          :id => 1234,
+                                          :reviewers => "joey, dave"
+                                          }
+
+      expect(response).to be_success
+      expect(paper.reload.reviewers).to eql(["@joey", "@dave"])
+    end
+
+    it "with the correct API key and invalid paper" do
+      editor = create(:editor, :login => "jimmy")
+      paper = create(:review_pending_paper, :state => "review_pending", :meta_review_issue_id => 1234)
+
+      post :api_assign_reviewers, params: {:secret => "mooo",
+                                          :id => 12345,
+                                          :reviewers => "mike"
+                                          }
+
+      expect(response).to be_unprocessable
+      expect(paper.reload.editor).to be_nil
+    end
+  end
+
   describe "POST #api_deposit" do
     ENV["WHEDON_SECRET"] = "mooo"
 

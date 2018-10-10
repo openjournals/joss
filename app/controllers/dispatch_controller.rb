@@ -2,7 +2,7 @@ class DispatchController < ApplicationController
   include DispatchHelper
   include SettingsHelper
 
-  protect_from_forgery :except => [ :api_start_review, :api_deposit ]
+  protect_from_forgery :except => [ :api_start_review, :api_deposit, :api_assign_editor, :api_assign_reviewers ]
   respond_to :json
 
   def github_recevier
@@ -28,6 +28,27 @@ class DispatchController < ApplicationController
 
   def origin_correct?(payload)
     payload['repository']['full_name'] == Rails.application.settings["reviews"]
+  end
+
+  def api_assign_editor
+    if params[:secret] == ENV['WHEDON_SECRET']
+      paper = Paper.find_by_meta_review_issue_id(params[:id])
+      editor = Editor.find_by_login(params[:editor])
+      return head :unprocessable_entity unless paper && editor
+      paper.set_editor(editor)
+    else
+      head :forbidden
+    end
+  end
+
+  def api_assign_reviewers
+    if params[:secret] == ENV['WHEDON_SECRET']
+      paper = Paper.find_by_meta_review_issue_id(params[:id])
+      return head :unprocessable_entity unless paper
+      paper.set_reviewers(params[:reviewers])
+    else
+      head :forbidden
+    end
   end
 
   def api_start_review

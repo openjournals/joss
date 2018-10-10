@@ -40,6 +40,8 @@ Rails.application.routes.draw do
   # API methods
   post '/papers/api_start_review', :to => 'dispatch#api_start_review'
   post '/papers/api_deposit', :to => 'dispatch#api_deposit'
+  post '/papers/api_assign_editor', :to => 'dispatch#api_assign_editor'
+  post '/papers/api_assign_reviewers', :to => 'dispatch#api_assign_reviewers'
   post '/dispatch', :to => 'dispatch#github_recevier', :format => 'json'
 
   root :to => 'home#index'

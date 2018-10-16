@@ -38,7 +38,7 @@ namespace :stats do
 
     sheet.rows.each_with_index do |row, index|
       puts "Working with #{index}"
-      next if index < 2
+      next if index < 3
       github_handle = sheet["A#{index}"]
 
       if handle = stats_clean_up_github_handle(github_handle)

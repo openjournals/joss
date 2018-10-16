@@ -5,6 +5,7 @@ gem "chartkick"
 gem 'bootsnap', require: false
 gem 'dotenv', '~> 2.2.1'
 gem 'github-markdown', '~> 0.6.9'
+gem 'google_drive'
 gem 'groupdate'
 gem 'honeybadger', '~> 3.2.0'
 gem 'html-pipeline', '~> 2.7.1'

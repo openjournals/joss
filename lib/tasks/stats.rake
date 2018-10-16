@@ -1,6 +1,5 @@
 require 'base64'
 require 'google_drive'
-require 'pry'
 
 def stats_clean_up_github_handle(github_handle)
   if github_handle.include?('https://github.com')

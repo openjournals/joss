@@ -28,7 +28,7 @@ class HomeController < ApplicationController
     @active_tab = "incoming"
     @papers = Paper.in_progress.where(:editor => nil).paginate(
                 :page => params[:page],
-                :per_page => 10
+                :per_page => 20
               )
     render template: "home/reviews"
   end
@@ -39,12 +39,12 @@ class HomeController < ApplicationController
       @editor = Editor.find_by_login(params[:editor])
       @papers = Paper.in_progress.where(:editor => @editor).paginate(
                   :page => params[:page],
-                  :per_page => 10
+                  :per_page => 20
                 )
     else
       @papers = Paper.everything.paginate(
                   :page => params[:page],
-                  :per_page => 10
+                  :per_page => 20
                 )
     end
   end
@@ -52,7 +52,7 @@ class HomeController < ApplicationController
   def in_progress
     @papers = Paper.in_progress.paginate(
                 :page => params[:page],
-                :per_page => 10
+                :per_page => 20
               )
     render template: "home/reviews"
   end
@@ -60,7 +60,7 @@ class HomeController < ApplicationController
   def all
     @papers = Paper.all.paginate(
                 :page => params[:page],
-                :per_page => 10
+                :per_page => 20
               )
     render template: "home/reviews"
   end

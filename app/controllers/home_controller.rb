@@ -1,6 +1,6 @@
 class HomeController < ApplicationController
   before_action :require_user, :only => %w(profile update_profile)
-  before_action :require_editor, :only => %w(dashboard reviews incoming stats all)
+  before_action :require_editor, :only => %w(dashboard reviews incoming stats all in_progress)
   layout "dashboard", :only =>  %w(dashboard reviews incoming stats all in_progress)
 
   def index

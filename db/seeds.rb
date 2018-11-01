@@ -153,8 +153,9 @@ Editor.create(
   description: <<-STR.strip_heredoc()
     Works on computer, computational, and data reseach at
     <a href="http://www.ncsa.illinois.edu/">NCSA</a>,
-    <a href="https://www.lis.illinois.edu">GSLIS</a>,
-    and <a href="http://www.ece.illinois.edu">ECE</a> at
+    <a href="http://www.cs.illinois.edu">CS</a>,
+    <a href="http://www.ece.illinois.edu">ECE</a>,
+    and the <a href="https://www.ischool.illinois.edu">iSchool</a> at
     <a href="http://illinois.edu">the University of Illinois at Urbana-Champaign</a>,
     and has a strong interest in studying common elements of how research is done by people using
     software and data.

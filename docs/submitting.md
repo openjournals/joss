@@ -206,8 +206,10 @@ Submission then is as simple as:
 - The software should have an **obvious** research application
 - You should be a major contributor to the software you are submitting
 - The software should be a significant contribution to the available open source software that either enables some new research challenges to be addressed or makes addressing research challenges significantly better (e.g., faster, easier, simpler)
-- The software should be feature complete (no half-baked solutions)
-Minor, 'utility' packages, including 'thin' API clients are not acceptable
+- The software should be feature complete (no half-baked solutions) and
+  designed for maintainable extension (not one-off modifications).
+  Minor ‘utility’ packages, including ‘thin’ API clients, are not
+  acceptable.
 
 In addition, the software associated with your submission must:
 

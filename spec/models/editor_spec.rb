@@ -44,4 +44,15 @@ RSpec.describe Editor, type: :model do
       expect { editor.save }.to change { editor.login }.to "somebody"
     end
   end
+
+  describe "#active editors" do
+    it "should exclude emeritus" do
+      editor_1 = create(:editor, login: "@board1", :kind => "board")
+      editor_2 = create(:editor, login: "@topic1", :kind => "topic")
+      editor_3 = create(:editor, login: "@retired1", :kind => "emeritus")
+
+      assert Editor.active.count == 2
+      assert Editor.emeritus.count == 1
+    end
+  end
 end

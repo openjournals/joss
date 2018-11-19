@@ -24,6 +24,10 @@ class Editor < ActiveRecord::Base
     categories.join(", ")
   end
 
+  def retired?
+    kind == "emeritus"
+  end
+
   def category_list=(new_list = "")
     self.categories = new_list.split(/,\s+/)
   end

@@ -40,6 +40,14 @@ module HomeHelper
 
   end
 
+  def stale_link
+    link_to("Most stale".html_safe, "#{request.path}?order=asc")
+  end
+
+  def fresh_link
+    link_to("Least stale".html_safe, "#{request.path}?order=desc")
+  end
+
   def comment_link(comment)
     link_to("View comment &rarr;".html_safe, comment['comment_url'], :target => "_blank")
   end

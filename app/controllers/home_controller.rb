@@ -25,19 +25,29 @@ class HomeController < ApplicationController
   end
 
   def incoming
+    if params[:order]
+      @papers = Paper.unscoped.in_progress.where(:editor => nil).order(:last_activity => params[:order]).paginate(
+                  :page => params[:page],
+                  :per_page => 20
+                )
+    else
+      @papers = Paper.in_progress.where(:editor => nil).paginate(
+                  :page => params[:page],
+                  :per_page => 20
+                )
+    end
+
     @active_tab = "incoming"
-    @papers = Paper.in_progress.where(:editor => nil).paginate(
-                :page => params[:page],
-                :per_page => 20
-              )
+
     render template: "home/reviews"
   end
 
   def reviews
     if params[:editor]
-      @active_tab =
-      @editor = Editor.find_by_login(params[:editor])
-      @papers = Paper.in_progress.where(:editor => @editor).paginate(
+      @active_tab = @editor = Editor.find_by_login(params[:editor])
+      sort_order = params[:order] ? params[:order] : 'desc'
+
+      @papers = Paper.unscoped.in_progress.where(:editor => @editor).order(:last_activity => sort_order).paginate(
                   :page => params[:page],
                   :per_page => 20
                 )
@@ -50,18 +60,33 @@ class HomeController < ApplicationController
   end
 
   def in_progress
-    @papers = Paper.in_progress.paginate(
-                :page => params[:page],
-                :per_page => 20
-              )
+    if params[:order]
+      @papers = Paper.unscoped.in_progress.order(:last_activity => params[:order]).paginate(
+                  :page => params[:page],
+                  :per_page => 20
+                )
+    else
+      @papers = Paper.in_progress.paginate(
+                  :page => params[:page],
+                  :per_page => 20
+                )
+    end
     render template: "home/reviews"
   end
 
   def all
-    @papers = Paper.all.paginate(
+    if params[:order]
+      @papers = Paper.unscoped.all.order(:last_activity => params[:order]).paginate(
                 :page => params[:page],
                 :per_page => 20
               )
+    else
+      @papers = Paper.all.paginate(
+                :page => params[:page],
+                :per_page => 20
+              )
+    end
+    
     render template: "home/reviews"
   end
 

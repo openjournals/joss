@@ -104,6 +104,7 @@ module DispatchHelper
           issues['last_edits'] = {}
           issues['last_edits'][sender] = payload['issue']['updated_at']
         end
+        paper.last_activity = payload['issue']['updated_at']
         paper.save and return
       end
 
@@ -133,6 +134,7 @@ module DispatchHelper
       # Only keep the last 5 comments
       issues['comments'] = issues['comments'].take(5)
 
+      paper.last_activity = commented_at
       paper.save
     end
 

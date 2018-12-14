@@ -3,6 +3,50 @@ include ConsoleExtensions
 
 namespace :utils do
 
+  desc "Populate activities"
+  task :update_activities => :environment do
+    Paper.all.each do |paper|
+      if activities = paper.activities
+        # Find the most recent comment
+
+        puts "working with #{paper.id}"
+        if activities['issues'].nil?
+          puts "No activity for #{paper.id}"
+        else
+          comments = activities['issues']['comments']
+          last_comment = comments.sort_by {|c| c['commented_at']}.last['commented_at']
+        end
+
+        if activities['last_edits'].nil?
+          if last_comment.nil?
+            paper.last_activity = paper.created_at
+            puts "Setting last activity to #{paper.created_at} for #{paper.id} (LAST RESORT)"
+
+          else
+            puts "No edits for #{paper.id}"
+            paper.last_activity = last_comment
+            puts "Setting last activity to #{last_comment} for #{paper.id}"
+          end
+        else
+          edits = activities['issues']['last_edits']
+          last_edit = edits.sort_by {|e, date| date }.last[1]
+
+          puts last_edit
+          puts last_comment
+          date = last_comment > last_edit ? last_comment : last_edit
+
+          paper.last_activity = date
+          puts "Setting last activity to #{date} for #{paper.id}"
+        end
+
+        paper.save
+      else # no paper activities
+        paper.last_activity = paper.created_at
+        paper.save
+      end
+    end
+  end
+
   def utils_initialize_activities(paper)
     activities = {
       'issues' => {

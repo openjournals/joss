@@ -2,11 +2,19 @@ class DispatchController < ApplicationController
   include DispatchHelper
   include SettingsHelper
 
+  require 'openssl'
+
   protect_from_forgery :except => [ :api_start_review, :api_deposit, :api_assign_editor, :api_assign_reviewers ]
   respond_to :json
 
   def github_recevier
-    payload = JSON.parse(request.body.read)
+    payload_body = request.body.read
+
+    unless verify_signature(payload_body)
+      head :unprocessable_entity and return
+    end
+
+    payload = JSON.parse(payload_body)
 
     if valid_webhook(payload)
       handle(payload)
@@ -16,11 +24,12 @@ class DispatchController < ApplicationController
     end
   end
 
-  def valid_webhook(payload)
-    signature = 'sha1=' + OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), ENV['GH_SECRET'], payload)
-return false unless Rack::Utils.secure_compare(signature, request.env['HTTP_X_HUB_SIGNATURE'])
+  def verify_signature(payload_body)
+    signature = 'sha1=' + OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), ENV['GH_SECRET'], payload_body)
+    return Rack::Utils.secure_compare(signature, request.env['HTTP_X_HUB_SIGNATURE'])
+  end
 
-    # TODO: validate that this webhook is indeed coming from GitHub
+  def valid_webhook(payload)
     if payload['issue'].nil?
       return false
     else

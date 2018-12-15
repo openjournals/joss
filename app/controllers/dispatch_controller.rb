@@ -17,6 +17,9 @@ class DispatchController < ApplicationController
   end
 
   def valid_webhook(payload)
+    signature = 'sha1=' + OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), ENV['GH_SECRET'], payload)
+return false unless Rack::Utils.secure_compare(signature, request.env['HTTP_X_HUB_SIGNATURE'])
+
     # TODO: validate that this webhook is indeed coming from GitHub
     if payload['issue'].nil?
       return false

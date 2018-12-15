@@ -22,7 +22,20 @@ describe DispatchController, :type => :controller do
 
   let(:whedon_pre_review_comment_random) { json_fixture('whedon-pre-review-comment-random-review.json') }
 
+  describe "POST #github_recevier for REVIEW with invalid HTTP_X_HUB_SIGNATURE", :type => :request do
+    before do
+      signature = "foobarbaz"
+      @paper = create(:paper, :meta_review_issue_id => 78, :review_issue_id => 79)
+      post '/dispatch', params: whedon_review_opened, headers: { 'CONTENT_TYPE' => 'application/json', 'ACCEPT' => 'application/json', 'HTTP_X_HUB_SIGNATURE' => signature }
+      @paper.reload
+    end
 
+    it "should initialize the activities when a review issue is opened" do
+      expect(response).to be_unprocessable
+      expect(@paper.activities).to eq({})
+    end
+  end
+  
   describe "POST #github_recevier for PRE-REVIEW", :type => :request do
     before do
       signature = set_signature(whedon_pre_review_opened)

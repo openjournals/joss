@@ -2,8 +2,6 @@ class DispatchController < ApplicationController
   include DispatchHelper
   include SettingsHelper
 
-  require 'openssl'
-
   protect_from_forgery :except => [ :api_start_review, :api_deposit, :api_assign_editor, :api_assign_reviewers ]
   respond_to :json
 

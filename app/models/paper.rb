@@ -1,5 +1,6 @@
 class Paper < ActiveRecord::Base
   include SettingsHelper
+  serialize :activities, Hash
 
   belongs_to  :submitting_author,
               :class_name => 'User',
@@ -61,7 +62,7 @@ class Paper < ActiveRecord::Base
   scope :visible, -> { where(:state => VISIBLE_STATES) }
   scope :everything, lambda { where('state NOT IN (?)', ['rejected', 'withdrawn']) }
 
-  before_create :set_sha
+  before_create :set_sha, :set_last_activity
   after_create :notify_editors
 
   validates_presence_of :title
@@ -286,5 +287,9 @@ private
 
   def set_sha
     self.sha ||= SecureRandom.hex
+  end
+
+  def set_last_activity
+    self.last_activity = Time.now
   end
 end

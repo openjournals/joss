@@ -9,7 +9,7 @@ Bundler.require(*Rails.groups)
 module Joss
   class Application < Rails::Application
     attr_accessor :settings
-    self.settings = YAML.load_file(Rails.root.join("config/settings.yml")).with_indifferent_access
+    self.settings = YAML.load_file(Rails.root.join("config/settings-#{Rails.env}.yml")).with_indifferent_access
 
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers

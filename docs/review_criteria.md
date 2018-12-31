@@ -20,7 +20,7 @@ As outlined in the [submission guidelines provided to authors](submitting.html#w
 
 ### Software license
 
-There should be an [OSI approved](https://opensource.org/licenses/alphabetical) license included in the repository. Common licenses such as those listed on http://choosealicense.com are preferred. Note there should be an actual license file present in the repository not just a reference to the license.
+There should be an [OSI approved](https://opensource.org/licenses/alphabetical) license included in the repository. Common licenses such as those listed on [choosealicense.com](https://choosealicense.com) are preferred. Note there should be an actual license file present in the repository not just a reference to the license.
 
 > **Acceptable:** A plain-text LICENSE file with the contents of an OSI approved license<br />            
 > **Not acceptable:** A phrase such as 'MIT license' in a README file

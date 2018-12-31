@@ -14,7 +14,7 @@ class HomeController < ApplicationController
     if params[:editor]
       @editor = Editor.find_by_login(params[:editor])
     else
-      @editor = Editor.first
+      @editor = current_user.editor
     end
 
     @reviewer = params[:reviewer].nil? ? "@arfon" : params[:reviewer]
@@ -86,7 +86,7 @@ class HomeController < ApplicationController
                 :per_page => 20
               )
     end
-    
+
     render template: "home/reviews"
   end
 

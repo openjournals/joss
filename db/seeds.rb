@@ -220,14 +220,12 @@ Editor.create(
   first_name: "Kevin M.",
   last_name: "Moerman",
   login: "Kevin-Mattheus-Moerman",
-  email: "",
+  email: "kmoerman@mit.edu",
   avatar_url: "/assets/editors/kevin-0259234e0f286791f360a601ebd7ef3bc0e9f5d95c853121c24d540bbb795f60.png",
-  categories: ["Image"],
-  url: "http://biomech.media.mit.edu/kevin-m-moerman/",
+  categories: ["Computational mechanics, Biomechanics, Finite Element Analysis, Meshing, Design Optimization, Inverse Analysis, Image-based Modelling"],
+  url: "https://kevinmoerman.org/",
   description: <<-STR.strip_heredoc()
-    Biomechanical and design engineer. Program manager for mechanical interfaces at
-    <a href="http://www.media.mit.edu/">MIT Media lab</a> department of
-    <a href="http://biomech.media.mit.edu/">Biomechatronics</a>. Developing computational methods for prosthetic device design. <a href="http://www.gibboncode.org/">GIBBON</a> code developer.
+    Computational mechanics and design engineer at NUI Galway, research affiliate <a href="http://www.media.mit.edu/">MIT Media's lab</a>. Developer for the <a href="http://www.gibboncode.org/">GIBBON</a> project.
   STR
 )
 

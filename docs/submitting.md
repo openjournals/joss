@@ -8,8 +8,10 @@ If you've already licensed your code and have good documentation then we expect 
 Before you submit we need you to:
 
 - Make software available in an open repository (GitHub, Bitbucket etc.) and include an [OSI approved open source license](https://opensource.org/licenses)
+- Make sure that the software complies with the [JOSS review criteria](review_criteria.html).
 - Author a short Markdown paper `paper.md` with a title, summary, author names, affiliations, and key references. See an example [here](https://github.com/arfon/fidgit/tree/master/paper).
 - (Optional) create a metadata file and include it in your repository describing your software. [This script](https://gist.github.com/arfon/478b2ed49e11f984d6fb) automates the generation of this metadata.
+
 
 ## What should my paper contain?
 

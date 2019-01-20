@@ -144,3 +144,17 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 ## Visualization of editorial flow
 
 ![Editorial flow](images/JOSS-flowchart.png)
+
+## Out of office
+
+Sometimes we need time away from our editing duties at JOSS. The [joss-reviews](https://github.com/openjournals/joss-reviews) repository has the [OoO bot](https://github.com/swinton/probot-ooo) installed which means you can mark yourself as out of the office (and unable to respond to reviews) for a period of time e.g.:
+
+Mark yourself as OoO in one of the reviews you're editing in the [joss-reviews](https://github.com/openjournals/joss-reviews) repository like this:
+
+```
+/ooo January 18 until February 2
+```
+
+Ooo bot will then respond to any mentions in the [joss-reviews](https://github.com/openjournals/joss-reviews) repository to let people know you're away.
+
+**Note, if you're planning on being out of the office for more than two weeks, please let the JOSS editorial team know.**

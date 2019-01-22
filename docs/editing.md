@@ -63,6 +63,10 @@ Steps:
 - Run `@wedon set <v1.x.x> as version` if the version was updated.
 - Add the “accepted” label.
 
+At that point, the EiC/AEiC will take over to publish the paper.
+
+It’s also a good idea to ask the authors to check the proof. We’ve had a few papers request a post-publication change of author list, for example—this requires a manual download/compile/deposit cycle and should be a rare event.
+
 ## Sample letter to invite reviewers
 
 ```

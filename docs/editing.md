@@ -57,11 +57,12 @@ Steps:
 - Get a new proof with the `@whedon generate pdf` command.
 - Download the proof, check all references have DOIs, follow the links and check the references.
 - Give the paper a proof-read and ask authors to fix typos.
-- Ask the author to make a Zenodo archive, and report the DOI in the Review thread.
+- Ask the author to make a Zenodo archive, and report the DOI in the review thread.
 - Check the Zenodo deposit has the correct metadata (title and author list), and request the author edit it if it doesn’t match the paper.
 - Run `@whedon set <doi> as archive`.
-- Run `@wedon set <v1.x.x> as version` if the version was updated.
+- Run `@whedon set <v1.x.x> as version` if the version was updated.
 - Add the “accepted” label.
+- Ping the `@joss-eics` team on the review thread letting them know the paper is ready to be accepted.
 
 At that point, the EiC/AEiC will take over to publish the paper.
 

@@ -53,6 +53,16 @@ When the reviewers are satisfied with the improvements, we ask that they confirm
 
 When a submission is accepted, we ask that the authors create an archive (on [Zenodo](https://zenodo.org/), [fig**share**](https://figshare.com/), or other) and post the archive DOI in the `REVIEW` issue. The editor should add the `accepted` label on the issue, run the command` @whedon set <archive doi> as archive`, and ping the EiC for final processing.
 
+Steps:
+- Get a new proof with the `@whedon generate pdf` command.
+- Download the proof, check all references have DOIs, follow the links and check the references.
+- Give the paper a proof-read and ask authors to fix typos.
+- Ask the author to make a Zenodo archive, and report the DOI in the Review thread.
+- Check the Zenodo deposit has the correct metadata (title and author list), and request the author edit it if it doesn’t match the paper.
+- Run `@whedon set <doi> as archive`.
+- Run `@wedon set <v1.x.x> as version` if the version was updated.
+- Add the “accepted” label.
+
 ## Sample letter to invite reviewers
 
 ```

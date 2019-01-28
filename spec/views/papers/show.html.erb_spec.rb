@@ -58,6 +58,7 @@ describe 'papers/show.html.erb' do
 
     it "shows the withdraw button to admins" do
       user = create(:user, :admin => true)
+      editor = create(:editor, :user => user)
       author = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
 

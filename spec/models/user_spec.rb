@@ -14,6 +14,14 @@ describe User do
     assert !user.admin?
   end
 
+  it "should know who the editors are" do
+    user = create(:user)
+    editor = create(:editor, :user => user)
+
+    expect(user.editor).to eq(editor)
+    expect(user.editor?).to eq(true)
+  end
+
   it "should know how to parameterize itself properly" do
     user = create(:user)
 

@@ -2,7 +2,7 @@ class User < ActiveRecord::Base
 
   has_many :papers
   has_one :editor
-  
+
   before_create :set_sha
 
   def self.from_omniauth(auth)
@@ -40,6 +40,10 @@ class User < ActiveRecord::Base
 
   def profile_complete?
     email.present? && github_username.present?
+  end
+
+  def editor?
+    self.editor ? true:false
   end
 
 private

@@ -56,6 +56,7 @@ When a submission is accepted, we ask that the authors create an archive (on [Ze
 Steps:
 - Get a new proof with the `@whedon generate pdf` command.
 - Download the proof, check all references have DOIs, follow the links and check the references.
+  - Whedon can help check references with the command `@whedon check references`
 - Give the paper a proof-read and ask authors to fix typos.
 - Ask the author to make a Zenodo archive, and report the DOI in the review thread.
 - Check the Zenodo deposit has the correct metadata (title and author list), and request the author edit it if it doesn’t match the paper.

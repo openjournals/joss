@@ -151,7 +151,7 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 - The reviewer reviews the paper and has a conversation with the author. The editor lurks on this conversation and comes in if needed for questions (or CoC issues).
 - The reviewer potentially asks for changes and the author makes changes. Everyone agrees it’s ready.
 
-**Step 11: The editor pings the EiC to get the paper published**
+**Step 11: The editor pings the EiC team to get the paper published**
 
 - To get the paper published ping the `@joss-eics` team on the review thread letting them know the paper is ready to be accepted.
 

@@ -56,6 +56,7 @@ When a submission is accepted, we ask that the authors create an archive (on [Ze
 Steps:
 - Get a new proof with the `@whedon generate pdf` command.
 - Download the proof, check all references have DOIs, follow the links and check the references.
+  - Whedon can help check references with the command `@whedon check references`
 - Give the paper a proof-read and ask authors to fix typos.
 - Ask the author to make a Zenodo archive, and report the DOI in the review thread.
 - Check the Zenodo deposit has the correct metadata (title and author list), and request the author edit it if it doesn’t match the paper.
@@ -150,9 +151,9 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 - The reviewer reviews the paper and has a conversation with the author. The editor lurks on this conversation and comes in if needed for questions (or CoC issues).
 - The reviewer potentially asks for changes and the author makes changes. Everyone agrees it’s ready.
 
-**Step 11: The editor pings the EiC to get the paper published**
+**Step 11: The editor pings the EiC team to get the paper published**
 
-- To get the paper published (mention EiC `@arfon` in the issue)
+- To get the paper published, ping the `@openjournals/joss-eics` team on the review thread letting them know the paper is ready to be accepted.
 
 **Step 12: Celebrate publication! Tweet! Thank reviewers! Say thank you on issue.**
 

@@ -4,7 +4,7 @@ class HomeController < ApplicationController
   layout "dashboard", :only =>  %w(dashboard reviews incoming stats all in_progress)
 
   def index
-    @papers = Paper.visible.limit(10)
+    @papers = Paper.visible.order(:accepted_at => :desc).limit(10)
   end
 
   def about

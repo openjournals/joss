@@ -48,7 +48,7 @@ class PapersController < ApplicationController
 
   def popular
     # TODO: Need to order by popularity here
-    @papers = Paper.visible.order(:accepted_at => :desc).paginate(
+    @papers = Paper.unscoped.visible.order(:accepted_at => :desc).paginate(
                 :page => params[:page],
                 :per_page => 10
               )

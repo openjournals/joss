@@ -63,7 +63,7 @@ Steps:
 - Run `@whedon set <doi> as archive`.
 - Run `@whedon set <v1.x.x> as version` if the version was updated.
 - Add the “accepted” label.
-- Ping the `@joss-eics` team on the review thread letting them know the paper is ready to be accepted.
+- Ping the `@openjournals/joss-eics` team on the review thread letting them know the paper is ready to be accepted.
 
 At that point, the EiC/AEiC will take over to publish the paper.
 

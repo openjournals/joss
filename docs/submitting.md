@@ -194,7 +194,6 @@ Example `paper.bib` file:
 
 Note that the paper ends with a References heading, and the references are built automatically from the content in the .bib file when they are mentioned in the paper body.
 
-
 ## Submitting your paper
 
 Submission then is as simple as:
@@ -221,6 +220,10 @@ In addition, the software associated with your submission must:
 - Permit individuals to create issues/file tickets against your repository
 
 JOSS publishes articles about research software. This definition includes software that: solves complex modeling problems in a scientific context (physics, mathematics, biology, medicine, social science, neuroscience, engineering); supports the functioning of research instruments or the execution of research experiments; extracts knowledge from large data sets; offers a mathematical library, or similar.
+
+## Submission fees
+
+There are no fees for submitting or publishing in JOSS. You can read more about our cost and sustainability model [here](http://joss.theoj.org/about#costs).
 
 ### Authorship
 

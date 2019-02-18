@@ -145,14 +145,17 @@ Once the reviewer(s) and editor have been assigned in the `pre-review` issue, th
 Whedon can reminders authors and reviewers after a specified amount of time to return to the review issue. Reminders can only be set by editors, and only for REVIEW issues. For example:
 
 ```text
+# Remind the reviewer in two weeks to return to the review
 @whedon remind @reviewer in 2 weeks
 ```
 
 ```text
+# Remind the reviewer in five days to return to the review
 @whedon remind @reviewer in 5 days
 ```
 
 ```text
+# Remind the author in two weeks to return to the review
 @whedon remind @author in 2 weeks
 ```
 

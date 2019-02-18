@@ -10,11 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20181213123534) do
+ActiveRecord::Schema.define(version: 2018_12_20_005508) do
 
   # These are extensions that must be enabled in order to support this database
-  enable_extension "plpgsql"
   enable_extension "hstore"
+  enable_extension "plpgsql"
 
   create_table "editors", id: :serial, force: :cascade do |t|
     t.string "kind", default: "topic", null: false
@@ -57,10 +57,14 @@ ActiveRecord::Schema.define(version: 20181213123534) do
     t.string "reviewers", default: [], array: true
     t.text "activities"
     t.datetime "last_activity"
+    t.string "tags", default: [], array: true
+    t.string "languages", default: [], array: true
     t.index ["editor_id"], name: "index_papers_on_editor_id"
+    t.index ["languages"], name: "index_papers_on_languages", using: :gin
     t.index ["last_activity"], name: "index_papers_on_last_activity"
     t.index ["reviewers"], name: "index_papers_on_reviewers", using: :gin
     t.index ["sha"], name: "index_papers_on_sha"
+    t.index ["tags"], name: "index_papers_on_tags", using: :gin
     t.index ["user_id"], name: "index_papers_on_user_id"
   end
 

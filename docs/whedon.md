@@ -167,7 +167,7 @@ Whedon can reminders authors and reviewers after a specified amount of time to r
 .. important:: For reviewers, the reminder will only be triggered if the reviewer's review is outstanding (i.e. outstanding checkboxes).
 ```
 
-### Assigning the software archive
+### Setting the software archive
 
 When a submission is accepted, we ask that the authors create an archive (on [Zenodo](https://zenodo.org/), [fig**share**](https://figshare.com/), or other) and post the archive DOI in the `REVIEW` issue. The editor should add the `accepted` label on the issue and ask `@whedon` to add the archive to the issue as follows:
 

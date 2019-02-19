@@ -146,21 +146,21 @@ Whedon can reminders authors and reviewers after a specified amount of time to r
 
 ```text
 # Remind the reviewer in two weeks to return to the review
-@whedon remind @reviewer in 2 weeks
+@whedon remind @reviewer in two weeks
 ```
 
 ```text
 # Remind the reviewer in five days to return to the review
-@whedon remind @reviewer in 5 days
+@whedon remind @reviewer in five days
 ```
 
 ```text
 # Remind the author in two weeks to return to the review
-@whedon remind @author in 2 weeks
+@whedon remind @author in two weeks
 ```
 
 ```eval_rst
-.. note:: Units of `day/days/week/weeks` are supported for reminders. In addition, only integer representations are supported (e.g. '2', not 'two').
+.. note:: Most units of times are understood by Whedon e.g. `hour/hours/day/days/week/weeks`.
 ```
 
 ```eval_rst

@@ -9,7 +9,7 @@ We like to think of JOSS as a 'developer friendly' journal. That is, if the subm
 
 For those submissions that don't quite meet the bar, please try to give clear feedback on how authors could improve their submission. A key goal of JOSS is to raise the quality of research software generally and you (the experienced reviewer) are well placed to give this feedback.
 
-A JOSS review involves checking submissions against a checklist of essential software features and details in the submitted paper.
+A JOSS review involves checking submissions against a checklist of essential software features and details in the submitted paper. This should be objective, not subjective; it should be based on the materials in the submission as perceived without distortion by personal feelings, prejudices, or interpretations.
 
 We encourage reviewers to file issues against the submitted repository's issue tracker. **When you have completed your review, please leave a comment in the review issue saying so.**
 

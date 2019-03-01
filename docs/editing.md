@@ -69,6 +69,19 @@ At that point, the EiC/AEiC will take over to publish the paper.
 
 It’s also a good idea to ask the authors to check the proof. We’ve had a few papers request a post-publication change of author list, for example—this requires a manual download/compile/deposit cycle and should be a rare event.
 
+## Processing of rOpenSci-reviewed and accepted submissions
+
+If a paper has already been reviewed and accepted by rOpenSci, the streamlined JOSS review process is:
+
+- Assign yourself as editor and reviewer
+- Add a comment in the pre-review issue pointing to the rOpenSci review
+- Start the review issue
+- Add a comment in the review issue pointing to the rOpenSci review
+- Compile the paper and check it looks ok
+- Tick off all the review checkboxes
+- Go to to the source code repo and grab the Zenodo DOI
+- Accept the paper
+
 ## Sample letter to invite reviewers
 
 ```

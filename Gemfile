@@ -10,7 +10,6 @@ gem 'groupdate'
 gem 'honeybadger', '~> 3.2.0'
 gem 'html-pipeline', '~> 2.7.1'
 gem 'commonmarker', '~> 0.17.7'
-gem 'octicons_helper', '~> 4.0'
 gem 'omniauth-orcid', '~> 2.0.2'
 gem 'octokit', '~> 4.3.0'
 gem 'pg', '~> 0.21.0'
@@ -22,6 +21,9 @@ gem 'sanitize', '~> 4.6.3'
 gem 'sass-rails', '~> 5.0.7'
 gem 'uglifier', '4.0.1'
 gem 'coffee-rails', '~> 4.2.2'
+
+# Use Bootstrap for the front-end
+gem 'bootstrap', '~> 4.3.1'
 
 # Use jquery as the JavaScript library
 gem 'jquery-rails', '~> 4.3.1'

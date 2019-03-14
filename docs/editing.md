@@ -25,7 +25,7 @@ The EiC assigns an editor (or a volunteering editor self-assigns) with the comma
 
 ### Finding reviewers
 
-At this point, the handling editor's job is to identify reviewer(s). We like to have two reviewers per submission. If the editor is comfortable with their own assessment of the submission, one reviewer may be sufficient. If the editor feels particularly unsure of the submission, maybe a third reviewer can be recruited.
+At this point, the handling editor's job is to identify reviewer(s) who have sufficient expertise in the field of software and of the field of the submission. We like to have two reviewers per submission. If the editor is comfortable with their own assessment of the submission, one reviewer may be sufficient. If the editor feels particularly unsure of the submission, maybe a third reviewer can be recruited.
 
 To recruit reviewers, the handling editor can ping candidates on Twitter, or mention them in the `PRE-REVIEW` issue with their GitHub handle. After expressing initial interest, candidate reviewers may need a longer explanation via email. See sample reviewer invitation email, below.
 
@@ -68,6 +68,19 @@ Steps:
 At that point, the EiC/AEiC will take over to publish the paper.
 
 It’s also a good idea to ask the authors to check the proof. We’ve had a few papers request a post-publication change of author list, for example—this requires a manual download/compile/deposit cycle and should be a rare event.
+
+## Processing of rOpenSci-reviewed and accepted submissions
+
+If a paper has already been reviewed and accepted by rOpenSci, the streamlined JOSS review process is:
+
+- Assign yourself as editor and reviewer
+- Add a comment in the pre-review issue pointing to the rOpenSci review
+- Start the review issue
+- Add a comment in the review issue pointing to the rOpenSci review
+- Compile the paper and check it looks ok
+- Tick off all the review checkboxes
+- Go to to the source code repo and grab the Zenodo DOI
+- Accept the paper
 
 ## Sample letter to invite reviewers
 

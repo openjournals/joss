@@ -15,7 +15,7 @@ Before you submit we need you to:
 
 ## What should my paper contain?
 
-JOSS welcomes submissions from broadly diverse research areas. For this reason, we request that authors include in the paper some sentences that would explain the software functionality and domain of use to a non-specialist reader. Your submission should probably be somewhere between 250-1000 words.
+JOSS welcomes submissions from broadly diverse research areas. For this reason, we require that authors include in the paper some sentences that would explain the software functionality and domain of use to a non-specialist reader. Your submission should probably be somewhere between 250-1000 words.
 
 In addition, your paper should include:
 

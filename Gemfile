@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'aasm', '~> 4.1.0'
+gem 'actionview', '>= 5.2.2.1'
 gem "chartkick"
 gem 'bootsnap', require: false
 gem 'dotenv', '~> 2.2.1'
@@ -15,7 +16,7 @@ gem 'omniauth-orcid', '~> 2.0.2'
 gem 'octokit', '~> 4.3.0'
 gem 'pg', '~> 0.21.0'
 gem 'will_paginate', '~> 3.1.6'
-gem 'rails', '5.2.2'
+gem 'rails', '5.2.2.1'
 gem 'responders'
 gem 'newrelic_rpm', '~> 4.6.0'
 gem 'sanitize', '~> 4.6.3'

@@ -117,10 +117,10 @@ Editor.create(
   categories: ["Geoscience", "geophysics"],
   url: "http://lindseyjh.ca/",
   description: <<-STR.strip_heredoc()
-    Geophysicist in the <a href="https://gif.eos.ubc.ca">Geophysical Inversion Facility</a> at the
-    <a href="https://www.ubc.ca/">University of British Columbia</a>. Her research background is in
-    computational geophysics and inverse problems. She contributes to geoscience-focused Python
-    packages and develops open-source educational resources in the geosciences.
+    Postdoctoral Researcher at the University of California Berkeley working on interactive computing with 
+    <a href="https://jupyter.org">Jupyter</a> for the geosciences. Her research background is in computational 
+    geophysics and inverse problems. She contributes to geoscience-focused Python packages and open-source 
+    educational resources.
   STR
 )
 

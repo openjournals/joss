@@ -8,9 +8,6 @@ Below is an example of the review checklist for the [Yellowbrick JOSS submission
 ```eval_rst
 .. important:: Note this section of our documentation only describes the JOSS review checklist. Authors and reviewers should consult the `review criteria <review_criteria.html>`_ to better understand how these checklist items should be interpreted.
 ```
-
-## Review checklist for @reviewer
-
 ### Conflict of interest
 
 - As the reviewer I confirm that I have read the [JOSS conflict of interest policy](https://github.com/openjournals/joss/blob/master/COI.md) and that there are no conflicts of interest for me to review this work.
@@ -46,9 +43,3 @@ Below is an example of the review checklist for the [Yellowbrick JOSS submission
 - **Authors:** Does the `paper.md` file include a list of authors with their affiliations?
 - **A statement of need:** Do the authors clearly state what problems the software is designed to solve and who the target audience is?
 - **References:** Do all archival references that should have a DOI list one (e.g., papers, datasets, software)?
-
-## Review checklist for @reviewer
-
-### Conflict of interest
-
-- As the reviewer I confirm that I have read the [JOSS conflict of interest policy](https://github.com/openjournals/joss/blob/master/COI.md) and that there are no conflicts of interest for me to review this work.

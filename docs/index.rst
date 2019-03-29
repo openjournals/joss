@@ -38,6 +38,7 @@ JOSS is a proud affiliate of the `Open Source Initiative <https://opensource.org
   submitting
   reviewer_guidelines
   review_criteria
+  review_checklist
 
 .. toctree::
   :caption: Editor Guides

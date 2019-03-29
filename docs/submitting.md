@@ -28,7 +28,7 @@ In addition, your paper should include:
 As this short list shows, JOSS papers are only permitted to contain a limited set of metadata (see header below), Statement of Need, Summary, and Reference sections. You can see an example accepted paper [here](https://raw.githubusercontent.com/adrn/gala/f6bb2532afeed3c0b0feea3037bf71a3f42b2a12/paper/paper.md). Given this paper format, a "full length" paper is not permitted, e.g., software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation.
 
 ```eval_rst
-.. important:: You paper will be reviewed by one or more reviewers in a public GitHub issue. Take a look at the `review criteria <review_criteria.html>`_ to better understand how your submission will be reviewed.
+.. important:: You paper will be reviewed by one or more reviewers in a public GitHub issue. Take a look at the `review checklist <review_checklist.html>`_ and  `review criteria <review_criteria.html>`_ to better understand how your submission will be reviewed.
 ```
 
 ## Example paper and bibliography

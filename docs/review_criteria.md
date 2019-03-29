@@ -18,6 +18,10 @@ As outlined in the [submission guidelines provided to authors](submitting.html#w
 
 ## Review items
 
+```eval_rst
+.. important:: Note, if you've not yet been involved in a JOSS review, you can see an example JOSS review checklist `here <review_checklist.html>`_. 
+```
+
 ### Software license
 
 There should be an [OSI approved](https://opensource.org/licenses/alphabetical) license included in the repository. Common licenses such as those listed on [choosealicense.com](https://choosealicense.com) are preferred. Note there should be an actual license file present in the repository not just a reference to the license.

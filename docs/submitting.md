@@ -90,8 +90,7 @@ used in graduate courses on Galactic dynamics to, e.g., provide interactive
 visualizations of textbook material [@Binney:2008]. The combination of speed,
 design, and support for Astropy functionality in ``Gala`` will enable exciting
 scientific explorations of forthcoming data releases from the *Gaia* mission
-[@gaia] by students and experts alike. The source code for ``Gala`` has been
-archived to Zenodo with the linked DOI: [@zenodo]
+[@gaia] by students and experts alike.
 
 # Mathematics
 
@@ -147,18 +146,6 @@ Example `paper.bib` file:
   	Publisher = {Princeton University Press},
   	Title = {{Galactic Dynamics: Second Edition}},
   	Year = 2008
-}
-
-@article{zenodo,
-  	Abstractnote = {Gala is a Python package for Galactic astronomy and gravitational dynamics. The bulk of the package centers around implementations of gravitational potentials, numerical integration, and nonlinear dynamics.},
-  	Author = {Adrian Price-Whelan and Brigitta Sipocz and Syrtis Major and Semyeong Oh},
-  	Date-Modified = {2017-08-13 14:14:18 +0000},
-  	Doi = {10.5281/zenodo.833339},
-  	Month = {Jul},
-  	Publisher = {Zenodo},
-  	Title = {adrn/gala: v0.2.1},
-  	Year = {2017},
-  	Bdsk-Url-1 = {http://dx.doi.org/10.5281/zenodo.833339}
 }
 
 @article{gaia,

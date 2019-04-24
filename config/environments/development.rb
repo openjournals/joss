@@ -40,4 +40,7 @@ Rails.application.configure do
   # config.action_view.raise_on_missing_translations = true
 
   config.cache_store = :memory_store
+
+    # Automatically inject JavaScript needed for LiveReload
+    config.middleware.insert_after(ActionDispatch::Static, Rack::LiveReload)
 end

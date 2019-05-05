@@ -4,7 +4,7 @@ describe Paper do
   before(:each) do
     Paper.destroy_all
   end
-  
+
   it "belongs to the submitting author" do
     association = Paper.reflect_on_association(:submitting_author)
     expect(association.macro).to eq(:belongs_to)
@@ -38,6 +38,7 @@ describe Paper do
     visible_paper_2 = create(:paper, :state => "superceded")
 
     expect(Paper.visible).to contain_exactly(visible_paper_1, visible_paper_2)
+    assert hidden_paper.invisible?
   end
 
   it "should exclude withdrawn and rejected papers" do
@@ -46,6 +47,7 @@ describe Paper do
     paper = create(:paper, :state => "accepted")
 
     expect(Paper.everything).to contain_exactly(paper)
+    expect(Paper.invisible).to contain_exactly(rejected_paper, withdrawn_paper)
   end
 
   # GitHub stuff

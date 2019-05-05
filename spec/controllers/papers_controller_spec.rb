@@ -151,6 +151,37 @@ describe PapersController, :type => :controller do
       expect(response.body).to match /404 Not Found/
       expect(response.status).to eq(404)
     end
+
+    it "should 404 for a paper that has been rejected" do
+      rejected_paper = create(:paper, :state => 'rejected')
+      get :show, params: {:id => rejected_paper.sha}, :format => "html"
+      expect(response.status).to eq(404)
+    end
+
+    it "should 404 for a paper that has just been submitted" do
+      submitted_paper = create(:paper, :state => 'submitted')
+      get :show, params: {:id => submitted_paper.sha}, :format => "html"
+      expect(response.status).to eq(404)
+    end
+
+    it "should be visible for a user who owns the paper" do
+      user = create(:user)
+      allow(controller).to receive_message_chain(:current_user).and_return(user)
+      submitted_paper = create(:paper, :state => 'submitted', :submitting_author => user)
+
+      get :show, params: {:id => submitted_paper.sha}, :format => "html"
+      expect(response.status).to eq(200)
+    end
+
+    it "should be visible for an admin" do
+      user = create(:user)
+      admin = create(:user, :admin => true)
+      allow(controller).to receive_message_chain(:current_user).and_return(admin)
+      submitted_paper = create(:paper, :state => 'submitted', :submitting_author => user)
+
+      get :show, params: {:id => submitted_paper.sha}, :format => "html"
+      expect(response.status).to eq(200)
+    end
   end
 
   describe "paper lookup" do

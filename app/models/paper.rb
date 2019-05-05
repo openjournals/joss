@@ -53,6 +53,12 @@ class Paper < ActiveRecord::Base
     "review_pending"
   ].freeze
 
+  INVISIBLE_STATES = [
+    "submitted",
+    "rejected",
+    "withdrawn"
+  ].freeze
+
   default_scope  { order(:created_at => :desc) }
   scope :recent, lambda { where('created_at > ?', 1.week.ago) }
   scope :submitted, lambda { where('state = ?', 'submitted') }
@@ -60,6 +66,7 @@ class Paper < ActiveRecord::Base
   scope :since, -> (date) { where('accepted_at >= ?', date) }
   scope :in_progress, -> { where(:state => IN_PROGRESS_STATES) }
   scope :visible, -> { where(:state => VISIBLE_STATES) }
+  scope :invisible, -> { where(:state => INVISIBLE_STATES) }
   scope :everything, lambda { where('state NOT IN (?)', ['rejected', 'withdrawn']) }
 
   before_create :set_sha, :set_last_activity
@@ -86,6 +93,10 @@ class Paper < ActiveRecord::Base
 
   def to_param
     sha
+  end
+
+  def invisible?
+    INVISIBLE_STATES.include?(state)
   end
 
   def pretty_repository_name

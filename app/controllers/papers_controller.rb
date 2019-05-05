@@ -140,6 +140,12 @@ class PapersController < ApplicationController
       @paper = Paper.find_by_sha!(params[:id])
     end
 
+    # Don't show the paper to anyone other than the submitting author or an
+    # admin.
+    if @paper.invisible?
+      head 404 and return unless can_see_hidden_paper?(@paper)
+    end
+
     render :layout => false
   end
 
@@ -193,5 +199,15 @@ class PapersController < ApplicationController
 
   def paper_params
     params.require(:paper).permit(:title, :repository_url, :archive_doi, :software_version, :suggested_editor, :body, :kind)
+  end
+
+  def can_see_hidden_paper?(paper)
+    return false unless current_user
+
+    if current_user.admin? || current_user.is_owner_of?(paper)
+      return true
+    else
+      return false
+    end
   end
 end

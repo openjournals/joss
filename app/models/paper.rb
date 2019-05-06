@@ -169,11 +169,12 @@ class Paper < ActiveRecord::Base
   def create_review_issue(editor_handle, reviewers)
     return false if review_issue_id
     return false unless editor = Editor.find_by_login(editor_handle)
+    assignees= reviewers.split(',') << editor_handle
 
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[REVIEW]: #{self.title}",
                                 review_body(editor_handle, reviewers),
-                                { :assignee => editor_handle,
+                                { :assignees => assignees,
                                   :labels => "review" })
 
     set_review_issue(issue.number)

@@ -173,7 +173,7 @@ class Paper < ActiveRecord::Base
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[REVIEW]: #{self.title}",
                                 review_body(editor_handle, reviewers),
-                                { :assignees => [assignees],
+                                { :assignees => [editor_handle],
                                   :labels => "review" })
 
     set_review_issue(issue.number)

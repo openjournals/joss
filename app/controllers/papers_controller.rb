@@ -151,8 +151,8 @@ class PapersController < ApplicationController
 
   def lookup
     paper = Paper.where('review_issue_id = ? OR meta_review_issue_id = ?', params[:id], params[:id]).first!
-    accepted_at = paper.accepted_at ? paper.accepted_at.strftime('%Y-%m-%d') : nil
-    response = {  :submitted => paper.created_at.strftime('%Y-%m-%d'),
+    accepted_at = paper.accepted_at ? paper.accepted_at.strftime('%d %B %Y') : nil
+    response = {  :submitted => paper.created_at.strftime('%d %B %Y'),
                   :accepted => accepted_at }
     render :json => response.to_json
   end

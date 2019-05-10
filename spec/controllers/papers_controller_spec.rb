@@ -189,7 +189,7 @@ describe PapersController, :type => :controller do
       submitted_paper = create(:paper, :state => 'submitted', :created_at => 3.days.ago, :meta_review_issue_id => 123)
 
       get :lookup, params: {:id => 123}
-      expect(JSON.parse(response.body)['submitted']).to eq(3.days.ago.strftime('%Y-%m-%d'))
+      expect(JSON.parse(response.body)['submitted']).to eq(3.days.ago.strftime('%d %B %Y'))
     end
 
     it "should 404 when passed an invalid id" do

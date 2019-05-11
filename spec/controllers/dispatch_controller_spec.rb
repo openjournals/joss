@@ -20,6 +20,8 @@ describe DispatchController, :type => :controller do
   let(:editor_review_comment) { json_fixture('editor-review-comment.json') }
   let(:whedon_review_edit) { json_fixture('whedon-review-edit.json') }
 
+  let(:whedon_review_labeled) { json_fixture('whedon-review-labeled.json') }
+
   let(:whedon_pre_review_comment_random) { json_fixture('whedon-pre-review-comment-random-review.json') }
 
   describe "POST #github_recevier for REVIEW with invalid HTTP_X_HUB_SIGNATURE", :type => :request do
@@ -35,7 +37,7 @@ describe DispatchController, :type => :controller do
       expect(@paper.activities).to eq({})
     end
   end
-  
+
   describe "POST #github_recevier for PRE-REVIEW", :type => :request do
     before do
       signature = set_signature(whedon_pre_review_opened)
@@ -64,6 +66,20 @@ describe DispatchController, :type => :controller do
 
       # expect(@paper.activities['issues']['review']['commenters']).to be_empty
       # expect(@paper.activities['issues']['review']['comments'].length).to eq(0)
+    end
+  end
+
+  describe "POST #github_recevier for REVIEW with labeling event", :type => :request do
+    before do
+      signature = set_signature(whedon_review_labeled)
+      @paper = create(:paper, :meta_review_issue_id => 78, :review_issue_id => 79, :labels => [{ "foo" => "efefef" }])
+      post '/dispatch', params: whedon_review_labeled, headers: { 'CONTENT_TYPE' => 'application/json', 'ACCEPT' => 'application/json', 'HTTP_X_HUB_SIGNATURE' => signature }
+      @paper.reload
+    end
+
+    it "should update the labels on the paper" do
+      expect(response).to be_ok
+      expect(@paper.labels).to eq({ "accepted" => "0052cc" })
     end
   end
 

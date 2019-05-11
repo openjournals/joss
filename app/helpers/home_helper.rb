@@ -1,4 +1,21 @@
 module HomeHelper
+  # How many papers should we show for an editor on the dashboard?
+  def in_progress_for_editor(papers)
+    ignored_state = "paused"
+    ignored_count = 0
+    papers.each do |p|
+      if p.labels.any? && p.labels.keys.include?(ignored_state)
+        ignored_count += 1
+      end
+    end
+
+    if ignored_count > 0
+      return "#{papers.count - ignored_count} (#{papers.count} inc. paused)"
+    else
+      return "#{papers.count}"
+    end
+  end
+
   def current_class?(test_path)
     return 'nav-link active' if request.path == test_path
     'nav-link'

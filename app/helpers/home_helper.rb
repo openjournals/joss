@@ -10,7 +10,7 @@ module HomeHelper
     end
 
     if ignored_count > 0
-      return "#{papers.count - ignored_count} (#{papers.count} inc. paused)"
+      return "#{papers.count - ignored_count} + #{ignored_count} paused"
     else
       return "#{papers.count}"
     end

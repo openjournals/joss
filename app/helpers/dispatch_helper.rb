@@ -58,7 +58,7 @@ module DispatchHelper
 
     # Has the review issue just been opened? If so, don't do anything.
     def opened?
-      action == 'opened'
+      action == 'opened' || action == 'reopened'
     end
 
     # Has the review issue just been closed? If so, don't do anything.

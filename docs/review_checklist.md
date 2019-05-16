@@ -10,7 +10,7 @@ Below is an example of the review checklist for the [Yellowbrick JOSS submission
 ```
 ### Conflict of interest
 
-- As the reviewer I confirm that I have read the [JOSS conflict of interest policy](https://github.com/openjournals/joss/blob/master/COI.md) and that there are no conflicts of interest for me to review this work.
+- As the reviewer I confirm that I have read the [JOSS conflict of interest policy](reviewer_guidelines.html#joss-conflict-of-interest-policy) and that there are no conflicts of interest for me to review this work.
 
 ### Code of Conduct
 

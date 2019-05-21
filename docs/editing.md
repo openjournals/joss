@@ -184,11 +184,19 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 
 ![Editorial flow](images/JOSS-flowchart.png)
 
-## Expectations of JOSS editors
+## Expectations on JOSS editors
 
-### Editorial assignments
+### Responding to editorial assignments
 
-As an editor, part of your job is to ensure that submissions you're responsible for 
+As documented above, papers will be assigned to you by one of the EiCs. We ask that EiCs respond in a timely fashion (< 72 hours) to invites to edit a new submission.
+
+### Continued attention to assigned submissions
+
+As an editor, part of your job is to ensure that submissions you're responsible for are progressing smoothly through the editorial process. This means that once or twice per week you should check your GitHub notifications and/or your editorial dashboard (e.g. `http://joss.theoj.org/dashboard/arfon`) for updates to the papers you are handling.
+
+**If reviews go stale**
+
+Sometimes reviews go quiet, either because a reviewer has failed to complete their review or an author has been slow to respond to a reviewer's feedback. **It's your job as the editor to prompt the author/or reviewer(s) to revisit the submission if there has been no response within 7-10 days.**
 
 ## Out of office
 

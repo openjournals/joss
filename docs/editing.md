@@ -23,6 +23,16 @@ The EiC assigns an editor (or a volunteering editor self-assigns) with the comma
 .. note:: If a paper is submitted without a recommended editor, it will show up in the weekly digest email under the category ‘Papers currently without an editor.’ Please review this weekly email and volunteer to edit papers that look to be in your domain. If you choose to be an editor in the issue thread type the command ``@whedon assign @yourhandle as editor``
 ```
 
+### How papers are assigned to editors
+
+By default, unless an editor volunteers, one of the Editor-in-chiefs (EiCs) will attempt to assign an incoming paper to the most suitable handling editor. While EiCs will make every effort to match a submission with the most appropriate editor, there are a number of situations where an EiC may assign a paper to an editor that doesn't fit entirely within the editor's research domains:
+
+- If there's no obvious fit to _any_ of the JOSS editors
+- If the most suitable editor is already handling a large number of papers
+- If the chosen editor has a lighter editorial load than other editors
+
+Normally an EiC will ask one or more editors to edit a submission (e.g. `@editor1, @editor 2 - would one of you be willing to edit this submission for JOSS`). If the editor doesn't respond withing a 48 hours, the EiC may assign the paper to the editor regardless.
+
 ### Finding reviewers
 
 At this point, the handling editor's job is to identify reviewer(s) who have sufficient expertise in the field of software and of the field of the submission. We like to have two reviewers per submission. If the editor is comfortable with their own assessment of the submission, one reviewer may be sufficient. If the editor feels particularly unsure of the submission, maybe a third reviewer can be recruited.
@@ -137,7 +147,7 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 
 **Step 5: The editor responds to the author saying that things look in line (or not) and will search for reviewer**
 
-**Step 6: The editor finds >= 1 reviewers**
+**Step 6: The editor finds >= 2 reviewers**
 
 - Use the list of reviewers: type the command `@whedon list reviewers` or look at list of reviewers in a Google [spreadsheet](https://docs.google.com/spreadsheets/d/1PAPRJ63yq9aPC1COLjaQp8mHmEq3rZUzwUYxTulyu78/edit?usp=sharing)
 - If people are in the review list, the editor can @-mention them on the issue to see if they will review: e.g. `@person1 @person2 can you review this submission for JOSS?`
@@ -173,6 +183,12 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 ## Visualization of editorial flow
 
 ![Editorial flow](images/JOSS-flowchart.png)
+
+## Expectations of JOSS editors
+
+### Editorial assignments
+
+As an editor, part of your job is to ensure that submissions you're responsible for 
 
 ## Out of office
 

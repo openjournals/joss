@@ -25,7 +25,7 @@ The EiC assigns an editor (or a volunteering editor self-assigns) with the comma
 
 ### How papers are assigned to editors
 
-By default, unless an editor volunteers, one of the Editor-in-chiefs (EiCs) will attempt to assign an incoming paper to the most suitable handling editor. While EiCs will make every effort to match a submission with the most appropriate editor, there are a number of situations where an EiC may assign a paper to an editor that doesn't fit entirely within the editor's research domains:
+By default, unless an editor volunteers, one of the Editors-in-chief (EiCs) will attempt to assign an incoming paper to the most suitable handling editor. While EiCs will make every effort to match a submission with the most appropriate editor, there are a number of situations where an EiC may assign a paper to an editor that doesn't fit entirely within the editor's research domains:
 
 - If there's no obvious fit to _any_ of the JOSS editors
 - If the most suitable editor is already handling a large number of papers
@@ -188,7 +188,7 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 
 ### Responding to editorial assignments
 
-As documented above, papers will be assigned to you by one of the EiCs. We ask that EiCs respond in a timely fashion (< 72 hours) to invites to edit a new submission.
+As documented above, papers will be assigned to you by one of the EiCs. We ask that editors respond in a timely fashion (< 72 hours) to invites to edit a new submission.
 
 ### Continued attention to assigned submissions
 
@@ -196,7 +196,7 @@ As an editor, part of your job is to ensure that submissions you're responsible 
 
 **If reviews go stale**
 
-Sometimes reviews go quiet, either because a reviewer has failed to complete their review or an author has been slow to respond to a reviewer's feedback. **It's your job as the editor to prompt the author/or reviewer(s) to revisit the submission if there has been no response within 7-10 days.**
+Sometimes reviews go quiet, either because a reviewer has failed to complete their review or an author has been slow to respond to a reviewer's feedback. **It's your job as the editor to prompt the author/or reviewer(s) to revisit the submission if there has been no response within 7-10 days unless there's a clear statement in the review thread that says an action is coming at a slightly later time, perhaps because a reviewer committed to a review by a certain date, or an author is making changes and says they will be done by a certain date.**
 
 ## Out of office
 

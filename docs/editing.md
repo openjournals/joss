@@ -25,7 +25,7 @@ The EiC assigns an editor (or a volunteering editor self-assigns) with the comma
 
 ### Finding reviewers
 
-At this point, the handling editor's job is to identify reviewer(s) who have sufficient expertise in the field of software and of the field of the submission. We like to have two reviewers per submission. If the editor is comfortable with their own assessment of the submission, one reviewer may be sufficient. If the editor feels particularly unsure of the submission, maybe a third reviewer can be recruited.
+At this point, the handling editor's job is to identify reviewer(s) who have sufficient expertise in the field of software and of the field of the submission. JOSS papers have at minimum two reviewers per submission. If the editor feels particularly unsure of the submission, a third (or fourth) reviewer can be recruited.
 
 To recruit reviewers, the handling editor can ping candidates on Twitter, or mention them in the `PRE-REVIEW` issue with their GitHub handle. After expressing initial interest, candidate reviewers may need a longer explanation via email. See sample reviewer invitation email, below.
 

@@ -21,6 +21,7 @@ gem 'sanitize', '~> 4.6.3'
 gem 'sass-rails', '~> 5.0.7'
 gem 'uglifier', '4.0.1'
 gem 'coffee-rails', '~> 4.2.2'
+gem 'active_link_to'
 
 # Use Bootstrap for the front-end
 gem 'bootstrap', '~> 4.3.1'

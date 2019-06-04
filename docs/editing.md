@@ -25,7 +25,7 @@ The EiC assigns an editor (or a volunteering editor self-assigns) with the comma
 
 ### How papers are assigned to editors
 
-By default, unless an editor volunteers, one of the Editors-in-chief (EiCs) will attempt to assign an incoming paper to the most suitable handling editor. While EiCs will make every effort to match a submission with the most appropriate editor, there are a number of situations where an EiC may assign a paper to an editor that doesn't fit entirely within the editor's research domains:
+By default, unless an editor volunteers, the Associated Editor-in-chief (AEiC) on duty will attempt to assign an incoming paper to the most suitable handling editor. While AEiCs will make every effort to match a submission with the most appropriate editor, there are a number of situations where an AEiC may assign a paper to an editor that doesn't fit entirely within the editor's research domains:
 
 - If there's no obvious fit to _any_ of the JOSS editors
 - If the most suitable editor is already handling a large number of papers

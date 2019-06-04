@@ -192,7 +192,7 @@ As documented above, papers will be assigned to you by one of the AEiCs. We ask 
 
 ### Continued attention to assigned submissions
 
-As an editor, part of your job is to ensure that submissions you're responsible for are progressing smoothly through the editorial process. This means that once or twice per week you should check your GitHub notifications and/or your editorial dashboard (e.g. `http://joss.theoj.org/dashboard/arfon`) for updates to the papers you are handling.
+As an editor, part of your job is to ensure that submissions you're responsible for are progressing smoothly through the editorial process. This means that once or twice per week you should check your GitHub notifications and/or your editorial dashboard (e.g. `http://joss.theoj.org/dashboard/youreditorname`) for updates to the papers you are handling.
 
 **If reviews go stale**
 

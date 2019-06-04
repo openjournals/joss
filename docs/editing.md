@@ -37,7 +37,7 @@ In most cases, an AEiC will ask one or more editors to edit a submission (e.g. `
 
 At this point, the handling editor's job is to identify reviewers who have sufficient expertise in the field of software and in the field of the submission. JOSS papers have to have a minimum of two reviewers per submission, except for papers that have previously been peer-reviewed via rOpenSci. If the editor feels particularly unsure of the submission, a third (or fourth) reviewer can be recruited.
 
-To recruit reviewers, the handling editor can ping candidates on Twitter, or mention them in the `PRE-REVIEW` issue with their GitHub handle. After expressing initial interest, candidate reviewers may need a longer explanation via email. See sample reviewer invitation email, below.
+To recruit reviewers, the handling editor can mention them in the `PRE-REVIEW` issue with their GitHub handle, ping them on Twitter, or email them. After expressing initial interest, candidate reviewers may need a longer explanation via email. See sample reviewer invitation email, below.
 
 Once a reviewer accepts, the handling editor runs the command `@whedon assign @username as reviewer` in the `PRE-REVIEW` issue. Add more reviewers with the command `@whedon add @username as reviewer`.
 

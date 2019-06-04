@@ -31,7 +31,7 @@ By default, unless an editor volunteers, the Associated Editor-in-chief (AEiC) o
 - If the most suitable editor is already handling a large number of papers
 - If the chosen editor has a lighter editorial load than other editors
 
-Normally an EiC will ask one or more editors to edit a submission (e.g. `@editor1, @editor 2 - would one of you be willing to edit this submission for JOSS`). If the editor doesn't respond withing a 48 hours, the EiC may assign the paper to the editor regardless.
+In most cases, an AEiC will ask one or more editors to edit a submission (e.g. `@editor1, @editor 2 - would one of you be willing to edit this submission for JOSS`). If the editor doesn't respond within a 48 hours, the AEiC may assign the paper to the editor regardless.
 
 ### Finding reviewers
 

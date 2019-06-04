@@ -188,7 +188,7 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 
 ### Responding to editorial assignments
 
-As documented above, papers will be assigned to you by one of the EiCs. We ask that editors respond in a timely fashion (< 72 hours) to invites to edit a new submission.
+As documented above, papers will be assigned to you by one of the AEiCs. We ask that editors respond in a timely fashion (< 72 hours) to invites to edit a new submission.
 
 ### Continued attention to assigned submissions
 

@@ -10,7 +10,7 @@ namespace :permissions do
 
     active_reviewers = []
     open_issues.each do |issue|
-      active_reviewers << issue.body.match(/Reviewers?:\*\*\s*(.+?)\r?\n/)[1].split(", ") - ["Pending"]
+      active_reviewers << issue.body.match(/Reviewers?:\*\*\s*(.+?)\r?\n/)[1].split(", ").each(&:strip!) - ["Pending"]
     end
 
     should_have_permissions = active_reviewers.flatten.uniq

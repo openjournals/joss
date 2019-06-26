@@ -46,6 +46,14 @@ class User < ActiveRecord::Base
     self.editor ? true:false
   end
 
+  def pretty_github_username
+    if github_username.start_with?('@')
+      return github_username
+    else
+      return github_username.prepend('@')
+    end
+  end
+
 private
 
   def set_sha

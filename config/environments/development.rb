@@ -41,6 +41,6 @@ Rails.application.configure do
 
   config.cache_store = :memory_store
 
-    # Automatically inject JavaScript needed for LiveReload
-    config.middleware.insert_after(ActionDispatch::Static, Rack::LiveReload)
+  # Automatically inject JavaScript needed for LiveReload
+  config.middleware.insert_after(ActionDispatch::Static, Rack::LiveReload)
 end

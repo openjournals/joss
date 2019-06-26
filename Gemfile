@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'aasm', '~> 4.1.0'
+gem 'actionview', '>= 5.2.2.1'
 gem "chartkick"
 gem 'bootsnap', require: false
 gem 'dotenv', '~> 2.2.1'
@@ -10,20 +11,22 @@ gem 'groupdate'
 gem 'honeybadger', '~> 3.2.0'
 gem 'html-pipeline', '~> 2.7.1'
 gem 'commonmarker', '~> 0.17.7'
+gem 'octicons_helper', '~> 4.0'
 gem 'omniauth-orcid', '~> 2.0.2'
-gem 'octokit', '~> 4.3.0'
+gem 'octokit', '~> 4.14'
 gem 'pg', '~> 0.21.0'
 gem 'will_paginate', '~> 3.1.6'
-gem 'rails', '5.2.2'
+gem 'rails', '5.2.2.1'
 gem 'responders'
 gem 'newrelic_rpm', '~> 4.6.0'
 gem 'sanitize', '~> 4.6.3'
 gem 'sass-rails', '~> 5.0.7'
 gem 'uglifier', '4.0.1'
 gem 'coffee-rails', '~> 4.2.2'
+
 gem 'active_link_to'
 
-# Use Bootstrap for the front-end
+ # Use Bootstrap for the front-end
 gem 'bootstrap', '~> 4.3.1'
 
 
@@ -39,7 +42,7 @@ group :development, :test do
   gem 'pry-byebug'
   gem 'capybara', '~> 2.16.1'
   gem 'factory_bot_rails', '~> 4.8.2'
-  gem 'rspec-rails', '~> 3.7.2'
+  gem 'rspec-rails', '~> 3.8.2'
   gem 'rails-controller-testing', '~> 1.0.2'
 end
 
@@ -53,9 +56,7 @@ group :development do
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
   gem 'spring-commands-rspec', group: :development
-  # LiveReload sass/view changes in th browser
-  gem 'guard', '~> 2.15' 
+  gem 'guard', '~> 2.15'
   gem 'guard-livereload', require: false 
-  gem 'rack-livereload' 
+  gem 'rack-livereload'
 end
-

@@ -140,12 +140,21 @@ class PapersController < ApplicationController
       @paper = Paper.find_by_sha!(params[:id])
     end
 
+    # Don't show the paper to anyone other than the submitting author or an
+    # admin.
+    if @paper.invisible?
+      head 404 and return unless can_see_hidden_paper?(@paper)
+    end
+
     render :layout => false
   end
 
   def lookup
     paper = Paper.where('review_issue_id = ? OR meta_review_issue_id = ?', params[:id], params[:id]).first!
-    render :plain => paper.created_at.strftime('%d %B %Y')
+    accepted_at = paper.accepted_at ? paper.accepted_at.strftime('%d %B %Y') : nil
+    response = {  :submitted => paper.created_at.strftime('%d %B %Y'),
+                  :accepted => accepted_at }
+    render :json => response.to_json
   end
 
   def valid_doi?
@@ -193,5 +202,15 @@ class PapersController < ApplicationController
 
   def paper_params
     params.require(:paper).permit(:title, :repository_url, :archive_doi, :software_version, :suggested_editor, :body, :kind)
+  end
+
+  def can_see_hidden_paper?(paper)
+    return false unless current_user
+
+    if current_user.admin? || current_user.is_owner_of?(paper)
+      return true
+    else
+      return false
+    end
   end
 end

@@ -1,4 +1,33 @@
 module HomeHelper
+  # How many papers should we show for an editor on the dashboard?
+  def in_progress_for_editor(papers)
+    ignored_state = "paused"
+    ignored_count = 0
+    papers.each do |p|
+      if p.labels.any? && p.labels.keys.include?(ignored_state)
+        ignored_count += 1
+      end
+    end
+
+    if ignored_count > 0
+      return "#{papers.count - ignored_count} + #{ignored_count} paused"
+    else
+      return "#{papers.count}"
+    end
+  end
+
+  def pretty_labels_for(paper)
+    return nil unless paper.labels.any?
+
+    capture do
+      paper.labels.each do |label, colour|
+        if label == "paused"
+          concat content_tag(:span, label, :style => "padding: 3px; margin-right: 3px; border-radius: 2px; background-color: ##{colour}; color: white;")
+        end
+      end
+    end
+  end
+
   def current_class?(test_path)
     return 'nav-link active' if request.path == test_path
     'nav-link'

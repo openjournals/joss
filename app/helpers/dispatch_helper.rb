@@ -36,6 +36,10 @@ module DispatchHelper
       payload['issue']['title']
     end
 
+    def labels
+      payload['issue']['labels']
+    end
+
     def comment_body
       payload['comment']['body']
     end
@@ -54,7 +58,7 @@ module DispatchHelper
 
     # Has the review issue just been opened? If so, don't do anything.
     def opened?
-      action == 'opened'
+      action == 'opened' || action == 'reopened'
     end
 
     # Has the review issue just been closed? If so, don't do anything.
@@ -71,7 +75,7 @@ module DispatchHelper
     end
 
     def labeled?
-      action == 'labeled'
+      action == 'labeled' || action == 'unlabeled'
     end
 
     def initialize_activities
@@ -93,7 +97,6 @@ module DispatchHelper
     # Parse the incoming payload and do something with it...
     def parse_payload!
       return if assigned?
-      return if labeled?
       return if opened?
       return if closed?
 
@@ -105,6 +108,17 @@ module DispatchHelper
           issues['last_edits'][sender] = payload['issue']['updated_at']
         end
         paper.last_activity = payload['issue']['updated_at']
+        paper.save and return
+      end
+
+      # Parse the labels and update papers with the new labels.
+      if labeled?
+        new_labels = Hash.new
+        labels.each do |label|
+          new_labels.merge!(label['name'] => label['color'])
+        end
+
+        paper.labels = new_labels
         paper.save and return
       end
 

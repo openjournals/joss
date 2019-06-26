@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_12_20_005508) do
+ActiveRecord::Schema.define(version: 2019_05_11_114410) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
@@ -59,7 +59,9 @@ ActiveRecord::Schema.define(version: 2018_12_20_005508) do
     t.datetime "last_activity"
     t.string "tags", default: [], array: true
     t.string "languages", default: [], array: true
+    t.jsonb "labels", default: {}, null: false
     t.index ["editor_id"], name: "index_papers_on_editor_id"
+    t.index ["labels"], name: "index_papers_on_labels", using: :gin
     t.index ["languages"], name: "index_papers_on_languages", using: :gin
     t.index ["last_activity"], name: "index_papers_on_last_activity"
     t.index ["reviewers"], name: "index_papers_on_reviewers", using: :gin

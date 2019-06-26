@@ -24,6 +24,12 @@ gem 'sass-rails', '~> 5.0.7'
 gem 'uglifier', '4.0.1'
 gem 'coffee-rails', '~> 4.2.2'
 
+gem 'active_link_to'
+
+ # Use Bootstrap for the front-end
+gem 'bootstrap', '~> 4.3.1'
+
+
 # Use jquery as the JavaScript library
 gem 'jquery-rails', '~> 4.3.1'
 
@@ -50,4 +56,7 @@ group :development do
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
   gem 'spring-commands-rspec', group: :development
+  gem 'guard', '~> 2.15'
+  gem 'guard-livereload', require: false 
+  gem 'rack-livereload'
 end

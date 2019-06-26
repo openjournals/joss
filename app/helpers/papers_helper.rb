@@ -13,6 +13,22 @@ module PapersHelper
     end
   end
 
+  def submittor_avatar(paper)
+    if username = paper.submitting_author.github_username
+      return "https://github.com/#{username.sub(/^@/, "")}.png"
+    else
+      return ""
+    end
+  end
+
+  def submittor_github(paper)
+    if username = paper.submitting_author.github_username
+      return "https://github.com/#{username.sub(/^@/, "")}"
+    else
+      return "https://github.com"
+    end
+  end
+
   def formatted_body(paper, length=nil)
     pipeline = HTML::Pipeline.new [
       HTML::Pipeline::MarkdownFilter,

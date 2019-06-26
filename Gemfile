@@ -2,7 +2,8 @@ source 'https://rubygems.org'
 
 gem 'aasm', '~> 4.1.0'
 gem 'actionview', '>= 5.2.2.1'
-gem "chartkick"
+gem 'chartkick'
+gem 'bundler', '= 2.0.1'
 gem 'bootsnap', require: false
 gem 'dotenv', '~> 2.2.1'
 gem 'github-markdown', '~> 0.6.9'

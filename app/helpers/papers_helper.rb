@@ -21,7 +21,6 @@ module PapersHelper
     else
       return content_tag(:span, "Submitted #{time_ago_in_words(paper.created_at)} ago", :class => "time")
     end
-
   end
 
   def badge_link(paper)

@@ -5,6 +5,25 @@ module PapersHelper
     end
   end
 
+  def pretty_status_badge(paper)
+    state = paper.state.gsub('_', ' ')
+    badge_class = paper.state.gsub('_', '-')
+
+    state = "published" if state == "accepted"
+
+    return content_tag(:span, state, :class => "badge #{badge_class}")
+  end
+
+  def time_words(paper)
+    case paper.state
+    when "accepted"
+      return content_tag(:span, "Published #{time_ago_in_words(paper.accepted_at)} ago", :class => "time")
+    else
+      return content_tag(:span, "Submitted #{time_ago_in_words(paper.created_at)} ago", :class => "time")
+    end
+
+  end
+
   def badge_link(paper)
     if paper.accepted?
       return paper.cross_ref_doi_url

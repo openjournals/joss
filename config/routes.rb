@@ -11,8 +11,7 @@ Rails.application.routes.draw do
 
     collection do
       get 'recent'
-      get 'popular'
-      get 'accepted', to: 'papers#popular'
+      get 'published', to: 'papers#popular'
       get 'active'
     end
   end

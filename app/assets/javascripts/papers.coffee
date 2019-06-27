@@ -19,3 +19,16 @@ $ ->
     e.preventDefault()
 
   clipboard = new Clipboard('.clippy')
+
+  if($("#joss-paper").length > 0)
+    paper = $('#joss-paper')
+    width = paper.width()
+    height = width * 1.41421
+    paper.css('height', height)
+
+$(window).resize ->
+  if($("#joss-paper").length > 0)
+    paper = $('#joss-paper')
+    width = paper.width()
+    height = width * 1.41421
+    paper.css('height', height)

@@ -18,3 +18,4 @@ $ ->
   $("form#new_paper").submit ->
     e.preventDefault()
 
+  clipboard = new Clipboard('.clippy')

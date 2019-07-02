@@ -1,4 +1,4 @@
-class AddPaperAndUserIndexes < ActiveRecord::Migration
+class AddPaperAndUserIndexes < ActiveRecord::Migration[5.2]
   def change
     add_index :users, :sha
     add_index :users, :email

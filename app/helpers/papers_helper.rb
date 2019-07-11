@@ -8,6 +8,8 @@ module PapersHelper
   def badge_link(paper)
     if paper.accepted?
       return paper.cross_ref_doi_url
+    elsif paper.review_pending?
+      return paper.meta_review_url
     else
       return paper.review_url
     end

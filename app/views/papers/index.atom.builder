@@ -5,7 +5,6 @@ atom_feed do |feed|
   @papers.each do |paper|
     next if paper.invisible?
     feed.entry(paper) do |entry|
-      case paper.state
       entry.title(paper.title)
       entry.state(paper.state)
       entry.archive_doi(paper.archive_doi)

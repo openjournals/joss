@@ -48,7 +48,6 @@ class Paper < ActiveRecord::Base
   ].freeze
 
   IN_PROGRESS_STATES = [
-    "submitted",
     "under_review",
     "review_pending"
   ].freeze

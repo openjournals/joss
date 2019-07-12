@@ -21,7 +21,7 @@ Below is an example of the review checklist for the [Yellowbrick JOSS submission
 - **Repository:** Is the source code for this software available at the <a target="_blank" href="https://github.com/DistrictDataLabs/yellowbrick">repository url</a>?
 - **License:** Does the repository contain a plain-text LICENSE file with the contents of an [OSI approved](https://opensource.org/licenses/alphabetical) software license?
 - **Version:** Does the release version given match the GitHub release (v0.8)?
-- **Authorship:** Has the submitting author (@bbengfort) made major contributions to the software? Does the full list of paper authors seem appropriate and complete?
+- **Authorship:** Has the submitting author made major contributions to the software? Does the full list of paper authors seem appropriate and complete?
 
 ### Functionality
 

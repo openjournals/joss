@@ -137,7 +137,7 @@ class Paper < ActiveRecord::Base
   end
 
   def clean_archive_doi
-    archive_doi.gsub(/\"/, "")
+    doi_with_url.gsub(/\"/, "")
   end
 
   # A 5-figure integer used to produce the JOSS DOI

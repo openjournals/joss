@@ -7,7 +7,7 @@ If you've already licensed your code and have good documentation then we expect 
 
 Before you submit we need you to:
 
-- Make software available in an open repository (GitHub, Bitbucket etc.) and include an [OSI approved open source license](https://opensource.org/licenses)
+- Make software available in an open repository (GitHub, Bitbucket etc.) and include an [OSI approved open source license](https://opensource.org/licenses).
 - Make sure that the software complies with the [JOSS review criteria](review_criteria.html).
 - Author a short Markdown paper `paper.md` with a title, summary, author names, affiliations, and key references. See an example [here](https://github.com/arfon/fidgit/tree/master/paper).
 - (Optional) create a metadata file and include it in your repository describing your software. [This script](https://gist.github.com/arfon/478b2ed49e11f984d6fb) automates the generation of this metadata.
@@ -19,12 +19,12 @@ JOSS welcomes submissions from broadly diverse research areas. For this reason, 
 
 In addition, your paper should include:
 
-- A list of the authors of the software and their affiliations
-- A summary describing the high-level functionality and purpose of the software for a diverse, *non-specialist audience*
-- A clear statement of need that illustrates the purpose of the software
-- A list of key references including a link to the software archive
-- Mentions (if applicable) of any ongoing research projects using the software or recent scholarly publications enabled by it
-- Acknowledgement of any financial support
+- A list of the authors of the software and their affiliations.
+- A summary describing the high-level functionality and purpose of the software for a diverse, *non-specialist audience*.
+- A clear statement of need that illustrates the purpose of the software.
+- A list of key references including a link to the software archive.
+- Mentions (if applicable) of any ongoing research projects using the software or recent scholarly publications enabled by it.
+- Acknowledgement of any financial support.
 
 As this short list shows, JOSS papers are only permitted to contain a limited set of metadata (see header below), Statement of Need, Summary, Acknowledgements, and References sections. You can see an example accepted paper [here](http://bit.ly/2x22gxT). Given this paper format, a "full length" paper is not permitted, e.g., software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation.
 
@@ -196,21 +196,18 @@ Submission then is as simple as:
 
 ## Submission requirements
 
-- The software should be open source as per the [OSI definition](https://opensource.org/osd)
-- The software should have an **obvious** research application
-- You should be a major contributor to the software you are submitting
-- The software should be a significant contribution to the available open source software that either enables some new research challenges to be addressed or makes addressing research challenges significantly better (e.g., faster, easier, simpler)
-- The software should be feature complete (no half-baked solutions) and
-  designed for maintainable extension (not one-off modifications).
-  Minor ‘utility’ packages, including ‘thin’ API clients, are not
-  acceptable.
+- The software should be open source as per the [OSI definition](https://opensource.org/osd).
+- The software should have an **obvious** research application.
+- You should be a major contributor to the software you are submitting.
+- The software should be a significant contribution to the available open source software that either enables some new research challenges to be addressed or makes addressing research challenges significantly better (e.g., faster, easier, simpler).
+- The software should be feature complete (no half-baked solutions) and designed for maintainable extension (not one-off modifications). Minor ‘utility’ packages, including ‘thin’ API clients, are not acceptable.
 
 In addition, the software associated with your submission must:
 
-- Be stored in a repository that can be cloned without registration
-- Be stored in a repository that is browsable online without registration
-- Have an issue tracker that is readable without registration
-- Permit individuals to create issues/file tickets against your repository
+- Be stored in a repository that can be cloned without registration.
+- Be stored in a repository that is browsable online without registration.
+- Have an issue tracker that is readable without registration.
+- Permit individuals to create issues/file tickets against your repository.
 
 JOSS publishes articles about research software. This definition includes software that: solves complex modeling problems in a scientific context (physics, mathematics, biology, medicine, social science, neuroscience, engineering); supports the functioning of research instruments or the execution of research experiments; extracts knowledge from large data sets; offers a mathematical library, or similar.
 
@@ -230,10 +227,10 @@ We strongly prefer software that doesn't rely upon proprietary (paid for) develo
 
 After submission:
 
-- One or more JOSS reviewers are assigned and the review is carried out in the [reviews repository](https://github.com/openjournals/joss-reviews)
-- Authors respond to reviewer-raised issues (if any are raised) on the submitted repository's issue tracker. Reviewer contributions, like any other contributions, should be acknowledged in the repository
-- Upon successful completion of the review, deposit a copy of your (updated) repository with a data-archiving service such as [Zenodo](https://zenodo.org/) or [figshare](https://figshare.com/), issue a DOI for the archive, and update the review issue thread with your DOI
-- After assignment of a DOI, your paper metadata is deposited in CrossRef and listed on the JOSS website
-- And that's it
+- One or more JOSS reviewers are assigned and the review is carried out in the [reviews repository](https://github.com/openjournals/joss-reviews).
+- Authors respond to reviewer-raised issues (if any are raised) on the submitted repository's issue tracker. Reviewer contributions, like any other contributions, should be acknowledged in the repository.
+- Upon successful completion of the review, deposit a copy of your (updated) repository with a data-archiving service such as [Zenodo](https://zenodo.org/) or [figshare](https://figshare.com/), issue a DOI for the archive, and update the review issue thread with your DOI.
+- After assignment of a DOI, your paper metadata is deposited in CrossRef and listed on the JOSS website.
+- And that's it.
 
 If you want to learn more about what the review process looks like in detail, take a look at the [reviewer guidelines](reviewer_guidelines.html).

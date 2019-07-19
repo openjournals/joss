@@ -1,8 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'aasm', '~> 4.1.0'
-gem 'actionview', '>= 5.2.2.1'
-gem "chartkick"
+gem 'chartkick'
 gem 'bootsnap', require: false
 gem 'dotenv', '~> 2.2.1'
 gem 'github-markdown', '~> 0.6.9'
@@ -16,13 +15,19 @@ gem 'omniauth-orcid', '~> 2.0.2'
 gem 'octokit', '~> 4.14'
 gem 'pg', '~> 0.21.0'
 gem 'will_paginate', '~> 3.1.6'
-gem 'rails', '5.2.2.1'
+gem 'rails', '5.2.3'
 gem 'responders'
 gem 'newrelic_rpm', '~> 4.6.0'
 gem 'sanitize', '~> 4.6.3'
 gem 'sass-rails', '~> 5.0.7'
 gem 'uglifier', '4.0.1'
 gem 'coffee-rails', '~> 4.2.2'
+
+gem 'active_link_to'
+
+ # Use Bootstrap for the front-end
+gem 'bootstrap', '~> 4.3.1'
+
 
 # Use jquery as the JavaScript library
 gem 'jquery-rails', '~> 4.3.1'
@@ -50,4 +55,7 @@ group :development do
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
   gem 'spring-commands-rspec', group: :development
+  gem 'guard', '~> 2.15'
+  gem 'guard-livereload', require: false
+  gem 'rack-livereload'
 end

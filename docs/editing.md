@@ -72,7 +72,6 @@ Steps:
 - Check the Zenodo deposit has the correct metadata (title and author list), and request the author edit it if it doesn’t match the paper.
 - Run `@whedon set <doi> as archive`.
 - Run `@whedon set <v1.x.x> as version` if the version was updated.
-- Add the “accepted” label.
 - Ping the `@openjournals/joss-eics` team on the review thread letting them know the paper is ready to be accepted.
 
 At that point, the EiC/AEiC will take over to publish the paper.

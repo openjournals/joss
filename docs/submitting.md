@@ -192,7 +192,7 @@ Note that the paper ends with a References heading, and the references are built
 Submission then is as simple as:
 
 - Filling in the [short submission form](http://joss.theoj.org/papers/new)
-- Waiting for reviewers to be assigned over in the JOSS reviews repository: https://github.com/openjournals/joss-reviews
+- Waiting for the managing editor to start a pre-review issue over in the JOSS reviews repository: https://github.com/openjournals/joss-reviews
 
 ## Submission requirements
 

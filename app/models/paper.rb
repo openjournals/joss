@@ -70,7 +70,7 @@ class Paper < ActiveRecord::Base
   scope :everything, lambda { where('state NOT IN (?)', ['rejected', 'withdrawn']) }
 
   before_create :set_sha, :set_last_activity
-  after_create :notify_editors
+  after_create :notify_editors, :notify_author
 
   validates_presence_of :title
   validates_presence_of :repository_url, :message => "^Repository address can't be blank"
@@ -80,6 +80,10 @@ class Paper < ActiveRecord::Base
 
   def notify_editors
     Notifications.submission_email(self).deliver_now
+  end
+
+  def notify_author
+    Notifications.author_submission_email(self).deliver_now
   end
 
   def self.featured

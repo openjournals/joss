@@ -121,10 +121,10 @@ describe Paper do
     end
   end
 
-  it "should email the editor when submitted" do
+  it "should email the editor AND submitting author when submitted" do
     paper = build(:paper)
 
-    expect {paper.save}.to change { ActionMailer::Base.deliveries.count }.by(1)
+    expect {paper.save}.to change { ActionMailer::Base.deliveries.count }.by(2)
   end
 
   it "should be able to be withdrawn at any time" do

@@ -5,6 +5,7 @@ FactoryBot.define do
     repository_url    'http://github.com/arfon/fidgit'
     archive_doi       'https://doi.org/10.0001/zenodo.12345'
     software_version  'v1.0.0'
+    submitting_author { create(:user) }
 
     created_at  { Time.now }
     updated_at  { Time.now }

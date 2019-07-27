@@ -7,6 +7,12 @@ class Notifications < ApplicationMailer
     mail(:to => EDITOR_EMAILS, :subject => "New submission: #{paper.title}")
   end
 
+  def author_submission_email(paper)
+    @url  = "#{Rails.application.settings["url"]}/papers/#{paper.sha}"
+    @paper = paper
+    mail(:to => paper.submitting_author.email, :subject => "Thanks for your submission: #{paper.title}")
+  end
+
   def editor_weekly_email(editor, pending_issues, assigned_issues, recently_closed_issues)
     @pending_issues = pending_issues
     @assigned_issues = assigned_issues

@@ -1,7 +1,7 @@
 Submitting a paper to JOSS
 ==========================
 
-If you've already developed a fully featured research code, released it under an OSI-approved license, and written good documentation and tests, then we expect that it should take perhaps an hour or two to prepare and submit your paper to JOSS.
+If you've already developed a fully featured research code, released it under an [OSI-approved license](https://opensource.org/licenses), and written good documentation and tests, then we expect that it should take perhaps an hour or two to prepare and submit your paper to JOSS.
 But please read these instructions carefully for a streamlined submission.
 
 ## Typical paper submission flow

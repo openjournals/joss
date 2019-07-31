@@ -7,7 +7,7 @@ describe HomeController, :type => :controller do
     it "should render home page" do
       get :index, :format => :html
       expect(response).to be_success
-      expect(response.body).to match /Journal of Open Source Education/
+      expect(response.body).to match /Journal of Open Source Software/
     end
   end
 

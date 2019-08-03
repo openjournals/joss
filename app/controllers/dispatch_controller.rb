@@ -80,8 +80,12 @@ class DispatchController < ApplicationController
     if params[:secret] == ENV['WHEDON_SECRET']
       @paper = Paper.find_by_review_issue_id(params[:id])
 
-      metadata = JSON.parse(Base64.decode64(params[:metadata]))
-
+      if params[:metadata]
+        metadata = JSON.parse(Base64.decode64(params[:metadata]))
+      else
+        metadata = nil
+      end
+      
       @paper.update_attributes(
         :doi => params[:doi],
         :archive_doi => params[:archive_doi],

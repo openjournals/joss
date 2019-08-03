@@ -329,6 +329,7 @@ describe DispatchController, :type => :controller do
     it "with the correct API key" do
       user = create(:user)
       paper = create(:under_review_paper, :review_issue_id => 1234, :user_id => user.id)
+      encoded_metadata = "eyJwYXBlciI6eyJ0aXRsZSI6IkZpZGdpdDogQW4gdW5nb2RseSB1bmlvbiBv\nZiBHaXRIdWIgYW5kIGZpZ3NoYXJlIiwidGFncyI6WyJleGFtcGxlIiwidGFn\ncyIsImZvciB0aGUgcGFwZXIiXSwibGFuZ3VhZ2VzIjpbIlB5dGhvbiIsIlJ1\nc3QiLCJQZXJsIl0sImF1dGhvcnMiOlt7ImdpdmVuX25hbWUiOiJBcmZvbiIs\nIm1pZGRsZV9uYW1lIjoiTS4iLCJsYXN0X25hbWUiOiJTbWl0aCIsIm9yY2lk\nIjoiMDAwMC0wMDAyLTM5NTctMjQ3NCIsImFmZmlsaWF0aW9uIjoiR2l0SHVi\nIEluYy4sIERpc25leSBJbmMuIn0seyJnaXZlbl9uYW1lIjoiSmFtZXMiLCJt\naWRkbGVfbmFtZSI6IlAuIiwibGFzdF9uYW1lIjoidmFuIERpc2hvZWNrIiwi\nb3JjaWQiOiIwMDAwLTAwMDItMzk1Ny0yNDc0IiwiYWZmaWxpYXRpb24iOiJE\naXNuZXkgSW5jLiJ9XSwiZG9pIjoiMTAuMjExMDUvam9zcy4wMDAxNyIsImFy\nY2hpdmVfZG9pIjoiaHR0cDovL2R4LmRvaS5vcmcvMTAuNTI4MS96ZW5vZG8u\nMTM3NTAiLCJyZXBvc2l0b3J5X2FkZHJlc3MiOiJodHRwczovL2dpdGh1Yi5j\nb20vYXBwbGljYXRpb25za2VsZXRvbi9Ta2VsZXRvbiIsImVkaXRvciI6ImFy\nZm9uIiwicmV2aWV3ZXJzIjpbIkBqaW0iLCJAYm9iIl19fQ==\n"
 
       post :api_deposit, params: {:secret => "mooo",
                                   :id => 1234,
@@ -336,10 +337,12 @@ describe DispatchController, :type => :controller do
                                   :archive_doi => "10.0001/zenodo.01234",
                                   :citation_string => "Smith et al., 2008, JOSS, etc.",
                                   :authors => "Arfon Smith, Mickey Mouse",
-                                  :title => "Foo, bar, baz"
+                                  :title => "Foo, bar, baz",
+                                  :metadata => encoded_metadata
                                   }
       expect(response).to be_success
       expect(paper.reload.state).to eql('accepted')
+      expect(paper.metadata['paper']['reviewers']).to eql(["@jim", "@bob"])
     end
   end
 end

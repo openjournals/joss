@@ -1,6 +1,7 @@
 class Paper < ActiveRecord::Base
   include SettingsHelper
   serialize :activities, Hash
+  serialize :metadata, Hash
 
   belongs_to  :submitting_author,
               :class_name => 'User',

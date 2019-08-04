@@ -5,7 +5,11 @@ describe 'papers/recent.html.erb' do
     it "should show the correct number of papers" do
       user = create(:user)
       3.times do
-        create(:paper, :state => "accepted", :accepted_at => Time.now, :submitting_author => user)
+        create( :paper,
+                :state => "accepted",
+                :accepted_at => Time.now,
+                :submitting_author => user,
+                :metadata => {'paper' => {'languages' => []}})
       end
 
       assign(:papers, Paper.all.paginate(:page => 1, :per_page => 10))

@@ -115,6 +115,7 @@ class Paper < ActiveRecord::Base
   end
 
   def language_tags
+    return [] unless accepted?
     metadata['paper']['languages'] - IGNORED_LANGUAGES
   end
 

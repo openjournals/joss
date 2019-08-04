@@ -1,6 +1,7 @@
 class Paper < ActiveRecord::Base
   include SettingsHelper
   serialize :activities, Hash
+  serialize :metadata, Hash
 
   belongs_to  :submitting_author,
               :class_name => 'User',
@@ -59,6 +60,16 @@ class Paper < ActiveRecord::Base
     "withdrawn"
   ].freeze
 
+  # Languages we don't show in the UI
+  IGNORED_LANGUAGES = [
+    'Shell',
+    'TeX',
+    'Makefile',
+    'HTML',
+    'CSS',
+    'CMake'
+  ].freeze
+
   default_scope  { order(:created_at => :desc) }
   scope :recent, lambda { where('created_at > ?', 1.week.ago) }
   scope :submitted, lambda { where('state = ?', 'submitted') }
@@ -93,6 +104,19 @@ class Paper < ActiveRecord::Base
 
   def self.popular
     recent
+  end
+
+  def scholar_title
+    metadata['paper']['title']
+  end
+
+  def scholar_authors
+    metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['last_name']}"}.join(', ')
+  end
+
+  def language_tags
+    return [] unless accepted?
+    metadata['paper']['languages'] - IGNORED_LANGUAGES
   end
 
   def to_param

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_05_11_114410) do
+ActiveRecord::Schema.define(version: 2019_08_02_131034) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
@@ -60,6 +60,7 @@ ActiveRecord::Schema.define(version: 2019_05_11_114410) do
     t.string "tags", default: [], array: true
     t.string "languages", default: [], array: true
     t.jsonb "labels", default: {}, null: false
+    t.text "metadata"
     t.index ["editor_id"], name: "index_papers_on_editor_id"
     t.index ["labels"], name: "index_papers_on_labels", using: :gin
     t.index ["languages"], name: "index_papers_on_languages", using: :gin

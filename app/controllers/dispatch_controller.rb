@@ -1,3 +1,5 @@
+require 'base64'
+
 class DispatchController < ApplicationController
   include DispatchHelper
   include SettingsHelper
@@ -78,13 +80,20 @@ class DispatchController < ApplicationController
     if params[:secret] == ENV['WHEDON_SECRET']
       @paper = Paper.find_by_review_issue_id(params[:id])
 
+      if params[:metadata]
+        metadata = JSON.parse(Base64.decode64(params[:metadata]))
+      else
+        metadata = nil
+      end
+      
       @paper.update_attributes(
         :doi => params[:doi],
         :archive_doi => params[:archive_doi],
         :accepted_at => Time.now,
         :citation_string => params[:citation_string],
         :authors => params[:authors],
-        :title => params[:title]
+        :title => params[:title],
+        :metadata => metadata
       )
 
       if @paper.accept!

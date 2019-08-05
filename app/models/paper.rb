@@ -1,4 +1,5 @@
 class Paper < ActiveRecord::Base
+  searchkick
   include SettingsHelper
   serialize :activities, Hash
   serialize :metadata, Hash
@@ -79,6 +80,7 @@ class Paper < ActiveRecord::Base
   scope :visible, -> { where(:state => VISIBLE_STATES) }
   scope :invisible, -> { where(:state => INVISIBLE_STATES) }
   scope :everything, lambda { where('state NOT IN (?)', ['rejected', 'withdrawn']) }
+  scope :search_import, -> { where(:state => VISIBLE_STATES) }
 
   before_create :set_sha, :set_last_activity
   after_create :notify_editors, :notify_author
@@ -95,6 +97,18 @@ class Paper < ActiveRecord::Base
 
   def notify_author
     Notifications.author_submission_email(self).deliver_now
+  end
+
+  # Only index papers that are visible
+  def should_index?
+    !invisible?
+  end
+
+  def search_data
+    {
+      languages: language_tags,
+      tags: author_tags
+    }
   end
 
   def self.featured
@@ -117,6 +131,15 @@ class Paper < ActiveRecord::Base
   def language_tags
     return [] unless accepted?
     metadata['paper']['languages'] - IGNORED_LANGUAGES
+  end
+
+  def author_tags
+    return [] unless accepted?
+    if metadata['paper']['tags']
+      return metadata['paper']['tags']
+    else
+      return []
+    end
   end
 
   def to_param

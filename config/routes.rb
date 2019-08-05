@@ -13,6 +13,7 @@ Rails.application.routes.draw do
       get 'recent'
       get 'published', to: 'papers#popular'
       get 'active'
+      get 'filter', to: 'papers#by_language'
     end
   end
 

@@ -20,6 +20,7 @@ gem 'responders'
 gem 'newrelic_rpm', '~> 4.6.0'
 gem 'sanitize', '~> 4.6.3'
 gem 'sass-rails', '~> 5.0.7'
+gem 'searchkick'
 gem 'uglifier', '4.0.1'
 gem 'coffee-rails', '~> 4.2.2'
 

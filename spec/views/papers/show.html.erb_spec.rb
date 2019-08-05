@@ -22,7 +22,7 @@ describe 'papers/show.html.erb' do
       user = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
 
-      paper = create(:paper, :state => "accepted")
+      paper = create(:accepted_paper)
       assign(:paper, paper)
 
       render :template => "papers/show.html.erb"

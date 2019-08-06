@@ -67,10 +67,13 @@ class PapersController < ApplicationController
   end
 
   def by_language
-    @papers = Paper.search(params['language'], fields: [:languages], 
+    @papers = Paper.search(params['language'], fields: [:languages],
                 :page => params[:page],
                 :per_page => 10
               )
+
+    @filtering = true
+    @language = params['language']
 
     respond_to do |format|
       format.atom { render :template => 'papers/index' }

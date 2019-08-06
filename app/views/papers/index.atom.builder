@@ -11,7 +11,7 @@ atom_feed do |feed|
       entry.languages(paper.language_tags.join(', '))
       entry.archive_doi(paper.archive_doi)
       entry.software_version(paper.software_version)
-      entry.content(formatted_body(paper), type: 'html')
+      entry.pdf_url(paper.pdf_url)
     end
   end
 end

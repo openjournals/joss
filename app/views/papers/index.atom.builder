@@ -7,11 +7,13 @@ atom_feed do |feed|
     feed.entry(paper) do |entry|
       entry.title(paper.title)
       entry.state(paper.state)
-      entry.tags(paper.author_tags.join(', '))
-      entry.languages(paper.language_tags.join(', '))
-      entry.archive_doi(paper.archive_doi)
       entry.software_version(paper.software_version)
-      entry.pdf_url(paper.pdf_url)
+      if paper.accepted?
+        entry.archive_doi(paper.archive_doi)
+        entry.languages(paper.language_tags.join(', '))
+        entry.pdf_url(paper.pdf_url)
+        entry.tags(paper.author_tags.join(', '))
+      end
     end
   end
 end

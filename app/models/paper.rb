@@ -107,7 +107,8 @@ class Paper < ActiveRecord::Base
   def search_data
     {
       languages: language_tags,
-      tags: author_tags
+      tags: author_tags,
+      authors: scholar_authors
     }
   end
 
@@ -125,6 +126,7 @@ class Paper < ActiveRecord::Base
   end
 
   def scholar_authors
+    return nil unless accepted?
     metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['last_name']}"}.join(', ')
   end
 

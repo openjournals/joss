@@ -27,7 +27,48 @@ describe 'papers/show.html.erb' do
 
       render :template => "papers/show.html.erb"
 
-      expect(rendered).to have_content "accepted into The Journal of Open Source Software"
+      # Paper metadata
+      expect(rendered).to have_content "Submitted #{Time.now.strftime('%d %B %Y')}"
+      expect(rendered).to have_content "Accepted #{Time.now.strftime('%d %B %Y')}"
+      expect(rendered).to have_content "Ruby"
+      expect(rendered).to have_content "Editor: @arfon"
+      expect(rendered).to have_content "Reviewers: @jim, @jane"
+      expect(rendered).to have_content "Walt Disney"
+    end
+
+    it "has the correct Google Scholar tags" do
+      user = create(:user)
+      allow(view).to receive_message_chain(:current_user).and_return(user)
+
+      paper = create(:accepted_paper)
+      assign(:paper, paper)
+
+      render :template => "papers/show.html.erb"
+
+      # Paper metadata
+      expect(rendered).to have_title("The Journal of Open Source Software: #{paper.scholar_title}")
+
+      expect(rendered).to have_css("meta[name='citation_title']", visible: false)
+      expect(rendered).to have_css("meta[content='#{paper.scholar_title}']", visible: false)
+
+      expect(rendered).to have_css("meta[name='citation_author']", visible: false)
+      expect(rendered).to have_css("meta[content='Mickey Mouse, Walt Disney']", visible: false)
+
+      expect(rendered).to have_css("meta[name='citation_publication_date']", visible: false)
+      expect(rendered).to have_css("meta[content='#{paper.accepted_at.strftime('%Y/%m/%d')}']", visible: false)
+
+      expect(rendered).to have_css("meta[name='citation_journal_title']", visible: false)
+      expect(rendered).to have_css("meta[content='#{Rails.application.settings['name']}']", visible: false)
+
+
+      expect(rendered).to have_css("meta[name='citation_pdf_url']", visible: false)
+      expect(rendered).to have_css("meta[content='#{paper.pdf_url}']", visible: false)
+
+      expect(rendered).to have_css("meta[name='citation_doi']", visible: false)
+      expect(rendered).to have_css("meta[content='10.21105/joss.00000']", visible: false)
+
+      expect(rendered).to have_css("meta[name='citation_issn']", visible: false)
+      expect(rendered).to have_css("meta[content='#{Rails.application.settings['twitter_issn']}']", visible: false)
     end
   end
 

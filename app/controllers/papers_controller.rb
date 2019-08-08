@@ -79,13 +79,13 @@ class PapersController < ApplicationController
                   :page => params[:page],
                   :per_page => 10
                 )
-      @term = params['language']
+      @term = "in #{params['language']}"
     elsif params['author']
       @papers = Paper.search(params['author'], fields: [:authors],
                   :page => params[:page],
                   :per_page => 10
                 )
-      @term = params['author']
+      @term = "by #{params['author']}"
     end
 
     @filtering = true

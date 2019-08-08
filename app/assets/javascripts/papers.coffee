@@ -30,4 +30,5 @@ $ ->
   $("form#new_paper").submit ->
     e.preventDefault()
 
-  clipboard = new Clipboard('.clippy')
+  if (typeof Clipboard != 'undefined')
+    clipboard = new Clipboard('.clippy')

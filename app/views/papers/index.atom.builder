@@ -10,7 +10,7 @@ atom_feed do |feed|
       entry.software_version(paper.software_version)
       if paper.accepted?
         entry.authors do |author|
-          paper.authors.each_with_index do |a, i|
+          paper.metadata_authors.each_with_index do |a, i|
             sequence = i == 0 ? "first" : "additional"
             author.author("sequence"=>sequence) do |auth|
               auth.given_name a['given_name']

@@ -5,6 +5,37 @@ module PapersHelper
     end
   end
 
+  def pretty_reviewers(reviewers)
+    fragment = []
+    reviewers.each do |reviewer|
+      fragment << github_link(reviewer)
+    end
+
+    return fragment.join(', ').html_safe
+  end
+
+  def github_link(handle)
+    link_to handle, "https://github.com/#{handle.gsub(/^\@/, "")}", :target => "_blank"
+  end
+
+  def pretty_authors(authors)
+    fragment = []
+    authors.each do |author|
+      fragment << author_link(author)
+    end
+
+    return fragment.join(', ').html_safe
+  end
+
+  def author_link(author)
+    name = "#{author['given_name']} #{author['last_name']}"
+    if author['orcid']
+      return link_to name, "http://orcid.org/#{author['orcid']}", :target => "_blank"
+    else
+      return name
+    end
+  end
+
   def pretty_status_badge(paper)
     state = paper.state.gsub('_', ' ')
     badge_class = paper.state.gsub('_', '-')

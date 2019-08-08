@@ -142,6 +142,21 @@ class Paper < ActiveRecord::Base
     end
   end
 
+  def metadata_reviewers
+    return [] unless accepted?
+    metadata['paper']['reviewers']
+  end
+
+  def metadata_editor
+    return nil unless accepted?
+    metadata['paper']['editor']
+  end
+
+  def metadata_authors
+    return nil unless accepted?
+    metadata['paper']['authors']
+  end
+
   def to_param
     sha
   end

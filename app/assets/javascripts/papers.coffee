@@ -24,7 +24,7 @@ $(document).on 'change', '.pre-check', authorCheck
 $(window).resize ->
   setPaperSize()
 
-$ ->
+$(window.ready) ->
   setPaperSize()
 
   $("form#new_paper").submit ->

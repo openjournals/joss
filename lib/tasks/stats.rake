@@ -37,6 +37,8 @@ namespace :stats do
     sheet = google.spreadsheet_by_key("1PAPRJ63yq9aPC1COLjaQp8mHmEq3rZUzwUYxTulyu78").worksheets[0]
 
     sheet.rows.each_with_index do |row, index|
+      # Need to slow down for the Google API.
+      sleep(0.75)
       puts "Working with #{index}"
       next if index < 4
       github_handle = sheet["A#{index}"]

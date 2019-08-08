@@ -8,19 +8,19 @@ atom_feed do |feed|
       entry.title(paper.title)
       entry.state(paper.state)
       entry.software_version(paper.software_version)
-      entry.authors do |author|
-        paper.authors.each_with_index do |a, i|
-          sequence = i == 0 ? "first" : "additional"
-          author.author("sequence"=>sequence) do |auth|
-            auth.given_name a['given_name']
-            auth.middle_name a['middle_name'] if a['middle_name']
-            auth.last_name a['last_name']
-            auth.affiliation a['affiliation']
-            auth.orcid a['orcid'] if a['orcid']
+      if paper.accepted?
+        entry.authors do |author|
+          paper.authors.each_with_index do |a, i|
+            sequence = i == 0 ? "first" : "additional"
+            author.author("sequence"=>sequence) do |auth|
+              auth.given_name a['given_name']
+              auth.middle_name a['middle_name'] if a['middle_name']
+              auth.last_name a['last_name']
+              auth.affiliation a['affiliation']
+              auth.orcid a['orcid'] if a['orcid']
+            end
           end
         end
-      end
-      if paper.accepted?
         entry.doi(paper.doi)
         entry.archive_doi(paper.archive_doi)
         entry.languages(paper.language_tags.join(', '))

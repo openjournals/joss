@@ -18,10 +18,11 @@ Rails.application.routes.draw do
   end
 
   get '/papers/lookup/:id', :to => "papers#lookup"
+  get '/papers/in/:language', to: "papers#filter", as: 'papers_by_language'
+  get '/papers/by/:author', to: "papers#filter", as: 'papers_by_author'
   get '/papers/:id/status.svg', :to => "papers#status", :format => "svg", :as => 'status_badge'
   get '/papers/:doi/status.svg', :to => "papers#status", :format => "svg", :constraints => { :doi => /10.21105\/joss\.\d{5}/}
   get '/papers/:doi', :to => "papers#show", :constraints => {:doi => /.*/}
-
 
   get '/dashboard/all', :to => "home#all"
   get '/dashboard/incoming', :to => "home#incoming"

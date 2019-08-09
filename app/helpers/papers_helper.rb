@@ -29,7 +29,7 @@ module PapersHelper
 
   def author_link(author)
     name = "#{author['given_name']} #{author['last_name']}"
-    author_search_link = link_to name, filter_papers_path(:author => name)
+    author_search_link = link_to name, papers_by_author_path(:author => name)
 
     if author['orcid']
       orcid_link = link_to author['orcid'], "http://orcid.org/#{author['orcid']}", :target => "_blank"

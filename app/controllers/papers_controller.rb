@@ -74,6 +74,8 @@ class PapersController < ApplicationController
   end
 
   def filter
+    @papers = Paper.none.page(1)
+    @term = "Empty search term"
     if params['language']
       @papers = Paper.search(params['language'], fields: [:languages],
                   :page => params[:page],

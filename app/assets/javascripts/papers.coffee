@@ -14,8 +14,9 @@ authorCheck = ->
 
 setPaperSize = ->
   if($("#joss-paper").length > 0)
+    paper_container = $('#joss-paper-pdf-container')
     paper = $('#joss-paper')
-    width = paper.width()
+    width = paper_container.width()
     height = width * 1.41421
     paper.css('height', height)
 
@@ -24,8 +25,8 @@ $(document).on 'change', '.pre-check', authorCheck
 $(window).resize ->
   setPaperSize()
 
-$(window.ready) ->
-  setPaperSize()
+$ ->
+  $("#joss-paper").on 'load', setPaperSize()
 
   $("form#new_paper").submit ->
     e.preventDefault()

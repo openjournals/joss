@@ -97,22 +97,6 @@ class PapersController < ApplicationController
     end
   end
 
-  def by_author
-    @papers = Paper.search(params['author'], fields: [:authors],
-                :page => params[:page],
-                :per_page => 10
-              )
-
-    @filtering = true
-    @authors = params['author']
-
-    respond_to do |format|
-      format.atom { render :template => 'papers/index' }
-      format.json { render :json => @papers }
-      format.html { render :template => 'papers/index' }
-    end
-  end
-
   def start_review
     @paper = Paper.find_by_sha(params[:id])
 

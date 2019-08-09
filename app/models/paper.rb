@@ -108,7 +108,8 @@ class Paper < ActiveRecord::Base
     {
       languages: language_tags,
       tags: author_tags,
-      authors: scholar_authors
+      authors: scholar_authors,
+      accepted_at: accepted_at
     }
   end
 

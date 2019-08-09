@@ -77,13 +77,13 @@ class PapersController < ApplicationController
     @papers = Paper.none.page(1)
     @term = "Empty search term"
     if params['language']
-      @papers = Paper.search(params['language'], fields: [:languages],
+      @papers = Paper.search(params['language'], fields: [:languages], order: { accepted_at: :desc },
                   :page => params[:page],
                   :per_page => 10
                 )
       @term = "in #{params['language']}"
     elsif params['author']
-      @papers = Paper.search(params['author'], fields: [:authors],
+      @papers = Paper.search(params['author'], fields: [:authors], order: { accepted_at: :desc },
                   :page => params[:page],
                   :per_page => 10
                 )

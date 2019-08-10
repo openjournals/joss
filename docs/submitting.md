@@ -1,35 +1,41 @@
 Submitting a paper to JOSS
 ==========================
 
-If you've already licensed your code and have good documentation then we expect that it should take less than an hour to prepare and submit your paper to JOSS.
+If you've already developed a fully featured research code, released it under an [OSI-approved license](https://opensource.org/licenses), and written good documentation and tests, then we expect that it should take perhaps an hour or two to prepare and submit your paper to JOSS.
+But please read these instructions carefully for a streamlined submission.
 
 ## Typical paper submission flow
 
-Before you submit we need you to:
+Before you submit, you should:
 
-- Make software available in an open repository (GitHub, Bitbucket etc.) and include an [OSI approved open source license](https://opensource.org/licenses).
-- Make sure that the software complies with the [JOSS review criteria](review_criteria.html).
-- Author a short Markdown paper `paper.md` with a title, summary, author names, affiliations, and key references. See an example [here](https://github.com/arfon/fidgit/tree/master/paper).
-- (Optional) create a metadata file and include it in your repository describing your software. [This script](https://gist.github.com/arfon/478b2ed49e11f984d6fb) automates the generation of this metadata.
+- Make your software available in an open repository (GitHub, Bitbucket, etc.) and include an [OSI approved open source license](https://opensource.org/licenses).
+- Make sure that the software complies with the [JOSS review criteria](review_criteria.html). In particular, your software should be full-featured, well-documented, and contain procedures (such as automated tests) for checking correctness.
+- Write a short paper in Markdown format using `paper.md` as file name, including a title, summary, author names, affiliations, and key references. See our [example paper](#example-paper-and-bibliography) to follow the correct format.
+- (Optional) create a metadata file describing your software and include it in your repository. We provide [a script](https://gist.github.com/arfon/478b2ed49e11f984d6fb) that automates the generation of this metadata.
 
 
 ## What should my paper contain?
 
-JOSS welcomes submissions from broadly diverse research areas. For this reason, we require that authors include in the paper some sentences that would explain the software functionality and domain of use to a non-specialist reader. Your submission should probably be somewhere between 250-1000 words.
+```eval_rst
+.. important:: Begin your paper with a summary of the high-level functionality of your software for a non-specialist reader. Avoid jargon in this section.
+```
 
-In addition, your paper should include:
+JOSS welcomes submissions from broadly diverse research areas. For this reason, we require that authors include in the paper some sentences that explain the software functionality and domain of use to a non-specialist reader. We also require that authors explain the research applications of the software. The paper should be between 250-1000 words.
 
-- A list of the authors of the software and their affiliations.
+
+Your paper should include:
+
+- A list of the authors of the software and their affiliations, using the correct format (see the example below).
 - A summary describing the high-level functionality and purpose of the software for a diverse, *non-specialist audience*.
-- A clear statement of need that illustrates the purpose of the software.
-- A list of key references including a link to the software archive.
-- Mentions (if applicable) of any ongoing research projects using the software or recent scholarly publications enabled by it.
+- A clear *Statement of Need* that illustrates the research purpose of the software.
+- A list of key references, including to other software addressing related needs.
+- Mention (if applicable) of any past or ongoing research projects using the software and recent scholarly publications enabled by it.
 - Acknowledgement of any financial support.
 
-As this short list shows, JOSS papers are only permitted to contain a limited set of metadata (see header below), Statement of Need, Summary, Acknowledgements, and References sections. You can see an example accepted paper [here](http://bit.ly/2x22gxT). Given this paper format, a "full length" paper is not permitted, e.g., software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation.
+As this short list shows, JOSS papers are only expected to contain a limited set of metadata (see example below), a Statement of Need, Summary, Acknowledgements, and References sections. You can look at an [example accepted paper](http://bit.ly/2x22gxT). Given this format, a "full length" paper is not permitted, and software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation.
 
 ```eval_rst
-.. important:: You paper will be reviewed by one or more reviewers in a public GitHub issue. Take a look at the `review checklist <review_checklist.html>`_ and  `review criteria <review_criteria.html>`_ to better understand how your submission will be reviewed.
+.. important:: Your paper will be reviewed by two or more reviewers in a public GitHub issue. Take a look at the `review checklist <review_checklist.html>`_ and  `review criteria <review_criteria.html>`_ to better understand how your submission will be reviewed.
 ```
 
 ## Example paper and bibliography
@@ -185,11 +191,11 @@ Example `paper.bib` file:
 }
 ```
 
-Note that the paper ends with a References heading, and the references are built automatically from the content in the .bib file when they are mentioned in the paper body.
+Note that the paper ends with a References heading, and the references are built automatically from the content in the `.bib` file. You should enter in-text citations in the paper body following correct [Markdown citation syntax](https://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html#citation_syntax).
 
 ## Submitting your paper
 
-Submission then is as simple as:
+Submission is as simple as:
 
 - Filling in the [short submission form](http://joss.theoj.org/papers/new)
 - Waiting for the managing editor to start a pre-review issue over in the JOSS reviews repository: https://github.com/openjournals/joss-reviews
@@ -200,7 +206,7 @@ Submission then is as simple as:
 - The software should have an **obvious** research application.
 - You should be a major contributor to the software you are submitting.
 - The software should be a significant contribution to the available open source software that either enables some new research challenges to be addressed or makes addressing research challenges significantly better (e.g., faster, easier, simpler).
-- The software should be feature complete (no half-baked solutions) and designed for maintainable extension (not one-off modifications). Minor ‘utility’ packages, including ‘thin’ API clients, are not acceptable.
+- The software should be feature-complete (no half-baked solutions) and designed for maintainable extension (not one-off modifications). Minor ‘utility’ packages, including ‘thin’ API clients, are not acceptable.
 - Your paper (`paper.md` and BibTeX files, plus any figures) must be hosted in a Git-based repository.
 
 In addition, the software associated with your submission must:
@@ -212,9 +218,9 @@ In addition, the software associated with your submission must:
 
 JOSS publishes articles about research software. This definition includes software that: solves complex modeling problems in a scientific context (physics, mathematics, biology, medicine, social science, neuroscience, engineering); supports the functioning of research instruments or the execution of research experiments; extracts knowledge from large data sets; offers a mathematical library, or similar.
 
-## Submission fees
+## No submission fees
 
-There are no fees for submitting or publishing in JOSS. You can read more about our cost and sustainability model [here](http://joss.theoj.org/about#costs).
+There are no fees for submitting or publishing in JOSS. You can read more about our [cost and sustainability model](http://joss.theoj.org/about#costs).
 
 ## Authorship
 
@@ -222,16 +228,17 @@ Purely financial (such as being named on an award) and organizational (such as g
 
 ## Submissions using proprietary languages/dev environments
 
-We strongly prefer software that doesn't rely upon proprietary (paid for) development environments/programming languages. However, provided _your submission_ meets our submission requirements (including having a valid open source license) then we will consider your submission for review. Should your submission be accepted for review, we may ask you, the submitting author, to help us find reviewers who already have the required development environment installed.
+We strongly prefer software that doesn't rely upon proprietary (paid for) development environments/programming languages. However, provided _your submission meets our requirements (including having a valid open source license) then we will consider your submission for review. Should your submission be accepted for review, we may ask you, the submitting author, to help us find reviewers who already have the required development environment installed.
 
 ## The review process
 
 After submission:
 
-- One or more JOSS reviewers are assigned and the review is carried out in the [reviews repository](https://github.com/openjournals/joss-reviews).
-- Authors respond to reviewer-raised issues (if any are raised) on the submitted repository's issue tracker. Reviewer contributions, like any other contributions, should be acknowledged in the repository.
-- Upon successful completion of the review, deposit a copy of your (updated) repository with a data-archiving service such as [Zenodo](https://zenodo.org/) or [figshare](https://figshare.com/), issue a DOI for the archive, and update the review issue thread with your DOI.
-- After assignment of a DOI, your paper metadata is deposited in CrossRef and listed on the JOSS website.
-- And that's it.
+- An Associate Editor-in-Chief will carry out an initial check of your submission, and proceed to assign a handling editor.
+- The handling editor will assign two or more JOSS reviewers, and the review will be carried out in the [JOSS reviews repository](https://github.com/openjournals/joss-reviews).
+- Authors will respond to reviewer-raised issues (if any are raised) on the submission repository's issue tracker. Reviewer and editor contributions, like any other contributions, should be acknowledged in the repository.
+- Upon successful completion of the review, authors will make a tagged release of the software, and deposit a copy of the repository with a data-archiving service such as [Zenodo](https://zenodo.org/) or [figshare](https://figshare.com/), get a DOI for the archive, and update the review issue thread with the version number and DOI.
+- After we assign a DOI for your accepted JOSS paper, its metadata is deposited with CrossRef and listed on the JOSS website.
+- The review issue will be closed, and an automatic tweet from [@JOSS_TheOJ](https://twitter.com/JOSS_TheOJ) will announce it!
 
-If you want to learn more about what the review process looks like in detail, take a look at the [reviewer guidelines](reviewer_guidelines.html).
+If you want to learn more details about the review process, take a look at the [reviewer guidelines](reviewer_guidelines.html).

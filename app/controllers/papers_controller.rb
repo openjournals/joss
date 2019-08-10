@@ -51,6 +51,9 @@ class PapersController < ApplicationController
 
     @selected = "popular"
 
+    puts "PARAMS :SINCE : #{params[:since]}"
+    puts "PARAMS :LANGUAGE : #{params[:language]}"
+
     respond_to do |format|
       format.atom { render :template => 'papers/index' }
       format.json { render :json => @papers }

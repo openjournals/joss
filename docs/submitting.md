@@ -237,7 +237,7 @@ After submission:
 
 - An Associate Editor-in-Chief will carry out an initial check of your submission, and proceed to assign a handling editor.
 - The handling editor will assign two or more JOSS reviewers, and the review will be carried out in the [JOSS reviews repository](https://github.com/openjournals/joss-reviews).
-- Authors will respond to reviewer-raised issues (if any are raised) on the submission repository's issue tracker. Reviewer contributions, like any other contributions, should be acknowledged in the repository.
+- Authors will respond to reviewer-raised issues (if any are raised) on the submission repository's issue tracker. Reviewer and editor contributions, like any other contributions, should be acknowledged in the repository.
 - Upon successful completion of the review, authors will make a tagged release of the software, and deposit a copy of the repository with a data-archiving service such as [Zenodo](https://zenodo.org/) or [figshare](https://figshare.com/), get a DOI for the archive, and update the review issue thread with the version number and DOI.
 - After we assign a DOI for your accepted JOSS paper, its metadata is deposited with CrossRef and listed on the JOSS website.
 - The review issue will be closed, and an automatic tweet from [@JOSS_TheOJ](https://twitter.com/JOSS_TheOJ) will announce it!

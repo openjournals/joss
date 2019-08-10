@@ -12,15 +12,15 @@ def stats_clean_up_github_handle(github_handle)
 end
 
 def stats_reviews_all_time_for(github_handle)
-  return Paper.visible.where(":reviewer = ANY(reviewers)", reviewer: "@#{github_handle}").count
+  return Paper.where(":reviewer = ANY(reviewers)", reviewer: "@#{github_handle}").count
 end
 
 def stats_reviews_last_year_for(github_handle)
-  return Paper.since(1.year.ago).visible.where(":reviewer = ANY(reviewers)", reviewer: "@#{github_handle}").count
+  return Paper.since(1.year.ago).where(":reviewer = ANY(reviewers)", reviewer: "@#{github_handle}").count
 end
 
 def stats_reviews_last_quarter_for(github_handle)
-  return Paper.since(3.months.ago).visible.where(":reviewer = ANY(reviewers)", reviewer: "@#{github_handle}").count
+  return Paper.since(3.months.ago).where(":reviewer = ANY(reviewers)", reviewer: "@#{github_handle}").count
 end
 
 def stats_active_reviews_for(github_handle)

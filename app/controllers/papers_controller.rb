@@ -37,7 +37,7 @@ class PapersController < ApplicationController
 
   def popular
     if params[:since]
-      @papers = Paper.unscoped.visible.where('accepted_at > ?', params[:since]).order(:accepted_at => :desc).paginate(
+      @papers = Paper.unscoped.visible.since(params[:since]).order(:accepted_at => :desc).paginate(
                   :page => params[:page],
                   :per_page => 10
                 )
@@ -50,9 +50,6 @@ class PapersController < ApplicationController
 
 
     @selected = "popular"
-
-    puts "PARAMS :SINCE : #{params[:since]}"
-    puts "PARAMS :LANGUAGE : #{params[:language]}"
 
     respond_to do |format|
       format.atom { render :template => 'papers/index' }

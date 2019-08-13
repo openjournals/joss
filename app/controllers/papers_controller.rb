@@ -88,6 +88,27 @@ class PapersController < ApplicationController
                   :per_page => 10
                 )
       @term = "by #{params['author']}"
+
+    elsif params['issue']
+      @papers = Paper.search(params['issue'], fields: [{issue: :exact}], order: { page: :desc },
+                  :page => params[:page],
+                  :per_page => 10
+                )
+      @term = "in issue #{params['issue']}"
+
+    elsif params['volume']
+      @papers = Paper.search(params['volume'], fields: [{volume: :exact}], order: { page: :desc },
+                  :page => params[:page],
+                  :per_page => 10
+                )
+      @term = "in volume #{params['volume']}"
+
+    elsif params['year']
+      @papers = Paper.search(params['year'], fields: [{year: :exact}], order: { page: :desc },
+                  :page => params[:page],
+                  :per_page => 10
+                )
+      @term = "in #{params['year']}"
     end
 
     @filtering = true

@@ -252,7 +252,7 @@ describe DispatchController, :type => :controller do
                                         :editor => "jimmy"
                                         }
 
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(paper.reload.editor).to eql(editor)
     end
 
@@ -300,7 +300,7 @@ describe DispatchController, :type => :controller do
                                           :reviewers => "joey, dave"
                                           }
 
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(paper.reload.reviewers).to eql(["@joey", "@dave"])
     end
 
@@ -340,7 +340,7 @@ describe DispatchController, :type => :controller do
                                   :title => "Foo, bar, baz",
                                   :metadata => encoded_metadata
                                   }
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(paper.reload.state).to eql('accepted')
       expect(paper.metadata['paper']['reviewers']).to eql(["@jim", "@bob"])
     end

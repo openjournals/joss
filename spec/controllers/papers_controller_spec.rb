@@ -10,7 +10,7 @@ describe PapersController, :type => :controller do
   describe "GET #index" do
     it "should render all visible papers" do
       get :index, :format => :html
-      expect(response).to be_success
+      expect(response).to be_successful
     end
   end
 
@@ -224,14 +224,14 @@ describe PapersController, :type => :controller do
   describe "GET Atom feeds" do
     it "returns an Atom feed for #index" do
       get :index, :format => "atom"
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(response).to render_template("papers/index")
       expect(response.content_type).to eq("application/atom+xml")
     end
 
     it "returns a valid Atom feed for #popular (published)" do
       get :popular, :format => "atom"
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(response).to render_template("papers/index")
       expect(response.content_type).to eq("application/atom+xml")
     end

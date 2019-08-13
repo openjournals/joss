@@ -68,7 +68,7 @@ describe 'papers/show.html.erb' do
       expect(rendered).to have_css("meta[content='10.21105/joss.00000']", visible: false)
 
       expect(rendered).to have_css("meta[name='citation_issn']", visible: false)
-      expect(rendered).to have_css("meta[content='#{Rails.application.settings['twitter_issn']}']", visible: false)
+      expect(rendered).to have_css("meta[content='#{Rails.application.settings['issn']}']", visible: false)
     end
   end
 

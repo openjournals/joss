@@ -160,6 +160,26 @@ class Paper < ActiveRecord::Base
     metadata['paper']['authors']
   end
 
+  def issue
+    return nil unless accepted?
+    metadata['paper']['issue']
+  end
+
+  def volume
+    return nil unless accepted?
+    metadata['paper']['volume']
+  end
+
+  def year
+    return nil unless accepted?
+    metadata['paper']['year']
+  end
+
+  def page
+    return nil unless accepted?
+    metadata['paper']['page']
+  end
+
   def to_param
     sha
   end

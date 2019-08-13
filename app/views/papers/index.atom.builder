@@ -15,6 +15,10 @@ atom_feed do |feed|
       entry.state(paper.state)
       entry.software_version(paper.software_version)
       if paper.accepted?
+        entry.issue paper.issue
+        entry.volume paper.volume
+        entry.year paper.year
+        entry.page paper.page
         entry.authors do |author|
           paper.metadata_authors.each_with_index do |a, i|
             sequence = i == 0 ? "first" : "additional"

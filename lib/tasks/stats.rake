@@ -38,7 +38,6 @@ namespace :stats do
 
     sheet.rows.each_with_index do |row, index|
       # Need to slow down for the Google API.
-      sleep(1)
       puts "Working with #{index}"
       next if index < 4
       github_handle = sheet["A#{index}"]
@@ -53,7 +52,7 @@ namespace :stats do
       sheet["H#{index}"] = stats_reviews_all_time_for(handle)
       sheet["I#{index}"] = stats_reviews_last_year_for(handle)
       sheet["J#{index}"] = stats_reviews_last_quarter_for(handle)
-      sheet.save
     end
+    sheet.save
   end
 end

@@ -20,6 +20,7 @@ Rails.application.routes.draw do
   get '/papers/lookup/:id', :to => "papers#lookup"
   get '/papers/in/:language', to: "papers#filter", as: 'papers_by_language'
   get '/papers/by/:author', to: "papers#filter", as: 'papers_by_author'
+  get '/papers/tagged/:tag', to: "papers#filter", as: 'papers_by_tag'
   get '/papers/issue/:issue', to: "papers#filter", as: 'papers_by_issue'
   get '/papers/volume/:volume', to: "papers#filter", as: 'papers_by_volume'
   get '/papers/year/:year', to: "papers#filter", as: 'papers_by_year'

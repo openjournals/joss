@@ -106,14 +106,15 @@ class Paper < ActiveRecord::Base
 
   def search_data
     {
-      languages: language_tags,
-      tags: author_tags,
-      authors: scholar_authors,
       accepted_at: accepted_at,
-      year: year,
-      volume: volume,
+      authors: scholar_authors,
       issue: issue,
-      page: page
+      languages: language_tags,
+      page: page,
+      tags: author_tags,
+      title: scholar_title,
+      volume: volume,
+      year: year
     }
   end
 
@@ -127,6 +128,7 @@ class Paper < ActiveRecord::Base
   end
 
   def scholar_title
+    return nil unless accepted?
     metadata['paper']['title']
   end
 
@@ -143,7 +145,7 @@ class Paper < ActiveRecord::Base
   def author_tags
     return [] unless accepted?
     if metadata['paper']['tags']
-      return metadata['paper']['tags']
+      return metadata['paper']['tags'] - language_tags
     else
       return []
     end

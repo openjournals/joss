@@ -36,11 +36,18 @@ class PapersController < ApplicationController
   end
 
   def popular
-    # TODO: Need to order by popularity here
-    @papers = Paper.unscoped.visible.order(:accepted_at => :desc).paginate(
-                :page => params[:page],
-                :per_page => 10
-              )
+    if params[:since]
+      @papers = Paper.unscoped.visible.since(params[:since]).order(:accepted_at => :desc).paginate(
+                  :page => params[:page],
+                  :per_page => 10
+                )
+    else
+      @papers = Paper.unscoped.visible.order(:accepted_at => :desc).paginate(
+                  :page => params[:page],
+                  :per_page => 10
+                )
+    end
+
 
     @selected = "popular"
 
@@ -58,6 +65,60 @@ class PapersController < ApplicationController
               )
 
     @selected = "active"
+
+    respond_to do |format|
+      format.atom { render :template => 'papers/index' }
+      format.json { render :json => @papers }
+      format.html { render :template => 'papers/index' }
+    end
+  end
+
+  def filter
+    @papers = Paper.none.page(1)
+    @term = "Empty search term"
+    if params['language']
+      @papers = Paper.search(params['language'], fields: [languages: :exact], order: { accepted_at: :desc },
+                  :page => params[:page],
+                  :per_page => 10
+                )
+      @term = "in #{params['language']}"
+    elsif params['author']
+      @papers = Paper.search(params['author'], fields: [:authors], order: { accepted_at: :desc },
+                  :page => params[:page],
+                  :per_page => 10
+                )
+      @term = "by #{params['author']}"
+
+    elsif params['tag']
+      @papers = Paper.search(params['tag'], fields: [:tags, :title], order: { accepted_at: :desc },
+                  :page => params[:page],
+                  :per_page => 10
+                )
+      @term = "#{params['tag']}"
+
+    elsif params['issue']
+      @papers = Paper.search(params['issue'], fields: [{issue: :exact}], order: { page: :desc },
+                  :page => params[:page],
+                  :per_page => 10
+                )
+      @term = "in issue #{params['issue']}"
+
+    elsif params['volume']
+      @papers = Paper.search(params['volume'], fields: [{volume: :exact}], order: { page: :desc },
+                  :page => params[:page],
+                  :per_page => 10
+                )
+      @term = "in volume #{params['volume']}"
+
+    elsif params['year']
+      @papers = Paper.search(params['year'], fields: [{year: :exact}], order: { page: :desc },
+                  :page => params[:page],
+                  :per_page => 10
+                )
+      @term = "in #{params['year']}"
+    end
+
+    @filtering = true
 
     respond_to do |format|
       format.atom { render :template => 'papers/index' }

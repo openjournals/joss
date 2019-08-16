@@ -6,7 +6,7 @@ describe HomeController, :type => :controller do
   describe "GET #index" do
     it "should render home page" do
       get :index, :format => :html
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(response.body).to match /The Journal of Open Source Software/
     end
   end
@@ -17,7 +17,7 @@ describe HomeController, :type => :controller do
       allow(controller).to receive_message_chain(:current_user).and_return(user)
 
       get :index, :format => :html
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(response.body).to match /you need to add your email address and GitHub handle/
     end
 
@@ -26,7 +26,7 @@ describe HomeController, :type => :controller do
       allow(controller).to receive_message_chain(:current_user).and_return(user)
 
       get :index, :format => :html
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(response.body).to match /you need to add your email address and GitHub handle/
     end
   end
@@ -34,7 +34,7 @@ describe HomeController, :type => :controller do
   describe "GET #about" do
     it "should render about page" do
       get :about, :format => :html
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(response.body).to match /Don't we have enough journals already?/
     end
   end
@@ -46,7 +46,7 @@ describe HomeController, :type => :controller do
 
       # FIXME: Fix this test
       # get :profile, :format => :html
-      # expect(response).to be_success
+      # expect(response).to be_successful
       # expect(response.body).not_to match /Please update your profile before continuing/
     end
   end

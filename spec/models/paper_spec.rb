@@ -34,7 +34,7 @@ describe Paper do
 
   it "should return only visible papers" do
     hidden_paper = create(:paper, :state => "submitted")
-    visible_paper_1 = create(:paper, :state => "accepted")
+    visible_paper_1 = create(:accepted_paper)
     visible_paper_2 = create(:paper, :state => "superceded")
 
     expect(Paper.visible).to contain_exactly(visible_paper_1, visible_paper_2)
@@ -44,7 +44,7 @@ describe Paper do
   it "should exclude withdrawn and rejected papers" do
     rejected_paper = create(:paper, :state => "rejected")
     withdrawn_paper = create(:paper, :state => "withdrawn")
-    paper = create(:paper, :state => "accepted")
+    paper = create(:accepted_paper)
 
     expect(Paper.everything).to contain_exactly(paper)
     expect(Paper.invisible).to contain_exactly(rejected_paper, withdrawn_paper)
@@ -128,7 +128,7 @@ describe Paper do
   end
 
   it "should be able to be withdrawn at any time" do
-    paper = create(:paper, :state => "accepted")
+    paper = create(:accepted_paper)
     assert Paper.visible.include?(paper)
 
     paper.withdraw!

@@ -1,4 +1,5 @@
 class Paper < ActiveRecord::Base
+  searchkick
   include SettingsHelper
   serialize :activities, Hash
   serialize :metadata, Hash
@@ -79,6 +80,7 @@ class Paper < ActiveRecord::Base
   scope :visible, -> { where(:state => VISIBLE_STATES) }
   scope :invisible, -> { where(:state => INVISIBLE_STATES) }
   scope :everything, lambda { where('state NOT IN (?)', ['rejected', 'withdrawn']) }
+  scope :search_import, -> { where(:state => VISIBLE_STATES) }
 
   before_create :set_sha, :set_last_activity
   after_create :notify_editors, :notify_author
@@ -97,6 +99,25 @@ class Paper < ActiveRecord::Base
     Notifications.author_submission_email(self).deliver_now
   end
 
+  # Only index papers that are visible
+  def should_index?
+    !invisible?
+  end
+
+  def search_data
+    {
+      accepted_at: accepted_at,
+      authors: scholar_authors,
+      issue: issue,
+      languages: language_tags,
+      page: page,
+      tags: author_tags,
+      title: scholar_title,
+      volume: volume,
+      year: year
+    }
+  end
+
   def self.featured
     # TODO: Make this a thing
     Paper.first
@@ -107,16 +128,62 @@ class Paper < ActiveRecord::Base
   end
 
   def scholar_title
+    return nil unless accepted?
     metadata['paper']['title']
   end
 
   def scholar_authors
+    return nil unless accepted?
     metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['last_name']}"}.join(', ')
   end
 
   def language_tags
     return [] unless accepted?
     metadata['paper']['languages'] - IGNORED_LANGUAGES
+  end
+
+  def author_tags
+    return [] unless accepted?
+    if metadata['paper']['tags']
+      return metadata['paper']['tags'] - language_tags
+    else
+      return []
+    end
+  end
+
+  def metadata_reviewers
+    return [] unless accepted?
+    metadata['paper']['reviewers']
+  end
+
+  def metadata_editor
+    return nil unless accepted?
+    metadata['paper']['editor']
+  end
+
+  def metadata_authors
+    return nil unless accepted?
+    metadata['paper']['authors']
+  end
+
+  def issue
+    return nil unless accepted?
+    metadata['paper']['issue']
+  end
+
+  def volume
+    return nil unless accepted?
+    metadata['paper']['volume']
+  end
+
+  def year
+    return nil unless accepted?
+    metadata['paper']['year']
+  end
+
+  def page
+    return nil unless accepted?
+    metadata['paper']['page']
   end
 
   def to_param

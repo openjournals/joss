@@ -10,7 +10,7 @@ describe PapersController, :type => :controller do
   describe "GET #index" do
     it "should render all visible papers" do
       get :index, :format => :html
-      expect(response).to be_success
+      expect(response).to be_successful
     end
   end
 
@@ -209,7 +209,7 @@ describe PapersController, :type => :controller do
     end
 
     it "should return the correct status badge for an accepted paper" do
-      submitted_paper = create(:paper, :state => 'accepted', :doi => "10.21105/joss.12345")
+      submitted_paper = create(:accepted_paper, :doi => "10.21105/joss.12345")
 
       get :status, params: {:id => submitted_paper.sha}, :format => "svg"
       expect(response.body).to match /10.21105/
@@ -218,6 +218,22 @@ describe PapersController, :type => :controller do
     it "should return the correct status badge for an unknown paper" do
       get :status, params: {:id => "asdasd"}, :format => "svg"
       expect(response.body).to match /Unknown/
+    end
+  end
+
+  describe "GET Atom feeds" do
+    it "returns an Atom feed for #index" do
+      get :index, :format => "atom"
+      expect(response).to be_successful
+      expect(response).to render_template("papers/index")
+      expect(response.content_type).to eq("application/atom+xml")
+    end
+
+    it "returns a valid Atom feed for #popular (published)" do
+      get :popular, :format => "atom"
+      expect(response).to be_successful
+      expect(response).to render_template("papers/index")
+      expect(response.content_type).to eq("application/atom+xml")
     end
   end
 end

@@ -14,6 +14,20 @@ FactoryBot.define do
       sha '48d24b0158528e85ac7706aecd8cddc4'
     end
 
+    paper_metadata = { 'paper' => { 'languages' => ['Ruby', 'Rust'],
+                                    'editor' => '@arfon',
+                                    'title' => 'arfon / fidgit',
+                                    'reviewers' => ['@jim', '@jane'],
+                                    'authors' => [{'given_name' =>  'Mickey', 'last_name' => 'Mouse', 'orcid' => '0000-0002-7736-0000'},
+                                                  {'given_name' => 'Walt', 'middle_name' => 'Elias', 'last_name' => 'Disney', 'orcid' => '0000-0002-7736-000X'}]}}
+    factory :accepted_paper do
+      metadata paper_metadata
+      state 'accepted'
+      accepted_at { Time.now }
+      review_issue_id 0
+      doi '10.21105/joss.00000'
+    end
+
     factory :submitted_paper do
       state 'submitted'
     end

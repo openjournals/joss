@@ -13,14 +13,20 @@ Rails.application.routes.draw do
       get 'recent'
       get 'published', to: 'papers#popular'
       get 'active'
+      get 'filter', to: 'papers#filter'
     end
   end
 
   get '/papers/lookup/:id', :to => "papers#lookup"
+  get '/papers/in/:language', to: "papers#filter", as: 'papers_by_language'
+  get '/papers/by/:author', to: "papers#filter", as: 'papers_by_author'
+  get '/papers/tagged/:tag', to: "papers#filter", as: 'papers_by_tag'
+  get '/papers/issue/:issue', to: "papers#filter", as: 'papers_by_issue'
+  get '/papers/volume/:volume', to: "papers#filter", as: 'papers_by_volume'
+  get '/papers/year/:year', to: "papers#filter", as: 'papers_by_year'
   get '/papers/:id/status.svg', :to => "papers#status", :format => "svg", :as => 'status_badge'
   get '/papers/:doi/status.svg', :to => "papers#status", :format => "svg", :constraints => { :doi => /10.21105\/joss\.\d{5}/}
   get '/papers/:doi', :to => "papers#show", :constraints => {:doi => /.*/}
-
 
   get '/dashboard/all', :to => "home#all"
   get '/dashboard/incoming', :to => "home#incoming"

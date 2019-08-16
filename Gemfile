@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
+ruby "2.6.3"
 
 gem 'aasm', '~> 4.1.0'
 gem 'chartkick'
@@ -13,13 +14,15 @@ gem 'commonmarker', '~> 0.17.7'
 gem 'octicons_helper', '~> 4.0'
 gem 'omniauth-orcid', '~> 2.0.2'
 gem 'octokit', '~> 4.14'
+gem 'pdf-reader', '~> 1.4'
 gem 'pg', '~> 0.21.0'
 gem 'will_paginate', '~> 3.1.6'
 gem 'rails', '5.2.3'
 gem 'responders'
-gem 'newrelic_rpm', '~> 4.6.0'
+gem 'newrelic_rpm'
 gem 'sanitize', '~> 4.6.3'
 gem 'sass-rails', '~> 5.0.7'
+gem 'searchkick'
 gem 'uglifier', '4.0.1'
 gem 'coffee-rails', '~> 4.2.2'
 

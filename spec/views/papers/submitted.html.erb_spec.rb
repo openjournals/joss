@@ -6,7 +6,7 @@ describe 'papers/submitted.html.erb' do
       user = create(:user)
 
       3.times do
-        create(:paper, :state => "accepted", :submitting_author => user)
+        create(:accepted_paper, :submitting_author => user)
       end
 
       create(:paper, :state => "submitted", :submitting_author => user)

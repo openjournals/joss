@@ -77,7 +77,7 @@ class PapersController < ApplicationController
     @papers = Paper.none.page(1)
     @term = "Empty search term"
     if params['language']
-      @papers = Paper.search(params['language'], fields: [:languages], order: { accepted_at: :desc },
+      @papers = Paper.search(params['language'], fields: [languages: :exact], order: { accepted_at: :desc },
                   :page => params[:page],
                   :per_page => 10
                 )

@@ -21,6 +21,7 @@ class Paper < ActiveRecord::Base
     state :superceded
     state :accepted
     state :rejected
+    state :retracted
     state :withdrawn
 
     event :reject do
@@ -46,7 +47,8 @@ class Paper < ActiveRecord::Base
 
   VISIBLE_STATES = [
     "accepted",
-    "superceded"
+    "superceded",
+    "retracted"
   ].freeze
 
   IN_PROGRESS_STATES = [
@@ -127,23 +129,27 @@ class Paper < ActiveRecord::Base
     recent
   end
 
+  def published?
+    accepted? || retracted?
+  end
+
   def scholar_title
-    return nil unless accepted?
+    return nil unless published?
     metadata['paper']['title']
   end
 
   def scholar_authors
-    return nil unless accepted?
+    return nil unless published?
     metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['last_name']}"}.join(', ')
   end
 
   def language_tags
-    return [] unless accepted?
+    return [] unless published?
     metadata['paper']['languages'] - IGNORED_LANGUAGES
   end
 
   def author_tags
-    return [] unless accepted?
+    return [] unless published?
     if metadata['paper']['tags']
       return metadata['paper']['tags'] - language_tags
     else
@@ -152,37 +158,37 @@ class Paper < ActiveRecord::Base
   end
 
   def metadata_reviewers
-    return [] unless accepted?
+    return [] unless published?
     metadata['paper']['reviewers']
   end
 
   def metadata_editor
-    return nil unless accepted?
+    return nil unless published?
     metadata['paper']['editor']
   end
 
   def metadata_authors
-    return nil unless accepted?
+    return nil unless published?
     metadata['paper']['authors']
   end
 
   def issue
-    return nil unless accepted?
+    return nil unless published?
     metadata['paper']['issue']
   end
 
   def volume
-    return nil unless accepted?
+    return nil unless published?
     metadata['paper']['volume']
   end
 
   def year
-    return nil unless accepted?
+    return nil unless published?
     metadata['paper']['year']
   end
 
   def page
-    return nil unless accepted?
+    return nil unless published?
     metadata['paper']['page']
   end
 

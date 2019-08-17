@@ -32,6 +32,14 @@ FactoryBot.define do
       state 'submitted'
     end
 
+    factory :retracted_paper do
+      metadata paper_metadata
+      state 'retracted'
+      accepted_at { Time.now }
+      review_issue_id 0
+      doi '10.21105/joss.00000'
+    end
+
     factory :submitted_paper_with_sha do
       sha '48d24b0158528e85ac7706aecd8cddc4'
       state 'submitted'

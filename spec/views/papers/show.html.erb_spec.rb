@@ -124,5 +124,16 @@ describe 'papers/show.html.erb' do
 
       expect(rendered).to have_content "View review issue"
     end
+
+    it "shows the takedown notice for a retracted paper" do
+      user = create(:user)
+      allow(view).to receive_message_chain(:current_user).and_return(user)
+
+      paper = create(:retracted_paper, :retraction_notice => "Reasons for retraction")
+      assign(:paper, paper)
+
+      render :template => "papers/show.html.erb"
+      expect(rendered).to have_content("Reasons for retraction")
+    end
   end
 end

@@ -1,9 +1,9 @@
 class ApplicationController < ActionController::Base
-  rescue_from ActiveRecord::RecordNotFound, :with => :record_not_found
+  rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
 
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
-  protect_from_forgery :with => :exception
+  protect_from_forgery with: :exception
 
   def require_user
     unless current_user
@@ -33,7 +33,7 @@ class ApplicationController < ActionController::Base
 
   def require_complete_profile
     if !current_user.profile_complete?
-      redirect_back(:notice => "Please add an email address to your account before submitting", :fallback_location => root_path)
+      redirect_back(notice: "Please add an email address to your account before submitting", fallback_location: root_path)
     end
   end
 
@@ -45,7 +45,7 @@ private
   helper_method :current_user
 
   def record_not_found
-    render :plain => "404 Not Found", :status => 404
+    render plain: "404 Not Found", status: 404
   end
 end
 

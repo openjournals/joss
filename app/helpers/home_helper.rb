@@ -22,7 +22,7 @@ module HomeHelper
     capture do
       paper.labels.each do |label, colour|
         if label == "paused"
-          concat content_tag(:span, label, :style => "padding: 3px; margin-right: 3px; border-radius: 2px; background-color: ##{colour}; color: white;")
+          concat content_tag(:span, label, style: "padding: 3px; margin-right: 3px; border-radius: 2px; background-color: ##{colour}; color: white;")
         end
       end
     end
@@ -39,15 +39,15 @@ module HomeHelper
     capture do
       if !paper.activities['issues']['comments'].empty?
         if paper.activities['issues']['last_edits'] && paper.activities['issues']['last_edits'].keys.any?
-          concat content_tag(:strong, "Recent activity", :style => "padding-bottom: 5px;")
+          concat content_tag(:strong, "Recent activity", style: "padding-bottom: 5px;")
           paper.activities['issues']['last_edits'].each do |user,time|
-            concat(content_tag(:p, "Checklist edit by #{user}, #{time_ago_in_words(time)} ago", :style => "padding: 0px; margin: 0px 0px 10px 0px;"))
+            concat(content_tag(:p, "Checklist edit by #{user}, #{time_ago_in_words(time)} ago", style: "padding: 0px; margin: 0px 0px 10px 0px;"))
           end
         end
-        concat content_tag(:strong, "Recent comments", :style => "padding-bottom: 5px;")
+        concat content_tag(:strong, "Recent comments", style: "padding-bottom: 5px;")
         paper.activities['issues']['comments'].each do |comment|
-          concat(content_tag(:p, truncate(comment['comment'], :length => 120), :style => "padding: 0px; margin-bottom: 0px;"))
-          concat(content_tag(:p, "#{time_ago_in_words(comment['commented_at']).capitalize} ago (@#{comment['author']}). #{comment_link(comment)}".html_safe, :style => "padding: 0px; margin: 0px 0px 10px 0px; font-style: italic;"))
+          concat(content_tag(:p, truncate(comment['comment'], length: 120), style: "padding: 0px; margin-bottom: 0px;"))
+          concat(content_tag(:p, "#{time_ago_in_words(comment['commented_at']).capitalize} ago (@#{comment['author']}). #{comment_link(comment)}".html_safe, style: "padding: 0px; margin: 0px 0px 10px 0px; font-style: italic;"))
         end
       end
     end
@@ -78,7 +78,7 @@ module HomeHelper
   end
 
   def comment_link(comment)
-    link_to("View comment &rarr;".html_safe, comment['comment_url'], :target => "_blank")
+    link_to("View comment &rarr;".html_safe, comment['comment_url'], target: "_blank")
   end
 
   def github_user(username)

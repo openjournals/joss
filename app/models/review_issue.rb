@@ -5,10 +5,10 @@ class ReviewIssue
 
   # Download all of the current open issues on review repo
   def self.download_review_issues(review_repo)
-    open_issues = GITHUB.list_issues(review_repo, :state => 'open')
+    open_issues = GITHUB.list_issues(review_repo, state: 'open')
 
     # TODO: Generate some stats on recently closed issues too
-    # closed_issues = github.list_issues(@nwo, :state => 'closed')
+    # closed_issues = github.list_issues(@nwo, state: 'closed')
 
     # Loop through open issues and create ReviewIssues for future manipulation
     review_issues = []
@@ -29,7 +29,7 @@ class ReviewIssue
 
   # Download all the completed (closed) review issues
   def self.download_completed_reviews(review_repo)
-    complete_issues = GITHUB.list_issues(review_repo, :state => 'closed')
+    complete_issues = GITHUB.list_issues(review_repo, state: 'closed')
 
     # Loop through open issues and create ReviewIssues for future manipulation
     review_issues = []

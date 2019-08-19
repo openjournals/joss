@@ -1,50 +1,50 @@
 class PapersController < ApplicationController
   include SettingsHelper
 
-  before_action :require_user, :only => %w(new create update withdraw)
-  before_action :require_complete_profile, :only => %w(create)
-  before_action :require_admin_user, :only => %w(start_meta_review archive reject)
+  before_action :require_user, only: %w(new create update withdraw)
+  before_action :require_complete_profile, only: %w(create)
+  before_action :require_admin_user, only: %w(start_meta_review archive reject)
 
   def recent
     @papers = Paper.visible.paginate(
-                :page => params[:page],
-                :per_page => 10
+                page: params[:page],
+                per_page: 10
               )
 
     @selected = "recent"
 
     respond_to do |format|
-      format.atom { render :template => 'papers/index' }
-      format.json { render :json => @papers }
-      format.html { render :template => 'papers/index' }
+      format.atom { render template: 'papers/index' }
+      format.json { render json: @papers }
+      format.html { render template: 'papers/index' }
     end
   end
 
   def index
     @papers = Paper.everything.paginate(
-                :page => params[:page],
-                :per_page => 10
+                page: params[:page],
+                per_page: 10
               )
 
     @selected = "all"
 
     respond_to do |format|
-      format.atom { render :template => 'papers/index' }
-      format.json { render :json => @papers }
-      format.html { render :template => 'papers/index' }
+      format.atom { render template: 'papers/index' }
+      format.json { render json: @papers }
+      format.html { render template: 'papers/index' }
     end
   end
 
   def popular
     if params[:since]
-      @papers = Paper.unscoped.visible.since(params[:since]).order(:accepted_at => :desc).paginate(
-                  :page => params[:page],
-                  :per_page => 10
+      @papers = Paper.unscoped.visible.since(params[:since]).order(accepted_at: :desc).paginate(
+                  page: params[:page],
+                  per_page: 10
                 )
     else
-      @papers = Paper.unscoped.visible.order(:accepted_at => :desc).paginate(
-                  :page => params[:page],
-                  :per_page => 10
+      @papers = Paper.unscoped.visible.order(accepted_at: :desc).paginate(
+                  page: params[:page],
+                  per_page: 10
                 )
     end
 
@@ -52,24 +52,24 @@ class PapersController < ApplicationController
     @selected = "popular"
 
     respond_to do |format|
-      format.atom { render :template => 'papers/index' }
-      format.json { render :json => @papers }
-      format.html { render :template => 'papers/index' }
+      format.atom { render template: 'papers/index' }
+      format.json { render json: @papers }
+      format.html { render template: 'papers/index' }
     end
   end
 
   def active
     @papers = Paper.in_progress.paginate(
-                :page => params[:page],
-                :per_page => 10
+                page: params[:page],
+                per_page: 10
               )
 
     @selected = "active"
 
     respond_to do |format|
-      format.atom { render :template => 'papers/index' }
-      format.json { render :json => @papers }
-      format.html { render :template => 'papers/index' }
+      format.atom { render template: 'papers/index' }
+      format.json { render json: @papers }
+      format.html { render template: 'papers/index' }
     end
   end
 
@@ -78,42 +78,42 @@ class PapersController < ApplicationController
     @term = "Empty search term"
     if params['language']
       @papers = Paper.search(params['language'], fields: [languages: :exact], order: { accepted_at: :desc },
-                  :page => params[:page],
-                  :per_page => 10
+                  page: params[:page],
+                  per_page: 10
                 )
       @term = "in #{params['language']}"
     elsif params['author']
       @papers = Paper.search(params['author'], fields: [:authors], order: { accepted_at: :desc },
-                  :page => params[:page],
-                  :per_page => 10
+                  page: params[:page],
+                  per_page: 10
                 )
       @term = "by #{params['author']}"
 
     elsif params['tag']
       @papers = Paper.search(params['tag'], fields: [:tags, :title], order: { accepted_at: :desc },
-                  :page => params[:page],
-                  :per_page => 10
+                  page: params[:page],
+                  per_page: 10
                 )
       @term = "#{params['tag']}"
 
     elsif params['issue']
       @papers = Paper.search(params['issue'], fields: [{issue: :exact}], order: { page: :desc },
-                  :page => params[:page],
-                  :per_page => 10
+                  page: params[:page],
+                  per_page: 10
                 )
       @term = "in issue #{params['issue']}"
 
     elsif params['volume']
       @papers = Paper.search(params['volume'], fields: [{volume: :exact}], order: { page: :desc },
-                  :page => params[:page],
-                  :per_page => 10
+                  page: params[:page],
+                  per_page: 10
                 )
       @term = "in volume #{params['volume']}"
 
     elsif params['year']
       @papers = Paper.search(params['year'], fields: [{year: :exact}], order: { page: :desc },
-                  :page => params[:page],
-                  :per_page => 10
+                  page: params[:page],
+                  per_page: 10
                 )
       @term = "in #{params['year']}"
     end
@@ -121,9 +121,9 @@ class PapersController < ApplicationController
     @filtering = true
 
     respond_to do |format|
-      format.atom { render :template => 'papers/index' }
-      format.json { render :json => @papers }
-      format.html { render :template => 'papers/index' }
+      format.atom { render template: 'papers/index' }
+      format.json { render json: @papers }
+      format.html { render template: 'papers/index' }
     end
   end
 
@@ -196,15 +196,15 @@ class PapersController < ApplicationController
       head 404 and return unless can_see_hidden_paper?(@paper)
     end
 
-    render :layout => false
+    render layout: false
   end
 
   def lookup
     paper = Paper.where('review_issue_id = ? OR meta_review_issue_id = ?', params[:id], params[:id]).first!
     accepted_at = paper.accepted_at ? paper.accepted_at.strftime('%d %B %Y') : nil
-    response = {  :submitted => paper.created_at.strftime('%d %B %Y'),
-                  :accepted => accepted_at }
-    render :json => response.to_json
+    response = {  submitted: paper.created_at.strftime('%d %B %Y'),
+                  accepted: accepted_at }
+    render json: response.to_json
   end
 
   def valid_doi?
@@ -223,7 +223,7 @@ class PapersController < ApplicationController
     if @paper.save
       redirect_to paper_path(@paper)
     else
-      render :action => :new
+      render action: :new
     end
   end
 
@@ -244,7 +244,7 @@ class PapersController < ApplicationController
     end
 
     if stale?(@paper)
-      render :inline => svg
+      render inline: svg
     end
   end
 

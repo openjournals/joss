@@ -22,7 +22,7 @@ atom_feed do |feed|
         entry.authors do |author|
           paper.metadata_authors.each_with_index do |a, i|
             sequence = i == 0 ? "first" : "additional"
-            author.author("sequence"=>sequence) do |auth|
+            author.author("sequence" => sequence) do |auth|
               auth.given_name a['given_name']
               auth.middle_name a['middle_name'] if a['middle_name']
               auth.last_name a['last_name']

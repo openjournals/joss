@@ -1,6 +1,6 @@
 namespace :editorials do
   desc "Send weekly emails to editors"
-  task :send_weekly_emails => :environment do
+  task send_weekly_emails: :environment do
     # We run this task daily on Heroku but only want the email
     # sent once per week (on a Sunday)
     if Time.now.sunday?

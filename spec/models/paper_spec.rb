@@ -18,7 +18,7 @@ describe Paper do
 
   it "should return it's submitting_author" do
     user = create(:user)
-    paper = create(:paper, :user_id => user.id)
+    paper = create(:paper, user_id: user.id)
 
     expect(paper.submitting_author).to eq(user)
   end
@@ -26,24 +26,24 @@ describe Paper do
   # Scopes
 
   it "should return recent" do
-    old_paper = create(:paper, :created_at => 2.weeks.ago)
+    old_paper = create(:paper, created_at: 2.weeks.ago)
     new_paper = create(:paper)
 
     expect(Paper.recent).to eq([new_paper])
   end
 
   it "should return only visible papers" do
-    hidden_paper = create(:paper, :state => "submitted")
+    hidden_paper = create(:paper, state: "submitted")
     visible_paper_1 = create(:accepted_paper)
-    visible_paper_2 = create(:paper, :state => "superceded")
+    visible_paper_2 = create(:paper, state: "superceded")
 
     expect(Paper.visible).to contain_exactly(visible_paper_1, visible_paper_2)
     assert hidden_paper.invisible?
   end
 
   it "should exclude withdrawn and rejected papers" do
-    rejected_paper = create(:paper, :state => "rejected")
-    withdrawn_paper = create(:paper, :state => "withdrawn")
+    rejected_paper = create(:paper, state: "rejected")
+    withdrawn_paper = create(:paper, state: "withdrawn")
     paper = create(:accepted_paper)
 
     expect(Paper.everything).to contain_exactly(paper)
@@ -52,7 +52,7 @@ describe Paper do
 
   # GitHub stuff
   it "should know how to return a pretty repo name with owner" do
-    paper = create(:paper, :repository_url => "https://github.com/arfon/joss-reviews")
+    paper = create(:paper, repository_url: "https://github.com/arfon/joss-reviews")
 
     expect(paper.pretty_repository_name).to eq("arfon / joss-reviews")
   end
@@ -70,20 +70,20 @@ describe Paper do
   end
 
   it "should bail creating a full DOI URL if if can't figure out what to do" do
-    paper = create(:paper, :archive_doi => "http://foobar.com")
+    paper = create(:paper, archive_doi: "http://foobar.com")
 
     expect(paper.doi_with_url).to eq("http://foobar.com")
   end
 
   it "should know how to generate its review url" do
-    paper = create(:paper, :review_issue_id => 999)
+    paper = create(:paper, review_issue_id: 999)
 
     expect(paper.review_url).to eq("https://github.com/#{Rails.application.settings["reviews"]}/issues/999")
   end
 
   context "when rejected" do
     it "should change the paper state" do
-      paper = create(:paper, :state => "submitted")
+      paper = create(:paper, state: "submitted")
       paper.reject!
 
       expect(paper.state).to eq('rejected')
@@ -92,11 +92,11 @@ describe Paper do
 
   context "when starting review" do
     it "should initially change the paper state to review_pending" do
-      editor = create(:editor, :login => "arfon")
-      user = create(:user, :editor => editor)
+      editor = create(:editor, login: "arfon")
+      user = create(:user, editor: editor)
       submitting_author = create(:user)
 
-      paper = create(:submitted_paper_with_sha, :submitting_author => submitting_author)
+      paper = create(:submitted_paper_with_sha, submitting_author: submitting_author)
       fake_issue = Object.new
       allow(fake_issue).to receive(:number).and_return(1)
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
@@ -107,10 +107,10 @@ describe Paper do
     end
 
     it "should then allow for the paper to be moved into the under_review state" do
-      editor = create(:editor, :login => "arfoneditor")
-      user = create(:user, :editor => editor)
+      editor = create(:editor, login: "arfoneditor")
+      user = create(:user, editor: editor)
       submitting_author = create(:user)
-      paper = create(:review_pending_paper, :submitting_author => submitting_author)
+      paper = create(:review_pending_paper, submitting_author: submitting_author)
       fake_issue = Object.new
       allow(fake_issue).to receive(:number).and_return(1)
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)

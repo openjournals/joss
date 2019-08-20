@@ -74,7 +74,7 @@ Octicons includes a stylesheet specifically for [Rails 4/Sprockets][sprockets].
 
   ``` ruby
   def octicon(code)
-    content_tag :span, '', :class => "octicon octicon-#{code.to_s.dasherize}"
+    content_tag :span, '', class: "octicon octicon-#{code.to_s.dasherize}"
   end
   ```
 

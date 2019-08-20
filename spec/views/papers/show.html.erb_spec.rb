@@ -10,10 +10,10 @@ describe 'papers/show.html.erb' do
       user = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
 
-      paper = create(:paper, :state => "submitted", :submitting_author => user)
+      paper = create(:paper, state: "submitted", submitting_author: user)
       assign(:paper, paper)
 
-      render :template => "papers/show.html.erb"
+      render template: "papers/show.html.erb"
 
       expect(rendered).to have_content "but the review hasn't started."
     end
@@ -25,7 +25,7 @@ describe 'papers/show.html.erb' do
       paper = create(:accepted_paper)
       assign(:paper, paper)
 
-      render :template => "papers/show.html.erb"
+      render template: "papers/show.html.erb"
 
       # Paper metadata
       expect(rendered).to have_content "Submitted #{Time.now.strftime('%d %B %Y')}"
@@ -43,7 +43,7 @@ describe 'papers/show.html.erb' do
       paper = create(:accepted_paper)
       assign(:paper, paper)
 
-      render :template => "papers/show.html.erb"
+      render template: "papers/show.html.erb"
 
       # Paper metadata
       expect(rendered).to have_title("The Journal of Open Source Software: #{paper.scholar_title}")
@@ -74,14 +74,14 @@ describe 'papers/show.html.erb' do
 
   context 'rendering admin partial' do
     it "displays buttons when there's no GitHub issue" do
-      user = create(:user, :admin => true)
+      user = create(:user, admin: true)
       author = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
 
-      paper = create(:paper, :state => "submitted", :review_issue_id => nil, :submitting_author => author)
+      paper = create(:paper, state: "submitted", review_issue_id: nil, submitting_author: author)
       assign(:paper, paper)
 
-      render :template => "papers/show.html.erb"
+      render template: "papers/show.html.erb"
 
       expect(rendered).to have_selector("input[type=submit][value='Reject paper']")
     end
@@ -90,37 +90,37 @@ describe 'papers/show.html.erb' do
       user = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
 
-      paper = create(:paper, :state => "submitted", :submitting_author => user)
+      paper = create(:paper, state: "submitted", submitting_author: user)
       assign(:paper, paper)
 
-      render :template => "papers/show.html.erb"
+      render template: "papers/show.html.erb"
       expect(rendered).to have_selector("input[type=submit][value='Withdraw paper']")
     end
 
     it "shows the withdraw button to admins" do
-      user = create(:user, :admin => true)
-      editor = create(:editor, :user => user)
+      user = create(:user, admin: true)
+      editor = create(:editor, user: user)
       author = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
 
-      paper = create(:paper, :state => "submitted", :submitting_author => author)
+      paper = create(:paper, state: "submitted", submitting_author: author)
       assign(:paper, paper)
 
-      render :template => "papers/show.html.erb"
+      render template: "papers/show.html.erb"
       expect(rendered).to have_selector("input[type=submit][value='Withdraw paper']")
       expect(rendered).to have_content(author.email)
     end
 
     it "doesn't displays buttons when there's a GitHub issue" do
-      user = create(:user, :admin => true)
+      user = create(:user, admin: true)
       author = create(:user)
 
       allow(view).to receive_message_chain(:current_user).and_return(user)
 
-      paper = create(:paper, :state => "submitted", :review_issue_id => 123, :submitting_author => author)
+      paper = create(:paper, state: "submitted", review_issue_id: 123, submitting_author: author)
       assign(:paper, paper)
 
-      render :template => "papers/show.html.erb"
+      render template: "papers/show.html.erb"
 
       expect(rendered).to have_content "View review issue"
     end
@@ -129,10 +129,10 @@ describe 'papers/show.html.erb' do
       user = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
 
-      paper = create(:retracted_paper, :retraction_notice => "Reasons for retraction")
+      paper = create(:retracted_paper, retraction_notice: "Reasons for retraction")
       assign(:paper, paper)
 
-      render :template => "papers/show.html.erb"
+      render template: "papers/show.html.erb"
       expect(rendered).to have_content("Reasons for retraction")
     end
   end

@@ -1,5 +1,5 @@
 require "util/console_extensions"
-include ConsoleExtensions
+include Util::ConsoleExtensions
 
 namespace :utils do
 
@@ -233,8 +233,10 @@ namespace :utils do
           editor = Editor.where('login = ?', editor).first
         end
 
-        paper.update_attribute(:editor_id, editor.id)
-        paper.update_attribute(:reviewers, review.reviewers)
+        if paper
+          paper.update_attribute(:editor_id, editor.id)
+          paper.update_attribute(:reviewers, review.reviewers)
+        end
       end
     end
   end

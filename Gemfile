@@ -3,7 +3,7 @@ ruby "2.6.3"
 
 gem 'aasm', '~> 4.1.0'
 gem 'chartkick'
-gem 'bootsnap', require: false
+gem 'bootsnap'
 gem 'dotenv', '~> 2.2.1'
 gem 'github-markdown', '~> 0.6.9'
 gem 'google_drive'
@@ -17,14 +17,15 @@ gem 'octokit', '~> 4.14'
 gem 'pdf-reader', '~> 1.4'
 gem 'pg', '~> 0.21.0'
 gem 'will_paginate', '~> 3.1.6'
-gem 'rails', '5.2.3'
+gem 'rails', '6.0.0'
 gem 'responders'
 gem 'newrelic_rpm'
 gem 'sanitize', '~> 4.6.3'
-gem 'sass-rails', '~> 5.0.7'
+gem 'sass-rails', '~> 6.0.0'
 gem 'searchkick'
 gem 'uglifier', '4.0.1'
-gem 'coffee-rails', '~> 4.2.2'
+gem 'coffee-rails', '~> 5.0.0'
+gem 'webpacker'
 
 gem 'active_link_to'
 

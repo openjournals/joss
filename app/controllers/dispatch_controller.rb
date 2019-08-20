@@ -4,7 +4,7 @@ class DispatchController < ApplicationController
   include DispatchHelper
   include SettingsHelper
 
-  protect_from_forgery :except => [ :api_start_review, :api_deposit, :api_assign_editor, :api_assign_reviewers ]
+  protect_from_forgery except: [ :api_start_review, :api_deposit, :api_assign_editor, :api_assign_reviewers ]
   respond_to :json
 
   def github_recevier
@@ -67,7 +67,7 @@ class DispatchController < ApplicationController
     if params[:secret] == ENV['WHEDON_SECRET']
       @paper = Paper.find_by_meta_review_issue_id(params[:id])
       if @paper.start_review!(nil, params[:editor], params[:reviewers])
-        render :json => @paper.to_json, :status => '201'
+        render json: @paper.to_json, status: '201'
       else
         head :unprocessable_entity
       end
@@ -85,19 +85,19 @@ class DispatchController < ApplicationController
       else
         metadata = nil
       end
-      
+
       @paper.update_attributes(
-        :doi => params[:doi],
-        :archive_doi => params[:archive_doi],
-        :accepted_at => Time.now,
-        :citation_string => params[:citation_string],
-        :authors => params[:authors],
-        :title => params[:title],
-        :metadata => metadata
+        doi: params[:doi],
+        archive_doi: params[:archive_doi],
+        accepted_at: Time.now,
+        citation_string: params[:citation_string],
+        authors: params[:authors],
+        title: params[:title],
+        metadata: metadata
       )
 
       if @paper.accept!
-        render :json => @paper.to_json, :status => '201'
+        render json: @paper.to_json, status: '201'
       else
         head :unprocessable_entity
       end

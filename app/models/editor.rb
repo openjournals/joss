@@ -18,7 +18,7 @@ class Editor < ActiveRecord::Base
   scope :board, -> { where(kind: "board") }
   scope :topic, -> { where(kind: "topic") }
   scope :emeritus, -> { where(kind: "emeritus") }
-  scope :active, -> { where(:kind => ACTIVE_EDITOR_STATES) }
+  scope :active, -> { where(kind: ACTIVE_EDITOR_STATES) }
 
   def category_list
     categories.join(", ")

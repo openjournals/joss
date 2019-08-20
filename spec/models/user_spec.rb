@@ -16,7 +16,7 @@ describe User do
 
   it "should know who the editors are" do
     user = create(:user)
-    editor = create(:editor, :user => user)
+    editor = create(:editor, user: user)
 
     expect(user.editor).to eq(editor)
     expect(user.editor?).to eq(true)
@@ -29,21 +29,21 @@ describe User do
   end
 
   it "should know how to create its ORCID id" do
-    user = create(:user, :uid => "0000-0000-0000-1111")
+    user = create(:user, uid: "0000-0000-0000-1111")
 
     expect(user.orcid_url).to eq("http://orcid.org/#{user.uid}")
   end
 
   it "should know how to format its name" do
-    user = create(:user, :uid => "0000-0000-0000-1111", :name => "Einstein, Albert")
+    user = create(:user, uid: "0000-0000-0000-1111", name: "Einstein, Albert")
 
     expect(user.nice_name).to eq("Albert Einstein")
   end
 
   it "should know whether it's profile is complete" do
-    complete_profile_user = create(:user, :email => "a@b.com", :github_username => "@foo")
-    user_without_email = create(:user, :email => nil)
-    user_without_github_username = create(:user, :github_username => nil)
+    complete_profile_user = create(:user, email: "a@b.com", github_username: "@foo")
+    user_without_email = create(:user, email: nil)
+    user_without_github_username = create(:user, github_username: nil)
 
     assert complete_profile_user.profile_complete?
     assert !user_without_email.profile_complete?

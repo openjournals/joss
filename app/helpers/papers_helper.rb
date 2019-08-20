@@ -15,7 +15,7 @@ module PapersHelper
   end
 
   def github_link(handle)
-    link_to handle, "https://github.com/#{handle.gsub(/^\@/, "")}", :target => "_blank"
+    link_to handle, "https://github.com/#{handle.gsub(/^\@/, "")}", target: "_blank"
   end
 
   def pretty_authors(authors)
@@ -29,10 +29,10 @@ module PapersHelper
 
   def author_link(author)
     name = "#{author['given_name']} #{author['last_name']}"
-    author_search_link = link_to name, papers_by_author_path(:author => name)
+    author_search_link = link_to name, papers_by_author_path(author: name)
 
     if author['orcid']
-      orcid_link = link_to author['orcid'], "http://orcid.org/#{author['orcid']}", :target => "_blank"
+      orcid_link = link_to author['orcid'], "http://orcid.org/#{author['orcid']}", target: "_blank"
       return "#{author_search_link} (#{orcid_link})"
     else
       return author_search_link
@@ -45,15 +45,15 @@ module PapersHelper
 
     state = "published" if state == "accepted"
 
-    return content_tag(:span, state, :class => "badge #{badge_class}")
+    return content_tag(:span, state, class: "badge #{badge_class}")
   end
 
   def time_words(paper)
     case paper.state
     when "accepted"
-      return content_tag(:span, "Published #{time_ago_in_words(paper.accepted_at)} ago", :class => "time")
+      return content_tag(:span, "Published #{time_ago_in_words(paper.accepted_at)} ago", class: "time")
     else
-      return content_tag(:span, "Submitted #{time_ago_in_words(paper.created_at)} ago", :class => "time")
+      return content_tag(:span, "Submitted #{time_ago_in_words(paper.created_at)} ago", class: "time")
     end
   end
 

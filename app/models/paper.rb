@@ -5,16 +5,16 @@ class Paper < ActiveRecord::Base
   serialize :metadata, Hash
 
   belongs_to  :submitting_author,
-              :class_name => 'User',
-              :validate => true,
-              :foreign_key => "user_id"
+              class_name: 'User',
+              validate: true,
+              foreign_key: "user_id"
 
   belongs_to  :editor
 
   include AASM
 
-  aasm :column => :state do
-    state :submitted, :initial => true
+  aasm column: :state do
+    state :submitted, initial: true
     state :review_pending
     state :under_review
     state :review_completed
@@ -25,23 +25,23 @@ class Paper < ActiveRecord::Base
     state :withdrawn
 
     event :reject do
-      transitions :to => :rejected
+      transitions to: :rejected
     end
 
     event :start_meta_review do
-      transitions :from => :submitted, :to => :review_pending, :if => :create_meta_review_issue
+      transitions from: :submitted, to: :review_pending, if: :create_meta_review_issue
     end
 
     event :start_review do
-      transitions :from => :review_pending, :to => :under_review, :if => :create_review_issue
+      transitions from: :review_pending, to: :under_review, if: :create_review_issue
     end
 
     event :accept do
-      transitions :to => :accepted
+      transitions to: :accepted
     end
 
     event :withdraw do
-      transitions :to => :withdrawn
+      transitions to: :withdrawn
     end
   end
 
@@ -73,24 +73,24 @@ class Paper < ActiveRecord::Base
     'CMake'
   ].freeze
 
-  default_scope  { order(:created_at => :desc) }
+  default_scope  { order(created_at: :desc) }
   scope :recent, lambda { where('created_at > ?', 1.week.ago) }
   scope :submitted, lambda { where('state = ?', 'submitted') }
 
   scope :since, -> (date) { where('accepted_at >= ?', date) }
-  scope :in_progress, -> { where(:state => IN_PROGRESS_STATES) }
-  scope :visible, -> { where(:state => VISIBLE_STATES) }
-  scope :invisible, -> { where(:state => INVISIBLE_STATES) }
+  scope :in_progress, -> { where(state: IN_PROGRESS_STATES) }
+  scope :visible, -> { where(state: VISIBLE_STATES) }
+  scope :invisible, -> { where(state: INVISIBLE_STATES) }
   scope :everything, lambda { where('state NOT IN (?)', ['rejected', 'withdrawn']) }
-  scope :search_import, -> { where(:state => VISIBLE_STATES) }
+  scope :search_import, -> { where(state: VISIBLE_STATES) }
 
   before_create :set_sha, :set_last_activity
   after_create :notify_editors, :notify_author
 
   validates_presence_of :title
-  validates_presence_of :repository_url, :message => "^Repository address can't be blank"
-  validates_presence_of :software_version, :message => "^Version can't be blank"
-  validates_presence_of :body, :message => "^Description can't be blank"
+  validates_presence_of :repository_url, message: "^Repository address can't be blank"
+  validates_presence_of :software_version, message: "^Version can't be blank"
+  validates_presence_of :body, message: "^Description can't be blank"
   validates :kind, inclusion: { in: Rails.application.settings["paper_types"] }, allow_nil: true
 
   def notify_editors
@@ -259,8 +259,8 @@ class Paper < ActiveRecord::Base
     reviewers = reviewers.split(',').each {|r| r.prepend('@')}
 
     ActionView::Base.new(Rails.configuration.paths['app/views']).render(
-      :template => 'shared/review_body', :format => :txt,
-      :locals => { :paper => self, :editor => "@#{editor}", :reviewers => reviewers }
+      template: 'shared/review_body', format: :txt,
+      locals: { paper: self, editor: "@#{editor}", reviewers: reviewers }
     )
   end
 
@@ -274,8 +274,8 @@ class Paper < ActiveRecord::Base
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[REVIEW]: #{self.title}",
                                 review_body(editor_handle, reviewers),
-                                { :assignees => [editor_handle],
-                                  :labels => "review" })
+                                { assignees: [editor_handle],
+                                  labels: "review" })
 
     set_review_issue(issue.number)
     set_editor(editor)
@@ -300,13 +300,13 @@ class Paper < ActiveRecord::Base
 
   def meta_review_body(editor)
     if editor.strip.empty?
-      locals = { :paper => self, :editor => "Pending" }
+      locals = { paper: self, editor: "Pending" }
     else
-      locals = { :paper => self, :editor => "#{editor}" }
+      locals = { paper: self, editor: "#{editor}" }
     end
     ActionView::Base.new(Rails.configuration.paths['app/views']).render(
-      :template => 'shared/meta_view_body', :format => :txt,
-      :locals => locals
+      template: 'shared/meta_view_body', format: :txt,
+      locals: locals
     )
   end
 
@@ -334,8 +334,8 @@ class Paper < ActiveRecord::Base
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[PRE REVIEW]: #{self.title}",
                                 meta_review_body(editor_handle),
-                                { :assignee => striped_handle,
-                                  :labels => "pre-review" })
+                                { assignee: striped_handle,
+                                  labels: "pre-review" })
 
     set_meta_review_issue(issue.number)
   end

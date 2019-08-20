@@ -29,7 +29,7 @@ end
 
 namespace :stats do
   desc "Update the Google sheet with reviewer counts"
-  task :review_counts => :environment do
+  task review_counts: :environment do
     decoded = Base64.decode64(ENV['GAUTH'].gsub("\\n", "\n"))
     client_secret = StringIO.new(decoded)
     google = GoogleDrive::Session.from_service_account_key(client_secret)

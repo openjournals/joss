@@ -59,7 +59,7 @@ class PapersController < ApplicationController
   end
 
   def active
-    @papers = Paper.in_progress.paginate(
+    @papers = Paper.public_in_progress.paginate(
                 page: params[:page],
                 per_page: 10
               )

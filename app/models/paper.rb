@@ -51,6 +51,11 @@ class Paper < ActiveRecord::Base
     "retracted"
   ].freeze
 
+  PUBLIC_IN_PROGRESS_STATES = [
+    "under_review",
+    "review_pending"
+  ].freeze
+
   IN_PROGRESS_STATES = [
     "submitted",
     "under_review",
@@ -79,6 +84,8 @@ class Paper < ActiveRecord::Base
 
   scope :since, -> (date) { where('accepted_at >= ?', date) }
   scope :in_progress, -> { where(state: IN_PROGRESS_STATES) }
+  scope :in_progress, -> { where(state: IN_PROGRESS_STATES) }
+  scope :public_in_progress, -> { where(state: PUBLIC_IN_PROGRESS_STATES) }
   scope :visible, -> { where(state: VISIBLE_STATES) }
   scope :invisible, -> { where(state: INVISIBLE_STATES) }
   scope :everything, lambda { where('state NOT IN (?)', ['rejected', 'withdrawn']) }

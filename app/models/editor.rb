@@ -4,7 +4,7 @@ class Editor < ActiveRecord::Base
   validates :last_name, presence: true
   validates :login, presence: true, unless: Proc.new { |editor| editor.kind == "emeritus"  }
 
-  belongs_to :user
+  belongs_to :user, optional: true
   has_many :papers
 
   before_save :clear_title, if: :board_removed?

@@ -9,7 +9,7 @@ class Paper < ActiveRecord::Base
               validate: true,
               foreign_key: "user_id"
 
-  belongs_to  :editor
+  belongs_to  :editor, optional: true
 
   include AASM
 

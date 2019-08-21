@@ -1,6 +1,5 @@
 FactoryBot.define do
   factory :editor do
-    user  { create(:user) }
     kind { "topic" }
     first_name { "Person" }
     last_name { "McEditor" }

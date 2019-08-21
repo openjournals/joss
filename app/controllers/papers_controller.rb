@@ -21,7 +21,7 @@ class PapersController < ApplicationController
   end
 
   def index
-    @papers = Paper.everything.paginate(
+    @papers = Paper.public_everything.paginate(
                 page: params[:page],
                 per_page: 10
               )

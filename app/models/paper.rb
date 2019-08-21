@@ -88,6 +88,7 @@ class Paper < ActiveRecord::Base
   scope :public_in_progress, -> { where(state: PUBLIC_IN_PROGRESS_STATES) }
   scope :visible, -> { where(state: VISIBLE_STATES) }
   scope :invisible, -> { where(state: INVISIBLE_STATES) }
+  scope :public_everything, lambda { where('state NOT IN (?)', ['submitted', 'rejected', 'withdrawn']) }
   scope :everything, lambda { where('state NOT IN (?)', ['rejected', 'withdrawn']) }
   scope :search_import, -> { where(state: VISIBLE_STATES) }
 

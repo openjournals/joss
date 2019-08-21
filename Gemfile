@@ -25,7 +25,6 @@ gem 'sass-rails', '~> 6.0.0'
 gem 'searchkick'
 gem 'uglifier', '4.1.20'
 gem 'coffee-rails', '~> 5.0.0'
-gem 'webpacker'
 
 gem 'active_link_to'
 

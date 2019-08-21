@@ -86,7 +86,7 @@ class DispatchController < ApplicationController
         metadata = nil
       end
 
-      @paper.update_attributes(
+      @paper.update(
         doi: params[:doi],
         archive_doi: params[:archive_doi],
         accepted_at: Time.now,

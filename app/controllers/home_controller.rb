@@ -93,7 +93,7 @@ class HomeController < ApplicationController
   def update_profile
     check_github_username
 
-    if current_user.update_attributes(user_params)
+    if current_user.update(user_params)
       redirect_back(notice: "Profile updated", fallback_location: root_path)
     end
   end

@@ -101,7 +101,7 @@ describe Paper do
       allow(fake_issue).to receive(:number).and_return(1)
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
-      paper.start_meta_review(nil, 'arfon')
+      paper.start_meta_review('arfon')
       expect(paper.state).to eq('review_pending')
       expect(paper.editor).to eq(editor)
     end
@@ -115,7 +115,7 @@ describe Paper do
       allow(fake_issue).to receive(:number).and_return(1)
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
-      paper.start_review(nil, 'arfoneditor', 'bobthereviewer')
+      paper.start_review('arfoneditor', 'bobthereviewer')
       expect(paper.state).to eq('under_review')
       expect(paper.editor).to eq(editor)
     end

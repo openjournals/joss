@@ -222,7 +222,7 @@ There are no fees for submitting or publishing in JOSS. You can read more about 
 
 ## Preprint Policy
 
-Authors are welcome to submit their papers to a preprint server (e.g., [arXiv](https://arxiv.org/), [bioRxiv](https://www.biorxiv.org/), [SocArXiv](https://socopen.org/), [PsyArXiv](https://psyarxiv.com/)) at any point during the submission and review process.
+Authors are welcome to submit their papers to a preprint server (e.g., [arXiv](https://arxiv.org/), [bioRxiv](https://www.biorxiv.org/), [SocArXiv](https://socopen.org/), [PsyArXiv](https://psyarxiv.com/) etc.) at any point during the submission and review process.
 
 Submission to a preprint server is _not_ considered a previous publication.
 

@@ -265,9 +265,9 @@ class Paper < ActiveRecord::Base
   # 'reviewers' should be a string (and may be comma-separated)
   def review_body(editor, reviewers)
     reviewers = reviewers.split(',').each {|r| r.prepend('@')}
-
-    ActionView::Base.with_empty_template_cache.new(Rails.configuration.paths['app/views'].expanded).render(
-      template: 'shared/review_body', format: :txt,
+    ApplicationController.render(
+      template: 'shared/review_body',
+      formats: :text,
       locals: { paper: self, editor: "@#{editor}", reviewers: reviewers }
     )
   end
@@ -312,8 +312,9 @@ class Paper < ActiveRecord::Base
     else
       locals = { paper: self, editor: "#{editor}" }
     end
-    ActionView::Base.new(Rails.configuration.paths['app/views'].expanded).render(
-      template: 'shared/meta_view_body', format: :txt,
+    ApplicationController.render(
+      template: 'shared/meta_view_body',
+      formats: :text,
       locals: locals
     )
   end

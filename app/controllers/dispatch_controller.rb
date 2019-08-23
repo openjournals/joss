@@ -66,7 +66,7 @@ class DispatchController < ApplicationController
   def api_start_review
     if params[:secret] == ENV['WHEDON_SECRET']
       @paper = Paper.find_by_meta_review_issue_id(params[:id])
-      if @paper.start_review!(nil, params[:editor], params[:reviewers])
+      if @paper.start_review!(params[:editor], params[:reviewers])
         render json: @paper.to_json, status: '201'
       else
         head :unprocessable_entity
@@ -86,7 +86,7 @@ class DispatchController < ApplicationController
         metadata = nil
       end
 
-      @paper.update_attributes(
+      @paper.update(
         doi: params[:doi],
         archive_doi: params[:archive_doi],
         accepted_at: Time.now,

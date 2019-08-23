@@ -101,7 +101,7 @@ describe Paper do
       allow(fake_issue).to receive(:number).and_return(1)
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
-      paper.start_meta_review(nil, 'arfon')
+      paper.start_meta_review('arfon')
       expect(paper.state).to eq('review_pending')
       expect(paper.editor).to eq(editor)
     end
@@ -115,7 +115,7 @@ describe Paper do
       allow(fake_issue).to receive(:number).and_return(1)
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
-      paper.start_review(nil, 'arfoneditor', 'bobthereviewer')
+      paper.start_review('arfoneditor', 'bobthereviewer')
       expect(paper.state).to eq('under_review')
       expect(paper.editor).to eq(editor)
     end
@@ -138,7 +138,7 @@ describe Paper do
   describe "#review_body with a single author" do
     let(:author) { create(:user) }
     let(:paper) do
-      instance = build(:paper, user_id: author.id, kind: kind)
+      instance = build(:paper_with_sha, user_id: author.id, kind: kind)
       instance.save(validate: false)
       instance
     end
@@ -165,6 +165,8 @@ describe Paper do
       it { is_expected.to match /Does installation proceed as outlined/ }
       it { is_expected.to match /Are there automated tests/ }
       it { is_expected.to match /Does the `paper.md` file include a list of authors/ }
+      it { is_expected.to match /\/papers\/#{paper.sha}/ }
+      it { is_expected.to match /#{paper.repository_url}/ }
     end
   end
 
@@ -182,6 +184,42 @@ describe Paper do
       it { is_expected.to match /Reviewer:/ }
       it { is_expected.to match /Review checklist for @mickey/ }
       it { is_expected.to match /Review checklist for @mouse/ }
+      it { is_expected.to match /\/papers\/#{paper.sha}/ }
+      it { is_expected.to match /#{paper.repository_url}/ }
+    end
+  end
+
+  describe "#meta_review_body" do
+    let(:author) { create(:user) }
+    let(:paper) do
+      instance = build(:paper_with_sha, user_id: author.id)
+      instance.save(validate: false)
+      instance
+    end
+    subject { paper.meta_review_body(editor) }
+
+    context "with an editor" do
+      let(:editor) { "@joss_editor" }
+
+      it "renders text" do
+        is_expected.to match /#{paper.submitting_author.github_username}/
+        is_expected.to match /#{paper.submitting_author.name}/
+        is_expected.to match /#{Rails.application.settings['reviewers']}/
+      end
+
+      it { is_expected.to match "The JOSS editor @joss_editor, will work with you on this issue" }
+    end
+
+    context "with no editor" do
+      let(:editor) { "" }
+
+      it "renders text" do
+        is_expected.to match /#{paper.submitting_author.github_username}/
+        is_expected.to match /#{paper.submitting_author.name}/
+        is_expected.to match /#{Rails.application.settings['reviewers']}/
+      end
+
+      it { is_expected.to match "Currently, there isn't an JOSS editor assigned" }
     end
   end
 end

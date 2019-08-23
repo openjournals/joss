@@ -26,11 +26,11 @@ RSpec.describe Editor, type: :model do
   end
 
   context "switching type to topic" do
-    before(:each) { editor.update_attributes(kind: "board", title: "chief") }
+    before(:each) { editor.update(kind: "board", title: "chief") }
 
     it "clears the title" do
       expect {
-        editor.update_attributes(kind: "topic")
+        editor.update(kind: "topic")
       }.to change {
         editor.title
       }.from("chief").to(nil)

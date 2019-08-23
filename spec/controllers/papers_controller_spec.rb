@@ -226,14 +226,14 @@ describe PapersController, type: :controller do
       get :index, format: "atom"
       expect(response).to be_successful
       expect(response).to render_template("papers/index")
-      expect(response.content_type).to eq("application/atom+xml")
+      expect(response.media_type).to eq("application/atom+xml")
     end
 
     it "returns a valid Atom feed for #popular (published)" do
       get :popular, format: "atom"
       expect(response).to be_successful
       expect(response).to render_template("papers/index")
-      expect(response.content_type).to eq("application/atom+xml")
+      expect(response.media_type).to eq("application/atom+xml")
     end
   end
 end

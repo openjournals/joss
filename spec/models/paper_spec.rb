@@ -164,9 +164,6 @@ describe Paper do
       it { is_expected.to match /Does the repository contain a plain-text LICENSE file/ }
       it { is_expected.to match /Does installation proceed as outlined/ }
       it { is_expected.to match /Are there automated tests/ }
-      it { is_expected.to match /Does the `paper.md` file include a list of authors/ }
-      it { is_expected.to match /\/papers\/#{paper.sha}/ }
-      it { is_expected.to match /#{paper.repository_url}/ }
     end
   end
 

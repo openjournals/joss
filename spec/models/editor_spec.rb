@@ -26,11 +26,11 @@ RSpec.describe Editor, type: :model do
   end
 
   context "switching type to topic" do
-    before(:each) { editor.update_attributes(kind: "board", title: "chief") }
+    before(:each) { editor.update(kind: "board", title: "chief") }
 
     it "clears the title" do
       expect {
-        editor.update_attributes(kind: "topic")
+        editor.update(kind: "topic")
       }.to change {
         editor.title
       }.from("chief").to(nil)
@@ -47,9 +47,9 @@ RSpec.describe Editor, type: :model do
 
   describe "#active editors" do
     it "should exclude emeritus" do
-      editor_1 = create(:editor, login: "@board1", :kind => "board")
-      editor_2 = create(:editor, login: "@topic1", :kind => "topic")
-      editor_3 = create(:editor, login: "@retired1", :kind => "emeritus")
+      editor_1 = create(:editor, login: "@board1", kind: "board")
+      editor_2 = create(:editor, login: "@topic1", kind: "topic")
+      editor_3 = create(:editor, login: "@retired1", kind: "emeritus")
 
       assert Editor.active.count == 2
       assert Editor.emeritus.count == 1

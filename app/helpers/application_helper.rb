@@ -4,20 +4,20 @@ module ApplicationHelper
   def flash_class_for(flash_level)
     case flash_level
     when 'error'
-      'flash-error'
+      'alert-danger'
     when 'warning'
-      'flash-warn'
+      'alert-warning'
     when 'notice'
-      'flash-messages'
+      'alert-primary'
     else
-      'flash-messages'
+      'alert-primary'
     end
   end
 
   def nav_link(link_text, link_path)
     class_name = current_page?(link_path) ? 'active' : ''
 
-    content_tag(:li, :class => class_name) do
+    content_tag(:li, class: class_name) do
       link_to link_text, link_path
     end
   end

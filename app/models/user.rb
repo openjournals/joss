@@ -6,7 +6,7 @@ class User < ActiveRecord::Base
   before_create :set_sha
 
   def self.from_omniauth(auth)
-    where(:provider => auth.provider, :uid => auth.uid).first_or_create do |user|
+    where(provider: auth.provider, uid: auth.uid).first_or_create do |user|
       user.provider = auth.provider
       user.uid      = auth.uid
       user.name     = auth.info.name
@@ -44,6 +44,14 @@ class User < ActiveRecord::Base
 
   def editor?
     self.editor ? true:false
+  end
+
+  def pretty_github_username
+    if github_username.start_with?('@')
+      return github_username
+    else
+      return github_username.prepend('@')
+    end
   end
 
 private

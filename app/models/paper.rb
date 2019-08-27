@@ -1,50 +1,59 @@
 class Paper < ActiveRecord::Base
+  searchkick
   include SettingsHelper
   serialize :activities, Hash
+  serialize :metadata, Hash
 
   belongs_to  :submitting_author,
-              :class_name => 'User',
-              :validate => true,
-              :foreign_key => "user_id"
+              class_name: 'User',
+              validate: true,
+              foreign_key: "user_id"
 
-  belongs_to  :editor
+  belongs_to  :editor, optional: true
 
   include AASM
 
-  aasm :column => :state do
-    state :submitted, :initial => true
+  aasm column: :state do
+    state :submitted, initial: true
     state :review_pending
     state :under_review
     state :review_completed
     state :superceded
     state :accepted
     state :rejected
+    state :retracted
     state :withdrawn
 
     event :reject do
-      transitions :to => :rejected
+      transitions to: :rejected
     end
 
     event :start_meta_review do
-      transitions :from => :submitted, :to => :review_pending, :if => :create_meta_review_issue
+      transitions from: :submitted, to: :review_pending, if: :create_meta_review_issue
     end
 
     event :start_review do
-      transitions :from => :review_pending, :to => :under_review, :if => :create_review_issue
+      transitions from: :review_pending, to: :under_review, if: :create_review_issue
     end
 
     event :accept do
-      transitions :to => :accepted
+      transitions to: :accepted
     end
 
     event :withdraw do
-      transitions :to => :withdrawn
+      transitions to: :withdrawn
     end
   end
 
   VISIBLE_STATES = [
     "accepted",
-    "superceded"
+    "superceded",
+    "retracted"
+  ].freeze
+
+  PUBLIC_IN_PROGRESS_STATES = [
+    "under_review",
+    "review_pending"
   ].freeze
 
   IN_PROGRESS_STATES = [
@@ -59,27 +68,64 @@ class Paper < ActiveRecord::Base
     "withdrawn"
   ].freeze
 
-  default_scope  { order(:created_at => :desc) }
+  # Languages we don't show in the UI
+  IGNORED_LANGUAGES = [
+    'Shell',
+    'TeX',
+    'Makefile',
+    'HTML',
+    'CSS',
+    'CMake'
+  ].freeze
+
+  default_scope  { order(created_at: :desc) }
   scope :recent, lambda { where('created_at > ?', 1.week.ago) }
   scope :submitted, lambda { where('state = ?', 'submitted') }
 
   scope :since, -> (date) { where('accepted_at >= ?', date) }
-  scope :in_progress, -> { where(:state => IN_PROGRESS_STATES) }
-  scope :visible, -> { where(:state => VISIBLE_STATES) }
-  scope :invisible, -> { where(:state => INVISIBLE_STATES) }
+  scope :in_progress, -> { where(state: IN_PROGRESS_STATES) }
+  scope :in_progress, -> { where(state: IN_PROGRESS_STATES) }
+  scope :public_in_progress, -> { where(state: PUBLIC_IN_PROGRESS_STATES) }
+  scope :visible, -> { where(state: VISIBLE_STATES) }
+  scope :invisible, -> { where(state: INVISIBLE_STATES) }
+  scope :public_everything, lambda { where('state NOT IN (?)', ['submitted', 'rejected', 'withdrawn']) }
   scope :everything, lambda { where('state NOT IN (?)', ['rejected', 'withdrawn']) }
+  scope :search_import, -> { where(state: VISIBLE_STATES) }
 
   before_create :set_sha, :set_last_activity
-  after_create :notify_editors
+  after_create :notify_editors, :notify_author
 
   validates_presence_of :title
-  validates_presence_of :repository_url, :message => "^Repository address can't be blank"
-  validates_presence_of :software_version, :message => "^Version can't be blank"
-  validates_presence_of :body, :message => "^Description can't be blank"
+  validates_presence_of :repository_url, message: "^Repository address can't be blank"
+  validates_presence_of :software_version, message: "^Version can't be blank"
+  validates_presence_of :body, message: "^Description can't be blank"
   validates :kind, inclusion: { in: Rails.application.settings["paper_types"] }, allow_nil: true
 
   def notify_editors
     Notifications.submission_email(self).deliver_now
+  end
+
+  def notify_author
+    Notifications.author_submission_email(self).deliver_now
+  end
+
+  # Only index papers that are visible
+  def should_index?
+    !invisible?
+  end
+
+  def search_data
+    {
+      accepted_at: accepted_at,
+      authors: scholar_authors,
+      issue: issue,
+      languages: language_tags,
+      page: page,
+      tags: author_tags,
+      title: scholar_title,
+      volume: volume,
+      year: year
+    }
   end
 
   def self.featured
@@ -89,6 +135,69 @@ class Paper < ActiveRecord::Base
 
   def self.popular
     recent
+  end
+
+  def published?
+    accepted? || retracted?
+  end
+
+  def scholar_title
+    return nil unless published?
+    metadata['paper']['title']
+  end
+
+  def scholar_authors
+    return nil unless published?
+    metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['last_name']}"}.join(', ')
+  end
+
+  def language_tags
+    return [] unless published?
+    metadata['paper']['languages'] - IGNORED_LANGUAGES
+  end
+
+  def author_tags
+    return [] unless published?
+    if metadata['paper']['tags']
+      return metadata['paper']['tags'] - language_tags
+    else
+      return []
+    end
+  end
+
+  def metadata_reviewers
+    return [] unless published?
+    metadata['paper']['reviewers']
+  end
+
+  def metadata_editor
+    return nil unless published?
+    metadata['paper']['editor']
+  end
+
+  def metadata_authors
+    return nil unless published?
+    metadata['paper']['authors']
+  end
+
+  def issue
+    return nil unless published?
+    metadata['paper']['issue']
+  end
+
+  def volume
+    return nil unless published?
+    metadata['paper']['volume']
+  end
+
+  def year
+    return nil unless published?
+    metadata['paper']['year']
+  end
+
+  def page
+    return nil unless published?
+    metadata['paper']['page']
   end
 
   def to_param
@@ -137,7 +246,7 @@ class Paper < ActiveRecord::Base
   end
 
   def clean_archive_doi
-    archive_doi.gsub(/\"/, "")
+    doi_with_url.gsub(/\"/, "")
   end
 
   # A 5-figure integer used to produce the JOSS DOI
@@ -156,10 +265,10 @@ class Paper < ActiveRecord::Base
   # 'reviewers' should be a string (and may be comma-separated)
   def review_body(editor, reviewers)
     reviewers = reviewers.split(',').each {|r| r.prepend('@')}
-
-    ActionView::Base.new(Rails.configuration.paths['app/views']).render(
-      :template => 'shared/review_body', :format => :txt,
-      :locals => { :paper => self, :editor => "@#{editor}", :reviewers => reviewers }
+    ApplicationController.render(
+      template: 'shared/review_body',
+      formats: :text,
+      locals: { paper: self, editor: "@#{editor}", reviewers: reviewers }
     )
   end
 
@@ -173,8 +282,8 @@ class Paper < ActiveRecord::Base
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[REVIEW]: #{self.title}",
                                 review_body(editor_handle, reviewers),
-                                { :assignees => [editor_handle],
-                                  :labels => "review" })
+                                { assignees: [editor_handle],
+                                  labels: "review" })
 
     set_review_issue(issue.number)
     set_editor(editor)
@@ -199,13 +308,14 @@ class Paper < ActiveRecord::Base
 
   def meta_review_body(editor)
     if editor.strip.empty?
-      locals = { :paper => self, :editor => "Pending" }
+      locals = { paper: self, editor: "Pending" }
     else
-      locals = { :paper => self, :editor => "#{editor}" }
+      locals = { paper: self, editor: "#{editor}" }
     end
-    ActionView::Base.new(Rails.configuration.paths['app/views']).render(
-      :template => 'shared/meta_view_body', :format => :txt,
-      :locals => locals
+    ApplicationController.render(
+      template: 'shared/meta_view_body',
+      formats: :text,
+      locals: locals
     )
   end
 
@@ -233,8 +343,8 @@ class Paper < ActiveRecord::Base
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[PRE REVIEW]: #{self.title}",
                                 meta_review_body(editor_handle),
-                                { :assignee => striped_handle,
-                                  :labels => "pre-review" })
+                                { assignee: striped_handle,
+                                  labels: "pre-review" })
 
     set_meta_review_issue(issue.number)
   end
@@ -281,6 +391,8 @@ class Paper < ActiveRecord::Base
       "<svg xmlns='http://www.w3.org/2000/svg' width='168' height='20'><linearGradient id='b' x2='0' y2='100%'><stop offset='0' stop-color='#bbb' stop-opacity='.1'/><stop offset='1' stop-opacity='.1'/></linearGradient><mask id='a'><rect width='168' height='20' rx='3' fill='#fff'/></mask><g mask='url(#a)'><path fill='#555' d='M0 0h39v20H0z'/><path fill='#4c1' d='M39 0h129v20H39z'/><path fill='url(#b)' d='M0 0h168v20H0z'/></g><g fill='#fff' text-anchor='middle' font-family='DejaVu Sans,Verdana,Geneva,sans-serif' font-size='11'><text x='19.5' y='15' fill='#010101' fill-opacity='.3'>#{prefix}</text><text x='19.5' y='14'>#{prefix}</text><text x='102.5' y='15' fill='#010101' fill-opacity='.3'>#{self.doi}</text><text x='102.5' y='14'>#{self.doi}</text></g></svg>"
     when "rejected"
       "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='20'><linearGradient id='b' x2='0' y2='100%'><stop offset='0' stop-color='#bbb' stop-opacity='.1'/><stop offset='1' stop-opacity='.1'/></linearGradient><mask id='a'><rect width='100' height='20' rx='3' fill='#fff'/></mask><g mask='url(#a)'><path fill='#555' d='M0 0h40v20H0z'/><path fill='#e05d44' d='M40 0h60v20H40z'/><path fill='url(#b)' d='M0 0h100v20H0z'/></g><g fill='#fff' text-anchor='middle' font-family='DejaVu Sans,Verdana,Geneva,sans-serif' font-size='11'><text x='20' y='15' fill='#010101' fill-opacity='.3'>#{prefix}</text><text x='20' y='14'>#{prefix}</text><text x='69' y='15' fill='#010101' fill-opacity='.3'>Rejected</text><text x='69' y='14'>Rejected</text></g></svg>"
+    when "retracted"
+      "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='20'><linearGradient id='b' x2='0' y2='100%'><stop offset='0' stop-color='#bbb' stop-opacity='.1'/><stop offset='1' stop-opacity='.1'/></linearGradient><mask id='a'><rect width='100' height='20' rx='3' fill='#fff'/></mask><g mask='url(#a)'><path fill='#555' d='M0 0h40v20H0z'/><path fill='#e05d44' d='M40 0h60v20H40z'/><path fill='url(#b)' d='M0 0h100v20H0z'/></g><g fill='#fff' text-anchor='middle' font-family='DejaVu Sans,Verdana,Geneva,sans-serif' font-size='11'><text x='20' y='15' fill='#010101' fill-opacity='.3'>#{prefix}</text><text x='20' y='14'>#{prefix}</text><text x='69' y='15' fill='#010101' fill-opacity='.3'>Rejected</text><text x='69' y='14'>Retracted</text></g></svg>"
     else
       "<svg xmlns='http://www.w3.org/2000/svg' width='102' height='20'><linearGradient id='b' x2='0' y2='100%'><stop offset='0' stop-color='#bbb' stop-opacity='.1'/><stop offset='1' stop-opacity='.1'/></linearGradient><mask id='a'><rect width='102' height='20' rx='3' fill='#fff'/></mask><g mask='url(#a)'><path fill='#555' d='M0 0h40v20H0z'/><path fill='#9f9f9f' d='M40 0h62v20H40z'/><path fill='url(#b)' d='M0 0h102v20H0z'/></g><g fill='#fff' text-anchor='middle' font-family='DejaVu Sans,Verdana,Geneva,sans-serif' font-size='11'><text x='20' y='15' fill='#010101' fill-opacity='.3'>#{prefix}</text><text x='20' y='14'>#{prefix}</text><text x='70' y='15' fill='#010101' fill-opacity='.3'>Unknown</text><text x='70' y='14'>Unknown</text></g></svg>"
     end

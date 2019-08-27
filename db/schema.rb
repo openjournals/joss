@@ -2,15 +2,15 @@
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
 #
-# Note that this schema.rb definition is the authoritative source for your
-# database schema. If you need to create the application database on another
-# system, you should be using db:schema:load, not running all the migrations
-# from scratch. The latter is a flawed and unsustainable approach (the more migrations
-# you'll amass, the slower it'll run and the greater likelihood for issues).
+# This file is the source Rails uses to define your schema when running `rails
+# db:schema:load`. When creating a new database, `rails db:schema:load` tends to
+# be faster and is potentially less error prone than running all of your
+# migrations from scratch. Old migrations may fail to apply correctly if those
+# migrations use external dependencies or application code.
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_05_11_114410) do
+ActiveRecord::Schema.define(version: 2019_08_20_143831) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
@@ -33,7 +33,7 @@ ActiveRecord::Schema.define(version: 2019_05_11_114410) do
     t.index ["user_id"], name: "index_editors_on_user_id"
   end
 
-  create_table "papers", id: :serial, force: :cascade do |t|
+  create_table "papers", force: :cascade do |t|
     t.string "title"
     t.string "state"
     t.string "repository_url"
@@ -49,28 +49,26 @@ ActiveRecord::Schema.define(version: 2019_05_11_114410) do
     t.text "paper_body"
     t.integer "meta_review_issue_id"
     t.string "suggested_editor"
+    t.string "kind"
     t.text "authors"
     t.text "citation_string"
     t.datetime "accepted_at"
-    t.string "kind"
     t.integer "editor_id"
     t.string "reviewers", default: [], array: true
     t.text "activities"
     t.datetime "last_activity"
-    t.string "tags", default: [], array: true
-    t.string "languages", default: [], array: true
     t.jsonb "labels", default: {}, null: false
+    t.text "metadata"
+    t.text "retraction_notice"
     t.index ["editor_id"], name: "index_papers_on_editor_id"
     t.index ["labels"], name: "index_papers_on_labels", using: :gin
-    t.index ["languages"], name: "index_papers_on_languages", using: :gin
     t.index ["last_activity"], name: "index_papers_on_last_activity"
     t.index ["reviewers"], name: "index_papers_on_reviewers", using: :gin
     t.index ["sha"], name: "index_papers_on_sha"
-    t.index ["tags"], name: "index_papers_on_tags", using: :gin
     t.index ["user_id"], name: "index_papers_on_user_id"
   end
 
-  create_table "users", id: :serial, force: :cascade do |t|
+  create_table "users", force: :cascade do |t|
     t.string "provider"
     t.string "uid"
     t.string "name"

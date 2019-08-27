@@ -12,10 +12,24 @@ authorCheck = ->
     $("#author-submit").addClass('disabled')
     $("#author-submit").prop('disabled', true)
 
+setPaperSize = ->
+  if($("#joss-paper").length > 0)
+    paper_container = $('#joss-paper-pdf-container')
+    paper = $('#joss-paper')
+    width = paper_container.width()
+    height = width * 1.41421
+    paper.css('height', height)
+
 $(document).on 'change', '.pre-check', authorCheck
 
+$(window).resize ->
+  setPaperSize()
+
 $ ->
+  $("#joss-paper").on 'load', setPaperSize()
+
   $("form#new_paper").submit ->
     e.preventDefault()
 
-  clipboard = new Clipboard('.clippy')
+  if (typeof Clipboard != 'undefined')
+    clipboard = new Clipboard('.clippy')

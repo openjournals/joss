@@ -1,10 +1,10 @@
 require "util/console_extensions"
-include ConsoleExtensions
+include Util::ConsoleExtensions
 
 namespace :utils do
 
   desc "Populate activities"
-  task :update_activities => :environment do
+  task update_activities: :environment do
     Paper.all.each do |paper|
       if activities = paper.activities
         # Find the most recent comment
@@ -100,7 +100,7 @@ namespace :utils do
   end
 
   desc "Populate editors and reviewers"
-  task :populate_editors_and_reviewers => :environment do
+  task populate_editors_and_reviewers: :environment do
     reviews_repo = Rails.application.settings["reviews"]
     Paper.everything.each do |paper|
       puts "Paper: #{paper.id}"
@@ -135,7 +135,7 @@ namespace :utils do
   end
 
   desc "Populate activities"
-  task :populate_activities => :environment do
+  task populate_activities: :environment do
     reviews_repo = Rails.application.settings["reviews"]
 
     puts "Starting with in progress papers"
@@ -185,7 +185,7 @@ namespace :utils do
   end
 
   desc "Clear activities"
-  task :clear_activities => :environment do
+  task clear_activities: :environment do
     Paper.all.each do |paper|
       paper.activities = nil
       paper.save
@@ -194,7 +194,7 @@ namespace :utils do
 
 
   desc "Add user_ids to editors"
-  task :add_user_ids => :environment do
+  task add_user_ids: :environment do
     Editor.all.each do |e|
       u = User.find_by_github_username("@#{e.login}")
       if u.nil?
@@ -207,7 +207,7 @@ namespace :utils do
   end
 
   desc "Add editor_ids to papers"
-  task :add_editor_ids => :environment do
+  task add_editor_ids: :environment do
     reviews_repo = Rails.application.settings["reviews"]
     open_review_issues = ReviewIssue.download_review_issues(reviews_repo)
     closed_review_issues = ReviewIssue.download_completed_reviews(reviews_repo)
@@ -233,8 +233,10 @@ namespace :utils do
           editor = Editor.where('login = ?', editor).first
         end
 
-        paper.update_attribute(:editor_id, editor.id)
-        paper.update_attribute(:reviewers, review.reviewers)
+        if paper
+          paper.update_attribute(:editor_id, editor.id)
+          paper.update_attribute(:reviewers, review.reviewers)
+        end
       end
     end
   end

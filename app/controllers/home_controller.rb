@@ -1,10 +1,10 @@
 class HomeController < ApplicationController
-  before_action :require_user, :only => %w(profile update_profile)
-  before_action :require_editor, :only => %w(dashboard reviews incoming stats all in_progress)
-  layout "dashboard", :only =>  %w(dashboard reviews incoming stats all in_progress)
+  before_action :require_user, only: %w(profile update_profile)
+  before_action :require_editor, only: %w(dashboard reviews incoming stats all in_progress)
+  # layout "dashboard", only:  %w(dashboard reviews incoming stats all in_progress)
 
   def index
-    @papers = Paper.unscoped.visible.order(:accepted_at => :desc).limit(10)
+    @papers = Paper.unscoped.visible.order(accepted_at: :desc).limit(10)
   end
 
   def about
@@ -21,19 +21,19 @@ class HomeController < ApplicationController
     @reviewer_papers = Paper.unscoped.where(":reviewer = ANY(reviewers)", reviewer: @reviewer).group_by_month(:accepted_at).count
 
     @accepted_papers = Paper.unscoped.visible.group_by_month(:accepted_at).count
-    @editor_papers = Paper.unscoped.where(:editor => @editor).visible.group_by_month(:accepted_at).count
+    @editor_papers = Paper.unscoped.where(editor: @editor).visible.group_by_month(:accepted_at).count
   end
 
   def incoming
     if params[:order]
-      @papers = Paper.unscoped.in_progress.where(:editor => nil).order(:last_activity => params[:order]).paginate(
-                  :page => params[:page],
-                  :per_page => 20
+      @papers = Paper.unscoped.in_progress.where(editor: nil).order(last_activity: params[:order]).paginate(
+                  page: params[:page],
+                  per_page: 20
                 )
     else
-      @papers = Paper.in_progress.where(:editor => nil).paginate(
-                  :page => params[:page],
-                  :per_page => 20
+      @papers = Paper.in_progress.where(editor: nil).paginate(
+                  page: params[:page],
+                  per_page: 20
                 )
     end
 
@@ -47,28 +47,28 @@ class HomeController < ApplicationController
       @active_tab = @editor = Editor.find_by_login(params[:editor])
       sort_order = params[:order] ? params[:order] : 'desc'
 
-      @papers = Paper.unscoped.in_progress.where(:editor => @editor).order(:last_activity => sort_order).paginate(
-                  :page => params[:page],
-                  :per_page => 20
+      @papers = Paper.unscoped.in_progress.where(editor: @editor).order(last_activity: sort_order).paginate(
+                  page: params[:page],
+                  per_page: 20
                 )
     else
       @papers = Paper.everything.paginate(
-                  :page => params[:page],
-                  :per_page => 20
+                  page: params[:page],
+                  per_page: 20
                 )
     end
   end
 
   def in_progress
     if params[:order]
-      @papers = Paper.unscoped.in_progress.order(:last_activity => params[:order]).paginate(
-                  :page => params[:page],
-                  :per_page => 20
+      @papers = Paper.unscoped.in_progress.order(last_activity: params[:order]).paginate(
+                  page: params[:page],
+                  per_page: 20
                 )
     else
       @papers = Paper.in_progress.paginate(
-                  :page => params[:page],
-                  :per_page => 20
+                  page: params[:page],
+                  per_page: 20
                 )
     end
     render template: "home/reviews"
@@ -76,14 +76,14 @@ class HomeController < ApplicationController
 
   def all
     if params[:order]
-      @papers = Paper.unscoped.all.order(:last_activity => params[:order]).paginate(
-                :page => params[:page],
-                :per_page => 20
+      @papers = Paper.unscoped.all.order(last_activity: params[:order]).paginate(
+                page: params[:page],
+                per_page: 20
               )
     else
       @papers = Paper.all.paginate(
-                :page => params[:page],
-                :per_page => 20
+                page: params[:page],
+                per_page: 20
               )
     end
 
@@ -93,8 +93,8 @@ class HomeController < ApplicationController
   def update_profile
     check_github_username
 
-    if current_user.update_attributes(user_params)
-      redirect_back(:notice => "Profile updated", :fallback_location => root_path)
+    if current_user.update(user_params)
+      redirect_back(notice: "Profile updated", fallback_location: root_path)
     end
   end
 

@@ -4,7 +4,7 @@ class Editor < ActiveRecord::Base
   validates :last_name, presence: true
   validates :login, presence: true, unless: Proc.new { |editor| editor.kind == "emeritus"  }
 
-  belongs_to :user
+  belongs_to :user, optional: true
   has_many :papers
 
   before_save :clear_title, if: :board_removed?
@@ -18,7 +18,7 @@ class Editor < ActiveRecord::Base
   scope :board, -> { where(kind: "board") }
   scope :topic, -> { where(kind: "topic") }
   scope :emeritus, -> { where(kind: "emeritus") }
-  scope :active, -> { where(:kind => ACTIVE_EDITOR_STATES) }
+  scope :active, -> { where(kind: ACTIVE_EDITOR_STATES) }
 
   def category_list
     categories.join(", ")

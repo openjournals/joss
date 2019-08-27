@@ -1,4 +1,4 @@
-class AddPaperMetadata < ActiveRecord::Migration
+class AddPaperMetadata < ActiveRecord::Migration[5.2]
   def change
     add_column :papers, :authors, :text
     add_column :papers, :citation_string, :text

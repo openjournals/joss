@@ -11,12 +11,6 @@ switchTabs = ->
   # Add the 'selected' class from all tabs
   $(this).addClass('selected')
 
-  # Hide all the 'paper-list' divs
-  $('.paper-list').addClass('hidden')
-
-  # Show the 'target_div' paper list
-  $('#' + target_div).removeClass('hidden')
-
 $(document).on 'click', '.tabnav-tab', switchTabs
 
 menuClick = ->

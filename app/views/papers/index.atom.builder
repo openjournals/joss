@@ -14,10 +14,10 @@ atom_feed do |feed|
       entry.title(paper.title)
       entry.state(paper.state)
       entry.software_version(paper.software_version)
-      entry.submitted(paper.created_at)
+      entry.submitted_at(paper.created_at)
       if paper.accepted?
         entry.issue paper.issue
-        entry.published(paper.accepted_at)
+        entry.published_at(paper.accepted_at)
         entry.volume paper.volume
         entry.year paper.year
         entry.page paper.page

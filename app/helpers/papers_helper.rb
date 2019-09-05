@@ -5,6 +5,16 @@ module PapersHelper
     end
   end
 
+  def scholar_author_tags(authors)
+    authors = authors.split(',')
+    returned = ""
+    authors.each do |author|
+      returned << "<meta name=\"citation_author\" content=\"#{author.strip}\">\n"
+    end
+
+    returned.html_safe
+  end
+
   def pretty_reviewers(reviewers)
     fragment = []
     reviewers.each do |reviewer|

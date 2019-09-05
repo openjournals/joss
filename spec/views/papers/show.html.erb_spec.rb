@@ -52,7 +52,8 @@ describe 'papers/show.html.erb' do
       expect(rendered).to have_css("meta[content='#{paper.scholar_title}']", visible: false)
 
       expect(rendered).to have_css("meta[name='citation_author']", visible: false)
-      expect(rendered).to have_css("meta[content='Mickey Mouse, Walt Disney']", visible: false)
+      expect(rendered).to have_css("meta[content='Mickey Mouse']", visible: false)
+      expect(rendered).to have_css("meta[content='Walt Disney']", visible: false)
 
       expect(rendered).to have_css("meta[name='citation_publication_date']", visible: false)
       expect(rendered).to have_css("meta[content='#{paper.accepted_at.strftime('%Y/%m/%d')}']", visible: false)

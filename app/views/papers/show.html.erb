@@ -50,18 +50,21 @@
   <meta name="twitter:image" content="<%= Rails.application.settings['logo_url'] %>" />
   <meta name="twitter:url" value="<%= Rails.application.settings['url'] %>" />
   <meta name="twitter:label1" value="ISSN" />
-  <meta name="twitter:data1" value="<%= Rails.application.settings['twitter_issn'] %>" />
+  <meta name="twitter:data1" value="<%= Rails.application.settings['issn'] %>" />
 
   <!-- Google Scholar Tags -->
 
   <% if @paper.doi? %>
-  <meta name="citation_title" content="<%= @paper.title %>">
-  <meta name="citation_author" content="<%= @paper.authors %>">
+  <meta name="citation_title" content="<%= @paper.scholar_title %>">
+  <%= scholar_author_tags(@paper.scholar_authors) %>
   <meta name="citation_publication_date" content="<%= @paper.accepted_at.strftime('%Y/%m/%d') %>">
   <meta name="citation_journal_title" content="<%= Rails.application.settings['name'] %>">
   <meta name="citation_pdf_url" content="<%= @paper.pdf_url %>">
   <meta name="citation_doi" content="<%= @paper.doi %>">
-  <meta name="citation_issn" content="<%= Rails.application.settings['twitter_issn'] %>">
+  <meta name="citation_issn" content="<%= Rails.application.settings['issn'] %>">
+  <meta name="citation_volume" content="<%= @paper.volume %>">
+  <meta name="citation_issue" content="<%= @paper.issue %>">
+  <meta name="citation_firstpage" content="<%= @paper.page %>">
   <% end %>
 
   <script>
@@ -87,27 +90,27 @@
 
   <div class="container paper-show">
     <% if @paper.doi? %>
+    <%= render partial: "shared/retraction_notice" if @paper.retracted? %>
+
     <div class="paper-title">
       <span class="__dimensions_badge_embed__" data-doi="<%= @paper.doi %>" data-hide-zero-citations="true"></span>
       <div class="paper-meta">
         <h1><%= @paper.title %></h1>
-        <!-- <span class="badge-lang">Python</span>
-        <span class="badge-lang">C++</span>
-        <span class="badge-lang">Pascal</span> -->
+        <% @paper.language_tags.each do |tag| %>
+        <span class="badge-lang"><%= link_to tag, papers_by_language_path(language: tag) %></span>
+        <% end %>
         <span class="small">Submitted <%= @paper.created_at.strftime('%d %B %Y') %></span>
         •
         <span class="small">Accepted <%= @paper.accepted_at.strftime('%d %B %Y') %></span>
-        <%= @paper.authors %>
       </div>
     </div>
   </div>
 
   <div class="container">
     <div class="row">
-      <div class="col-md-9">
-        <!-- <iframe id="joss-paper" src="<%= @paper.pdf_url %>" width="" height="" border="0"></iframe> -->
+      <div id="joss-paper-pdf-container" class="col-md-9">
         <object id="joss-paper" data="<%= @paper.pdf_url %>#toolbar=0&navpanes=0&scrollbar=0&statusbar=0&messages=0&view=FitH" type="application/pdf" style="width:100%; height:100%;">
-          <embed src="<%= @paper.pdf_url %>#toolbar=0&navpanes=0&scrollbar=0&statusbar=0&messages=0" type="application/pdf" />
+          <embed src="<%= @paper.pdf_url %>#toolbar=0&navpanes=0&scrollbar=0&statusbar=0&messages=0" type="application/pdf"  style="width:100%; height:100%;" />
         </object>
       </div>
 
@@ -134,14 +137,26 @@
           <% end %>
         </div>
 
-        <div class="label">Citation information</div>
+        <div class="label">Review</div>
+        <p>Editor: <%= github_link @paper.metadata_editor %><br>Reviewers: <%= pretty_reviewers(@paper.metadata_reviewers) %></p>
+
+        <div class="label">Authors</div>
+        <p><%= pretty_authors(@paper.metadata_authors) %></p>
+
+        <div class="label">Citation</div>
         <p><%= @paper.citation_string %><br ><a href="#" id="joss-paper-bibtex" class="clippy" data-clipboard-action="copy" data-clipboard-text="BibTex entry not available. Please check back later.">Copy BibTeX entry &raquo;</a></p>
 
+        <div class="label">Tags</div>
+        <p>
+          <% @paper.author_tags.each do |tag| %>
+          <span class="badge-lang"><%= link_to tag, papers_by_tag_path(tag: tag) %></span>
+          <% end %>
+        </p>
         <div class="label">Altmetrics</div>
         <div style='padding-bottom: 10px;' data-badge-type='donut' class='altmetric-embed' data-badge-popover='right' data-hide-no-mentions='false' data-doi="<%= @paper.doi %>"></div>
 
         <div class="label">Markdown badge</div>
-        <p><%= image_tag @paper.status_badge_url %> &nbsp; <a href="#" class="clippy" data-clipboard-action="copy" data-clipboard-text="<%= @paper.markdown_code %>"><%= octicon "clippy", :height => 16,  :class => "", :"aria-label" => "Copy" %></a></p>
+        <p><%= image_tag @paper.status_badge_url %> &nbsp; <a href="#" class="clippy" data-clipboard-action="copy" data-clipboard-text="<%= @paper.markdown_code %>"><%= octicon "clippy", height: 16,  class: "", "aria-label": "Copy" %></a></p>
 
         <div class="label">License</div>
         <p>Authors of <%= Rails.application.settings['abbreviation'] %> papers retain copyright.</p>
@@ -179,9 +194,9 @@
       <div class="container-fluid">
         <div class="row">
           <div class="paper-status">
-            <%= render :partial => "status", :locals => { :paper => @paper } %>
+            <%= render partial: "status", locals: { paper: @paper } %>
             <h1><%= @paper.title %></h1>
-            <%= render :partial => "papers/admin", :locals => { :paper => @paper } if current_user %>
+            <%= render partial: "papers/admin", locals: { paper: @paper } if current_user %>
             <%= formatted_body(@paper) %>
             <p><strong>Repository Address</strong>: <%= link_to @paper.repository_url, @paper.repository_url %></p>
           </div>

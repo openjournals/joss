@@ -220,12 +220,12 @@ Editor.create(
   first_name: "Kevin M.",
   last_name: "Moerman",
   login: "Kevin-Mattheus-Moerman",
-  email: "kmoerman@mit.edu",
+  email: "kevin.moerman@nuigalway.ie",
   avatar_url: "/assets/editors/kevin-0259234e0f286791f360a601ebd7ef3bc0e9f5d95c853121c24d540bbb795f60.png",
   categories: ["Computational mechanics, Biomechanics, Finite Element Analysis, Meshing, Design Optimization, Inverse Analysis, Image-based Modelling"],
   url: "https://kevinmoerman.org/",
   description: <<-STR.strip_heredoc()
-    Computational mechanics and design engineer at NUI Galway, research affiliate <a href="http://www.media.mit.edu/">MIT Media's lab</a>. Developer for the <a href="http://www.gibboncode.org/">GIBBON</a> project.
+    Lecturer Biomedical Engineering <a href="https://www.nuigalway.ie/our-research/people/engineering-and-informatics/kevinmoerman/">, College of Engineering & Informatics NUI Galway</a>, Research Affiliate MIT Media lab, Senior Member IEEE, Developer for the <a href="http://www.gibboncode.org/">GIBBON</a> computational biomechanics project.
   STR
 )
 

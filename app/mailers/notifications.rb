@@ -18,6 +18,6 @@ class Notifications < ApplicationMailer
     @assigned_issues = assigned_issues
     @closed_issues = recently_closed_issues
     @editor = editor.login
-    mail(to: editor.email, bcc: "arfon.smith@gmail.com", subject: "#{Rails.application.settings["abbreviation"]} weekly editor update for #{editor.login}")
+    mail(to: editor.email, subject: "#{Rails.application.settings["abbreviation"]} weekly editor update for #{editor.login}")
   end
 end

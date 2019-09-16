@@ -200,6 +200,22 @@ describe PapersController, type: :controller do
     end
   end
 
+  describe "accepted papers" do
+    it "should redirect a URL for a PDF to the actual PDF location" do
+      paper = create(:accepted_paper)
+
+      get :show, params: {doi: paper.doi}, format: "pdf"
+      expect(response).to redirect_to(paper.pdf_url)
+    end
+
+    it "should not redirect for URLs with DOIs when asking for HTML response" do
+      paper = create(:accepted_paper)
+
+      get :show, params: {doi: paper.doi}, format: "html"
+      expect(response).to render_template("papers/show")
+    end
+  end
+
   describe "status badges" do
     it "should return the correct status badge for a submitted paper" do
       submitted_paper = create(:paper, state: 'submitted')

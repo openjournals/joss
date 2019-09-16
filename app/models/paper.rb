@@ -255,6 +255,26 @@ class Paper < ActiveRecord::Base
     "#{setting(:abbreviation).downcase}.#{id}"
   end
 
+  # This URL returns the 'DOI optimized' representation of a URL for a paper
+  # e.g. https://joss.theoj.org/papers/10.21105/joss.01632 rather than something
+  # with the SHA e.g. https://joss.theoj.org/papers/5e290cb57b61f83de4460fd0eca22726
+  # This URL format only works for accepted papers so falls back to the SHA
+  # version if no DOI is set.
+  def seo_url
+    if accepted?
+      "#{Rails.application.settings["url"]}/papers/10.21105/#{joss_id}"
+    else
+      "#{Rails.application.settings["url"]}/papers/#{to_param}"
+    end
+  end
+
+  # Return the seo_url plus '.pdf'. This is for Google Scholar so that we can
+  # point to PDFs on the same domain on the JOSS site (although they are then
+  # 301 redirected to a pdf_url later).
+  def seo_pdf_url
+    "#{seo_url}.pdf"
+  end
+
   # Where to find the PDF for this paper
   def pdf_url
     doi_to_file = doi.gsub('/', '.')

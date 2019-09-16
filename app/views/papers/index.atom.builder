@@ -10,7 +10,7 @@ atom_feed do |feed|
 
   @papers.each do |paper|
     next if paper.invisible?
-    feed.entry(paper) do |entry|
+    feed.entry(paper, url: paper.seo_url) do |entry|
       entry.title(paper.title)
       entry.state(paper.state)
       entry.software_version(paper.software_version)
@@ -36,7 +36,7 @@ atom_feed do |feed|
         entry.doi(paper.doi)
         entry.archive_doi(paper.clean_archive_doi)
         entry.languages(paper.language_tags.join(', '))
-        entry.pdf_url(paper.pdf_url)
+        entry.pdf_url(paper.seo_pdf_url)
         entry.tags(paper.author_tags.join(', '))
       end
     end

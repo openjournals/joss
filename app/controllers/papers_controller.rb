@@ -196,7 +196,10 @@ class PapersController < ApplicationController
       head 404 and return unless can_see_hidden_paper?(@paper)
     end
 
-    render layout: false
+    respond_to do |format|
+      format.pdf { redirect_to @paper.pdf_url, :status => 301 }
+      format.html { render layout: false }
+    end
   end
 
   def lookup

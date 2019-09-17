@@ -197,7 +197,7 @@ class PapersController < ApplicationController
     end
 
     respond_to do |format|
-      format.pdf { redirect_to @paper.pdf_url, :status => 301 }
+      format.pdf { redirect_to @paper.pdf_url, status: 301 }
       format.html { render layout: false }
     end
   end

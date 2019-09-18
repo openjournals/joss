@@ -81,6 +81,24 @@ describe Paper do
     expect(paper.review_url).to eq("https://github.com/#{Rails.application.settings["reviews"]}/issues/999")
   end
 
+  context "when accepted" do
+    it "should know how to generate a PDF URL for Google Scholar" do
+      paper = create(:accepted_paper)
+
+      expect(paper.seo_url).to eq('http://joss.theoj.org/papers/10.21105/joss.00000')
+      expect(paper.seo_pdf_url).to eq('http://joss.theoj.org/papers/10.21105/joss.00000.pdf')
+    end
+  end
+
+  context "when not yet accepted" do
+    it "should know how to generate a PDF URL for Google Scholar" do
+      paper = create(:under_review_paper)
+
+      expect(paper.seo_url).to eq('http://joss.theoj.org/papers/48d24b0158528e85ac7706aecd8cddc4')
+      expect(paper.seo_pdf_url).to eq('http://joss.theoj.org/papers/48d24b0158528e85ac7706aecd8cddc4.pdf')
+    end
+  end
+
   context "when rejected" do
     it "should change the paper state" do
       paper = create(:paper, state: "submitted")

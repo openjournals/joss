@@ -178,7 +178,7 @@ describe Paper do
     context "with no paper type" do
       let(:kind) { nil }
       it { is_expected.to match /Reviewer:/ }
-      it { is_expected.to match /JOSS conflict of interest policy/ }
+      it { is_expected.to match /JOSS conflict of interest/ }
       it { is_expected.to match /Does the repository contain a plain-text LICENSE file/ }
       it { is_expected.to match /Does installation proceed as outlined/ }
       it { is_expected.to match /Are there automated tests/ }

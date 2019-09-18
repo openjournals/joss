@@ -28,6 +28,8 @@ describe 'papers/show.html.erb' do
       render template: "papers/show.html.erb"
 
       # Paper metadata
+      # FIXME - these tests seem to be timezone sensitive??? i.e. can fail depending
+      # upon the time of day when running the tests...
       expect(rendered).to have_content "Submitted #{Time.now.strftime('%d %B %Y')}"
       expect(rendered).to have_content "Accepted #{Time.now.strftime('%d %B %Y')}"
       expect(rendered).to have_content "Ruby"

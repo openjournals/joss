@@ -214,6 +214,13 @@ describe PapersController, type: :controller do
       get :show, params: {doi: paper.doi}, format: "html"
       expect(response).to render_template("papers/show")
     end
+
+    it "should redirect URLs with the paper SHA to the URL with the DOI in the path" do
+      paper = create(:accepted_paper)
+
+      get :show, params: {id: paper.sha}, format: "html"
+      expect(response).to redirect_to(paper.seo_url)
+    end
   end
 
   describe "status badges" do

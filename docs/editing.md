@@ -61,7 +61,7 @@ When the reviewers are satisfied with the improvements, we ask that they confirm
 
 ## After acceptance
 
-When a submission is accepted, we ask that the authors create an archive (on [Zenodo](https://zenodo.org/), [fig**share**](https://figshare.com/), or other) and post the archive DOI in the `REVIEW` issue. The editor should add the `accepted` label on the issue, run the command` @whedon set <archive doi> as archive`, and ping the EiC for final processing.
+When a submission is accepted, we ask that the authors create an archive (on [Zenodo](https://zenodo.org/), [fig**share**](https://figshare.com/), or other) and post the archive DOI in the `REVIEW` issue. The editor should run the command `@whedon set <archive doi> as archive`, and ping the EiC for final processing.
 
 Steps:
 - Get a new proof with the `@whedon generate pdf` command.

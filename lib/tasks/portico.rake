@@ -31,7 +31,6 @@ namespace :portico do
           `rm -rf tmp/10.21105.#{paper.joss_id}*`
         end
       end
-
     end
   end
 end

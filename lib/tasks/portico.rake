@@ -22,8 +22,12 @@ namespace :portico do
 
       # Upload to FTP server
       Net::FTP.open(ENV['PORTICO_HOST'], ENV['PORTICO_USERNAME'], ENV['PORTICO_PASSWORD']) do |ftp|
-        ftp.putbinaryfile("tmp/10.21105.#{paper.joss_id}.zip")
-        puts "Uploaded 10.21105.#{paper.joss_id}"
+        if ftp.list("10.21105.#{paper.joss_id}.zip").any?
+          puts "Deposit already exists for 10.21105.#{paper.joss_id}"
+        else
+          ftp.putbinaryfile("tmp/10.21105.#{paper.joss_id}.zip")
+          puts "Uploading deposit for 10.21105.#{paper.joss_id}"
+        end
       end
 
       # Clean up

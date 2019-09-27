@@ -3,7 +3,7 @@ require 'net/ftp'
 namespace :portico do
   desc "Deposit"
   task deposit: :environment do
-    Paper.visible.limit(2).each do |paper|
+    Paper.visible.each do |paper|
       crossref_file = "https://github.com/#{Rails.application.settings["papers_repo"]}/raw/master/#{paper.joss_id}/10.21105.#{paper.joss_id}.crossref.xml"
       pdf_file = "https://github.com/#{Rails.application.settings["papers_repo"]}/raw/master/#{paper.joss_id}/10.21105.#{paper.joss_id}.pdf"
 

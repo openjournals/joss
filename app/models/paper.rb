@@ -91,6 +91,7 @@ class Paper < ActiveRecord::Base
   scope :public_everything, lambda { where('state NOT IN (?)', ['submitted', 'rejected', 'withdrawn']) }
   scope :everything, lambda { where('state NOT IN (?)', ['rejected', 'withdrawn']) }
   scope :search_import, -> { where(state: VISIBLE_STATES) }
+  scope :not_archived, -> { where('archived = ?', false) }
 
   before_create :set_sha, :set_last_activity
   after_create :notify_editors, :notify_author

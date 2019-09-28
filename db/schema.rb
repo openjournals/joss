@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_08_20_143831) do
+ActiveRecord::Schema.define(version: 2019_09_28_003647) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
@@ -33,7 +33,7 @@ ActiveRecord::Schema.define(version: 2019_08_20_143831) do
     t.index ["user_id"], name: "index_editors_on_user_id"
   end
 
-  create_table "papers", force: :cascade do |t|
+  create_table "papers", id: :serial, force: :cascade do |t|
     t.string "title"
     t.string "state"
     t.string "repository_url"
@@ -49,10 +49,10 @@ ActiveRecord::Schema.define(version: 2019_08_20_143831) do
     t.text "paper_body"
     t.integer "meta_review_issue_id"
     t.string "suggested_editor"
-    t.string "kind"
     t.text "authors"
     t.text "citation_string"
     t.datetime "accepted_at"
+    t.string "kind"
     t.integer "editor_id"
     t.string "reviewers", default: [], array: true
     t.text "activities"
@@ -60,6 +60,7 @@ ActiveRecord::Schema.define(version: 2019_08_20_143831) do
     t.jsonb "labels", default: {}, null: false
     t.text "metadata"
     t.text "retraction_notice"
+    t.boolean "archived", default: false
     t.index ["editor_id"], name: "index_papers_on_editor_id"
     t.index ["labels"], name: "index_papers_on_labels", using: :gin
     t.index ["last_activity"], name: "index_papers_on_last_activity"
@@ -68,7 +69,7 @@ ActiveRecord::Schema.define(version: 2019_08_20_143831) do
     t.index ["user_id"], name: "index_papers_on_user_id"
   end
 
-  create_table "users", force: :cascade do |t|
+  create_table "users", id: :serial, force: :cascade do |t|
     t.string "provider"
     t.string "uid"
     t.string "name"

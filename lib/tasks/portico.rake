@@ -3,7 +3,7 @@ require 'net/ftp'
 namespace :portico do
   desc "Deposit"
   task deposit: :environment do
-    Paper.visible.each do |paper|
+    Paper.visible.not_archived.each do |paper|
       # Upload to FTP server
       Net::FTP.open(ENV['PORTICO_HOST'], ENV['PORTICO_USERNAME'], ENV['PORTICO_PASSWORD']) do |ftp|
         if ftp.list("10.21105.#{paper.joss_id}.zip").any?

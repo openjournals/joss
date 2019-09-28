@@ -3,7 +3,7 @@ require 'net/ftp'
 namespace :portico do
   desc "Deposit"
   task deposit: :environment do
-    Paper.visible.not_archived.each do |paper|
+    Paper.visible.each do |paper|
       # Upload to FTP server
       Net::FTP.open(ENV['PORTICO_HOST'], ENV['PORTICO_USERNAME'], ENV['PORTICO_PASSWORD']) do |ftp|
         if ftp.list("10.21105.#{paper.joss_id}.zip").any?
@@ -21,6 +21,15 @@ namespace :portico do
           files_to_download.each do |file|
             `cd tmp/10.21105.#{paper.joss_id} && { curl -L -O #{file} ; cd -; }`
           end
+
+          # Archive the review too...
+          archive_review_object = Hash.new
+          archive_review_object['review_issue'] = GITHUB.issue(Rails.application.settings["reviews"], paper.review_issue_id).to_h
+          archive_review_object['review_issue_comments'] = GITHUB.issue_comments(Rails.application.settings["reviews"], paper.review_issue_id).map(&:to_h)
+
+          File.open("tmp/10.21105.#{paper.joss_id}/review.json", "w") { |f|
+            f.write(JSON.pretty_generate(archive_review_object))
+          }
 
           # Zip the folder
           `zip tmp/10.21105.#{paper.joss_id}.zip tmp/10.21105.#{paper.joss_id}/*`

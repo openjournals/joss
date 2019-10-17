@@ -91,7 +91,9 @@ If a paper has already been reviewed and accepted by rOpenSci, the streamlined J
 - Go to to the source code repo and grab the Zenodo DOI
 - Accept the paper
 
-## Sample letter to invite reviewers
+## Sample messages for authors and reviewers
+
+### Sample email to potential reviewers
 
 ```
 Dear Dr. Jekyll,
@@ -125,6 +127,45 @@ Kind regards,
 
 JOSS Editor.
 ```
+
+### Query scope of submission
+
+```
+:wave: thanks for your submission to JOSS. From a quick inspection of this submission it's not entirely obvious that it meets our [submission criteria](https://joss.readthedocs.io/en/latest/submitting.html#submission-requirements). In particular, this item:
+
+> - Your software should have an obvious research application
+
+Could you confirm here that there _is_ a research application for this software (and explain what that application is)? The section [_'what should my paper contain'_](https://joss.readthedocs.io/en/latest/submitting.html#what-should-my-paper-contain) has some guidance for the sort of content we're looking to be present in the `paper.md`.
+
+Many thanks!
+```
+
+### GitHub invite to potential reviewers
+
+```
+:wave: @reviewer1 & @reviewer2, would any of you be willing to review this submission for JOSS? We carry out our checklist-driven reviews here in GitHub issues and follow these guidelines: https://joss.readthedocs.io/en/latest/review_criteria.html
+```
+
+### Message to reviewers at the start of a review
+
+```
+@reviewer1 & @reviewer2 please carry out your review in this issue by updating the checklist above and giving feedback in this issue. The reviewer guidelines are available here: https://joss.readthedocs.io/en/latest/reviewer_guidelines.html
+
+Any questions/concerns please let me know.
+```
+
+### Message to authors at the end of a review
+
+```
+At this point could you make a new release of this software that includes the changes that have resulted from this review. Then, please make an archive of the software in Zenodo/figshare/other service and update this thread with the DOI of the archive? For the Zenodo/figshare archive, please make sure that:
+
+- The title of the archive is the same as the JOSS paper title
+- That the authors of the archive are the same as the JOSS paper authors
+
+I can then move forward with accepting the submission.
+```
+
+###
 
 ## Overview of editorial process
 

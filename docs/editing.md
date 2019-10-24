@@ -157,10 +157,11 @@ Any questions/concerns please let me know.
 ### Message to authors at the end of a review
 
 ```
-At this point could you make a new release of this software that includes the changes that have resulted from this review. Then, please make an archive of the software in Zenodo/figshare/other service and update this thread with the DOI of the archive? For the Zenodo/figshare archive, please make sure that:
-
-- The title of the archive is the same as the JOSS paper title
-- That the authors of the archive are the same as the JOSS paper authors
+At this point could you:
+- [ ] Make a tagged release of your software, and list the version tag of the archived version here.
+- [ ] Archive the reviewed software in Zenodo or a similar service
+- [ ] Check the Zenodo deposit has the correct metadata, this includes the title (should match the paper title) and author list (make sure the list is correct and people who only made a small fix are not on it); you may also add the authors' ORCID.
+- [ ] Please list the Zenodo DOI of the archived version here.
 
 I can then move forward with accepting the submission.
 ```

@@ -264,3 +264,41 @@ Mark yourself as OoO in one of the reviews you're editing in the [joss-reviews](
 Ooo bot will then respond to any mentions in the [joss-reviews](https://github.com/openjournals/joss-reviews) repository to let people know you're away.
 
 **Note, if you're planning on being out of the office for more than two weeks, please let the JOSS editorial team know.**
+
+## Managing notifications
+
+Being on the JOSS editorial team means that there can be a _lot_ of notifications from GitHub if you don't take some proactive steps to minimize noise from the reviews repository.
+
+### Things you should do when joining the editorial team
+
+**Unsubscribe from the reviews repository on GitHub**
+
+When you're added to the editorial team on GitHub, you will almost certainly find yourself subscribed (watching) to the [`joss-reviews`](https://github.com/openjournals/joss-reviews) repository. The first thing you should do is set yourself to 'not watching':
+
+![watching](https://cloud.githubusercontent.com/assets/4483/20250593/64d7ce48-a9de-11e6-9225-d3dfb3e48e68.png)
+
+Please note, that by not watching the reviews repository, you will still receive notifications for issues (reviews) where you are `@mentioned`.
+
+Sometimes another editor might mention you in a review issue (for example to ask you a question). If you've responded and no-longer want to receive messages for that review, you can manually unsubscribe by clicking the button in the right-hand column on the review issue page.
+
+**Curate your GitHub notifications experience**
+
+GitHub has extensive documentation on [managing notifications](https://help.github.com/en/articles/managing-your-notifications) which explains when and why different notifications are sent from a repository.
+
+**Set up email filters**
+
+Email filters can be very useful for managing incoming email notifications, here are some recommended resources:
+
+- A GitHub blog post describing how to set up [email filters](https://github.blog/2017-07-18-managing-large-numbers-of-github-notifications/).
+
+If you use Gmail:
+
+- https://gist.github.com/ldez/bd6e6401ad0855e6c0de6da19a8c50b5
+- https://github.com/jessfraz/gmailfilters
+- https://hackernoon.com/how-to-never-miss-a-github-mention-fdd5a0f9ab6d
+
+**Use a dedicated tool**
+
+For papers that you are already assigned to edit, the dedicated JOSS dashboard aggregates notifications associated with each paper. The dashboard is available at: `https://joss.theoj.org/dashboard/<yourgithubusername>`
+
+Another tool you might want to try out is [https://octobox.io/](Octobox).

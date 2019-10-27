@@ -59,17 +59,17 @@ Comments in the `REVIEW` issue should be kept brief, as much as possible, with m
 
 When the reviewers are satisfied with the improvements, we ask that they confirm their recommendation to accept the submission.
 
-## After acceptance
+## After reviewers recommend acceptance
 
-When a submission is accepted, we ask that the authors create an archive (on [Zenodo](https://zenodo.org/), [fig**share**](https://figshare.com/), or other) and post the archive DOI in the `REVIEW` issue. The editor should run the command `@whedon set <archive doi> as archive`, and ping the EiC for final processing.
+When a submission is ready to be accepted, we ask that the authors issue a new tagged release of the software (if changed), and archive it (on [Zenodo](https://zenodo.org/), [fig**share**](https://figshare.com/), or other). The authors then post the version number and archive DOI in the `REVIEW` issue. The handling editor executes the pre-publication steps, and pings the EiCs for final processing.
 
-Steps:
+Pre-publication steps:
 - Get a new proof with the `@whedon generate pdf` command.
 - Download the proof, check all references have DOIs, follow the links and check the references.
   - Whedon can help check references with the command `@whedon check references`
-- Give the paper a proof-read and ask authors to fix typos.
-- Ask the author to make a Zenodo archive, and report the DOI in the review thread.
-- Check the Zenodo deposit has the correct metadata (title and author list), and request the author edit it if it doesn’t match the paper.
+- Proof-read the paper and ask authors to fix any remaining typos, badly formed ciations, awkward wording, etc..
+- Ask the author to make a tagged release and archive, and report the version number and archive DOI in the review thread.
+- Check the archive deposit has the correct metadata (title and author list), and request the author edit it if it doesn’t match the paper.
 - Run `@whedon set <doi> as archive`.
 - Run `@whedon set <v1.x.x> as version` if the version was updated.
 - Ping the `@openjournals/joss-eics` team on the review thread letting them know the paper is ready to be accepted.

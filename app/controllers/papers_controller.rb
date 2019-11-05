@@ -82,12 +82,20 @@ class PapersController < ApplicationController
                   per_page: 10
                 )
       @term = "in #{params['language']}"
+
     elsif params['author']
       @papers = Paper.search(params['author'], fields: [:authors], order: { accepted_at: :desc },
                   page: params[:page],
                   per_page: 10
                 )
       @term = "by #{params['author']}"
+
+    elsif params['reviewer']
+      @papers = Paper.search(params['reviewer'], fields: [:reviewers], order: { accepted_at: :desc },
+                  page: params[:page],
+                  per_page: 10
+                )
+      @term = "reviewed by #{params['reviewer']}"
 
     elsif params['tag']
       @papers = Paper.search(params['tag'], fields: [:tags, :title], order: { accepted_at: :desc },

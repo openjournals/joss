@@ -90,6 +90,13 @@ class PapersController < ApplicationController
                 )
       @term = "by #{params['author']}"
 
+    elsif params['editor']
+      @papers = Paper.search(params['editor'], fields: [:editor], order: { accepted_at: :desc },
+                  page: params[:page],
+                  per_page: 10
+                )
+      @term = "edited by #{params['editor']}"
+
     elsif params['reviewer']
       @papers = Paper.search(params['reviewer'], fields: [:reviewers], order: { accepted_at: :desc },
                   page: params[:page],

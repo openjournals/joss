@@ -120,6 +120,7 @@ class Paper < ActiveRecord::Base
       accepted_at: accepted_at,
       authors: scholar_authors,
       reviewers: metadata_reviewers,
+      editor: metadata_editor,
       issue: issue,
       languages: language_tags,
       page: page,

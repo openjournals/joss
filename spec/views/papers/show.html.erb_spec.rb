@@ -33,8 +33,8 @@ describe 'papers/show.html.erb' do
       expect(rendered).to have_content "Submitted #{Time.now.strftime('%d %B %Y')}"
       expect(rendered).to have_content "Accepted #{Time.now.strftime('%d %B %Y')}"
       expect(rendered).to have_content "Ruby"
-      expect(rendered).to have_content "Editor: @arfon"
-      expect(rendered).to have_content "Reviewers: @jim, @jane"
+      expect(rendered).to have_content "Editor: @arfon (all papers)"
+      expect(rendered).to have_content "Reviewers: @jim (all reviews), @jane (all reviews)"
       expect(rendered).to have_content "Walt Disney"
     end
 

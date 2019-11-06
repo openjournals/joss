@@ -18,14 +18,18 @@ module PapersHelper
   def pretty_reviewers(reviewers)
     fragment = []
     reviewers.each do |reviewer|
-      fragment << github_link(reviewer)
+      fragment << github_link(reviewer) + " (" + reviewer_page_link('all reviews', reviewer) + ")"
     end
 
     return fragment.join(', ').html_safe
   end
 
+  def reviewer_page_link(link_text, handle)
+    link_to link_text, papers_by_reviewer_path(handle), title: "All papers reviewed by #{handle}"
+  end
+
   def github_link(handle)
-    link_to handle, "https://github.com/#{handle.gsub(/^\@/, "")}", target: "_blank"
+    link_to handle, "https://github.com/#{handle.gsub(/^\@/, "")}", title: "GitHub profile for #{handle}", target: "_blank"
   end
 
   def pretty_authors(authors)

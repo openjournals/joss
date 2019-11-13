@@ -110,8 +110,8 @@ and the submission repository is at: https://github.com/< … >
 JOSS is a free, open-source, community driven and developer-friendly online journal
 (no publisher is seeking to raise revenue from the volunteer labor of researchers!).
 
-The review process at JOSS is unique: it is open and author-reviewer-editor conversations
-are encouraged.
+The review process at JOSS is unique: it takes place in a GitHub issue, is open,
+and author-reviewer-editor conversations are encouraged.
 
 JOSS reviews involve downloading and installing the software, and inspecting the repository
 and submitted paper for key elements. See https://joss.readthedocs.io/en/latest/review_criteria.html

@@ -17,8 +17,8 @@ RSpec.describe EditorsController, type: :controller do
     it "should allow the lookup of an editor" do
       editor = create(:editor)
       get :lookup, params: {login: editor.login }
-      expect(JSON.parse(response.body)['name']).to eq('foo')
-      expect(JSON.parse(response.body)['url']).to eq('foo')
+      expect(JSON.parse(response.body)['name']).to eq('Person McEditor')
+      expect(JSON.parse(response.body)['url']).to eq('http://placekitten.com')
     end
   end
 

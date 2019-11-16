@@ -13,6 +13,13 @@ RSpec.describe EditorsController, type: :controller do
       get :index
       expect(response).to redirect_to %r(test.host/auth/orcid)
     end
+
+    it "should allow the lookup of an editor" do
+      editor = create(:editor)
+      get :lookup, params: {login: editor.login }
+      expect(JSON.parse(response.body)['name']).to eq('Person McEditor')
+      expect(JSON.parse(response.body)['url']).to eq('http://placekitten.com')
+    end
   end
 
   context "when logged in as a non-admin user" do

@@ -17,6 +17,7 @@ Rails.application.routes.draw do
     end
   end
 
+  get '/editors/lookup/:login', to: "editors#lookup"
   get '/papers/lookup/:id', to: "papers#lookup"
   get '/papers/in/:language', to: "papers#filter", as: 'papers_by_language'
   get '/papers/by/:author', to: "papers#filter", as: 'papers_by_author'

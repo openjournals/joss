@@ -301,4 +301,4 @@ If you use Gmail:
 
 For papers that you are already assigned to edit, the dedicated JOSS dashboard aggregates notifications associated with each paper. The dashboard is available at: `https://joss.theoj.org/dashboard/<yourgithubusername>`
 
-Another tool you might want to try out is [https://octobox.io/](Octobox).
+Another tool you might want to try out is [Octobox](https://octobox.io/).

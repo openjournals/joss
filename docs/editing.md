@@ -84,8 +84,10 @@ If a paper has already been reviewed and accepted by rOpenSci, the streamlined J
 
 - Assign yourself as editor and reviewer
 - Add a comment in the pre-review issue pointing to the rOpenSci review
+- Add the rOpenSci label to the pre-review issue
 - Start the review issue
 - Add a comment in the review issue pointing to the rOpenSci review
+- Add the rOpenSci label to the review issue
 - Compile the paper and check it looks ok
 - Tick off all the review checkboxes
 - Go to to the source code repo and grab the Zenodo DOI

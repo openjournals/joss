@@ -201,6 +201,7 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 - Use the list of reviewers: type the command `@whedon list reviewers` or look at list of reviewers in a Google [spreadsheet](https://docs.google.com/spreadsheets/d/1PAPRJ63yq9aPC1COLjaQp8mHmEq3rZUzwUYxTulyu78/edit?usp=sharing)
 - If people are in the review list, the editor can @-mention them on the issue to see if they will review: e.g. `@person1 @person2 can you review this submission for JOSS?`
 - Or solicit reviewers outside the list. Send an email to people describing what JOSS is and asking if they would be interested in reviewing.
+- If you ask the author to suggest potential reviewers, please be sure to tell the author not to @-tag their suggestions.
 
 **Step 7: Editor tells Whedon to assign the reviewer to the paper**
 

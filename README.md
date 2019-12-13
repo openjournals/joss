@@ -1,6 +1,8 @@
 # The Journal of Open Source Software
 
-[![Build Status](https://travis-ci.org/openjournals/joss.svg?branch=master)](https://travis-ci.org/openjournals/joss) [![Powered by NumFOCUS](https://img.shields.io/badge/powered%20by-NumFOCUS-orange.svg?style=flat&colorA=E1523D&colorB=007D8A)](http://numfocus.org) 
+[![Build Status](https://travis-ci.org/openjournals/joss.svg?branch=master)](https://travis-ci.org/openjournals/joss)
+[![Powered by NumFOCUS](https://img.shields.io/badge/powered%20by-NumFOCUS-orange.svg?style=flat&colorA=E1523D&colorB=007D8A)](http://numfocus.org)
+[![Donate to JOSS](https://img.shields.io/badge/Donate-to%20JOSS-brightgreen.svg)](https://numfocus.org/donate-to-joss)
 
 The [Journal of Open Source Software](https://joss.theoj.org) (JOSS) is a developer friendly journal for research software packages.
 
@@ -44,7 +46,7 @@ Please adhere to this code of conduct in any interactions you have in the JOSS c
 
 ## ⚙️ Development
 
-[LiveReload](https://github.com/guard/guard-livereload) enables the browser to automatically refresh on change during development. 
+[LiveReload](https://github.com/guard/guard-livereload) enables the browser to automatically refresh on change during development.
 
 1. Download the [LiveReload Chrome plugin](https://chrome.google.com/webstore/detail/livereload/jnihajbhpnppcggbcgedagnkighmdlei/)
 2. Run `bundle exec guard`

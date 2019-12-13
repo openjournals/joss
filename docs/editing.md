@@ -59,22 +59,22 @@ Comments in the `REVIEW` issue should be kept brief, as much as possible, with m
 
 When the reviewers are satisfied with the improvements, we ask that they confirm their recommendation to accept the submission.
 
-## After acceptance
+## After reviewers recommend acceptance
 
-When a submission is accepted, we ask that the authors create an archive (on [Zenodo](https://zenodo.org/), [fig**share**](https://figshare.com/), or other) and post the archive DOI in the `REVIEW` issue. The editor should add the `accepted` label on the issue, run the command` @whedon set <archive doi> as archive`, and ping the EiC for final processing.
+When a submission is ready to be accepted, we ask that the authors issue a new tagged release of the software (if changed), and archive it (on [Zenodo](https://zenodo.org/), [fig**share**](https://figshare.com/), or other). The authors then post the version number and archive DOI in the `REVIEW` issue. The handling editor executes the pre-publication steps, and pings the EiCs for final processing.
 
-Steps:
+Pre-publication steps:
 - Get a new proof with the `@whedon generate pdf` command.
 - Download the proof, check all references have DOIs, follow the links and check the references.
   - Whedon can help check references with the command `@whedon check references`
-- Give the paper a proof-read and ask authors to fix typos.
-- Ask the author to make a Zenodo archive, and report the DOI in the review thread.
-- Check the Zenodo deposit has the correct metadata (title and author list), and request the author edit it if it doesn’t match the paper.
+- Proof-read the paper and ask authors to fix any remaining typos, badly formed ciations, awkward wording, etc..
+- Ask the author to make a tagged release and archive, and report the version number and archive DOI in the review thread.
+- Check the archive deposit has the correct metadata (title and author list), and request the author edit it if it doesn’t match the paper.
 - Run `@whedon set <doi> as archive`.
 - Run `@whedon set <v1.x.x> as version` if the version was updated.
-- Ping the `@openjournals/joss-eics` team on the review thread letting them know the paper is ready to be accepted.
+- Ping the `@openjournals/joss-eics` team on the review thread letting them know the paper is ready for final processing.
 
-At that point, the EiC/AEiC will take over to publish the paper.
+At that point, the EiC/AEiC will take over to make final checks and publish the paper.
 
 It’s also a good idea to ask the authors to check the proof. We’ve had a few papers request a post-publication change of author list, for example—this requires a manual download/compile/deposit cycle and should be a rare event.
 
@@ -84,14 +84,18 @@ If a paper has already been reviewed and accepted by rOpenSci, the streamlined J
 
 - Assign yourself as editor and reviewer
 - Add a comment in the pre-review issue pointing to the rOpenSci review
+- Add the rOpenSci label to the pre-review issue
 - Start the review issue
 - Add a comment in the review issue pointing to the rOpenSci review
+- Add the rOpenSci label to the review issue
 - Compile the paper and check it looks ok
 - Tick off all the review checkboxes
 - Go to to the source code repo and grab the Zenodo DOI
 - Accept the paper
 
-## Sample letter to invite reviewers
+## Sample messages for authors and reviewers
+
+### Sample email to potential reviewers
 
 ```
 Dear Dr. Jekyll,
@@ -108,8 +112,8 @@ and the submission repository is at: https://github.com/< … >
 JOSS is a free, open-source, community driven and developer-friendly online journal
 (no publisher is seeking to raise revenue from the volunteer labor of researchers!).
 
-The review process at JOSS is unique: it is open and author-reviewer-editor conversations
-are encouraged.
+The review process at JOSS is unique: it takes place in a GitHub issue, is open,
+and author-reviewer-editor conversations are encouraged.
 
 JOSS reviews involve downloading and installing the software, and inspecting the repository
 and submitted paper for key elements. See https://joss.readthedocs.io/en/latest/review_criteria.html
@@ -125,6 +129,52 @@ Kind regards,
 
 JOSS Editor.
 ```
+
+### Query scope of submission
+
+```
+:wave: thanks for your submission to JOSS. From a quick inspection of this submission it's not entirely obvious that it meets our [submission criteria](https://joss.readthedocs.io/en/latest/submitting.html#submission-requirements). In particular, this item:
+
+> - Your software should have an obvious research application
+
+Could you confirm here that there _is_ a research application for this software (and explain what that application is)? The section [_'what should my paper contain'_](https://joss.readthedocs.io/en/latest/submitting.html#what-should-my-paper-contain) has some guidance for the sort of content we're looking to be present in the `paper.md`.
+
+Many thanks!
+```
+
+### GitHub invite to potential reviewers
+
+```
+:wave: @reviewer1 & @reviewer2, would any of you be willing to review this submission for JOSS? We carry out our checklist-driven reviews here in GitHub issues and follow these guidelines: https://joss.readthedocs.io/en/latest/review_criteria.html
+```
+
+### Message to reviewers at the start of a review
+
+```
+👋🏼 @authorname @reviewer1 @reviewer2 this is the review thread for the paper. All of our communications will happen here from now on.
+
+Both reviewers have checklists at the top of this thread with the JOSS requirements. As you go over the submission, please check any items that you feel have been satisfied. There are also links to the JOSS reviewer guidelines.
+
+The JOSS review is different from most other journals. Our goal is to work with the authors to help them meet our criteria instead of merely passing judgment on the submission. As such, the reviewers are encouraged to submit issues and pull requests on the software repository. When doing so, please mention `openjournals/joss-reviews#REVIEW_NUMER` so that a link is created to this thread (and I can keep an eye on what is happening). Please also feel free to comment and ask questions on this thread. In my experience, it is better to post comments/questions/suggestions as you come across them instead of waiting until you've reviewed the entire package.
+
+We aim for reviews to be completed within about 2-4 weeks. Please let me know if any of you require some more time. We can also use Whedon (our bot) to set automatic reminders if you know you'll be away for a known period of time.
+
+Please feel free to ping me (@editorname) if you have any questions/concerns.
+```
+
+### Message to authors at the end of a review
+
+```
+At this point could you:
+- [ ] Make a tagged release of your software, and list the version tag of the archived version here.
+- [ ] Archive the reviewed software in Zenodo or a similar service
+- [ ] Check the Zenodo deposit has the correct metadata, this includes the title (should match the paper title) and author list (make sure the list is correct and people who only made a small fix are not on it); you may also add the authors' ORCID.
+- [ ] Please list the Zenodo DOI of the archived version here.
+
+I can then move forward with accepting the submission.
+```
+
+###
 
 ## Overview of editorial process
 
@@ -151,6 +201,7 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 - Use the list of reviewers: type the command `@whedon list reviewers` or look at list of reviewers in a Google [spreadsheet](https://docs.google.com/spreadsheets/d/1PAPRJ63yq9aPC1COLjaQp8mHmEq3rZUzwUYxTulyu78/edit?usp=sharing)
 - If people are in the review list, the editor can @-mention them on the issue to see if they will review: e.g. `@person1 @person2 can you review this submission for JOSS?`
 - Or solicit reviewers outside the list. Send an email to people describing what JOSS is and asking if they would be interested in reviewing.
+- If you ask the author to suggest potential reviewers, please be sure to tell the author not to @-tag their suggestions.
 
 **Step 7: Editor tells Whedon to assign the reviewer to the paper**
 
@@ -216,3 +267,41 @@ Mark yourself as OoO in one of the reviews you're editing in the [joss-reviews](
 Ooo bot will then respond to any mentions in the [joss-reviews](https://github.com/openjournals/joss-reviews) repository to let people know you're away.
 
 **Note, if you're planning on being out of the office for more than two weeks, please let the JOSS editorial team know.**
+
+## Managing notifications
+
+Being on the JOSS editorial team means that there can be a _lot_ of notifications from GitHub if you don't take some proactive steps to minimize noise from the reviews repository.
+
+### Things you should do when joining the editorial team
+
+**Unsubscribe from the reviews repository on GitHub**
+
+When you're added to the editorial team on GitHub, you will almost certainly find yourself subscribed (watching) to the [`joss-reviews`](https://github.com/openjournals/joss-reviews) repository. The first thing you should do is set yourself to 'not watching':
+
+![watching](https://cloud.githubusercontent.com/assets/4483/20250593/64d7ce48-a9de-11e6-9225-d3dfb3e48e68.png)
+
+Please note, that by not watching the reviews repository, you will still receive notifications for issues (reviews) where you are `@mentioned`.
+
+Sometimes another editor might mention you in a review issue (for example to ask you a question). If you've responded and no-longer want to receive messages for that review, you can manually unsubscribe by clicking the button in the right-hand column on the review issue page.
+
+**Curate your GitHub notifications experience**
+
+GitHub has extensive documentation on [managing notifications](https://help.github.com/en/articles/managing-your-notifications) which explains when and why different notifications are sent from a repository.
+
+**Set up email filters**
+
+Email filters can be very useful for managing incoming email notifications, here are some recommended resources:
+
+- A GitHub blog post describing how to set up [email filters](https://github.blog/2017-07-18-managing-large-numbers-of-github-notifications/).
+
+If you use Gmail:
+
+- https://gist.github.com/ldez/bd6e6401ad0855e6c0de6da19a8c50b5
+- https://github.com/jessfraz/gmailfilters
+- https://hackernoon.com/how-to-never-miss-a-github-mention-fdd5a0f9ab6d
+
+**Use a dedicated tool**
+
+For papers that you are already assigned to edit, the dedicated JOSS dashboard aggregates notifications associated with each paper. The dashboard is available at: `https://joss.theoj.org/dashboard/<yourgithubusername>`
+
+Another tool you might want to try out is [Octobox](https://octobox.io/).

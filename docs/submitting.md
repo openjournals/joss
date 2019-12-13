@@ -39,7 +39,6 @@ Before you submit, you should:
 
 JOSS welcomes submissions from broadly diverse research areas. For this reason, we require that authors include in the paper some sentences that explain the software functionality and domain of use to a non-specialist reader. We also require that authors explain the research applications of the software. The paper should be between 250-1000 words.
 
-
 Your paper should include:
 
 - A list of the authors of the software and their affiliations, using the correct format (see the example below).
@@ -213,6 +212,10 @@ Example `paper.bib` file:
 ```
 
 Note that the paper ends with a References heading, and the references are built automatically from the content in the `.bib` file. You should enter in-text citations in the paper body following correct [Markdown citation syntax](https://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html#citation_syntax).
+
+## Checking that your paper compiles
+
+JOSS uses Pandoc to compile papers from their Markdown form into a PDF. You can test that your paper is properly structured using the [JOSS paper preview service](https://whedon.theoj.org).
 
 ## Submitting your paper
 

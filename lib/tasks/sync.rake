@@ -1,5 +1,5 @@
 namespace :sync do
-  desc "Restrict permissions on reviews repository to those that need it"
+  desc "Fix assignees on issues"
   task assignees: :environment do
     # We run this task daily on Heroku
     reviews_repo = Rails.application.settings["reviews"]

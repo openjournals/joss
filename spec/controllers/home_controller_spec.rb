@@ -33,9 +33,9 @@ describe HomeController, type: :controller do
 
   describe "GET #about" do
     it "should render about page" do
-      get :about, format: :html
+      get :about, :format => :html
       expect(response).to be_successful
-      expect(response.body).to match /Don't we have enough journals already?/
+      expect(response.body).to match /Why is this journal needed/
     end
   end
 

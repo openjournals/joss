@@ -167,9 +167,9 @@ Please feel free to ping me (@editorname) if you have any questions/concerns.
 ```
 At this point could you:
 - [ ] Make a tagged release of your software, and list the version tag of the archived version here.
-- [ ] Archive the reviewed software in Zenodo or a similar service
-- [ ] Check the Zenodo deposit has the correct metadata, this includes the title (should match the paper title) and author list (make sure the list is correct and people who only made a small fix are not on it); you may also add the authors' ORCID.
-- [ ] Please list the Zenodo DOI of the archived version here.
+- [ ] Archive the reviewed software in Zenodo or a similar service (e.g. figshare, an institutional repository)
+- [ ] Check the archival deposit (e.g., in Zenodo) has the correct metadata, this includes the title (should match the paper title) and author list (make sure the list is correct and people who only made a small fix are not on it); you may also add the authors' ORCID.
+- [ ] Please list the DOI of the archived version here.
 
 I can then move forward with accepting the submission.
 ```

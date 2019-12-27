@@ -61,7 +61,6 @@ Rails.application.routes.draw do
   get '/papers/:id/status.svg', to: "papers#status", format: "svg", as: 'status_badge'
 
   doi_prefix_name = Rails.application.settings[:abbreviation].downcase || "joss"
-
   get '/papers/:doi/status.svg', to: "papers#status", format: "svg", constraints: { doi: /10.21105\/#{doi_prefix_name}\.\d{5}/}
   get '/papers/:doi', to: "papers#show", constraints: { doi: /10.21105\/#{doi_prefix_name}\.\d{5}/}
   get '/papers/:doi.:format', to: "papers#show", constraints: { doi: /10.21105\/#{doi_prefix_name}\.\d{5}/}

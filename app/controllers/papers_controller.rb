@@ -1,3 +1,5 @@
+require 'uri'
+
 class PapersController < ApplicationController
   include SettingsHelper
 
@@ -217,8 +219,13 @@ class PapersController < ApplicationController
     end
 
     respond_to do |format|
-      format.pdf { redirect_to @paper.pdf_url, status: 301 }
       format.html { render layout: false }
+      format.pdf {
+        data = open(@paper.pdf_url)
+        send_data data.read,
+          :type => data.content_type,
+          :disposition => 'inline'
+      }
     end
   end
 

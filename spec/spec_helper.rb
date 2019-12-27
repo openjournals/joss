@@ -102,5 +102,13 @@ RSpec.configure do |config|
       with(body: "{\"assignee\":\"joss\",\"labels\":[\"pre-review\"],\"title\":\"[PRE REVIEW]: arfon / fidgit\",\"body\":\"**Submitting author:** @foobar (\\u003ca href=\\\"http://orcid.org/0000-0000-0000-1234\\\"\\u003eDoe, John\\u003c/a\\u003e)\\n**Repository:** \\u003ca href=\\\"http://github.com/arfon/fidgit\\\" target =\\\"_blank\\\"\\u003ehttp://github.com/arfon/fidgit\\u003c/a\\u003e\\n**Version:** v1.0.0\\n**Editor:** @joss\\n**Reviewer:** Pending\\n\\n**What this issue is for**\\n\\nThanks for submitting your paper to JOSS @foobar. The JOSS editor (shown at the top of this issue) will work with you on this issue to find a reviewer for your submission before creating the main review issue.\\n\\n**Editor instructions**\\n\\nThe JOSS submission bot @whedon is here to help you find and assign reviewers and start the main review. To find out what @whedon can do for you type:\\n\\n```\\n@whedon commands\\n```\\n\"}",
            headers: {'Accept'=>'application/vnd.github.v3+json', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Type'=>'application/json', 'User-Agent'=>'Octokit Ruby Gem 4.3.0'}).
       to_return(status: 200, body: "", headers: {})
+    stub_request(:get, "https://www.theoj.org/joss-papers/joss.00000/10.21105.joss.00000.pdf").
+         with(
+           headers: {
+       	  'Accept'=>'*/*',
+       	  'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+       	  'User-Agent'=>'Ruby'
+           }).
+         to_return(status: 200, body: IO.binread('spec/fixtures/paper.pdf'), headers: {})
   end
 end

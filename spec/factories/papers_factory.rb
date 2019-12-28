@@ -27,7 +27,7 @@ FactoryBot.define do
       state { 'accepted' }
       accepted_at { Time.now }
       review_issue_id { 0 }
-      doi { '10.21105/joss.00000' }
+      doi { '10.21105/jose.00000' }
     end
 
     factory :submitted_paper do
@@ -47,7 +47,7 @@ FactoryBot.define do
       state { 'retracted' }
       accepted_at { Time.now }
       review_issue_id { 0 }
-      doi { '10.21105/joss.00000' }
+      doi { '10.21105/jose.00000' }
     end
 
     factory :submitted_paper_with_sha do

@@ -5,12 +5,12 @@ Review criteria
 
 As outlined in the [submission guidelines provided to authors](submitting.html#what-should-my-paper-contain), the JOSS paper (the compiled PDF associated with this submission) should only include:
 
-- A list of the authors of the software
-- Author affiliations
-- A summary describing the high-level functionality and purpose of the software for a diverse, non-specialist audience
-- A clear statement of need that illustrates the purpose of the software
-- Mentions (if applicable) of any ongoing research projects using the software or recent scholarly publications enabled by it
-- A list of key references including a link to the software archive
+- A list of the authors of the software and their affiliations.
+- A summary describing the high-level functionality and purpose of the software for a diverse, non-specialist audience.
+- A clear statement of need that illustrates the purpose of the software.
+- A description of how this software compares to other commonly-used packages in this research area.
+- Mentions (if applicable) of any ongoing research projects using the software or recent scholarly publications enabled by it.
+- A list of key references including a link to the software archive.
 
 ```eval_rst
 .. important:: Note the paper *should not* include software documentation such as API (Application Programming Interface) functionality, as this should be outlined in the software documentation.
@@ -19,7 +19,7 @@ As outlined in the [submission guidelines provided to authors](submitting.html#w
 ## Review items
 
 ```eval_rst
-.. important:: Note, if you've not yet been involved in a JOSS review, you can see an example JOSS review checklist `here <review_checklist.html>`_. 
+.. important:: Note, if you've not yet been involved in a JOSS review, you can see an example JOSS review checklist `here <review_checklist.html>`_.
 ```
 
 ### Software license

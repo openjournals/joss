@@ -1,7 +1,7 @@
 require 'open3'
 
-class Paper < ApplicationRecord
-  searchkick index_name: "joss-production"
+class Paper < ActiveRecord::Base
+  searchkick index_name: "jose-production"
 
   include SettingsHelper
   serialize :activities, Hash

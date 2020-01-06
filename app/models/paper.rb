@@ -1,5 +1,4 @@
 class Paper < ActiveRecord::Base
-  searchkick
   searchkick index_name: "joss-production"
 
   include SettingsHelper

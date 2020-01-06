@@ -1,5 +1,6 @@
 class Paper < ActiveRecord::Base
-  searchkick
+  searchkick index_name: "jose-production"
+  
   include SettingsHelper
   serialize :activities, Hash
   serialize :metadata, Hash

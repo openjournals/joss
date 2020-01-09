@@ -95,7 +95,7 @@ If a paper has already been reviewed and accepted by rOpenSci, the streamlined J
 
 ## Rejecting a paper
 
-If you believe a paper is out of scope and should not be sent out for review then you should:
+If you believe a submission should be rejected, for example, because it is out of scope for JOSS, then you should:
 
 - Email the JOSS editors mailing list linking to the pre-review thread and your proposed justification for rejecting the submission.
 - Wait for at least 48 hours (two working days) to let other editors respond.

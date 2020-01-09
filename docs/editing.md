@@ -93,6 +93,14 @@ If a paper has already been reviewed and accepted by rOpenSci, the streamlined J
 - Go to to the source code repo and grab the Zenodo DOI
 - Accept the paper
 
+## Rejecting a paper
+
+If you believe a paper is out of scope and should not be sent out for review then you should:
+
+- Email the JOSS editors mailing list linking to the pre-review thread and your proposed justification for rejecting the submission.
+- Wait for at least 48 hours (two working days) to let other editors respond.
+- If at least two more editors agree and there's no other disagreement then 1) communicate the decision to the author in the pre-review issue and 2) ping the JOSS AEiCs team on GitHub (@openjournals/joss-eics) to ask them to process the rejection.
+
 ## Sample messages for authors and reviewers
 
 ### Sample email to potential reviewers

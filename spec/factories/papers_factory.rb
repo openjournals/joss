@@ -32,6 +32,10 @@ FactoryBot.define do
       state { 'submitted' }
     end
 
+    factory :rejected_paper do
+      state { 'rejected' }
+    end
+
     factory :retracted_paper do
       metadata { paper_metadata }
       state { 'retracted' }

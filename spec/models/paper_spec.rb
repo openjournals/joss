@@ -222,7 +222,7 @@ describe Paper do
         is_expected.to match /#{Rails.application.settings['reviewers']}/
       end
 
-      it { is_expected.to match "@joss_editor has been suggested as a potential handling editor" }
+      it { is_expected.to match "The author's suggestion for the handling editor is @joss_editor" }
     end
 
     context "with no editor" do

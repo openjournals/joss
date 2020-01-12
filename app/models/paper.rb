@@ -332,9 +332,9 @@ class Paper < ActiveRecord::Base
 
   def meta_review_body(editor)
     if editor.strip.empty?
-      locals = { paper: self, editor: "Pending" }
+      locals = { paper: self, suggested_editor: "Pending" }
     else
-      locals = { paper: self, editor: "#{editor}" }
+      locals = { paper: self, suggested_editor: "#{editor}" }
     end
     ApplicationController.render(
       template: 'shared/meta_view_body',
@@ -345,30 +345,12 @@ class Paper < ActiveRecord::Base
 
   # Create a review meta-issue for assigning reviewers
   def create_meta_review_issue(editor_handle)
-    if editor_handle
-      striped_handle = editor_handle.gsub('@', '')
-    else
-      striped_handle = editor_handle
-    end
-
     return false if meta_review_issue_id
-
-    # If an editor handle has been passed then look up the editor
-    if !editor_handle.blank?
-      if editor = Editor.find_by_login(striped_handle)
-        set_editor(editor)
-      else
-        # If we've been passed an editor handle but can't find the editor we
-        # should fail here.
-        return false
-      end
-    end
 
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[PRE REVIEW]: #{self.title}",
                                 meta_review_body(editor_handle),
-                                { assignee: striped_handle,
-                                  labels: "pre-review" })
+                                { labels: "pre-review" })
 
     set_meta_review_issue(issue.number)
   end

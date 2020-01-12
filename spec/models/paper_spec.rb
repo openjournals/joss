@@ -121,7 +121,7 @@ describe Paper do
 
       paper.start_meta_review('arfon')
       expect(paper.state).to eq('review_pending')
-      expect(paper.editor).to eq(editor)
+      expect(paper.editor).to be(nil)
     end
 
     it "should then allow for the paper to be moved into the under_review state" do
@@ -222,7 +222,7 @@ describe Paper do
         is_expected.to match /#{Rails.application.settings['reviewers']}/
       end
 
-      it { is_expected.to match "The JOSS editor @joss_editor, will work with you on this issue" }
+      it { is_expected.to match "The author's suggestion for the handling editor is @joss_editor" }
     end
 
     context "with no editor" do

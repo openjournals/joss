@@ -330,11 +330,11 @@ class Paper < ActiveRecord::Base
     self.update_attribute(:review_issue_id, issue_number)
   end
 
-  def meta_review_body(editor)
+  def meta_review_body(editor, eic)
     if editor.strip.empty?
-      locals = { paper: self, suggested_editor: "Pending" }
+      locals = { paper: self, suggested_editor: "Pending", eic: eic }
     else
-      locals = { paper: self, suggested_editor: "#{editor}" }
+      locals = { paper: self, suggested_editor: "#{editor}", eic: eic }
     end
     ApplicationController.render(
       template: 'shared/meta_view_body',
@@ -344,13 +344,14 @@ class Paper < ActiveRecord::Base
   end
 
   # Create a review meta-issue for assigning reviewers
-  def create_meta_review_issue(editor_handle)
+  def create_meta_review_issue(editor_handle, eic_handle)
     return false if meta_review_issue_id
 
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[PRE REVIEW]: #{self.title}",
-                                meta_review_body(editor_handle),
-                                { labels: "pre-review" })
+                                meta_review_body(editor_handle, eic_handle),
+                                { labels: "pre-review",
+                                  assignees: [eic_handle] })
 
     set_meta_review_issue(issue.number)
   end

@@ -33,7 +33,7 @@ describe PapersController, type: :controller do
       editor = create(:editor, login: "josseditor")
       editing_user = create(:user, editor: editor)
 
-      allow(controller).to receive_message_chain(:current_user).and_return(user)
+      allow(controller).to receive_message_chain(:current_user).and_return(editing_user)
 
       author = create(:user)
       paper = create(:paper, user_id: author.id)

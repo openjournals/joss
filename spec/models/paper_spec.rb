@@ -119,7 +119,7 @@ describe Paper do
       allow(fake_issue).to receive(:number).and_return(1)
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
-      paper.start_meta_review('arfon')
+      paper.start_meta_review('arfon', 'important-editor')
       expect(paper.state).to eq('review_pending')
       expect(paper.editor).to be(nil)
     end
@@ -211,7 +211,7 @@ describe Paper do
       instance.save(validate: false)
       instance
     end
-    subject { paper.meta_review_body(editor) }
+    subject { paper.meta_review_body(editor, 'important-editor') }
 
     context "with an editor" do
       let(:editor) { "@joss_editor" }
@@ -220,6 +220,7 @@ describe Paper do
         is_expected.to match /#{paper.submitting_author.github_username}/
         is_expected.to match /#{paper.submitting_author.name}/
         is_expected.to match /#{Rails.application.settings['reviewers']}/
+        is_expected.to match /important-editor/
       end
 
       it { is_expected.to match "The author's suggestion for the handling editor is @joss_editor" }

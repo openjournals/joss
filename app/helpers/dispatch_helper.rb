@@ -74,6 +74,10 @@ module DispatchHelper
       action == 'locked'
     end
 
+    def unlocked?
+      action == 'unlocked'
+    end
+
     def assigned?
       action == 'assigned' || action == 'unassigned'
     end
@@ -104,6 +108,7 @@ module DispatchHelper
       return if opened?
       return if closed?
       return if locked?
+      return if unlocked?
 
       if edited?
         if issues.has_key?('last_edits')

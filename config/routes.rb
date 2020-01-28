@@ -53,6 +53,7 @@ Rails.application.routes.draw do
   post '/papers/api_assign_editor', to: 'dispatch#api_assign_editor'
   post '/papers/api_assign_reviewers', to: 'dispatch#api_assign_reviewers'
   post '/papers/api_reject', to: 'dispatch#api_reject'
+  post '/papers/api_withdraw', to: 'dispatch#api_withdraw'
   post '/dispatch', to: 'dispatch#github_recevier', format: 'json'
 
   root to: 'home#index'

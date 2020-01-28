@@ -347,6 +347,35 @@ describe DispatchController, type: :controller do
     end
   end
 
+  describe "PUT #api_withdraw" do
+    ENV["WHEDON_SECRET"] = "mooo"
+
+    it "with no API key" do
+      post :api_withdraw
+      expect(response).to be_forbidden
+    end
+
+    it "with the correct API key for a review_pending paper" do
+      paper = create(:review_pending_paper, state: "review_pending", meta_review_issue_id: 1234)
+
+      post :api_withdraw, params: { secret: "mooo",
+                                  id: 1234}
+
+      expect(response).to be_successful
+      expect(paper.reload.state).to eql("withdrawn")
+    end
+
+    it "with the correct API key for rejected paper" do
+      paper = create(:rejected_paper, meta_review_issue_id: 1234)
+
+      post :api_withdraw, params: { secret: "mooo",
+                                  id: 1234}
+
+      expect(response).to be_successful
+      expect(paper.reload.state).to eql("withdrawn")
+    end
+  end
+
   describe "POST #api_deposit" do
     ENV["WHEDON_SECRET"] = "mooo"
 

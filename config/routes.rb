@@ -48,6 +48,7 @@ Rails.application.routes.draw do
 
   get '/blog' => redirect("http://blog.joss.theoj.org"), as: :blog
   # API methods
+  post '/papers/api_editor_invite', to: 'dispatch#api_editor_invite'
   post '/papers/api_start_review', to: 'dispatch#api_start_review'
   post '/papers/api_deposit', to: 'dispatch#api_deposit'
   post '/papers/api_assign_editor', to: 'dispatch#api_assign_editor'

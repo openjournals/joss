@@ -7,6 +7,11 @@ class Notifications < ApplicationMailer
     mail(to: EDITOR_EMAILS, subject: "New submission: #{paper.title}")
   end
 
+  def editor_invite_email(paper, editor)
+    @paper = paper
+    mail(to: editor.email, subject: "JOSS editorial invite: #{paper.title}")
+  end
+
   def author_submission_email(paper)
     @url  = "#{Rails.application.settings["url"]}/papers/#{paper.sha}"
     @paper = paper

@@ -4,7 +4,9 @@ class DispatchController < ApplicationController
   include DispatchHelper
   include SettingsHelper
 
-  protect_from_forgery except: [ :api_start_review, :api_deposit, :api_assign_editor, :api_assign_reviewers, :api_reject, :api_withdraw ]
+  protect_from_forgery except: [  :api_assign_editor, :api_assign_reviewers,
+                                  :api_deposit, :api_editor_invite, :api_reject,
+                                  :api_start_review, :api_withdraw ]
   respond_to :json
 
   def github_recevier
@@ -48,6 +50,20 @@ class DispatchController < ApplicationController
       editor = Editor.find_by_login(params[:editor])
       return head :unprocessable_entity unless paper && editor
       paper.set_editor(editor)
+    else
+      head :forbidden
+    end
+  end
+
+  def api_editor_invite
+    if params[:secret] == ENV['WHEDON_SECRET']
+      paper = Paper.find_by_meta_review_issue_id(params[:id])
+      return head :unprocessable_entity unless paper
+      if paper.invite_editor(params[:editor])
+        head :no_content
+      else
+        head :unprocessable_entity
+      end
     else
       head :forbidden
     end

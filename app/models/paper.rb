@@ -145,6 +145,11 @@ class Paper < ActiveRecord::Base
     accepted? || retracted?
   end
 
+  def invite_editor(editor_handle)
+    return false unless editor = Editor.find_by_login(editor_handle)
+    Notifications.editor_invite_email(self, editor).deliver_now
+  end
+
   def scholar_title
     return nil unless published?
     metadata['paper']['title']

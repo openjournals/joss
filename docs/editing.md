@@ -59,6 +59,15 @@ Comments in the `REVIEW` issue should be kept brief, as much as possible, with m
 
 When the reviewers are satisfied with the improvements, we ask that they confirm their recommendation to accept the submission.
 
+### Adding a new reviewer once the review has started
+
+Sometimes you'll need to add a new reviewer once the main review (i.e. post pre-review) is already underway. In this situation you should do the following:
+
+- In the review thread, do `@whedon add @newreviewer as reviewer`.
+- Manually edit the first message in the thread to add a checklist for @newreviewer.
+
+In the future, this will be more automated but for now, there's some manual work required.
+
 ## After reviewers recommend acceptance
 
 When a submission is ready to be accepted, we ask that the authors issue a new tagged release of the software (if changed), and archive it (on [Zenodo](https://zenodo.org/), [fig**share**](https://figshare.com/), or other). The authors then post the version number and archive DOI in the `REVIEW` issue. The handling editor executes the pre-publication steps, and pings the EiCs for final processing.

@@ -18,5 +18,12 @@
 //= require bootstrap
 //= require_tree .
 
-
-
+$(document).ready(function(){
+  var clipboard = new Clipboard('.clipboard-btn', {
+    text: function(trigger) {
+      target = trigger.getAttribute('data-clipboard-target').substring(1);
+      console.log(target);
+      return document.getElementById(target).innerHTML;
+    }
+  });
+});

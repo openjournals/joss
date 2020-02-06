@@ -160,6 +160,16 @@ class Paper < ActiveRecord::Base
     metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['last_name']}"}.join(', ')
   end
 
+  def bibtex_authors
+    return nil unless published?
+    metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['last_name']}"}.join(' and ')
+  end
+
+  def bibtex_key
+    return nil unless published?
+    "#{metadata['paper']['authors'].first['last_name']}#{year}"
+  end
+
   def language_tags
     return [] unless published?
     metadata['paper']['languages'] - IGNORED_LANGUAGES

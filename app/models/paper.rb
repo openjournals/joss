@@ -145,6 +145,11 @@ class Paper < ActiveRecord::Base
     accepted? || retracted?
   end
 
+  def invite_editor(editor_handle)
+    return false unless editor = Editor.find_by_login(editor_handle)
+    Notifications.editor_invite_email(self, editor).deliver_now
+  end
+
   def scholar_title
     return nil unless published?
     metadata['paper']['title']
@@ -153,6 +158,16 @@ class Paper < ActiveRecord::Base
   def scholar_authors
     return nil unless published?
     metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['last_name']}"}.join(', ')
+  end
+
+  def bibtex_authors
+    return nil unless published?
+    metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['last_name']}"}.join(' and ')
+  end
+
+  def bibtex_key
+    return nil unless published?
+    "#{metadata['paper']['authors'].first['last_name']}#{year}"
   end
 
   def language_tags

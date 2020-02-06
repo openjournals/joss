@@ -283,6 +283,31 @@ describe DispatchController, type: :controller do
     end
   end
 
+  describe "POST #api_editor_invite" do
+    ENV["WHEDON_SECRET"] = "mooo"
+
+    it "with no API key" do
+      post :api_editor_invite
+      expect(response).to be_forbidden
+    end
+
+    it "with the correct API key and valid editor" do
+      editor = create(:editor, login: "jimmy")
+      paper = create(:review_pending_paper, state: "review_pending", meta_review_issue_id: 1234)
+      post_params = { secret: "mooo", id: 1234, editor: "jimmy" }
+
+      expect { post :api_editor_invite, params: post_params }.to change { ActionMailer::Base.deliveries.count }.by(1)
+    end
+
+    it "with the correct API key and invalid editor" do
+      paper = create(:review_pending_paper, state: "review_pending", meta_review_issue_id: 1234)
+      post_params = { secret: "mooo", id: 1234, editor: "not-editor" }
+      post :api_editor_invite, params: post_params
+
+      expect(response).to be_unprocessable
+    end
+  end
+
   describe "POST #api_assign_reviewers" do
     ENV["WHEDON_SECRET"] = "mooo"
 
@@ -344,6 +369,35 @@ describe DispatchController, type: :controller do
 
       expect(response).to be_successful
       expect(paper.reload.state).to eql("rejected")
+    end
+  end
+
+  describe "PUT #api_withdraw" do
+    ENV["WHEDON_SECRET"] = "mooo"
+
+    it "with no API key" do
+      post :api_withdraw
+      expect(response).to be_forbidden
+    end
+
+    it "with the correct API key for a review_pending paper" do
+      paper = create(:review_pending_paper, state: "review_pending", meta_review_issue_id: 1234)
+
+      post :api_withdraw, params: { secret: "mooo",
+                                  id: 1234}
+
+      expect(response).to be_successful
+      expect(paper.reload.state).to eql("withdrawn")
+    end
+
+    it "with the correct API key for rejected paper" do
+      paper = create(:rejected_paper, meta_review_issue_id: 1234)
+
+      post :api_withdraw, params: { secret: "mooo",
+                                  id: 1234}
+
+      expect(response).to be_successful
+      expect(paper.reload.state).to eql("withdrawn")
     end
   end
 

@@ -11,6 +11,10 @@ class Paper < ActiveRecord::Base
               foreign_key: "user_id"
 
   belongs_to  :editor, optional: true
+  belongs_to  :eic,
+              class_name: 'Editor',
+              optional: true,
+              foreign_key: "eic_id"
 
   include AASM
 
@@ -345,11 +349,11 @@ class Paper < ActiveRecord::Base
     self.update_attribute(:review_issue_id, issue_number)
   end
 
-  def meta_review_body(editor)
+  def meta_review_body(editor, eic_name)
     if editor.strip.empty?
-      locals = { paper: self, suggested_editor: "Pending" }
+      locals = { paper: self, suggested_editor: "Pending", eic_name: eic_name }
     else
-      locals = { paper: self, suggested_editor: "#{editor}" }
+      locals = { paper: self, suggested_editor: "#{editor}", eic_name: eic_name }
     end
     ApplicationController.render(
       template: 'shared/meta_view_body',
@@ -359,20 +363,25 @@ class Paper < ActiveRecord::Base
   end
 
   # Create a review meta-issue for assigning reviewers
-  def create_meta_review_issue(editor_handle)
+  def create_meta_review_issue(editor_handle, eic)
     return false if meta_review_issue_id
 
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[PRE REVIEW]: #{self.title}",
-                                meta_review_body(editor_handle),
+                                meta_review_body(editor_handle, eic.full_name),
                                 { labels: "pre-review" })
 
     set_meta_review_issue(issue.number)
+    set_meta_eic(eic)
   end
 
   # Update the Paper meta_review_issue_id field
   def set_meta_review_issue(issue_number)
     self.update_attribute(:meta_review_issue_id, issue_number)
+  end
+
+  def set_meta_eic(eic)
+    self.update_attribute(:eic_id, eic.id)
   end
 
   def meta_review_url

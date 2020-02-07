@@ -29,11 +29,12 @@ describe PapersController, type: :controller do
     end
 
     it "LOGGED IN and with correct params" do
-      user = create(:admin_user)
+      admin_editor = create(:editor, login: "josseic")
+      admin_user = create(:admin_user, editor: admin_editor)
       editor = create(:editor, login: "josseditor")
       editing_user = create(:user, editor: editor)
 
-      allow(controller).to receive_message_chain(:current_user).and_return(user)
+      allow(controller).to receive_message_chain(:current_user).and_return(admin_user)
 
       author = create(:user)
       paper = create(:paper, user_id: author.id)
@@ -45,6 +46,8 @@ describe PapersController, type: :controller do
       post :start_meta_review, params: {id: paper.sha, editor: "josseditor"}
 
       expect(response).to be_redirect
+      expect(paper.reload.state).to eq('review_pending')
+      expect(paper.reload.eic).to eq(admin_editor)
     end
   end
 

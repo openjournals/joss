@@ -159,7 +159,7 @@ class PapersController < ApplicationController
   def start_meta_review
     @paper = Paper.find_by_sha(params[:id])
 
-    if @paper.start_meta_review!(params[:editor])
+    if @paper.start_meta_review!(params[:editor], current_user.editor)
       flash[:notice] = "Review started"
       redirect_to paper_path(@paper)
     else

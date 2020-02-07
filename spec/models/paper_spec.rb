@@ -119,9 +119,10 @@ describe Paper do
       allow(fake_issue).to receive(:number).and_return(1)
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
-      paper.start_meta_review('arfon')
+      paper.start_meta_review!('arfon', editor)
       expect(paper.state).to eq('review_pending')
-      expect(paper.editor).to be(nil)
+      expect(paper.reload.editor).to be(nil)
+      expect(paper.reload.eic).to eq(editor)
     end
 
     it "should then allow for the paper to be moved into the under_review state" do
@@ -206,12 +207,14 @@ describe Paper do
 
   describe "#meta_review_body" do
     let(:author) { create(:user) }
+
     let(:paper) do
       instance = build(:paper_with_sha, user_id: author.id)
       instance.save(validate: false)
       instance
     end
-    subject { paper.meta_review_body(editor) }
+
+    subject { paper.meta_review_body(editor, 'Important Editor') }
 
     context "with an editor" do
       let(:editor) { "@joss_editor" }
@@ -220,6 +223,7 @@ describe Paper do
         is_expected.to match /#{paper.submitting_author.github_username}/
         is_expected.to match /#{paper.submitting_author.name}/
         is_expected.to match /#{Rails.application.settings['reviewers']}/
+        is_expected.to match /Important Editor/
       end
 
       it { is_expected.to match "The author's suggestion for the handling editor is @joss_editor" }

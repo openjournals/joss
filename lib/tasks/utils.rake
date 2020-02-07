@@ -10,7 +10,7 @@ namespace :utils do
     DAN_WEEKS_2019 = [5, 9, 13, 17, 21, 25, 29, 33, 39, 44, 49]
     KRISTEN_WEEKS_2019 = [38, 43, 48]
     ARFON_WEEKS_2019 = [1, 4, 8, 12, 16, 20, 24, 28, 32, 36]
-    KEVIN_WEEKS_2019 = [37, 42, 47]
+    KEVIN_WEEKS_2019 = [37, 42, 47, 52]
 
     KYLE_WEEKS_2020 = [3]
     LORENA_WEEKS_2020 = [4]

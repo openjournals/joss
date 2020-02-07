@@ -438,3 +438,4 @@ var forEach = function(object, block, context) {
 document.addEventListener("turbo:load", function() {
   sorttable.init();
 })
+

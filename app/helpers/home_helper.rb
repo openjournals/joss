@@ -4,7 +4,7 @@ module HomeHelper
       return nil unless paper.track
       concat content_tag(:span, paper.track.label, style: "padding: 3px; margin-right: 3px; border-radius: 2px; background-color: ##{paper.track.label_color}; color: #000000;")
     end
-    
+
     capture do
       paper.labels.each do |label, colour|
         if label == "paused"
@@ -103,7 +103,7 @@ module HomeHelper
           concat(content_tag(:span, "#{comment_link(comment)}".html_safe, class: "comment-link"))
         end)
       end
-    rescue 
+    rescue
       return "Error returning latest status"
     end
   end

@@ -36,7 +36,7 @@ namespace :utils do
       return Editor.find_by_login('arfon') if ARFON_WEEKS_2019.include?(week)
       return Editor.find_by_login('Kevin-Mattheus-Moerman') if KEVIN_WEEKS_2019.include?(week)
 
-      raise
+      raise "Can't find editor for #{week}"
     end
 
     papers_2019.each do |paper|

@@ -12,10 +12,11 @@ namespace :utils do
     ARFON_WEEKS_2019 = [1, 4, 8, 12, 16, 20, 24, 28, 32, 36]
     KEVIN_WEEKS_2019 = [37, 42, 47]
 
-    KRISTEN_WEEKS_2020 = [1, 6]
-    DAN_WEEKS_2020 = [2]
     KYLE_WEEKS_2020 = [3]
     LORENA_WEEKS_2020 = [4]
+    DAN_WEEKS_2020 = [2]
+    KRISTEN_WEEKS_2020 = [1, 6]
+    ARFON_WEEKS_2020 = []
     KEVIN_WEEKS_2020 = [5]
 
     papers_before_2019 = Paper.where('created_at < ?', '2019-01-01')

@@ -119,9 +119,10 @@ describe Paper do
       allow(fake_issue).to receive(:number).and_return(1)
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
-      paper.start_meta_review('arfon', 'important-editor')
+      paper.start_meta_review!('arfon', editor)
       expect(paper.state).to eq('review_pending')
-      expect(paper.editor).to be(nil)
+      expect(paper.reload.editor).to be(nil)
+      expect(paper.reload.eic).to eq(editor)
     end
 
     it "should then allow for the paper to be moved into the under_review state" do

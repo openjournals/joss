@@ -137,6 +137,8 @@ Citations to entries in paper.bib should be in
 [rMarkdown](http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html)
 format.
 
+If you want to cite a software repository URL (e.g. something on GitHub without a preferred citation) then you can do it with the example BibTeX entry below for @fidgit.
+
 For a quick reference, the following citation commands can be used:
 - `@author:2001`  ->  "Author et al. (2001)"
 - `[@author:2001]` -> "(Author et al., 2001)"
@@ -208,6 +210,15 @@ Example `paper.bib` file:
     volume = 558,
     doi = {10.1051/0004-6361/201322068},
     adsurl = {http://adsabs.harvard.edu/abs/2013A%26A...558A..33A}
+}
+
+@misc{fidgit,
+  author = {​A. Smith},
+  title = {Fidgit: An ungodly union of GitHub and Figshare},
+  year = {2020},
+  publisher = {​GitHub},
+  journal = {​GitHub repository},
+  url = {​https://github.com/arfon/fidgit}
 }
 ```
 

@@ -75,6 +75,27 @@ class PapersController < ApplicationController
     end
   end
 
+  def search
+    @papers = Paper.none.page(1)
+    @term = "results for empty search"
+
+    if params['q']
+      @papers = Paper.search(params['q'], fields: [:title, :tags, :languages],
+                  page: params[:page],
+                  per_page: 10)
+
+      @term = "search results for '#{params['q']}'"
+    end
+
+    @filtering = true
+
+    respond_to do |format|
+      format.atom { render template: 'papers/index' }
+      format.json { render json: @papers }
+      format.html { render template: 'papers/index' }
+    end
+  end
+
   def filter
     @papers = Paper.none.page(1)
     @term = "Empty search term"

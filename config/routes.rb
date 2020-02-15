@@ -14,6 +14,7 @@ Rails.application.routes.draw do
       get 'published', to: 'papers#popular'
       get 'active'
       get 'filter', to: 'papers#filter'
+      get 'search', to: 'papers#search'
     end
   end
 

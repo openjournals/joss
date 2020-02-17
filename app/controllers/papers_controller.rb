@@ -80,7 +80,7 @@ class PapersController < ApplicationController
     @term = "results for empty search"
 
     if params['q']
-      @papers = Paper.search(params['q'], fields: [:title, :tags, :languages],
+      @papers = Paper.search(params['q'], fields: [:authors, :title, :tags, :languages],
                   page: params[:page],
                   per_page: 10)
 

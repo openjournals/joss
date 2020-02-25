@@ -87,6 +87,33 @@ At that point, the EiC/AEiC will take over to make final checks and publish the 
 
 It’s also a good idea to ask the authors to check the proof. We’ve had a few papers request a post-publication change of author list, for example—this requires a manual download/compile/deposit cycle and should be a rare event.
 
+## Handling of papers published together with AAS publishing
+
+JOSS is collaborating with [AAS publishing](https://journals.aas.org/) to offer software review for some of the papers submitted to their journals. A detailed overview of the motivations/background is available in the [announcement blog post](https://blog.joss.theoj.org/2018/12/a-new-collaboration-with-aas-publishing), here we document the additional editorial steps that are necessary for JOSS to follow:
+
+**Before/during review**
+
+- If the paper is a joint publication, make sure you apply the [`AAS`](https://github.com/openjournals/joss-reviews/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3AAAS+) label to both the `pre-review` and the `review` issues.
+- Before moving the JOSS paper from `pre-review` to `review`, ensure that you (the JOSS editor) make the reviewers aware that JOSS will be receiving a small financial donation from AAS publishing for this review (e.g. [like this](https://github.com/openjournals/joss-reviews/issues/1852#issuecomment-553203738)).
+
+**After the paper has been accepted by JOSS**
+
+- Once the JOSS review is complete, ask the author for the status of their AAS publication, specifically if they have the AAS paper DOI yet.
+- Once this is available, ask the author to add this information to their `paper.md` YAML header as documented in the [submission guidelines](submitting.html#what-should-my-paper-contain).
+
+```
+# Optional fields if submitting to a AAS journal too, see this blog post:
+# https://blog.joss.theoj.org/2018/12/a-new-collaboration-with-aas-publishing
+aas-doi: 10.3847/xxxxx <- update this with the DOI from AAS once you know it.
+aas-journal: Astrophysical Journal <- The name of the AAS journal.
+```
+
+- Pause the review to await notification that the AAS paper is published.
+
+**Once the AAS paper is published**
+
+- Ask the EiC on rotation to publish the paper as normal (by tagging `@openjournals/joss-eics`).
+
 ## Processing of rOpenSci-reviewed and accepted submissions
 
 If a paper has already been reviewed and accepted by rOpenSci, the streamlined JOSS review process is:
@@ -100,7 +127,7 @@ If a paper has already been reviewed and accepted by rOpenSci, the streamlined J
 - Compile the paper and check it looks ok
 - Tick off all the review checkboxes
 - Go to to the source code repo and grab the Zenodo DOI
-- Accept the paper
+- Accept and publish the paper
 
 ## Rejecting a paper
 

@@ -108,7 +108,7 @@ aas-doi: 10.3847/xxxxx <- update this with the DOI from AAS once you know it.
 aas-journal: Astrophysical Journal <- The name of the AAS journal.
 ```
 
-- Pause the review to await notification that the AAS paper is published.
+- Pause the review (by applying the `paused` label) to await notification that the AAS paper is published.
 
 **Once the AAS paper is published**
 

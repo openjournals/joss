@@ -41,8 +41,48 @@ module HomeHelper
   end
 
   def current_class?(test_path)
-    return 'nav-link active' if request.path == test_path
-    'nav-link'
+    return 'tabnav-tab selected' if request.path == test_path
+    'tabnav-tab'
+  end
+
+  def checklist_activity(paper)
+    return "No activity" if paper.activities.empty?
+    return "No activity" if paper.activities['issues']['commenters'].empty?
+
+    capture do
+      if !paper.activities['issues']['comments'].empty?
+        if paper.activities['issues']['last_edits'] && paper.activities['issues']['last_edits'].keys.any?
+          user, time = paper.activities['issues']['last_edits'].first
+          concat(image_tag(avatar(user), size: "24x24", class: "avatar", title: user))
+          concat(content_tag(:span, "&nbsp; #{time_ago_in_words(time)} ago".html_safe, class: "time"))
+        else
+          return "No activity"
+        end
+      end
+    end
+  end
+
+  def sort_icon(sort_order)
+    capture do
+      if sort_order == "desc"
+        concat(link_to octicon("chevron-down"), "#{request.path}?order=asc")
+      elsif sort_order == "asc"
+        concat(link_to octicon("chevron-up"), "#{request.path}?order=desc")
+      end
+    end
+  end
+
+  def comment_activity(paper)
+    return "No activity" if paper.activities.empty?
+    return "No activity" if paper.activities['issues']['commenters'].empty?
+    capture do
+      comment = paper.activities['issues']['comments'].first
+      concat(content_tag(:span, image_tag(avatar(comment['author']), size: "24x24", class: "avatar", title: comment['author']), class: "activity-avatar"))
+      concat(content_tag(:span, style: "") do
+        concat(content_tag(:span, "#{time_ago_in_words(comment['commented_at'])} ago".html_safe, class: "time"))
+        concat(content_tag(:span, "#{comment_link(comment)}".html_safe, class: "comment-link"))
+      end)
+    end
   end
 
   def card_activity(paper)
@@ -90,11 +130,15 @@ module HomeHelper
   end
 
   def comment_link(comment)
-    link_to("View comment &rarr;".html_safe, comment['comment_url'], target: "_blank")
+    link_to("View comment &raquo;".html_safe, comment['comment_url'], target: "_blank", title: comment['comment'])
+  end
+
+  def github_user_link(username)
+    "https://github.com/#{username.gsub('@', '')}"
   end
 
   def github_user(username)
-    link_to("@#{username}", "https://github.com/#{username.gsub('@', '')}")
+    link_to("@#{username}", github_user_link(username))
   end
 
   def activites_shortcut_for(paper)

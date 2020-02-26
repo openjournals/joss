@@ -45,6 +45,24 @@ module HomeHelper
     'tabnav-tab'
   end
 
+  def review_issue_links(paper)
+    capture do
+      if paper.meta_review_issue_id
+        concat(link_to paper.meta_review_issue_id, paper.meta_review_url)
+      else
+        concat("–")
+      end
+
+      concat(" / ")
+
+      if paper.review_issue_id
+        concat(link_to paper.review_issue_id, paper.review_url)
+      else
+        concat("–")
+      end
+    end
+  end
+
   def checklist_activity(paper)
     return "No activity" if paper.activities.empty?
     return "No activity" if paper.activities['issues']['commenters'].empty?

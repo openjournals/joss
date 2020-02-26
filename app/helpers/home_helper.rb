@@ -65,9 +65,9 @@ module HomeHelper
   def sort_icon(sort_order)
     capture do
       if sort_order == "desc"
-        concat(link_to octicon("chevron-down"), "#{request.path}?order=asc")
+        concat(link_to octicon("chevron-up"), "#{request.path}?order=asc")
       elsif sort_order == "asc"
-        concat(link_to octicon("chevron-up"), "#{request.path}?order=desc")
+        concat(link_to octicon("chevron-down"), "#{request.path}?order=desc")
       end
     end
   end

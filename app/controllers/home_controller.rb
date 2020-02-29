@@ -37,6 +37,7 @@ class HomeController < ApplicationController
                 )
     end
 
+    @editor = current_user.editor
     @active_tab = "incoming"
 
     render template: "home/reviews"

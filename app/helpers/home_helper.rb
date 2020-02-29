@@ -10,7 +10,7 @@ module HomeHelper
     end
 
     if ignored_count > 0
-      return "#{papers.count - ignored_count} + #{ignored_count} paused"
+      return "#{papers.count - ignored_count} <span class='small font-italic'>(+ #{ignored_count} paused)</span>".html_safe
     else
       return "#{papers.count}"
     end

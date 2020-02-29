@@ -81,6 +81,8 @@ class HomeController < ApplicationController
       @order = "desc"
     end
 
+    @editor = current_user.editor
+
     @papers = Paper.unscoped.in_progress.order(last_activity: @order).paginate(
                 page: params[:page],
                 per_page: 20

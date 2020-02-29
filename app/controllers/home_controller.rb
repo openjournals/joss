@@ -104,6 +104,8 @@ class HomeController < ApplicationController
               )
     end
 
+    @editor = current_user.editor
+    
     render template: "home/reviews"
   end
 

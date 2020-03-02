@@ -83,9 +83,9 @@ Pre-publication steps:
 - Check the archive deposit has the correct metadata (title and author list), and request the author edit it if it doesn’t match the paper.
 - Run `@whedon set <doi> as archive`.
 - Run `@whedon set <v1.x.x> as version` if the version was updated.
-- Ping the `@openjournals/joss-eics` team on the review thread letting them know the paper is ready for final processing.
+- Run `@whedon accept` to generate the final proofs, which has Whedon notify the `@openjournals/joss-eics` team that the paper is ready for final processing.
 
-At that point, the EiC/AEiC will take over to make final checks and publish the paper.
+At this point, the EiC/AEiC will take over to make final checks and publish the paper.
 
 It’s also a good idea to ask the authors to check the proof. We’ve had a few papers request a post-publication change of author list, for example—this requires a manual download/compile/deposit cycle and should be a rare event.
 

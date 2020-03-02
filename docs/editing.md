@@ -33,6 +33,8 @@ By default, unless an editor volunteers, the Associated Editor-in-chief (AEiC) o
 
 In most cases, an AEiC will ask one or more editors to edit a submission (e.g. `@editor1, @editor 2 - would one of you be willing to edit this submission for JOSS`). If the editor doesn't respond within ~3 working days, the AEiC may assign the paper to the editor regardless.
 
+Editors may also be invited to edit over email when an AEiC runs the  command `@whedon invite @editor1 as editor`.
+
 ### Finding reviewers
 
 At this point, the handling editor's job is to identify reviewers who have sufficient expertise in the field of software and in the field of the submission. JOSS papers have to have a minimum of two reviewers per submission, except for papers that have previously been peer-reviewed via rOpenSci. In some cases, the editor also might want to formally add themself as one of the reviewers. If the editor feels particularly unsure of the submission, a third (or fourth) reviewer can be recruited.

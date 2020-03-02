@@ -109,6 +109,16 @@ Editors can either assign themselves or other editors as the editor of a submiss
 @whedon assign @editorname as editor
 ```
 
+### Inviting an editor
+
+Whedon can be used by EiCs to send email invites to registered editors as follows:
+
+```text
+@whedon invite @editorname as editor
+```
+
+This will send an automated email to the editor with a link to the GitHub `pre-review` issue.
+
 ### Adding and removing reviewers
 
 Reviewers should be assigned by using the following commands:

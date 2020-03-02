@@ -1,53 +1,73 @@
-<div class="" style="margin: 0px 30px;">
-  <h2>Editor dashboard</h2>
-  <ul class="nav nav-pills nav-fill nav-justified" style="padding-bottom: 20px;">
-    <li class="nav-item">
-      <a class="<%= current_class?('/dashboard/incoming') %>" href="/dashboard/incoming">Papers with no editor</a>
-    </li>
-    <li class="nav-item">
-      <a class='<%= current_class?("/dashboard/#{current_user.editor.login}") %>' href="/dashboard/<%= current_user.editor.login %>">Your papers</a>
-    </li>
-    <li class="nav-item">
-      <a class="<%= current_class?('/dashboard/in_progress') %>" href="/dashboard/in_progress">In progress papers</a>
-    </li>
-    <li class="nav-item">
-      <a class="<%= current_class?('/dashboard/all') %>" href="/dashboard/all">All papers</a>
-    </li>
-    <li class="nav-item">
-      <a class="<%= current_class?('/dashboard') %>" href="/dashboard">JOSS statistics</a>
-    </li>
-  </ul>
-  <table class="table table-bordered table-hover table-striped table-responsive">
-    <thead class="thead-light">
+<div class="container">
+  <div class="row dashboard">
+    <div class="col-7">
+      <div class="welcome">Welcome, <%= current_user.editor.full_name %></div>
+      <div class="hero-small dashboard">
+        <div class="hero-title">
+          <%= image_tag "icon_papers.svg", height: "32px" %><h1>Editor dashboard</h1>
+        </div>
+      </div>
+    </div>
+    <div class="col-5">
+      <div class="my-statistics">
+        <div class="banner">
+          <span class="text-left">Statistics</span>
+          <span class="float-right"><%= link_to "View more &raquo;".html_safe, dashboard_path %></span>
+        </div>
+
+        <div class="row">
+          <div class="stat col">
+            <div class="count"><%= @editor.papers.visible.since(1.month.ago).count %></div>
+            <div class="message">Papers last month</div>
+          </div>
+          <div class="stat col">
+            <div class="count"><%= @editor.three_month_average %><span class="sub">(3M average)</span></div>
+            <div class="message">Papers per month</div>
+          </div>
+          <div class="stat col">
+            <div class="count"><%= Editor.global_three_month_average %><span class="sub">(Editor average)</span></div>
+            <div class="message">Papers per month</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%= render partial: "menu" %>
+
+<div class="container">
+  <table class="dashboard-table">
+    <thead>
       <tr>
-        <th scope="col" width="23%">Paper title</th>
-        <th scope="col" width="10%" class="text-center">Reviews</th>
-        <th scope="col" width="8%">State</th>
-        <th scope="col" width="18%">Reviewers</th>
-        <th scope="col" width="12%">Submitted</th>
-        <th scope="col" width="29%">Last Activity &middot; <%= stale_link %> &middot; <%= fresh_link %></th>
+        <th scope="col" width="12%">Status</th>
+        <th scope="col" width="34%">Paper title</th>
+        <th scope="col" class="text-center" width="10%">Reviews</th>
+        <th class="mobile-hide text-center" scope="col" width="8%">Reviewers</th>
+        <th class="mobile-hide" scope="col" width="15%">Last comment</th>
+        <th scope="col" width="2%" style="padding:0 1em 0 0;"><%= sort_icon(@order) %></th>
       </tr>
     </thead>
     <tbody>
       <% @papers.each do |paper| %>
       <tr>
-        <td><%= link_to truncate(paper.title, length: 50), paper_url(paper), title: paper.title %> <%= pretty_labels_for(paper) %></td>
-        <td class="text-center"><%= link_to truncate("#{paper.meta_review_issue_id}", length: 60), paper.meta_review_url  %> / <%= link_to truncate("#{paper.review_issue_id}", length: 60), paper.review_url  %></td>
-        <td><pre><%= paper.state %></pre></td>
-        <td><%= linked_reviewers(paper) %></td>
-        <td><%= time_ago_in_words(paper.created_at) %> ago</td>
-        <td style="position: relative;">
-          <%= last_comment_for(paper) %>
-          <a href="#paper-activity-<%= paper.id %>" data-toggle="collapse" aria-expanded="false" aria-controls="collapseExample" style="position: absolute; bottom: 4px; right: 4px">More ▼</a>
-          <div class="collapse" id="paper-activity-<%= paper.id %>" style="margin-top: 5px;">
-            <div class="card card-body" style="width: 85%;">
-              <%= card_activity(paper) %>
-            </div>
-          </div>
+        <td class="state"><%= paper.state.titleize %></td>
+        <td><%= link_to paper.title, paper_url(paper), title: paper.title, class: "d-inline-block text-truncate", style: "max-width: 450px;" %><div class="time">Submitted <%= time_ago_in_words(paper.created_at) %> ago <%= pretty_labels_for(paper) %></div></td>
+        <td class="text-center"><%= review_issue_links(paper) %></td>
+        <td class="text-center mobile-hide">
+          <%- paper.reviewers.each do |reviewer| %>
+            <%= link_to image_tag(avatar(reviewer), size: "24x24", class: "avatar", title: reviewer), github_user_link(reviewer).html_safe %>
+          <%- end %>
         </td>
+        <td class="mobile-hide"><%= comment_activity(paper) %></td>
+        <td style="display:none;"></td>
       </tr>
       <% end %>
     </tbody>
   </table>
-  <%= will_paginate @papers %>
+
+  <div class="row">
+    <!-- :class not applying here? --> <div class="pagination_helper"><%= page_entries_info(@papers).capitalize.html_safe %></div>
+    <%= will_paginate @papers, inner_window: 3, outer_window: 0, page_links: false %>
+  </div>
 </div>

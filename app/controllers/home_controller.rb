@@ -37,17 +37,27 @@ class HomeController < ApplicationController
                 )
     end
 
+    @editor = current_user.editor
     @active_tab = "incoming"
 
     render template: "home/reviews"
   end
 
   def reviews
+    case params[:order]
+    when "desc"
+      @order = "desc"
+    when "asc"
+      @order = "asc"
+    when nil
+      @order = "desc"
+    else
+      @order = "desc"
+    end
+
     if params[:editor]
       @active_tab = @editor = Editor.find_by_login(params[:editor])
-      sort_order = params[:order] ? params[:order] : 'desc'
-
-      @papers = Paper.unscoped.in_progress.where(editor: @editor).order(last_activity: sort_order).paginate(
+      @papers = Paper.unscoped.in_progress.where(editor: @editor).order(last_activity: @order).paginate(
                   page: params[:page],
                   per_page: 20
                 )
@@ -60,17 +70,24 @@ class HomeController < ApplicationController
   end
 
   def in_progress
-    if params[:order]
-      @papers = Paper.unscoped.in_progress.order(last_activity: params[:order]).paginate(
-                  page: params[:page],
-                  per_page: 20
-                )
+    case params[:order]
+    when "desc"
+      @order = "desc"
+    when "asc"
+      @order = "asc"
+    when nil
+      @order = "desc"
     else
-      @papers = Paper.in_progress.paginate(
-                  page: params[:page],
-                  per_page: 20
-                )
+      @order = "desc"
     end
+
+    @editor = current_user.editor
+
+    @papers = Paper.unscoped.in_progress.order(last_activity: @order).paginate(
+                page: params[:page],
+                per_page: 20
+              )
+
     render template: "home/reviews"
   end
 
@@ -87,6 +104,8 @@ class HomeController < ApplicationController
               )
     end
 
+    @editor = current_user.editor
+    
     render template: "home/reviews"
   end
 

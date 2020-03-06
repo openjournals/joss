@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_02_06_205751) do
+ActiveRecord::Schema.define(version: 2020_03_06_231512) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
@@ -62,6 +62,7 @@ ActiveRecord::Schema.define(version: 2020_02_06_205751) do
     t.text "retraction_notice"
     t.boolean "archived", default: false
     t.integer "eic_id"
+    t.string "submission_kind"
     t.index ["editor_id"], name: "index_papers_on_editor_id"
     t.index ["eic_id"], name: "index_papers_on_eic_id"
     t.index ["labels"], name: "index_papers_on_labels", using: :gin

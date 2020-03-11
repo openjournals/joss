@@ -33,6 +33,10 @@ FactoryBot.define do
       state { 'submitted' }
     end
 
+    factory :resubmission_paper do
+      submission_kind   { 'resubmission' }
+    end
+
     factory :rejected_paper do
       state { 'rejected' }
     end

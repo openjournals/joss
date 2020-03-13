@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
 
   resources :editors
-  resources :papers do
+  resources :papers, except: [:create] do
     member do
       post 'start_review'
       post 'start_meta_review'

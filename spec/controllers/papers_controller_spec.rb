@@ -97,7 +97,8 @@ describe PapersController, type: :controller do
     end
   end
 
-  describe "POST #create" do
+  describe "POST #create", skip: "New submissions are temporarily disabled - CoV19" do
+
     it "LOGGED IN responds with success" do
       user = create(:user)
       allow(controller).to receive_message_chain(:current_user).and_return(user)
@@ -117,8 +118,8 @@ describe PapersController, type: :controller do
       paper_params = {title: "Yeah whateva", body: "something", repository_url: "", archive_doi: "https://doi.org/10.6084/m9.figshare.828487"}
       post :create, params: {paper: paper_params}
 
-      # expect(response.body).to match /Your paper could not be saved/
-      # expect(Paper.count).to eq(paper_count)
+      expect(response.body).to match /Your paper could not be saved/
+      expect(Paper.count).to eq(paper_count)
     end
 
     it "LOGGED IN without a email on the submitting author account" do

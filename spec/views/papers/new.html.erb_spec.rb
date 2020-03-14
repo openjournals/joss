@@ -15,7 +15,7 @@ RSpec.describe "papers/new", type: :view do
     Rails.application.settings["paper_types"] = setting
   end
 
-  context "with multiple paper types" do
+  context "with multiple paper types", skip: "New submissions are temporarily disabled - CoV19" do
     let(:paper_types) { %w(type1 type2 type3) }
 
     it "renders the new paper form" do
@@ -34,7 +34,7 @@ RSpec.describe "papers/new", type: :view do
     end
   end
 
-  context "with no paper types" do
+  context "with no paper types", skip: "New submissions are temporarily disabled - CoV19" do
     let(:paper_types) { [] }
 
     it "renders the new paper form" do

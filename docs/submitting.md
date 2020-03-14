@@ -45,7 +45,7 @@ Your paper should include:
 - A summary describing the high-level functionality and purpose of the software for a diverse, *non-specialist audience*.
 - A clear *Statement of Need* that illustrates the research purpose of the software.
 - A list of key references, including to other software addressing related needs.
-- Mention (if applicable) of any past or ongoing research projects using the software and recent scholarly publications enabled by it.
+- Mention (if applicable) a representative set of past or ongoing research projects using the software and recent scholarly publications enabled by it.
 - Acknowledgement of any financial support.
 
 As this short list shows, JOSS papers are only expected to contain a limited set of metadata (see example below), a Statement of Need, Summary, Acknowledgements, and References sections. You can look at an [example accepted paper](http://bit.ly/2x22gxT). Given this format, a "full length" paper is not permitted, and software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation.

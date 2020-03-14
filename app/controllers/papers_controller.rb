@@ -239,6 +239,9 @@ class PapersController < ApplicationController
       head 404 and return unless can_see_hidden_paper?(@paper)
     end
 
+    # The behaviour here for PDFs is to make it possible for the PDF to appear
+    # to be on the current domain even when it might not be. This is essential
+    # for Google Scholar and helpful for browser security warnings.
     respond_to do |format|
       format.html { render layout: false }
       format.pdf {

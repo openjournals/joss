@@ -120,12 +120,13 @@ describe 'papers/show.html.erb' do
 
       allow(view).to receive_message_chain(:current_user).and_return(user)
 
-      paper = create(:paper, state: "submitted", review_issue_id: 123, submitting_author: author)
+      paper = create(:resubmission_paper, state: "submitted", review_issue_id: 123, submitting_author: author)
       assign(:paper, paper)
 
       render template: "papers/show.html.erb"
 
-      expect(rendered).to have_content "View review issue"
+      expect(rendered).to have_content "Paper review"
+      expect(rendered).to have_content "Resubmission"
     end
 
     it "shows the takedown notice for a retracted paper" do

@@ -5,6 +5,23 @@ module PapersHelper
     end
   end
 
+  def paper_kind(paper)
+    case paper.submission_kind
+    when "new"
+      "New submission"
+    when "resubmission"
+      "Resubmission"
+    when "new version"
+      "New version"
+    else
+      "Unknown"
+    end
+  end
+
+  def paper_count_for(user)
+    [user.papers.visible.count - 1, 0].max
+  end
+
   def scholar_author_tags(authors)
     authors = authors.split(',')
     returned = ""

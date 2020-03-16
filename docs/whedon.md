@@ -24,6 +24,9 @@ This will return an output something like this (the exact response depends upon 
 # Remove a GitHub user from the reviewers of this submission
 @whedon remove @username as reviewer
 
+# This adds the user as a collaborator again and will return a link in the review thread for them to click.
+@whedon re-invite @reviewer as reviewer
+
 # List of editor GitHub usernames
 @whedon list editors
 

@@ -6,12 +6,6 @@ Whedon or `@whedon` on GitHub, is our editorial bot that interacts with authors,
 `@whedon` can do a bunch of different things. If you want to ask `@whedon` what it can do, simply type the following in a JOSS `review` or `pre-review` issue:
 
 ```text
-@whedon commands
-```
-
-This will return an output something like this (the exact response depends upon whether or not you're an editor):
-
-```text
 # List all of Whedon's capabilities
 @whedon commands
 
@@ -20,6 +14,9 @@ This will return an output something like this (the exact response depends upon 
 
 # Add a GitHub user to the reviewers of this submission
 @whedon add @username as reviewer
+
+# Re-invite a reviewer (if they can't update checklists)
+@whedon re-invite @username as reviewer
 
 # Remove a GitHub user from the reviewers of this submission
 @whedon remove @username as reviewer
@@ -54,11 +51,28 @@ EDITORIAL TASKS
 # certain period of time (supported units days and weeks)
 @whedon remind @reviewer in 2 weeks
 
-# Ask Whedon to accept the paper and deposit with Crossref
+# Ask Whedon to do a  dry run of accepting the paper and depositing with Crossref
 @whedon accept
 
 # Ask Whedon to check the references for missing DOIs
 @whedon check references
+
+# Ask Whedon to check repository statistics for the submitted software
+@whedon check repository
+
+EiC TASKS
+
+# Invite an editor to edit a submission (sending them an email)
+@whedon invite @editor as editor
+
+# Reject a paper
+@whedon reject
+
+# Withdraw a paper
+@whedon withdraw
+
+# Ask Whedon to actually accept the paper and deposit with Crossref
+@whedon accept deposit=true
 ```
 
 ## Author commands

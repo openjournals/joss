@@ -107,21 +107,21 @@ class PapersController < ApplicationController
       @term = "in #{params['language']}"
 
     elsif params['author']
-      @papers = Paper.search(params['author'], fields: [authors: :exact], order: { accepted_at: :desc },
+      @papers = Paper.search(params['author'], fields: [:authors], misspellings: false, order: { accepted_at: :desc },
                   page: params[:page],
                   per_page: 10
                 )
       @term = "by #{params['author']}"
 
     elsif params['editor']
-      @papers = Paper.search(params['editor'], fields: [editor: :exact], order: { accepted_at: :desc },
+      @papers = Paper.search(params['editor'], fields: [:editor], misspellings: false, order: { accepted_at: :desc },
                   page: params[:page],
                   per_page: 10
                 )
       @term = "edited by #{params['editor']}"
 
     elsif params['reviewer']
-      @papers = Paper.search(params['reviewer'], fields: [reviewers: :exact], order: { accepted_at: :desc },
+      @papers = Paper.search(params['reviewer'], fields: [:reviewers], misspellings: false, order: { accepted_at: :desc },
                   page: params[:page],
                   per_page: 10
                 )

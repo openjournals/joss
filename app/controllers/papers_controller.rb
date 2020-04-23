@@ -298,7 +298,7 @@ class PapersController < ApplicationController
     end
 
     if stale?(@paper)
-      render inline: svg
+      render html: svg, layout: false
     end
   end
 

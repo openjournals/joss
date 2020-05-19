@@ -78,7 +78,7 @@ Pre-publication steps:
 - Get a new proof with the `@whedon generate pdf` command.
 - Download the proof, check all references have DOIs, follow the links and check the references.
   - Whedon can help check references with the command `@whedon check references`
-- Proof-read the paper and ask authors to fix any remaining typos, badly formed ciations, awkward wording, etc..
+- Proof-read the paper and ask authors to fix any remaining typos, badly formed citations, awkward wording, etc..
 - Ask the author to make a tagged release and archive, and report the version number and archive DOI in the review thread.
 - Check the archive deposit has the correct metadata (title and author list), and request the author edit it if it doesn’t match the paper.
 - Run `@whedon set <doi> as archive`.

@@ -97,7 +97,7 @@ describe PapersController, type: :controller do
     end
   end
 
-  describe "POST #create", skip: "New submissions are temporarily disabled - CoV19" do
+  describe "POST #create" do
 
     it "LOGGED IN responds with success" do
       user = create(:user)

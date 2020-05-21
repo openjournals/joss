@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_03_06_231512) do
+ActiveRecord::Schema.define(version: 2020_05_21_184901) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
@@ -30,6 +30,8 @@ ActiveRecord::Schema.define(version: 2020_03_06_231512) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id"
+    t.string "availability"
+    t.index ["availability"], name: "index_editors_on_availability"
     t.index ["user_id"], name: "index_editors_on_user_id"
   end
 

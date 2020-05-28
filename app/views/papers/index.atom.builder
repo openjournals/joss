@@ -5,7 +5,7 @@ atom_feed do |feed|
   feed.link(rel: 'next', type: "application/atom+xml", href: url_for(params: url_params, format: 'atom', page: @papers.current_page + 1, only_path: false)) unless @papers.current_page == @papers.total_pages
   feed.link(rel: 'previous', type: "application/atom+xml", href: url_for(params: url_params, format: 'atom', page: @papers.current_page - 1, only_path: false)) unless @papers.current_page == 1
   feed.link(rel: 'last', type: "application/atom+xml", href: url_for(params: url_params, format: 'atom', page: @papers.total_pages, only_path: false))
-  feed.title(setting(:name))
+  feed.title(Rails.application.settings["name"])
   feed.updated(@papers[0].created_at) if @papers.length > 0
 
   @papers.each do |paper|

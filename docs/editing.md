@@ -272,7 +272,9 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 
 **Step 11: The editor pings the EiC team to get the paper published**
 
-- To get the paper published, ping the `@openjournals/joss-eics` team on the review thread letting them know the paper is ready to be accepted.
+- Make a final check of the paper with `@whedon generate pdf` and that all references have DOIs (where appropriate) with `@whedon check references`.
+- If everything looks good, ask the author to make a new release (if possible) of the software being reviewed and deposit a new archive the software with Zenodo/figshare. Update the review thread with this archive DOI: `@whedon set 10.5281/zenodo.xxxxxx` as archive.
+- Finally, use `@whedon accept` on the review thread to ping the `@openjournals/joss-eics` team letting them know the paper is ready to be accepted.
 
 **Step 12: Celebrate publication! Tweet! Thank reviewers! Say thank you on issue.**
 

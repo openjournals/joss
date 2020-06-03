@@ -168,12 +168,12 @@ class Paper < ActiveRecord::Base
 
   def scholar_authors
     return nil unless published?
-    metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['last_name']}"}.join(', ')
+    metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['middle_name']} #{a['last_name']}".squeeze}.join(', ')
   end
 
   def bibtex_authors
     return nil unless published?
-    metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['last_name']}"}.join(' and ')
+    metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['middle_name']} #{a['last_name']}".squeeze}.join(' and ')
   end
 
   def bibtex_key

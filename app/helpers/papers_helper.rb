@@ -59,7 +59,7 @@ module PapersHelper
   end
 
   def author_link(author)
-    name = "#{author['given_name']} #{author['middle_name']} #{author['last_name']}".squeeze
+    name = "#{author['given_name']} #{author['middle_name']} #{author['last_name']}".squish
     author_search_link = link_to name, papers_by_author_path(author: name)
 
     if author['orcid']

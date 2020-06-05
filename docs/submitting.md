@@ -22,6 +22,10 @@ In addition, the software associated with your submission must:
 
 JOSS publishes articles about research software. This definition includes software that: solves complex modeling problems in a scientific context (physics, mathematics, biology, medicine, social science, neuroscience, engineering); supports the functioning of research instruments or the execution of research experiments; extracts knowledge from large data sets; offers a mathematical library, or similar.
 
+### Should I write my own software or contribute to an existing package?
+
+While we are happy to review submissions in standalone repositories, we also review submissions that are significant contributions made to existing packages. It is often better to have an integrated library or package of methods than a large number of single-method packages.
+
 ## Typical paper submission flow
 
 Before you submit, you should:

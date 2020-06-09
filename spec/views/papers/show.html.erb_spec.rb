@@ -35,7 +35,7 @@ describe 'papers/show.html.erb' do
       expect(rendered).to have_content "Ruby"
       expect(rendered).to have_content "Editor: @arfon (all papers)"
       expect(rendered).to have_content "Reviewers: @jim (all reviews), @jane (all reviews)"
-      expect(rendered).to have_content "Walt Disney"
+      expect(rendered).to have_content "Walt Elias Disney"
     end
 
     it "has the correct Google Scholar tags" do
@@ -55,7 +55,7 @@ describe 'papers/show.html.erb' do
 
       expect(rendered).to have_css("meta[name='citation_author']", visible: false)
       expect(rendered).to have_css("meta[content='Mickey Mouse']", visible: false)
-      expect(rendered).to have_css("meta[content='Walt Disney']", visible: false)
+      expect(rendered).to have_css("meta[content='Walt Elias Disney']", visible: false)
 
       expect(rendered).to have_css("meta[name='citation_publication_date']", visible: false)
       expect(rendered).to have_css("meta[content='#{paper.accepted_at.strftime('%Y/%m/%d')}']", visible: false)

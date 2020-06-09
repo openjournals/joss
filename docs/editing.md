@@ -78,7 +78,7 @@ Pre-publication steps:
 - Get a new proof with the `@whedon generate pdf` command.
 - Download the proof, check all references have DOIs, follow the links and check the references.
   - Whedon can help check references with the command `@whedon check references`
-- Proof-read the paper and ask authors to fix any remaining typos, badly formed ciations, awkward wording, etc..
+- Proof-read the paper and ask authors to fix any remaining typos, badly formed citations, awkward wording, etc..
 - Ask the author to make a tagged release and archive, and report the version number and archive DOI in the review thread.
 - Check the archive deposit has the correct metadata (title and author list), and request the author edit it if it doesn’t match the paper.
 - Run `@whedon set <doi> as archive`.
@@ -272,7 +272,9 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 
 **Step 11: The editor pings the EiC team to get the paper published**
 
-- To get the paper published, ping the `@openjournals/joss-eics` team on the review thread letting them know the paper is ready to be accepted.
+- Make a final check of the paper with `@whedon generate pdf` and that all references have DOIs (where appropriate) with `@whedon check references`.
+- If everything looks good, ask the author to make a new release (if possible) of the software being reviewed and deposit a new archive the software with Zenodo/figshare. Update the review thread with this archive DOI: `@whedon set 10.5281/zenodo.xxxxxx` as archive.
+- Finally, use `@whedon accept` on the review thread to ping the `@openjournals/joss-eics` team letting them know the paper is ready to be accepted.
 
 **Step 12: Celebrate publication! Tweet! Thank reviewers! Say thank you on issue.**
 

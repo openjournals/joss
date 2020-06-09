@@ -298,7 +298,7 @@ class PapersController < ApplicationController
     end
 
     if stale?(@paper)
-      render html: svg, layout: false, content_type: 'image/svg+xml'
+      render text: svg, layout: false, content_type: 'image/svg+xml'
     end
   end
 

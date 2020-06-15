@@ -11,7 +11,7 @@ But please read these instructions carefully for a streamlined submission.
 - You should be a major contributor to the software you are submitting.
 - The software should be a significant contribution to the available open source software that either enables some new research challenges to be addressed or makes addressing research challenges significantly better (e.g., faster, easier, simpler).
 - The software should be feature-complete (no half-baked solutions) and designed for maintainable extension (not one-off modifications). **Minor ‘utility’ packages, including ‘thin’ API clients, and single-function packages are not acceptable**.
-- Your paper (`paper.md` and BibTeX files, plus any figures) must be hosted in a Git-based repository, ideally together with your software.
+- Your paper (`paper.md` and BibTeX files, plus any figures) must be hosted in a Git-based repository. Placing these items together with your software (rather than in a separate repository) is **strongly encouraged**.
 
 In addition, the software associated with your submission must:
 

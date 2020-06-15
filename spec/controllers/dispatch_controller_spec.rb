@@ -83,6 +83,22 @@ describe DispatchController, type: :controller do
     end
   end
 
+  describe "POST #github_recevier for REVIEW when a paper doesn't have a suggested_editor set", type: :request do
+    before do
+      signature = set_signature(whedon_review_labeled)
+      build(:paper, meta_review_issue_id: 78, suggested_editor: nil, review_issue_id: 79, labels: [{ "foo" => "efefef" }]).save(validate: false)
+      @paper = Paper.find_by_meta_review_issue_id(78)
+
+      post '/dispatch', params: whedon_review_labeled, headers: { 'CONTENT_TYPE' => 'application/json', 'ACCEPT' => 'application/json', 'HTTP_X_HUB_SIGNATURE' => signature }
+      @paper.reload
+    end
+
+    it "should update the labels on the paper" do
+      expect(response).to be_ok
+      expect(@paper.labels).to eq({ "accepted" => "0052cc" })
+    end
+  end
+
   describe "POST #github_recevier for REVIEW", type: :request do
     before do
       signature = set_signature(whedon_review_opened)

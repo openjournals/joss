@@ -7,6 +7,7 @@ FactoryBot.define do
     software_version  { 'v1.0.0' }
     submitting_author { create(:user) }
     submission_kind   { 'new' }
+    suggested_editor  { '@editor' }
 
     created_at  { Time.now }
     updated_at  { Time.now }

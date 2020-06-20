@@ -60,7 +60,7 @@ module PapersHelper
 
   def author_link(author)
     name = "#{author['given_name']} #{author['middle_name']} #{author['last_name']}".squish
-    author_search_link = link_to name, papers_by_author_path(author: name)
+    author_search_link = link_to(name, "/papers/by/#{name}".gsub('.', '%2E'))
 
     if author['orcid']
       orcid_link = link_to author['orcid'], "http://orcid.org/#{author['orcid']}", target: "_blank"

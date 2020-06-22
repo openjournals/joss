@@ -316,6 +316,18 @@ Ooo bot will then respond to any mentions in the [joss-reviews](https://github.c
 
 **Note, if you're planning on being out of the office for more than two weeks, please let the JOSS editorial team know.**
 
+## Editorial buddy
+
+New editors are assigned an editorial 'buddy' from the existing editorial team. The buddy is there to help the new editor onboard successfully and to provide a dedicated resource for any questions they might have but don't feel comfortable posting to the editor mailing list.
+
+Buddy assignments don't have a fixed term but generally require a committment for 1-2 months.
+
+Some things you might need to do as a buddy for a new editor:
+
+- Respond to questions via email or on GitHub review issues.
+- Check in with the new editor every couple of weeks if there hasn't been any other communication.
+- (Optionally) keep an eye on the new editor's submissions.
+
 ## Managing notifications
 
 Being on the JOSS editorial team means that there can be a _lot_ of notifications from GitHub if you don't take some proactive steps to minimize noise from the reviews repository.

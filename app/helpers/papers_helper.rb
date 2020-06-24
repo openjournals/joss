@@ -19,7 +19,7 @@ module PapersHelper
   end
 
   def paper_count_for(user)
-    [user.papers.visible.count - 1, 0].max
+    user.papers.visible.count
   end
 
   def scholar_author_tags(authors)

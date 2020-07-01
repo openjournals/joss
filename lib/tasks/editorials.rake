@@ -27,7 +27,7 @@ namespace :editorials do
   task send_query_scope_email: :environment do
     if Time.now.monday? || Time.now.thursday?
       reviews_repo = Rails.application.settings["reviews"]
-      review_issues = ReviewIssue.download_review_issues(reviews_repo, 'Makefile')
+      review_issues = ReviewIssue.download_review_issues(reviews_repo, 'query-scope')
 
       # Loop through editors and send them their weekly email :-)
       Editor.active.each do |editor|

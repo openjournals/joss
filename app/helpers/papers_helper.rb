@@ -18,6 +18,16 @@ module PapersHelper
     end
   end
 
+  def vote_comment_preview(vote)
+    return "No comment" if vote.comment.empty?
+
+    capture do
+      concat(content_tag(:span, class: "comment-preview", title: vote.comment) do
+        truncate(vote.comment)
+      end)
+    end
+  end
+
   def paper_count_for(user)
     user.papers.visible.count
   end

@@ -1,0 +1,79 @@
+<div class="card">
+  <div class="card-header">
+  Scope summary <% if @paper.votes.any? %><small>👍 <%= @paper.votes.in_scope.count %> &middot; 👎 <%= @paper.votes.out_of_scope.count %></small><% end %>
+  </div>
+  <div class="card-body">
+    <p class="card-text">Record your opinion on whether or not this submission is in scope, optionally leaving a comment explaining your decision for the EiCs.</p>
+
+    <%= form_for [@paper, Vote.new] do |f| %>
+      <div class="form-group">
+        <div class="row">
+          <div class="col">
+            <%= f.text_field :comment, class: "form-control", placeholder: "Include a comment with your vote (optional)" %>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="row">
+          <div class="col-md-3">
+            <%= f.submit "Vote as in scope 👍", form_class: "left", class: "btn btn-light btn-sm" %>
+          </div>  
+          <div class="col-md-3">
+            <%= f.submit "Vote as out of scope 👎", form_class: "left", class: "btn btn-light btn-sm" %>
+          </div>  
+        </div>
+      </div>
+
+
+      <div class="form-group">
+        <%= link_to "View vote summary &raquo;".html_safe, "#voteSummary", class: 'tooltips', title: 'View vote summary', data: { toggle: 'collapse'} %>
+    
+        <table class="table table-sm collapse" id="voteSummary" style="margin-top:10px;">
+          <thead>
+            <tr>
+              <th scope="col"><small><strong>Vote</strong></small></th>
+              <th scope="col"><small><strong>Editor</strong></small></th>
+              <th scope="col"><small><strong>Comment</strong></small></th>
+              <th scope="col"><small><strong>Time</strong></small></th>
+            </tr>
+          </thead>
+          <tbody>
+          <% @paper.votes.each do |vote| %>
+          <tr>
+            <td>
+              <% if vote.in_scope? %>
+                <small>👍 (in scope)</small>
+              <% else %>
+                <small>👎 (out of scope)</small>
+              <% end %>
+            </td>
+            <td><small><%= vote.editor.user.name %> (<%= vote.editor.login %>)</small></td>
+            <td><small><%= vote_comment_preview(vote) %></small></td>
+            <td><small><%= time_ago_in_words(vote.created_at) %> ago</small></td>
+          </tr>
+          <% end %>
+          </tbody>
+        </table>
+        
+        
+        <div class="collapse" >
+          <% @paper.votes.each do |vote| %>
+            <% if vote.in_scope? %>
+              <small><%= vote.editor.user.name %> (<%= vote.editor.login %>) voted 👍 <%= time_ago_in_words(vote.created_at) %> ago.</small>
+            <% else %>
+              <small><%= vote.editor.login %> voted 👎</small>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  <div class="card-footer">
+    <% if @paper.votes.any? %>
+    <small class="text-muted">Last voted on <%= time_ago_in_words(@paper.votes.first.created_at) %> ago by <%= @paper.votes.last.editor.login %> </small>
+    <% else %>
+    <small class="text-muted">No votes on scope yet.</small>
+    <% end %>
+  </div>
+</div>

@@ -16,6 +16,15 @@ class Paper < ActiveRecord::Base
               optional: true,
               foreign_key: "eic_id"
 
+  has_many    :votes
+  has_many    :in_scope_votes,
+              -> { in_scope },
+              class_name: 'Vote'
+
+  has_many    :out_of_scope_votes,
+              -> { out_of_scope },
+              class_name: 'Vote'
+
   include AASM
 
   aasm column: :state do

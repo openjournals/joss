@@ -25,4 +25,10 @@ class Notifications < ApplicationMailer
     @editor = editor.login
     mail(to: editor.email, subject: "#{Rails.application.settings["abbreviation"]} weekly editor update for #{editor.login}")
   end
+
+  def editor_scope_email(editor, issues)
+    @query_scope_issues = issues
+    @editor = editor.login
+    mail(to: editor.email, subject: "[Please review]: #{Rails.application.settings["abbreviation"]} scope check summary")
+  end
 end

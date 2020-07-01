@@ -23,9 +23,9 @@ namespace :editorials do
   end
 
   desc "Send twice-weekly emails with possible submission rejections"
-  # Send on Monday and Thursday
+  # Send on Wednesday
   task send_query_scope_email: :environment do
-    if Time.now.monday? || Time.now.thursday?
+    if Time.now.wednesday?
       reviews_repo = Rails.application.settings["reviews"]
       review_issues = ReviewIssue.download_review_issues(reviews_repo, 'query-scope')
 

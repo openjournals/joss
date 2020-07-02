@@ -77,11 +77,15 @@ authors:
     affiliation: "1, 2" # (Multiple affiliations must be quoted)
   - name: Author Without ORCID
     affiliation: 2
+  - name: Author with no affiliation
+    affiliation: 3
 affiliations:
  - name: Lyman Spitzer, Jr. Fellow, Princeton University
    index: 1
- - name: Institution 2
+ - name: Institution Name
    index: 2
+ - name: Independent Researcher
+   index: 3
 date: 13 August 2017
 bibliography: paper.bib
 

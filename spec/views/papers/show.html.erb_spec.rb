@@ -9,6 +9,7 @@ describe 'papers/show.html.erb' do
     it "displays correctly for submitted paper" do
       user = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
+      allow(view).to receive_message_chain(:current_editor).and_return(user)
 
       paper = create(:paper, state: "submitted", submitting_author: user)
       assign(:paper, paper)
@@ -80,6 +81,7 @@ describe 'papers/show.html.erb' do
       user = create(:user, admin: true)
       author = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
+      allow(view).to receive_message_chain(:current_editor).and_return(user)
 
       paper = create(:paper, state: "submitted", review_issue_id: nil, submitting_author: author)
       assign(:paper, paper)
@@ -92,6 +94,7 @@ describe 'papers/show.html.erb' do
     it "shows the withdraw button to paper owners" do
       user = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
+      allow(view).to receive_message_chain(:current_editor).and_return(user)
 
       paper = create(:paper, state: "submitted", submitting_author: user)
       assign(:paper, paper)
@@ -105,6 +108,7 @@ describe 'papers/show.html.erb' do
       editor = create(:editor, user: user)
       author = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
+      allow(view).to receive_message_chain(:current_editor).and_return(user)
 
       paper = create(:paper, state: "submitted", submitting_author: author)
       assign(:paper, paper)
@@ -119,6 +123,7 @@ describe 'papers/show.html.erb' do
       author = create(:user)
 
       allow(view).to receive_message_chain(:current_user).and_return(user)
+      allow(view).to receive_message_chain(:current_editor).and_return(user)
 
       paper = create(:resubmission_paper, state: "submitted", review_issue_id: 123, submitting_author: author)
       assign(:paper, paper)

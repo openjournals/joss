@@ -15,5 +15,9 @@ class Vote < ActiveRecord::Base
     kind == "in-scope"
   end
 
+  def out_of_scope?
+    kind == "out-of-scope"
+  end
+
   validates :kind, inclusion: { in: VOTE_KINDS }, allow_nil: false
 end

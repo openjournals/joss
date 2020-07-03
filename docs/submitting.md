@@ -33,7 +33,7 @@ As a rule of thumb, JOSS' minimum allowable contribution should represent **not 
 - Age of software (is this a well-established software project) / length of commit history.
 - Number of commits.
 - Number of authors.
-- Total lines of code (LOC).
+- Total lines of code (LOC). Submissions under 1000 LOC will usually be flagged, those under 300 LOC will be desk rejected.
 - Whether the software has already been cited in academic papers.
 - Whether the software is sufficiently useful that it is _likely to be cited_ by your peer group.
 

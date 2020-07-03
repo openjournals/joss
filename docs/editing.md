@@ -137,6 +137,7 @@ If you believe a submission should be rejected, for example, because it is out o
 
 - Ask Whedon to flag the submission as potentially out of scope with the command `@whedon query scope`. This command adds the `query-scope` label to the issue.
 - Mention to the author your reasons for flagging the submission as possibly out of scope, and give them an opportunity to defend their submission.
+- The EiC on rotation will make a final determination of whether a submission is in scope, taking into account the feedback of other editors.
 
 ### Voting on papers flagged as potentially out of scope
 

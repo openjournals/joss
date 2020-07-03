@@ -135,9 +135,12 @@ If a paper has already been reviewed and accepted by rOpenSci, the streamlined J
 
 If you believe a submission should be rejected, for example, because it is out of scope for JOSS, then you should:
 
-- Email the JOSS editors mailing list linking to the pre-review thread and your proposed justification for rejecting the submission.
-- Wait for at least 48 hours (two working days) to let other editors respond.
-- If at least two more editors agree and there's no other disagreement then 1) communicate the decision to the author in the pre-review issue and 2) ping the JOSS AEiCs team on GitHub (@openjournals/joss-eics) to ask them to process the rejection.
+- Ask Whedon to flag the submission as potentially out of scope with the command `@whedon query scope`. This command adds the `query-scope` label to the issue.
+- Mention to the author your reasons for flagging the submission as possibly out of scope, and give them an opportunity to defend their submission.
+
+### Voting on papers flagged as potentially out of scope
+
+Once per week, an email is sent to all JOSS editors with a summary of the papers that are currently flagged as potentially out of scope. Editors are asked to review these submissions and vote on the JOSS website if they have an opinion about a submission.
 
 ## Sample messages for authors and reviewers
 

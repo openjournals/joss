@@ -8,6 +8,7 @@ But please read these instructions carefully for a streamlined submission.
 
 - The software should be open source as per the [OSI definition](https://opensource.org/osd).
 - The software should have an **obvious** research application.
+- Your paper must not discuss new research results.
 - You should be a major contributor to the software you are submitting.
 - Your paper (`paper.md` and BibTeX files, plus any figures) must be hosted in a Git-based repository. Placing these items together with your software (rather than in a separate repository) is **strongly encouraged**.
 

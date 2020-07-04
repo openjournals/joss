@@ -17,6 +17,8 @@ Once a submission comes in, it will be in the queue for a quick check by the Edi
 .. important:: If the paper is out-of-scope for JOSS, editors assess this and notify the author in the ``PRE-REVIEW`` issue.
 ```
 
+Editors can flag submissions of questionable scope using the command `@whedon query scope`.
+
 The EiC assigns an editor (or a volunteering editor self-assigns) with the command `@whedon assign @username as editor` in a comment.
 
 ```eval_rst

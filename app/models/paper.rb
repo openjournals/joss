@@ -339,11 +339,18 @@ class Paper < ActiveRecord::Base
     return false if review_issue_id
     return false unless editor = Editor.find_by_login(editor_handle)
 
+    if labels.any?
+      new_labels = labels.keys + ["review"] - ["pre-review"]
+    else
+      new_labels = ["review"]
+    end
+    
+
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[REVIEW]: #{self.title}",
                                 review_body(editor_handle, reviewers),
                                 { assignees: [editor_handle],
-                                  labels: "review" })
+                                  labels: new_labels.join(",") })
 
     set_review_issue(issue.number)
     set_editor(editor)
@@ -395,6 +402,10 @@ class Paper < ActiveRecord::Base
   # Update the Paper meta_review_issue_id field
   def set_meta_review_issue(issue_number)
     self.update_attribute(:meta_review_issue_id, issue_number)
+  end
+
+  def meta_review_issue
+    
   end
 
   def set_meta_eic(eic)

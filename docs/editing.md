@@ -41,6 +41,15 @@ At this point, the handling editor's job is to identify reviewers who have suffi
 
 To recruit reviewers, the handling editor can mention them in the `PRE-REVIEW` issue with their GitHub handle, ping them on Twitter, or email them. After expressing initial interest, candidate reviewers may need a longer explanation via email. See sample reviewer invitation email, below.
 
+**Potential ways to find reviewers**
+
+Finding reviewers can be challenging, especially if a submission is outside of your immediate area of expertise. Some strategies you can use to identify potential candidates:
+
+- Search the [reviewer spreadsheet](https://bit.ly/joss-reviewers) of volunteer reviewers. When using this spreadsheet, pay attention to the number of reviews this individual is already doing to avoid overloading them.
+- Ask the author(s): You are free to ask the submitting author to suggest possible reviewers by using the [reviewer spreadsheet](https://bit.ly/joss-reviewers) but also people from their professional network.
+- Use your professional network: You're welcome to invite people you know of who might be able to give a good review.
+- Ask on social networks: Sometimes asking on Twitter for reviewers can identify good candidates.
+
 Once a reviewer accepts, the handling editor runs the command `@whedon assign @username as reviewer` in the `PRE-REVIEW` issue. Add more reviewers with the command `@whedon add @username as reviewer`.
 
 ```eval_rst

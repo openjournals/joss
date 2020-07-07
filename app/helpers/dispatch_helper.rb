@@ -78,6 +78,10 @@ module DispatchHelper
       action == 'unlocked'
     end
 
+    def pinned?
+      action == 'pinned' || action == "unpinned"
+    end
+
     def assigned?
       action == 'assigned' || action == 'unassigned'
     end
@@ -108,6 +112,7 @@ module DispatchHelper
       return if opened?
       return if closed?
       return if locked?
+      return if pinned?
       return if unlocked?
 
       if edited?

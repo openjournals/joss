@@ -2,6 +2,8 @@ Rails.application.routes.draw do
 
   resources :editors
   resources :papers do
+    resources :votes, only: ['create']
+
     member do
       post 'start_review'
       post 'start_meta_review'
@@ -48,6 +50,7 @@ Rails.application.routes.draw do
   get "/signout" => "sessions#destroy", as: :signout
 
   get '/blog' => redirect("http://blog.joss.theoj.org"), as: :blog
+
   # API methods
   post '/papers/api_editor_invite', to: 'dispatch#api_editor_invite'
   post '/papers/api_start_review', to: 'dispatch#api_start_review'

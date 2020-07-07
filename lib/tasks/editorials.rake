@@ -21,4 +21,19 @@ namespace :editorials do
       end
     end
   end
+
+  desc "Send twice-weekly emails with possible submission rejections"
+  task send_query_scope_email: :environment do
+    # We run this task daily on Heroku but only want the email
+    # sent once per week (on a Sunday)
+    if Time.now.sunday?
+      reviews_repo = Rails.application.settings["reviews"]
+      review_issues = ReviewIssue.download_review_issues(reviews_repo, 'query-scope')
+
+      # Loop through editors and send them their weekly email :-)
+      Editor.active.each do |editor|
+        Notifications.editor_scope_email(editor, review_issues).deliver_now!
+      end
+    end
+  end
 end

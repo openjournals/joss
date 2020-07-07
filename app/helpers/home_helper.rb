@@ -37,6 +37,9 @@ module HomeHelper
           concat content_tag(:span, label, style: "padding: 3px; margin-right: 3px; border-radius: 2px; background-color: ##{colour}; color: white;")
         elsif label == "recommend-accept"
           concat content_tag(:span, label, style: "padding: 3px; margin-right: 3px; border-radius: 2px; background-color: ##{colour}; color: #000000;")
+        elsif label == "query-scope"
+          concat content_tag(:span, label, style: "padding: 3px; margin-right: 3px; border-radius: 2px; background-color: ##{colour}; color: #000000;")
+
         end
       end
     end
@@ -45,6 +48,16 @@ module HomeHelper
   def current_class?(test_path)
     return 'tabnav-tab selected' if request.path == test_path
     'tabnav-tab'
+  end
+
+  def vote_summary(paper)
+    if paper.labels.keys.include?("query-scope")
+      capture do
+        concat(content_tag(:small, "👍(#{paper.votes.in_scope.count}) / 👎 (#{paper.votes.out_of_scope.count})"))
+      end
+    else
+      'OK'
+    end
   end
 
   def review_issue_links(paper)
@@ -176,7 +189,7 @@ module HomeHelper
   end
 
   def availability_class(editor)
-    return "" unless editor.availability? 
+    return "" unless editor.availability?
     "availability-" + editor.availability.downcase.gsub(' ', '-')
   end
 end

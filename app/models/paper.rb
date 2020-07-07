@@ -404,10 +404,6 @@ class Paper < ActiveRecord::Base
     self.update_attribute(:meta_review_issue_id, issue_number)
   end
 
-  def meta_review_issue
-    
-  end
-
   def set_meta_eic(eic)
     self.update_attribute(:eic_id, eic.id)
   end

@@ -43,7 +43,30 @@ At this point, the handling editor's job is to identify reviewers who have suffi
 
 To recruit reviewers, the handling editor can mention them in the `PRE-REVIEW` issue with their GitHub handle, ping them on Twitter, or email them. After expressing initial interest, candidate reviewers may need a longer explanation via email. See sample reviewer invitation email, below.
 
+**Reviewer Considerations**
+
+- It is rare that all reviewers have the expertise to cover all aspects of a submission (e.g., knows the language really well and knows the scientific discipline well). As such, a good practice is to try and make sure that between the two or three reviewers, all aspects of the submission are covered. 
+- Selection and assignment of reviewers should adhere to the [JOSS COI policy](https://joss.theoj.org/about#ethics).
+
+**Potential ways to find reviewers**
+
+Finding reviewers can be challenging, especially if a submission is outside of your immediate area of expertise. Some strategies you can use to identify potential candidates:
+
+- Search the [reviewer spreadsheet](https://bit.ly/joss-reviewers) of volunteer reviewers. 
+  - When using this spreadsheet, pay attention to the number of reviews this individual is already doing to avoid overloading them.
+  - It can be helpful to use the "Data > Filter Views" capability to temporarily filter the table view to include only people with language or domain expertise matching the paper. 
+- Ask the author(s): You are free to ask the submitting author to suggest possible reviewers by using the [reviewer spreadsheet](https://bit.ly/joss-reviewers) and also people from their professional network. In this situation, the editor still needs to verify that their suggestions are appropriate.
+- Use your professional network: You're welcome to invite people you know of who might be able to give a good review.
+- Search Google and GitHub for related work, and write to the authors of that related work.
+  - You might like to try [this tool](https://github.com/dfm/joss-reviewer) from @dfm.
+- Ask on social networks: Sometimes asking on Twitter for reviewers can identify good candidates.
+- Check the work being referenced in the submission: 
+  - Authors of software that is being built on might be interested in reviewing the submission.
+  - Users of the the software that is being submission be interested in reviewing the submission
+- Avoid asking JOSS editors to review: If at all possible, avoid asking JOSS editors to review as they are generally very busy editing their own papers.
+
 Once a reviewer accepts, the handling editor runs the command `@whedon assign @username as reviewer` in the `PRE-REVIEW` issue. Add more reviewers with the command `@whedon add @username as reviewer`.
+Under the uncommon circumstance that a review must be started before all reviewers have been identified (e.g., if finding a second reviewer is taking a long time and the first reviewer wants to get started), an editor may elect to start the review and add the remaining reviewers later. To accomplish this, the editor will need to hand-edit the review checklist to create space for the reviewers added after the review issues is created.
 
 ```eval_rst
 .. note:: The ``assign`` command clobbers all reviewer assignments. If you want to add an additional reviewer use the ``add`` command.

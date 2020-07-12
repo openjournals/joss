@@ -9,6 +9,9 @@ class VotesController < ApplicationController
     elsif params[:commit].include?("out of scope")
       puts "OUT OF SCOPE"
       kind = "out-of-scope"
+    elsif params[:commit].include?("Just comment")
+      puts "JUST COMMENTING"
+      kind = "comment"
     end
 
     params = vote_params.merge!(editor_id: current_user.editor.id, kind: kind)

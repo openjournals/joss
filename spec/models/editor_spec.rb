@@ -20,6 +20,18 @@ RSpec.describe Editor, type: :model do
     end
   end
 
+  describe "#associations" do
+    it "has many votes" do
+      association = Editor.reflect_on_association(:votes)
+      expect(association.macro).to eq(:has_many)
+    end
+    
+    it "has many papers" do
+      association = Editor.reflect_on_association(:papers)
+      expect(association.macro).to eq(:has_many)
+    end
+  end
+
   describe "#full_name" do
     subject { editor.full_name }
     it { is_expected.to eql "#{editor.first_name} #{editor.last_name}" }

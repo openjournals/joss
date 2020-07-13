@@ -18,8 +18,18 @@ module PapersHelper
     end
   end
 
+  def vote_comment_preview(vote)
+    return "No comment" if vote.comment.empty?
+
+    capture do
+      concat(content_tag(:span, class: "comment-preview", title: vote.comment) do
+        truncate(vote.comment)
+      end)
+    end
+  end
+
   def paper_count_for(user)
-    [user.papers.visible.count - 1, 0].max
+    user.papers.visible.count
   end
 
   def scholar_author_tags(authors)
@@ -59,8 +69,8 @@ module PapersHelper
   end
 
   def author_link(author)
-    name = "#{author['given_name']} #{author['last_name']}"
-    author_search_link = link_to name, papers_by_author_path(author: name)
+    name = "#{author['given_name']} #{author['middle_name']} #{author['last_name']}".squish
+    author_search_link = link_to(name, "/papers/by/#{name}".gsub('.', '%2E'))
 
     if author['orcid']
       orcid_link = link_to author['orcid'], "http://orcid.org/#{author['orcid']}", target: "_blank"

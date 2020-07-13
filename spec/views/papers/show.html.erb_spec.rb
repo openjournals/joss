@@ -9,6 +9,7 @@ describe 'papers/show.html.erb' do
     it "displays correctly for submitted paper" do
       user = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
+      allow(view).to receive_message_chain(:current_editor).and_return(user)
 
       paper = create(:paper, state: "submitted", submitting_author: user)
       assign(:paper, paper)
@@ -35,7 +36,7 @@ describe 'papers/show.html.erb' do
       expect(rendered).to have_content "Ruby"
       expect(rendered).to have_content "Editor: @arfon (all papers)"
       expect(rendered).to have_content "Reviewers: @jim (all reviews), @jane (all reviews)"
-      expect(rendered).to have_content "Walt Disney"
+      expect(rendered).to have_content "Walt Elias Disney"
     end
 
     it "has the correct Google Scholar tags" do
@@ -55,7 +56,7 @@ describe 'papers/show.html.erb' do
 
       expect(rendered).to have_css("meta[name='citation_author']", visible: false)
       expect(rendered).to have_css("meta[content='Mickey Mouse']", visible: false)
-      expect(rendered).to have_css("meta[content='Walt Disney']", visible: false)
+      expect(rendered).to have_css("meta[content='Walt Elias Disney']", visible: false)
 
       expect(rendered).to have_css("meta[name='citation_publication_date']", visible: false)
       expect(rendered).to have_css("meta[content='#{paper.accepted_at.strftime('%Y/%m/%d')}']", visible: false)
@@ -80,6 +81,7 @@ describe 'papers/show.html.erb' do
       user = create(:user, admin: true)
       author = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
+      allow(view).to receive_message_chain(:current_editor).and_return(user)
 
       paper = create(:paper, state: "submitted", review_issue_id: nil, submitting_author: author)
       assign(:paper, paper)
@@ -92,6 +94,7 @@ describe 'papers/show.html.erb' do
     it "shows the withdraw button to paper owners" do
       user = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
+      allow(view).to receive_message_chain(:current_editor).and_return(user)
 
       paper = create(:paper, state: "submitted", submitting_author: user)
       assign(:paper, paper)
@@ -105,6 +108,7 @@ describe 'papers/show.html.erb' do
       editor = create(:editor, user: user)
       author = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
+      allow(view).to receive_message_chain(:current_editor).and_return(user)
 
       paper = create(:paper, state: "submitted", submitting_author: author)
       assign(:paper, paper)
@@ -119,6 +123,7 @@ describe 'papers/show.html.erb' do
       author = create(:user)
 
       allow(view).to receive_message_chain(:current_user).and_return(user)
+      allow(view).to receive_message_chain(:current_editor).and_return(user)
 
       paper = create(:resubmission_paper, state: "submitted", review_issue_id: 123, submitting_author: author)
       assign(:paper, paper)

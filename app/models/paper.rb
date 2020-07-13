@@ -16,6 +16,15 @@ class Paper < ActiveRecord::Base
               optional: true,
               foreign_key: "eic_id"
 
+  has_many    :votes
+  has_many    :in_scope_votes,
+              -> { in_scope },
+              class_name: 'Vote'
+
+  has_many    :out_of_scope_votes,
+              -> { out_of_scope },
+              class_name: 'Vote'
+
   include AASM
 
   aasm column: :state do
@@ -108,6 +117,7 @@ class Paper < ActiveRecord::Base
   after_create :notify_editors, :notify_author
 
   validates_presence_of :title
+  validates_presence_of :suggested_editor, on: :create, message: "^You must suggest an editor to handle your submission"
   validates_presence_of :repository_url, message: "^Repository address can't be blank"
   validates_presence_of :software_version, message: "^Version can't be blank"
   validates_presence_of :body, message: "^Description can't be blank"
@@ -168,12 +178,12 @@ class Paper < ActiveRecord::Base
 
   def scholar_authors
     return nil unless published?
-    metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['last_name']}"}.join(', ')
+    metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['middle_name']} #{a['last_name']}".squish}.join(', ')
   end
 
   def bibtex_authors
     return nil unless published?
-    metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['last_name']}"}.join(' and ')
+    metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['middle_name']} #{a['last_name']}".squish}.join(' and ')
   end
 
   def bibtex_key
@@ -329,11 +339,18 @@ class Paper < ActiveRecord::Base
     return false if review_issue_id
     return false unless editor = Editor.find_by_login(editor_handle)
 
+    if labels.any?
+      new_labels = labels.keys + ["review"] - ["pre-review"]
+    else
+      new_labels = ["review"]
+    end
+    
+
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[REVIEW]: #{self.title}",
                                 review_body(editor_handle, reviewers),
                                 { assignees: [editor_handle],
-                                  labels: "review" })
+                                  labels: new_labels.join(",") })
 
     set_review_issue(issue.number)
     set_editor(editor)

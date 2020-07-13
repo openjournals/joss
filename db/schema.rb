@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_03_06_231512) do
+ActiveRecord::Schema.define(version: 2020_06_30_105443) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
@@ -30,6 +30,8 @@ ActiveRecord::Schema.define(version: 2020_03_06_231512) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id"
+    t.string "availability"
+    t.index ["availability"], name: "index_editors_on_availability"
     t.index ["user_id"], name: "index_editors_on_user_id"
   end
 
@@ -88,6 +90,19 @@ ActiveRecord::Schema.define(version: 2020_03_06_231512) do
     t.index ["email"], name: "index_users_on_email"
     t.index ["name"], name: "index_users_on_name"
     t.index ["sha"], name: "index_users_on_sha"
+  end
+
+  create_table "votes", force: :cascade do |t|
+    t.integer "editor_id"
+    t.integer "paper_id"
+    t.string "kind"
+    t.text "comment"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["editor_id", "paper_id"], name: "index_votes_on_editor_id_and_paper_id", unique: true
+    t.index ["editor_id"], name: "index_votes_on_editor_id"
+    t.index ["kind"], name: "index_votes_on_kind"
+    t.index ["paper_id"], name: "index_votes_on_paper_id"
   end
 
 end

@@ -9,9 +9,8 @@ But please read these instructions carefully for a streamlined submission.
 - The software should be open source as per the [OSI definition](https://opensource.org/osd).
 - The software should have an **obvious** research application.
 - You should be a major contributor to the software you are submitting.
-- The software should be a significant contribution to the available open source software that either enables some new research challenges to be addressed or makes addressing research challenges significantly better (e.g., faster, easier, simpler).
-- The software should be feature-complete (no half-baked solutions) and designed for maintainable extension (not one-off modifications). **Minor ‘utility’ packages, including ‘thin’ API clients, and single-function packages are not acceptable**.
-- Your paper (`paper.md` and BibTeX files, plus any figures) must be hosted in a Git-based repository, ideally together with your software.
+- You paper should not focus on new research results accomplished with the software.
+- Your paper (`paper.md` and BibTeX files, plus any figures) must be hosted in a Git-based repository. Placing these items together with your software (rather than in a separate repository) is **strongly encouraged**.
 
 In addition, the software associated with your submission must:
 
@@ -20,7 +19,37 @@ In addition, the software associated with your submission must:
 - Have an issue tracker that is readable without registration.
 - Permit individuals to create issues/file tickets against your repository.
 
+### What we mean by research software
+
 JOSS publishes articles about research software. This definition includes software that: solves complex modeling problems in a scientific context (physics, mathematics, biology, medicine, social science, neuroscience, engineering); supports the functioning of research instruments or the execution of research experiments; extracts knowledge from large data sets; offers a mathematical library, or similar.
+
+
+### Substantial scholarly effort 
+
+JOSS publishes articles about software that represent substantial scholarly effort on the part of the authors. Your software should be a significant contribution to the available open source software that either enables some new research challenges to be addressed or makes addressing research challenges significantly better (e.g., faster, easier, simpler).
+
+As a rule of thumb, JOSS' minimum allowable contribution should represent **not less than** three months of work for an individual. Some factors that may be considered by editors and reviewers when judging effort include:
+
+- Age of software (is this a well-established software project) / length of commit history.
+- Number of commits.
+- Number of authors.
+- Total lines of code (LOC). Submissions under 1000 LOC will usually be flagged, those under 300 LOC will be desk rejected.
+- Whether the software has already been cited in academic papers.
+- Whether the software is sufficiently useful that it is _likely to be cited_ by your peer group.
+
+In addition, JOSS requires that software should be feature-complete (i.e. no half-baked solutions) and designed for maintainable extension (not one-off modifications of existing tools). "Minor utility" packages, including "thin" API clients, and single-function packages are not acceptable.
+
+#### Other venues for reviewing and publishing software packages
+
+Authors wishing to publish software deemed out of scope for JOSS have a few options available to them:
+
+- Follow [GitHub's guide](https://guides.github.com/activities/citable-code/) on how to create a permanent archive and DOI for your software. This DOI can then be used by others to cite your work.
+- Enquire whether your software might be considered by communities such as [rOpenSci](https://ropensci.org) and [pyOpenSci](https://pyopensci.org).
+
+
+### Should I write my own software or contribute to an existing package?
+
+While we are happy to review submissions in standalone repositories, we also review submissions that are significant contributions made to existing packages. It is often better to have an integrated library or package of methods than a large number of single-method packages.
 
 ## Typical paper submission flow
 
@@ -68,16 +97,20 @@ tags:
   - galactic dynamics
   - milky way
 authors:
-  - name: Adrian M. Price-Whelan
+  - name: Adrian M. Price-Whelan^[Custom footnotes for e.g. denoting who the corresspoinding author is can be included like this.]
     orcid: 0000-0003-0872-7098
     affiliation: "1, 2" # (Multiple affiliations must be quoted)
   - name: Author Without ORCID
     affiliation: 2
+  - name: Author with no affiliation
+    affiliation: 3
 affiliations:
  - name: Lyman Spitzer, Jr. Fellow, Princeton University
    index: 1
- - name: Institution 2
+ - name: Institution Name
    index: 2
+ - name: Independent Researcher
+   index: 3
 date: 13 August 2017
 bibliography: paper.bib
 
@@ -98,6 +131,8 @@ is now well-established, commonly taught, and frequently used in astronomy.
 Aside from toy problems and demonstrations, the majority of problems require
 efficient numerical tools, many of which require the same base code (e.g., for
 performing numerical orbit integration).
+
+# Statement of need 
 
 `Gala` is an Astropy-affiliated Python package for galactic dynamics. Python
 enables wrapping low-level languages (e.g., C) for speed without losing
@@ -255,7 +290,7 @@ There are no fees for submitting or publishing in JOSS. You can read more about 
 
 ## Preprint Policy
 
-Authors are welcome to submit their papers to a preprint server ([arXiv](https://arxiv.org/), [bioRxiv](https://www.biorxiv.org/), [SocArXiv](https://socopen.org/), [PsyArXiv](https://psyarxiv.com/) etc.) at any point during the submission and review process.
+Authors are welcome to submit their papers to a preprint server ([arXiv](https://arxiv.org/), [bioRxiv](https://www.biorxiv.org/), [SocArXiv](https://socopen.org/), [PsyArXiv](https://psyarxiv.com/) etc.) at any point before, during, or after the submission and review process.
 
 Submission to a preprint server is _not_ considered a previous publication.
 

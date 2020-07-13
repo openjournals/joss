@@ -29,6 +29,22 @@ There should be an [OSI approved](https://opensource.org/licenses/alphabetical) 
 > **Acceptable:** A plain-text LICENSE file with the contents of an OSI approved license<br />            
 > **Not acceptable:** A phrase such as 'MIT license' in a README file
 
+### Substantial scholarly effort
+
+Reviewers should verify that the software represents substantial scholarly effort. As a rule of thumb, JOSS' minimum allowable contribution should represent **not less than** three months of work for an individual. Signals of effort include: 
+
+- Age of software (is this a well-established software project) / length of commit history.
+- Number of commits.
+- Number of authors.
+- Lines of code (LOC): These statistics are usually reported by Whedon in the `pre-review` issue thread.
+- Whether the software has already been cited in academic papers.
+- Whether the software is sufficiently useful that it is _likely to be cited_ by other researchers working in this domain.
+
+
+```eval_rst
+.. note:: The decision on scholarly effort is ultimately one made by JOSS editors. Reviewers are asked to flag submissions of questionable scope during the review process so that the editor can bring this to the attention of the JOSS editorial team.
+```
+
 ### Documentation
 
 There should be sufficient documentation for you, the reviewer to understand the core functionality of the software under review. A high-level overview of this documentation should be included in a `README` file (or equivalent). There should be:

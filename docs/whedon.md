@@ -57,6 +57,9 @@ EDITORIAL TASKS
 # Ask Whedon to check the references for missing DOIs
 @whedon check references
 
+# Ask Whedon to check the references for missing DOIs from alternative branch
+@whedon check references from branch custom-branch-name
+
 # Ask Whedon to check repository statistics for the submitted software
 @whedon check repository
 

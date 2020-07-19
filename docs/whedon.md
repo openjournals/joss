@@ -41,6 +41,10 @@ Whedon or `@whedon` on GitHub, is our editorial bot that interacts with authors,
 
 EDITORIAL TASKS
 
+# All commands can be run on a non-default branch, to do this pass a custom 
+# branch name by following the command with `from branch custom-branch-name`.
+# For example:
+
 # Compile the paper
 @whedon generate pdf
 
@@ -57,9 +61,6 @@ EDITORIAL TASKS
 # Ask Whedon to check the references for missing DOIs
 @whedon check references
 
-# Ask Whedon to check the references for missing DOIs from alternative branch
-@whedon check references from branch custom-branch-name
-
 # Ask Whedon to check repository statistics for the submitted software
 @whedon check repository
 
@@ -75,6 +76,7 @@ EiC TASKS
 @whedon withdraw
 
 # Ask Whedon to actually accept the paper and deposit with Crossref
+# (supports custom branches too)
 @whedon accept deposit=true
 ```
 

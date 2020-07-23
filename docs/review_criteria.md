@@ -26,7 +26,7 @@ As outlined in the [submission guidelines provided to authors](submitting.html#w
 
 There should be an [OSI approved](https://opensource.org/licenses/alphabetical) license included in the repository. Common licenses such as those listed on [choosealicense.com](https://choosealicense.com) are preferred. Note there should be an actual license file present in the repository not just a reference to the license.
 
-> **Acceptable:** A plain-text LICENSE file with the contents of an OSI approved license<br />            
+> **Acceptable:** A plain-text LICENSE or COPYING file with the contents of an OSI approved license<br />            
 > **Not acceptable:** A phrase such as 'MIT license' in a README file
 
 ### Substantial scholarly effort
@@ -95,7 +95,7 @@ Authors are strongly encouraged to include an automated test suite covering the 
 
 > **Good:** An automated test suite hooked up to an external service such as Travis-CI or similar<br />
 > **OK:** Documented manual steps that can be followed to objectively check the expected functionality of the software (e.g., a sample input file to assert behavior)<br />
-> **Bad (not acceptable):** No way for you the reviewer to objectively assess whether the software works
+> **Bad (not acceptable):** No way for you, the reviewer, to objectively assess whether the software works
 
 ## Other considerations
 

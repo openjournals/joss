@@ -59,6 +59,8 @@ ActiveRecord::Schema.define(version: 2020_06_30_105443) do
     t.string "reviewers", default: [], array: true
     t.text "activities"
     t.datetime "last_activity"
+    t.string "tags", default: [], array: true
+    t.string "languages", default: [], array: true
     t.jsonb "labels", default: {}, null: false
     t.text "metadata"
     t.text "retraction_notice"
@@ -68,9 +70,11 @@ ActiveRecord::Schema.define(version: 2020_06_30_105443) do
     t.index ["editor_id"], name: "index_papers_on_editor_id"
     t.index ["eic_id"], name: "index_papers_on_eic_id"
     t.index ["labels"], name: "index_papers_on_labels", using: :gin
+    t.index ["languages"], name: "index_papers_on_languages", using: :gin
     t.index ["last_activity"], name: "index_papers_on_last_activity"
     t.index ["reviewers"], name: "index_papers_on_reviewers", using: :gin
     t.index ["sha"], name: "index_papers_on_sha"
+    t.index ["tags"], name: "index_papers_on_tags", using: :gin
     t.index ["user_id"], name: "index_papers_on_user_id"
   end
 

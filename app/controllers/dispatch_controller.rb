@@ -13,6 +13,7 @@ class DispatchController < ApplicationController
     payload_body = request.body.read
 
     unless verify_signature(payload_body)
+      puts "FAILING HERE"
       head :unprocessable_entity and return
     end
 
@@ -22,6 +23,7 @@ class DispatchController < ApplicationController
       handle(payload)
       head 200
     else
+      puts "ACTUALLY FAILING HERE"
       head :unprocessable_entity
     end
   end

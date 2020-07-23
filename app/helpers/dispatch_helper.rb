@@ -164,7 +164,7 @@ module DispatchHelper
       issues['comments'] = issues['comments'].take(5)
 
       paper.last_activity = commented_at
-      paper.save!
+      paper.save
     end
 
     # For each author,

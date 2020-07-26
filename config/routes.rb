@@ -31,9 +31,9 @@ Rails.application.routes.draw do
   get '/papers/volume/:volume', to: "papers#filter", as: 'papers_by_volume'
   get '/papers/year/:year', to: "papers#filter", as: 'papers_by_year'
   get '/papers/:id/status.svg', to: "papers#status", format: "svg", as: 'status_badge'
-  get '/papers/:doi/status.svg', to: "papers#status", format: "svg", constraints: { doi: /10.21105\/joss\.\d{5}/}
-  get '/papers/:doi', to: "papers#show", constraints: { doi: /10.21105\/joss\.\d{5}/}
-  get '/papers/:doi.:format', to: "papers#show", constraints: { doi: /10.21105\/joss\.\d{5}/}
+  get '/papers/:doi/status.svg', to: "papers#status", format: "svg", constraints: { doi: /10.21105\/jcon\.\d{5}/}
+  get '/papers/:doi', to: "papers#show", constraints: { doi: /10.21105\/jcon\.\d{5}/}
+  get '/papers/:doi.:format', to: "papers#show", constraints: { doi: /10.21105\/jcon\.\d{5}/}
 
 
   get '/dashboard/all', to: "home#all"

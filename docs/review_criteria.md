@@ -31,7 +31,7 @@ There should be an [OSI approved](https://opensource.org/licenses/alphabetical) 
 
 ### Substantial scholarly effort
 
-Reviewers should verify that the software represents substantial scholarly effort. As a rule of thumb, JOSS' minimum allowable contribution should represent **not less than** three months of work for an individual. Signals of effort include: 
+Reviewers should verify that the software represents substantial scholarly effort. As a rule of thumb, JOSS' minimum allowable contribution should represent **not less than** three months of work for an individual. Signals of effort may include: 
 
 - Age of software (is this a well-established software project) / length of commit history.
 - Number of commits.

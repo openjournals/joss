@@ -41,7 +41,6 @@ RSpec.describe "papers/new", type: :view do
       assert_select "form[action=?][method=?]", papers_path, "post" do
         assert_select "input#paper_title[name=?]", "paper[title]"
         assert_select "input#paper_repository_url[name=?]", "paper[repository_url]"
-        assert_select "input#paper_software_version[name=?]", "paper[software_version]"
         assert_select "select#paper_suggested_editor[name=?]", "paper[suggested_editor]"
         assert_select "textarea#paper_body[name=?]", "paper[body]"
         assert_select "input#author-check"

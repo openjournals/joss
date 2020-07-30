@@ -95,7 +95,8 @@ class Paper < ActiveRecord::Base
     'Makefile',
     'HTML',
     'CSS',
-    'CMake'
+    'CMake',
+    'Ruby'
   ].freeze
 
   default_scope  { order(created_at: :desc) }

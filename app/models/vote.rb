@@ -25,5 +25,9 @@ class Vote < ActiveRecord::Base
     kind == "comment"
   end
 
+  def self.has_vote_for?(paper, editor)
+    find_by_paper_id_and_editor_id(paper, editor)
+  end
+
   validates :kind, inclusion: { in: VOTE_KINDS }, allow_nil: false
 end

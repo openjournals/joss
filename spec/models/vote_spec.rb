@@ -34,6 +34,17 @@ describe Vote do
     assert out_of_scope_vote.out_of_scope?
   end
 
+  it "should know how to look up a vote for an editor" do
+    editor = create(:editor)
+    editor2 = create(:editor)
+    paper = create(:paper)
+    create(:in_scope_vote, editor: editor, paper: paper)
+
+    expect(Vote.has_vote_for?(paper, editor)).to be_a_kind_of(Vote)
+    expect(Vote.has_vote_for?(paper, editor2)).to be_nil
+  end
+  
+
   it "should know about #in_scope and #out_of_scope" do
     submitted_paper = create(:paper, state: "submitted")
 

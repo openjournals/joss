@@ -10,7 +10,7 @@ But please read these instructions carefully for a streamlined submission.
 - The software should have an **obvious** research application.
 - You should be a major contributor to the software you are submitting.
 - Your paper should not focus on new research results accomplished with the software.
-- Your paper (`paper.md` and BibTeX files, plus any figures) must be hosted in a Git-based repository. Placing these items together with your software (rather than in a separate repository) is **strongly encouraged**.
+- Your paper (`paper.md` and BibTeX files, plus any figures) must be hosted in a Git-based repository together with your software (although they may be in a short-lived branch which is never merged with the default).
 
 In addition, the software associated with your submission must:
 

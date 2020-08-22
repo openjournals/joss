@@ -92,19 +92,24 @@ class HomeController < ApplicationController
   end
 
   def all
-    if params[:order]
-      @papers = Paper.unscoped.all.order(last_activity: params[:order]).paginate(
-                page: params[:page],
-                per_page: 20
-              )
+    case params[:order]
+    when "desc"
+      @order = "desc"
+    when "asc"
+      @order = "asc"
+    when nil
+      @order = "desc"
     else
-      @papers = Paper.all.paginate(
-                page: params[:page],
-                per_page: 20
-              )
+      @order = "desc"
     end
 
     @editor = current_user.editor
+    
+    @papers = Paper.unscoped.all.order(last_activity: @order).paginate(
+              page: params[:page],
+              per_page: 20
+            )
+
     
     render template: "home/reviews"
   end

@@ -39,7 +39,7 @@ module ApplicationHelper
   end
 
   def name_and_tagline
-    "#{setting(:name)} (#{setting(:abbreviation)}) is #{setting(:tagline)}".html_safe
+    "#{setting(:name)} is #{setting(:tagline)}".html_safe
   end
 
   def avatar(username)

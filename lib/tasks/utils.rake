@@ -5,7 +5,7 @@ namespace :utils do
 
   desc "Populate EiCs"
   task populate_eics: :environment do
-      paper.set_meta_eic(Editor.find_by_login('pbellec'))
+      paper.set_meta_eic(Editor.find_by_login('emdupre'))
   end
 
   desc "Populate activities"

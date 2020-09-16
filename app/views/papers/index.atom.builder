@@ -13,7 +13,6 @@ atom_feed do |feed|
     feed.entry(paper, url: paper.seo_url) do |entry|
       entry.title(paper.title)
       entry.state(paper.state)
-      entry.software_version(paper.software_version)
       entry.submitted_at(paper.created_at)
       if paper.accepted?
         entry.issue paper.issue

@@ -14,7 +14,7 @@ Below is an example of the review checklist for the [Yellowbrick JOSS submission
 
 ### Code of Conduct
 
-- I confirm that I read and will adhere to the [JOSS code of conduct](https://joss.theoj.org/about#code_of_conduct).
+- I confirm that I read and will adhere to the [NeuroLibre code of conduct](https://github.com/neurolibre/neurolibre/blob/master/CODE_OF_CONDUCT.md).
 
 ### General checks
 

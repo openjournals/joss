@@ -117,7 +117,6 @@ class Paper < ActiveRecord::Base
   after_create :notify_editors, :notify_author
 
   validates_presence_of :title
-  validates_presence_of :suggested_editor, on: :create, message: "^You must suggest an editor to handle your submission"
   validates_presence_of :repository_url, message: "^Repository address can't be blank"
   validates_presence_of :software_version, message: "^Version can't be blank"
   validates_presence_of :body, message: "^Description can't be blank"
@@ -344,7 +343,7 @@ class Paper < ActiveRecord::Base
     else
       new_labels = ["review"]
     end
-    
+
 
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[REVIEW]: #{self.title}",
@@ -374,11 +373,7 @@ class Paper < ActiveRecord::Base
   end
 
   def meta_review_body(editor, eic_name)
-    if editor.strip.empty?
-      locals = { paper: self, suggested_editor: "Pending", eic_name: eic_name }
-    else
-      locals = { paper: self, suggested_editor: "#{editor}", eic_name: eic_name }
-    end
+    locals = { paper: self, eic_name: eic_name }
     ApplicationController.render(
       template: 'shared/meta_view_body',
       formats: :text,

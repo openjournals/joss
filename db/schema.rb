@@ -50,7 +50,6 @@ ActiveRecord::Schema.define(version: 2020_06_30_105443) do
     t.string "doi"
     t.text "paper_body"
     t.integer "meta_review_issue_id"
-    t.string "suggested_editor"
     t.text "authors"
     t.text "citation_string"
     t.datetime "accepted_at"

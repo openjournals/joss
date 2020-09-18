@@ -1,6 +1,9 @@
 # NeuroLibre
 
+[![Build Status](https://travis-ci.com/neurolibre/neurolibre.svg?branch=master)](https://travis-ci.com/neurolibre/neurolibre)
+
 <img align="left" src="https://conp-pcno.github.io/images/neurolibre-icon-red.png">
+
 NeuroLibre is a curated repository of interactive neuroscience notebooks that seamlessly integrates data, text, code and figures.
 Notebooks can be freely modified and re-executed through the web, offering a fully reproducible, “libre” path from data to figures.
 NeuroLibre is powered by the [Binder](https://gke.mybinder.org/) project with computational resources provided by the [Canadian Open Neuroscience Platform (CONP)](http://conp.ca/),

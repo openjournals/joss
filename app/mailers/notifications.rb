@@ -9,7 +9,7 @@ class Notifications < ApplicationMailer
 
   def editor_invite_email(paper, editor)
     @paper = paper
-    mail(to: editor.email, subject: "JOSS editorial invite: #{paper.title}")
+    mail(to: editor.email, subject: "NeuroLibre editorial invite: #{paper.title}")
   end
 
   def author_submission_email(paper)

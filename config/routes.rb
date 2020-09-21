@@ -49,7 +49,7 @@ Rails.application.routes.draw do
   get '/auth/:provider/callback', to: 'sessions#create'
   get "/signout" => "sessions#destroy", as: :signout
 
-  get '/blog' => redirect("http://blog.joss.theoj.org"), as: :blog
+  # get '/blog' => redirect("http://blog.joss.theoj.org"), as: :blog
 
   # API methods
   post '/papers/api_editor_invite', to: 'dispatch#api_editor_invite'

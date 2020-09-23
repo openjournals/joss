@@ -17,7 +17,7 @@ class HomeController < ApplicationController
       @editor = current_user.editor
     end
 
-    @reviewer = params[:reviewer].nil? ? "@arfon" : params[:reviewer]
+    @reviewer = params[:reviewer].nil? ? "@emdupre" : params[:reviewer]
     @reviewer_papers = Paper.unscoped.where(":reviewer = ANY(reviewers)", reviewer: @reviewer).group_by_month(:accepted_at).count
 
     @accepted_papers = Paper.unscoped.visible.group_by_month(:accepted_at).count
@@ -104,13 +104,13 @@ class HomeController < ApplicationController
     end
 
     @editor = current_user.editor
-    
+
     @papers = Paper.unscoped.all.order(last_activity: @order).paginate(
               page: params[:page],
               per_page: 20
             )
 
-    
+
     render template: "home/reviews"
   end
 

@@ -5,8 +5,12 @@ namespace :utils do
 
   desc "Populate EiCs"
   task populate_eics: :environment do
+    all_papers = Paper.where('created_at > ?', '2020-09-01')
+
+    all_papers.each do |paper|
       eic = Editor.find_by_login('emdupre')
       paper.set_meta_eic(eic)
+    end
   end
 
   desc "Populate activities"

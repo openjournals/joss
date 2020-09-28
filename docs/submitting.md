@@ -24,7 +24,7 @@ In addition, the software associated with your submission must:
 JOSS publishes articles about research software. This definition includes software that: solves complex modeling problems in a scientific context (physics, mathematics, biology, medicine, social science, neuroscience, engineering); supports the functioning of research instruments or the execution of research experiments; extracts knowledge from large data sets; offers a mathematical library, or similar.
 
 
-### Substantial scholarly effort 
+### Substantial scholarly effort
 
 JOSS publishes articles about software that represent substantial scholarly effort on the part of the authors. Your software should be a significant contribution to the available open source software that either enables some new research challenges to be addressed or makes addressing research challenges significantly better (e.g., faster, easier, simpler).
 
@@ -132,7 +132,7 @@ Aside from toy problems and demonstrations, the majority of problems require
 efficient numerical tools, many of which require the same base code (e.g., for
 performing numerical orbit integration).
 
-# Statement of need 
+# Statement of need
 
 `Gala` is an Astropy-affiliated Python package for galactic dynamics. Python
 enables wrapping low-level languages (e.g., C) for speed without losing
@@ -195,7 +195,7 @@ Fenced code blocks are rendered with syntax highlighting:
 ```python
 for n in range(10):
     yield f(n)
-```	
+```
 
 # Acknowledgements
 

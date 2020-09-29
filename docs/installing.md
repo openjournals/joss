@@ -32,7 +32,7 @@ We also recommend you gather the following information
 before deploying your application to Heroku:
 
 1. A `public ORCID API <https://members.orcid.org/api/about-public-api>`_ key
-1. A GitHub `Personal Access Token <https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token>`_ for the automated account that users will interact with (e.g., whedon, roboneuro)
+1. A GitHub `Personal Access Token <https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token>`_ for the automated account that users will interact with (e.g., Whedon, RoboNeuro)
 1. An email address registered on a domain you control (i.e., not gmail or a related service)
 
 .. warning::

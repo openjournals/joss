@@ -115,6 +115,9 @@ This can be especially useful if you're planning to spin up your own platform ba
 Open Journals framework.
 [NeuroLibre](https://neurolibre.herokuapp.com) is one such example use-case.
 
+Modifying your site configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 In this case, there are several important variables to be aware of and modify.
 Most of these are accessible in the `config` folder.
 
@@ -131,5 +134,28 @@ This file lists the GitHub repository where you expect papers to be published,
 as well as the editor team ID.
 For your GitHub organization, make sure you have created and populated a team called `editors`.
 Then, you can check its ID number as detailed in [this guide](https://fabian-kostadinov.github.io/2015/01/16/how-to-find-a-github-team-id).
+In `config` you should also modify the `orcid.yml` file to list your site as the production site.
 
-Finally, you can modify the `orcid.yml` file to list your site as the production site.
+Optionally, you can edit `seeds.rb`, a file in the `db` folder.
+"DB" is short for "database," and this file _seeds_ the database with information about your editorial team.
+You can edit the file `seeds.rb` to remove any individuals who are not editors in your organization.
+This file will be updated later as you add information in the application, so this step is not strictly necessary.
+
+Modifying your site contents
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can modify site content by updating files in the `app` and `docs` folders.
+For example, in `app/views/notifications` you can text for any emails that will be sent by your application.
+
+Note that files which end in `.html.erb` are treated as HTML files, and typical HTML formatting applies.
+You can set the HTML styling by modifying the Sass files for your application,
+located in `app/assets/stylesheets`.
+
+There are currently a few hard-coded variables in the application which you will also need to update.
+Note that these are mostly under `lib/tasks`.
+For example, in `stats.rake`, the reviewer sheet ID is hard-coded on line 37.
+You should update this to point to your own spreadsheet where you maintain a list of eligible reviewers.
+
+In the same folder, `utils.rake` is currently hard-coded to alternate assignments of editor-in-chief based on weeks.
+You should modify this to either set a single editor-in-chief,
+or design your own scheme of alternating between members of your editorial board.

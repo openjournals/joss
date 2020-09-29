@@ -7,10 +7,13 @@ Any open journal (JOSS, JOSE, etc.) can be considered in three parts:
 2. The Whedon gem
 3. A thin API wrapper around the Whedon gem to interface with GitHub
 
-For JOSS, these correspond to the
-[JOSS](https://github.com/openjournals/joss),
-[Whedon](https://github.com/openjournals/whedon), and
-[Whedon-API](https://github.com/openjournals/whedon-api) code bases.
+For JOSS, these correspond to the:
+
+1. [JOSS](https://github.com/openjournals/joss),
+2. [Whedon](https://github.com/openjournals/whedon), and
+3. [Whedon-API](https://github.com/openjournals/whedon-api)
+
+code bases.
 
 Setting up a local development environment
 ------------------------------------------
@@ -58,7 +61,11 @@ Specifically, you'll need an:
 
 1. [Elasticsearch add-on](https://elements.heroku.com/addons/bonsai),
 1. [Postgres add-on](https://elements.heroku.com/addons/heroku-postgresql),
-1. [Scheduler add-on](https://devcenter.heroku.com/articles/scheduler)_
+1. [Scheduler add-on](https://devcenter.heroku.com/articles/scheduler)
+
+For the scheduler add-on, you'll need to designate which tasks it should run and when.
+These can be found in the `lib/tasks` folder, and involve things such as sending out weekly reminder emails to editors.
+Each task should be scheduled as a separate job; for example, `rake send_weekly_emails`.
 
 You can also optionally configure the following add-ons (or simply set their secret keys in your config variables):
 
@@ -67,7 +74,7 @@ You can also optionally configure the following add-ons (or simply set their sec
 
 Once you've pushed your application to Heroku and provisioned the appropriate add-ons,
 you're ready to update your config with the appropriate secrets.
-For a list of the expected secret key names, see your app.json file.
+For a list of the expected secret key names, see the `app.json` file.
 
 ```eval_rst
 .. warn:
@@ -99,3 +106,30 @@ If you'd prefer to do this on the Heroku deployment, make sure you've logged int
 Then you can directly modify this attribute in the deployments Postgres database using SQL.
 For more information on accessing your application's Postgres database,
 see [the official docs](https://devcenter.heroku.com/articles/heroku-postgresql#pg-psql).
+
+Making modifications to launch your own site
+--------------------------------------------
+
+Some times you may not want to launch an exact copy of JOSS, but a modified version.
+This can be especially useful if you're planning to spin up your own platform based on the
+Open Journals framework.
+[NeuroLibre](https://neurolibre.herokuapp.com) is one such example use-case.
+
+In this case, there are several important variables to be aware of and modify.
+Most of these are accessible in the `config` folder.
+
+First, there are three files which provide settings for your Rails application in different development contexts:
+
+1. `settings-test.yml`
+1. `settings-development.yml`
+1. `settings-production.yml`
+
+These each contain site-specific variables that should be modified if you are building off of the Open Journals framework.
+
+Next, you'll need to modify the `repository.yml` file.
+This file lists the GitHub repository where you expect papers to be published,
+as well as the editor team ID.
+For your GitHub organization, make sure you have created and populated a team called `editors`.
+Then, you can check its ID number as detailed in [this guide](https://fabian-kostadinov.github.io/2015/01/16/how-to-find-a-github-team-id).
+
+Finally, you can modify the `orcid.yml` file to list your site as the production site.

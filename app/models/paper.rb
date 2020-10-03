@@ -462,6 +462,15 @@ class Paper < ActiveRecord::Base
 
 private
 
+  def check_repository_address
+    stdout_str, stderr_str, status = Open3.capture3("git ls-remote #{repository_url}")
+
+    if !status.success?
+      errors.add(:base, "Invalid Git repository address. Check that the repository can be cloned using the value you entered and that access doesn't require authentication.")
+      return false
+    end
+  end
+  
   def set_sha
     self.sha ||= SecureRandom.hex
   end

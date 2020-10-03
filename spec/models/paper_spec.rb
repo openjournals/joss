@@ -5,6 +5,11 @@ describe Paper do
     Paper.destroy_all
   end
 
+  it "should know how to validate a Git repository address" do
+    paper = build(:paper, :repository_url => 'https://example.com')
+    expect { paper.save! }.to raise_error(ActiveRecord::RecordInvalid)
+  end
+
   it "belongs to the submitting author" do
     association = Paper.reflect_on_association(:submitting_author)
     expect(association.macro).to eq(:belongs_to)

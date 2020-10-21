@@ -9,8 +9,8 @@ But please read these instructions carefully for a streamlined submission.
 - The software should be open source as per the [OSI definition](https://opensource.org/osd).
 - The software should have an **obvious** research application.
 - You should be a major contributor to the software you are submitting.
-- You paper should not focus on new research results accomplished with the software.
-- Your paper (`paper.md` and BibTeX files, plus any figures) must be hosted in a Git-based repository. Placing these items together with your software (rather than in a separate repository) is **strongly encouraged**.
+- Your paper should not focus on new research results accomplished with the software.
+- Your paper (`paper.md` and BibTeX files, plus any figures) must be hosted in a Git-based repository together with your software (although they may be in a short-lived branch which is never merged with the default).
 
 In addition, the software associated with your submission must:
 
@@ -24,7 +24,7 @@ In addition, the software associated with your submission must:
 JOSS publishes articles about research software. This definition includes software that: solves complex modeling problems in a scientific context (physics, mathematics, biology, medicine, social science, neuroscience, engineering); supports the functioning of research instruments or the execution of research experiments; extracts knowledge from large data sets; offers a mathematical library, or similar.
 
 
-### Substantial scholarly effort 
+### Substantial scholarly effort
 
 JOSS publishes articles about software that represent substantial scholarly effort on the part of the authors. Your software should be a significant contribution to the available open source software that either enables some new research challenges to be addressed or makes addressing research challenges significantly better (e.g., faster, easier, simpler).
 
@@ -97,7 +97,7 @@ tags:
   - galactic dynamics
   - milky way
 authors:
-  - name: Adrian M. Price-Whelan^[Custom footnotes for e.g. denoting who the corresspoinding author is can be included like this.]
+  - name: Adrian M. Price-Whelan^[Custom footnotes for e.g. denoting who the corresponding author is can be included like this.]
     orcid: 0000-0003-0872-7098
     affiliation: "1, 2" # (Multiple affiliations must be quoted)
   - name: Author Without ORCID
@@ -132,7 +132,7 @@ Aside from toy problems and demonstrations, the majority of problems require
 efficient numerical tools, many of which require the same base code (e.g., for
 performing numerical orbit integration).
 
-# Statement of need 
+# Statement of need
 
 `Gala` is an Astropy-affiliated Python package for galactic dynamics. Python
 enables wrapping low-level languages (e.g., C) for speed without losing
@@ -191,18 +191,13 @@ Figures can be included like this:
 ![Caption for example figure.\label{fig:example}](figure.png)
 and referenced from text using \autoref{fig:example}.
 
-Fenced code blocks are rendered with syntax highlighting:
-```python
-for n in range(10):
-    yield f(n)
-```	
-
 # Acknowledgements
 
 We acknowledge contributions from Brigitta Sipocz, Syrtis Major, and Semyeong
 Oh, and support from Kathryn Johnston during the genesis of this project.
 
 # References
+
 ```
 
 Example `paper.bib` file:
@@ -298,7 +293,7 @@ Submission to a preprint server is _not_ considered a previous publication.
 
 Purely financial (such as being named on an award) and organizational (such as general supervision of a research group) contributions are not considered sufficient for co-authorship of JOSS submissions, but active project direction and other forms of non-code contributions are. The authors themselves assume responsibility for deciding who should be credited with co-authorship, and co-authors must always agree to be listed. In addition, co-authors agree to be accountable for all aspects of the work, and to notify JOSS if any retraction or correction of mistakes are needed after publication.
 
-## Submissions using proprietary languages/dev environments
+## Submissions using proprietary languages/development environments
 
 We strongly prefer software that doesn't rely upon proprietary (paid for) development environments/programming languages. However, provided _your submission meets our requirements_ (including having a valid open source license) then we will consider your submission for review. Should your submission be accepted for review, we may ask you, the submitting author, to help us find reviewers who already have the required development environment installed.
 
@@ -314,3 +309,11 @@ After submission:
 - The review issue will be closed, and an automatic tweet from [@JOSS_TheOJ](https://twitter.com/JOSS_TheOJ) will announce it!
 
 If you want to learn more details about the review process, take a look at the [reviewer guidelines](reviewer_guidelines.html).
+
+## Confidential requests
+
+Please write admin@theoj.org with confidential matters such as retraction requests, report of misconduct, and retroactive author name changes.
+
+In case of a legal name change, the DOI will be unchanged and the paper will be updated to use the new name and note that a name has been changed, but without identifying the author.
+
+JOSS will also update CrossRef metadata.

@@ -4,13 +4,13 @@ class VotesController < ApplicationController
 
   def create
     if params[:commit].include?("in scope")
-      puts "IN SCOPE"
+      logger.info "IN SCOPE"
       kind = "in-scope"
     elsif params[:commit].include?("out of scope")
-      puts "OUT OF SCOPE"
+      logger.info "OUT OF SCOPE"
       kind = "out-of-scope"
     elsif params[:commit].include?("Just comment")
-      puts "JUST COMMENTING"
+      logger.info "JUST COMMENTING"
       kind = "comment"
     end
 
@@ -19,6 +19,10 @@ class VotesController < ApplicationController
     @vote = @paper.votes.build(params)
 
     begin
+      if previous_vote = Vote.find_by_paper_id_and_editor_id(@paper, current_user.editor)
+        previous_vote.destroy!
+      end
+
       @vote.save!
       flash[:notice] = "Vote recorded"
       redirect_to paper_path(@paper)

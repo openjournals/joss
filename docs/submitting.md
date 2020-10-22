@@ -204,8 +204,7 @@ Example `paper.bib` file:
 
 ```
 @article{Pearson:2017,
-  	Adsnote = {Provided by the SAO/NASA Astrophysics Data System},
-  	Adsurl = {http://adsabs.harvard.edu/abs/2017arXiv170304627P},
+  	url = {http://adsabs.harvard.edu/abs/2017arXiv170304627P},
   	Archiveprefix = {arXiv},
   	Author = {{Pearson}, S. and {Price-Whelan}, A.~M. and {Johnston}, K.~V.},
   	Eprint = {1703.04627},
@@ -217,8 +216,7 @@ Example `paper.bib` file:
 }
 
 @book{Binney:2008,
-  	Adsnote = {Provided by the SAO/NASA Astrophysics Data System},
-  	Adsurl = {http://adsabs.harvard.edu/abs/2008gady.book.....B},
+  	url = {http://adsabs.harvard.edu/abs/2008gady.book.....B},
   	Author = {{Binney}, J. and {Tremaine}, S.},
   	Booktitle = {Galactic Dynamics: Second Edition, by James Binney and Scott Tremaine.~ISBN 978-0-691-13026-2 (HB).~Published by Princeton University Press, Princeton, NJ USA, 2008.},
   	Publisher = {Princeton University Press},
@@ -229,7 +227,7 @@ Example `paper.bib` file:
 @article{gaia,
     author = {{Gaia Collaboration}},
     title = "{The Gaia mission}",
-    journal = {\aap},
+    journal = {Astronomy and Astrophysics},
     archivePrefix = "arXiv",
     eprint = {1609.04153},
     primaryClass = "astro-ph.IM",
@@ -238,13 +236,13 @@ Example `paper.bib` file:
     month = nov,
     volume = 595,
     doi = {10.1051/0004-6361/201629272},
-    adsurl = {http://adsabs.harvard.edu/abs/2016A%26A...595A...1G},
+    url = {http://adsabs.harvard.edu/abs/2016A%26A...595A...1G},
 }
 
 @article{astropy,
     author = {{Astropy Collaboration}},
     title = "{Astropy: A community Python package for astronomy}",
-    journal = {\aap},
+    journal = {Astronomy and Astrophysics},
     archivePrefix = "arXiv",
     eprint = {1307.6212},
     primaryClass = "astro-ph.IM",
@@ -253,16 +251,16 @@ Example `paper.bib` file:
     month = oct,
     volume = 558,
     doi = {10.1051/0004-6361/201322068},
-    adsurl = {http://adsabs.harvard.edu/abs/2013A%26A...558A..33A}
+    url = {http://adsabs.harvard.edu/abs/2013A%26A...558A..33A}
 }
 
 @misc{fidgit,
-  author = {​A. Smith},
+  author = {A. Smith},
   title = {Fidgit: An ungodly union of GitHub and Figshare},
   year = {2020},
-  publisher = {​GitHub},
-  journal = {​GitHub repository},
-  url = {​https://github.com/arfon/fidgit}
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  url = {https://github.com/arfon/fidgit}
 }
 ```
 

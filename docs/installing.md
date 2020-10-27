@@ -105,6 +105,17 @@ Then you can directly modify this attribute in the deployments Postgres database
 For more information on accessing your application's Postgres database,
 see [the official docs](https://devcenter.heroku.com/articles/heroku-postgresql#pg-psql).
 
+Finally, you'll need to set up a [GitHub webhook](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/about-webhooks) for reviews repository.
+For JOSS, this corresponds to the `openjournals/joss-reviews` GitHub repository.
+In this GitHub repository's settings,
+you can add a new webhook with the following configuration:
+
+- Set the `Payload` URL to the `/dispatch` hook for your Heroku application URL.
+  For example, https://neurolibre.herokuapp.com/dispatch
+- Set the `Content type` to `application/json`
+- Set the secret to a high-entropy, random string as detailed in the [GitHub docs](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/securing-your-webhooks#setting-your-secret-token)
+- Set the webhook to deliver `all events`
+
 ## Making modifications to launch your own site
 
 Some times you may not want to launch an exact copy of JOSS, but a modified version.
@@ -192,6 +203,19 @@ The `JOSS_API_KEY` should match the `WHEDON_SECRET` key that you created in your
 
 You'll also need to provide a `HEROKU_APP_NAME`, `HEROKU_CLI_TOKEN`, and `HEROKU_CLI_USER` that the `restart.sh` script can use when executing.
 You can find these directly from the heroku-cli as detailed in [their documentation](https://devcenter.heroku.com/articles/authentication).
+
+Finally, you'll need to set up a [GitHub webhook](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/about-webhooks) for reviews repository.
+For JOSS, this corresponds to the `openjournals/joss-reviews` GitHub repository.
+**This is in addition to the webhook you previously created for the JOSS deployment,
+although it points to the same repository.**
+In this GitHub repository's settings,
+you can add a new webhook with the following configuration:
+
+- Set the `Payload` URL to the `/dispatch` hook for your Heroku application URL.
+  For example, https://roboneuro.herokuapp.com/dispatch
+- Set the `Content type` to `application/json`
+- Set the secret to a high-entropy, random string as detailed in the [GitHub docs](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/securing-your-webhooks#setting-your-secret-token)
+- Set the webhook to deliver `all events`
 
 ## Modifying your Whedon-API deployment
 

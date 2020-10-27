@@ -1,5 +1,4 @@
-Installing the JOSS application
-===============================
+# Installing the JOSS application
 
 Any open journal (JOSS, JOSE, etc.) can be considered in three parts:
 
@@ -15,8 +14,7 @@ For JOSS, these correspond to the:
 
 code bases.
 
-Setting up a local development environment
-------------------------------------------
+## Setting up a local development environment
 
 All open journals are coded in Ruby,
 with the website and Whedon-API developed as
@@ -27,8 +25,7 @@ you'll need a working Ruby on Rails development environment.
 For more information, please see
 [this official guide](https://guides.rubyonrails.org/getting_started.html#creating-a-new-rails-project-installing-rails).
 
-Deploying your JOSS application
--------------------------------
+## Deploying your JOSS application
 
 To deploy JOSS, you'll need a [Heroku account](https://signup.heroku.com/).
 We also recommend you gather the following information
@@ -53,14 +50,15 @@ before deploying your application to Heroku:
 ```
 
 Assuming you [have forked the JOSS GitHub repository](https://docs.github.com/en/free-pro-team@latest/github/getting-started-with-github/fork-a-repo)
-to your account, you can [configure Heroku as a git remote](https://devcenter.heroku.com/articles/git#prerequisites-install-git-and-the-heroku-cli) for your code.
+to your account,
+you can [configure Heroku as a git remote](https://devcenter.heroku.com/articles/git#prerequisites-install-git-and-the-heroku-cli) for your code.
 This makes it easy to keep your Heroku deployment in sync with your local development copy.
 
 On the JOSS Heroku deployment, you'll need to provision several [add-ons](https://elements.heroku.com/addons).
-Specifically, you'll need an:
+Specifically, you'll need:
 
-1. [Elasticsearch add-on](https://elements.heroku.com/addons/bonsai),
-1. [Postgres add-on](https://elements.heroku.com/addons/heroku-postgresql),
+1. [Elasticsearch add-on](https://elements.heroku.com/addons/bonsai)
+1. [Postgres add-on](https://elements.heroku.com/addons/heroku-postgresql)
 1. [Scheduler add-on](https://devcenter.heroku.com/articles/scheduler)
 
 For the scheduler add-on, you'll need to designate which tasks it should run and when.
@@ -107,16 +105,14 @@ Then you can directly modify this attribute in the deployments Postgres database
 For more information on accessing your application's Postgres database,
 see [the official docs](https://devcenter.heroku.com/articles/heroku-postgresql#pg-psql).
 
-Making modifications to launch your own site
---------------------------------------------
+## Making modifications to launch your own site
 
 Some times you may not want to launch an exact copy of JOSS, but a modified version.
 This can be especially useful if you're planning to spin up your own platform based on the
 Open Journals framework.
 [NeuroLibre](https://neurolibre.herokuapp.com) is one such example use-case.
 
-Modifying your site configuration
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+### Modifying your site configuration
 
 In this case, there are several important variables to be aware of and modify.
 Most of these are accessible in the `config` folder.
@@ -141,8 +137,7 @@ Optionally, you can edit `seeds.rb`, a file in the `db` folder.
 You can edit the file `seeds.rb` to remove any individuals who are not editors in your organization.
 This file will be updated later as you add information in the application, so this step is not strictly necessary.
 
-Modifying your site contents
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+### Modifying your site contents
 
 You can modify site content by updating files in the `app` and `docs` folders.
 For example, in `app/views/notifications` you can text for any emails that will be sent by your application.
@@ -159,3 +154,48 @@ You should update this to point to your own spreadsheet where you maintain a lis
 In the same folder, `utils.rake` is currently hard-coded to alternate assignments of editor-in-chief based on weeks.
 You should modify this to either set a single editor-in-chief,
 or design your own scheme of alternating between members of your editorial board.
+
+## Deploying your Whedon-API Application
+
+Whedon-API can also be deployed on Heroku.
+Note that &mdash; for full functionality &mdash; Whedon-API must be deployed on [Hobby dynos](https://devcenter.heroku.com/articles/dyno-types), rather than free dynos.
+Hobby dynos allow the Whedon-API application to run continuously, without falling asleep after 30 minutes of inactivity;
+this means that Whedon-API can respond to activity on GitHub at any time.
+Whedon-API specifically requires two Hobby dynos: one for the `web` service and one for the `worker` service.
+
+On the Whedon-API Heroku deployment, you'll need to provision several [add-ons](https://elements.heroku.com/addons).
+Specifically, you'll need:
+
+1. [Cloudinary add-on](https://elements.heroku.com/addons/cloudinary)
+1. [Postgres add-on](https://elements.heroku.com/addons/heroku-postgresql),
+1. [Scheduler add-on](https://devcenter.heroku.com/articles/scheduler)
+1. [Redis To Go add-on](https://elements.heroku.com/addons/redistogo)
+
+For the scheduler add-on, you'll need to designate which tasks it should run and when.
+The only task that needs to be scheduled is the `restart.sh` script,
+which should be set to execute every hour.
+
+```eval_rst
+.. warn:
+    Cloudinary `does not allow free accounts to serve PDFs <https://cloudinary.com/blog/uploading_managing_and_delivering_pdfs#delivering_pdf_files>`_ by default.
+    This will prevent your application from offering a paper preview service, as in https://whedon.theoj.org
+    To have this restriction lifted, you will need to `contact Cloudinary customer support <https://support.cloudinary.com/hc/en-us/requests/new>`_ directly.
+```
+
+As before, once you've pushed your application to Heroku and provisioned the appropriate add-ons,
+you're ready to update your config with the appropriate secrets.
+For a list of the expected secret key names, see the `app.json` file.
+Many of these will be re-used from deploying your JOSS application.
+
+Specifically, the `GH_TOKEN` should be the same personal access token as before.
+The `JOSS_API_KEY` should match the `WHEDON_SECRET` key that you created in your JOSS deployment.
+
+You'll also need to provide a `HEROKU_APP_NAME`, `HEROKU_CLI_TOKEN`, and `HEROKU_CLI_USER` that the `restart.sh` script can use when executing.
+You can find these directly from the heroku-cli as detailed in [their documentation](https://devcenter.heroku.com/articles/authentication).
+
+## Modifying your Whedon-API deployment
+
+Some times you may not want to launch an exact copy of the Whedon-API, but a modified version.
+This can be especially useful if you're planning to spin up your own platform based on the
+Open Journals framework.
+[RoboNeuro](https://github.com/roboneuro) is one such example use-case.

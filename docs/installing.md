@@ -105,17 +105,6 @@ Then you can directly modify this attribute in the deployments Postgres database
 For more information on accessing your application's Postgres database,
 see [the official docs](https://devcenter.heroku.com/articles/heroku-postgresql#pg-psql).
 
-Finally, you'll need to set up a [GitHub webhook](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/about-webhooks) for reviews repository.
-For JOSS, this corresponds to the `openjournals/joss-reviews` GitHub repository.
-In this GitHub repository's settings,
-you can add a new webhook with the following configuration:
-
-- Set the `Payload` URL to the `/dispatch` hook for your Heroku application URL.
-  For example, https://neurolibre.herokuapp.com/dispatch
-- Set the `Content type` to `application/json`
-- Set the secret to a high-entropy, random string as detailed in the [GitHub docs](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/securing-your-webhooks#setting-your-secret-token)
-- Set the webhook to deliver `all events`
-
 ## Making modifications to launch your own site
 
 Some times you may not want to launch an exact copy of JOSS, but a modified version.
@@ -147,6 +136,20 @@ Optionally, you can edit `seeds.rb`, a file in the `db` folder.
 "DB" is short for "database," and this file _seeds_ the database with information about your editorial team.
 You can edit the file `seeds.rb` to remove any individuals who are not editors in your organization.
 This file will be updated later as you add information in the application, so this step is not strictly necessary.
+
+Finally, you'll need to set up a [GitHub webhook](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/about-webhooks) for reviews repository.
+This should be a repository that you have write access to,
+where you expect most of the reviewer-author interaction to occur.
+For JOSS, this corresponds to the `openjournals/joss-reviews` GitHub repository.
+
+In this GitHub repository's settings,
+you can add a new webhook with the following configuration:
+
+- Set the `Payload` URL to the `/dispatch` hook for your Heroku application URL.
+  For example, https://neurolibre.herokuapp.com/dispatch
+- Set the `Content type` to `application/json`
+- Set the secret to a high-entropy, random string as detailed in the [GitHub docs](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/securing-your-webhooks#setting-your-secret-token)
+- Set the webhook to deliver `all events`
 
 ### Modifying your site contents
 
@@ -204,10 +207,33 @@ The `JOSS_API_KEY` should match the `WHEDON_SECRET` key that you created in your
 You'll also need to provide a `HEROKU_APP_NAME`, `HEROKU_CLI_TOKEN`, and `HEROKU_CLI_USER` that the `restart.sh` script can use when executing.
 You can find these directly from the heroku-cli as detailed in [their documentation](https://devcenter.heroku.com/articles/authentication).
 
-Finally, you'll need to set up a [GitHub webhook](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/about-webhooks) for reviews repository.
+## Modifying your Whedon-API deployment
+
+Some times you may not want to launch an exact copy of the Whedon-API, but a modified version.
+This can be especially useful if you're planning to spin up your own platform based on the
+Open Journals framework.
+[RoboNeuro](https://github.com/roboneuro) is one such example use-case.
+
+### Modifying your Whedon-API configuration
+
+Similar to the JOSS deployment described above,
+the Whedon-API configuration is controlled through a series of YAML files included in the `config/` folder.
+Each of these files provide relevant configuration for a different development context.
+Specifically, two files are defined:
+
+1. `settings-test.yml`
+1. `settings-production.yml`
+
+which can be used to define testing and production environment variables, respectively.
+Much of the information [previously defined for your JOSS deployment](#modifying-your-site-configuration) will carry over,
+including the editor team ID.
+
+Finally, you'll need to set up a [GitHub webhook](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/about-webhooks) for your reviews repository.
+As a reminder, this should be a repository that you have write access to.
 For JOSS, this corresponds to the `openjournals/joss-reviews` GitHub repository.
 **This is in addition to the webhook you previously created for the JOSS deployment,
 although it points to the same repository.**
+
 In this GitHub repository's settings,
 you can add a new webhook with the following configuration:
 
@@ -216,10 +242,3 @@ you can add a new webhook with the following configuration:
 - Set the `Content type` to `application/json`
 - Set the secret to a high-entropy, random string as detailed in the [GitHub docs](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/securing-your-webhooks#setting-your-secret-token)
 - Set the webhook to deliver `all events`
-
-## Modifying your Whedon-API deployment
-
-Some times you may not want to launch an exact copy of the Whedon-API, but a modified version.
-This can be especially useful if you're planning to spin up your own platform based on the
-Open Journals framework.
-[RoboNeuro](https://github.com/roboneuro) is one such example use-case.

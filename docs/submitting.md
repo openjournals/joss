@@ -39,6 +39,10 @@ As a rule of thumb, JOSS' minimum allowable contribution should represent **not 
 
 In addition, JOSS requires that software should be feature-complete (i.e. no half-baked solutions) and designed for maintainable extension (not one-off modifications of existing tools). "Minor utility" packages, including "thin" API clients, and single-function packages are not acceptable.
 
+### Co-publication of science, methods, and software
+
+Sometimes authors prepare a JOSS publication alongside a contribution describing a science application, details of algorithm development, and/or methods assessment. In this circumstance, JOSS considers submissions for which the implementation of the software itself reflects a substantial scientific effort. This may be represented by the design of the software, the implementation of the algorithms, creation of tutorials, or any other aspect of the software. We ask that authors indicate whether related publications (published, in review, or nearing submission) exist as part of submitting to JOSS.
+
 #### Other venues for reviewing and publishing software packages
 
 Authors wishing to publish software deemed out of scope for JOSS have a few options available to them:

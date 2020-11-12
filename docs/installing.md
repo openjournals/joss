@@ -1,6 +1,6 @@
 # Installing the JOSS application
 
-Any open journal (JOSS, JOSE, etc.) can be considered in three parts:
+Any Open Journal (JOSS, JOSE, etc.) can be considered in three parts:
 
 1. The website
 2. The Whedon gem
@@ -16,7 +16,7 @@ code bases.
 
 ## Setting up a local development environment
 
-All open journals are coded in Ruby,
+All Open Journals are coded in Ruby,
 with the website and Whedon-API developed as
 [Ruby on Rails](https://rubyonrails.org/inst) applications.
 
@@ -58,7 +58,7 @@ On the JOSS Heroku deployment, you'll need to provision several [add-ons](https:
 Specifically, you'll need:
 
 1. [Elasticsearch add-on](https://elements.heroku.com/addons/bonsai)
-1. [Postgres add-on](https://elements.heroku.com/addons/heroku-postgresql)
+1. [PostgreSQL add-on](https://elements.heroku.com/addons/heroku-postgresql)
 1. [Scheduler add-on](https://devcenter.heroku.com/articles/scheduler)
 
 For the scheduler add-on, you'll need to designate which tasks it should run and when.
@@ -166,7 +166,7 @@ heroku run rails searchkick:reindex:all
 ### Modifying your site contents
 
 You can modify site content by updating files in the `app` and `docs` folders.
-For example, in `app/views/notifications` you can text for any emails that will be sent by your application.
+For example, in `app/views/notifications` you can change the text for any emails that will be sent by your application.
 
 Note that files which end in `.html.erb` are treated as HTML files, and typical HTML formatting applies.
 You can set the HTML styling by modifying the Sass files for your application,

@@ -132,11 +132,6 @@ For your GitHub organization, make sure you have created and populated a team ca
 Then, you can check its ID number as detailed in [this guide](https://fabian-kostadinov.github.io/2015/01/16/how-to-find-a-github-team-id).
 In `config` you should also modify the `orcid.yml` file to list your site as the production site.
 
-Optionally, you can edit `seeds.rb`, a file in the `db` folder.
-"DB" is short for "database," and this file _seeds_ the database with information about your editorial team.
-You can edit the file `seeds.rb` to remove any individuals who are not editors in your organization.
-This file will be updated later as you add information in the application, so this step is not strictly necessary.
-
 Finally, you'll need to set up a [GitHub webhook](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/about-webhooks) for reviews repository.
 This should be a repository that you have write access to,
 where you expect most of the reviewer-author interaction to occur.
@@ -150,6 +145,23 @@ you can add a new webhook with the following configuration:
 - Set the `Content type` to `application/json`
 - Set the secret to a high-entropy, random string as detailed in the [GitHub docs](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/securing-your-webhooks#setting-your-secret-token)
 - Set the webhook to deliver `all events`
+
+#### Updating your application database
+
+Optionally, you can edit `seeds.rb`, a file in the `db` folder.
+"DB" is short for "database," and this file _seeds_ the database with information about your editorial team.
+You can edit the file `seeds.rb` to remove any individuals who are not editors in your organization.
+This can be especially useful if you will be creating the database multiple times during development;
+for example, if you add in testing information that you'd later like to remove.
+
+You can reinitialize the database from your Heroku CLI using the following commands:
+
+```bash
+heroku pg:reset DATABASE_URL
+heroku run rails db:schema:load
+heroku run rails db:seed
+heroku run rails searchkick:reindex:all
+```
 
 ### Modifying your site contents
 
@@ -181,7 +193,6 @@ On the Whedon-API Heroku deployment, you'll need to provision several [add-ons](
 Specifically, you'll need:
 
 1. [Cloudinary add-on](https://elements.heroku.com/addons/cloudinary)
-1. [Postgres add-on](https://elements.heroku.com/addons/heroku-postgresql),
 1. [Scheduler add-on](https://devcenter.heroku.com/articles/scheduler)
 1. [Redis To Go add-on](https://elements.heroku.com/addons/redistogo)
 

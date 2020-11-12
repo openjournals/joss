@@ -75,7 +75,7 @@ you're ready to update your config with the appropriate secrets.
 For a list of the expected secret key names, see the `app.json` file.
 
 ```eval_rst
-.. warn:
+.. warning::
     One "gotcha" when provisioning the Bonsai add-on is that it may only set the BONSAI_URL variable.
     Make sure that there is also an ELASTICSEARCH_URL which is set to the same address.
 ```
@@ -84,7 +84,7 @@ We will not cover Portico, as this requires that your application is a part of t
 If you do not already have access to these keys, you can simply ignore them for now.
 
 ```eval_rst
-.. note:
+.. note::
     One secret key we have not covered thus far is WHEDON_SECRET.
     This is because it is not one that you obtain from a provide,
     but a secret key that you set yourself.

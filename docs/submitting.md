@@ -272,7 +272,7 @@ Note that the paper ends with a References heading, and the references are built
 
 ## Checking that your paper compiles
 
-JOSS uses Pandoc to compile papers from their Markdown form into a PDF. You can test that your paper is properly structured using the [JOSS paper preview service](https://whedon.herokuapp.com).
+JOSS uses Pandoc to compile papers from their Markdown form into a PDF. You can test that your paper is properly structured using the [JOSS paper preview service](https://whedon.theoj.org).
 
 ## Submitting your paper
 

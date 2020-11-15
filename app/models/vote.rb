@@ -2,6 +2,8 @@ class Vote < ActiveRecord::Base
   belongs_to :paper
   belongs_to :editor
 
+  validates :comment, presence: true
+
   VOTE_KINDS = [
     "in-scope",
     "out-of-scope",

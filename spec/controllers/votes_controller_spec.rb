@@ -30,7 +30,8 @@ RSpec.describe VotesController, type: :controller do
                     commit: "Vote as in scope 👍", 
                     paper_id: paper.sha }
 
-    expect { post :create, params: vote_params }.to raise_error(ActiveRecord::RecordInvalid)
+    post :create, params: vote_params
+    expect(paper.votes.count).to eq(vote_count) # No new votes
   end
 
   it "LOGGED IN responds with success should an additional vote (but destroy the first)" do

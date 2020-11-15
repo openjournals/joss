@@ -18,18 +18,16 @@ class VotesController < ApplicationController
 
     @vote = @paper.votes.build(params)
 
-    begin
-      if previous_vote = Vote.find_by_paper_id_and_editor_id(@paper, current_user.editor)
-        previous_vote.destroy!
-      end
+    if previous_vote = Vote.find_by_paper_id_and_editor_id(@paper, current_user.editor)
+      previous_vote.destroy!
+    end
 
-      @vote.save!
+    if @vote.save
       flash[:notice] = "Vote recorded"
       redirect_to paper_path(@paper)
-    # Can't vote on the same item twice
-    rescue ActiveRecord::RecordNotUnique => e
-      flash[:error] = "Can't vote on the same item twice"
-      render 'papers/show', layout: false
+    else
+      flash[:error] = "Comment can't be empty"
+      redirect_to paper_path(@paper)
     end
   end
 

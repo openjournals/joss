@@ -276,7 +276,7 @@ JOSS uses Pandoc to compile papers from their Markdown form into a PDF. There ar
 
 **JOSS paper preview service**
 
-Visit [https://whedon.theoj.org](https://whedon.theoj.org) and enter your repository address (and custom branch if you're using one). Note that your repository must be world-readable (i.e. not require a login to access).
+Visit [https://whedon.theoj.org](https://whedon.theoj.org) and enter your repository address (and custom branch if you're using one). Note that your repository must be world-readable (i.e., it cannot require a login to access).
 
 <img width="1348" alt="Screen Shot 2020-11-23 at 12 08 58 PM" src="https://user-images.githubusercontent.com/4483/99960475-b4f7be00-2d84-11eb-83bd-7784e9e23913.png">
 

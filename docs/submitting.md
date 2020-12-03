@@ -50,10 +50,13 @@ Authors wishing to publish software deemed out of scope for JOSS have a few opti
 - Follow [GitHub's guide](https://guides.github.com/activities/citable-code/) on how to create a permanent archive and DOI for your software. This DOI can then be used by others to cite your work.
 - Enquire whether your software might be considered by communities such as [rOpenSci](https://ropensci.org) and [pyOpenSci](https://pyopensci.org).
 
-
 ### Should I write my own software or contribute to an existing package?
 
 While we are happy to review submissions in standalone repositories, we also review submissions that are significant contributions made to existing packages. It is often better to have an integrated library or package of methods than a large number of single-method packages.
+
+### Questions? Open an issue to ask
+
+Authors wishing to make a pre-submission enquiry should [open an issue](https://github.com/openjournals/joss/issues/new?title=Pre-submission%20enquiry) on the JOSS repository.
 
 ## Typical paper submission flow
 

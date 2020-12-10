@@ -17,7 +17,7 @@ gem 'octokit', '~> 4.14'
 gem 'pdf-reader', '~> 2.2'
 gem 'pg', '~> 1.1.4'
 gem 'will_paginate', '~> 3.1.8'
-gem 'rails', '6.0.3.4'
+gem 'rails', '6.1.0'
 gem 'responders'
 gem 'newrelic_rpm'
 gem 'sanitize', '~> 5.2.1'
@@ -33,7 +33,7 @@ gem 'bootstrap', '~> 4.3.1'
 
 
 # Use jquery as the JavaScript library
-gem 'jquery-rails', '~> 4.3.5'
+gem 'jquery-rails', '~> 4.4.0'
 
 gem 'custom_error_message', '~> 1.1.1'
 # Use Unicorn as the app server

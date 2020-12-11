@@ -1,4 +1,4 @@
-class Editor < ActiveRecord::Base
+class Editor < ApplicationRecord
   validates :kind, presence: true, inclusion: { in: ["board", "topic", "emeritus"] }
   validates :first_name, presence: true
   validates :last_name, presence: true

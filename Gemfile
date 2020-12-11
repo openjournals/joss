@@ -43,8 +43,8 @@ group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'pry-byebug'
   gem 'capybara', '~> 3.28.0'
-  gem 'factory_bot_rails', '~> 5.0.2'
-  gem 'rspec-rails', '~> 4.0.0.beta2'
+  gem 'factory_bot_rails', '~> 6.1.0'
+  gem 'rspec-rails', '~> 4.0.1'
   gem 'rails-controller-testing', '~> 1.0.4'
 end
 

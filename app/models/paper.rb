@@ -1,6 +1,6 @@
 require 'open3'
 
-class Paper < ActiveRecord::Base
+class Paper < ApplicationRecord
   searchkick index_name: "joss-production"
 
   include SettingsHelper
@@ -347,7 +347,7 @@ class Paper < ActiveRecord::Base
     else
       new_labels = ["review"]
     end
-    
+
 
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[REVIEW]: #{self.title}",
@@ -469,11 +469,11 @@ private
     stdout_str, stderr_str, status = Open3.capture3("git ls-remote #{repository_url}")
 
     if !status.success?
-      errors.add(:base, "Invalid Git repository address. Check that the repository can be cloned using the value entered in the form, and that access doesn't require authentication.")
+      errors.add(:base, :invalid, message: "Invalid Git repository address. Check that the repository can be cloned using the value entered in the form, and that access doesn't require authentication.")
       return false
     end
   end
-  
+
   def set_sha
     self.sha ||= SecureRandom.hex
   end

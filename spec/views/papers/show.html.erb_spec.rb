@@ -14,7 +14,7 @@ describe 'papers/show.html.erb' do
       paper = create(:paper, state: "submitted", submitting_author: user)
       assign(:paper, paper)
 
-      render template: "papers/show.html.erb"
+      render template: "papers/show", formats: :html
 
       expect(rendered).to have_content("but the review hasn't started.", { normalize_ws: true })
     end
@@ -26,7 +26,7 @@ describe 'papers/show.html.erb' do
       paper = create(:accepted_paper)
       assign(:paper, paper)
 
-      render template: "papers/show.html.erb"
+      render template: "papers/show", formats: :html
 
       # Paper metadata
       # FIXME - these tests seem to be timezone sensitive??? i.e. can fail depending
@@ -46,7 +46,7 @@ describe 'papers/show.html.erb' do
       paper = create(:accepted_paper)
       assign(:paper, paper)
 
-      render template: "papers/show.html.erb"
+      render template: "papers/show", formats: :html
 
       # Paper metadata
       expect(rendered).to have_title("The Journal of Open Source Software: #{paper.scholar_title}")
@@ -86,7 +86,7 @@ describe 'papers/show.html.erb' do
       paper = create(:paper, state: "submitted", review_issue_id: nil, submitting_author: author)
       assign(:paper, paper)
 
-      render template: "papers/show.html.erb"
+      render template: "papers/show", formats: :html
 
       expect(rendered).to have_selector("input[type=submit][value='Reject paper']")
     end
@@ -99,7 +99,7 @@ describe 'papers/show.html.erb' do
       paper = create(:paper, state: "submitted", submitting_author: user)
       assign(:paper, paper)
 
-      render template: "papers/show.html.erb"
+      render template: "papers/show", formats: :html
       expect(rendered).to have_selector("input[type=submit][value='Withdraw paper']")
     end
 
@@ -113,7 +113,7 @@ describe 'papers/show.html.erb' do
       paper = create(:paper, state: "submitted", submitting_author: author)
       assign(:paper, paper)
 
-      render template: "papers/show.html.erb"
+      render template: "papers/show", formats: :html
       expect(rendered).to have_selector("input[type=submit][value='Withdraw paper']")
       expect(rendered).to have_content(author.email)
     end
@@ -128,7 +128,7 @@ describe 'papers/show.html.erb' do
       paper = create(:resubmission_paper, state: "submitted", review_issue_id: 123, submitting_author: author)
       assign(:paper, paper)
 
-      render template: "papers/show.html.erb"
+      render template: "papers/show", formats: :html
 
       expect(rendered).to have_content "Paper review"
       expect(rendered).to have_content "Resubmission"
@@ -141,7 +141,7 @@ describe 'papers/show.html.erb' do
       paper = create(:retracted_paper, retraction_notice: "Reasons for retraction")
       assign(:paper, paper)
 
-      render template: "papers/show.html.erb"
+      render template: "papers/show", formats: :html
       expect(rendered).to have_content("Reasons for retraction")
     end
   end

@@ -1,3 +1,5 @@
+require 'open3'
+
 class Paper < ActiveRecord::Base
   searchkick index_name: "jcon-production"
 
@@ -123,6 +125,7 @@ class Paper < ActiveRecord::Base
   validates_presence_of :body, message: "^Description can't be blank"
   validates :kind, inclusion: { in: Rails.application.settings["paper_types"] }, allow_nil: true
   validates :submission_kind, inclusion: { in: SUBMISSION_KINDS }, allow_nil: false
+  validate :check_repository_address, on: :create
 
   def notify_editors
     Notifications.submission_email(self).deliver_now
@@ -462,6 +465,15 @@ class Paper < ActiveRecord::Base
 
 private
 
+  def check_repository_address
+    stdout_str, stderr_str, status = Open3.capture3("git ls-remote #{repository_url}")
+
+    if !status.success?
+      errors.add(:base, "Invalid Git repository address. Check that the repository can be cloned using the value entered in the form, and that access doesn't require authentication.")
+      return false
+    end
+  end
+  
   def set_sha
     self.sha ||= SecureRandom.hex
   end

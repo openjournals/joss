@@ -48,7 +48,7 @@ describe DispatchController, type: :controller do
 
     it "should initialize the activities when an issue is opened" do
       expect(response).to be_ok
-      expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[], "last_edits"=>{}}})
+      expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[], "last_edits"=>{}, "last_comments" => {}}})
     end
 
     it "should UPDATE the activities when an issue is then commented on" do
@@ -63,9 +63,8 @@ describe DispatchController, type: :controller do
       expect(response).to be_ok
       expect(@paper.activities['issues']['commenters']).to eq({"pre-review"=>{"whedon"=>1, "editor"=>1}, "review"=>{}})
       expect(@paper.activities['issues']['comments'].length).to eq(2)
-
-      # expect(@paper.activities['issues']['review']['commenters']).to be_empty
-      # expect(@paper.activities['issues']['review']['comments'].length).to eq(0)
+      expect(@paper.activities['issues']['last_comments']['editor']).to eq("2018-09-30T11:48:30Z")
+      expect(@paper.activities['issues']['last_comments']['whedon']).to eq("2018-09-30T11:48:40Z")
     end
   end
 
@@ -109,7 +108,7 @@ describe DispatchController, type: :controller do
 
     it "should initialize the activities when a review issue is opened" do
       expect(response).to be_ok
-      expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[], "last_edits"=>{}}})
+      expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[], "last_edits"=>{}, "last_comments" => {}}})
     end
   end
 
@@ -124,7 +123,7 @@ describe DispatchController, type: :controller do
 
     it "should update the last_edits key" do
       expect(response).to be_ok
-      expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[], "last_edits"=>{"comment-editor"=>"2018-10-06T16:18:56Z"}}})
+      expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[], "last_comments" => {}, "last_edits"=>{"comment-editor"=>"2018-10-06T16:18:56Z"}}})
     end
 
     it "should update the last_activity field" do

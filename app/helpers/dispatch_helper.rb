@@ -66,6 +66,10 @@ module DispatchHelper
       action == 'closed'
     end
 
+    def commented?
+      action == 'created'
+    end
+
     def edited?
       action == 'edited'
     end
@@ -98,7 +102,8 @@ module DispatchHelper
             'review' => {}
           },
           'comments' => [],
-          'last_edits' => {}
+          'last_edits' => {},
+          'last_comments' => {}
         }
       }
 
@@ -135,6 +140,18 @@ module DispatchHelper
 
         paper.labels = new_labels
         paper.save and return
+      end
+
+      # New addition to keep track of the last comments by each 
+      # person on the thread.
+      if commented?
+        if issues.has_key?('last_comments')
+          issues['last_comments'][sender] = payload['issue']['updated_at']
+        else
+          issues['last_comments'] = {}
+          issues['last_comments'][sender] = payload['issue']['updated_at']
+        end
+        paper.last_activity = payload['issue']['updated_at']
       end
 
       if pre_review?

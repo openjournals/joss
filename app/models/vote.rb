@@ -2,6 +2,8 @@ class Vote < ActiveRecord::Base
   belongs_to :paper
   belongs_to :editor
 
+  validates :comment, presence: true
+
   VOTE_KINDS = [
     "in-scope",
     "out-of-scope",
@@ -23,6 +25,10 @@ class Vote < ActiveRecord::Base
 
   def comment?
     kind == "comment"
+  end
+
+  def self.has_vote_for?(paper, editor)
+    find_by_paper_id_and_editor_id(paper, editor)
   end
 
   validates :kind, inclusion: { in: VOTE_KINDS }, allow_nil: false

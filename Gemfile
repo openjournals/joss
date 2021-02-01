@@ -17,7 +17,7 @@ gem 'octokit', '~> 4.14'
 gem 'pdf-reader', '~> 2.2'
 gem 'pg', '~> 1.1.4'
 gem 'will_paginate', '~> 3.1.8'
-gem 'rails', '6.0.3.4'
+gem 'rails', '6.1.1'
 gem 'responders'
 gem 'newrelic_rpm'
 gem 'sanitize', '~> 5.2.1'
@@ -33,7 +33,7 @@ gem 'bootstrap', '~> 4.3.1'
 
 
 # Use jquery as the JavaScript library
-gem 'jquery-rails', '~> 4.3.5'
+gem 'jquery-rails', '~> 4.4.0'
 
 gem 'custom_error_message', '~> 1.1.1'
 # Use Unicorn as the app server
@@ -43,8 +43,8 @@ group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'pry-byebug'
   gem 'capybara', '~> 3.28.0'
-  gem 'factory_bot_rails', '~> 5.0.2'
-  gem 'rspec-rails', '~> 4.0.0.beta2'
+  gem 'factory_bot_rails', '~> 6.1.0'
+  gem 'rspec-rails', '~> 4.0.1'
   gem 'rails-controller-testing', '~> 1.0.4'
 end
 

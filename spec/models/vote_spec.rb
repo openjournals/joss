@@ -43,7 +43,7 @@ describe Vote do
     expect(Vote.has_vote_for?(paper, editor)).to be_a_kind_of(Vote)
     expect(Vote.has_vote_for?(paper, editor2)).to be_nil
   end
-  
+
 
   it "should know about #in_scope and #out_of_scope" do
     submitted_paper = create(:paper, state: "submitted")
@@ -55,7 +55,7 @@ describe Vote do
     2.times do
       create(:out_of_scope_vote, editor: create(:editor), paper: submitted_paper)
     end
-    
+
     expect(submitted_paper.votes.count).to eq(5)
     expect(submitted_paper.votes.in_scope.count).to eq(3)
     expect(submitted_paper.votes.out_of_scope.count).to eq(2)

@@ -36,7 +36,6 @@ gem 'bootstrap', '~> 4.3.1'
 # Use jquery as the JavaScript library
 gem 'jquery-rails', '~> 4.4.0'
 
-gem 'custom_error_message', '~> 1.1.1'
 # Use Unicorn as the app server
 gem 'unicorn', '~> 5.8.0'
 

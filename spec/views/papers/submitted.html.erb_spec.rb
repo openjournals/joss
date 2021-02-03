@@ -16,7 +16,7 @@ describe 'papers/submitted.html.erb' do
       render template: "papers/index", formats: :html
 
       expect(rendered).to have_selector('.paper-title', count: 0)
-      expect(rendered).to have_content("Active Papers 1", { normalize_ws: true })
+      expect(rendered).to have_content(:visible, "Active Papers 1", normalize_ws: true)
     end
   end
 end

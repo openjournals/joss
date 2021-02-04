@@ -16,7 +16,10 @@ gem 'omniauth-orcid', '~> 2.1.1'
 gem 'octokit', '~> 4.14'
 gem 'pdf-reader', '~> 2.2'
 gem 'pg', '~> 1.1.4'
-gem 'will_paginate', '~> 3.1.8'
+# TODO: Remove git reference and revert to latest release
+# once this bug is fixed and Rails 6.1 is supported:
+# https://github.com/mislav/will_paginate/pull/619
+gem 'will_paginate', git: "https://github.com/kvokka/will_paginate", branch: "fix-page_entries_info"
 gem 'rails', '6.1.1'
 gem 'responders'
 gem 'newrelic_rpm'

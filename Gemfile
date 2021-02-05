@@ -13,11 +13,15 @@ gem 'html-pipeline', '~> 2.12.0'
 gem 'commonmarker', '~> 0.20.1'
 gem 'octicons_helper', '~> 9.1'
 gem 'omniauth-orcid', '~> 2.1.1'
-gem 'octokit', '~> 4.14'
-gem 'pdf-reader', '~> 2.2'
-gem 'pg', '~> 1.1.4'
-gem 'will_paginate', '~> 3.1.8'
-gem 'rails', '6.0.2'
+gem 'omniauth-rails_csrf_protection'
+gem 'octokit', '~> 4.20'
+gem 'pdf-reader', '~> 2.4.2'
+gem 'pg', '~> 1.2.3'
+# TODO: Remove git reference and revert to latest release
+# once this bug is fixed and Rails 6.1 is supported:
+# https://github.com/mislav/will_paginate/pull/619
+gem 'will_paginate', git: "https://github.com/kvokka/will_paginate", branch: "fix-page_entries_info"
+gem 'rails', '6.1.1'
 gem 'responders'
 gem 'newrelic_rpm'
 gem 'sanitize', '~> 5.0.0'

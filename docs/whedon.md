@@ -61,7 +61,8 @@ EDITORIAL TASKS
 # Ask Whedon to check the references for missing DOIs
 @whedon check references
 
-# Ask Whedon to check repository statistics for the submitted software
+# Ask Whedon to check repository statistics for the submitted software, for license, and
+# for Statement of Need section in paper
 @whedon check repository
 
 EiC TASKS

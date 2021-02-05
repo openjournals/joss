@@ -9,9 +9,10 @@ RSpec.describe EditorsController, type: :controller do
 
   context "when not logged in" do
     let(:current_user) { nil }
-    it "redirects to login" do
+    it "redirects to root with a login message" do
       get :index
-      expect(response).to redirect_to %r(test.host/auth/orcid)
+      expect(response).to redirect_to root_path
+      expect(flash[:error]).to eql "Please login first"
     end
 
     it "should allow the lookup of an editor" do

@@ -1,4 +1,4 @@
-require 'uri'
+require 'open-uri'
 
 class PapersController < ApplicationController
   include SettingsHelper
@@ -245,7 +245,7 @@ class PapersController < ApplicationController
     respond_to do |format|
       format.html { render layout: false }
       format.pdf {
-        data = open(@paper.pdf_url)
+        data = URI.open(@paper.pdf_url)
         send_data data.read,
           :type => data.content_type,
           :disposition => 'inline'

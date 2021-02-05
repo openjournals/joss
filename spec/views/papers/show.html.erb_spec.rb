@@ -16,7 +16,7 @@ describe 'papers/show.html.erb' do
 
       render template: "papers/show", formats: :html
 
-      expect(rendered).to have_content("but the review hasn't started.", { normalize_ws: true })
+      expect(rendered).to have_content(:visible, "but the review hasn't started.", normalize_ws: true)
     end
 
     it "displays correctly for accepted paper" do

@@ -119,10 +119,10 @@ class Paper < ApplicationRecord
   after_create :notify_editors, :notify_author
 
   validates_presence_of :title
-  validates_presence_of :suggested_editor, on: :create, message: "^You must suggest an editor to handle your submission"
-  validates_presence_of :repository_url, message: "^Repository address can't be blank"
-  validates_presence_of :software_version, message: "^Version can't be blank"
-  validates_presence_of :body, message: "^Description can't be blank"
+  validates_presence_of :suggested_editor, on: :create, message: "You must suggest an editor to handle your submission"
+  validates_presence_of :repository_url, message: "Repository address can't be blank"
+  validates_presence_of :software_version, message: "Version can't be blank"
+  validates_presence_of :body, message: "Description can't be blank"
   validates :kind, inclusion: { in: Rails.application.settings["paper_types"] }, allow_nil: true
   validates :submission_kind, inclusion: { in: SUBMISSION_KINDS }, allow_nil: false
   validate :check_repository_address, on: :create

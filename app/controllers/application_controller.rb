@@ -7,8 +7,8 @@ class ApplicationController < ActionController::Base
 
   def require_user
     unless current_user
-      # Make sure we get redirected back to the page we were asking for.
-      redirect_to "/auth/orcid?origin=#{ENV['REQUEST_URI']}"
+      flash[:error] = "Please login first"
+      redirect_back fallback_location: :root
       false # throw :abort
     end
   end

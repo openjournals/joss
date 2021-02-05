@@ -66,6 +66,9 @@ EDITORIAL TASKS
 
 EiC TASKS
 
+# Flag submission for editoral review, due to size or question about being research software
+@whedon query scope
+
 # Invite an editor to edit a submission (sending them an email)
 @whedon invite @editor as editor
 

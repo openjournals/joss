@@ -2,15 +2,15 @@
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
 #
-# This file is the source Rails uses to define your schema when running `rails
-# db:schema:load`. When creating a new database, `rails db:schema:load` tends to
+# This file is the source Rails uses to define your schema when running `bin/rails
+# db:schema:load`. When creating a new database, `bin/rails db:schema:load` tends to
 # be faster and is potentially less error prone than running all of your
 # migrations from scratch. Old migrations may fail to apply correctly if those
 # migrations use external dependencies or application code.
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_06_30_105443) do
+ActiveRecord::Schema.define(version: 2021_02_14_162210) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
@@ -65,10 +65,12 @@ ActiveRecord::Schema.define(version: 2020_06_30_105443) do
     t.boolean "archived", default: false
     t.integer "eic_id"
     t.string "submission_kind"
+    t.float "percent_complete"
     t.index ["editor_id"], name: "index_papers_on_editor_id"
     t.index ["eic_id"], name: "index_papers_on_eic_id"
     t.index ["labels"], name: "index_papers_on_labels", using: :gin
     t.index ["last_activity"], name: "index_papers_on_last_activity"
+    t.index ["percent_complete"], name: "index_papers_on_percent_complete"
     t.index ["reviewers"], name: "index_papers_on_reviewers", using: :gin
     t.index ["sha"], name: "index_papers_on_sha"
     t.index ["user_id"], name: "index_papers_on_user_id"

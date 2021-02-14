@@ -126,6 +126,10 @@ describe DispatchController, type: :controller do
       expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[], "last_comments" => {}, "last_edits"=>{"comment-editor"=>"2018-10-06T16:18:56Z"}}})
     end
 
+    it "should update the percent_complete value" do 
+      expect(@paper.percent_complete).to eq(0.9375)
+    end
+
     it "should update the last_activity field" do
       github_updated_at = JSON.parse(whedon_review_edit)['issue']['updated_at'].to_datetime.strftime("%Y-%m-%dT%l:%M:%S%z")
       expect(@paper.last_activity.strftime('%Y-%m-%dT%l:%M:%S%z')).to eql(github_updated_at)

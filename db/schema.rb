@@ -65,7 +65,7 @@ ActiveRecord::Schema.define(version: 2021_02_14_162210) do
     t.boolean "archived", default: false
     t.integer "eic_id"
     t.string "submission_kind"
-    t.float "percent_complete"
+    t.float "percent_complete", default: 0.0
     t.index ["editor_id"], name: "index_papers_on_editor_id"
     t.index ["eic_id"], name: "index_papers_on_eic_id"
     t.index ["labels"], name: "index_papers_on_labels", using: :gin

@@ -98,7 +98,7 @@ describe DispatchController, type: :controller do
     end
   end
 
-  describe "POST #github_recevier for REVIEW", type: :request do
+  describe "POST #github_recevier for REVIEW", type: :request, vcr: true do
     before do
       signature = set_signature(whedon_review_opened)
       @paper = create(:paper, meta_review_issue_id: 78, review_issue_id: 79)
@@ -112,7 +112,7 @@ describe DispatchController, type: :controller do
     end
   end
 
-  describe "POST #github_recevier for REVIEW", type: :request do
+  describe "POST #github_recevier for REVIEW", type: :request, vcr: true do
     before do
       signature = set_signature(whedon_review_edit)
 
@@ -124,6 +124,10 @@ describe DispatchController, type: :controller do
     it "should update the last_edits key" do
       expect(response).to be_ok
       expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[], "last_comments" => {}, "last_edits"=>{"comment-editor"=>"2018-10-06T16:18:56Z"}}})
+    end
+
+    it "should update the percent_complete value" do 
+      expect(@paper.percent_complete).to eq(0.9375)
     end
 
     it "should update the last_activity field" do

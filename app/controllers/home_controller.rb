@@ -26,7 +26,7 @@ class HomeController < ApplicationController
 
   def incoming
     if params[:order]
-      @papers = Paper.unscoped.in_progress.where(editor: nil).order(last_activity: params[:order]).paginate(
+      @papers = Paper.unscoped.in_progress.where(editor: nil).order(percent_complete: params[:order]).paginate(
                   page: params[:page],
                   per_page: 20
                 )
@@ -57,10 +57,11 @@ class HomeController < ApplicationController
 
     if params[:editor]
       @active_tab = @editor = Editor.find_by_login(params[:editor])
-      @papers = Paper.unscoped.in_progress.where(editor: @editor).order(last_activity: @order).paginate(
-                  page: params[:page],
-                  per_page: 20
-                )
+      
+      @papers = Paper.unscoped.in_progress.where(editor: @editor).order(percent_complete: @order).paginate(
+        page: params[:page],
+        per_page: 20
+      )
     else
       @papers = Paper.everything.paginate(
                   page: params[:page],
@@ -83,7 +84,7 @@ class HomeController < ApplicationController
 
     @editor = current_user.editor
 
-    @papers = Paper.unscoped.in_progress.order(last_activity: @order).paginate(
+    @papers = Paper.unscoped.in_progress.order(percent_complete: @order).paginate(
                 page: params[:page],
                 per_page: 20
               )
@@ -105,7 +106,7 @@ class HomeController < ApplicationController
 
     @editor = current_user.editor
     
-    @papers = Paper.unscoped.all.order(last_activity: @order).paginate(
+    @papers = Paper.unscoped.all.order(percent_complete: @order).paginate(
               page: params[:page],
               per_page: 20
             )

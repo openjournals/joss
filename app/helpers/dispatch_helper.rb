@@ -119,7 +119,7 @@ module DispatchHelper
       return if locked?
       return if pinned?
       return if unlocked?
-
+      
       if edited?
         if issues.has_key?('last_edits')
           issues['last_edits'][sender] = payload['issue']['updated_at']
@@ -127,6 +127,8 @@ module DispatchHelper
           issues['last_edits'] = {}
           issues['last_edits'][sender] = payload['issue']['updated_at']
         end
+
+        paper.percent_complete = paper.fraction_check_boxes_complete
         paper.last_activity = payload['issue']['updated_at']
         paper.save and return
       end

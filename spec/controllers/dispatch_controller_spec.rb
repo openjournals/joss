@@ -98,7 +98,7 @@ describe DispatchController, type: :controller do
     end
   end
 
-  describe "POST #github_recevier for REVIEW", type: :request do
+  describe "POST #github_recevier for REVIEW", type: :request, vcr: true do
     before do
       signature = set_signature(whedon_review_opened)
       @paper = create(:paper, meta_review_issue_id: 78, review_issue_id: 79)
@@ -112,7 +112,7 @@ describe DispatchController, type: :controller do
     end
   end
 
-  describe "POST #github_recevier for REVIEW", type: :request do
+  describe "POST #github_recevier for REVIEW", type: :request, vcr: true do
     before do
       signature = set_signature(whedon_review_edit)
 

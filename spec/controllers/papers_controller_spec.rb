@@ -203,14 +203,6 @@ describe PapersController, type: :controller do
   end
 
   describe "accepted papers" do
-    it "should send_file a URL for a PDF" do
-      paper = create(:accepted_paper)
-      request.headers["HTTP_ACCEPT"] = "application/pdf"
-
-      get :show, params: {doi: paper.doi}
-      expect(response.body).to eq(IO.binread('spec/fixtures/paper.pdf'))
-    end
-
     it "should not redirect when accepting any content type" do
       paper = create(:accepted_paper)
       request.headers["HTTP_ACCEPT"] = "*/*"

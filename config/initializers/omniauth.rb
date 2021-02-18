@@ -1,5 +1,7 @@
 require 'omniauth-orcid'
 
+OmniAuth.config.allowed_request_methods = [:post, :get] 
+
 Rails.application.config.middleware.use OmniAuth::Builder do
 
   environment = defined?(Rails) ? Rails.env : ENV["RACK_ENV"]

@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby "2.6.6"
+ruby "2.7.2"
 
 gem 'aasm', '~> 5.0.5'
 gem 'chartkick'

@@ -11,6 +11,7 @@ RSpec.describe "editors/edit", type: :view do
 
     assert_select "form[action=?][method=?]", editor_path(@editor), "post" do
       assert_select "select#editor_kind[name=?]", "editor[kind]"
+      assert_select "select#editor_availability[name=?]", "editor[availability]"
       assert_select "input#editor_title[name=?]", "editor[title]"
       assert_select "input#editor_first_name[name=?]", "editor[first_name]"
       assert_select "input#editor_last_name[name=?]", "editor[last_name]"

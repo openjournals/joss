@@ -17,5 +17,6 @@ RSpec.describe "editors/show", type: :view do
     expect(rendered).to match(/Categories/)
     expect(rendered).to match(/Url/)
     expect(rendered).to match(/Description/)
+    expect(rendered).to match(/Availability/)
   end
 end

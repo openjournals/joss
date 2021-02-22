@@ -59,6 +59,6 @@ class EditorsController < ApplicationController
     end
 
     def editor_params
-      params.require(:editor).permit(:availability, :kind, :title, :first_name, :last_name, :login, :email, :avatar_url, :category_list, :url, :description)
+      params.require(:editor).permit(:availability, :availability_comment, :kind, :title, :first_name, :last_name, :login, :email, :avatar_url, :category_list, :url, :description)
     end
 end

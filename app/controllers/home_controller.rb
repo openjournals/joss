@@ -38,7 +38,6 @@ class HomeController < ApplicationController
     end
 
     @editor = current_user.editor
-    @active_tab = "incoming"
 
     render template: "home/reviews"
   end
@@ -56,8 +55,8 @@ class HomeController < ApplicationController
     end
 
     if params[:editor]
-      @active_tab = @editor = Editor.find_by_login(params[:editor])
-      
+      @editor = Editor.find_by_login(params[:editor])
+
       @papers = Paper.unscoped.in_progress.where(editor: @editor).order(percent_complete: @order).paginate(
         page: params[:page],
         per_page: 20
@@ -105,13 +104,13 @@ class HomeController < ApplicationController
     end
 
     @editor = current_user.editor
-    
+
     @papers = Paper.unscoped.all.order(percent_complete: @order).paginate(
               page: params[:page],
               per_page: 20
             )
 
-    
+
     render template: "home/reviews"
   end
 

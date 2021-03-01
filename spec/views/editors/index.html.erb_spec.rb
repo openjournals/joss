@@ -10,6 +10,7 @@ RSpec.describe "editors/index", type: :view do
     assert_select "tr>td:nth-of-type(1)", text: /Person McEditor/, count: 2
     assert_select "tr>td:nth-of-type(2)", text: "mceditor", count: 2
     assert_select "tr>td:nth-of-type(3)", text: "topic1, topic2, topic3", count: 2
-    assert_select "tr>td:nth-of-type(5)", text: "Available OOO until March 1", count: 2
+    assert_select "tr>td:nth-of-type(5)", text: "🟢*", count: 2
+    assert_select "tr>td:nth-of-type(5)>span[title=?]", "Available: OOO until March 1", count: 2
   end
 end

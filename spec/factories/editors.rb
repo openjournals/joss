@@ -9,5 +9,7 @@ FactoryBot.define do
     categories { %w(topic1 topic2 topic3) }
     url { "http://placekitten.com" }
     description { "Person McEditor is an editor" }
+    availability { "available" }
+    availability_comment { "OOO until March 1" }
   end
 end

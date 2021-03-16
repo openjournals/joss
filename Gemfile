@@ -46,7 +46,7 @@ group :development, :test do
   gem 'pry-byebug'
   gem 'capybara', '~> 3.35.3'
   gem 'factory_bot_rails', '~> 6.1.0'
-  gem 'rspec-rails', '~> 4.0.2'
+  gem 'rspec-rails', '~> 5.0.0'
   gem 'rails-controller-testing', '~> 1.0.5'
 end
 

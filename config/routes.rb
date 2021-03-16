@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
 
   resources :editors
+
   resources :papers do
     resources :votes, only: ['create']
 
@@ -36,6 +37,8 @@ Rails.application.routes.draw do
   get '/papers/:doi', to: "papers#show", constraints: { doi: /10.21105\/joss\.\d{5}/}
   get '/papers/:doi.:format', to: "papers#show", constraints: { doi: /10.21105\/joss\.\d{5}/}
 
+  get '/editor_profile', to: 'editors#profile', as: 'editor_profile'
+  patch '/update_editor_profile', to: 'editors#update_profile', as: 'update_editor_profile'
 
   get '/dashboard/all', to: "home#all"
   get '/dashboard/incoming', to: "home#incoming"
@@ -43,10 +46,11 @@ Rails.application.routes.draw do
   get '/dashboard', to: "home#dashboard"
 
   get '/dashboard/*editor', to: "home#reviews"
-
-  post '/update_profile', to: "home#update_profile"
   get '/about', to: 'home#about', as: 'about'
+
   get '/profile', to: 'home#profile', as: 'profile'
+  post '/update_profile', to: "home#update_profile"
+
   get '/auth/:provider/callback', to: 'sessions#create'
   get "/signout" => "sessions#destroy", as: :signout
 

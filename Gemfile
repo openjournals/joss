@@ -52,7 +52,7 @@ group :development, :test do
 end
 
 group :test do
-  gem 'vcr', '~> 3.0', '>= 3.0.1'
+  gem 'vcr', '~> 6.0', '>= 6.0.0'
 end
 
 group :development do

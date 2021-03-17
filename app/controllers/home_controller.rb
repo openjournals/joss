@@ -22,6 +22,9 @@ class HomeController < ApplicationController
 
     @accepted_papers = Paper.unscoped.visible.group_by_month(:accepted_at).count
     @editor_papers = Paper.unscoped.where(editor: @editor).visible.group_by_month(:accepted_at).count
+
+    @assignment_by_editor = Paper.unscoped.in_progress.group(:editor_id).count
+    @paused_by_editor = Paper.unscoped.in_progress.where("labels->>'paused' ILIKE '%'").group(:editor_id).count
   end
 
   def incoming

@@ -6,6 +6,8 @@ class EditorsController < ApplicationController
 
   def index
     @editors = Editor.all
+    @assignment_by_editor = Paper.unscoped.in_progress.group(:editor_id).count
+    @paused_by_editor = Paper.unscoped.in_progress.where("labels->>'paused' ILIKE '%'").group(:editor_id).count
   end
 
   def show
@@ -76,10 +78,10 @@ class EditorsController < ApplicationController
     end
 
     def editor_params
-      params.require(:editor).permit(:availability, :availability_comment, :kind, :title, :first_name, :last_name, :login, :email, :avatar_url, :category_list, :url, :description)
+      params.require(:editor).permit(:max_assignments, :availability_comment, :kind, :title, :first_name, :last_name, :login, :email, :avatar_url, :category_list, :url, :description)
     end
 
     def profile_params
-      params.require(:editor).permit(:availability, :availability_comment, :first_name, :last_name, :email, :avatar_url, :category_list, :url, :description)
+      params.require(:editor).permit(:max_assignments, :availability_comment, :first_name, :last_name, :email, :avatar_url, :category_list, :url, :description)
     end
 end

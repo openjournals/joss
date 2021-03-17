@@ -42,6 +42,12 @@ RSpec.describe EditorsController, type: :controller do
       get :index
       expect(assigns(:editors)).to eq([editor])
     end
+
+    it "assigns grouped availability information" do
+      get :index
+      expect(assigns(:assignment_by_editor)).to be
+      expect(assigns(:paused_by_editor)).to be
+    end
   end
 
   describe "#show" do

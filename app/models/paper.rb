@@ -430,14 +430,14 @@ class Paper < ApplicationRecord
   def fraction_check_boxes_complete
     return 0.0 if review_issue_id.nil?
     issue = GITHUB.issue(Rails.application.settings["reviews"], review_issue_id)
-  
+
     checkbox_count = issue.body.scan(/(- \[ \]|- \[x\])/m).count
     checked_checkbox_count = issue.body.scan(/(- \[x\])/m).count
 
     return checked_checkbox_count.to_f / checkbox_count
   end
 
-  def pretty_percentage    
+  def pretty_percentage
     (percent_complete * 100).to_i
   end
 

@@ -16,12 +16,6 @@ class Editor < ApplicationRecord
     "topic"
   ].freeze
 
-  AVAILABILITY_STATES = [
-    "available",
-    "somewhat",
-    "none"
-  ]
-
   scope :board, -> { where(kind: "board") }
   scope :topic, -> { where(kind: "topic") }
   scope :emeritus, -> { where(kind: "emeritus") }

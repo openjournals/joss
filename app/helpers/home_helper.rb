@@ -159,9 +159,4 @@ module HomeHelper
   def linked_reviewers(paper)
     paper.reviewers.map { |reviewer| github_user(reviewer.gsub('@', '')) }.join(', ').html_safe
   end
-
-  def availability_class(editor)
-    return "" unless editor.availability?
-    "availability-" + editor.availability.downcase.gsub(' ', '-')
-  end
 end

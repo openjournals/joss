@@ -5,7 +5,7 @@ RSpec.describe "editors/show", type: :view do
     @editor = assign(:editor, create(:editor))
   end
 
-  it "renders attributes in <p>" do
+  it "renders attributes" do
     render
     expect(rendered).to match(/Type/)
     expect(rendered).to match(/Title/)
@@ -17,6 +17,6 @@ RSpec.describe "editors/show", type: :view do
     expect(rendered).to match(/Categories/)
     expect(rendered).to match(/Url/)
     expect(rendered).to match(/Description/)
-    expect(rendered).to match(/Availability/)
+    expect(rendered).to match(/Max number of assignments/)
   end
 end

@@ -25,6 +25,12 @@ class HomeController < ApplicationController
 
     @assignment_by_editor = Paper.unscoped.in_progress.group(:editor_id).count
     @paused_by_editor = Paper.unscoped.in_progress.where("labels->>'paused' ILIKE '%'").group(:editor_id).count
+
+    @papers_last_week = Paper.unscoped.visible.since(1.week.ago).group(:editor_id).count
+    @papers_last_month = Paper.unscoped.visible.since(1.month.ago).group(:editor_id).count
+    @papers_last_3_months = Paper.unscoped.visible.since(3.months.ago).group(:editor_id).count
+    @papers_last_year = Paper.unscoped.visible.since(1.year.ago).group(:editor_id).count
+    @papers_all_time = Paper.unscoped.visible.since(100.year.ago).group(:editor_id).count
   end
 
   def incoming

@@ -106,7 +106,6 @@ class Paper < ApplicationRecord
 
   scope :since, -> (date) { where('accepted_at >= ?', date) }
   scope :in_progress, -> { where(state: IN_PROGRESS_STATES) }
-  scope :in_progress, -> { where(state: IN_PROGRESS_STATES) }
   scope :public_in_progress, -> { where(state: PUBLIC_IN_PROGRESS_STATES) }
   scope :visible, -> { where(state: VISIBLE_STATES) }
   scope :invisible, -> { where(state: INVISIBLE_STATES) }

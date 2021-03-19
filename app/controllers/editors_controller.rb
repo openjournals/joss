@@ -4,6 +4,8 @@ class EditorsController < ApplicationController
 
   def index
     @editors = Editor.all
+    @assignment_by_editor = Paper.unscoped.in_progress.group(:editor_id).count
+    @paused_by_editor = Paper.unscoped.in_progress.where("labels->>'paused' ILIKE '%'").group(:editor_id).count
   end
 
   def show

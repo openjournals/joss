@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_02_22_114454) do
+ActiveRecord::Schema.define(version: 2021_03_25_114224) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
@@ -30,13 +30,23 @@ ActiveRecord::Schema.define(version: 2021_02_22_114454) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id"
-    t.string "availability"
     t.string "availability_comment"
-    t.index ["availability"], name: "index_editors_on_availability"
+    t.string "availability"
     t.index ["user_id"], name: "index_editors_on_user_id"
   end
 
-  create_table "papers", id: :serial, force: :cascade do |t|
+  create_table "invitations", force: :cascade do |t|
+    t.bigint "editor_id"
+    t.bigint "paper_id"
+    t.boolean "accepted", default: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["created_at"], name: "index_invitations_on_created_at"
+    t.index ["editor_id"], name: "index_invitations_on_editor_id"
+    t.index ["paper_id"], name: "index_invitations_on_paper_id"
+  end
+
+  create_table "papers", force: :cascade do |t|
     t.string "title"
     t.string "state"
     t.string "repository_url"
@@ -52,10 +62,10 @@ ActiveRecord::Schema.define(version: 2021_02_22_114454) do
     t.text "paper_body"
     t.integer "meta_review_issue_id"
     t.string "suggested_editor"
+    t.string "kind"
     t.text "authors"
     t.text "citation_string"
     t.datetime "accepted_at"
-    t.string "kind"
     t.integer "editor_id"
     t.string "reviewers", default: [], array: true
     t.text "activities"
@@ -77,7 +87,7 @@ ActiveRecord::Schema.define(version: 2021_02_22_114454) do
     t.index ["user_id"], name: "index_papers_on_user_id"
   end
 
-  create_table "users", id: :serial, force: :cascade do |t|
+  create_table "users", force: :cascade do |t|
     t.string "provider"
     t.string "uid"
     t.string "name"

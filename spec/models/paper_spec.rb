@@ -91,6 +91,25 @@ describe Paper do
     expect(paper.review_url).to eq("https://github.com/#{Rails.application.settings["reviews"]}/issues/999")
   end
 
+  describe "#set_editor" do
+    it "should update paper's editor" do
+      paper = create(:paper)
+      editor = create(:editor)
+
+      paper.set_editor editor
+      expect(paper.editor).to eq(editor)
+    end
+
+    it "should mark editor's pending invitation as accepted" do
+      paper = create(:paper)
+      editor = create(:editor)
+      invitation = create(:invitation, :pending, paper: paper, editor: editor)
+
+      paper.set_editor editor
+      expect(invitation.reload).to be_accepted
+    end
+  end
+
   describe "#invite_editor" do
     it "should return false if editor does not exist" do
       expect(create(:paper).invite_editor("invalid")).to be false

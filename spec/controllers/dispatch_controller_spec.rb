@@ -126,7 +126,7 @@ describe DispatchController, type: :controller do
       expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[], "last_comments" => {}, "last_edits"=>{"comment-editor"=>"2018-10-06T16:18:56Z"}}})
     end
 
-    it "should update the percent_complete value" do 
+    it "should update the percent_complete value" do
       expect(@paper.percent_complete).to eq(0.9375)
     end
 
@@ -316,6 +316,8 @@ describe DispatchController, type: :controller do
       post_params = { secret: "mooo", id: 1234, editor: "jimmy" }
 
       expect { post :api_editor_invite, params: post_params }.to change { ActionMailer::Base.deliveries.count }.by(1)
+      expect { post :api_editor_invite, params: post_params }.to change { editor.invitations.count }.by(1)
+      expect { post :api_editor_invite, params: post_params }.to change { paper.invitations.count }.by(1)
     end
 
     it "with the correct API key and invalid editor" do

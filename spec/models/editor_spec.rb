@@ -25,9 +25,14 @@ RSpec.describe Editor, type: :model do
       association = Editor.reflect_on_association(:votes)
       expect(association.macro).to eq(:has_many)
     end
-    
+
     it "has many papers" do
       association = Editor.reflect_on_association(:papers)
+      expect(association.macro).to eq(:has_many)
+    end
+
+    it "has many invitations" do
+      association = Editor.reflect_on_association(:invitations)
       expect(association.macro).to eq(:has_many)
     end
   end

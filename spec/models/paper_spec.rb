@@ -15,6 +15,11 @@ describe Paper do
     expect(association.macro).to eq(:belongs_to)
   end
 
+  it "has many invitations" do
+    association = Paper.reflect_on_association(:invitations)
+    expect(association.macro).to eq(:has_many)
+  end
+
   it "should know how to parameterize itself properly" do
     paper = create(:paper)
 
@@ -84,6 +89,28 @@ describe Paper do
     paper = create(:paper, review_issue_id: 999)
 
     expect(paper.review_url).to eq("https://github.com/#{Rails.application.settings["reviews"]}/issues/999")
+  end
+
+  describe "#invite_editor" do
+    it "should return false if editor does not exist" do
+      expect(create(:paper).invite_editor("invalid")).to be false
+    end
+
+    it "should email an invitation to the editor" do
+      paper = create(:paper)
+      editor = create(:editor)
+
+      expect { paper.invite_editor(editor.login) }.to change { ActionMailer::Base.deliveries.count }.by(1)
+    end
+
+    it "should create a pending invitation for the invited editor" do
+      paper = create(:paper)
+      editor = create(:editor)
+
+      expect(Invitation.exists?(paper: paper, editor:editor)).to be_falsy
+      expect { paper.invite_editor(editor.login)}.to change { Invitation.count }.by(1)
+      expect(Invitation.pending.exists?(paper: paper, editor:editor)).to be_truthy
+    end
   end
 
   context "when accepted" do

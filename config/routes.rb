@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
 
   resources :editors
+  resources :invitations, only: [:index]
   resources :papers do
     resources :votes, only: ['create']
 

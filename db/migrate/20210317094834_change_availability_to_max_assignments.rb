@@ -15,7 +15,7 @@ class ChangeAvailabilityToMaxAssignments < ActiveRecord::Migration[6.1]
       assigned_by_editor = Paper.unscoped.in_progress.group(:editor_id).count
       Editor.emeritus.update_all(max_assignments: 0)
       Editor.active.each do |editor|
-        editor.max_assignments = assigned_by_editor[editor.id].to_i + map_by_current_availability[editor.availability]
+        editor.max_assignments = map_by_current_availability[editor.availability]
         editor.save
       end
     end

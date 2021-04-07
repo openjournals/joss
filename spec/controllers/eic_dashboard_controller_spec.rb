@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe EicDashboardController, type: :controller do
+RSpec.describe AeicDashboardController, type: :controller do
   render_views
   let(:current_user) { create(:admin_user, editor: create(:editor)) }
 

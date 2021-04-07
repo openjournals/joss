@@ -21,7 +21,7 @@ Rails.application.routes.draw do
     end
   end
 
-  get '/eic/', to: "eic_dashboard#index", as: "eic_dashboard"
+  get '/aeic/', to: "aeic_dashboard#index", as: "aeic_dashboard"
   get '/editors/lookup/:login', to: "editors#lookup"
   get '/papers/lookup/:id', to: "papers#lookup"
   get '/papers/in/:language', to: "papers#filter", as: 'papers_by_language'

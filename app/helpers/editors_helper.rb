@@ -57,4 +57,17 @@ module EditorsHelper
 
     return total_paper_count - paused_count
   end
+
+  def open_invites_for_editor(editor)
+    invites = editor.invitations.pending
+
+    return "–" if invites.empty?
+
+    output = []
+    invites.each do |invite|
+      output << link_to(invite.paper.meta_review_issue_id, invite.paper.meta_review_url)
+    end
+
+    return output.join(" • ").html_safe
+  end
 end

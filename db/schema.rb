@@ -46,7 +46,7 @@ ActiveRecord::Schema.define(version: 2021_03_25_114224) do
     t.index ["paper_id"], name: "index_invitations_on_paper_id"
   end
 
-  create_table "papers", force: :cascade do |t|
+  create_table "papers", id: :serial, force: :cascade do |t|
     t.string "title"
     t.string "state"
     t.string "repository_url"
@@ -62,10 +62,10 @@ ActiveRecord::Schema.define(version: 2021_03_25_114224) do
     t.text "paper_body"
     t.integer "meta_review_issue_id"
     t.string "suggested_editor"
-    t.string "kind"
     t.text "authors"
     t.text "citation_string"
     t.datetime "accepted_at"
+    t.string "kind"
     t.integer "editor_id"
     t.string "reviewers", default: [], array: true
     t.text "activities"
@@ -87,7 +87,7 @@ ActiveRecord::Schema.define(version: 2021_03_25_114224) do
     t.index ["user_id"], name: "index_papers_on_user_id"
   end
 
-  create_table "users", force: :cascade do |t|
+  create_table "users", id: :serial, force: :cascade do |t|
     t.string "provider"
     t.string "uid"
     t.string "name"

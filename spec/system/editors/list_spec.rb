@@ -33,19 +33,17 @@ feature "Editor list" do
     end
 
     scenario "show the list of editors" do
-      expect(page).to have_content('Tester')
-      expect(page).to have_content('Software testing editor')
       expect(page).to have_content('Computing, Test systems')
-      expect(page).to have_content('🟢*')
+      expect(page).to have_content('🟩*')
     end
 
     scenario "editors info is editable" do
       allow(Repository).to receive(:editors).and_return(["@tester", "@mctester"])
-      click_link "✏️", href: edit_editor_path(Editor.find_by(login: 'tester'))
-      fill_in :editor_last_name, with: "Testing"
+      click_link "Edit", href: edit_editor_path(Editor.find_by(login: 'tester'))
+      fill_in :editor_category_list, with: "Fancy"
       click_on "Update Editor"
       visit editors_path
-      expect(page).to have_content('Tester Testing')
+      expect(page).to have_content('Fancy')
     end
   end
 end

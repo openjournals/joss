@@ -8,21 +8,21 @@ describe EditorsHelper do
   describe "display_availability" do
     it "displays icon with current availability" do
       @editor.max_assignments = 3
-      expect(display_availability(@editor)).to include("🔴")
+      expect(display_availability(@editor)).to include("🟥")
 
       @editor.max_assignments = 4
-      expect(display_availability(@editor)).to include("🟠")
+      expect(display_availability(@editor)).to include("🟨")
 
       @editor.max_assignments = 5
-      expect(display_availability(@editor)).to include("🟢")
+      expect(display_availability(@editor)).to include("🟩")
     end
 
     it "displays availability comment if present" do
-      expect(display_availability(@editor)).to include("🟢")
+      expect(display_availability(@editor)).to include("🟩")
       expect(display_availability(@editor)).to_not include("*")
 
       @editor.availability_comment = "OOO until january"
-      expect(display_availability(@editor)).to include("🟢*")
+      expect(display_availability(@editor)).to include("🟩*")
       expect(display_availability(@editor)).to include("OOO until january")
     end
   end
@@ -35,7 +35,7 @@ describe EditorsHelper do
 
     it "returns assigned + paused papers if present" do
       expect(in_progress_for_editor(@editor)).to include("3")
-      expect(in_progress_for_editor(@editor)).to include("(+ 1 paused)")
+      expect(in_progress_for_editor(@editor)).to include("(+ 1)")
     end
   end
 

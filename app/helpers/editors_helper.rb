@@ -5,20 +5,25 @@ module EditorsHelper
     active_assignments = @assignment_by_editor[editor.id].to_i - @paused_by_editor[editor.id].to_i
     availability = editor.max_assignments - active_assignments
     icon = if availability <= 0
-             "🟥"
+             "red"
            elsif availability == 1
-              "🟨"
+              "yellow"
            else
-              "🟩"
+              "green"
            end
 
+    availability_class = "availability-status-#{icon}"
+
     comment = "#{editor.max_assignments} max."
+
+    display_count = editor.max_assignments
+    
     if editor.availability_comment.present?
-      icon += "*"
+      display_count = "#{display_count}*"
       comment += " : #{editor.availability_comment}"
     end
 
-    "<span title='#{comment}' %>#{icon}</span>".html_safe
+    "<span class='#{availability_class}' title='#{comment}' %>#{display_count}</span>".html_safe
   end
 
   def in_progress_for_editor(editor)

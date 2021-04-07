@@ -8,21 +8,21 @@ describe EditorsHelper do
   describe "display_availability" do
     it "displays icon with current availability" do
       @editor.max_assignments = 3
-      expect(display_availability(@editor)).to include("🟥")
+      expect(display_availability(@editor)).to include("3")
 
       @editor.max_assignments = 4
-      expect(display_availability(@editor)).to include("🟨")
+      expect(display_availability(@editor)).to include("4")
 
       @editor.max_assignments = 5
-      expect(display_availability(@editor)).to include("🟩")
+      expect(display_availability(@editor)).to include("5")
     end
 
     it "displays availability comment if present" do
-      expect(display_availability(@editor)).to include("🟩")
+      expect(display_availability(@editor)).to include("5")
       expect(display_availability(@editor)).to_not include("*")
 
       @editor.availability_comment = "OOO until january"
-      expect(display_availability(@editor)).to include("🟩*")
+      expect(display_availability(@editor)).to include("5*")
       expect(display_availability(@editor)).to include("OOO until january")
     end
   end

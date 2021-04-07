@@ -5,11 +5,11 @@ module EditorsHelper
     active_assignments = @assignment_by_editor[editor.id].to_i - @paused_by_editor[editor.id].to_i
     availability = editor.max_assignments - active_assignments
     icon = if availability <= 0
-             "🔴"
+             "🟥"
            elsif availability == 1
-              "🟠"
+              "🟨"
            else
-              "🟢"
+              "🟩"
            end
 
     comment = "#{editor.max_assignments} max."
@@ -26,7 +26,7 @@ module EditorsHelper
     total_paper_count = @assignment_by_editor[editor.id].to_i
 
     if paused_count > 0
-      return "#{total_paper_count - paused_count} <span class='small font-italic'>(+ #{paused_count} paused)</span>".html_safe
+      return "#{total_paper_count - paused_count} <span class='small font-italic'>(+ #{paused_count})</span>".html_safe
     else
       return "#{total_paper_count}"
     end
@@ -50,18 +50,7 @@ module EditorsHelper
       ""
     end
   end
-
-  def in_progress_for_editor(editor)
-    paused_count = @paused_by_editor[editor.id].to_i
-    total_paper_count = @assignment_by_editor[editor.id].to_i
-
-    if paused_count > 0
-      return "#{total_paper_count - paused_count} <span class='small font-italic'>(+ #{paused_count} paused)</span>".html_safe
-    else
-      return "#{total_paper_count}"
-    end
-  end
-
+  
   def in_progress_no_paused_for_editor(editor)
     paused_count = @paused_by_editor[editor.id].to_i
     total_paper_count = @assignment_by_editor[editor.id].to_i

@@ -17,7 +17,7 @@ module EditorsHelper
     comment = "#{editor.max_assignments} max."
 
     display_count = editor.max_assignments
-    
+
     if editor.availability_comment.present?
       display_count = "#{display_count}*"
       comment += " : #{editor.availability_comment}"
@@ -55,7 +55,7 @@ module EditorsHelper
       ""
     end
   end
-  
+
   def in_progress_no_paused_for_editor(editor)
     paused_count = @paused_by_editor[editor.id].to_i
     total_paper_count = @assignment_by_editor[editor.id].to_i
@@ -64,13 +64,13 @@ module EditorsHelper
   end
 
   def open_invites_for_editor(editor)
-    invites = editor.invitations.pending
-
-    return "–" if invites.empty?
+    return "–" if @pending_invitations_by_editor[editor.id].to_i == 0
 
     output = []
-    invites.each do |invite|
-      output << link_to(invite.paper.meta_review_issue_id, invite.paper.meta_review_url)
+    @pending_invitations.each do |invite|
+      if invite.editor == editor
+        output << link_to(invite.paper.meta_review_issue_id, invite.paper.meta_review_url)
+      end
     end
 
     return output.join(" • ").html_safe

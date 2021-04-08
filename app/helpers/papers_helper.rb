@@ -145,15 +145,13 @@ module PapersHelper
   end
 
   def open_invites_for_paper(paper)
-    invites = paper.invitations.pending
-
-    return "–" if invites.empty?
-
     output = []
-    invites.each do |invite|
-      output << link_to(image_tag(avatar(invite.editor.login), size: "24x24", class: "avatar", title: "#{invite.editor.full_name} invited #{time_ago_in_words(invite.created_at)} ago"), invite.paper.meta_review_url)
+    @pending_invitations.each do |invite|
+      if invite.paper_id == paper.id
+        output << link_to(image_tag(avatar(invite.editor.login), size: "24x24", class: "avatar", title: "#{invite.editor.full_name} invited #{time_ago_in_words(invite.created_at)} ago"), paper.meta_review_url)
+      end
     end
 
-    return output.join(" • ").html_safe
+    return output.empty? ? "–" : output.join(" • ").html_safe
   end
 end

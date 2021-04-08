@@ -46,6 +46,8 @@ class HomeController < ApplicationController
                 )
     end
 
+    load_pending_invitations_for_papers(@papers)
+
     @editor = current_user.editor
 
     render template: "home/reviews"
@@ -97,6 +99,8 @@ class HomeController < ApplicationController
                 per_page: 20
               )
 
+    load_pending_invitations_for_papers(@papers)
+
     render template: "home/reviews"
   end
 
@@ -119,6 +123,7 @@ class HomeController < ApplicationController
               per_page: 20
             )
 
+    load_pending_invitations_for_papers(@papers)
 
     render template: "home/reviews"
   end
@@ -148,5 +153,9 @@ private
 
   def user_params
     params.require(:user).permit(:email, :github_username)
+  end
+
+  def load_pending_invitations_for_papers(papers)
+    @pending_invitations = Invitation.includes(:editor).pending.where(paper: papers)
   end
 end

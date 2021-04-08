@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe EicDashboardController, type: :controller do
+RSpec.describe AeicDashboardController, type: :controller do
   render_views
   let(:current_user) { create(:admin_user, editor: create(:editor)) }
 
@@ -40,7 +40,7 @@ RSpec.describe EicDashboardController, type: :controller do
 
       get :index
 
-      expect(response.body).to have_content "List of ready to publish submissions at Github"
+      expect(response.body).to have_content "List of ready to publish submissions at GitHub"
       expect(response.body).to have_link("#1", href: "/test1")
       expect(response.body).to have_link("#2", href: "/test2")
       expect(response.body).to have_content "Accepted paper 1"
@@ -55,7 +55,7 @@ RSpec.describe EicDashboardController, type: :controller do
       get :index
 
       expect(response.body).to have_content "There are no open submissions labeled as recommend-accept"
-      expect(response.body).to_not have_content "List of ready to publish submissions at Github"
+      expect(response.body).to_not have_content "List of ready to publish submissions at GitHub"
     end
 
     it "lists all issues flagged with query-scope" do
@@ -64,7 +64,7 @@ RSpec.describe EicDashboardController, type: :controller do
 
       get :index
 
-      expect(response.body).to have_content "List of submissions pending editorial review at Github"
+      expect(response.body).to have_content "List of submissions pending editorial review at GitHub"
       expect(response.body).to have_link("#3", href: "/test3")
       expect(response.body).to have_link("#4", href: "/test4")
       expect(response.body).to have_content "Flagged paper 1"

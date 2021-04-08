@@ -143,4 +143,17 @@ module PapersHelper
   def paper_types
     Rails.application.settings["paper_types"]
   end
+
+  def open_invites_for_paper(paper)
+    invites = paper.invitations.pending
+
+    return "–" if invites.empty?
+
+    output = []
+    invites.each do |invite|
+      output << link_to(image_tag(avatar(invite.editor.login), size: "24x24", class: "avatar", title: "#{invite.editor.full_name} invited #{time_ago_in_words(invite.created_at)} ago"), invite.paper.meta_review_url)
+    end
+
+    return output.join(" • ").html_safe
+  end
 end

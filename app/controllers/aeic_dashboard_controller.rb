@@ -1,4 +1,4 @@
-class EicDashboardController < ApplicationController
+class AeicDashboardController < ApplicationController
   before_action :require_admin_user
 
   def index

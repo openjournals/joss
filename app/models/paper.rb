@@ -7,25 +7,26 @@ class Paper < ApplicationRecord
   serialize :activities, Hash
   serialize :metadata, Hash
 
-  belongs_to  :submitting_author,
-              class_name: 'User',
-              validate: true,
-              foreign_key: "user_id"
+  belongs_to :submitting_author,
+             class_name: 'User',
+             validate: true,
+             foreign_key: "user_id"
 
-  belongs_to  :editor, optional: true
-  belongs_to  :eic,
-              class_name: 'Editor',
-              optional: true,
-              foreign_key: "eic_id"
+  belongs_to :editor, optional: true
+  belongs_to :eic,
+             class_name: 'Editor',
+             optional: true,
+             foreign_key: "eic_id"
 
-  has_many    :votes
-  has_many    :in_scope_votes,
-              -> { in_scope },
-              class_name: 'Vote'
+  has_many :invitations
+  has_many :votes
+  has_many :in_scope_votes,
+           -> { in_scope },
+           class_name: 'Vote'
 
-  has_many    :out_of_scope_votes,
-              -> { out_of_scope },
-              class_name: 'Vote'
+  has_many :out_of_scope_votes,
+           -> { out_of_scope },
+           class_name: 'Vote'
 
   include AASM
 
@@ -171,6 +172,7 @@ class Paper < ApplicationRecord
   def invite_editor(editor_handle)
     return false unless editor = Editor.find_by_login(editor_handle)
     Notifications.editor_invite_email(self, editor).deliver_now
+    invitations.create(editor: editor)
   end
 
   def scholar_title
@@ -368,6 +370,7 @@ class Paper < ApplicationRecord
   # Updated the paper with the editor_id
   def set_editor(editor)
     self.update_attribute(:editor_id, editor.id)
+    Invitation.accept_if_pending(self, editor)
   end
 
   # Update the Paper review_issue_id field

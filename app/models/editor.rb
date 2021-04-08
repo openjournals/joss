@@ -7,6 +7,7 @@ class Editor < ApplicationRecord
   belongs_to :user, optional: true
   has_many :papers
   has_many :votes
+  has_many :invitations
 
   before_save :clear_title, if: :board_removed?
   before_save :format_login, if: :login_changed?
@@ -15,12 +16,6 @@ class Editor < ApplicationRecord
     "board",
     "topic"
   ].freeze
-
-  AVAILABILITY_STATES = [
-    "available",
-    "somewhat",
-    "none"
-  ]
 
   scope :board, -> { where(kind: "board") }
   scope :topic, -> { where(kind: "topic") }

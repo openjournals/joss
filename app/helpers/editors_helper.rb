@@ -68,7 +68,7 @@ module EditorsHelper
 
     output = []
     @pending_invitations.each do |invite|
-      if invite.editor == editor
+      if invite.editor_id == editor.id
         output << link_to(invite.paper.meta_review_issue_id, invite.paper.meta_review_url)
       end
     end

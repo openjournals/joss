@@ -345,6 +345,6 @@ If you want to learn more details about the review process, take a look at the [
 
 Please write admin@theoj.org with confidential matters such as retraction requests, report of misconduct, and retroactive author name changes.
 
-In case of a legal name change, the DOI will be unchanged and the paper will be updated to use the new name and note that a name has been changed, but without identifying the author.
+In case of a name change, the DOI will be unchanged and the paper will be updated without publishing a correction notice or notifying co-authors.
 
 JOSS will also update CrossRef metadata.

@@ -254,6 +254,36 @@ describe PapersController, type: :controller do
     end
   end
 
+  describe "GET Paper JSON" do
+    it "returns valid json" do
+      paper = create(:retracted_paper)
+      get :show, params: {doi: paper.doi}, format: "json"
+      expect(response).to be_successful
+      expect(response).to render_template("papers/show")
+      expect(response.media_type).to eq("application/json")
+      expect { JSON.parse(response.body) }.not_to raise_error
+    end
+
+    it "returns paper's metadata" do
+      paper = create(:retracted_paper, state: "superceded")
+      get :show, params: {doi: paper.doi}, format: "json"
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response["state"]).to eq("superceded")
+      expect(parsed_response["metadata"]["editor"]).to eq("@arfon")
+      expect(parsed_response["doi"]).to be_nil
+    end
+
+    it "returns publication info for accepted papers" do
+      paper = create(:accepted_paper)
+      get :show, params: {doi: paper.doi}, format: "json"
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response["state"]).to eq("accepted")
+      expect(parsed_response["metadata"]["editor"]).to eq("@arfon")
+      expect(parsed_response["doi"]).to eq("10.21105/joss.00000")
+      expect(parsed_response["published_at"]).to_not be_nil
+    end
+  end
+
   describe "GET Atom feeds" do
     it "returns an Atom feed for #index" do
       get :index, format: "atom"

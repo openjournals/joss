@@ -28,6 +28,7 @@ gem 'sass-rails', '~> 6.0.0'
 gem 'searchkick'
 gem 'uglifier', '4.2.0'
 gem 'coffee-rails', '~> 5.0.0'
+gem 'jbuilder', '~> 2.7'
 
 gem 'active_link_to'
 

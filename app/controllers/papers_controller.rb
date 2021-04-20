@@ -250,6 +250,7 @@ class PapersController < ApplicationController
           :type => data.content_type,
           :disposition => 'inline'
       }
+      format.json
     end
   end
 

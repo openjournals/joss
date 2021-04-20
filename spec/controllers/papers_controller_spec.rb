@@ -268,17 +268,19 @@ describe PapersController, type: :controller do
       paper = create(:retracted_paper, state: "superceded")
       get :show, params: {doi: paper.doi}, format: "json"
       parsed_response = JSON.parse(response.body)
+      expect(parsed_response["title"]).to eq(paper.title)
       expect(parsed_response["state"]).to eq("superceded")
-      expect(parsed_response["metadata"]["editor"]).to eq("@arfon")
       expect(parsed_response["doi"]).to be_nil
+      expect(parsed_response["published_at"]).to be_nil
     end
 
     it "returns publication info for accepted papers" do
       paper = create(:accepted_paper)
       get :show, params: {doi: paper.doi}, format: "json"
       parsed_response = JSON.parse(response.body)
+      expect(parsed_response["title"]).to eq(paper.title)
       expect(parsed_response["state"]).to eq("accepted")
-      expect(parsed_response["metadata"]["editor"]).to eq("@arfon")
+      expect(parsed_response["editor"]).to eq("@arfon")
       expect(parsed_response["doi"]).to eq("10.21105/joss.00000")
       expect(parsed_response["published_at"]).to_not be_nil
     end

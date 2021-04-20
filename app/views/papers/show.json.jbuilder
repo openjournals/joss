@@ -11,8 +11,8 @@ if @paper.published?
   json.authors @paper.metadata_authors
   json.editor @paper.metadata_editor
   json.reviewers @paper.metadata_reviewers
-  json.languages @paper.language_tags
-  json.tags @paper.author_tags
+  json.languages @paper.language_tags.join(', ')
+  json.tags @paper.author_tags.join(', ')
   json.software_repository @paper.repository_url
   json.paper_review @paper.review_url
   json.pdf_url @paper.pdf_url

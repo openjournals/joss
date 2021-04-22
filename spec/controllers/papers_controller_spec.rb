@@ -275,7 +275,8 @@ describe PapersController, type: :controller do
     end
 
     it "returns publication info for accepted papers" do
-      editor = create(:editor)
+      user = create(:user)
+      editor = create(:editor, user: user)
       paper = create(:accepted_paper, editor: editor)
       get :show, params: {doi: paper.doi}, format: "json"
       parsed_response = JSON.parse(response.body)
@@ -283,6 +284,7 @@ describe PapersController, type: :controller do
       expect(parsed_response["state"]).to eq("accepted")
       expect(parsed_response["editor"]).to eq("@arfon")
       expect(parsed_response["editor_name"]).to eq("Person McEditor")
+      expect(parsed_response["editor_orcid"]).to eq("0000-0000-0000-1234")
       expect(parsed_response["doi"]).to eq("10.21105/joss.00000")
       expect(parsed_response["published_at"]).to_not be_nil
     end

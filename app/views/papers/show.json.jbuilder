@@ -13,6 +13,7 @@ if @paper.published?
   if @paper.editor
     json.editor_name @paper.editor.full_name
     json.editor_url @paper.editor.url if @paper.editor.url
+    json.editor_orcid @paper.editor.orcid
   end
   json.reviewers @paper.metadata_reviewers
   json.languages @paper.language_tags.join(', ')

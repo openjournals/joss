@@ -51,6 +51,10 @@ class Editor < ApplicationRecord
     [first_name, last_name].join(" ")
   end
 
+  def orcid
+    user.uid
+  end
+
   def clear_title
     self.title = nil
   end

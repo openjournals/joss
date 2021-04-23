@@ -11,16 +11,6 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: secret
     steps:
-      - name: Configure sysctl limits for elasticsearch
-        run: |
-          sudo swapoff -a
-          sudo sysctl -w vm.swappiness=1
-          sudo sysctl -w fs.file-max=262144
-          sudo sysctl -w vm.max_map_count=262144
-      - name: Runs Elasticsearch
-        uses: elastic/elastic-github-actions/elasticsearch@master
-        with:
-          stack-version: 7.12.0
       - uses: actions/checkout@v2
       - name: Install Node
         uses: actions/setup-node@v2
@@ -31,8 +21,20 @@ jobs:
         with:
           ruby-version: 3.0.0
           bundler-cache: true
+      - name: Install Elasticsearch
+        uses: ankane/setup-elasticsearch@v1
+        with:
+          elasticsearch-version: 7.12.0
+      - name: Verify Elasticsearch connection and create index
+        env:
+          ELASTICSEARCH_URL: http://localhost:9200
+        run: |
+          echo $ELASTICSEARCH_URL
+          curl -fsSL "$ELASTICSEARCH_URL/_cat/health?h=status"
+          curl -X PUT $ELASTICSEARCH_URL/joss-production
       - name: Run tests
         env:
+          ELASTICSEARCH_URL: http://localhost:9200
           PGUSER: postgres
           PGPASSWORD: secret
           RAILS_ENV: test

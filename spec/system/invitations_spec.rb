@@ -49,25 +49,24 @@ feature "Invitations list" do
     end
 
     scenario "show status for accepted invitations" do
-      create(:invitation, accepted: true)
+      create(:invitation, :accepted)
       visit invitations_path
 
       expect(page).to have_content("✅ Accepted")
     end
 
     scenario "show status for pending invitations" do
-      create(:invitation, accepted: false)
+      create(:invitation, :pending)
       visit invitations_path
 
       expect(page).to have_content("⏳ Pending")
     end
 
-    scenario "show status for rejected invitations" do
-      paper = create(:paper, review_issue_id: 42, editor: create(:editor, id: 33))
-      create(:invitation, accepted: false, paper: paper, editor: create(:editor, id: 21))
+    scenario "show status for expired invitations" do
+      create(:invitation, :expired)
       visit invitations_path
 
-      expect(page).to have_content("❌ Rejected")
+      expect(page).to have_content("❌ Expired")
     end
   end
 end

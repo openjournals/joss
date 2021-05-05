@@ -370,7 +370,7 @@ class Paper < ApplicationRecord
   # Updated the paper with the editor_id
   def set_editor(editor)
     self.update_attribute(:editor_id, editor.id)
-    Invitation.accept_if_pending(self, editor)
+    Invitation.resolve_pending(self, editor)
   end
 
   # Update the Paper review_issue_id field

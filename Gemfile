@@ -20,7 +20,7 @@ gem 'pg', '~> 1.2.3'
 # once this bug is fixed and Rails 6.1 is supported:
 # https://github.com/mislav/will_paginate/pull/619
 gem 'will_paginate', git: "https://github.com/kvokka/will_paginate", branch: "fix-page_entries_info"
-gem 'rails', '6.1.3.1'
+gem 'rails', '6.1.3.2'
 gem 'responders'
 gem 'newrelic_rpm'
 gem 'sanitize', '~> 5.2.3'

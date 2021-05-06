@@ -1,7 +1,9 @@
 Rails.application.routes.draw do
 
   resources :editors
-  resources :invitations, only: [:index]
+  resources :invitations, only: [:index] do
+    put 'expire', on: :member
+  end
   resources :papers do
     resources :votes, only: ['create']
 

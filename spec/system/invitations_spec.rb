@@ -48,6 +48,27 @@ feature "Invitations list" do
       expect(page).to have_content("user3")
     end
 
+    scenario "expire invitations" do
+      invitation = create(:invitation, :pending)
+      visit invitations_path
+
+      expect(page).to have_content("⏳ Pending")
+      expect(page).to have_link("expire", href: expire_invitation_path(invitation))
+      click_link "expire"
+      expect(page).to have_content("Invitation canceled")
+      expect(page).to have_content("❌ Expired")
+      expect(page).to_not have_link("expire")
+      expect(page).to_not have_content("⏳ Pending")
+    end
+
+    scenario "only pending invitations can be canceled" do
+      create(:invitation, :accepted)
+      create(:invitation, :expired)
+      visit invitations_path
+
+      expect(page).to_not have_link("expire")
+    end
+
     scenario "paginate invitations" do
       create_list(:invitation, 10, :accepted)
       create_list(:invitation, 10, :pending)

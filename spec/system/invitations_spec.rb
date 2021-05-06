@@ -48,6 +48,16 @@ feature "Invitations list" do
       expect(page).to have_content("user3")
     end
 
+    scenario "paginate invitations" do
+      create_list(:invitation, 10, :accepted)
+      create_list(:invitation, 10, :pending)
+      create_list(:invitation, 10, :expired)
+      visit invitations_path
+
+      expect(page).to have_content("Displaying invitation 1 - 25 of 30 in total")
+      expect(page).to have_link("Next →", href: invitations_path(page:2))
+    end
+
     scenario "show status for accepted invitations" do
       create(:invitation, :accepted)
       visit invitations_path

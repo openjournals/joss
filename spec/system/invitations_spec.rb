@@ -48,26 +48,56 @@ feature "Invitations list" do
       expect(page).to have_content("user3")
     end
 
+    scenario "expire invitations" do
+      invitation = create(:invitation, :pending)
+      visit invitations_path
+
+      expect(page).to have_content("⏳ Pending")
+      expect(page).to have_link("Cancel", href: expire_invitation_path(invitation))
+      click_link "Cancel"
+      expect(page).to have_content("Invitation canceled")
+      expect(page).to have_content("❌ Expired")
+      expect(page).to_not have_link("Cancel")
+      expect(page).to_not have_content("⏳ Pending")
+    end
+
+    scenario "only pending invitations can be canceled" do
+      create(:invitation, :accepted)
+      create(:invitation, :expired)
+      visit invitations_path
+
+      expect(page).to_not have_link("Cancel")
+    end
+
+    scenario "paginate invitations" do
+      create_list(:invitation, 10, :accepted)
+      create_list(:invitation, 10, :pending)
+      create_list(:invitation, 10, :expired)
+      visit invitations_path
+
+      expect(page).to have_content("Displaying invitation 1 - 25 of 30 in total")
+      expect(page).to have_link("Next →", href: invitations_path(page:2))
+    end
+
     scenario "show status for accepted invitations" do
-      create(:invitation, accepted: true)
+      create(:invitation, :accepted)
       visit invitations_path
 
       expect(page).to have_content("✅ Accepted")
     end
 
     scenario "show status for pending invitations" do
-      create(:invitation, accepted: false)
+      create(:invitation, :pending)
       visit invitations_path
 
       expect(page).to have_content("⏳ Pending")
     end
 
-    scenario "show status for rejected invitations" do
-      paper = create(:paper, review_issue_id: 42, editor: create(:editor, id: 33))
-      create(:invitation, accepted: false, paper: paper, editor: create(:editor, id: 21))
+    scenario "show status for expired invitations" do
+      create(:invitation, :expired)
       visit invitations_path
 
-      expect(page).to have_content("❌ Rejected")
+      expect(page).to have_content("❌ Expired")
     end
   end
 end

@@ -4,11 +4,15 @@ FactoryBot.define do
     editor { create(:editor) }
 
     trait :pending do
-      accepted { false }
+      state { 'pending' }
     end
 
     trait :accepted do
-      accepted { true }
+      state { 'accepted' }
+    end
+
+    trait :expired do
+      state { 'expired' }
     end
   end
 end

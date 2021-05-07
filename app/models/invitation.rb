@@ -2,15 +2,41 @@ class Invitation < ApplicationRecord
   belongs_to :editor
   belongs_to :paper
 
-  scope :accepted, -> { where(accepted: true) }
-  scope :pending, -> { where(accepted: false) }
+  validates :state, presence: true, inclusion: { in: ["pending", "accepted", "expired"] }
 
-  def accept!
-    self.update_attribute(:accepted, true)
+  scope :accepted, -> { where(state: "accepted") }
+  scope :pending, -> { where(state: "pending") }
+  scope :expired, -> { where(state: "expired") }
+
+  def expired?
+    state == "expired"
   end
 
-  def self.accept_if_pending(paper, editor)
-    invitation = pending.find_by(paper: paper, editor: editor)
-    invitation.accept! if invitation
+  def pending?
+    state == "pending"
+  end
+
+  def accepted?
+    state == "accepted"
+  end
+
+  def accept!
+    self.update_attribute(:state, "accepted")
+  end
+
+  def expire!
+    self.update_attribute(:state, "expired")
+  end
+
+  def self.resolve_pending(paper, editor)
+    pending_invitations = pending.where(paper: paper)
+
+    pending_invitations.each do |invitation|
+      if invitation.editor_id == editor.id
+        invitation.accept!
+      else
+        invitation.expire!
+      end
+    end
   end
 end

@@ -108,6 +108,17 @@ describe Paper do
       paper.set_editor editor
       expect(invitation.reload).to be_accepted
     end
+
+    it "should expire other editor's pending invitations" do
+      paper = create(:paper)
+      editor = create(:editor)
+      invitation_1 = create(:invitation, :pending, paper: paper)
+      invitation_2 = create(:invitation, :pending, paper: paper)
+
+      paper.set_editor editor
+      expect(invitation_1.reload).to be_expired
+      expect(invitation_2.reload).to be_expired
+    end
   end
 
   describe "#invite_editor" do

@@ -80,6 +80,10 @@ Next, run the command `@whedon start review`. If you haven't assigned an editor 
 
 The `REVIEW` issue contains some instructions, and reviewer checklists. The reviewer(s) should check off items of the checklist one-by-one, until done. In the meantime, reviewers can engage the authors freely in a conversation aimed at improving the paper.
 
+```eval_rst
+.. note:: When a new review is started, Whedon invites the reviewers to the GitHub repository. The reviewers must accept the invitation to the GitHub repository in order for Whedon to be able to assign the review issue to them, and reviewers are unable to check off checklist items until they have accepted the repository invitation.
+```
+
 If a reviewer recants their commitment or is unresponsive, editors can remove them with the command `@whedon remove @username as reviewer`. You can also add new reviewers in the `REVIEW` issue, but in this case, you need to manually add a review checklist for them by editing the issue body.
 
 Comments in the `REVIEW` issue should be kept brief, as much as possible, with more lengthy suggestions or requests posted as separate issues, directly in the submission repository. A link-back to those issues in the `REVIEW` is helpful.

@@ -6,6 +6,7 @@ Rails.application.routes.draw do
   end
   resources :papers do
     resources :votes, only: ['create']
+    resources :notes, only: ['create']
 
     member do
       post 'start_review'

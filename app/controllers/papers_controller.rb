@@ -225,7 +225,7 @@ class PapersController < ApplicationController
     if params[:doi] && valid_doi?
       @paper = Paper.find_by_doi!(params[:doi])
     else
-      @paper = Paper.find_by_sha!(params[:id])
+      @paper = Paper.includes(notes: :editor).find_by_sha!(params[:id])
       # By default we want people to use the URLs with the DOI in the path if
       # the paper is accepted.
       if @paper.accepted?

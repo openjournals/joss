@@ -16,6 +16,15 @@ class NotesController < ApplicationController
     end
   end
 
+  def destroy
+    @note = @paper.notes.find(params[:id])
+    if @note.editor_id == current_user.editor.id
+      @note.destroy!
+      flash[:notice] = "Note deleted"
+    end
+    redirect_to paper_path(@paper)
+  end
+
   private
 
   def note_params

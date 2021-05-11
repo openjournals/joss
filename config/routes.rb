@@ -5,8 +5,8 @@ Rails.application.routes.draw do
     put 'expire', on: :member
   end
   resources :papers do
-    resources :votes, only: ['create']
-    resources :notes, only: ['create']
+    resources :votes, only: [:create]
+    resources :notes, only: [:create, :destroy]
 
     member do
       post 'start_review'

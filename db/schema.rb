@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_05_05_104138) do
+ActiveRecord::Schema.define(version: 2021_05_11_103312) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
@@ -45,6 +45,16 @@ ActiveRecord::Schema.define(version: 2021_05_05_104138) do
     t.index ["editor_id"], name: "index_invitations_on_editor_id"
     t.index ["paper_id"], name: "index_invitations_on_paper_id"
     t.index ["state"], name: "index_invitations_on_state"
+  end
+
+  create_table "notes", force: :cascade do |t|
+    t.integer "editor_id"
+    t.integer "paper_id"
+    t.text "comment"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["editor_id"], name: "index_notes_on_editor_id"
+    t.index ["paper_id"], name: "index_notes_on_paper_id"
   end
 
   create_table "papers", force: :cascade do |t|

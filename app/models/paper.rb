@@ -19,6 +19,7 @@ class Paper < ApplicationRecord
              foreign_key: "eic_id"
 
   has_many :invitations
+  has_many :notes
   has_many :votes
   has_many :in_scope_votes,
            -> { in_scope },

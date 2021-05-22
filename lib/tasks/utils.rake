@@ -3,6 +3,66 @@ include Util::ConsoleExtensions
 
 namespace :utils do
 
+  desc "Populate EiCs"
+  task populate_eics: :environment do
+    KYLE_WEEKS_2019 = [2, 6, 10, 14, 18, 22, 26, 30, 34, 40, 45, 50]
+    LORENA_WEEKS_2019 = [3, 7, 11, 15, 19, 23, 27, 31, 35, 41, 46, 51]
+    DAN_WEEKS_2019 = [5, 9, 13, 17, 21, 25, 29, 33, 39, 44, 49]
+    KRISTEN_WEEKS_2019 = [38, 43, 48]
+    ARFON_WEEKS_2019 = [1, 4, 8, 12, 16, 20, 24, 28, 32, 36]
+    KEVIN_WEEKS_2019 = [37, 42, 47, 52]
+
+    KYLE_WEEKS_2020 = [3]
+    LORENA_WEEKS_2020 = [4]
+    DAN_WEEKS_2020 = [2]
+    KRISTEN_WEEKS_2020 = [1, 6]
+    ARFON_WEEKS_2020 = []
+    KEVIN_WEEKS_2020 = [5]
+
+    papers_before_2019 = Paper.where('created_at < ?', '2019-01-01')
+
+    papers_before_2019.each do |paper|
+      eic = Editor.find_by_login('arfon')
+      paper.set_meta_eic(eic)
+    end
+
+    papers_2019 = Paper.where('created_at BETWEEN ? AND ?', '2019-01-01', '2019-12-31')
+
+    def whos_week_2019(week)
+      return Editor.find_by_login('kyleniemeyer') if KYLE_WEEKS_2019.include?(week)
+      return Editor.find_by_login('labarba') if LORENA_WEEKS_2019.include?(week)
+      return Editor.find_by_login('danielskatz') if DAN_WEEKS_2019.include?(week)
+      return Editor.find_by_login('kthyng') if KRISTEN_WEEKS_2019.include?(week)
+      return Editor.find_by_login('arfon') if ARFON_WEEKS_2019.include?(week)
+      return Editor.find_by_login('Kevin-Mattheus-Moerman') if KEVIN_WEEKS_2019.include?(week)
+
+      raise "Can't find editor for #{week}"
+    end
+
+    papers_2019.each do |paper|
+      week = Date.parse(paper.created_at.to_s).cweek
+      paper.set_meta_eic(whos_week_2019(week))
+    end
+
+    papers_2020 = Paper.where('created_at BETWEEN ? AND ?', '2020-01-01', '2020-12-31')
+
+    def whos_week_2020(week)
+      return Editor.find_by_login('kyleniemeyer') if KYLE_WEEKS_2020.include?(week)
+      return Editor.find_by_login('labarba') if LORENA_WEEKS_2020.include?(week)
+      return Editor.find_by_login('danielskatz') if DAN_WEEKS_2020.include?(week)
+      return Editor.find_by_login('kthyng') if KRISTEN_WEEKS_2020.include?(week)
+      return Editor.find_by_login('arfon') if ARFON_WEEKS_2020.include?(week)
+      return Editor.find_by_login('Kevin-Mattheus-Moerman') if KEVIN_WEEKS_2020.include?(week)
+
+      raise
+    end
+
+    papers_2020.each do |paper|
+      week = Date.parse(paper.created_at.to_s).cweek
+      paper.set_meta_eic(whos_week_2020(week))
+    end
+  end
+
   desc "Populate activities"
   task update_activities: :environment do
     Paper.all.each do |paper|

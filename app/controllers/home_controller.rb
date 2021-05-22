@@ -22,11 +22,20 @@ class HomeController < ApplicationController
 
     @accepted_papers = Paper.unscoped.visible.group_by_month(:accepted_at).count
     @editor_papers = Paper.unscoped.where(editor: @editor).visible.group_by_month(:accepted_at).count
+
+    @assignment_by_editor = Paper.unscoped.in_progress.group(:editor_id).count
+    @paused_by_editor = Paper.unscoped.in_progress.where("labels->>'paused' ILIKE '%'").group(:editor_id).count
+
+    @papers_last_week = Paper.unscoped.visible.since(1.week.ago).group(:editor_id).count
+    @papers_last_month = Paper.unscoped.visible.since(1.month.ago).group(:editor_id).count
+    @papers_last_3_months = Paper.unscoped.visible.since(3.months.ago).group(:editor_id).count
+    @papers_last_year = Paper.unscoped.visible.since(1.year.ago).group(:editor_id).count
+    @papers_all_time = Paper.unscoped.visible.since(100.year.ago).group(:editor_id).count
   end
 
   def incoming
     if params[:order]
-      @papers = Paper.unscoped.in_progress.where(editor: nil).order(last_activity: params[:order]).paginate(
+      @papers = Paper.unscoped.in_progress.where(editor: nil).order(percent_complete: params[:order]).paginate(
                   page: params[:page],
                   per_page: 20
                 )
@@ -37,20 +46,32 @@ class HomeController < ApplicationController
                 )
     end
 
-    @active_tab = "incoming"
+    load_pending_invitations_for_papers(@papers)
+
+    @editor = current_user.editor
 
     render template: "home/reviews"
   end
 
   def reviews
-    if params[:editor]
-      @active_tab = @editor = Editor.find_by_login(params[:editor])
-      sort_order = params[:order] ? params[:order] : 'desc'
+    case params[:order]
+    when "desc"
+      @order = "desc"
+    when "asc"
+      @order = "asc"
+    when nil
+      @order = "desc"
+    else
+      @order = "desc"
+    end
 
-      @papers = Paper.unscoped.in_progress.where(editor: @editor).order(last_activity: sort_order).paginate(
-                  page: params[:page],
-                  per_page: 20
-                )
+    if params[:editor]
+      @editor = Editor.find_by_login(params[:editor])
+
+      @papers = Paper.unscoped.in_progress.where(editor: @editor).order(percent_complete: @order).paginate(
+        page: params[:page],
+        per_page: 20
+      )
     else
       @papers = Paper.everything.paginate(
                   page: params[:page],
@@ -60,32 +81,49 @@ class HomeController < ApplicationController
   end
 
   def in_progress
-    if params[:order]
-      @papers = Paper.unscoped.in_progress.order(last_activity: params[:order]).paginate(
-                  page: params[:page],
-                  per_page: 20
-                )
+    case params[:order]
+    when "desc"
+      @order = "desc"
+    when "asc"
+      @order = "asc"
+    when nil
+      @order = "desc"
     else
-      @papers = Paper.in_progress.paginate(
-                  page: params[:page],
-                  per_page: 20
-                )
+      @order = "desc"
     end
+
+    @editor = current_user.editor
+
+    @papers = Paper.unscoped.in_progress.order(percent_complete: @order).paginate(
+                page: params[:page],
+                per_page: 20
+              )
+
+    load_pending_invitations_for_papers(@papers)
+
     render template: "home/reviews"
   end
 
   def all
-    if params[:order]
-      @papers = Paper.unscoped.all.order(last_activity: params[:order]).paginate(
-                page: params[:page],
-                per_page: 20
-              )
+    case params[:order]
+    when "desc"
+      @order = "desc"
+    when "asc"
+      @order = "asc"
+    when nil
+      @order = "desc"
     else
-      @papers = Paper.all.paginate(
-                page: params[:page],
-                per_page: 20
-              )
+      @order = "desc"
     end
+
+    @editor = current_user.editor
+
+    @papers = Paper.unscoped.all.order(percent_complete: @order).paginate(
+              page: params[:page],
+              per_page: 20
+            )
+
+    load_pending_invitations_for_papers(@papers)
 
     render template: "home/reviews"
   end
@@ -115,5 +153,9 @@ private
 
   def user_params
     params.require(:user).permit(:email, :github_username)
+  end
+
+  def load_pending_invitations_for_papers(papers)
+    @pending_invitations = Invitation.includes(:editor).pending.where(paper: papers)
   end
 end

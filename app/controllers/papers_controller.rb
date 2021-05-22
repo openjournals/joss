@@ -1,4 +1,4 @@
-require 'uri'
+require 'open-uri'
 
 class PapersController < ApplicationController
   include SettingsHelper
@@ -107,21 +107,21 @@ class PapersController < ApplicationController
       @term = "in #{params['language']}"
 
     elsif params['author']
-      @papers = Paper.search(params['author'], fields: [:authors], order: { accepted_at: :desc },
+      @papers = Paper.search(params['author'], fields: [:authors], misspellings: false, order: { accepted_at: :desc },
                   page: params[:page],
                   per_page: 10
                 )
       @term = "by #{params['author']}"
 
     elsif params['editor']
-      @papers = Paper.search(params['editor'], fields: [:editor], order: { accepted_at: :desc },
+      @papers = Paper.search(params['editor'], fields: [:editor], misspellings: false, order: { accepted_at: :desc },
                   page: params[:page],
                   per_page: 10
                 )
       @term = "edited by #{params['editor']}"
 
     elsif params['reviewer']
-      @papers = Paper.search(params['reviewer'], fields: [:reviewers], order: { accepted_at: :desc },
+      @papers = Paper.search(params['reviewer'], fields: [:reviewers], misspellings: false, order: { accepted_at: :desc },
                   page: params[:page],
                   per_page: 10
                 )
@@ -180,7 +180,7 @@ class PapersController < ApplicationController
   def start_meta_review
     @paper = Paper.find_by_sha(params[:id])
 
-    if @paper.start_meta_review!(params[:editor])
+    if @paper.start_meta_review!(params[:editor], current_user.editor)
       flash[:notice] = "Review started"
       redirect_to paper_path(@paper)
     else
@@ -225,7 +225,7 @@ class PapersController < ApplicationController
     if params[:doi] && valid_doi?
       @paper = Paper.find_by_doi!(params[:doi])
     else
-      @paper = Paper.find_by_sha!(params[:id])
+      @paper = Paper.includes(notes: :editor).find_by_sha!(params[:id])
       # By default we want people to use the URLs with the DOI in the path if
       # the paper is accepted.
       if @paper.accepted?
@@ -239,14 +239,18 @@ class PapersController < ApplicationController
       head 404 and return unless can_see_hidden_paper?(@paper)
     end
 
+    # The behaviour here for PDFs is to make it possible for the PDF to appear
+    # to be on the current domain even when it might not be. This is essential
+    # for Google Scholar and helpful for browser security warnings.
     respond_to do |format|
       format.html { render layout: false }
       format.pdf {
-        data = open(@paper.pdf_url)
+        data = URI.open(@paper.pdf_url)
         send_data data.read,
           :type => data.content_type,
           :disposition => 'inline'
       }
+      format.json
     end
   end
 
@@ -302,7 +306,7 @@ class PapersController < ApplicationController
   private
 
   def paper_params
-    params.require(:paper).permit(:title, :repository_url, :archive_doi, :software_version, :suggested_editor, :body, :kind)
+    params.require(:paper).permit(:title, :repository_url, :archive_doi, :software_version, :suggested_editor, :body, :kind, :submission_kind)
   end
 
   def can_see_hidden_paper?(paper)

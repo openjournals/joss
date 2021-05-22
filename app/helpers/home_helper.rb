@@ -1,33 +1,4 @@
 module HomeHelper
-  # How many papers should we show for an editor on the dashboard?
-  def in_progress_for_editor(papers)
-    ignored_state = "paused"
-    ignored_count = 0
-    papers.each do |p|
-      if p.labels.any? && p.labels.keys.include?(ignored_state)
-        ignored_count += 1
-      end
-    end
-
-    if ignored_count > 0
-      return "#{papers.count - ignored_count} + #{ignored_count} paused"
-    else
-      return "#{papers.count}"
-    end
-  end
-
-  def count_without_ignored(papers)
-    ignored_state = "paused"
-    ignored_count = 0
-    papers.each do |p|
-      if p.labels.any? && p.labels.keys.include?(ignored_state)
-        ignored_count += 1
-      end
-    end
-
-    return papers.count - ignored_count
-  end
-
   def pretty_labels_for(paper)
     return nil unless paper.labels.any?
 
@@ -35,14 +6,92 @@ module HomeHelper
       paper.labels.each do |label, colour|
         if label == "paused"
           concat content_tag(:span, label, style: "padding: 3px; margin-right: 3px; border-radius: 2px; background-color: ##{colour}; color: white;")
+        elsif label == "recommend-accept"
+          concat content_tag(:span, label, style: "padding: 3px; margin-right: 3px; border-radius: 2px; background-color: ##{colour}; color: #000000;")
+        elsif label == "query-scope"
+          concat content_tag(:span, label, style: "padding: 3px; margin-right: 3px; border-radius: 2px; background-color: ##{colour}; color: #000000;")
+        elsif label == "waitlisted"
+          concat content_tag(:span, label, style: "padding: 3px; margin-right: 3px; border-radius: 2px; background-color: ##{colour}; color: #000000;")
         end
       end
     end
   end
 
   def current_class?(test_path)
-    return 'nav-link active' if request.path == test_path
-    'nav-link'
+    return 'tabnav-tab selected' if request.path == test_path
+    'tabnav-tab'
+  end
+
+  def vote_summary(paper)
+    if paper.labels.keys.include?("query-scope")
+      capture do
+        concat(content_tag(:small, "👍(#{paper.votes.in_scope.count}) / 👎 (#{paper.votes.out_of_scope.count})"))
+      end
+    else
+      'OK'
+    end
+  end
+
+  def review_issue_links(paper)
+    capture do
+      if paper.meta_review_issue_id
+        concat(link_to paper.meta_review_issue_id, paper.meta_review_url)
+      else
+        concat("–")
+      end
+
+      concat(" / ")
+
+      if paper.review_issue_id
+        concat(link_to paper.review_issue_id, paper.review_url)
+      else
+        concat("–")
+      end
+    end
+  end
+
+  def checklist_activity(paper)
+    return "No activity" if paper.activities.empty?
+    return "No activity" if paper.activities['issues']['commenters'].empty?
+
+    capture do
+      if !paper.activities['issues']['comments'].empty?
+        if paper.activities['issues']['last_edits'] && paper.activities['issues']['last_edits'].keys.any?
+          non_whedon_activities = paper.activities['issues']['last_edits'].select {|user, time| user != "whedon"}
+          return "No activity" if non_whedon_activities.empty?
+          user, time = non_whedon_activities.first
+          concat(content_tag(:span, image_tag(avatar(user), size: "24x24", class: "avatar", title: user), class: "activity-avatar"))
+          concat(content_tag(:span, style: "") do
+            concat(content_tag(:span, "#{time_ago_in_words(time)} ago".html_safe, class: "time"))
+          end)
+        else
+          return "No activity"
+        end
+      end
+    end
+  end
+
+  def sort_icon(sort_order)
+    capture do
+      if sort_order == "desc"
+        concat(link_to octicon("chevron-up"), "#{request.path}?order=asc")
+      elsif sort_order == "asc"
+        concat(link_to octicon("chevron-down"), "#{request.path}?order=desc")
+      end
+    end
+  end
+
+  def comment_activity(paper)
+    return "No activity" if paper.activities.empty?
+    return "No activity" if paper.activities['issues']['commenters'].empty?
+    capture do
+      comment = paper.activities['issues']['comments'].first
+      concat(content_tag(:span, image_tag(avatar(comment['author']), size: "24x24", class: "avatar", title: comment['author']), class: "activity-avatar"))
+      concat(content_tag(:span, style: "") do
+        concat(content_tag(:span, "#{time_ago_in_words(comment['commented_at'])} ago".html_safe, class: "time"))
+        concat(content_tag(:span, "#{comment_link(comment)}".html_safe, class: "comment-link"))
+      end)
+    end
   end
 
   def card_activity(paper)
@@ -90,11 +139,15 @@ module HomeHelper
   end
 
   def comment_link(comment)
-    link_to("View comment &rarr;".html_safe, comment['comment_url'], target: "_blank")
+    link_to("View comment &raquo;".html_safe, comment['comment_url'], target: "_blank", title: comment['comment'])
+  end
+
+  def github_user_link(username)
+    "https://github.com/#{username.gsub('@', '')}"
   end
 
   def github_user(username)
-    link_to("@#{username}", "https://github.com/#{username.gsub('@', '')}")
+    link_to("@#{username}", github_user_link(username))
   end
 
   def activites_shortcut_for(paper)

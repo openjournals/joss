@@ -5,7 +5,7 @@
 # Disable the form if the author hasn't checked the certify checkbox
 authorCheck = ->
   checkBoxCount = $(".pre-check:checked").length
-  if checkBoxCount == 2
+  if checkBoxCount == 3
     $("#author-submit").removeClass('disabled')
     $("#author-submit").prop('disabled', false)
   else

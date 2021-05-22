@@ -6,12 +6,6 @@ Whedon or `@whedon` on GitHub, is our editorial bot that interacts with authors,
 `@whedon` can do a bunch of different things. If you want to ask `@whedon` what it can do, simply type the following in a JOSS `review` or `pre-review` issue:
 
 ```text
-@whedon commands
-```
-
-This will return an output something like this (the exact response depends upon whether or not you're an editor):
-
-```text
 # List all of Whedon's capabilities
 @whedon commands
 
@@ -20,6 +14,9 @@ This will return an output something like this (the exact response depends upon 
 
 # Add a GitHub user to the reviewers of this submission
 @whedon add @username as reviewer
+
+# Re-invite a reviewer (if they can't update checklists)
+@whedon re-invite @username as reviewer
 
 # Remove a GitHub user from the reviewers of this submission
 @whedon remove @username as reviewer
@@ -44,6 +41,10 @@ This will return an output something like this (the exact response depends upon 
 
 EDITORIAL TASKS
 
+# All commands can be run on a non-default branch, to do this pass a custom 
+# branch name by following the command with `from branch custom-branch-name`.
+# For example:
+
 # Compile the paper
 @whedon generate pdf
 
@@ -54,11 +55,33 @@ EDITORIAL TASKS
 # certain period of time (supported units days and weeks)
 @whedon remind @reviewer in 2 weeks
 
-# Ask Whedon to accept the paper and deposit with Crossref
+# Ask Whedon to do a  dry run of accepting the paper and depositing with Crossref
 @whedon accept
 
 # Ask Whedon to check the references for missing DOIs
 @whedon check references
+
+# Ask Whedon to check repository statistics for the submitted software, for license, and
+# for Statement of Need section in paper
+@whedon check repository
+
+EiC TASKS
+
+# Flag submission for editoral review, due to size or question about being research software
+@whedon query scope
+
+# Invite an editor to edit a submission (sending them an email)
+@whedon invite @editor as editor
+
+# Reject a paper
+@whedon reject
+
+# Withdraw a paper
+@whedon withdraw
+
+# Ask Whedon to actually accept the paper and deposit with Crossref
+# (supports custom branches too)
+@whedon accept deposit=true
 ```
 
 ## Author commands
@@ -108,6 +131,16 @@ Editors can either assign themselves or other editors as the editor of a submiss
 ```text
 @whedon assign @editorname as editor
 ```
+
+### Inviting an editor
+
+Whedon can be used by EiCs to send email invites to registered editors as follows:
+
+```text
+@whedon invite @editorname as editor
+```
+
+This will send an automated email to the editor with a link to the GitHub `pre-review` issue.
 
 ### Adding and removing reviewers
 

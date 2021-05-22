@@ -44,10 +44,13 @@ private
   end
   helper_method :current_user
 
+
+  def current_editor
+    current_user && current_user.editor?
+  end
+  helper_method :current_editor
+
   def record_not_found
     render plain: "404 Not Found", status: 404
   end
 end
-
-
-

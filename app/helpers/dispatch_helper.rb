@@ -66,6 +66,10 @@ module DispatchHelper
       action == 'closed'
     end
 
+    def commented?
+      action == 'created'
+    end
+
     def edited?
       action == 'edited'
     end
@@ -76,6 +80,10 @@ module DispatchHelper
 
     def unlocked?
       action == 'unlocked'
+    end
+
+    def pinned?
+      action == 'pinned' || action == "unpinned"
     end
 
     def assigned?
@@ -94,7 +102,8 @@ module DispatchHelper
             'review' => {}
           },
           'comments' => [],
-          'last_edits' => {}
+          'last_edits' => {},
+          'last_comments' => {}
         }
       }
 
@@ -108,8 +117,9 @@ module DispatchHelper
       return if opened?
       return if closed?
       return if locked?
+      return if pinned?
       return if unlocked?
-
+      
       if edited?
         if issues.has_key?('last_edits')
           issues['last_edits'][sender] = payload['issue']['updated_at']
@@ -117,6 +127,8 @@ module DispatchHelper
           issues['last_edits'] = {}
           issues['last_edits'][sender] = payload['issue']['updated_at']
         end
+
+        paper.percent_complete = paper.fraction_check_boxes_complete
         paper.last_activity = payload['issue']['updated_at']
         paper.save and return
       end
@@ -130,6 +142,18 @@ module DispatchHelper
 
         paper.labels = new_labels
         paper.save and return
+      end
+
+      # New addition to keep track of the last comments by each 
+      # person on the thread.
+      if commented?
+        if issues.has_key?('last_comments')
+          issues['last_comments'][sender] = payload['issue']['updated_at']
+        else
+          issues['last_comments'] = {}
+          issues['last_comments'][sender] = payload['issue']['updated_at']
+        end
+        paper.last_activity = payload['issue']['updated_at']
       end
 
       if pre_review?

@@ -5,6 +5,33 @@ module PapersHelper
     end
   end
 
+  def paper_kind(paper)
+    case paper.submission_kind
+    when "new"
+      "New submission"
+    when "resubmission"
+      "Resubmission"
+    when "new version"
+      "New version"
+    else
+      "Unknown"
+    end
+  end
+
+  def vote_comment_preview(vote)
+    return "No comment" if vote.comment.empty?
+
+    capture do
+      concat(content_tag(:span, class: "comment-preview", title: vote.comment) do
+        truncate(vote.comment)
+      end)
+    end
+  end
+
+  def paper_count_for(user)
+    user.papers.visible.count
+  end
+
   def scholar_author_tags(authors)
     authors = authors.split(',')
     returned = ""
@@ -42,8 +69,8 @@ module PapersHelper
   end
 
   def author_link(author)
-    name = "#{author['given_name']} #{author['last_name']}"
-    author_search_link = link_to name, papers_by_author_path(author: name)
+    name = "#{author['given_name']} #{author['middle_name']} #{author['last_name']}".squish
+    author_search_link = link_to(name, "/papers/by/#{name}".gsub('.', '%2E'))
 
     if author['orcid']
       orcid_link = link_to author['orcid'], "http://orcid.org/#{author['orcid']}", target: "_blank"
@@ -115,5 +142,16 @@ module PapersHelper
 
   def paper_types
     Rails.application.settings["paper_types"]
+  end
+
+  def open_invites_for_paper(paper)
+    output = []
+    @pending_invitations.each do |invite|
+      if invite.paper_id == paper.id
+        output << link_to(image_tag(avatar(invite.editor.login), size: "24x24", class: "avatar", title: "#{invite.editor.full_name} invited #{time_ago_in_words(invite.created_at)} ago"), paper.meta_review_url)
+      end
+    end
+
+    return output.empty? ? "–" : output.join(" • ").html_safe
   end
 end

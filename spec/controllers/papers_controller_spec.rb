@@ -14,14 +14,6 @@ describe PapersController, type: :controller do
     end
   end
 
-  describe "POST #create" do
-    it "NOT LOGGED IN responds with redirect" do
-      paper_params = {title: "Yeah whateva", body: "something"}
-      post :create, params: {paper: paper_params}
-      expect(response).to be_redirect
-    end
-  end
-
   describe "#start_meta_review" do
     it "NOT LOGGED IN responds with redirect" do
       post :start_meta_review, params: {id: 'nothing much'}
@@ -29,11 +21,12 @@ describe PapersController, type: :controller do
     end
 
     it "LOGGED IN and with correct params" do
-      user = create(:admin_user)
+      admin_editor = create(:editor, login: "josseic")
+      admin_user = create(:admin_user, editor: admin_editor)
       editor = create(:editor, login: "josseditor")
       editing_user = create(:user, editor: editor)
 
-      allow(controller).to receive_message_chain(:current_user).and_return(user)
+      allow(controller).to receive_message_chain(:current_user).and_return(admin_user)
 
       author = create(:user)
       paper = create(:paper, user_id: author.id)
@@ -45,6 +38,8 @@ describe PapersController, type: :controller do
       post :start_meta_review, params: {id: paper.sha, editor: "josseditor"}
 
       expect(response).to be_redirect
+      expect(paper.reload.state).to eq('review_pending')
+      expect(paper.reload.eic).to eq(admin_editor)
     end
   end
 
@@ -103,12 +98,13 @@ describe PapersController, type: :controller do
   end
 
   describe "POST #create" do
+
     it "LOGGED IN responds with success" do
       user = create(:user)
       allow(controller).to receive_message_chain(:current_user).and_return(user)
       paper_count = Paper.count
 
-      paper_params = {title: "Yeah whateva", body: "something", repository_url: "https://github.com/foo/bar", archive_doi: "https://doi.org/10.6084/m9.figshare.828487", software_version: "v1.0.1"}
+      paper_params = {title: "Yeah whateva", body: "something", repository_url: "https://github.com/openjournals/joss", archive_doi: "https://doi.org/10.6084/m9.figshare.828487", software_version: "v1.0.1", submission_kind: "new", suggested_editor: "@editor"}
       post :create, params: {paper: paper_params}
       expect(response).to be_redirect # as it's created the thing
       expect(Paper.count).to eq(paper_count + 1)
@@ -136,6 +132,12 @@ describe PapersController, type: :controller do
       post :create, params: {paper: paper_params}
       expect(response).to be_redirect # as it's redirected us
       expect(Paper.count).to eq(paper_count)
+    end
+
+    it "NOT LOGGED IN responds with redirect" do
+      paper_params = {title: "Yeah whateva", body: "something"}
+      post :create, params: {paper: paper_params}
+      expect(response).to be_redirect
     end
   end
 
@@ -201,14 +203,6 @@ describe PapersController, type: :controller do
   end
 
   describe "accepted papers" do
-    it "should send_file a URL for a PDF" do
-      paper = create(:accepted_paper)
-      request.headers["HTTP_ACCEPT"] = "application/pdf"
-
-      get :show, params: {doi: paper.doi}
-      expect(response.body).to eq(IO.binread('spec/fixtures/paper.pdf'))
-    end
-
     it "should not redirect when accepting any content type" do
       paper = create(:accepted_paper)
       request.headers["HTTP_ACCEPT"] = "*/*"
@@ -257,6 +251,42 @@ describe PapersController, type: :controller do
     it "should return the correct status badge for an unknown paper" do
       get :status, params: {id: "asdasd"}, format: "svg"
       expect(response.body).to match /Unknown/
+    end
+  end
+
+  describe "GET Paper JSON" do
+    it "returns valid json" do
+      paper = create(:retracted_paper)
+      get :show, params: {doi: paper.doi}, format: "json"
+      expect(response).to be_successful
+      expect(response).to render_template("papers/show")
+      expect(response.media_type).to eq("application/json")
+      expect { JSON.parse(response.body) }.not_to raise_error
+    end
+
+    it "returns paper's metadata" do
+      paper = create(:retracted_paper, state: "superceded")
+      get :show, params: {doi: paper.doi}, format: "json"
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response["title"]).to eq(paper.title)
+      expect(parsed_response["state"]).to eq("superceded")
+      expect(parsed_response["doi"]).to be_nil
+      expect(parsed_response["published_at"]).to be_nil
+    end
+
+    it "returns publication info for accepted papers" do
+      user = create(:user)
+      editor = create(:editor, user: user)
+      paper = create(:accepted_paper, editor: editor)
+      get :show, params: {doi: paper.doi}, format: "json"
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response["title"]).to eq(paper.title)
+      expect(parsed_response["state"]).to eq("accepted")
+      expect(parsed_response["editor"]).to eq("@arfon")
+      expect(parsed_response["editor_name"]).to eq("Person McEditor")
+      expect(parsed_response["editor_orcid"]).to eq("0000-0000-0000-1234")
+      expect(parsed_response["doi"]).to eq("10.21105/joss.00000")
+      expect(parsed_response["published_at"]).to_not be_nil
     end
   end
 

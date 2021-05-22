@@ -1,7 +1,13 @@
 Rails.application.routes.draw do
 
   resources :editors
+  resources :invitations, only: [:index] do
+    put 'expire', on: :member
+  end
   resources :papers do
+    resources :votes, only: [:create]
+    resources :notes, only: [:create, :destroy]
+
     member do
       post 'start_review'
       post 'start_meta_review'
@@ -18,6 +24,7 @@ Rails.application.routes.draw do
     end
   end
 
+  get '/aeic/', to: "aeic_dashboard#index", as: "aeic_dashboard"
   get '/editors/lookup/:login', to: "editors#lookup"
   get '/papers/lookup/:id', to: "papers#lookup"
   get '/papers/in/:language', to: "papers#filter", as: 'papers_by_language'
@@ -33,20 +40,25 @@ Rails.application.routes.draw do
   get '/papers/:doi', to: "papers#show", constraints: { doi: /10.21105\/jose\.\d{5}/}
   get '/papers/:doi.:format', to: "papers#show", constraints: { doi: /10.21105\/jose\.\d{5}/}
 
+  get '/editor_profile', to: 'editors#profile', as: 'editor_profile'
+  patch '/update_editor_profile', to: 'editors#update_profile', as: 'update_editor_profile'
+
   get '/dashboard/all', to: "home#all"
   get '/dashboard/incoming', to: "home#incoming"
   get '/dashboard/in_progress', to: "home#in_progress"
   get '/dashboard', to: "home#dashboard"
 
   get '/dashboard/*editor', to: "home#reviews"
-
-  post '/update_profile', to: "home#update_profile"
   get '/about', to: 'home#about', as: 'about'
+
   get '/profile', to: 'home#profile', as: 'profile'
+  post '/update_profile', to: "home#update_profile"
+
   get '/auth/:provider/callback', to: 'sessions#create'
   get "/signout" => "sessions#destroy", as: :signout
 
   get '/blog' => redirect("http://blog.joss.theoj.org"), as: :blog
+
   # API methods
   post '/papers/api_editor_invite', to: 'dispatch#api_editor_invite'
   post '/papers/api_start_review', to: 'dispatch#api_start_review'

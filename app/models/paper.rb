@@ -1,16 +1,33 @@
-class Paper < ActiveRecord::Base
+require 'open3'
+
+class Paper < ApplicationRecord
   searchkick index_name: "jose-production"
-  
+
   include SettingsHelper
   serialize :activities, Hash
   serialize :metadata, Hash
 
-  belongs_to  :submitting_author,
-              class_name: 'User',
-              validate: true,
-              foreign_key: "user_id"
+  belongs_to :submitting_author,
+             class_name: 'User',
+             validate: true,
+             foreign_key: "user_id"
 
-  belongs_to  :editor, optional: true
+  belongs_to :editor, optional: true
+  belongs_to :eic,
+             class_name: 'Editor',
+             optional: true,
+             foreign_key: "eic_id"
+
+  has_many :invitations
+  has_many :notes
+  has_many :votes
+  has_many :in_scope_votes,
+           -> { in_scope },
+           class_name: 'Vote'
+
+  has_many :out_of_scope_votes,
+           -> { out_of_scope },
+           class_name: 'Vote'
 
   include AASM
 
@@ -69,6 +86,12 @@ class Paper < ActiveRecord::Base
     "withdrawn"
   ].freeze
 
+  SUBMISSION_KINDS = [
+    "new",
+    "resubmission",
+    "new version"
+  ]
+
   # Languages we don't show in the UI
   IGNORED_LANGUAGES = [
     'Shell',
@@ -85,7 +108,6 @@ class Paper < ActiveRecord::Base
 
   scope :since, -> (date) { where('accepted_at >= ?', date) }
   scope :in_progress, -> { where(state: IN_PROGRESS_STATES) }
-  scope :in_progress, -> { where(state: IN_PROGRESS_STATES) }
   scope :public_in_progress, -> { where(state: PUBLIC_IN_PROGRESS_STATES) }
   scope :visible, -> { where(state: VISIBLE_STATES) }
   scope :invisible, -> { where(state: INVISIBLE_STATES) }
@@ -98,10 +120,13 @@ class Paper < ActiveRecord::Base
   after_create :notify_editors, :notify_author
 
   validates_presence_of :title
-  validates_presence_of :repository_url, message: "^Repository address can't be blank"
-  validates_presence_of :software_version, message: "^Version can't be blank"
-  validates_presence_of :body, message: "^Description can't be blank"
+  validates_presence_of :suggested_editor, on: :create, message: "You must suggest an editor to handle your submission"
+  validates_presence_of :repository_url, message: "Repository address can't be blank"
+  validates_presence_of :software_version, message: "Version can't be blank"
+  validates_presence_of :body, message: "Description can't be blank"
   validates :kind, inclusion: { in: Rails.application.settings["paper_types"] }, allow_nil: true
+  validates :submission_kind, inclusion: { in: SUBMISSION_KINDS }, allow_nil: false
+  validate :check_repository_address, on: :create
 
   def notify_editors
     Notifications.submission_email(self).deliver_now
@@ -148,6 +173,7 @@ class Paper < ActiveRecord::Base
   def invite_editor(editor_handle)
     return false unless editor = Editor.find_by_login(editor_handle)
     Notifications.editor_invite_email(self, editor).deliver_now
+    invitations.create(editor: editor)
   end
 
   def scholar_title
@@ -157,7 +183,17 @@ class Paper < ActiveRecord::Base
 
   def scholar_authors
     return nil unless published?
-    metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['last_name']}"}.join(', ')
+    metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['middle_name']} #{a['last_name']}".squish}.join(', ')
+  end
+
+  def bibtex_authors
+    return nil unless published?
+    metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['middle_name']} #{a['last_name']}".squish}.join(' and ')
+  end
+
+  def bibtex_key
+    return nil unless published?
+    "#{metadata['paper']['authors'].first['last_name']}#{year}"
   end
 
   def bibtex_authors
@@ -318,11 +354,18 @@ class Paper < ActiveRecord::Base
     return false if review_issue_id
     return false unless editor = Editor.find_by_login(editor_handle)
 
+    if labels.any?
+      new_labels = labels.keys + ["review"] - ["pre-review"]
+    else
+      new_labels = ["review"]
+    end
+
+
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[REVIEW]: #{self.title}",
                                 review_body(editor_handle, reviewers),
                                 { assignees: [editor_handle],
-                                  labels: "review" })
+                                  labels: new_labels.join(",") })
 
     set_review_issue(issue.number)
     set_editor(editor)
@@ -338,6 +381,7 @@ class Paper < ActiveRecord::Base
   # Updated the paper with the editor_id
   def set_editor(editor)
     self.update_attribute(:editor_id, editor.id)
+    Invitation.resolve_pending(self, editor)
   end
 
   # Update the Paper review_issue_id field
@@ -345,11 +389,11 @@ class Paper < ActiveRecord::Base
     self.update_attribute(:review_issue_id, issue_number)
   end
 
-  def meta_review_body(editor)
+  def meta_review_body(editor, eic_name)
     if editor.strip.empty?
-      locals = { paper: self, suggested_editor: "Pending" }
+      locals = { paper: self, suggested_editor: "Pending", eic_name: eic_name }
     else
-      locals = { paper: self, suggested_editor: "#{editor}" }
+      locals = { paper: self, suggested_editor: "#{editor}", eic_name: eic_name }
     end
     ApplicationController.render(
       template: 'shared/meta_view_body',
@@ -359,20 +403,25 @@ class Paper < ActiveRecord::Base
   end
 
   # Create a review meta-issue for assigning reviewers
-  def create_meta_review_issue(editor_handle)
+  def create_meta_review_issue(editor_handle, eic)
     return false if meta_review_issue_id
 
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[PRE REVIEW]: #{self.title}",
-                                meta_review_body(editor_handle),
+                                meta_review_body(editor_handle, eic.full_name),
                                 { labels: "pre-review" })
 
     set_meta_review_issue(issue.number)
+    set_meta_eic(eic)
   end
 
   # Update the Paper meta_review_issue_id field
   def set_meta_review_issue(issue_number)
     self.update_attribute(:meta_review_issue_id, issue_number)
+  end
+
+  def set_meta_eic(eic)
+    self.update_attribute(:eic_id, eic.id)
   end
 
   def meta_review_url
@@ -389,6 +438,20 @@ class Paper < ActiveRecord::Base
 
   def pretty_state
     state.humanize.downcase
+  end
+
+  def fraction_check_boxes_complete
+    return 0.0 if review_issue_id.nil?
+    issue = GITHUB.issue(Rails.application.settings["reviews"], review_issue_id)
+
+    checkbox_count = issue.body.scan(/(- \[ \]|- \[x\])/m).count
+    checked_checkbox_count = issue.body.scan(/(- \[x\])/m).count
+
+    return checked_checkbox_count.to_f / checkbox_count
+  end
+
+  def pretty_percentage
+    (percent_complete * 100).to_i
   end
 
   # Returns DOI with URL e.g. "https://doi.org/10.21105/joss.00001"
@@ -428,6 +491,15 @@ class Paper < ActiveRecord::Base
   end
 
 private
+
+  def check_repository_address
+    stdout_str, stderr_str, status = Open3.capture3("git ls-remote #{repository_url}")
+
+    if !status.success?
+      errors.add(:base, :invalid, message: "Invalid Git repository address. Check that the repository can be cloned using the value entered in the form, and that access doesn't require authentication.")
+      return false
+    end
+  end
 
   def set_sha
     self.sha ||= SecureRandom.hex

@@ -1,9 +1,15 @@
 class EditorsController < ApplicationController
-  before_action :require_admin_user, except: [:lookup]
+  before_action :require_admin_user, except: [:lookup, :profile, :update_profile]
+  before_action :require_editor, only:[:profile, :update_profile]
   before_action :set_editor, only: [:show, :edit, :update, :destroy]
+  before_action :set_current_editor, only: [:profile, :update_profile]
 
   def index
     @editors = Editor.all
+    @assignment_by_editor = Paper.unscoped.in_progress.group(:editor_id).count
+    @paused_by_editor = Paper.unscoped.in_progress.where("labels->>'paused' ILIKE '%'").group(:editor_id).count
+    @pending_invitations_by_editor = Invitation.pending.group(:editor_id).count
+    @pending_invitations = Invitation.includes(:paper).pending
   end
 
   def show
@@ -53,12 +59,31 @@ class EditorsController < ApplicationController
     redirect_to editors_url, notice: 'Editor was successfully destroyed.'
   end
 
+  def profile
+  end
+
+  def update_profile
+    if @editor.update(profile_params)
+      redirect_to editor_profile_path, notice: 'Editor profile was successfully updated.'
+    else
+      render :profile
+    end
+  end
+
   private
     def set_editor
       @editor = Editor.find(params[:id])
     end
 
+    def set_current_editor
+      @editor = current_user.editor
+    end
+
     def editor_params
-      params.require(:editor).permit(:kind, :title, :first_name, :last_name, :login, :email, :avatar_url, :category_list, :url, :description)
+      params.require(:editor).permit(:max_assignments, :availability_comment, :kind, :title, :first_name, :last_name, :login, :email, :avatar_url, :category_list, :url, :description)
+    end
+
+    def profile_params
+      params.require(:editor).permit(:max_assignments, :availability_comment, :first_name, :last_name, :email, :avatar_url, :category_list, :url, :description)
     end
 end

@@ -48,7 +48,7 @@ describe DispatchController, type: :controller do
 
     it "should initialize the activities when an issue is opened" do
       expect(response).to be_ok
-      expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[], "last_edits"=>{}}})
+      expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[], "last_edits"=>{}, "last_comments" => {}}})
     end
 
     it "should UPDATE the activities when an issue is then commented on" do
@@ -63,9 +63,8 @@ describe DispatchController, type: :controller do
       expect(response).to be_ok
       expect(@paper.activities['issues']['commenters']).to eq({"pre-review"=>{"whedon"=>1, "editor"=>1}, "review"=>{}})
       expect(@paper.activities['issues']['comments'].length).to eq(2)
-
-      # expect(@paper.activities['issues']['review']['commenters']).to be_empty
-      # expect(@paper.activities['issues']['review']['comments'].length).to eq(0)
+      expect(@paper.activities['issues']['last_comments']['editor']).to eq("2018-09-30T11:48:30Z")
+      expect(@paper.activities['issues']['last_comments']['whedon']).to eq("2018-09-30T11:48:40Z")
     end
   end
 
@@ -83,7 +82,23 @@ describe DispatchController, type: :controller do
     end
   end
 
-  describe "POST #github_recevier for REVIEW", type: :request do
+  describe "POST #github_recevier for REVIEW when a paper doesn't have a suggested_editor set", type: :request do
+    before do
+      signature = set_signature(whedon_review_labeled)
+      build(:paper, meta_review_issue_id: 78, suggested_editor: nil, review_issue_id: 79, labels: [{ "foo" => "efefef" }]).save(validate: false)
+      @paper = Paper.find_by_meta_review_issue_id(78)
+
+      post '/dispatch', params: whedon_review_labeled, headers: { 'CONTENT_TYPE' => 'application/json', 'ACCEPT' => 'application/json', 'HTTP_X_HUB_SIGNATURE' => signature }
+      @paper.reload
+    end
+
+    it "should update the labels on the paper" do
+      expect(response).to be_ok
+      expect(@paper.labels).to eq({ "accepted" => "0052cc" })
+    end
+  end
+
+  describe "POST #github_recevier for REVIEW", type: :request, vcr: true do
     before do
       signature = set_signature(whedon_review_opened)
       @paper = create(:paper, meta_review_issue_id: 78, review_issue_id: 79)
@@ -93,11 +108,11 @@ describe DispatchController, type: :controller do
 
     it "should initialize the activities when a review issue is opened" do
       expect(response).to be_ok
-      expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[], "last_edits"=>{}}})
+      expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[], "last_edits"=>{}, "last_comments" => {}}})
     end
   end
 
-  describe "POST #github_recevier for REVIEW", type: :request do
+  describe "POST #github_recevier for REVIEW", type: :request, vcr: true do
     before do
       signature = set_signature(whedon_review_edit)
 
@@ -108,7 +123,11 @@ describe DispatchController, type: :controller do
 
     it "should update the last_edits key" do
       expect(response).to be_ok
-      expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[], "last_edits"=>{"comment-editor"=>"2018-10-06T16:18:56Z"}}})
+      expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[], "last_comments" => {}, "last_edits"=>{"comment-editor"=>"2018-10-06T16:18:56Z"}}})
+    end
+
+    it "should update the percent_complete value" do
+      expect(@paper.percent_complete).to eq(0.9375)
     end
 
     it "should update the last_activity field" do
@@ -297,6 +316,8 @@ describe DispatchController, type: :controller do
       post_params = { secret: "mooo", id: 1234, editor: "jimmy" }
 
       expect { post :api_editor_invite, params: post_params }.to change { ActionMailer::Base.deliveries.count }.by(1)
+      expect { post :api_editor_invite, params: post_params }.to change { editor.invitations.count }.by(1)
+      expect { post :api_editor_invite, params: post_params }.to change { paper.invitations.count }.by(1)
     end
 
     it "with the correct API key and invalid editor" do

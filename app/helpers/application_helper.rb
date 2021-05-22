@@ -41,4 +41,8 @@ module ApplicationHelper
   def name_and_tagline
     "#{setting(:name)} (#{setting(:abbreviation)}) is #{setting(:tagline)}".html_safe
   end
+
+  def avatar(username)
+    return "https://github.com/#{username.sub(/^@/, "")}.png"
+  end
 end

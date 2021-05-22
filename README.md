@@ -1,6 +1,6 @@
 # The Journal of Open Source Software
 
-[![Build Status](https://travis-ci.org/openjournals/joss.svg?branch=master)](https://travis-ci.org/openjournals/joss)
+[![Build Status](https://github.com/openjournals/joss/actions/workflows/tests.yml/badge.svg)](https://github.com/openjournals/joss/actions/workflows/tests.yml)
 [![Powered by NumFOCUS](https://img.shields.io/badge/powered%20by-NumFOCUS-orange.svg?style=flat&colorA=E1523D&colorB=007D8A)](http://numfocus.org)
 [![Donate to JOSS](https://img.shields.io/badge/Donate-to%20JOSS-brightgreen.svg)](https://numfocus.org/donate-to-joss)
 

@@ -5,9 +5,19 @@ describe Paper do
     Paper.destroy_all
   end
 
+  it "should know how to validate a Git repository address" do
+    paper = build(:paper, :repository_url => 'https://example.com')
+    expect { paper.save! }.to raise_error(ActiveRecord::RecordInvalid)
+  end
+
   it "belongs to the submitting author" do
     association = Paper.reflect_on_association(:submitting_author)
     expect(association.macro).to eq(:belongs_to)
+  end
+
+  it "has many invitations" do
+    association = Paper.reflect_on_association(:invitations)
+    expect(association.macro).to eq(:has_many)
   end
 
   it "should know how to parameterize itself properly" do
@@ -81,6 +91,58 @@ describe Paper do
     expect(paper.review_url).to eq("https://github.com/#{Rails.application.settings["reviews"]}/issues/999")
   end
 
+  describe "#set_editor" do
+    it "should update paper's editor" do
+      paper = create(:paper)
+      editor = create(:editor)
+
+      paper.set_editor editor
+      expect(paper.editor).to eq(editor)
+    end
+
+    it "should mark editor's pending invitation as accepted" do
+      paper = create(:paper)
+      editor = create(:editor)
+      invitation = create(:invitation, :pending, paper: paper, editor: editor)
+
+      paper.set_editor editor
+      expect(invitation.reload).to be_accepted
+    end
+
+    it "should expire other editor's pending invitations" do
+      paper = create(:paper)
+      editor = create(:editor)
+      invitation_1 = create(:invitation, :pending, paper: paper)
+      invitation_2 = create(:invitation, :pending, paper: paper)
+
+      paper.set_editor editor
+      expect(invitation_1.reload).to be_expired
+      expect(invitation_2.reload).to be_expired
+    end
+  end
+
+  describe "#invite_editor" do
+    it "should return false if editor does not exist" do
+      expect(create(:paper).invite_editor("invalid")).to be false
+    end
+
+    it "should email an invitation to the editor" do
+      paper = create(:paper)
+      editor = create(:editor)
+
+      expect { paper.invite_editor(editor.login) }.to change { ActionMailer::Base.deliveries.count }.by(1)
+    end
+
+    it "should create a pending invitation for the invited editor" do
+      paper = create(:paper)
+      editor = create(:editor)
+
+      expect(Invitation.exists?(paper: paper, editor:editor)).to be_falsy
+      expect { paper.invite_editor(editor.login)}.to change { Invitation.count }.by(1)
+      expect(Invitation.pending.exists?(paper: paper, editor:editor)).to be_truthy
+    end
+  end
+
   context "when accepted" do
     it "should know how to generate a PDF URL for Google Scholar" do
       paper = create(:accepted_paper)
@@ -119,9 +181,10 @@ describe Paper do
       allow(fake_issue).to receive(:number).and_return(1)
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
-      paper.start_meta_review('arfon')
+      paper.start_meta_review!('arfon', editor)
       expect(paper.state).to eq('review_pending')
-      expect(paper.editor).to be(nil)
+      expect(paper.reload.editor).to be(nil)
+      expect(paper.reload.eic).to eq(editor)
     end
 
     it "should then allow for the paper to be moved into the under_review state" do
@@ -206,12 +269,14 @@ describe Paper do
 
   describe "#meta_review_body" do
     let(:author) { create(:user) }
+
     let(:paper) do
       instance = build(:paper_with_sha, user_id: author.id)
       instance.save(validate: false)
       instance
     end
-    subject { paper.meta_review_body(editor) }
+
+    subject { paper.meta_review_body(editor, 'Important Editor') }
 
     context "with an editor" do
       let(:editor) { "@joss_editor" }
@@ -220,6 +285,7 @@ describe Paper do
         is_expected.to match /#{paper.submitting_author.github_username}/
         is_expected.to match /#{paper.submitting_author.name}/
         is_expected.to match /#{Rails.application.settings['reviewers']}/
+        is_expected.to match /Important Editor/
       end
 
       it { is_expected.to match "The author's suggestion for the handling editor is @joss_editor" }

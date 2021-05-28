@@ -264,7 +264,7 @@ Example `paper.bib` file:
 }
 
 @misc{fidgit,
-  author = {A. Smith},
+  author = {A. M. Smith and K. Thaney and M. Hahnel},
   title = {Fidgit: An ungodly union of GitHub and Figshare},
   year = {2020},
   publisher = {GitHub},

@@ -56,7 +56,7 @@ EDITORIAL TASKS
 @whedon remind @reviewer in 2 weeks
 
 # Ask Whedon to do a  dry run of accepting the paper and depositing with Crossref
-@whedon accept
+@whedon recommend-accept
 
 # Ask Whedon to check the references for missing DOIs
 @whedon check references
@@ -223,7 +223,7 @@ Whedon can accept a paper from the review issue. This includes generating the fi
 JOSS topic editors can ask for the final proofs to be created by Whedon with the following command:
 
 ```text
-@whedon accept
+@whedon recommend-accept
 ```
 
 On issuing this command, Whedon will also check the references of the paper for any missing DOIs. This command can be triggered separately:

@@ -31,4 +31,9 @@ class Notifications < ApplicationMailer
     @editor = editor
     mail(to: editor.email, subject: "[Please review]: #{Rails.application.settings["abbreviation"]} scope check summary")
   end
+
+  def onboarding_invitation_email(onboarding_invitation)
+    @onboarding_invitation = onboarding_invitation
+    mail(to: onboarding_invitation.email,subject: "Invitation to join the #{Rails.application.settings["abbreviation"]} editorial board")
+  end
 end

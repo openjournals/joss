@@ -1,6 +1,6 @@
 class OnboardingInvitation < ApplicationRecord
   validates :email, presence: true
-  validates_uniqueness_of :email, message: "already present in the list on sent invitations"
+  validates_uniqueness_of :email, message: "is already present in the list on sent invitations"
   validates :token, presence: true, uniqueness: true
 
   before_validation :set_token, on: :create

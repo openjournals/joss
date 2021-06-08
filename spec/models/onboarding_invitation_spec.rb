@@ -9,7 +9,7 @@ RSpec.describe OnboardingInvitation, type: :model do
     expect(onboarding.errors.messages_for(:token)).to_not be_empty
   end
 
-  it "should have an unique email" do
+  it "should have a unique email" do
     onboarding_1 = create(:onboarding_invitation)
     onboarding_2 = OnboardingInvitation.new(email: onboarding_1.email)
 
@@ -17,7 +17,7 @@ RSpec.describe OnboardingInvitation, type: :model do
     expect(onboarding_2.errors.messages_for(:email)).to_not be_empty
   end
 
-  it "should have an unique token" do
+  it "should have a unique token" do
     onboarding_1 = create(:onboarding_invitation)
     onboarding_2 = OnboardingInvitation.new(token: onboarding_1.token)
 

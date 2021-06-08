@@ -3,6 +3,7 @@ class CreateOnboardingInvitations < ActiveRecord::Migration[6.1]
     create_table :onboarding_invitations do |t|
       t.string :email
       t.string :token
+      t.datetime :last_sent_at
 
       t.timestamps
     end

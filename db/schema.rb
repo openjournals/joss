@@ -60,6 +60,7 @@ ActiveRecord::Schema.define(version: 2021_06_07_093405) do
   create_table "onboarding_invitations", force: :cascade do |t|
     t.string "email"
     t.string "token"
+    t.datetime "last_sent_at"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end

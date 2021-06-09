@@ -1,5 +1,5 @@
 class Editor < ApplicationRecord
-  validates :kind, presence: true, inclusion: { in: ["board", "topic", "emeritus"] }
+  validates :kind, presence: true, inclusion: { in: ["board", "topic", "emeritus", "pending"] }
   validates :first_name, presence: true
   validates :last_name, presence: true
   validates :login, presence: true, unless: Proc.new { |editor| editor.kind == "emeritus"  }
@@ -20,6 +20,7 @@ class Editor < ApplicationRecord
   scope :board, -> { where(kind: "board") }
   scope :topic, -> { where(kind: "topic") }
   scope :emeritus, -> { where(kind: "emeritus") }
+  scope :pending, -> { where(kind: "pending") }
   scope :active, -> { where(kind: ACTIVE_EDITOR_STATES) }
   scope :since, -> (date) { where('created_at >= ?', date) }
 

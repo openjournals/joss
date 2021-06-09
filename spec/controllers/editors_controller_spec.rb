@@ -40,6 +40,7 @@ RSpec.describe EditorsController, type: :controller do
     it "assigns editors to @active_editors and @emeritus_editors" do
       editor = create(:editor)
       emeritus = create(:editor, kind: "emeritus")
+      create(:editor, kind: "pending")
       get :index
       expect(assigns(:active_editors)).to eq([editor])
       expect(assigns(:emeritus_editors)).to eq([emeritus])

@@ -105,13 +105,15 @@ RSpec.describe Editor, type: :model do
   end
 
   describe "#active editors" do
-    it "should exclude emeritus" do
+    it "should exclude emeritus and pending" do
       editor_1 = create(:editor, login: "@board1", kind: "board")
       editor_2 = create(:editor, login: "@topic1", kind: "topic")
       editor_3 = create(:editor, login: "@retired1", kind: "emeritus")
+      editor_3 = create(:editor, login: "@pending1", kind: "pending")
 
       assert Editor.active.count == 2
       assert Editor.emeritus.count == 1
+      assert Editor.pending.count == 1
     end
   end
 end

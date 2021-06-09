@@ -45,5 +45,11 @@ feature "Editor list" do
       visit editors_path
       expect(page).to have_content('Fancy')
     end
+
+    scenario "Pending editors are not listed" do
+      create(:editor, first_name: "Future Editor", kind: "pending")
+      visit editors_path
+      expect(page).to_not have_content('Future Editor')
+    end
   end
 end

@@ -60,9 +60,12 @@ ActiveRecord::Schema.define(version: 2021_06_07_093405) do
   create_table "onboarding_invitations", force: :cascade do |t|
     t.string "email"
     t.string "token"
+    t.string "name"
     t.datetime "last_sent_at"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["token", "email"], name: "index_onboarding_invitations_on_token_and_email"
+    t.index ["token"], name: "index_onboarding_invitations_on_token"
   end
 
   create_table "papers", force: :cascade do |t|

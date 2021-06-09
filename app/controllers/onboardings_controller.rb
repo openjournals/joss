@@ -39,6 +39,6 @@ class OnboardingsController < ApplicationController
   private
 
   def onboarding_invitation_params
-    params.require(:onboarding_invitation).permit(:email)
+    params.require(:onboarding_invitation).permit(:email, :name)
   end
 end

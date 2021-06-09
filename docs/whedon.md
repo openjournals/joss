@@ -247,5 +247,5 @@ If everything looks good with the draft proofs from the `@whedon accept` command
 ```
 
 ```eval_rst
-.. note:: This command is only available to the JOSS editor-in-chief, or associate editor-in-chiefs.
+.. note:: This command is only available to the JOSS editor-in-chief, or associate editors-in-chief.
 ```

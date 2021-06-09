@@ -44,6 +44,10 @@ class Editor < ApplicationRecord
     kind == "emeritus"
   end
 
+  def pending?
+    kind == "pending"
+  end
+
   def category_list=(new_list = "")
     self.categories = new_list.split(/,\s+/)
   end

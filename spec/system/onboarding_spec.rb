@@ -81,4 +81,21 @@ feature "Onboarding" do
       expect(ActionMailer::Base.deliveries.last.to).to eq(["invited@editor.org"])
     end
   end
+
+  feature "Manage pending editors" do
+    before do
+      login_as(admin)
+    end
+
+    scenario "List pending editors" do
+      create(:editor, first_name: "TopicEditor", last_name: "1")
+      create(:pending_editor, first_name: "PendingEditor", last_name: "2")
+      visit onboardings_path
+
+      within("#pending-editors") do
+        expect(page).to have_content("PendingEditor 2")
+        expect(page).to_not have_content("TopicEditor")
+      end
+    end
+  end
 end

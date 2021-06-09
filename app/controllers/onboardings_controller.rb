@@ -7,6 +7,7 @@ class OnboardingsController < ApplicationController
 
   def index
     @onboardings = OnboardingInvitation.all.order(last_sent_at: :desc)
+    @pending_editors = Editor.pending
   end
 
   def create

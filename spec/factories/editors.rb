@@ -14,5 +14,13 @@ FactoryBot.define do
     factory :board_editor do
       kind { "board" }
     end
+
+    factory :emeritus_editor do
+      kind { "emeritus" }
+    end
+
+    factory :pending_editor do
+      kind { "pending" }
+    end
   end
 end

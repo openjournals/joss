@@ -11,6 +11,7 @@ class Editor < ApplicationRecord
 
   before_save :clear_title, if: :board_removed?
   before_save :format_login, if: :login_changed?
+  before_save :add_default_avatar_url
 
   ACTIVE_EDITOR_STATES = [
     "board",
@@ -74,5 +75,11 @@ class Editor < ApplicationRecord
 
   def format_login
     login.gsub!(/^@/, "")
+  end
+
+  def add_default_avatar_url
+    if avatar_url.blank? && login.present?
+      self.avatar_url = "https://github.com/#{login}.png"
+    end
   end
 end

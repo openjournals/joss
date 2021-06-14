@@ -31,6 +31,8 @@ Rails.application.routes.draw do
     collection do
       get :pending
       get 'editor/:token', action: :editor, as: :editor
+      post :add_editor
+      post :accept_editor
     end
   end
 

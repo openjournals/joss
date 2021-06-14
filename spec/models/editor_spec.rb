@@ -116,4 +116,36 @@ RSpec.describe Editor, type: :model do
       assert Editor.pending.count == 1
     end
   end
+
+  describe "#accept!" do
+    it "should upgrade a pending editor to a topic editor" do
+      editor = create(:pending_editor)
+
+      assert editor.kind = "pending"
+      editor.accept!
+      assert editor.reload.kind = "topic"
+    end
+
+    it "should delete the onboarding invitation" do
+      editor = create(:pending_editor)
+      create(:onboarding_invitation, email: editor.email)
+      create(:onboarding_invitation)
+
+      expect { editor.accept! }.to change(OnboardingInvitation, :count).by(-1)
+    end
+
+    it "should not affect non-pending editors" do
+      topic_editor = create(:editor)
+      board_editor = create(:board_editor)
+      emeritus_editor = create(:emeritus_editor)
+
+      topic_editor.accept!
+      board_editor.accept!
+      emeritus_editor.accept!
+
+      assert topic_editor.reload.kind = "topic"
+      assert board_editor.reload.kind = "board"
+      assert emeritus_editor.reload.kind = "emeritus"
+    end
+  end
 end

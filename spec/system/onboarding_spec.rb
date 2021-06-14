@@ -1,6 +1,7 @@
 require "rails_helper"
 
 feature "Onboarding" do
+  let(:user) { create(:user) }
   let(:user_editor) { create(:user, editor: create(:editor)) }
   let(:admin) { create(:admin_user) }
 
@@ -83,6 +84,8 @@ feature "Onboarding" do
   end
 
   feature "Manage pending editors" do
+    let(:pending_editor) { create(:pending_editor, first_name: "Laura", last_name: "Edits", login: "lauraedits33") }
+
     before do
       login_as(admin)
     end
@@ -95,6 +98,95 @@ feature "Onboarding" do
       within("#pending-editors") do
         expect(page).to have_content("PendingEditor 2")
         expect(page).to_not have_content("TopicEditor")
+      end
+    end
+
+    scenario "Accept pending editor" do
+      user = create(:user, editor: pending_editor)
+      visit onboardings_path
+
+      within("#pending-editors") do
+        expect(page).to have_content("Laura Edits")
+        click_link "Approve"
+      end
+
+      expect(page).to have_content("Laura Edits (lauraedits33) accepted as topic editor!")
+      expect(page).to_not have_css("#pending-editors")
+
+      create(:pending_editor)
+      visit onboardings_path
+      within("#pending-editors") do
+        expect(page).to_not have_content("Laura Edits")
+      end
+
+      visit editors_path
+      expect(page).to have_content("lauraedits33")
+    end
+  end
+
+  feature "Invitations acceptance" do
+    let(:onboarding_invitation) { create(:onboarding_invitation, email: user.email) }
+
+    before do
+      login_as(user)
+    end
+
+    scenario "Users can't access other users invitations" do
+      inv = create(:onboarding_invitation)
+      visit editor_onboardings_path(inv.token)
+
+      expect(page).to have_content("The page you requested is not available")
+    end
+
+    scenario "Invitation is not valid if user is already an editor" do
+      create(:editor, user: user)
+      visit editor_onboardings_path(onboarding_invitation.token)
+
+      expect(page).to have_content("You already are an editor")
+    end
+
+    scenario "User can access they own invitations" do
+      visit editor_onboardings_path(onboarding_invitation.token)
+      expect(page).to have_content("Please complete your editor info:")
+    end
+
+    scenario "Accepting invitations create a pending editor" do
+      visit editor_onboardings_path(onboarding_invitation.token)
+      fill_in :editor_first_name, with: "Eddie"
+      fill_in :editor_last_name, with: "Tor"
+      fill_in :editor_email, with: "edi@tor.com"
+      fill_in :editor_login, with: "@test_editor"
+      click_on "Save editor data"
+
+      expect(page).to have_content("Thanks! An editor in chief will review your info soon")
+      expect(user.editor).to be_pending
+    end
+
+    scenario "Pending editors can update their info" do
+      user.editor = create(:pending_editor, first_name: "WrongName")
+
+      visit editor_onboardings_path(onboarding_invitation.token)
+      fill_in :editor_first_name, with: "UpdatedName"
+      click_on "Save editor data"
+
+      expect(user.editor.reload.first_name).to eq("UpdatedName")
+    end
+
+    scenario "All fields are mandatory" do
+      data = { editor_first_name: "Eddie",
+               editor_last_name: "Tor",
+               editor_email: "edi@tor.com",
+               editor_login: "@test" }
+
+      data.keys.each do |field_name|
+        visit editor_onboardings_path(onboarding_invitation.token)
+        fields = data.keys - [field_name]
+        fields.each do |field|
+          fill_in field, with: data[:field]
+        end
+        click_on "Save editor data"
+
+        expect(page).to have_content("Error saving your data: All fields are mandatory")
       end
     end
   end

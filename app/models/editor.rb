@@ -49,6 +49,13 @@ class Editor < ApplicationRecord
     kind == "pending"
   end
 
+  def accept!
+    update_attribute(:kind, "topic") if self.pending?
+    if invite = OnboardingInvitation.find_by(email: self.email)
+      invite.destroy
+    end
+  end
+
   def category_list=(new_list = "")
     self.categories = new_list.split(/,\s+/)
   end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_06_07_093405) do
+ActiveRecord::Schema.define(version: 2021_06_15_091027) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
@@ -64,6 +64,8 @@ ActiveRecord::Schema.define(version: 2021_06_07_093405) do
     t.datetime "last_sent_at"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.datetime "accepted_at"
+    t.datetime "invited_to_team_at"
     t.index ["token", "email"], name: "index_onboarding_invitations_on_token_and_email"
     t.index ["token"], name: "index_onboarding_invitations_on_token"
   end

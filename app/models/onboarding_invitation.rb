@@ -7,9 +7,27 @@ class OnboardingInvitation < ApplicationRecord
   before_validation :strip_email
   after_create :send_email
 
+  scope :pending_acceptance, -> { where(accepted_at: nil) }
+
   def send_email
     Notifications.onboarding_invitation_email(self).deliver_now
     self.touch(:last_sent_at)
+  end
+
+  def accepted?
+    self.accepted_at.present?
+  end
+
+  def invited_to_team?
+    self.invited_to_team_at.present?
+  end
+
+  def accepted!
+    self.touch(:accepted_at)
+  end
+
+  def invited_to_team!
+    self.touch(:invited_to_team_at)
   end
 
   private

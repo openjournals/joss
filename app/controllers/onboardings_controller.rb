@@ -60,7 +60,7 @@ class OnboardingsController < ApplicationController
   def check_invited_editor
     unless @onboarding = OnboardingInvitation.find_by(token: params[:token], email: current_user.email)
       flash[:error] = "The page you requested is not available"
-      redirect_to root_path
+      redirect_to(root_path) and return
     end
 
     unless !current_user.editor? || current_user.editor.pending?

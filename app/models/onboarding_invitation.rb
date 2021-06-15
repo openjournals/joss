@@ -1,4 +1,6 @@
 class OnboardingInvitation < ApplicationRecord
+  belongs_to :editor, optional: true
+
   validates :email, presence: true
   validates_uniqueness_of :email, message: "is already present in the list on sent invitations"
   validates :token, presence: true, uniqueness: true
@@ -22,8 +24,8 @@ class OnboardingInvitation < ApplicationRecord
     self.invited_to_team_at.present?
   end
 
-  def accepted!
-    self.touch(:accepted_at)
+  def accepted!(ed = nil)
+    self.update(editor: ed, accepted_at: Time.now)
   end
 
   def invited_to_team!

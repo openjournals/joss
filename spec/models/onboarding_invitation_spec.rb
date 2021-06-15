@@ -68,6 +68,17 @@ RSpec.describe OnboardingInvitation, type: :model do
       expect(accepted_at_2).to_not be_nil
       expect(accepted_at_1 < accepted_at_2).to be true
     end
+
+    it "should assign an editor" do
+      onboarding = create(:onboarding_invitation)
+      editor = create(:pending_editor)
+      expect(onboarding.accepted_at).to be_nil
+
+      onboarding.accepted!(editor)
+
+      expect(onboarding.reload.accepted_at).to_not be_nil
+      expect(onboarding.editor_id).to eq(editor.id)
+    end
   end
 
   describe "#accepted?" do

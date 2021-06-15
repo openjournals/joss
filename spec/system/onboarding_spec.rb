@@ -81,6 +81,17 @@ feature "Onboarding" do
       expect(ActionMailer::Base.deliveries.count).to eq(emails_sent + 1)
       expect(ActionMailer::Base.deliveries.last.to).to eq(["invited@editor.org"])
     end
+
+    scenario "List pending invitations" do
+      create(:onboarding_invitation, email: "invited@editor.org")
+      create(:onboarding_invitation, email: "accepted@editor.org", accepted_at: Time.now)
+
+      visit onboardings_path
+      within("#onboarding-invitations") {
+        expect(page).to have_content("invited@editor.org")
+        expect(page).to_not have_content("accepted@editor.org")
+      }
+    end
   end
 
   feature "Manage pending editors" do
@@ -160,6 +171,8 @@ feature "Onboarding" do
 
       expect(page).to have_content("Thanks! An editor in chief will review your info soon")
       expect(user.editor).to be_pending
+      expect(onboarding_invitation.reload).to be_accepted
+      expect(onboarding_invitation.editor).to eq(user.editor)
     end
 
     scenario "Pending editors can update their info" do

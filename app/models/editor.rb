@@ -8,6 +8,7 @@ class Editor < ApplicationRecord
   has_many :papers
   has_many :votes
   has_many :invitations
+  has_one :onboarding_invitation, dependent: :destroy
 
   before_save :clear_title, if: :board_removed?
   before_save :format_login, if: :login_changed?

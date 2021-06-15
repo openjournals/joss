@@ -9,6 +9,7 @@ class OnboardingsController < ApplicationController
 
   def add_editor
     if @editor.update(new_editor_params)
+      @onboarding.accepted!(@editor)
       flash[:notice] = "Thanks! An editor in chief will review your info soon"
     else
       flash[:error] = "Error saving your data: All fields are mandatory"
@@ -17,8 +18,8 @@ class OnboardingsController < ApplicationController
   end
 
   def index
-    @onboardings = OnboardingInvitation.all.order(last_sent_at: :desc)
-    @pending_editors = Editor.pending
+    @onboardings = OnboardingInvitation.pending_acceptance.order(last_sent_at: :desc)
+    @pending_editors = Editor.includes(:onboarding_invitation).pending
   end
 
   def create

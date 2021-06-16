@@ -33,6 +33,7 @@ Rails.application.routes.draw do
       get 'editor/:token', action: :editor, as: :editor
       post :add_editor
       post :accept_editor
+      post :invite_to_editors_team
     end
   end
 

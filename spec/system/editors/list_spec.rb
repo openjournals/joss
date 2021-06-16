@@ -44,7 +44,7 @@ feature "Editor list" do
       expect(page).to have_content('Computing, Test systems')
       expect(page).to have_content('Software testing editor')
       expect(page).to have_content('topic')
-      click_link 'List'
+      click_link "List"
       expect(current_path).to eq(editors_path)
     end
 
@@ -53,7 +53,7 @@ feature "Editor list" do
       click_link "Edit", href: edit_editor_path(Editor.find_by(login: 'tester'))
       fill_in :editor_category_list, with: "Fancy"
       click_on "Update Editor"
-      click_link 'List'
+      click_link "List"
       expect(current_path).to eq(editors_path)
       expect(page).to have_content('Fancy')
     end

@@ -99,6 +99,7 @@ feature "Onboarding" do
 
     before do
       login_as(admin)
+      allow(Repository).to receive(:editors).and_return([""])
     end
 
     scenario "List pending editors" do
@@ -121,7 +122,7 @@ feature "Onboarding" do
         click_link "Approve"
       end
 
-      expect(page).to have_content("Laura Edits (lauraedits33) accepted as topic editor!")
+      expect(page).to have_content("Laura Edits (@lauraedits33) accepted as topic editor!")
       expect(page).to_not have_css("#pending-editors")
 
       create(:pending_editor)
@@ -132,6 +133,61 @@ feature "Onboarding" do
 
       visit editors_path
       expect(page).to have_content("lauraedits33")
+    end
+
+    scenario "Update editor's info" do
+      user = create(:user, editor: pending_editor)
+      visit onboardings_path
+      within("#pending-editors") do
+        expect(page).to have_content("Laura Edits")
+        click_link "lauraedits33"
+      end
+      expect(page).to have_content("Laura Edits")
+      click_link "Edit"
+      fill_in :editor_first_name, with: "Lauren"
+      click_on "Update Editor"
+      click_link "List of pending editors"
+      expect(current_path).to eq(onboardings_path)
+      within("#pending-editors") do
+        expect(page).to_not have_content("Laura Edits")
+        expect(page).to have_content("Lauren Edits")
+      end
+    end
+
+    scenario "Invite to GH editors team" do
+      user = create(:user, editor: pending_editor)
+      onboarding = create(:onboarding_invitation, email: pending_editor.email)
+      onboarding.accepted!(pending_editor)
+
+      visit onboardings_path
+
+      expect(onboarding.invited_to_team_at).to be_blank
+      expect(Repository).to receive(:invite_to_editors_team).with("lauraedits33").and_return(true)
+      within("#pending-editors") do
+        expect(page).to have_content("Information registered. Ready to be invited to GitHub team")
+        click_link "Send invitation to join GitHub team"
+      end
+
+      expect(onboarding.reload.invited_to_team_at).to be_present
+      expect(page).to have_content("@lauraedits33 invited to GitHub Open Journals' editors team")
+
+      expect(Repository).to receive(:invite_to_editors_team).with("lauraedits33").and_return(true)
+      within("#pending-editors") do
+        expect(page).to have_content("Invitation to join organization sent. Pending acceptance.")
+        click_link "Re-send invitation to join GitHub organization"
+      end
+
+      expect(page).to have_content("@lauraedits33 invited to GitHub Open Journals' editors team")
+    end
+
+    scenario "Pending editors already in the GH editors team are detected" do
+      user = create(:user, editor: pending_editor)
+      expect(Repository).to receive(:editors).and_return(["@lauraedits33"])
+      visit onboardings_path
+
+      within("#pending-editors") do
+        expect(page).to have_content("Joined GitHub organization and editors team!")
+      end
     end
   end
 

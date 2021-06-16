@@ -2,7 +2,7 @@ class OnboardingsController < ApplicationController
   before_action :require_admin_user, except: [:editor, :add_editor]
   before_action :require_user, only: [:editor, :add_editor]
   before_action :check_invited_editor, only: [:editor, :add_editor]
-  before_action :load_editor, only: [:editor, :add_editor]
+  before_action :load_editor, only: [:editor, :add_editor, ]
 
   def editor
   end
@@ -11,10 +11,11 @@ class OnboardingsController < ApplicationController
     if @editor.update(new_editor_params)
       @onboarding.accepted!(@editor)
       flash[:notice] = "Thanks! An editor in chief will review your info soon"
+      redirect_to root_path
     else
       flash[:error] = "Error saving your data: All fields are mandatory"
+      redirect_to editor_onboardings_path(@onboarding.token)
     end
-    redirect_to editor_onboardings_path(@onboarding.token)
   end
 
   def index
@@ -35,7 +36,7 @@ class OnboardingsController < ApplicationController
   def accept_editor
     if editor = Editor.find(params[:editor_id])
       editor.accept!
-      flash[:notice] = "#{editor.full_name} (#{editor.login}) accepted as topic editor!"
+      flash[:notice] = "#{editor.full_name} (@#{editor.login}) accepted as topic editor!"
     end
     redirect_to onboardings_path
   end
@@ -52,6 +53,17 @@ class OnboardingsController < ApplicationController
     if onboarding = OnboardingInvitation.find(params[:id])
       onboarding.destroy!
       flash[:notice] = "Onboarding invitation deleted"
+    end
+    redirect_to onboardings_path
+  end
+
+  def invite_to_editors_team
+    editor = Editor.find(params[:editor_id])
+    if editor && Repository.invite_to_editors_team(editor.login)
+      editor.onboarding_invitation.invited_to_team!
+      flash[:notice] = "@#{editor.login} invited to GitHub Open Journals' editors team"
+    else
+      flash[:error] = "Failure sending GitHub invitation"
     end
     redirect_to onboardings_path
   end

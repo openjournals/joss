@@ -69,7 +69,7 @@
     <% end %>
   </div>
 
-  <div class="generic-content-item">
+  <div class="generic-content-item" id="editors">
     <h1>Pending editors</h1>
 
     <% if @pending_editors.empty? %>
@@ -94,13 +94,23 @@
               <%= link_to editor.login, editor, title: "View info" %></td>
             </td>
             <td>
-              <%= ["Invitation to join organization sent. Pending acceptance.", "Joined organization, pending adding to Editors team"].sample %>
+              <% if Repository.editors.include?("@#{editor.login}") %>
+                Joined GitHub organization and editors team!
+              <% elsif editor.onboarding_invitation&.invited_to_team? %>
+                Invitation to join organization sent. Pending acceptance.
+              <% else %>
+                Information registered. Ready to be invited to GitHub team
+              <% end %>
             </td>
             <td>
               <%= link_to("Approve", accept_editor_onboardings_path(editor_id: editor.id), method: :post, data: {confirm: "This will make #{editor.login} a topic editor" }) %>
             </td>
             <td>
-              <%= link_to("Re-send invitation to join GitHub organization", "#") %>
+              <% if editor.onboarding_invitation&.invited_to_team? %>
+                <%= link_to("Re-send invitation to join GitHub organization", invite_to_editors_team_onboardings_path(editor_id: editor.id), method: :post) %>
+              <% else %>
+                <%= link_to("Send invitation to join GitHub team", invite_to_editors_team_onboardings_path(editor_id: editor.id), method: :post) %>
+              <% end %>
             </td>
           </tr>
           <%- end %>

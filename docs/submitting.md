@@ -6,10 +6,10 @@ But please read these instructions carefully for a streamlined submission.
 
 ## Submission requirements
 
-- The software should be open source as per the [OSI definition](https://opensource.org/osd).
-- The software should have an **obvious** research application.
-- You should be a major contributor to the software you are submitting.
-- Your paper should not focus on new research results accomplished with the software.
+- The software must be open source as per the [OSI definition](https://opensource.org/osd).
+- The software must have an **obvious** research application.
+- You must be a major contributor to the software you are submitting.
+- Your paper must not focus on new research results accomplished with the software.
 - Your paper (`paper.md` and BibTeX files, plus any figures) must be hosted in a Git-based repository together with your software (although they may be in a short-lived branch which is never merged with the default).
 
 In addition, the software associated with your submission must:

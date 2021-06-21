@@ -34,6 +34,6 @@ class Notifications < ApplicationMailer
 
   def onboarding_invitation_email(onboarding_invitation)
     @onboarding_invitation = onboarding_invitation
-    mail(to: onboarding_invitation.email,subject: "Invitation to join the #{Rails.application.settings["abbreviation"]} editorial board")
+    mail(to: onboarding_invitation.email, subject: "Invitation to join the #{Rails.application.settings["abbreviation"]} editorial board")
   end
 end

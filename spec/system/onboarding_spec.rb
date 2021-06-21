@@ -214,7 +214,7 @@ feature "Onboarding" do
 
     scenario "User can access they own invitations" do
       visit editor_onboardings_path(onboarding_invitation.token)
-      expect(page).to have_content("Please complete your editor info:")
+      expect(page).to have_content("Please complete your editor information")
     end
 
     scenario "Accepting invitations create a pending editor" do

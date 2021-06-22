@@ -28,7 +28,7 @@ module Repository
     if invitee_id.present?
       org = Rails.application.settings["reviews"].split("/").first
       url = "https://api.github.com/orgs/#{org}/invitations"
-      headers = {"Authorization" => "token #{ENV['GH_TOKEN']}", "Content-Type" => "application/json", "Accept" => "application/vnd.github.v3+json"}
+      headers = {"Authorization" => "token #{GITHUB.access_token}", "Content-Type" => "application/json", "Accept" => "application/vnd.github.v3+json"}
       parameters = {invitee_id: invitee_id, team_ids: [config[nwo]["editor_team_id"]]}
 
       response = Faraday.post(url, parameters.to_json, headers)

@@ -32,7 +32,7 @@ We also recommend you gather the following information
 before deploying your application to Heroku:
 
 1. A [public ORCID API](https://members.orcid.org/api/about-public-api) key
-1. A GitHub [Personal Access Token](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token) for the automated account that users will interact with (e.g., `@Whedon`, `@RoboNeuro`)
+1. A GitHub [Personal Access Token](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token) for the automated account that users will interact with (e.g., `@Whedon`, `@RoboNeuro`). In order to be able to send invitations to reviewers and collaborators, the automated GitHub account must be an admin of the organization the reviews take place at. And the Personal Access Token should include the `admin:org` scope.
 1. An email address registered on a domain you control (i.e., not `gmail` or a related service)
 
 ```eval_rst

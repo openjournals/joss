@@ -223,6 +223,9 @@ feature "Onboarding" do
       fill_in :editor_last_name, with: "Tor"
       fill_in :editor_email, with: "edi@tor.com"
       fill_in :editor_login, with: "@test_editor"
+      fill_in :editor_url, with: "https://joss.theoj.org"
+      fill_in :editor_category_list, with: "bioinformatics, open science"
+      fill_in :editor_description, with: "I'm a great person"
       click_on "Save editor data"
 
       expect(page).to have_content("Thanks! An editor in chief will review your info soon")
@@ -236,12 +239,14 @@ feature "Onboarding" do
 
       visit editor_onboardings_path(onboarding_invitation.token)
       fill_in :editor_first_name, with: "UpdatedName"
+      fill_in :editor_category_list, with: "astrophysics, galaxies"
       click_on "Save editor data"
 
       expect(user.editor.reload.first_name).to eq("UpdatedName")
+      expect(user.editor.categories).to eq(["astrophysics", "galaxies"])
     end
 
-    scenario "All fields are mandatory" do
+    scenario "Name, Email and GitHub username are mandatory" do
       data = { editor_first_name: "Eddie",
                editor_last_name: "Tor",
                editor_email: "edi@tor.com",
@@ -255,7 +260,7 @@ feature "Onboarding" do
         end
         click_on "Save editor data"
 
-        expect(page).to have_content("Error saving your data: All fields are mandatory")
+        expect(page).to have_content("Error saving your data: Name, Email and GitHub username are mandatory")
       end
     end
   end

@@ -2,6 +2,7 @@ class Editor < ApplicationRecord
   validates :kind, presence: true, inclusion: { in: ["board", "topic", "emeritus", "pending"] }
   validates :first_name, presence: true
   validates :last_name, presence: true
+  validates :email, presence: true, unless: Proc.new { |editor| editor.kind == "emeritus"  }
   validates :login, presence: true, unless: Proc.new { |editor| editor.kind == "emeritus"  }
 
   belongs_to :user, optional: true

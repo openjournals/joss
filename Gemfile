@@ -16,10 +16,7 @@ gem 'omniauth-rails_csrf_protection'
 gem 'octokit', '~> 4.20'
 gem 'pdf-reader', '~> 2.4.2'
 gem 'pg', '~> 1.2.3'
-# TODO: Remove git reference and revert to latest release
-# once this bug is fixed and Rails 6.1 is supported:
-# https://github.com/mislav/will_paginate/pull/619
-gem 'will_paginate', git: "https://github.com/kvokka/will_paginate", branch: "fix-page_entries_info"
+gem 'will_paginate', '~> 3.3.0'
 gem 'rails', '6.1.4'
 gem 'responders'
 gem 'newrelic_rpm'

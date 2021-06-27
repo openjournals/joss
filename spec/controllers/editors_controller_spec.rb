@@ -37,10 +37,13 @@ RSpec.describe EditorsController, type: :controller do
   end
 
   describe "#index" do
-    it "assigns all editors as @editors" do
+    it "assigns editors to @active_editors and @emeritus_editors" do
       editor = create(:editor)
+      emeritus = create(:editor, kind: "emeritus")
+      create(:editor, kind: "pending")
       get :index
-      expect(assigns(:editors)).to eq([editor])
+      expect(assigns(:active_editors)).to eq([current_user.editor, editor])
+      expect(assigns(:emeritus_editors)).to eq([emeritus])
     end
 
     it "assigns grouped availability information" do

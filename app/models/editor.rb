@@ -1,16 +1,19 @@
 class Editor < ApplicationRecord
-  validates :kind, presence: true, inclusion: { in: ["board", "topic", "emeritus"] }
+  validates :kind, presence: true, inclusion: { in: ["board", "topic", "emeritus", "pending"] }
   validates :first_name, presence: true
   validates :last_name, presence: true
+  validates :email, presence: true, unless: Proc.new { |editor| editor.kind == "emeritus"  }
   validates :login, presence: true, unless: Proc.new { |editor| editor.kind == "emeritus"  }
 
   belongs_to :user, optional: true
   has_many :papers
   has_many :votes
   has_many :invitations
+  has_one :onboarding_invitation, dependent: :destroy
 
   before_save :clear_title, if: :board_removed?
   before_save :format_login, if: :login_changed?
+  before_save :add_default_avatar_url
 
   ACTIVE_EDITOR_STATES = [
     "board",
@@ -20,6 +23,7 @@ class Editor < ApplicationRecord
   scope :board, -> { where(kind: "board") }
   scope :topic, -> { where(kind: "topic") }
   scope :emeritus, -> { where(kind: "emeritus") }
+  scope :pending, -> { where(kind: "pending") }
   scope :active, -> { where(kind: ACTIVE_EDITOR_STATES) }
   scope :since, -> (date) { where('created_at >= ?', date) }
 
@@ -41,6 +45,17 @@ class Editor < ApplicationRecord
 
   def retired?
     kind == "emeritus"
+  end
+
+  def pending?
+    kind == "pending"
+  end
+
+  def accept!
+    update_attribute(:kind, "topic") if self.pending?
+    if invite = OnboardingInvitation.find_by(email: self.email)
+      invite.destroy
+    end
   end
 
   def category_list=(new_list = "")
@@ -69,5 +84,11 @@ class Editor < ApplicationRecord
 
   def format_login
     login.gsub!(/^@/, "")
+  end
+
+  def add_default_avatar_url
+    if avatar_url.blank? && login.present?
+      self.avatar_url = "https://github.com/#{login}.png"
+    end
   end
 end

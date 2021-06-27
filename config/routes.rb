@@ -24,6 +24,19 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :onboardings, only: [:index, :create, :destroy] do
+    member do
+      post :resend_invitation
+    end
+    collection do
+      get :pending
+      get 'editor/:token', action: :editor, as: :editor
+      post :add_editor
+      post :accept_editor
+      post :invite_to_editors_team
+    end
+  end
+
   get '/aeic/', to: "aeic_dashboard#index", as: "aeic_dashboard"
   get '/editors/lookup/:login', to: "editors#lookup"
   get '/papers/lookup/:id', to: "papers#lookup"

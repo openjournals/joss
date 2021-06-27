@@ -9,6 +9,7 @@ FactoryBot.define do
 
     factory :admin_user do
       admin { true }
+      editor { create(:editor) }
     end
 
     factory :no_email_user do

@@ -8,6 +8,15 @@ def set_signature(payload)
   'sha1=' + OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), ENV['GH_SECRET'], payload)
 end
 
+def headers(event, payload)
+  {
+    'CONTENT_TYPE' => 'application/json',
+    'ACCEPT' => 'application/json',
+    'HTTP_X_GITHUB_EVENT' => event.to_s,
+    'HTTP_X_HUB_SIGNATURE' => set_signature(payload)
+  }
+end
+
 describe DispatchController, type: :controller do
   render_views
 
@@ -26,9 +35,9 @@ describe DispatchController, type: :controller do
 
   describe "POST #github_receiver for REVIEW with invalid HTTP_X_HUB_SIGNATURE", type: :request do
     before do
-      signature = "foobarbaz"
+      wrong_payload = "foobarbaz"
       @paper = create(:paper, meta_review_issue_id: 78, review_issue_id: 79)
-      post '/dispatch', params: whedon_review_opened, headers: { 'CONTENT_TYPE' => 'application/json', 'ACCEPT' => 'application/json', 'HTTP_X_GITHUB_EVENT' => 'issues', 'HTTP_X_HUB_SIGNATURE' => signature }
+      post '/dispatch', params: whedon_review_opened, headers: headers(:issues, wrong_payload)
       @paper.reload
     end
 
@@ -41,9 +50,8 @@ describe DispatchController, type: :controller do
 
   describe "POST #github_receiver for PRE-REVIEW", type: :request do
     before do
-      signature = set_signature(whedon_pre_review_opened)
       @paper = create(:paper, meta_review_issue_id: 78, review_issue_id: nil)
-      post '/dispatch', params: whedon_pre_review_opened, headers: { 'CONTENT_TYPE' => 'application/json', 'ACCEPT' => 'application/json', 'HTTP_X_GITHUB_EVENT' => 'issues', 'HTTP_X_HUB_SIGNATURE' => signature }
+      post '/dispatch', params: whedon_pre_review_opened, headers: headers(:issues, whedon_pre_review_opened)
       @paper.reload
     end
 
@@ -53,11 +61,8 @@ describe DispatchController, type: :controller do
     end
 
     it "should UPDATE the activities when an issue is then commented on" do
-      signature = set_signature(whedon_pre_review_comment)
-      post '/dispatch', params: whedon_pre_review_comment, headers: { 'CONTENT_TYPE' => 'application/json', 'ACCEPT' => 'application/json', 'HTTP_X_GITHUB_EVENT' => 'issue_comment', 'HTTP_X_HUB_SIGNATURE' => signature }
-
-      signature = set_signature(editor_pre_review_comment)
-      post '/dispatch', params: editor_pre_review_comment, headers: { 'CONTENT_TYPE' => 'application/json', 'ACCEPT' => 'application/json', 'HTTP_X_GITHUB_EVENT' => 'issue_comment', 'HTTP_X_HUB_SIGNATURE' => signature }
+      post '/dispatch', params: whedon_pre_review_comment, headers: headers(:issue_comment, whedon_pre_review_comment)
+      post '/dispatch', params: editor_pre_review_comment, headers: headers(:issue_comment, editor_pre_review_comment)
       @paper.reload
 
       expect(response).to be_ok
@@ -70,9 +75,8 @@ describe DispatchController, type: :controller do
 
   describe "POST #github_receiver for REVIEW with labeling event", type: :request do
     before do
-      signature = set_signature(whedon_review_labeled)
       @paper = create(:paper, meta_review_issue_id: 78, review_issue_id: 79, labels: [{ "foo" => "efefef" }])
-      post '/dispatch', params: whedon_review_labeled, headers: { 'CONTENT_TYPE' => 'application/json', 'ACCEPT' => 'application/json', 'HTTP_X_GITHUB_EVENT' => 'issues', 'HTTP_X_HUB_SIGNATURE' => signature }
+      post '/dispatch', params: whedon_review_labeled, headers: headers(:issues, whedon_review_labeled)
       @paper.reload
     end
 
@@ -87,8 +91,7 @@ describe DispatchController, type: :controller do
       build(:paper, meta_review_issue_id: 78, suggested_editor: nil, review_issue_id: 79, labels: [{ "foo" => "efefef" }]).save(validate: false)
       @paper = Paper.find_by_meta_review_issue_id(78)
 
-      signature = set_signature(whedon_review_labeled)
-      post '/dispatch', params: whedon_review_labeled, headers: { 'CONTENT_TYPE' => 'application/json', 'ACCEPT' => 'application/json', 'HTTP_X_GITHUB_EVENT' => 'issues', 'HTTP_X_HUB_SIGNATURE' => signature }
+      post '/dispatch', params: whedon_review_labeled, headers: headers(:issues, whedon_review_labeled)
       @paper.reload
     end
 
@@ -100,9 +103,8 @@ describe DispatchController, type: :controller do
 
   describe "POST #github_receiver for REVIEW - open", type: :request, vcr: true do
     before do
-      signature = set_signature(whedon_review_opened)
       @paper = create(:paper, meta_review_issue_id: 78, review_issue_id: 79)
-      post '/dispatch', params: whedon_review_opened, headers: { 'CONTENT_TYPE' => 'application/json', 'ACCEPT' => 'application/json', 'HTTP_X_GITHUB_EVENT' => 'issues', 'HTTP_X_HUB_SIGNATURE' => signature }
+      post '/dispatch', params: whedon_review_opened, headers: headers(:issues, whedon_review_opened)
       @paper.reload
     end
 
@@ -114,10 +116,8 @@ describe DispatchController, type: :controller do
 
   describe "POST #github_receiver for REVIEW", type: :request, vcr: true do
     before do
-      signature = set_signature(whedon_review_edit)
-
       @paper = create(:paper, meta_review_issue_id: 78, review_issue_id: 79)
-      post '/dispatch', params: whedon_review_edit, headers: { 'CONTENT_TYPE' => 'application/json', 'ACCEPT' => 'application/json', 'HTTP_X_GITHUB_EVENT' => 'issues', 'HTTP_X_HUB_SIGNATURE' => signature }
+      post '/dispatch', params: whedon_review_edit, headers: headers(:issues, whedon_review_edit)
       @paper.reload
     end
 
@@ -138,10 +138,8 @@ describe DispatchController, type: :controller do
 
   describe "POST #github_receiver", type: :request do
     it "shouldn't do anything if the payload is not for one of the papers" do
-      signature = set_signature(whedon_pre_review_comment)
-
       random_paper = create(:paper, meta_review_issue_id: 1234)
-      post '/dispatch', params: whedon_pre_review_comment, headers: { 'CONTENT_TYPE' => 'application/json', 'ACCEPT' => 'application/json', 'HTTP_X_GITHUB_EVENT' => 'issue_comment', 'HTTP_X_HUB_SIGNATURE' => signature }
+      post '/dispatch', params: whedon_pre_review_comment, headers: headers(:issue_comment, whedon_pre_review_comment)
       random_paper.reload
 
       expect(response).to be_ok
@@ -149,10 +147,8 @@ describe DispatchController, type: :controller do
     end
 
     it "shouldn't do anything if a payload is received for the wrong repository" do
-      signature = set_signature(whedon_pre_review_comment_random)
-
       paper = create(:paper, meta_review_issue_id: 78)
-      post '/dispatch', params: whedon_pre_review_comment_random, headers: { 'CONTENT_TYPE' => 'application/json', 'ACCEPT' => 'application/json', 'HTTP_X_GITHUB_EVENT' => 'issue_comment', 'HTTP_X_HUB_SIGNATURE' => signature }
+      post '/dispatch', params: whedon_pre_review_comment_random, headers: headers(:issue_comment, whedon_pre_review_comment_random)
       paper.reload
 
       expect(response).to be_forbidden
@@ -164,7 +160,7 @@ describe DispatchController, type: :controller do
       signature = set_signature(whedon_review_comment)
 
       paper = create(:paper, meta_review_issue_id: 78, review_issue_id: 79)
-      post '/dispatch', params: whedon_review_comment, headers: { 'CONTENT_TYPE' => 'application/json', 'ACCEPT' => 'application/json', 'HTTP_X_GITHUB_EVENT' => 'issue_comment', 'HTTP_X_HUB_SIGNATURE' => signature }
+      post '/dispatch', params: whedon_review_comment, headers: headers(:issue_comment, whedon_review_comment)
       paper.reload
 
       expect(response).to be_ok

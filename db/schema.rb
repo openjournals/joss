@@ -31,7 +31,7 @@ ActiveRecord::Schema.define(version: 2021_06_15_101009) do
     t.datetime "updated_at", null: false
     t.integer "user_id"
     t.string "availability_comment"
-    t.integer "max_assignments", default: 2, null: false
+    t.integer "max_assignments", default: 4, null: false
     t.index ["user_id"], name: "index_editors_on_user_id"
   end
 

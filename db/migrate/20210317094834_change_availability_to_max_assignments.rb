@@ -1,6 +1,6 @@
 class ChangeAvailabilityToMaxAssignments < ActiveRecord::Migration[6.1]
   def change
-    add_column :editors,:max_assignments, :integer, null: false, default: 2
+    add_column :editors, :max_assignments, :integer, null: false, default: 2
     migrate_availability
     remove_column :editors, :availability, :string
   end

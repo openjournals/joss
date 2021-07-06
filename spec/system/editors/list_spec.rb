@@ -34,7 +34,7 @@ feature "Editor list" do
 
     scenario "show the list of editors" do
       expect(page).to have_content('Computing, Test systems')
-      expect(page).to have_content('2*')
+      expect(page).to have_content('4*')
     end
 
     scenario "show editor's info" do

@@ -1,7 +1,7 @@
 require 'open3'
 
 class Paper < ApplicationRecord
-  searchkick index_name: "joss-production"
+  searchkick index_name: "jose-production"
 
   include SettingsHelper
   serialize :activities, Hash
@@ -189,6 +189,16 @@ class Paper < ApplicationRecord
   def bibtex_authors
     return nil unless published?
     metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['middle_name']} #{a['last_name']}".squish}.join(' and ')
+  end
+
+  def bibtex_key
+    return nil unless published?
+    "#{metadata['paper']['authors'].first['last_name']}#{year}"
+  end
+
+  def bibtex_authors
+    return nil unless published?
+    metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['last_name']}"}.join(' and ')
   end
 
   def bibtex_key

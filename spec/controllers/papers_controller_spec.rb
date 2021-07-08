@@ -242,7 +242,7 @@ describe PapersController, type: :controller do
     end
 
     it "should return the correct status badge for an accepted paper" do
-      submitted_paper = create(:accepted_paper, doi: "10.21105/joss.12345")
+      submitted_paper = create(:accepted_paper, doi: "10.21105/jose.12345")
 
       get :status, params: {id: submitted_paper.sha}, format: "svg"
       expect(response.body).to match /10.21105/
@@ -285,7 +285,7 @@ describe PapersController, type: :controller do
       expect(parsed_response["editor"]).to eq("@arfon")
       expect(parsed_response["editor_name"]).to eq("Person McEditor")
       expect(parsed_response["editor_orcid"]).to eq("0000-0000-0000-1234")
-      expect(parsed_response["doi"]).to eq("10.21105/joss.00000")
+      expect(parsed_response["doi"]).to eq("10.21105/jose.00000")
       expect(parsed_response["published_at"]).to_not be_nil
     end
   end

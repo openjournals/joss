@@ -72,7 +72,7 @@ Before you submit, you should:
 .. important:: Begin your paper with a summary of the high-level functionality of your software for a non-specialist reader. Avoid jargon in this section.
 ```
 
-JOSS welcomes submissions from broadly diverse research areas. For this reason, we require that authors include in the paper some sentences that explain the software functionality and domain of use to a non-specialist reader. We also require that authors explain the research applications of the software. The paper should be between 250-1000 words.
+JOSS welcomes submissions from broadly diverse research areas. For this reason, we require that authors include in the paper some sentences that explain the software functionality and domain of use to a non-specialist reader. We also require that authors explain the research applications of the software. The paper should be between 250-1000 words. Authors submitting papers significantly longer than 1000 words may be asked to reduce the length of their paper.
 
 Your paper should include:
 

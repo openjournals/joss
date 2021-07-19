@@ -94,7 +94,7 @@ Reviewers are expected to install the software they are reviewing and to verify 
 
 Authors are strongly encouraged to include an automated test suite covering the core functionality of their software.
 
-> **Good:** An automated test suite hooked up to an external service such as Travis-CI or similar<br />
+> **Good:** An automated test suite hooked up to continuous integration<br />
 > **OK:** Documented manual steps that can be followed to objectively check the expected functionality of the software (e.g., a sample input file to assert behavior)<br />
 > **Bad (not acceptable):** No way for you, the reviewer, to objectively assess whether the software works
 

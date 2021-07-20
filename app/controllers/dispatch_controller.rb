@@ -1,4 +1,5 @@
 require 'base64'
+require 'issue'
 
 class DispatchController < ApplicationController
   include DispatchHelper
@@ -9,39 +10,18 @@ class DispatchController < ApplicationController
                                   :api_start_review, :api_withdraw ]
   respond_to :json
 
-  def github_recevier
-    payload_body = request.body.read
+  def github_receiver
+    webhook = Issue::Webhook.new(secret_token: ENV["GH_SECRET"],
+                                 origin: Rails.application.settings["reviews"],
+                                 accept_events: ["issues", "issue_comment"])
+    payload, error = webhook.parse_request(request)
 
-    unless verify_signature(payload_body)
-      head :unprocessable_entity and return
-    end
-
-    payload = JSON.parse(payload_body)
-
-    if valid_webhook(payload)
-      handle(payload)
+    if webhook.errored?
+      head error.status, msg: error.message
+    else
+      parse_payload!(payload)
       head 200
-    else
-      head :unprocessable_entity
     end
-  end
-
-  def verify_signature(payload_body)
-    signature = 'sha1=' + OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), ENV['GH_SECRET'], payload_body)
-    return Rack::Utils.secure_compare(signature, request.env['HTTP_X_HUB_SIGNATURE'])
-  end
-
-  def valid_webhook(payload)
-    if payload['issue'].nil?
-      return false
-    else
-      return false unless origin_correct?(payload)
-      return true
-    end
-  end
-
-  def origin_correct?(payload)
-    payload['repository']['full_name'] == Rails.application.settings["reviews"]
   end
 
   def api_assign_editor

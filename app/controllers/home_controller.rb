@@ -54,11 +54,18 @@ class HomeController < ApplicationController
   end
 
   def reviews
+    sort = "complete"
     case params[:order]
-    when "desc"
+    when "complete-desc"
       @order = "desc"
-    when "asc"
+    when "complete-asc"
       @order = "asc"
+    when "active-desc"
+      @order = "desc"
+      sort = "active"
+    when "active-asc"
+      @order = "asc"
+      sort = "active"
     when nil
       @order = "desc"
     else
@@ -68,10 +75,17 @@ class HomeController < ApplicationController
     if params[:editor]
       @editor = Editor.find_by_login(params[:editor])
 
-      @papers = Paper.unscoped.in_progress.where(editor: @editor).order(percent_complete: @order).paginate(
-        page: params[:page],
-        per_page: 20
-      )
+      if sort == "active"
+        @papers = Paper.unscoped.in_progress.where(editor: @editor).order(last_activity: @order).paginate(
+          page: params[:page],
+          per_page: 20
+        )
+      else
+        @papers = Paper.unscoped.in_progress.where(editor: @editor).order(percent_complete: @order).paginate(
+          page: params[:page],
+          per_page: 20
+        )
+      end
     else
       @papers = Paper.everything.paginate(
                   page: params[:page],
@@ -81,11 +95,18 @@ class HomeController < ApplicationController
   end
 
   def in_progress
+    sort = "complete"
     case params[:order]
-    when "desc"
+    when "complete-desc"
       @order = "desc"
-    when "asc"
+    when "complete-asc"
       @order = "asc"
+    when "active-desc"
+      @order = "desc"
+      sort = "active"
+    when "active-asc"
+      @order = "asc"
+      sort = "active"
     when nil
       @order = "desc"
     else
@@ -94,10 +115,17 @@ class HomeController < ApplicationController
 
     @editor = current_user.editor
 
-    @papers = Paper.unscoped.in_progress.order(percent_complete: @order).paginate(
-                page: params[:page],
-                per_page: 20
-              )
+    if sort == "active"
+      @papers = Paper.unscoped.in_progress.order(last_activity: @order).paginate(
+        page: params[:page],
+        per_page: 20
+      )
+    else
+      @papers = Paper.unscoped.in_progress.order(percent_complete: @order).paginate(
+        page: params[:page],
+        per_page: 20
+      )
+    end
 
     load_pending_invitations_for_papers(@papers)
 
@@ -105,11 +133,18 @@ class HomeController < ApplicationController
   end
 
   def all
+    sort = "complete"
     case params[:order]
-    when "desc"
+    when "complete-desc"
       @order = "desc"
-    when "asc"
+    when "complete-asc"
       @order = "asc"
+    when "active-desc"
+      @order = "desc"
+      sort = "active"
+    when "active-asc"
+      @order = "asc"
+      sort = "active"
     when nil
       @order = "desc"
     else
@@ -118,10 +153,17 @@ class HomeController < ApplicationController
 
     @editor = current_user.editor
 
-    @papers = Paper.unscoped.all.order(percent_complete: @order).paginate(
-              page: params[:page],
-              per_page: 20
-            )
+    if sort == "active"
+      @papers = Paper.unscoped.all.order(last_activity: @order).paginate(
+        page: params[:page],
+        per_page: 20
+      )
+    else
+      @papers = Paper.unscoped.all.order(percent_complete: @order).paginate(
+        page: params[:page],
+        per_page: 20
+      )
+    end
 
     load_pending_invitations_for_papers(@papers)
 

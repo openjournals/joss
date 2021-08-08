@@ -71,12 +71,26 @@ module HomeHelper
     end
   end
 
+  def sort_activity(sort_order)
+    capture do
+      if sort_order == "active-desc"
+        concat(link_to octicon("chevron-up"), "#{request.path}?order=active-asc")
+      elsif sort_order == "active-asc"
+        concat(link_to octicon("chevron-down"), "#{request.path}?order=active-desc")
+      else
+        concat(link_to octicon("chevron-down"), "#{request.path}?order=active-desc")
+      end
+    end
+  end
+  
   def sort_icon(sort_order)
     capture do
-      if sort_order == "desc"
-        concat(link_to octicon("chevron-up"), "#{request.path}?order=asc")
-      elsif sort_order == "asc"
-        concat(link_to octicon("chevron-down"), "#{request.path}?order=desc")
+      if sort_order == "complete-desc"
+        concat(link_to octicon("chevron-up"), "#{request.path}?order=complete-asc")
+      elsif sort_order == "complete-asc"
+        concat(link_to octicon("chevron-down"), "#{request.path}?order=complete-desc")
+      else sort_order == "complete-asc"
+        concat(link_to octicon("chevron-down"), "#{request.path}?order=complete-desc")
       end
     end
   end

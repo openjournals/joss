@@ -45,22 +45,22 @@ To recruit reviewers, the handling editor can mention them in the `PRE-REVIEW` i
 
 **Reviewer Considerations**
 
-- It is rare that all reviewers have the expertise to cover all aspects of a submission (e.g., knows the language really well and knows the scientific discipline well). As such, a good practice is to try and make sure that between the two or three reviewers, all aspects of the submission are covered. 
+- It is rare that all reviewers have the expertise to cover all aspects of a submission (e.g., knows the language really well and knows the scientific discipline well). As such, a good practice is to try and make sure that between the two or three reviewers, all aspects of the submission are covered.
 - Selection and assignment of reviewers should adhere to the [JOSS COI policy](https://joss.theoj.org/about#ethics).
 
 **Potential ways to find reviewers**
 
 Finding reviewers can be challenging, especially if a submission is outside of your immediate area of expertise. Some strategies you can use to identify potential candidates:
 
-- Search the [reviewer spreadsheet](https://bit.ly/joss-reviewers) of volunteer reviewers. 
+- Search the [reviewer spreadsheet](https://bit.ly/joss-reviewers) of volunteer reviewers.
   - When using this spreadsheet, pay attention to the number of reviews this individual is already doing to avoid overloading them.
-  - It can be helpful to use the "Data > Filter Views" capability to temporarily filter the table view to include only people with language or domain expertise matching the paper. 
+  - It can be helpful to use the "Data > Filter Views" capability to temporarily filter the table view to include only people with language or domain expertise matching the paper.
 - Ask the author(s): You are free to ask the submitting author to suggest possible reviewers by using the [reviewer spreadsheet](https://bit.ly/joss-reviewers) and also people from their professional network. In this situation, the editor still needs to verify that their suggestions are appropriate.
 - Use your professional network: You're welcome to invite people you know of who might be able to give a good review.
 - Search Google and GitHub for related work, and write to the authors of that related work.
   - You might like to try [this tool](https://github.com/dfm/joss-reviewer) from @dfm.
 - Ask on social networks: Sometimes asking on Twitter for reviewers can identify good candidates.
-- Check the work being referenced in the submission: 
+- Check the work being referenced in the submission:
   - Authors of software that is being built on might be interested in reviewing the submission.
   - Users of the the software that is being submission be interested in reviewing the submission
 - Avoid asking JOSS editors to review: If at all possible, avoid asking JOSS editors to review as they are generally very busy editing their own papers.
@@ -371,7 +371,7 @@ Being on the JOSS editorial team means that there can be a _lot_ of notification
 
 When you're added to the editorial team on GitHub, you will almost certainly find yourself subscribed (watching) to the [`joss-reviews`](https://github.com/openjournals/joss-reviews) repository. The first thing you should do is set yourself to 'not watching':
 
-![watching](https://cloud.githubusercontent.com/assets/4483/20250593/64d7ce48-a9de-11e6-9225-d3dfb3e48e68.png)
+![Repository notifications settings](https://cloud.githubusercontent.com/assets/4483/20250593/64d7ce48-a9de-11e6-9225-d3dfb3e48e68.png)
 
 Please note, that by not watching the reviews repository, you will still receive notifications for issues (reviews) where you are `@mentioned`.
 

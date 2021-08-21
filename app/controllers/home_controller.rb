@@ -34,16 +34,34 @@ class HomeController < ApplicationController
   end
 
   def incoming
-    if params[:order]
-      @papers = Paper.unscoped.in_progress.where(editor: nil).order(percent_complete: params[:order]).paginate(
+    sort = "complete"
+    case params[:order]
+    when "complete-desc"
+      @order = "desc"
+    when "complete-asc"
+      @order = "asc"
+    when "active-desc"
+      @order = "desc"
+      sort = "active"
+    when "active-asc"
+      @order = "asc"
+      sort = "active"
+    when nil
+      @order = "desc"
+    else
+      @order = "desc"
+    end
+
+    if sort == "active"
+      @papers = Paper.unscoped.in_progress.where(editor: nil).order(last_activity: @order).paginate(
                   page: params[:page],
                   per_page: 20
                 )
     else
-      @papers = Paper.in_progress.where(editor: nil).paginate(
-                  page: params[:page],
-                  per_page: 20
-                )
+      @papers = Paper.unscoped.in_progress.where(editor: nil).order(percent_complete: @order).paginate(
+        page: params[:page],
+        per_page: 20
+      )
     end
 
     load_pending_invitations_for_papers(@papers)

@@ -58,7 +58,7 @@ class HomeController < ApplicationController
                   per_page: 20
                 )
     else
-      @papers = Paper.unscoped.in_progress.where(editor: nil).order(percent_complete: @order).paginate(
+      @papers = Paper.in_progress.where(editor: nil).paginate(
         page: params[:page],
         per_page: 20
       )

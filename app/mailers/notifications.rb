@@ -1,5 +1,5 @@
 class Notifications < ApplicationMailer
-  EDITOR_EMAILS = [Rails.application.settings["editor_email"]]
+  EDITOR_EMAILS = [Rails.application.settings["editor_email"], "gorjor@umich.edu"]
 
   def submission_email(paper)
     aeic_emails = paper.track.aeic_emails
@@ -19,12 +19,12 @@ class Notifications < ApplicationMailer
 
   def editor_invite_email(paper, editor)
     @paper = paper
-    mail(to: editor.email, subject: "JOSS editorial invite: #{paper.title}")
+    mail(to: editor.email, subject: "JOSE editorial invite: #{paper.title}")
   end
 
   def editor_invite_email(paper, editor)
     @paper = paper
-    mail(to: editor.email, subject: "JOSS editorial invite: #{paper.title}")
+    mail(to: editor.email, subject: "JOSE editorial invite: #{paper.title}")
   end
 
   def author_submission_email(paper)

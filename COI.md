@@ -1,4 +1,4 @@
-# JOSS Conflict of Interest Policy
+# JOSE Conflict of Interest Policy
 
 The definition of a conflict of Interest in peer review is a circumstance that makes you "unable to make an impartial scientific judgment or evaluation." ([PNAS Conflict of Interest Policy](http://www.pnas.org/site/authors/coi.xhtml)). JOSS is concerned with avoiding any actual conflicts of interest, and being sufficiently transparent that we avoid the appearance of conflicts of interest as well.
 

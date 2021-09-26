@@ -36,7 +36,7 @@ As a rule of thumb, JOSS' minimum allowable contribution should represent **not 
 - Whether the software has already been cited in academic papers.
 - Whether the software is sufficiently useful that it is _likely to be cited_ by your peer group.
 
-In addition, JOSS requires that software should be feature-complete (i.e., no half-baked solutions), packaged appropriately according to common community standards for the programming language being used, and designed for maintainable extension (not one-off modifications of existing tools). "Minor utility" packages, including "thin" API clients, and single-function packages are not acceptable.
+In addition, JOSS requires that software should be feature-complete (i.e., no half-baked solutions), packaged appropriately according to common community standards for the programming language being used (e.g., [Python](https://packaging.python.org), [R](https://r-pkgs.org/index.html)), and designed for maintainable extension (not one-off modifications of existing tools). "Minor utility" packages, including "thin" API clients, and single-function packages are not acceptable.
 
 ### Co-publication of science, methods, and software
 

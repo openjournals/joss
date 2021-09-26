@@ -56,11 +56,11 @@ The authors should clearly state what problems the software is designed to solve
 
 #### Installation instructions
 
-There should be a clearly-stated list of dependencies. Ideally these should be handled with an automated package management solution.
+Software depdendencies should be clearly documented and their installation handled by an automated proceedure. Where possible software installation should be managed with a package manager, however this criterion depends upon the maturity and availability of software packaging and distribution in the programming language being used. For example, Python packages should be `pip install`able, and have adopted [packaging conventions](https://packaging.python.org), Fortran submissions with a Makefile may be sufficient.
 
-> **Good:** A package management file such as a Gemfile or package.json or equivalent<br />
-> **OK:** A list of dependencies to install<br />
-> **Bad (not acceptable):** Reliance on other software not listed by the authors
+> **Good:** The software is simple to install, and follows established distribution and dependency management approaches for the language being used<br />
+> **OK:** A list of dependencies to install, together with some kind of script to handle their installation (e.g., a Makefile<br />
+> **Bad (not acceptable):** Dependencies are unclear, and/or installation process lacks automation
 
 #### Example usage
 

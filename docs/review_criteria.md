@@ -56,7 +56,7 @@ The authors should clearly state what problems the software is designed to solve
 
 #### Installation instructions
 
-Software depdendencies should be clearly documented and their installation handled by an automated proceedure. Where possible, software installation should be managed with a package manager. However, this criterion depends upon the maturity and availability of software packaging and distribution in the programming language being used. For example, Python packages should be `pip install`able, and have adopted [packaging conventions](https://packaging.python.org), while Fortran submissions with a Makefile may be sufficient.
+Software dependencies should be clearly documented and their installation handled by an automated proceedure. Where possible, software installation should be managed with a package manager. However, this criterion depends upon the maturity and availability of software packaging and distribution in the programming language being used. For example, Python packages should be `pip install`able, and have adopted [packaging conventions](https://packaging.python.org), while Fortran submissions with a Makefile may be sufficient.
 
 > **Good:** The software is simple to install, and follows established distribution and dependency management approaches for the language being used<br />
 > **OK:** A list of dependencies to install, together with some kind of script to handle their installation (e.g., a Makefile<br />

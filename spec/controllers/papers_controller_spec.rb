@@ -270,6 +270,7 @@ describe PapersController, type: :controller do
       parsed_response = JSON.parse(response.body)
       expect(parsed_response["title"]).to eq(paper.title)
       expect(parsed_response["state"]).to eq("superceded")
+      expect(parsed_response["software_repository"]).to eq("http://github.com/arfon/fidgit")
       expect(parsed_response["doi"]).to be_nil
       expect(parsed_response["published_at"]).to be_nil
     end
@@ -282,6 +283,7 @@ describe PapersController, type: :controller do
       parsed_response = JSON.parse(response.body)
       expect(parsed_response["title"]).to eq(paper.title)
       expect(parsed_response["state"]).to eq("accepted")
+      expect(parsed_response["software_repository"]).to eq("http://github.com/arfon/fidgit")
       expect(parsed_response["editor"]).to eq("@arfon")
       expect(parsed_response["editor_name"]).to eq("Person McEditor")
       expect(parsed_response["editor_orcid"]).to eq("0000-0000-0000-1234")

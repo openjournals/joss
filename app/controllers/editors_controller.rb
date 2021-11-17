@@ -28,8 +28,9 @@ class EditorsController < ApplicationController
       url = "https://github.com/#{params[:login]}"
     end
 
-    response = {  name: "#{editor.first_name} #{editor.last_name}",
-                  url: url }
+    response = {  name: editor.full_name,
+                  url: url,
+                  orcid: editor.orcid }
 
     render json: response.to_json
   end

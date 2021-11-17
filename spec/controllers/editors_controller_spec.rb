@@ -18,6 +18,7 @@ RSpec.describe EditorsController, type: :controller do
     it "should allow the lookup of an editor" do
       editor = create(:editor)
       get :lookup, params: {login: editor.login }
+
       expect(JSON.parse(response.body)['name']).to eq('Person McEditor')
       expect(JSON.parse(response.body)['url']).to eq('http://placekitten.com')
     end
@@ -158,6 +159,27 @@ RSpec.describe EditorsController, type: :controller do
       editor = create(:editor)
       delete :destroy, params: {id: editor.to_param}
       expect(response).to redirect_to(editors_url)
+    end
+  end
+
+  describe "#lookup" do
+    it "returns nil orcid if no associated user" do
+      editor = create(:editor)
+      get :lookup, params: {login: editor.login }
+
+      expect(JSON.parse(response.body)['name']).to eq('Person McEditor')
+      expect(JSON.parse(response.body)['url']).to eq('http://placekitten.com')
+      expect(JSON.parse(response.body)['orcid']).to eq(nil)
+    end
+
+    it "includes editor's user orcid" do
+      editor = create(:editor, user: create(:user))
+
+      get :lookup, params: {login: editor.login }
+
+      expect(JSON.parse(response.body)['name']).to eq('Person McEditor')
+      expect(JSON.parse(response.body)['url']).to eq('http://placekitten.com')
+      expect(JSON.parse(response.body)['orcid']).to eq('0000-0000-0000-1234')
     end
   end
 end

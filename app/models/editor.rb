@@ -67,7 +67,7 @@ class Editor < ApplicationRecord
   end
 
   def orcid
-    user.uid
+    user.uid if user
   end
 
   def clear_title

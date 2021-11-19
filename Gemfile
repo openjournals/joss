@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 ruby '3.0.0'
 
-gem 'aasm', '~> 5.0.5'
+gem 'aasm', '~> 5.2.0'
 gem 'chartkick'
 gem 'bootsnap'
 gem 'dotenv', '~> 2.7.6'

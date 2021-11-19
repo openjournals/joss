@@ -43,7 +43,7 @@ class Paper < ApplicationRecord
     state :withdrawn
 
     event :reject do
-      transitions to: :rejected
+      transitions to: :rejected, after: :expire_invitations
     end
 
     event :start_meta_review do
@@ -174,6 +174,10 @@ class Paper < ApplicationRecord
     return false unless editor = Editor.find_by_login(editor_handle)
     Notifications.editor_invite_email(self, editor).deliver_now
     invitations.create(editor: editor)
+  end
+
+  def expire_invitations
+    Invitation.expire_all_for_paper(self)
   end
 
   def scholar_title

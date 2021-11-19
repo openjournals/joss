@@ -168,6 +168,18 @@ describe Paper do
 
       expect(paper.state).to eq('rejected')
     end
+
+    it "should expire all pending invitations" do
+      paper = create(:paper, state: "submitted")
+      invitation_1 = create(:invitation, :pending, paper: paper)
+      invitation_2 = create(:invitation, :pending, paper: paper)
+
+      paper.reject!
+
+      expect(invitation_1.reload).to be_expired
+      expect(invitation_2.reload).to be_expired
+      expect(paper.state).to eq('rejected')
+    end
   end
 
   context "when starting review" do

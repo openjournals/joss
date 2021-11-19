@@ -39,4 +39,8 @@ class Invitation < ApplicationRecord
       end
     end
   end
+
+  def self.expire_all_for_paper(paper)
+    pending.where(paper: paper).update_all(state: "expired")
+  end
 end

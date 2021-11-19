@@ -48,4 +48,31 @@ describe Invitation do
       expect { Invitation.resolve_pending(create(:paper), create(:editor)) }.to_not change { Invitation.accepted.count }
     end
   end
+
+  describe ".expire_all_for_paper" do
+    it "should expire all pending invitations for the paper" do
+      paper = create(:paper)
+      invitation_1 = create(:invitation, :pending, paper: paper)
+      invitation_2 = create(:invitation, :pending, paper: paper)
+      invitation_3 = create(:invitation, :pending)
+
+      Invitation.expire_all_for_paper(paper)
+      expect(invitation_1.reload).to be_expired
+      expect(invitation_2.reload).to be_expired
+      expect(invitation_3.reload).to_not be_expired
+    end
+
+    it "should not change accepted invitations state" do
+      invitation = create(:invitation, :accepted)
+      expect { Invitation.expire_all_for_paper(invitation.paper) }.to_not change { Invitation.pending.count }
+      expect { Invitation.expire_all_for_paper(invitation.paper) }.to_not change { Invitation.accepted.count }
+    end
+
+    it "should do nothing if paper has no pending invitations" do
+      create(:invitation, :accepted)
+      create(:invitation, :pending)
+      expect { Invitation.expire_all_for_paper(create(:paper)) }.to_not change { Invitation.pending.count }
+      expect { Invitation.expire_all_for_paper(create(:paper)) }.to_not change { Invitation.accepted.count }
+    end
+  end
 end

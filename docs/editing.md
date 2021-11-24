@@ -181,7 +181,7 @@ Dear Dr. Jekyll,
 
 I found you following links from the page of The Super Project and/or on Twitter. This
 message is to ask if you can help us out with a submission to JOSS (The Journal of Open
-Source Software), where I’m an editor.
+Source Software, https://joss.theoj.org), where I’m an editor.
 
 JOSS publishes articles about open source research software. The submission I'd like you
 to review is titled: "great software name here"

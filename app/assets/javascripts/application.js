@@ -21,9 +21,14 @@
 $(document).ready(function(){
   var clipboard = new Clipboard('.clipboard-btn', {
     text: function(trigger) {
-      target = trigger.getAttribute('data-clipboard-target').substring(1);
-      console.log(target);
-      return document.getElementById(target).innerHTML;
+      if (trigger.getAttribute('data-clipboard-target')) {
+        target = trigger.getAttribute('data-clipboard-target').substring(1);
+        console.log(target);
+        return document.getElementById(target).innerHTML;
+      } 
+      else if (trigger.getAttribute('data-clipboard-text')) {
+        return trigger.getAttribute('data-clipboard-text');
+      } 
     }
   });
 });

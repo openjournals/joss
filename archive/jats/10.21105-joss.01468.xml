@@ -1,0 +1,687 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1468</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01468</article-id>
+<title-group>
+<article-title>WRF-CMake: integrating CMake support into the Advanced
+Research WRF (ARW) modelling system</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-3299-1382</contrib-id>
+<string-name>M. Riechert</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-7071-7547</contrib-id>
+<string-name>D. Meyer</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Independent scholar</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-05-14">
+<day>14</day>
+<month>5</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>41</issue>
+<fpage>1468</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>cmake</kwd>
+<kwd>fortran</kwd>
+<kwd>meteorology</kwd>
+<kwd>weather</kwd>
+<kwd>modelling</kwd>
+<kwd>nwp</kwd>
+<kwd>wrf</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The Weather Research and Forecasting model
+  (WRF<xref ref-type="fn" rid="fn1">1</xref>) model
+  (<xref alt="Skamarock et al., 2019" rid="ref-Skamarock2019" ref-type="bibr">Skamarock
+  et al., 2019</xref>) is an atmospheric modelling system widely used in
+  operational forecasting and atmospheric research
+  (<xref alt="Powers et al., 2017" rid="ref-Powers2017" ref-type="bibr">Powers
+  et al., 2017</xref>). WRF is released as a free and open-source
+  software and officially supported to run on Unix and Unix-like
+  operating systems and on several hardware architectures from
+  single-core computers to multi-core supercomputers. Its current build
+  system relies on several bespoke hand-written Makefiles, and Perl and
+  Shell scripts that have been supported and extended during the many
+  years of development.</p>
+  <p>The use of build script generation tools, that is, tools that
+  generate files for native build systems from specifications in a
+  high-level language, rather than manually maintaining build scripts
+  for different environments and platforms, can be useful to reduce code
+  duplication and to minimize issues with code not building correctly
+  (<xref alt="Hoffman et al., 2009" rid="ref-Hoffman2009" ref-type="bibr">Hoffman
+  et al., 2009</xref>), to make software more accessible to a broader
+  audience, and the support less expensive
+  (<xref alt="Heroux &amp; Willenbring, 2009" rid="ref-Heroux2009" ref-type="bibr">Heroux
+  &amp; Willenbring, 2009</xref>). As such, a common build script
+  generation tool is
+  <ext-link ext-link-type="uri" xlink:href="https://cmake.org/">CMake</ext-link>.
+  Today, CMake is employed in several projects such as
+  <ext-link ext-link-type="uri" xlink:href="https://www.hdfgroup.org/">HDF5</ext-link>,
+  <ext-link ext-link-type="uri" xlink:href="https://energyplus.net/">EnergyPlus</ext-link>,
+  and
+  <ext-link ext-link-type="uri" xlink:href="https://www.paraview.org/">ParaView</ext-link>
+  to build modern software written in C, C++, and Fortran in high
+  performance computing (HPC) environments and, by CERN, to allow users
+  to easily set-up and build several million lines of C++ and Python
+  code used in the offline software of the ATLAS experiment at the Large
+  Hadron Collider (LHC)
+  (<xref alt="Elmsheuser et al., 2017" rid="ref-Elmsheuser2017" ref-type="bibr">Elmsheuser
+  et al., 2017</xref>).</p>
+  <p><ext-link ext-link-type="uri" xlink:href="https://github.com/WRF-CMake/WRF">WRF-CMake</ext-link>
+  aims at helping model developers and end-users by adding CMake support
+  to the latest version of WRF and the WRF Processing System (WPS),
+  while coexisting with the existing build set-up. The main goals of
+  WRF-CMake are to simplify the build process involved in developing and
+  building WRF and WPS, add support for automated testing using
+  continuous integration (CI), and the generation of pre-built binary
+  releases for Linux, macOS, and Windows thus allowing non-expert users
+  to get started with their simulations in a few minutes, or integrating
+  WRF and WPS into other software (see, for example, the
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/GIS4WRF/gis4wrf">GIS4WRF</ext-link>
+  project
+  (<xref alt="Meyer &amp; Riechert, 2019" rid="ref-Meyer2019" ref-type="bibr">Meyer
+  &amp; Riechert, 2019</xref>)). The WRF-CMake project provides model
+  developers, code maintainers, and end-users wishing to build WRF and
+  WPS on their system several advantages such as robust incremental
+  rebuilds, dependency analysis of Fortran code, flexible library
+  dependency discovery, automatic construction of compiler command-lines
+  based on the detected compiler, and integrated support for MPI and
+  OpenMP. Furthermore, by using a single language to control the build,
+  CMake removes the need to write and support several hand-written
+  Makefiles, and Perl and Shell scripts. The current WRF-CMake set-up on
+  GitHub offers model developers and code maintainers an automated
+  testing infrastructure (see
+  <xref alt="Testing" rid="testing">Testing</xref>) for Linux, macOS,
+  and Windows, and allows end-users to directly download pre-built
+  binaries for common configurations and architectures from the
+  project’s website (experimental). WRF-CMake is available as a free and
+  open-source project on GitHub at
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/WRF-CMake">https://github.com/WRF-CMake</ext-link>
+  and currently includes CMake support for the main
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/WRF-CMake/WRF">Advanced
+  Research WRF (ARW) core</ext-link> and
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/WRF-CMake/WPS">WPS</ext-link>.</p>
+</sec>
+<sec id="testing">
+  <title>Testing</title>
+  <p>A fundamental aspect of software development is testing. Ideally,
+  model components should be tested individually and under several
+  testing methodologies
+  (<xref alt="Feathers, 2004" rid="ref-Feathers2004" ref-type="bibr">Feathers,
+  2004</xref>). Here, however, as the WRF framework does not offer a way
+  to unit test its components, we instead run separate build and
+  regression tests to evaluate the effects of our changes. While build
+  tests are used to check the absence of compilation errors, regression
+  tests are used to estimate the size of simulation errors resulting
+  from our change.</p>
+  <p>Build tests are performed for all supported build variants (Table
+  1) using CI services at every commit. As noted by Hodyss and Majumdar
+  (<xref alt="2007" rid="ref-Hodyss2007" ref-type="bibr">2007</xref>),
+  and Geer
+  (<xref alt="2016" rid="ref-Geer2016" ref-type="bibr">2016</xref>), the
+  high sensitivity to initial conditions of dynamical systems, such as
+  the ones used in weather models, can lead to large differences in
+  skill between any two forecasts. It is this high sensitivity to
+  initial conditions that can obscure the source of model error, whether
+  this originates from a change in compiler or architecture, an actual
+  coding error, or indeed, the intrinsic nature of the dynamical system
+  employed.</p>
+  <table-wrap>
+    <caption>
+      <p>Build variants used in build and regression tests.
+      <monospace>Make</monospace>: original WRF build system files,
+      <monospace>CMake</monospace>: this paper;
+      <monospace>Debug</monospace>: compiler optimizations disabled,
+      <monospace>Release</monospace>: enabled;
+      <monospace>serial</monospace>: single processor,
+      <monospace>dmpar</monospace>: multiple with distributed memory
+      (MPI), <monospace>smpar</monospace>: multiple with shared memory
+      (OpenMP), <monospace>dm_sm</monospace>: multiple with MPI and
+      OpenMP.</p>
+    </caption>
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Variant</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>OS</td>
+          <td><monospace>Linux</monospace>,
+          <monospace>macOS</monospace>,
+          <monospace>Windows</monospace></td>
+        </tr>
+        <tr>
+          <td>Build tool</td>
+          <td><monospace>Make</monospace>,
+          <monospace>CMake</monospace></td>
+        </tr>
+        <tr>
+          <td>Build type</td>
+          <td><monospace>Debug</monospace>,
+          <monospace>Release</monospace></td>
+        </tr>
+        <tr>
+          <td>Mode</td>
+          <td><monospace>serial</monospace>,
+          <monospace>dmpar</monospace>, <monospace>smpar</monospace>,
+          <monospace>dm_sm</monospace></td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>As a result, the impact of our changes are evaluated using the
+  range-normalized relative percentage error
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{\delta}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝛅</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  and range-normalized root-mean-square percentage error (NRMSPE;
+  Appendix A). These are computed per domain for all grid points, and
+  for all vertical levels. The errors are assessed by (a) comparing the
+  outputs of prognostic-variable outputs (Table 2) from WRF (Make)
+  against those from WRF-CMake and (b) comparing the outputs for all
+  build variants (for both Make and CMake) against a reference build
+  variant defined as <monospace>Linux/Make/Debug/serial</monospace>.</p>
+  <p>These tests are then run for all supported build variants (Table 1)
+  using the
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/WRF-CMake/wats">WRF-CMake
+  Automated Testing Suite (WATS)</ext-link> and a subset of
+  namelists<xref ref-type="fn" rid="fn2">2</xref> from the official
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/wrf-model/WTF">WRF
+  Testing Framework</ext-link>. These are run on CI services at major
+  code changes (e.g. before merging pull requests), and for 1 hour of
+  simulation time, to constrain computing resources.</p>
+  <p>Here, we report the summary results for the domain showing the
+  greatest error (i.e. innermost; domain 2) after simulating for 60
+  minutes. Values of <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{\delta}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝛅</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  in the extended boxplots (Figure 1 and 3) are aggregated for all
+  quantities reported in Table 2.</p>
+  <table-wrap>
+    <caption>
+      <p>WRF prognostic variables evaluated during regression tests.</p>
+    </caption>
+    <table>
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Name</th>
+          <th>Unit</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[p]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td>Air pressure</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\mathsf{Pa}]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="sans-serif"><mml:mi>𝖯</mml:mi><mml:mi>𝖺</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula></td>
+        </tr>
+        <tr>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\phi]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϕ</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td>Surface geopotential</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\mathsf{m^2\ s^{-2}}]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="sans-serif"><mml:msup><mml:mi>𝗆</mml:mi><mml:mn>2</mml:mn></mml:msup><mml:mspace width="0.222em"></mml:mspace><mml:msup><mml:mi>𝗌</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>2</mml:mn></mml:mrow></mml:msup></mml:mstyle></mml:math></alternatives></inline-formula></td>
+        </tr>
+        <tr>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\theta]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td>Air potential temperature</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\mathsf{K}]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="sans-serif"><mml:mi>𝖪</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula></td>
+        </tr>
+        <tr>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\boldsymbol{u}]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula></td>
+          <td>Zonal component of wind velocity</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\mathsf{m\ s^{-1}}]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="sans-serif"><mml:mi>𝗆</mml:mi><mml:mspace width="0.222em"></mml:mspace><mml:msup><mml:mi>𝗌</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:mstyle></mml:math></alternatives></inline-formula></td>
+        </tr>
+        <tr>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\boldsymbol{v}]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐯</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula></td>
+          <td>Meridional component of wind velocity</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\mathsf{m\ s^{-1}}]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="sans-serif"><mml:mi>𝗆</mml:mi><mml:mspace width="0.222em"></mml:mspace><mml:msup><mml:mi>𝗌</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:mstyle></mml:math></alternatives></inline-formula></td>
+        </tr>
+        <tr>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\boldsymbol{w}]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐰</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula></td>
+          <td>Vertical component of wind velocity</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\mathsf{m\ s^{-1}}]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="sans-serif"><mml:mi>𝗆</mml:mi><mml:mspace width="0.222em"></mml:mspace><mml:msup><mml:mi>𝗌</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:mstyle></mml:math></alternatives></inline-formula></td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>At the start of the simulation, the NRMSPE between WRF (Make) and
+  WRF-CMake is zero (Appendix B, Figure 5) but small when comparing WRF
+  build variants (both Make and CMake) against a reference variant
+  (<monospace>Linux/Make/Debug/serial</monospace>; Appendix B, Figure
+  6), thus suggesting an expected variability of outputs when running
+  WRF across different platforms.</p>
+  <p>After 60 minutes (simulation time), WRF-CMake produces, on average,
+  small values of <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{\delta}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝛅</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  with a mean close to zero and most of the error (99.8 %) is between
+  -0.05 and 0.05 % (Figure 1). On Linux, the only build variants showing
+  no error are for <monospace>Debug/serial</monospace> and
+  <monospace>Debug/dmpar</monospace> (Figure 1 and 2). For NRMSPE
+  (Figure 2), values of <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{w}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐰</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  show to be the most sensitive, however, the largest errors are shown
+  for all components of wind velocity, on both, Linux and macOS.</p>
+  <p>Differences most likely arise due to inconsistent usage of compiler
+  optimization options in WRF (Make) across its C and Fortran files,
+  whereas with WRF-CMake such options are centrally applied. This
+  applies in particular for <monospace>Release</monospace> build
+  variants. Given that <monospace>Debug/serial</monospace> and
+  <monospace>Debug/dmpar</monospace> show no error, we would expect the
+  same to be true for the OpenMP variants
+  <monospace>Debug/smpar</monospace> and
+  <monospace>Debug/dm_sm</monospace>. Further investigation is required
+  to establish the source of these differences.</p>
+  <p>When comparing both Make and CMake versions against the reference
+  build variant (i.e. <monospace>Linux/Make/Debug/serial</monospace>;
+  Figure 3 and 4), the errors appear to be of equal, or greater,
+  magnitude than those shown when comparing WRF (Make) against WRF-CMake
+  for both <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{\delta}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝛅</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  (Figure 3) and NRMSPE (Figure 4), thus indicating that the variability
+  across build variants may be more important and may also be an
+  inherent feature of WRF.</p>
+  <p>The choice of operating system has the greatest impact on both
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{\delta}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝛅</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  and NRMSPE (Figure 3 and 4) over compiler optimization strategies and
+  build tool used. A change in build tool to CMake appears to produce
+  values of <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{\delta}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝛅</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  and NRMSPE consistent with those obtained from versions of WRF built
+  with the original build scripts<xref ref-type="fn" rid="fn3">3</xref>.
+  The largest errors are shown for wind velocity and, specifically for
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{u}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{w}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐰</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>.
+  Larger values of <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{\delta}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝛅</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  and NRMSPE between operating systems appear to be a general property
+  of WRF (i.e. with/without CMake support) and should be investigated
+  further.</p>
+  <fig>
+    <caption><p>WRF (Make) vs WRF-CMake: extended box plots of
+    range-normalized relative percentage errors
+    (<inline-formula><alternatives>
+    <tex-math><![CDATA[\boldsymbol{\delta}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝛅</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>)
+    for the domain with highest errors only (domain 2) after 60 minutes
+    (simulation time). Extended boxplots show minimum, maximum, median,
+    and percentiles at [99.9, 99, 75, 25, 5, 1, 0.1].</p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="figures/rel_err_ext_boxplot_make_cmake_t6.pdf" xlink:title="" />
+  </fig>
+  <fig>
+    <caption><p>WRF (Make) vs WRF-CMake: range-normalized root
+    mean-square percentage error (NRMSPE) for the domain with highest
+    errors only (domain 2) after 60 minutes (simulation
+    time).</p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="figures/nrmse_range_make_cmake_t6.pdf" xlink:title="" />
+  </fig>
+  <fig>
+    <caption><p>WRF (Make and CMake) vs reference build variant:
+    extended box plots of range-normalized relative percentage errors
+    (<inline-formula><alternatives>
+    <tex-math><![CDATA[\boldsymbol{\delta}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝛅</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>)
+    against the reference build variant
+    (<monospace>Linux/Make/Debug/serial</monospace>) for the domain with
+    highest errors only (domain 2) after 60 minutes (simulation time).
+    Extended boxplots show minimum, maximum, median, and percentiles at
+    [99.9, 99, 75, 25, 5, 1, 0.1].</p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="figures/rel_err_ext_boxplot_single_ref_t6.pdf" xlink:title="" />
+  </fig>
+  <fig>
+    <caption><p>WRF (Make and CMake) vs reference build variant:
+    range-normalized root mean-square percentage errors (NRMSPE) against
+    the reference build variant
+    (<monospace>Linux/Make/Debug/serial</monospace>) for the domain with
+    highest errors only (domain 2) after 60 minutes (simulation
+    time).</p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="figures/nrmse_range_single_ref_t6.pdf" xlink:title="" />
+  </fig>
+</sec>
+<sec id="concluding-remarks">
+  <title>Concluding remarks</title>
+  <p>We introduce WRF-CMake as a modern replacement for the existing WRF
+  build system. Its main goals are to simplify the build process
+  involved in developing and building WRF and WPS, add support for
+  automated testing using CI, and automate the generation of pre-built
+  binary releases for Linux, macOS, and Windows. Results from regression
+  tests indicate that, when evaluating outputs of prognostic variables,
+  errors between WRF and WRF-CMake are generally small, or smaller, then
+  errors originating from a change in optimization strategy
+  (e.g. <monospace>Debug</monospace>, <monospace>Release</monospace>) or
+  a change in platform (e.g. Linux to macOS). These larger errors appear
+  to be a general property of WRF (i.e. with/without CMake support) and
+  should be investigated further. Depending on feedback and general
+  uptake by the community, future work may involve adding support for
+  WRF-DA, WRFPLUS, WRF-Chem, and WRF-Hydro.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We thank A. J. Geer at the European Centre for Medium-Range Weather
+  Forecasts (ECMWF) for the useful discussion and feedback concerning
+  the topic of error growth in dynamical systems.</p>
+</sec>
+<sec id="appendix-a-statistics">
+  <title>Appendix A Statistics</title>
+  <p>The vector of range-normalized relative percentage error
+  (<inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{\delta}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝛅</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>)
+  between two vectors <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{x}_{1}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{x}_{2}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+  of paired quantities <inline-formula><alternatives>
+  <tex-math><![CDATA[x_{1}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[x_{2}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+  is defined as:</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[\delta := \frac{x_1 - x_2}{R_{x_1}}\; \times 100\; \%,]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>δ</mml:mi><mml:mo>:=</mml:mo><mml:mfrac><mml:mrow><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mrow><mml:msub><mml:mi>R</mml:mi><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:msub></mml:mfrac><mml:mspace width="0.278em"></mml:mspace><mml:mo>×</mml:mo><mml:mn>100</mml:mn><mml:mspace width="0.278em"></mml:mspace><mml:mi>%</mml:mi><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>where <inline-formula><alternatives>
+  <tex-math><![CDATA[R_{x_1}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>R</mml:mi><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:msub></mml:math></alternatives></inline-formula>
+  is the range of <inline-formula><alternatives>
+  <tex-math><![CDATA[x_1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>.</p>
+  <p>Similarly, the range-normalized root-mean-square percentage error
+  (NRMSPE) is defined as:</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[\mathrm{NRMSPE} := \frac{\mathrm{RMSE}}{R_{x_1}}\; \times 100\; \%,]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="normal"><mml:mi>N</mml:mi><mml:mi>R</mml:mi><mml:mi>M</mml:mi><mml:mi>S</mml:mi><mml:mi>P</mml:mi><mml:mi>E</mml:mi></mml:mstyle><mml:mo>:=</mml:mo><mml:mfrac><mml:mstyle mathvariant="normal"><mml:mi>R</mml:mi><mml:mi>M</mml:mi><mml:mi>S</mml:mi><mml:mi>E</mml:mi></mml:mstyle><mml:msub><mml:mi>R</mml:mi><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:msub></mml:mfrac><mml:mspace width="0.278em"></mml:mspace><mml:mo>×</mml:mo><mml:mn>100</mml:mn><mml:mspace width="0.278em"></mml:mspace><mml:mi>%</mml:mi><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>with the root-mean-square-error (RMSE) defined as:</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[\mathrm{RMSE} := \sqrt{
+          \frac{\sum_{i=1}^{N} (\boldsymbol{x}_{1} - \boldsymbol{x}_{2})^{2}}{N}}.]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="normal"><mml:mi>R</mml:mi><mml:mi>M</mml:mi><mml:mi>S</mml:mi><mml:mi>E</mml:mi></mml:mstyle><mml:mo>:=</mml:mo><mml:msqrt><mml:mfrac><mml:mrow><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>N</mml:mi></mml:munderover><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mn>1</mml:mn></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup></mml:mrow><mml:mi>N</mml:mi></mml:mfrac></mml:msqrt><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+</sec>
+<sec id="appendix-b-supplementary-figures">
+  <title>Appendix B Supplementary figures</title>
+  <fig>
+    <caption><p>WRF (Make) vs WRF-CMake: range-normalized root
+    mean-square percentage error (NRMSPE) at 0 minutes (simulation
+    time).</p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="figures/nrmse_range_make_cmake_t0.pdf" xlink:title="" />
+  </fig>
+  <fig>
+    <caption><p>WRF (Make and CMake) vs reference build variant:
+    range-normalized root mean-square percentage errors (NRMSPE) against
+    the reference build variant
+    (<monospace>Linux/Make/Debug/serial</monospace>) for the domain with
+    highest errors only (domain 2) at 0 minutes (simulation time).
+    Extended boxplots show minimum, maximum, median, and percentiles at
+    [99.9, 99, 75, 25, 5, 1, 0.1].</p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="figures/nrmse_range_single_ref_t0.pdf" xlink:title="" />
+  </fig>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Skamarock2019">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Skamarock</surname><given-names>William C.</given-names></name>
+          <name><surname>Klemp</surname><given-names>Joseph B.</given-names></name>
+          <name><surname>Dudhia</surname><given-names>Jimy</given-names></name>
+          <name><surname>Gill</surname><given-names>David O.</given-names></name>
+          <name><surname>Liu</surname><given-names>Zhiquan</given-names></name>
+          <name><surname>Berner</surname><given-names>Judith</given-names></name>
+          <name><surname>Wang</surname><given-names>Wei</given-names></name>
+          <name><surname>Powers</surname><given-names>Jordan G.</given-names></name>
+          <name><surname>Duda</surname><given-names>Michael G.</given-names></name>
+          <name><surname>Barker</surname><given-names>Dale M.</given-names></name>
+          <name><surname>Huang</surname><given-names>Xiang-Yu</given-names></name>
+        </person-group>
+        <article-title>A description of the advanced research WRF model version 4</article-title>
+        <publisher-name>NCAR Technical Note NCAR/TN-556+STR</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <pub-id pub-id-type="doi">10.5065/1dfh-6p97</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Powers2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Powers</surname><given-names>Jordan G.</given-names></name>
+          <name><surname>Klemp</surname><given-names>Joseph B.</given-names></name>
+          <name><surname>Skamarock</surname><given-names>William C.</given-names></name>
+          <name><surname>Davis</surname><given-names>Christopher A.</given-names></name>
+          <name><surname>Dudhia</surname><given-names>Jimy</given-names></name>
+          <name><surname>Gill</surname><given-names>David O.</given-names></name>
+          <name><surname>Coen</surname><given-names>Janice L.</given-names></name>
+          <name><surname>Gochis</surname><given-names>David J.</given-names></name>
+          <name><surname>Ahmadov</surname><given-names>Ravan</given-names></name>
+          <name><surname>Peckham</surname><given-names>Steven E.</given-names></name>
+          <name><surname>Grell</surname><given-names>Georg A.</given-names></name>
+          <name><surname>Michalakes</surname><given-names>John</given-names></name>
+          <name><surname>Trahan</surname><given-names>Samuel</given-names></name>
+          <name><surname>Benjamin</surname><given-names>Stanley G.</given-names></name>
+          <name><surname>Alexander</surname><given-names>Curtis R.</given-names></name>
+          <name><surname>Dimego</surname><given-names>Geoffrey J.</given-names></name>
+          <name><surname>Wang</surname><given-names>Wei</given-names></name>
+          <name><surname>Schwartz</surname><given-names>Craig S.</given-names></name>
+          <name><surname>Romine</surname><given-names>Glen S.</given-names></name>
+          <name><surname>Liu</surname><given-names>Zhiquan</given-names></name>
+          <name><surname>Snyder</surname><given-names>Chris</given-names></name>
+          <name><surname>Chen</surname><given-names>Fei</given-names></name>
+          <name><surname>Barlage</surname><given-names>Michael J.</given-names></name>
+          <name><surname>Yu</surname><given-names>Wei</given-names></name>
+          <name><surname>Duda</surname><given-names>Michael G.</given-names></name>
+        </person-group>
+        <article-title>The Weather Research and Forecasting Model: Overview, System Efforts, and Future Directions</article-title>
+        <source>Bulletin of the American Meteorological Society</source>
+        <year iso-8601-date="2017-08">2017</year><month>08</month>
+        <volume>98</volume>
+        <issue>8</issue>
+        <uri>http://journals.ametsoc.org/doi/10.1175/BAMS-D-15-00308.1</uri>
+        <pub-id pub-id-type="doi">10.1175/BAMS-D-15-00308.1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hoffman2009">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Hoffman</surname><given-names>Bill</given-names></name>
+          <name><surname>Cole</surname><given-names>David</given-names></name>
+          <name><surname>Vines</surname><given-names>John</given-names></name>
+        </person-group>
+        <article-title>Software process for rapid development of HPC software using CMake</article-title>
+        <source>2009 DoD high performance computing modernization program users group conference</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2009-06">2009</year><month>06</month>
+        <uri>https://doi.org/10.1109/hpcmp-ugc.2009.62</uri>
+        <pub-id pub-id-type="doi">10.1109/hpcmp-ugc.2009.62</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Heroux2009">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Heroux</surname><given-names>Michael A.</given-names></name>
+          <name><surname>Willenbring</surname><given-names>James M.</given-names></name>
+        </person-group>
+        <article-title>Barely sufficient software engineering: 10 practices to improve your CSE software</article-title>
+        <source>2009 ICSE workshop on software engineering for computational science and engineering</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2009-05">2009</year><month>05</month>
+        <uri>https://doi.org/10.1109/secse.2009.5069157</uri>
+        <pub-id pub-id-type="doi">10.1109/secse.2009.5069157</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Elmsheuser2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Elmsheuser</surname><given-names>J</given-names></name>
+          <name><surname>Krasznahorkay</surname><given-names>A</given-names></name>
+          <name><surname>Obreshkov</surname><given-names>E</given-names></name>
+          <name><surname>Undrus</surname><given-names>A</given-names></name>
+        </person-group>
+        <article-title>Large scale software building with CMake in ATLAS</article-title>
+        <source>Journal of Physics: Conference Series</source>
+        <publisher-name>IOP Publishing</publisher-name>
+        <year iso-8601-date="2017-10">2017</year><month>10</month>
+        <volume>898</volume>
+        <uri>https://doi.org/10.1088/1742-6596/898/7/072010</uri>
+        <pub-id pub-id-type="doi">10.1088/1742-6596/898/7/072010</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Meyer2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Meyer</surname><given-names>D.</given-names></name>
+          <name><surname>Riechert</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>Open source QGIS toolkit for the advanced research WRF modelling system</article-title>
+        <source>Environmental Modelling &amp; Software</source>
+        <publisher-name>Elsevier BV</publisher-name>
+        <year iso-8601-date="2019-02">2019</year><month>02</month>
+        <volume>112</volume>
+        <uri>https://doi.org/10.1016/j.envsoft.2018.10.018</uri>
+        <pub-id pub-id-type="doi">10.1016/j.envsoft.2018.10.018</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Feathers2004">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Feathers</surname><given-names>Michael</given-names></name>
+        </person-group>
+        <source>Working Effectively with Legacy Code</source>
+        <publisher-name>Prentice Hall</publisher-name>
+        <publisher-loc>New Jersey</publisher-loc>
+        <year iso-8601-date="2004">2004</year>
+        <isbn>978-0131177055</isbn>
+        <issn>1803537X</issn>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hodyss2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hodyss</surname><given-names>Daniel</given-names></name>
+          <name><surname>Majumdar</surname><given-names>Sharanya J.</given-names></name>
+        </person-group>
+        <article-title>The contamination of ‘data impact’ in global models by rapidly growing mesoscale instabilities</article-title>
+        <source>Quarterly Journal of the Royal Meteorological Society</source>
+        <year iso-8601-date="2007-10">2007</year><month>10</month>
+        <volume>133</volume>
+        <issue>628</issue>
+        <issn>00359009</issn>
+        <uri>http://doi.wiley.com/10.1002/qj.157</uri>
+        <pub-id pub-id-type="doi">10.1002/qj.157</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Geer2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Geer</surname><given-names>Alan J.</given-names></name>
+        </person-group>
+        <article-title>Significance of changes in medium-range forecast scores</article-title>
+        <source>Tellus A: Dynamic Meteorology and Oceanography</source>
+        <year iso-8601-date="2016-12">2016</year><month>12</month>
+        <volume>68</volume>
+        <issue>1</issue>
+        <issn>1600-0870</issn>
+        <uri>https://www.tandfonline.com/doi/full/10.3402/tellusa.v68.30229</uri>
+        <pub-id pub-id-type="doi">10.3402/tellusa.v68.30229</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+<fn-group>
+  <fn id="fn1">
+    <label>1</label><p>By WRF, we specifically mean the Advanced
+    Research WRF (ARW). The Non-hydrostatic Mesoscale Model (NMM)
+    dynamical core, WRF-DA, WRFPLUS, WRF-Chem, and WRF-Hydro are not
+    currently supported in WRF-CMake.</p>
+  </fn>
+  <fn id="fn2">
+    <label>2</label><p>See
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/WRF-CMake/wats/tree/master/cases/wrf">https://github.com/WRF-CMake/wats/tree/master/cases/wrf</ext-link></p>
+  </fn>
+  <fn id="fn3">
+    <label>3</label><p>Comparison on Windows is not made as Windows
+    support is only available in WRF-CMake.</p>
+  </fn>
+</fn-group>
+</back>
+</article>

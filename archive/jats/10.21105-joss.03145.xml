@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3145</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03145</article-id>
+<title-group>
+<article-title>ExaFMM: a high-performance fast multipole method library
+with C++ and Python interfaces</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-2520-0511</contrib-id>
+<string-name>Tingyu Wang</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-7573-7873</contrib-id>
+<string-name>Rio Yokota</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-5812-2711</contrib-id>
+<string-name>Lorena A. Barba</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>The George Washington University</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Tokyo Institute of Technology</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-07-21">
+<day>21</day>
+<month>7</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>61</issue>
+<fpage>3145</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Python</kwd>
+<kwd>fast multipole method</kwd>
+<kwd>low-rank approximation</kwd>
+<kwd>high performance computing</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>ExaFMM is an open-source library for fast multipole algorithms,
+  providing high-performance evaluation of N-body problems in three
+  dimensions, with C++ and Python interfaces. This new implementation is
+  the most recent of many across a decade of work in our research group.
+  Our goal for all these years has been to produce reusable, standard
+  code for this intricate algorithm. The new header-only C/C++
+  implementation is easier to extend, still competitive with
+  state-of-the-art codes, and includes a <monospace>pybind11</monospace>
+  Python interface
+  (<xref alt="Jakob et al., 2017" rid="ref-pybind11" ref-type="bibr">Jakob
+  et al., 2017</xref>).</p>
+  <p>The fast multipole method (FMM) was introduced more than 30 years
+  ago
+  (<xref alt="Greengard &amp; Rokhlin, 1987" rid="ref-GreengardRokhlin1987" ref-type="bibr">Greengard
+  &amp; Rokhlin, 1987</xref>) as a means of reducing the complexity of
+  N-body problems from <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{O}(N^2)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>𝒪</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msup><mml:mi>N</mml:mi><mml:mn>2</mml:mn></mml:msup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  to <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{O}(N)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>𝒪</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>N</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  using hierarchical approximations of long-range interactions. Two
+  major variants of hierarchical N-body algorithms exist: treecodes and
+  FMM. (Algebraic analogues also exist, such as H-matrix methods.) Both
+  were originally developed for fast evaluation of the gravitational
+  potential field, but now have found many applications in different
+  fields. For example, the integral formulation of problems modeled by
+  elliptic partial differential equations can be reinterpreted as N-body
+  interactions. In this way, N-body algorithms are applicable to
+  acoustics, electromagenetics, fluid dynamics, and more. The present
+  version of ExaFMM implements the so-called kernel-independent variant
+  of FMM
+  (<xref alt="Ying et al., 2004" rid="ref-yingKernelindependentAdaptiveFast2004" ref-type="bibr">Ying
+  et al., 2004</xref>). It supports computing both the potential and
+  forces of Laplace, low-frequency Helmholtz and modified Helmholtz
+  (a.k.a. Yukawa) kernels. Users can add other non-oscillatory kernels
+  with modest programming effort.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>Over the past three decades, a plethora of fast N-body
+  implementations have emerged. We will mention a few notable ones for
+  context. <monospace>Bonsai</monospace>
+  (<xref alt="Bédorf et al., 2012" rid="ref-bedorfSparseOctreeGravitational2012" ref-type="bibr">Bédorf
+  et al., 2012</xref>) is a gravitational treecode that runs entirely on
+  GPU hardware. <monospace>ChaNGa</monospace>
+  (<xref alt="Jetley et al., 2008" rid="ref-jetleyMassivelyParallelCosmological2008" ref-type="bibr">Jetley
+  et al., 2008</xref>) is also a treecode that uses
+  <monospace>Charm++</monospace> to automate dynamic load balancing.
+  <monospace>ScalFMM</monospace>
+  (<xref alt="Agullo et al., 2014" rid="ref-agullo2014task" ref-type="bibr">Agullo
+  et al., 2014</xref>) implements the black-box FMM, a
+  kernel-independent variant based on interpolation. It comes with an
+  option to use <monospace>StarPU</monospace> runtime system to handle
+  heterogeneous task scheduling. <monospace>TBFMM</monospace>
+  (<xref alt="Bramas, 2020" rid="ref-bramasTBFMMGenericParallel2020" ref-type="bibr">Bramas,
+  2020</xref>) is a task-based FMM library that features a generic C++
+  design to support various types of tree structures and kernels,
+  through heavy use of C++ templates. <monospace>PVFMM</monospace>
+  (<xref alt="Malhotra &amp; Biros, 2015" rid="ref-malhotraPVFMMParallelKernel2015" ref-type="bibr">Malhotra
+  &amp; Biros, 2015</xref>) can compute both particle and volume
+  potentials using a kernel-independent FMM, KIFMM
+  (<xref alt="Ying et al., 2004" rid="ref-yingKernelindependentAdaptiveFast2004" ref-type="bibr">Ying
+  et al., 2004</xref>).</p>
+  <p>The first version of ExaFMM focused on low-accuracy optimizations
+  and implemented a dual-tree traversal
+  (<xref alt="Barba &amp; Yokota, 2012" rid="ref-BarbaYokota2012-figshare" ref-type="bibr">Barba
+  &amp; Yokota, 2012</xref>;
+  <xref alt="Yokota, 2013" rid="ref-yokotaFMMBasedDual2013" ref-type="bibr">Yokota,
+  2013</xref>;
+  <xref alt="Yokota &amp; Barba, 2012" rid="ref-YokotaBarba2011a" ref-type="bibr">Yokota
+  &amp; Barba, 2012</xref>). It was GPU-enabled using CUDA, parallel
+  with MPI and exploited multithreading using OpenMP. Despite all these
+  efforts, it has remained a challenge in the FMM community to have a
+  well-established open-source software package, analogous to FFTW for
+  the fast Fourier transform, delivering compelling performance with a
+  standard and easy-to-use interface.</p>
+  <p>The “alpha” version of ExaFMM is long and complex, and hard to
+  maintain. Its length is partly due to a focus on fast execution, which
+  led to specialized treatment of low-<inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+  evaluations and extensive hand-coded optimizations. This emphasis on
+  achieving high performance led to poor reusability and
+  maintainability. The current version uses the kernel-independent
+  variant of the method for higher performance at high accuracy (higher
+  truncation order <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>).
+  Keeping focus on maintainability, it stays close to standards, with
+  clean function interfaces, shallow inheritance and conservative use of
+  classes. Instead of a fixation with being the fastest of all, we focus
+  on “ballpark” competitive performance. Above all, the Python API and
+  ability to call it from Jupyter notebooks should make this software
+  valuable for many applications.</p>
+</sec>
+<sec id="features-of-the-software-design">
+  <title>Features of the software design</title>
+  <p><monospace>exafmm-t</monospace> is designed to be standard and
+  lean. First, it only uses C++ STL containers and depends on mature
+  math libraries: BLAS, LAPACK and FFTW3. Second,
+  <monospace>exafmm-t</monospace> is moderately object-oriented, namely,
+  the usage of encapsulation, inheritance and polymorphism is
+  conservative or even minimal in the code. The core library consists of
+  around 6,000 lines of code, which is an order of magnitude shorter
+  than many other FMM packages.</p>
+  <p><monospace>exafmm-t</monospace> is concise but highly optimized. To
+  achieve competitive performance, our work combines techniques and
+  optimizations from several past efforts. On top of multi-threading
+  using OpenMP, we further speed up the P2P operator (near-range
+  interactions) using SIMD vectorization with SSE/AVX/AVX-512
+  compatibility; we apply the cache optimization proposed in PVFMM
+  (<xref alt="Malhotra &amp; Biros, 2015" rid="ref-malhotraPVFMMParallelKernel2015" ref-type="bibr">Malhotra
+  &amp; Biros, 2015</xref>) to improve the performance of M2L operators
+  (far-range interactions). In addition, <monospace>exafmm-t</monospace>
+  also allows users to pre-compute and store translation operators,
+  which benefits applications that require iterative FMM evaluations.
+  The single-node performance of <monospace>exafmm-t</monospace> is on
+  par with the state-of-the-art packages that we mentioned above. We ran
+  a benchmark that solves a Laplace N-body problem with 1 million
+  randomly distributed particles on a workstation with a 14-core Intel
+  i9-7940X CPU. It took 0.95 and 1.48 seconds to obtain 7 and 10 digits
+  of accuracy on the potential, respectively.</p>
+  <p><monospace>exafmm-t</monospace> is also relatively easy to extend.
+  Adding a new kernel only requires users to create a derived
+  <monospace>FMM</monospace> class and provide the kernel function. Last
+  but not least, it offers high-level Python APIs to support Python
+  applications. Thanks to <monospace>pybind11</monospace>, most STL
+  containers can be automatically converted to Python-native data
+  structures. Since Python uses duck typing, we have to expose
+  overloaded functions to different Python objects. To avoid naming
+  collisions and keep a clean interface, we chose to create a Python
+  module for each kernel under <monospace>exafmm-t</monospace>’s Python
+  package, instead of adding suffixes to function and class names to
+  identify types.</p>
+</sec>
+<sec id="application">
+  <title>Application</title>
+  <p>We have recently integrated <monospace>exafmm-t</monospace> with
+  <monospace>Bempp-cl</monospace>, an open-source boundary element
+  method (BEM) package in Python
+  (<xref alt="Betcke &amp; Scroggs, 2021" rid="ref-Betcke2021" ref-type="bibr">Betcke
+  &amp; Scroggs, 2021</xref>), whose predecessor,
+  <monospace>BEM++</monospace>
+  (<xref alt="Śmigaj et al., 2015" rid="ref-smigajSolvingBoundaryIntegral2015" ref-type="bibr">Śmigaj
+  et al., 2015</xref>), has enabled many acoustic and electromagnetic
+  applications. In BEM applications, computations are dominated by the
+  dense matrix-vector multiplication (mat-vec) in each iteration.
+  <monospace>exafmm-t</monospace> reduces both time and memory cost of
+  mat-vec to a linear complexity, thus makes
+  <monospace>Bempp-cl</monospace> feasible to solve large-scale
+  problems. In an upcoming paper, we demonstrate the capabilities and
+  performance of Bempp-Exafmm on biomolecular electrostatics
+  simulations, including solving problems at the scale of a virus
+  (<xref alt="Wang et al., 2021" rid="ref-wangETal2021" ref-type="bibr">Wang
+  et al., 2021</xref>). The showcase calculation in that paper
+  (submitted) obtains the surface electrostatic potential of a Zika
+  virus, modeled with 1.6 million atoms, 10 million boundary elements
+  (30M points), at a runtime of 1.5 hours on 1 CPU node.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This software builds on efforts over more than a decade. It
+  directly received support from grants to LAB in both the UK and the
+  US, including EPSRC Grant EP/E033083/1, and NSF Grants OCI-0946441,
+  NSF CAREER OAC-1149784, and CCF-1747669. Other support includes
+  faculty start-up funds at Boston University and George Washington
+  University, and NVIDIA via hardware donations.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-jetleyMassivelyParallelCosmological2008">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Jetley</surname><given-names>Pritish</given-names></name>
+          <name><surname>Gioachin</surname><given-names>Filippo</given-names></name>
+          <name><surname>Mendes</surname><given-names>Celso</given-names></name>
+          <name><surname>Kale</surname><given-names>Laxmikant V.</given-names></name>
+          <name><surname>Quinn</surname><given-names>Thomas</given-names></name>
+        </person-group>
+        <article-title>Massively parallel cosmological simulations with ChaNGa</article-title>
+        <source>2008 IEEE International Symposium on Parallel and Distributed Processing</source>
+        <publisher-name>IEEE</publisher-name>
+        <publisher-loc>Miami, FL, USA</publisher-loc>
+        <year iso-8601-date="2008-04">2008</year><month>04</month>
+        <isbn>978-1-4244-1693-6</isbn>
+        <uri>http://ieeexplore.ieee.org/document/4536319/</uri>
+        <pub-id pub-id-type="doi">10.1109/IPDPS.2008.4536319</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bedorfSparseOctreeGravitational2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bédorf</surname><given-names>Jeroen</given-names></name>
+          <name><surname>Gaburov</surname><given-names>Evghenii</given-names></name>
+          <name><surname>Portegies Zwart</surname><given-names>Simon</given-names></name>
+        </person-group>
+        <article-title>A sparse octree gravitational N-body code that runs entirely on the GPU processor</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="2012-04">2012</year><month>04</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-07-29">2020</year><month>07</month><day>29</day></date-in-citation>
+        <volume>231</volume>
+        <issue>7</issue>
+        <issn>0021-9991</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S0021999111007364</uri>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2011.12.024</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-yingKernelindependentAdaptiveFast2004">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ying</surname><given-names>Lexing</given-names></name>
+          <name><surname>Biros</surname><given-names>George</given-names></name>
+          <name><surname>Zorin</surname><given-names>Denis</given-names></name>
+        </person-group>
+        <article-title>A kernel-independent adaptive fast multipole algorithm in two and three dimensions</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="2004-05">2004</year><month>05</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-07-30">2019</year><month>07</month><day>30</day></date-in-citation>
+        <volume>196</volume>
+        <issue>2</issue>
+        <issn>00219991</issn>
+        <uri>https://linkinghub.elsevier.com/retrieve/pii/S0021999103006090</uri>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2003.11.021</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-GreengardRokhlin1987">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Greengard</surname><given-names>L.</given-names></name>
+          <name><surname>Rokhlin</surname><given-names>V.</given-names></name>
+        </person-group>
+        <article-title>A fast algorithm for particle simulations</article-title>
+        <source>J. Comput. Phys.</source>
+        <year iso-8601-date="1987">1987</year>
+        <volume>73</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1016/0021-9991(87)90140-9</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-BarbaYokota2012-figshare">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Barba</surname><given-names>Lorena A.</given-names></name>
+          <name><surname>Yokota</surname><given-names>Rio</given-names></name>
+        </person-group>
+        <article-title>ExaFMM: An open source library for Fast Multipole Methods aimed towards Exascale systems</article-title>
+        <publisher-name>Poster on Figshare, under CC-BY license, https://dx.doi.org/10.6084/m9.figshare.92166.v1</publisher-name>
+        <year iso-8601-date="2012-05">2012</year><month>05</month>
+        <pub-id pub-id-type="doi">10.6084/m9.figshare.92166.v1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-YokotaBarba2011a">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yokota</surname><given-names>R.</given-names></name>
+          <name><surname>Barba</surname><given-names>L. A.</given-names></name>
+        </person-group>
+        <article-title>A tuned and scalable fast multipole method as a preeminent algorithm for exascale systems</article-title>
+        <source>The International Journal of High-performance Computing Applications</source>
+        <year iso-8601-date="2012">2012</year>
+        <pub-id pub-id-type="doi">10.1177/1094342011429952</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-yokotaFMMBasedDual2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yokota</surname><given-names>R.</given-names></name>
+        </person-group>
+        <article-title>An FMM Based on Dual Tree Traversal for Many-Core Architectures</article-title>
+        <source>Journal of Algorithms &amp; Computational Technology</source>
+        <year iso-8601-date="2013-09">2013</year><month>09</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-07-30">2019</year><month>07</month><day>30</day></date-in-citation>
+        <volume>7</volume>
+        <issue>3</issue>
+        <issn>1748-3026</issn>
+        <uri>https://doi.org/10.1260/1748-3018.7.3.301</uri>
+        <pub-id pub-id-type="doi">10.1260/1748-3018.7.3.301</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-malhotraPVFMMParallelKernel2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Malhotra</surname><given-names>Dhairya</given-names></name>
+          <name><surname>Biros</surname><given-names>George</given-names></name>
+        </person-group>
+        <article-title>PVFMM: A Parallel Kernel Independent FMM for Particle and Volume Potentials</article-title>
+        <source>Communications in Computational Physics</source>
+        <year iso-8601-date="2015-09">2015</year><month>09</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-07-30">2019</year><month>07</month><day>30</day></date-in-citation>
+        <volume>18</volume>
+        <issue>3</issue>
+        <issn>1815-2406, 1991-7120</issn>
+        <uri>https://www.cambridge.org/core/journals/communications-in-computational-physics/article/pvfmm-a-parallel-kernel-independent-fmm-for-particle-and-volume-potentials/365109A4C15B126CD2A184F767D4C957</uri>
+        <pub-id pub-id-type="doi">10.4208/cicp.020215.150515sw</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-smigajSolvingBoundaryIntegral2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Śmigaj</surname><given-names>Wojciech</given-names></name>
+          <name><surname>Betcke</surname><given-names>Timo</given-names></name>
+          <name><surname>Arridge</surname><given-names>Simon</given-names></name>
+          <name><surname>Phillips</surname><given-names>Joel</given-names></name>
+          <name><surname>Schweiger</surname><given-names>Martin</given-names></name>
+        </person-group>
+        <article-title>Solving Boundary Integral Problems with BEM++</article-title>
+        <source>ACM Transactions on Mathematical Software</source>
+        <year iso-8601-date="2015-02">2015</year><month>02</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-10-03">2019</year><month>10</month><day>03</day></date-in-citation>
+        <volume>41</volume>
+        <issue>2</issue>
+        <issn>00983500</issn>
+        <uri>http://dl.acm.org/citation.cfm?doid=2732672.2590830</uri>
+        <pub-id pub-id-type="doi">10.1145/2590830</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pybind11">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Jakob</surname><given-names>Wenzel</given-names></name>
+          <name><surname>Rhinelander</surname><given-names>Jason</given-names></name>
+          <name><surname>Moldovan</surname><given-names>Dean</given-names></name>
+        </person-group>
+        <article-title>pybind11 – seamless operability between c++11 and python</article-title>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Betcke2021">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Betcke</surname><given-names>Timo</given-names></name>
+          <name><surname>Scroggs</surname><given-names>Matthew W.</given-names></name>
+        </person-group>
+        <article-title>Bempp-cl: A fast python based just-in-time compiling boundary element library.</article-title>
+        <source>Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <volume>6</volume>
+        <issue>59</issue>
+        <uri>https://doi.org/10.21105/joss.02879</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.02879</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bramasTBFMMGenericParallel2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bramas</surname><given-names>Berenger</given-names></name>
+        </person-group>
+        <article-title>TBFMM: A C++ generic and parallel fast multipole method library</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2020-12">2020</year><month>12</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-02-24">2021</year><month>02</month><day>24</day></date-in-citation>
+        <volume>5</volume>
+        <issue>56</issue>
+        <issn>2475-9066</issn>
+        <uri>https://joss.theoj.org/papers/10.21105/joss.02444</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.02444</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-agullo2014task">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Agullo</surname><given-names>Emmanuel</given-names></name>
+          <name><surname>Bramas</surname><given-names>Bérenger</given-names></name>
+          <name><surname>Coulaud</surname><given-names>Olivier</given-names></name>
+          <name><surname>Darve</surname><given-names>Eric</given-names></name>
+          <name><surname>Messner</surname><given-names>Matthias</given-names></name>
+          <name><surname>Takahashi</surname><given-names>Toru</given-names></name>
+        </person-group>
+        <article-title>Task-based FMM for multicore architectures</article-title>
+        <source>SIAM Journal on Scientific Computing</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>36</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1137/130915662</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-wangETal2021">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Wang</surname><given-names>Tingyu</given-names></name>
+          <name><surname>Cooper</surname><given-names>Christopher D.</given-names></name>
+          <name><surname>Betcke</surname><given-names>Timo</given-names></name>
+          <name><surname>Barba</surname><given-names>Lorena A.</given-names></name>
+        </person-group>
+        <article-title>High-productivity, high-performance workflow for virus-scale electrostatic simulations with Bempp-Exafmm</article-title>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://arxiv.org/abs/2103.01048</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

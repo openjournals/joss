@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">512</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00512</article-id>
+<title-group>
+<article-title>origami: A Generalized Framework for Cross-Validation in
+R</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9874-6649</contrib-id>
+<string-name>Jeremy R. Coyle</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-7127-2789</contrib-id>
+<string-name>Nima S. Hejazi</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Division of Biostatistics, University of California,
+Berkeley</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2017-06-19">
+<day>19</day>
+<month>6</month>
+<year>2017</year>
+</pub-date>
+<volume>3</volume>
+<issue>21</issue>
+<fpage>512</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>statistics</kwd>
+<kwd>machine learning</kwd>
+<kwd>cross-validation</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Cross-validation is an essential tool for evaluating how any given
+  data analytic procedure extends from a sample to the target population
+  from which the sample is derived. It has seen widespread application
+  in all facets of statistics, perhaps most notably statistical machine
+  learning. When used for model selection, cross-validation has powerful
+  optimality properties
+  (<xref alt="van der Laan et al., 2007" rid="ref-vanderLaanU003A2007bz" ref-type="bibr">van
+  der Laan et al., 2007</xref>;
+  <xref alt="van der Vaart et al., 2006" rid="ref-VaartU003A2006bz" ref-type="bibr">van
+  der Vaart et al., 2006</xref>).</p>
+  <p>Cross-validation works by partitioning a sample into complementary
+  subsets, applying a particular data analytic (statistical) routine on
+  a subset (the “training” set), and evaluating the routine of choice on
+  the complementary subset (the “testing” set). This procedure is
+  repeated across multiple partitions of the data, and a variety of
+  different partitioning schemes exist, such as
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[V]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>V</mml:mi></mml:math></alternatives></inline-formula>-fold
+  cross-validation and bootstrap cross-validation.
+  <monospace>origami</monospace>, a package for the R language for
+  statistical computing
+  (<xref alt="R Core Team, 2017" rid="ref-R" ref-type="bibr">R Core
+  Team, 2017</xref>), supports many of the existing cross-validation
+  schemes, providing a suite of tools that generalize the application of
+  cross-validation to arbitrary data analytic procedures.</p>
+</sec>
+<sec id="general-workflow">
+  <title>General workflow</title>
+  <p>The main function in the <monospace>origami</monospace> R package
+  is <monospace>cross_validate</monospace>. To start off, the user must
+  define folds and a function that operates on each fold. Once these are
+  passed to <monospace>cross_validate</monospace>, this function will
+  map the fold-specific function across the folds, combining the results
+  in a reasonable way. Specific details on each each step of this
+  process are given below.</p>
+  <sec id="define-folds">
+    <title>(1) Define folds</title>
+    <p>The <monospace>folds</monospace> object passed to
+    <monospace>cross_validate</monospace> is a list of folds. Such lists
+    can be generated using the <monospace>make_folds</monospace>
+    function. Each fold consists of a list with a
+    <monospace>training</monospace> index vector, a
+    <monospace>validation</monospace> index vector, and a
+    <monospace>fold_index</monospace> (its order in the list of folds).
+    This function supports a variety of cross-validation schemes
+    including <inline-formula><alternatives>
+    <tex-math><![CDATA[V]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>V</mml:mi></mml:math></alternatives></inline-formula>-fold
+    and bootstrap cross-validation, as well as time series methods like
+    <italic>“rolling window”</italic>. See
+    (<xref alt="van der Laan et al., 2007" rid="ref-vanderLaanU003A2007bz" ref-type="bibr">van
+    der Laan et al., 2007</xref>) for formal definitions of these
+    schemes. <monospace>make_folds</monospace> can balance across levels
+    of a variable (<monospace>stratify_ids</monospace>), and it can also
+    keep all observations from the same independent unit together
+    (<monospace>cluster</monospace>). We invite interested users to
+    consult the documentation of the <monospace>make_folds</monospace>
+    function for further details.</p>
+  </sec>
+  <sec id="define-fold-function">
+    <title>(2) Define fold function</title>
+    <p>The <monospace>cv_fun</monospace> argument to
+    <monospace>cross_validate</monospace> is a function that will
+    perform some operation on each fold. The first argument to this
+    function must be <monospace>fold</monospace>, which will receive an
+    individual fold object to operate on. Additional arguments can be
+    passed to <monospace>cv_fun</monospace> using the
+    <monospace>...</monospace> argument to
+    <monospace>cross_validate</monospace>. Within this function, the
+    convenience functions <monospace>training</monospace>,
+    <monospace>validation</monospace> and
+    <monospace>fold_index</monospace> can return the various components
+    of a fold object. If <monospace>training</monospace> or
+    <monospace>validation</monospace> is passed an object, it will index
+    into it in a sensible way. For instance, if it is a vector, it will
+    index the vector directly. If it is a
+    <monospace>data.frame</monospace> or <monospace>matrix</monospace>,
+    it will index rows. This allows the user to easily partition data
+    into training and validation sets. This fold function must return a
+    named list of results containing whatever fold-specific outputs are
+    generated.</p>
+  </sec>
+  <sec id="apply-cross-validate">
+    <title>(3) Apply <monospace>cross-validate</monospace></title>
+    <p>After defining folds, <monospace>cross_validate</monospace> can
+    be used to map the <monospace>cv_fun</monospace> across the
+    <monospace>folds</monospace> using
+    <monospace>future_lapply</monospace>. This means that it can be
+    easily parallelized by specifying a parallelization scheme (i.e., a
+    <monospace>plan</monospace>). See the
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/HenrikBengtsson/future"><monospace>future</monospace>
+    package</ext-link> for further details.</p>
+    <p>The application of <monospace>cross_validate</monospace>
+    generates a list of results. As described above, each call to
+    <monospace>cv_fun</monospace> itself returns a list of results, with
+    different elements for each type of result we care about. The main
+    loop generates a list of these individual lists of results (a sort
+    of “meta-list”). This “meta-list” is then inverted such that there
+    is one element per result type (this too is a list of the results
+    for each fold). By default, <monospace>combine_results</monospace>
+    is used to combine these results type lists in a sensible manner.
+    How results are combined is determined automatically by examining
+    the data types of the results from the first fold. This can be
+    modified by specifying a list of arguments to
+    <monospace>.combine_control</monospace>. See the help for
+    <monospace>combine_results</monospace> for more details. In most
+    cases, the defaults should suffice.</p>
+  </sec>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-vanderLaanU003A2007bz">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>van der Laan</surname><given-names>M. J.</given-names></name>
+          <name><surname>Polley</surname><given-names>E. C.</given-names></name>
+          <name><surname>Hubbard</surname><given-names>A. E.</given-names></name>
+        </person-group>
+        <article-title>Super learner</article-title>
+        <source>Statistical Applications in Genetics and Molecular Biology</source>
+        <year iso-8601-date="2007">2007</year>
+        <volume>6</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-VaartU003A2006bz">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>van der Vaart</surname><given-names>A. W.</given-names></name>
+          <name><surname>Dudoit</surname><given-names>S.</given-names></name>
+          <name><surname>van der Laan</surname><given-names>M. J.</given-names></name>
+        </person-group>
+        <article-title>Oracle inequalities for multi-fold cross validation</article-title>
+        <source>Statistics &amp; Decisions</source>
+        <year iso-8601-date="2006">2006</year>
+        <volume>24</volume>
+        <issue>3</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-R">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>R Core Team</string-name>
+        </person-group>
+        <source>R: A language and environment for statistical computing</source>
+        <publisher-name>R Foundation for Statistical Computing</publisher-name>
+        <publisher-loc>Vienna, Austria</publisher-loc>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://www.R-project.org/</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

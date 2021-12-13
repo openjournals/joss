@@ -1,0 +1,586 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2596</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02596</article-id>
+<title-group>
+<article-title>maxsmooth: Derivative Constrained Function
+Fitting</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-4367-3550</contrib-id>
+<string-name>Harry T. J. Bevins</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Astrophysics Group, Cavendish Laboratory, J.J.Thomson
+Avenue, Cambridge, CB3 0HE, United Kingdom</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-07-31">
+<day>31</day>
+<month>7</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>54</issue>
+<fpage>2596</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>astrophysics</kwd>
+<kwd>cosmology</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>maxsmooth</monospace> is an optimisation routine written
+  in Python (supporting version <inline-formula><alternatives>
+  <tex-math><![CDATA[\geq 3.6]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>≥</mml:mo><mml:mn>3.6</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>)
+  for fitting Derivative Constrained Functions (DCFs) to data. DCFs are
+  a family of functions which have derivatives that do not cross zero in
+  the band of interest. Two special cases of DCF are Maximally Smooth
+  Functions (MSFs) which have derivatives with order
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[m \geq 2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>m</mml:mi><mml:mo>≥</mml:mo><mml:mn>2</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  constrained and Completely Smooth Functions (CSFs) with
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[m \geq 1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>m</mml:mi><mml:mo>≥</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  constrained. Alternatively, we can constrain an arbitrary set of
+  derivatives and we refer to these models as Partially Smooth
+  Functions. Due to their constrained nature, DCFs can produce perfectly
+  smooth fits to data and reveal non-smooth signals of interest in the
+  residuals.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>The development of <monospace>maxsmooth</monospace> has been
+  motivated by the problem of foreground modelling in Global 21-cm
+  experiments
+  (<xref alt="Bowman et al., 2018" rid="ref-EDGES_LB" ref-type="bibr">Bowman
+  et al., 2018</xref>;
+  <xref alt="de Lera Acedo, 2019" rid="ref-REACH" ref-type="bibr">de
+  Lera Acedo, 2019</xref>;
+  <xref alt="Price et al., 2018" rid="ref-LEDA" ref-type="bibr">Price et
+  al., 2018</xref>;
+  <xref alt="Singh et al., 2018" rid="ref-SARAS" ref-type="bibr">Singh
+  et al., 2018</xref>). Global 21-cm cosmology is the study of the spin
+  temperature of hydrogen gas and its relative magnitude compared to the
+  Cosmic Microwave Background during the Cosmic Dawn (CD) and Epoch of
+  Reionisation (EoR). During the CD and EoR the first stars formed and
+  the properties of the hydrogen gas changed as it interacted with
+  radiation from these stars
+  (<xref alt="Barkana, 2016" rid="ref-Barkana2016" ref-type="bibr">Barkana,
+  2016</xref>;
+  <xref alt="Furlanetto et al., 2006" rid="ref-Furlanetto2006" ref-type="bibr">Furlanetto
+  et al., 2006</xref>;
+  <xref alt="Pritchard &amp; Loeb, 2012" rid="ref-Pritchard2012" ref-type="bibr">Pritchard
+  &amp; Loeb, 2012</xref>).</p>
+  <p>The goal of Global 21-cm experiments is to detect this structure in
+  the sky averaged radio spectrum between <inline-formula><alternatives>
+  <tex-math><![CDATA[\nu = 50]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>ν</mml:mi><mml:mo>=</mml:mo><mml:mn>50</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[200]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>200</mml:mn></mml:math></alternatives></inline-formula>
+  MHz. However, the signal of interest is expected to be approximately
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\leq 250]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>≤</mml:mo><mml:mn>250</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  mK and masked by foregrounds <inline-formula><alternatives>
+  <tex-math><![CDATA[10^4 - 10^5]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mn>10</mml:mn><mml:mn>4</mml:mn></mml:msup><mml:mo>−</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>5</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>
+  times brighter
+  (<xref alt="Cohen et al., 2017" rid="ref-Cohen" ref-type="bibr">Cohen
+  et al., 2017</xref>,
+  <xref alt="2019" rid="ref-Cohen2019" ref-type="bibr">2019</xref>).</p>
+  <p>Modelling and removal of the foreground is essential for detection
+  of the Global 21-cm signal. DCFs provide a powerful alternative to
+  unconstrained polynomials for accurately modelling the smooth
+  synchrotron/free-free emission foreground from the Galaxy and
+  extragalactic radio sources.</p>
+  <p>To illustrate the abilities of <monospace>maxsmooth</monospace> we
+  produce mock 21-cm experiment data and model and remove the foreground
+  using an MSF. We add to a mock foreground,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\nu^{-2.5}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>ν</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>2.5</mml:mn></mml:mrow></mml:msup></mml:math></alternatives></inline-formula>,
+  a Gaussian noise with standard deviation of
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[0.02]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>0.02</mml:mn></mml:math></alternatives></inline-formula>
+  K and a Gaussian signal with amplitude <inline-formula><alternatives>
+  <tex-math><![CDATA[0.23]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>0.23</mml:mn></mml:math></alternatives></inline-formula>
+  K, central frequency of <inline-formula><alternatives>
+  <tex-math><![CDATA[100]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>100</mml:mn></mml:math></alternatives></inline-formula>
+  MHz and standard deviation of <inline-formula><alternatives>
+  <tex-math><![CDATA[10]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>10</mml:mn></mml:math></alternatives></inline-formula>
+  MHz.</p>
+  <p>The figure below shows the residuals (bottom panel, green) when
+  fitting and removing an MSF from the data (top panel) compared to the
+  injected signal (bottom panel, red). While the removal of the
+  foreground does not directly recover the injected signal, rather a
+  smooth baseline subtracted version, we see the remnant of the signal
+  in the residuals (see Bevins et al.
+  (<xref alt="2020" rid="ref-Bevins" ref-type="bibr">2020</xref>) for
+  more details and examples).</p>
+  <fig>
+    <caption><p><bold>Top panel:</bold> The mock 21-cm data used to
+    illustrate the abilities of <monospace>maxsmooth</monospace>.
+    <bold>Bottom Panel:</bold> The residuals, green, when removing an
+    MSF model of the 21-cm foreground from the data showing a clear
+    remnant of the signal, red. When jointly fitting an MSF and signal
+    model we find that we can accurately recover the signal itself (see
+    Bevins et al.
+    (<xref alt="2020" rid="ref-Bevins" ref-type="bibr">2020</xref>)).</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="example.png" xlink:title="" />
+  </fig>
+  <p><monospace>maxsmooth</monospace> is applicable to any experiment in
+  which the signal of interest has to be separated from comparatively
+  high magnitude smooth signals or foregrounds.</p>
+</sec>
+<sec id="maxsmooth">
+  <title><monospace>maxsmooth</monospace></title>
+  <p>DCFs can be fitted with routines such as Basin-hopping
+  (<xref alt="Wales &amp; Doye, 1997" rid="ref-Basinhopping" ref-type="bibr">Wales
+  &amp; Doye, 1997</xref>) and Nelder-Mead
+  (<xref alt="Nelder &amp; Mead, 1965" rid="ref-Nelder-Mead" ref-type="bibr">Nelder
+  &amp; Mead, 1965</xref>) and this has been the practice for 21-cm
+  cosmology
+  (<xref alt="Sathyanarayana Rao et al., 2017" rid="ref-MSFCD" ref-type="bibr">Sathyanarayana
+  Rao et al., 2017</xref>;
+  <xref alt="Singh &amp; Subrahmanyan, 2019" rid="ref-MSF-EDGES" ref-type="bibr">Singh
+  &amp; Subrahmanyan, 2019</xref>). However,
+  <monospace>maxsmooth</monospace> employs quadratic programming via
+  <ext-link ext-link-type="uri" xlink:href="https://pypi.org/project/cvxopt/">CVXOPT</ext-link>
+  to rapidly and efficiently fit DCFs which are constrained such
+  that</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[  \frac{d^my}{dx^m}\geq0 ~~ \textrm{or} ~~ \frac{d^my}{dx^m}~\leq0. ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mfrac><mml:mrow><mml:msup><mml:mi>d</mml:mi><mml:mi>m</mml:mi></mml:msup><mml:mi>y</mml:mi></mml:mrow><mml:mrow><mml:mi>d</mml:mi><mml:msup><mml:mi>x</mml:mi><mml:mi>m</mml:mi></mml:msup></mml:mrow></mml:mfrac><mml:mo>≥</mml:mo><mml:mn>0</mml:mn><mml:mspace width="0.222em"></mml:mspace><mml:mspace width="0.222em"></mml:mspace><mml:mtext mathvariant="normal">or</mml:mtext><mml:mspace width="0.222em"></mml:mspace><mml:mspace width="0.222em"></mml:mspace><mml:mfrac><mml:mrow><mml:msup><mml:mi>d</mml:mi><mml:mi>m</mml:mi></mml:msup><mml:mi>y</mml:mi></mml:mrow><mml:mrow><mml:mi>d</mml:mi><mml:msup><mml:mi>x</mml:mi><mml:mi>m</mml:mi></mml:msup></mml:mrow></mml:mfrac><mml:mspace width="0.222em"></mml:mspace><mml:mo>≤</mml:mo><mml:mn>0</mml:mn><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>An example DCF from the <monospace>maxsmooth</monospace> library is
+  given by</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[ y ~ = ~ \sum_{k=0}^{N} ~ a_{k} ~ x^k, ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>y</mml:mi><mml:mspace width="0.222em"></mml:mspace><mml:mo>=</mml:mo><mml:mspace width="0.222em"></mml:mspace><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>k</mml:mi><mml:mo>=</mml:mo><mml:mn>0</mml:mn></mml:mrow><mml:mi>N</mml:mi></mml:munderover><mml:mspace width="0.222em"></mml:mspace><mml:msub><mml:mi>a</mml:mi><mml:mi>k</mml:mi></mml:msub><mml:mspace width="0.222em"></mml:mspace><mml:msup><mml:mi>x</mml:mi><mml:mi>k</mml:mi></mml:msup><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>where <inline-formula><alternatives>
+  <tex-math><![CDATA[x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[y]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>y</mml:mi></mml:math></alternatives></inline-formula>
+  are the independent and dependent variables respectively and
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
+  is the order of the fit with powers from
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[0 - (N-1)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>0</mml:mn><mml:mo>−</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>N</mml:mi><mml:mo>−</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.
+  The library is intended be extended by future contributions from
+  users. We find that the use of quadratic programming makes
+  <monospace>maxsmooth</monospace> approximately two orders of magnitude
+  quicker than a Basin-hopping/Nelder-Mead approach.</p>
+  <p><monospace>maxsmooth</monospace> rephrases the above condition such
+  that</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[ \pm_m ~ \frac{d^my}{dx^m} ~ \leq0, ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:munder><mml:mo>±</mml:mo><mml:mi>m</mml:mi></mml:munder><mml:mspace width="0.222em"></mml:mspace><mml:mfrac><mml:mrow><mml:msup><mml:mi>d</mml:mi><mml:mi>m</mml:mi></mml:msup><mml:mi>y</mml:mi></mml:mrow><mml:mrow><mml:mi>d</mml:mi><mml:msup><mml:mi>x</mml:mi><mml:mi>m</mml:mi></mml:msup></mml:mrow></mml:mfrac><mml:mspace width="0.222em"></mml:mspace><mml:mo>≤</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>where the <inline-formula><alternatives>
+  <tex-math><![CDATA[\pm]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>±</mml:mo></mml:math></alternatives></inline-formula>
+  applies to a given <inline-formula><alternatives>
+  <tex-math><![CDATA[m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>m</mml:mi></mml:math></alternatives></inline-formula>.
+  This produces a set of sign spaces with different combinations of
+  constrained positive and negative derivatives. In each sign space the
+  associated minimum is found using quadratic programming and then
+  <monospace>maxsmooth</monospace> identifies the optimum combination of
+  signs, <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{s}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐬</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>.
+  To summarise the minimisation problem we have</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[\min_{a,~s}~~\frac{1}{2}~\mathbf{a}^T~\mathbf{Q}~\mathbf{a}~+~\mathbf{q}^T~\mathbf{a},]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:munder><mml:mo>min</mml:mo><mml:mrow><mml:mi>a</mml:mi><mml:mo>,</mml:mo><mml:mspace width="0.222em"></mml:mspace><mml:mi>s</mml:mi></mml:mrow></mml:munder><mml:mspace width="0.222em"></mml:mspace><mml:mspace width="0.222em"></mml:mspace><mml:mfrac><mml:mn>1</mml:mn><mml:mn>2</mml:mn></mml:mfrac><mml:mspace width="0.222em"></mml:mspace><mml:msup><mml:mstyle mathvariant="bold"><mml:mi>𝐚</mml:mi></mml:mstyle><mml:mi>T</mml:mi></mml:msup><mml:mspace width="0.222em"></mml:mspace><mml:mstyle mathvariant="bold"><mml:mi>𝐐</mml:mi></mml:mstyle><mml:mspace width="0.222em"></mml:mspace><mml:mstyle mathvariant="bold"><mml:mi>𝐚</mml:mi></mml:mstyle><mml:mspace width="0.222em"></mml:mspace><mml:mo>+</mml:mo><mml:mspace width="0.222em"></mml:mspace><mml:msup><mml:mstyle mathvariant="bold"><mml:mi>𝐪</mml:mi></mml:mstyle><mml:mi>T</mml:mi></mml:msup><mml:mspace width="0.222em"></mml:mspace><mml:mstyle mathvariant="bold"><mml:mi>𝐚</mml:mi></mml:mstyle><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+  <disp-formula><alternatives>
+  <tex-math><![CDATA[\mathrm{s.t.}~~\mathbf{G(s)~a} \leq \mathbf{0},]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="normal"><mml:mi>s</mml:mi><mml:mi>.</mml:mi><mml:mi>t</mml:mi><mml:mi>.</mml:mi></mml:mstyle><mml:mspace width="0.222em"></mml:mspace><mml:mspace width="0.222em"></mml:mspace><mml:mstyle mathvariant="bold"><mml:mi>𝐆</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>𝐬</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mspace width="0.222em"></mml:mspace><mml:mi>𝐚</mml:mi></mml:mstyle><mml:mo>≤</mml:mo><mml:mstyle mathvariant="bold"><mml:mn>0</mml:mn></mml:mstyle><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>where we are minimising <inline-formula><alternatives>
+  <tex-math><![CDATA[\chi^2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>χ</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{G(s)a}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐆</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>𝐬</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>𝐚</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  is a stacked matrix of derivative evaluations and
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{a}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐚</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  is the matrix of parameters we are optimising for.
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{Q}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐐</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{q}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐪</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  are given by</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{Q}~=~ \mathbf{\Phi}^T~\mathbf{\Phi}~~\textrm{and}~~ \mathbf{q}^T~=~-\mathbf{y}^T~\mathbf{\Phi},]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐐</mml:mi></mml:mstyle><mml:mspace width="0.222em"></mml:mspace><mml:mo>=</mml:mo><mml:mspace width="0.222em"></mml:mspace><mml:msup><mml:mstyle mathvariant="bold"><mml:mi>𝚽</mml:mi></mml:mstyle><mml:mi>T</mml:mi></mml:msup><mml:mspace width="0.222em"></mml:mspace><mml:mstyle mathvariant="bold"><mml:mi>𝚽</mml:mi></mml:mstyle><mml:mspace width="0.222em"></mml:mspace><mml:mspace width="0.222em"></mml:mspace><mml:mtext mathvariant="normal">and</mml:mtext><mml:mspace width="0.222em"></mml:mspace><mml:mspace width="0.222em"></mml:mspace><mml:msup><mml:mstyle mathvariant="bold"><mml:mi>𝐪</mml:mi></mml:mstyle><mml:mi>T</mml:mi></mml:msup><mml:mspace width="0.222em"></mml:mspace><mml:mo>=</mml:mo><mml:mspace width="0.222em"></mml:mspace><mml:mo>−</mml:mo><mml:msup><mml:mstyle mathvariant="bold"><mml:mi>𝐲</mml:mi></mml:mstyle><mml:mi>T</mml:mi></mml:msup><mml:mspace width="0.222em"></mml:mspace><mml:mstyle mathvariant="bold"><mml:mi>𝚽</mml:mi></mml:mstyle><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>here <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{\Phi}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝚽</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  is a matrix of basis function evaluations and
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{y}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐲</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  is a column matrix of the dependent data.</p>
+  <p>The discrete spaces can be searched in their entirety quickly and
+  efficiently or a sign navigating algorithm can be invoked using
+  <monospace>maxsmooth</monospace> reducing the fitting time. Division
+  of the parameter space into sign spaces allows for a more complete
+  exploration when compared to Basin-hopping/Nelder-Mead based
+  algorithms.</p>
+  <p>The sign navigating approach uses a cascading algorithm to identify
+  a candidate optimum <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{s}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐬</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{a}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐚</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>.
+  The algorithm starts with a randomly generated
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{s}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐬</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>.
+  Each individual sign is then flipped, from the lowest order derivative
+  first, until the objective function decreases in value. The signs
+  associated with the lower <inline-formula><alternatives>
+  <tex-math><![CDATA[\chi^2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>χ</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:math></alternatives></inline-formula>
+  value become the optimum set and the process is repeated until
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\chi^2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>χ</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:math></alternatives></inline-formula>
+  stops decreasing. This is followed by a limited exploration of the
+  neighbouring sign spaces to identify the true global minimum.</p>
+  <fig>
+    <caption><p>The time taken to fit polynomial data following an
+    approximate <inline-formula><alternatives>
+    <tex-math><![CDATA[x^a]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>x</mml:mi><mml:mi>a</mml:mi></mml:msup></mml:math></alternatives></inline-formula>
+    power law using both <monospace>maxsmooth</monospace> quadratic
+    programming methods and for comparison a method based in
+    Basin-hopping and Nelder-Mead routines. We show the results using
+    the later method up to <inline-formula><alternatives>
+    <tex-math><![CDATA[N = 7]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>N</mml:mi><mml:mo>=</mml:mo><mml:mn>7</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+    after which the method begins to fail without adjustments to the
+    routine parameters. For <inline-formula><alternatives>
+    <tex-math><![CDATA[N = 3 - 7]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>N</mml:mi><mml:mo>=</mml:mo><mml:mn>3</mml:mn><mml:mo>−</mml:mo><mml:mn>7</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+    we find a maximum difference of <inline-formula><alternatives>
+    <tex-math><![CDATA[0.04\%]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>0.04</mml:mn><mml:mi>%</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    between the optimum <monospace>maxsmooth</monospace>
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\chi^2]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>χ</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:math></alternatives></inline-formula>
+    values and the Basin-hopping results. Figure taken from Bevins et
+    al.
+    (<xref alt="2020" rid="ref-Bevins" ref-type="bibr">2020</xref>).</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="times.png" xlink:title="" />
+  </fig>
+  <p>Documentation for <monospace>maxsmooth</monospace> is available at
+  <ext-link ext-link-type="uri" xlink:href="maxsmooth.readthedocs.io/">ReadTheDocs</ext-link>
+  and the code can be found on
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/htjb/maxsmooth">Github</ext-link>.
+  The code is also pip installable
+  (<ext-link ext-link-type="uri" xlink:href="https://pypi.org/project/maxsmooth/">PyPI</ext-link>).
+  Continuous integration is performed with
+  <ext-link ext-link-type="uri" xlink:href="https://travis-ci.com/github/htjb/maxsmooth">Travis</ext-link>
+  and
+  <ext-link ext-link-type="uri" xlink:href="https://circleci.com/gh/htjb/maxsmooth">CircleCi</ext-link>.
+  The associated code coverage can be found at
+  <ext-link ext-link-type="uri" xlink:href="https://codecov.io/gh/htjb/maxsmooth">CodeCov</ext-link>.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>Discussions on the applications of the software were provided by
+  Eloy de Lera Acedo, Will Handley and Anastasia Fialkov. The author is
+  supported by the Science and Technology Facilities Council (STFC) via
+  grant number ST/T505997/1.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Furlanetto2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Furlanetto</surname><given-names>S. R.</given-names></name>
+          <name><surname>Oh</surname><given-names>S. P.</given-names></name>
+          <name><surname>Briggs</surname><given-names>F. H.</given-names></name>
+        </person-group>
+        <article-title>Cosmology at low frequencies: The 21 cm transition and the high-redshift Universe</article-title>
+        <source>Physics Reports</source>
+        <year iso-8601-date="2006-10">2006</year><month>10</month>
+        <volume>433</volume>
+        <issue>4-6</issue>
+        <pub-id pub-id-type="doi">10.1016/j.physrep.2006.08.002</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Barkana2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Barkana</surname><given-names>R.</given-names></name>
+        </person-group>
+        <article-title>The rise of the first stars: Supersonic streaming, radiative feedback, and 21-cm cosmology</article-title>
+        <source>Physics Reports</source>
+        <year iso-8601-date="2016-07">2016</year><month>07</month>
+        <volume>645</volume>
+        <pub-id pub-id-type="doi">10.1016/j.physrep.2016.06.006</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Pritchard2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pritchard</surname><given-names>J. R.</given-names></name>
+          <name><surname>Loeb</surname><given-names>A.</given-names></name>
+        </person-group>
+        <article-title>21 cm cosmology in the 21st century</article-title>
+        <source>Reports on Progress in Physics</source>
+        <year iso-8601-date="2012-08">2012</year><month>08</month>
+        <volume>75</volume>
+        <issue>8</issue>
+        <pub-id pub-id-type="doi">10.1088/0034-4885/75/8/086901</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Cohen">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cohen</surname><given-names>A.</given-names></name>
+          <name><surname>Fialkov</surname><given-names>A.</given-names></name>
+          <name><surname>Barkana</surname><given-names>R.</given-names></name>
+          <name><surname>Lotem</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>Charting the parameter space of the global 21-cm signal</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>472</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1093/mnras/stx2065</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Cohen2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cohen</surname><given-names>A.</given-names></name>
+          <name><surname>Fialkov</surname><given-names>A.</given-names></name>
+          <name><surname>Barkana</surname><given-names>R.</given-names></name>
+          <name><surname>Monsalve</surname><given-names>R.</given-names></name>
+        </person-group>
+        <article-title>Emulating the Global 21-cm Signal from Cosmic Dawn and Reionization</article-title>
+        <source>arXiv e-prints</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://arxiv.org/abs/1910.06274</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-REACH">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>de Lera Acedo</surname><given-names>E.</given-names></name>
+        </person-group>
+        <article-title>REACH: Radio experiment for the analysis of cosmic hydrogen</article-title>
+        <source>2019 International Conference on Electromagnetics in Advanced Applications (ICEAA)</source>
+        <year iso-8601-date="2019">2019</year>
+        <pub-id pub-id-type="doi">10.1109/ICEAA.2019.8879199</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SARAS">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Singh</surname><given-names>S.</given-names></name>
+          <name><surname>Subrahmanyan</surname><given-names>R.</given-names></name>
+          <name><surname>Udaya Shankar</surname><given-names>N.</given-names></name>
+          <name><surname>Sathyanarayana Rao</surname><given-names>M.</given-names></name>
+          <name><surname>Girish</surname><given-names>B. S.</given-names></name>
+          <name><surname>Raghunathan</surname><given-names>A.</given-names></name>
+          <name><surname>Somashekar</surname><given-names>R.</given-names></name>
+          <name><surname>Srivani</surname><given-names>K. S.</given-names></name>
+        </person-group>
+        <article-title>SARAS 2: a spectral radiometer for probing cosmic dawn and the epoch of reionization through detection of the global 21-cm signal</article-title>
+        <source>Experimental Astronomy</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>45</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1007/s10686-018-9584-3</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LEDA">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Price</surname><given-names>D. C.</given-names></name>
+          <name><surname>Greenhill</surname><given-names>L. J.</given-names></name>
+          <name><surname>Fialkov</surname><given-names>A.</given-names></name>
+          <name><surname>Bernardi</surname><given-names>G.</given-names></name>
+          <name><surname>Garsden</surname><given-names>H.</given-names></name>
+          <name><surname>Barsdell</surname><given-names>B. R.</given-names></name>
+          <name><surname>Kocz</surname><given-names>J.</given-names></name>
+          <name><surname>Anderson</surname><given-names>M. M.</given-names></name>
+          <name><surname>Bourke</surname><given-names>S. A.</given-names></name>
+          <name><surname>Craig</surname><given-names>J.</given-names></name>
+          <name><surname>Dexter</surname><given-names>M. R.</given-names></name>
+          <name><surname>Dowell</surname><given-names>J.</given-names></name>
+          <name><surname>Eastwood</surname><given-names>M. W.</given-names></name>
+          <name><surname>Eftekhari</surname><given-names>T.</given-names></name>
+          <name><surname>Ellingson</surname><given-names>S. W.</given-names></name>
+          <name><surname>Hallinan</surname><given-names>G.</given-names></name>
+          <name><surname>Hartman</surname><given-names>J. M.</given-names></name>
+          <name><surname>Kimberk</surname><given-names>R.</given-names></name>
+          <name><surname>Lazio</surname><given-names>T. Joseph W.</given-names></name>
+          <name><surname>Leiker</surname><given-names>S.</given-names></name>
+          <name><surname>MacMahon</surname><given-names>D.</given-names></name>
+          <name><surname>Monroe</surname><given-names>R.</given-names></name>
+          <name><surname>Schinzel</surname><given-names>F.</given-names></name>
+          <name><surname>Taylor</surname><given-names>G. B.</given-names></name>
+          <name><surname>Tong</surname><given-names>E.</given-names></name>
+          <name><surname>Werthimer</surname><given-names>D.</given-names></name>
+          <name><surname>Woody</surname><given-names>D. P.</given-names></name>
+        </person-group>
+        <article-title>Design and characterization of the Large-aperture Experiment to Detect the Dark Age (LEDA) radiometer systems</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>478</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1093/mnras/sty1244</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-EDGES_LB">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bowman</surname><given-names>Judd D.</given-names></name>
+          <name><surname>Rogers</surname><given-names>Alan E. E.</given-names></name>
+          <name><surname>Monsalve</surname><given-names>Raul A.</given-names></name>
+          <name><surname>Mozdzen</surname><given-names>Thomas J.</given-names></name>
+          <name><surname>Mahesh</surname><given-names>Nivedita</given-names></name>
+        </person-group>
+        <article-title>An absorption profile centered at 78 megahertz in the sky-averaged spectrum</article-title>
+        <source>Nature</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>555</volume>
+        <pub-id pub-id-type="doi">10.1038/nature25792</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MSFCD">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sathyanarayana Rao</surname><given-names>Mayuri</given-names></name>
+          <name><surname>Subrahmanyan</surname><given-names>Ravi</given-names></name>
+          <name><surname>Udaya Shankar</surname><given-names>N.</given-names></name>
+          <name><surname>Chluba</surname><given-names>Jens</given-names></name>
+        </person-group>
+        <article-title>Modeling the radio foreground for detection of CMB spectral distortions from the cosmic dawn and the epoch of reionization</article-title>
+        <source>The Astrophysical Journal</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>840</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.3847/1538-4357/aa69bd</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MSF-EDGES">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Singh</surname><given-names>S.</given-names></name>
+          <name><surname>Subrahmanyan</surname><given-names>R.</given-names></name>
+        </person-group>
+        <article-title>The Redshifted 21 cm Signal in the EDGES Low-band Spectrum</article-title>
+        <source>The Astrophysical Journal</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>880</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.3847/1538-4357/ab2879</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Basinhopping">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wales</surname><given-names>D. J.</given-names></name>
+          <name><surname>Doye</surname><given-names>J. P. K.</given-names></name>
+        </person-group>
+        <article-title>Global optimization by basin-hopping and the lowest energy structures of lennard-jones clusters containing up to 110 atoms</article-title>
+        <source>The Journal of Physical Chemistry A</source>
+        <year iso-8601-date="1997">1997</year>
+        <volume>101</volume>
+        <issue>28</issue>
+        <pub-id pub-id-type="doi">10.1021/jp970984n</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Nelder-Mead">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Nelder</surname><given-names>J. A.</given-names></name>
+          <name><surname>Mead</surname><given-names>R.</given-names></name>
+        </person-group>
+        <article-title>A Simplex Method for Function Minimization</article-title>
+        <source>The Computer Journal</source>
+        <year iso-8601-date="1965-01">1965</year><month>01</month>
+        <volume>7</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1093/comjnl/7.4.308</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Bevins">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bevins</surname><given-names>H. T. J.</given-names></name>
+          <name><surname>Handley</surname><given-names>W. J.</given-names></name>
+          <name><surname>Fialkov</surname><given-names>A.</given-names></name>
+          <name><surname>Lera de Acedo</surname><given-names>E.</given-names></name>
+          <name><surname>Greenhill</surname><given-names>L. J.</given-names></name>
+          <name><surname>Price</surname><given-names>D. C.</given-names></name>
+        </person-group>
+        <article-title>maxsmooth: Rapid maximally smooth function fitting with applications in Global 21-cm cosmology</article-title>
+        <source>arXiv e-prints</source>
+        <year iso-8601-date="2020-07">2020</year><month>07</month>
+        <uri>https://arxiv.org/abs/2007.14970</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

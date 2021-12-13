@@ -1,0 +1,545 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3537</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03537</article-id>
+<title-group>
+<article-title>lattice-symmetries: A package for working with quantum
+many-body bases</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-0200-2686</contrib-id>
+<string-name>Tom Westerhout</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Institute for Molecules and Materials, Radboud
+University</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-03-15">
+<day>15</day>
+<month>3</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>64</issue>
+<fpage>3537</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>physics</kwd>
+<kwd>quantum</kwd>
+<kwd>many-body</kwd>
+<kwd>exact diagonalization</kwd>
+<kwd>spin systems</kwd>
+<kwd>symmetries</kwd>
+<kwd>C</kwd>
+<kwd>C++</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Exact diagonalization (ED) is one of the most reliable and
+  established numerical methods of quantum many-body theory. It is
+  precise, unbiased, and general enough to be applicable to a huge
+  variety of problems in condensed matter physics. Mathematically, ED is
+  a linear algebra problem involving a matrix called the Hamiltonian.
+  For a system of spin-1/2 particles, the size of this matrix scales
+  exponentially (as <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{O}(2^N)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>𝒪</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msup><mml:mn>2</mml:mn><mml:mi>N</mml:mi></mml:msup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>)
+  with the number of particles <inline-formula><alternatives>
+  <tex-math><![CDATA[N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>.</p>
+  <p>Very fast scaling of memory requirements with system size is the
+  main computational challenge of the method. There are a few techniques
+  allowing one to lower the amount of storage used by the Hamiltonian.
+  For example, one can store only the non-zero elements of the
+  Hamiltonian. This is beneficial when the Hamiltonian is sparse, which
+  is usually the case in condensed matter physics. One can even take it
+  one step further and avoid storing the matrix altogether by instead
+  computing matrix elements on the fly.</p>
+  <p>A complementary approach to reduce memory requirements is to make
+  use of system symmetries. For example, many relevant Hamiltonians
+  possess <inline-formula><alternatives>
+  <tex-math><![CDATA[U(1)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>U</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  symmetry, which permits one to perform calculations assuming that the
+  number of particles (or number of spins pointing upwards), is fixed.
+  Another example would be translational invariance of the underlying
+  lattice.</p>
+  <p>Although the algorithms for dealing with lattice symmetries are
+  well known
+  (<xref alt="Sandvik et al., 2010" rid="ref-sandvik2010" ref-type="bibr">Sandvik
+  et al., 2010</xref>), implementing them remains a non-trivial task.
+  Here we present <monospace>lattice-symmetries</monospace>, a package
+  providing high-quality and high-performance realization of these
+  algorithms. Instead of writing their own optimized implementation for
+  every system of interest, a domain expert provides system-specific
+  details (such as the number of particles or momentum quantum number)
+  to <monospace>lattice-symmetries</monospace> and it will automatically
+  construct a reduced Hamiltonian. The dimension of the new Hamiltonian
+  can be multiple orders of magnitude smaller than of the original
+  one.</p>
+  <p>Furthermore, in <monospace>lattice-symmetries</monospace> the
+  Hamiltonian itself is never stored. Instead, its matrix elements are
+  computed on the fly, which reduces the memory requirements even more.
+  Care is taken to keep the implementation generic such that different
+  physical systems can be studied, but without sacrificing performance
+  as we will show in the next section.</p>
+  <p>All in all, <monospace>lattice-symmetries</monospace> serves as a
+  foundation for building state-of-the-art ED and VMC (Variational Monte
+  Carlo) applications. For example, <monospace>SpinED</monospace>
+  (<xref alt="Westerhout, 2020" rid="ref-SpinED" ref-type="bibr">Westerhout,
+  2020</xref>) is an easy-to-use application for exact diagonalization
+  that is built on top of <monospace>lattice-symmetries</monospace> and
+  can handle clusters of at least 42 spins on a single node.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Exact diagonalization is an old and well-established method and
+  many packages have been written for it. However, we find that most
+  state-of-the-art implementations
+  (<xref alt="Läuchli et al., 2019" rid="ref-lauchi2019" ref-type="bibr">Läuchli
+  et al., 2019</xref>;
+  <xref alt="Wietek &amp; Läuchli, 2018" rid="ref-wietek2018" ref-type="bibr">Wietek
+  &amp; Läuchli, 2018</xref>) are closed-source. There are but three
+  notable open-source projects that natively support spin
+  systems<xref ref-type="fn" rid="fn1">1</xref> :
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\text{H}\Phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mtext mathvariant="normal">H</mml:mtext><mml:mi>Φ</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  (<xref alt="Kawamura et al., 2017" rid="ref-kawamura2017" ref-type="bibr">Kawamura
+  et al., 2017</xref>), <monospace>SPINPACK</monospace>
+  (<xref alt="Schulenburg, 2017" rid="ref-schulenburg2017" ref-type="bibr">Schulenburg,
+  2017</xref>), and <monospace>QuSpin</monospace>
+  (<xref alt="Weinberg &amp; Bukov, 2017" rid="ref-weinberg2017" ref-type="bibr">Weinberg
+  &amp; Bukov, 2017</xref>).</p>
+  <fig>
+    <caption><p>Performance of matrix-vector products in
+    <monospace>QuSpin</monospace>, <monospace>SPINPACK</monospace>, and
+    <monospace>lattice-symmetries</monospace>. For a Heisenberg
+    Hamiltonian on square lattices of different sizes, we measure the
+    time it takes to do a single matrix-vector product. Timings for
+    <monospace>lattice-symmetries</monospace> are normalized to
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[1]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>1</mml:mn></mml:math></alternatives></inline-formula>
+    to show relative speedup compared to <monospace>QuSpin</monospace>,
+    with absolute times in seconds listed as well. Depending on the
+    system speedups over <monospace>QuSpin</monospace> vary between 5
+    and 22 times, but in all cases
+    <monospace>lattice-symmetries</monospace> is significantly faster.
+    <styled-content id="figU003Aperformance"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="jpeg" xlink:href="02_operator_application.jpg" xlink:title="" />
+  </fig>
+  <p><inline-formula><alternatives>
+  <tex-math><![CDATA[\text{H}\Phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mtext mathvariant="normal">H</mml:mtext><mml:mi>Φ</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  implements a variety of Hamiltonians, works at both zero and finite
+  temperatures, and supports multi-node computations. However, there are
+  a few points in which <monospace>lattice-symmetries</monospace>
+  improves upon <inline-formula><alternatives>
+  <tex-math><![CDATA[\text{H}\Phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mtext mathvariant="normal">H</mml:mtext><mml:mi>Φ</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.
+  Firstly, <inline-formula><alternatives>
+  <tex-math><![CDATA[\text{H}\Phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mtext mathvariant="normal">H</mml:mtext><mml:mi>Φ</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  does not support arbitrary lattice symmetries. Secondly, it uses a
+  custom input file format making it not user-friendly. Finally, since
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\text{H}\Phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mtext mathvariant="normal">H</mml:mtext><mml:mi>Φ</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  is an executable, it cannot be used to as a library to develop new
+  algorithms and applications.</p>
+  <p><monospace>SPINPACK</monospace> is another popular solution for
+  diagonalization of spin Hamiltonians. <monospace>SPINPACK</monospace>
+  does support user-defined symmetries, unlike
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\text{H}\Phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mtext mathvariant="normal">H</mml:mtext><mml:mi>Φ</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>,
+  but its interface is even less user-friendly. Defining a lattice,
+  Hamiltonian, and symmetries requires writing non-trivial amounts of
+  <monospace>C</monospace> code. Finally,
+  <monospace>SPINPACK</monospace> is slower than
+  <monospace>lattice-symmetries</monospace> as illustrated in
+  <xref alt="Figure 1" rid="figU003Aperformance">Figure 1</xref>.</p>
+  <p><monospace>QuSpin</monospace> is much closer in functionality to
+  <monospace>lattice-symmetries</monospace>. It is a high-level Python
+  package, which natively supports (but is not limited to) spin systems,
+  can employ user-defined lattice symmetries, and can also perform
+  matrix-free calculations (where matrix elements are computed on the
+  fly). However, <monospace>QuSpin</monospace> mostly focuses on ease of
+  use and functionality rather than performance. In
+  <monospace>lattice-symmetries</monospace> we follow UNIX philosophy
+  (<xref alt="Salus, 1994" rid="ref-salus1994" ref-type="bibr">Salus,
+  1994</xref>) and try to “do one thing but do it well”. Even though
+  <monospace>lattice-symmetries</monospace> uses essentially the same
+  algorithms as <monospace>QuSpin</monospace>, careful implementation
+  allows us to achieve an order of magnitude speedup as shown in
+  <xref alt="Figure 1" rid="figU003Aperformance">Figure 1</xref>. To
+  achieve such performance, we make heavy use of Single Instruction
+  Multiple Data (SIMD) instructions supported by modern processors.
+  Vector Class Library
+  (<xref alt="Fog, 2020" rid="ref-vectorclass" ref-type="bibr">Fog,
+  2020</xref>) is used to write all performance-critical kernels, which
+  currently limits the portability of
+  <monospace>lattice-symmetries</monospace> to processors supporting
+  <monospace>x86-64</monospace> instruction sets.</p>
+  <p><monospace>lattice-symmetries</monospace> is a library implemented
+  in <monospace>C++</monospace> and <monospace>C</monospace>. It
+  provides two interfaces:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Low-level <monospace>C</monospace> interface which can be used
+      to implement ED and VMC applications with focus on
+      performance.</p>
+    </list-item>
+    <list-item>
+      <p>A higher-level <monospace>Python</monospace> wrapper which
+      allows to easily test and prototype algorithms.</p>
+    </list-item>
+  </list>
+  <p>The library is easily installable via the
+  <monospace>Conda</monospace> package manager.</p>
+  <p>The general workflow is as follows: the user starts by defining a
+  few symmetry generators
+  (<monospace>ls_symmetry</monospace>/<monospace>Symmetry</monospace> in
+  <monospace>C</monospace>/<monospace>Python</monospace>) from which
+  <monospace>lattice-symmetries</monospace> automatically constructs the
+  symmetry group
+  (<monospace>ls_group</monospace>/<monospace>Group</monospace> in
+  <monospace>C</monospace>/<monospace>Python</monospace>). The user then
+  proceeds to constructing the Hilbert space basis
+  (<monospace>ls_spin_basis</monospace>/<monospace>SpinBasis</monospace>
+  in <monospace>C</monospace>/<monospace>Python</monospace>). For some
+  applications functionality provided by
+  <monospace>SpinBasis</monospace> may be sufficient, but typically the
+  user will construct one (or multiple) quantum mechanical operators
+  (<monospace>ls_operator</monospace>/<monospace>Operator</monospace> in
+  <monospace>C</monospace>/<monospace>Python</monospace>) corresponding
+  to the Hamiltonian and various observables.
+  <monospace>lattice-symmetries</monospace> supports generic 1-, 2-, 3-,
+  and 4-point operators. Examples of Hamiltonians that can be
+  constructed include</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[
+  \begin{aligned}
+      H &= \sum_{i, j} J_{ij} \boldsymbol\sigma_i \cdot \boldsymbol\sigma_j && \text{Heisenberg interaction,} \\
+      H &= \sum_{i, j} J_{ij} \sigma^z_i \sigma^z_j + \sum_i h_i \sigma^x_i && \text{Ising model in transverse magnetic field,} \\
+      H &= \sum_{i, j} \mathbf{D}_{ij} \left[ \boldsymbol\sigma_i \times \boldsymbol\sigma_j \right] && \text{Dzyaloshinskii-Moriya interaction.} \\
+  \end{aligned}
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtable><mml:mtr><mml:mtd columnalign="right"><mml:mi>H</mml:mi></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:munder><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>,</mml:mo><mml:mi>j</mml:mi></mml:mrow></mml:munder><mml:msub><mml:mi>J</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝛔</mml:mi></mml:mstyle><mml:mi>i</mml:mi></mml:msub><mml:mo>⋅</mml:mo><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝛔</mml:mi></mml:mstyle><mml:mi>j</mml:mi></mml:msub></mml:mtd><mml:mtd columnalign="right"></mml:mtd><mml:mtd columnalign="left"><mml:mtext mathvariant="normal">Heisenberg interaction,</mml:mtext></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"><mml:mi>H</mml:mi></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:munder><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>,</mml:mo><mml:mi>j</mml:mi></mml:mrow></mml:munder><mml:msub><mml:mi>J</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:msubsup><mml:mi>σ</mml:mi><mml:mi>i</mml:mi><mml:mi>z</mml:mi></mml:msubsup><mml:msubsup><mml:mi>σ</mml:mi><mml:mi>j</mml:mi><mml:mi>z</mml:mi></mml:msubsup><mml:mo>+</mml:mo><mml:munder><mml:mo>∑</mml:mo><mml:mi>i</mml:mi></mml:munder><mml:msub><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:msubsup><mml:mi>σ</mml:mi><mml:mi>i</mml:mi><mml:mi>x</mml:mi></mml:msubsup></mml:mtd><mml:mtd columnalign="right"></mml:mtd><mml:mtd columnalign="left"><mml:mtext mathvariant="normal">Ising model in transverse magnetic field,</mml:mtext></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"><mml:mi>H</mml:mi></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:munder><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>,</mml:mo><mml:mi>j</mml:mi></mml:mrow></mml:munder><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐃</mml:mi></mml:mstyle><mml:mrow><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝛔</mml:mi></mml:mstyle><mml:mi>i</mml:mi></mml:msub><mml:mo>×</mml:mo><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝛔</mml:mi></mml:mstyle><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow></mml:mtd><mml:mtd columnalign="right"></mml:mtd><mml:mtd columnalign="left"><mml:mtext mathvariant="normal">Dzyaloshinskii-Moriya interaction.</mml:mtext></mml:mtd></mml:mtr></mml:mtable></mml:math></alternatives></disp-formula></p>
+  <p>Here, <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol\sigma]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝛔</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  denotes Pauli matrices, <inline-formula><alternatives>
+  <tex-math><![CDATA[J]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>J</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{D}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐃</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  are various coupling constants, and sums over
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[j]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>j</mml:mi></mml:math></alternatives></inline-formula>
+  can run over arbitrary used-defined geometries.</p>
+  <p><monospace>Operator</monospace>s can be efficiently applied to
+  vectors in the Hilbert space (i.e., wavefunctions). Also, in cases
+  when the Hilbert space dimension is so big that the wavefunction
+  cannot be written down explicitly (as a list of coefficients),
+  <monospace>Operator</monospace> can be applied to individual spin
+  configurations to implement Monte Carlo local estimators.</p>
+  <p>As an example of what can be done with
+  <monospace>lattice-symmetries</monospace>, we implemented a standalone
+  application for exact diagonalization studies of spin-1/2 systems,
+  <monospace>SpinED</monospace>. By combining
+  <monospace>lattice-symmetries</monospace> with the PRIMME eigensolver
+  (<xref alt="Stathopoulos &amp; McCombs, 2010" rid="ref-stathopoulos2010" ref-type="bibr">Stathopoulos
+  &amp; McCombs, 2010</xref>), it allows one to treat systems of at
+  least 42 sites on a single node. <monospace>SpinED</monospace> is
+  distributed as a statically-linked executable — one can download one
+  file and immediately get started with physics. All in all, it makes
+  large-scale ED more approachable for non-experts.</p>
+  <p>Notable research projects using
+  <monospace>lattice-symmetries</monospace> and
+  <monospace>SpinED</monospace> include Astrakhantsev et al.
+  (<xref alt="2021" rid="ref-astrakhantsev2021" ref-type="bibr">2021</xref>),
+  Bagrov et al.
+  (<xref alt="2020" rid="ref-bagrov2020" ref-type="bibr">2020</xref>),
+  and Westerhout et al.
+  (<xref alt="2020" rid="ref-westerhout2020" ref-type="bibr">2020</xref>).
+  Additionally, <monospace>lattice-symmetries</monospace> is being used
+  to simulate quantum circuits
+  (<xref alt="Astrakhantsev, 2021" rid="ref-qsl2021" ref-type="bibr">Astrakhantsev,
+  2021</xref>).</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>The author thanks Nikita Astrakhantsev for useful discussions and
+  testing of (most) new features. The assistance of Askar Iliasov and
+  Andrey Bagrov with with group-theoretic aspects of this work is
+  appreciated. This work was supported by European Research Council via
+  Synergy Grant 854843 – FASTCORR.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-lauchi2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Läuchli</surname><given-names>Andreas M.</given-names></name>
+          <name><surname>Sudan</surname><given-names>Julien</given-names></name>
+          <name><surname>Moessner</surname><given-names>Roderich</given-names></name>
+        </person-group>
+        <article-title>S=\frac{1}{2} kagome Heisenberg antiferromagnet revisited</article-title>
+        <source>Physical Review B</source>
+        <publisher-name>American Physical Society (APS)</publisher-name>
+        <year iso-8601-date="2019-10">2019</year><month>10</month>
+        <volume>100</volume>
+        <issue>15, 15</issue>
+        <issn>2469-9950, 2469-9969</issn>
+        <uri>https://doi.org/10.1103/physrevb.100.155142</uri>
+        <pub-id pub-id-type="doi">10.1103/physrevb.100.155142</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-wietek2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wietek</surname><given-names>Alexander</given-names></name>
+          <name><surname>Läuchli</surname><given-names>Andreas M.</given-names></name>
+        </person-group>
+        <article-title>Sublattice coding algorithm and distributed memory parallelization for large-scale exact diagonalizations of quantum many-body systems</article-title>
+        <source>Physical Review E</source>
+        <publisher-name>American Physical Society (APS)</publisher-name>
+        <year iso-8601-date="2018-09">2018</year><month>09</month>
+        <volume>98</volume>
+        <issue>3, 3</issue>
+        <issn>2470-0045, 2470-0053</issn>
+        <uri>https://doi.org/10.1103/physreve.98.033309</uri>
+        <pub-id pub-id-type="doi">10.1103/physreve.98.033309</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kawamura2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kawamura</surname><given-names>Mitsuaki</given-names></name>
+          <name><surname>Yoshimi</surname><given-names>Kazuyoshi</given-names></name>
+          <name><surname>Misawa</surname><given-names>Takahiro</given-names></name>
+          <name><surname>Yamaji</surname><given-names>Youhei</given-names></name>
+          <name><surname>Todo</surname><given-names>Synge</given-names></name>
+          <name><surname>Kawashima</surname><given-names>Naoki</given-names></name>
+        </person-group>
+        <article-title>Quantum lattice model solver H\Phi</article-title>
+        <source>Computer Physics Communications</source>
+        <publisher-name>Elsevier BV</publisher-name>
+        <year iso-8601-date="2017-08">2017</year><month>08</month>
+        <volume>217</volume>
+        <issn>0010-4655</issn>
+        <uri>https://doi.org/10.1016/j.cpc.2017.04.006</uri>
+        <pub-id pub-id-type="doi">10.1016/j.cpc.2017.04.006</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-weinberg2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Weinberg</surname><given-names>Phillip</given-names></name>
+          <name><surname>Bukov</surname><given-names>Marin</given-names></name>
+        </person-group>
+        <article-title>QuSpin: A Python package for dynamics and exact diagonalisation of quantum many body systems part I: Spin chains</article-title>
+        <source>SciPost Physics</source>
+        <publisher-name>Stichting SciPost</publisher-name>
+        <year iso-8601-date="2017-02">2017</year><month>02</month>
+        <volume>2</volume>
+        <issue>1, 1</issue>
+        <issn>2542-4653</issn>
+        <uri>https://doi.org/10.21468/scipostphys.2.1.003</uri>
+        <pub-id pub-id-type="doi">10.21468/scipostphys.2.1.003</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-salus1994">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Salus</surname><given-names>Peter H</given-names></name>
+        </person-group>
+        <source>A quarter century of UNIX</source>
+        <publisher-name>ACM Press/Addison-Wesley Publishing Co.</publisher-name>
+        <year iso-8601-date="1994">1994</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-SpinED">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Westerhout</surname><given-names>Tom</given-names></name>
+        </person-group>
+        <article-title>SpinED</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>https://github.com/twesterhout/spin-ed; GitHub</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-sandvik2010">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Sandvik</surname><given-names>Anders W.</given-names></name>
+          <name><surname>Avella</surname><given-names>Adolfo</given-names></name>
+          <name><surname>Mancini</surname><given-names>Ferdinando</given-names></name>
+        </person-group>
+        <article-title>Computational studies of quantum spin systems</article-title>
+        <source>AIP conference proceedings</source>
+        <publisher-name>American Institute of Physics; AIP</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <volume>1297</volume>
+        <uri>https://doi.org/10.1063/1.3518900</uri>
+        <pub-id pub-id-type="doi">10.1063/1.3518900</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-astrakhantsev2021">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Astrakhantsev</surname><given-names>Nikita</given-names></name>
+          <name><surname>Westerhout</surname><given-names>Tom</given-names></name>
+          <name><surname>Tiwari</surname><given-names>Apoorv</given-names></name>
+          <name><surname>Choo</surname><given-names>Kenny</given-names></name>
+          <name><surname>Chen</surname><given-names>Ao</given-names></name>
+          <name><surname>Fischer</surname><given-names>Mark H</given-names></name>
+          <name><surname>Carleo</surname><given-names>Giuseppe</given-names></name>
+          <name><surname>Neupert</surname><given-names>Titus</given-names></name>
+        </person-group>
+        <article-title>Broken-symmetry ground states of the Heisenberg model on the pyrochlore lattice</article-title>
+        <source>arXiv Condensed Matter</source>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://arxiv.org/abs/2101.08787</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-bagrov2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bagrov</surname><given-names>Andrey A</given-names></name>
+          <name><surname>Iliasov</surname><given-names>Askar A</given-names></name>
+          <name><surname>Westerhout</surname><given-names>Tom</given-names></name>
+        </person-group>
+        <article-title>Kinetic samplers for neural quantum states</article-title>
+        <source>arXiv Condensed Matter</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://arxiv.org/abs/2011.02986</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-westerhout2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Westerhout</surname><given-names>Tom</given-names></name>
+          <name><surname>Astrakhantsev</surname><given-names>Nikita</given-names></name>
+          <name><surname>Tikhonov</surname><given-names>Konstantin S.</given-names></name>
+          <name><surname>Katsnelson</surname><given-names>Mikhail I.</given-names></name>
+          <name><surname>Bagrov</surname><given-names>Andrey A.</given-names></name>
+        </person-group>
+        <article-title>Generalization properties of neural network approximations to frustrated magnet ground states</article-title>
+        <source>Nature Communications</source>
+        <publisher-name>Springer Science; Business Media LLC</publisher-name>
+        <year iso-8601-date="2020-03">2020</year><month>03</month>
+        <volume>11</volume>
+        <issue>1</issue>
+        <issn>2041-1723</issn>
+        <uri>https://doi.org/10.1038/s41467-020-15402-w</uri>
+        <pub-id pub-id-type="doi">10.1038/s41467-020-15402-w</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-stathopoulos2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Stathopoulos</surname><given-names>Andreas</given-names></name>
+          <name><surname>McCombs</surname><given-names>James R.</given-names></name>
+        </person-group>
+        <article-title>PRIMME: Preconditioned iterative multimethod eigensolver — methods and software description</article-title>
+        <source>ACM Transactions on Mathematical Software</source>
+        <publisher-name>Association for Computing Machinery (ACM)</publisher-name>
+        <year iso-8601-date="2010-04">2010</year><month>04</month>
+        <volume>37</volume>
+        <issue>2</issue>
+        <issn>0098-3500, 1557-7295</issn>
+        <uri>https://doi.org/10.1145/1731022.1731031</uri>
+        <pub-id pub-id-type="doi">10.1145/1731022.1731031</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-schulenburg2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Schulenburg</surname><given-names>Jörg</given-names></name>
+        </person-group>
+        <article-title>SPINPACK</article-title>
+        <source>Magdeburg University</source>
+        <year iso-8601-date="2017">2017</year>
+        <uri>\url{https://www-e.ovgu.de/jschulen/spin/}</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-vectorclass">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Fog</surname><given-names>Agner</given-names></name>
+        </person-group>
+        <article-title>VCL: C++ vector class library</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>https://github.com/vectorclass/version2; GitHub</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-qsl2021">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Astrakhantsev</surname><given-names>Nikita</given-names></name>
+        </person-group>
+        <article-title>QSL_at_QC</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>https://github.com/nikita-astronaut/QSL_at_QC; GitHub</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+<fn-group>
+  <fn id="fn1">
+    <label>1</label><p>There are a few projects targeting fermionic
+    systems and the Hubbard model in particular. Although it is possible
+    to transform a spin Hamiltonian into a fermionic one, it is
+    impractical for large-scale simulations since lattice symmetries are
+    lost in the new Hamiltonian.</p>
+  </fn>
+</fn-group>
+</back>
+</article>

@@ -1,0 +1,473 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1862</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01862</article-id>
+<title-group>
+<article-title>miet: an R package for region of interest analysis from
+magnetic reasonance images</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-4161-7093</contrib-id>
+<string-name>Benoit Combès</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Empenn INSERM - Institut National de la Santé et de la
+Recherche Médicale, Inria Rennes – Bretagne Atlantique , IRISA_D5 -
+SIGNAUX ET IMAGES NUMÉRIQUES, ROBOTIQUE</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-07-04">
+<day>4</day>
+<month>7</month>
+<year>2019</year>
+</pub-date>
+<volume>5</volume>
+<issue>45</issue>
+<fpage>1862</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>MRI</kwd>
+<kwd>medical imaging</kwd>
+<kwd>statistics</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>In a medical imaging study, a set of magnetic resonance imaging
+  (MRI) data is generally stored as a hierarchy of folders containing
+  MRI volumes. These volumes may correspond to a variety of
+  e.g. subjects, subject-types, centers, acquisition types that
+  structures the folders naming and hierarchy. Here is an example of
+  such structure:</p>
+  <preformat>|-- center01
+|   |-- healthySubject01
+|   |   `-- month0
+|   |-- healthySubject02
+|   |   `-- month0
+|   |-- patient01
+|   |   |-- month0
+|   |   `-- month12
+|   `-- patient02
+|       |-- month0
+|       `-- month12
+`-- center02
+    |-- healthySubject01
+    |   |-- month0
+    |   `-- month12
+    |-- healthySubject02
+    |   |-- month0
+    |   `-- month12
+    |-- patient01
+    |   |-- month0
+    |   `-- month12
+    `-- patient02
+        |-- month0
+        `-- month12</preformat>
+  <p>Each of the folders at the bottom of the hierarchy (here
+  <monospace>month0</monospace> or <monospace>month12</monospace>)
+  contains a set of files with MRI volumes for the given subject (that
+  may be, for example, either a healthy subject or a patient) at the
+  given time of their follow-up, acquired in the given center. These
+  volumes may consist of a set of raw data as well as post-processed
+  data such as segmentation masks, co-registered volumes, etc. that are
+  produced from image processing tools. Obviously, the same dataset
+  could have been structured in many other ways.</p>
+  <p>Once all this data is produced, the next step generally consists in
+  analyzing them. An ubiquitous analysis in medical imaging is the
+  so-called region-of-interest based analysis that consists in comparing
+  statistics of MR signals over sets of predefined regions
+  (<xref alt="Poldrack, 2007" rid="ref-PoldrackU003A2007" ref-type="bibr">Poldrack,
+  2007</xref>).</p>
+  <p>Such an analysis needs to iterate over all MR volumes of interest
+  to read them and to extract the relevant statistics. To the best of
+  our knowledge, there is no dedicated framework to ease such tasks,
+  which may result in lengthy technical analysis codes.
+  <monospace>miet</monospace> - acronym of medical imaging extraction
+  tools - is an R package attempting to fill that gap. More
+  specifically, <monospace>miet</monospace> is designed to specify and
+  extract tibbles
+  (<xref alt="Müller &amp; Wickham, 2019" rid="ref-TibbleU003A2019" ref-type="bibr">Müller
+  &amp; Wickham, 2019</xref>), which is an improved
+  <monospace>data.frame</monospace> structure, ready for data analysis
+  from a specified folder hierarchy and a set of extraction
+  formulas.</p>
+</sec>
+<sec id="a-short-example">
+  <title>A short example</title>
+  <p><monospace>miet</monospace> is based on the following three
+  successive steps:</p>
+  <list list-type="order">
+    <list-item>
+      <p>Populate: Given a description of how the folders are
+      structured, build a “population” tibble gathering information
+      about data hierarchy and location.</p>
+    </list-item>
+    <list-item>
+      <p>Extract: Build a tibble that contains, for each element from
+      your population, values extracted from the associated MRI
+      volumes.</p>
+    </list-item>
+    <list-item>
+      <p>Expand: Gather information from a set of generated tibbles into
+      a single tibble.</p>
+    </list-item>
+  </list>
+  <p>At the end of these three stages, we end up with a tibble ready for
+  data analysis.</p>
+  <p>The four next subsections present an example involving a data set
+  of spinal cord MRI volumes and use it to illustrate the three previous
+  operations. For a reproducible example with publicly available
+  (synthetic) data, see the <monospace>miet</monospace> readme
+  (https://gitlab.inria.fr/miet/miet).</p>
+  <sec id="setting">
+    <title>Setting</title>
+    <p>Our purpose in this short example is to assess the difference of
+    an MRI measurement called the mean magnetization transfer ratio or
+    MTR
+    (<xref alt="Grossman et al., 1994" rid="ref-GrossmanU003A1994" ref-type="bibr">Grossman
+    et al., 1994</xref>) from one scanner to another (also refer to as
+    the scanner-effect). More precisely, we want to assess the
+    difference of MTR measurements on two different scanners in a given
+    anatomical region: voxels corresponding to specific vertebral levels
+    (called C3C6) and assess their correlations with subject body mass
+    index. For this purpose, we dispose from 3D volumes containing MTR
+    values and 3D volumes containing vertebral levels for a set of 10
+    participants scanned on two different scanners (examples of data are
+    given in Figure 1).</p>
+    <p>We consider that our data are contained in the following file
+    hierarchy:</p>
+    <preformat>|-- center01
+|   |-- 01
+|   |-- 02
+|   |---....
+|
+`-- center02
+    |-- 01
+    |-- 02
+    |---....
+    </preformat>
+    <p>Moreover, we assume that each of these folders contains (among
+    others) the file <monospace>mtr.nii.gz</monospace>, the 3D MTR
+    volume and the file <monospace>vertebralLevel.nii.gz</monospace>,
+    that contains the volume representing the vertebral label of each
+    voxel. We assume that in a given folder, these two volumes have the
+    same geometry.</p>
+    <fig>
+      <caption><p>Example of volume data. From left to right: i) Sagital
+      view of vertebral labeling
+      <monospace>vertebralLevel.nii.gz</monospace> on the corresponding
+      anatomical volume (0 is the background and is not displayed,
+      values 1 to 9 labels respectively levels C1 to T2 and are
+      color-coded). ii) Axial view (C3 level) of vertebral labeling
+      <monospace>vertebralLevel.nii.gz</monospace> of the spinal cord on
+      the corresponding anatomical volume. iii) Corresponding axial view
+      for the magnetization transfer map
+      <monospace>mtr.nii.gz</monospace>. Roughly speaking, the darker
+      the pixel the lowest the myelin content.</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="illus/volIllustration.png" xlink:title="" />
+    </fig>
+  </sec>
+  <sec id="populate">
+    <title>Populate</title>
+    <p>First, we are going to parse the overall folder hierarchy to
+    identify each subject and center. This is performed using the
+    function <monospace>miet_populate</monospace>. This function uses a
+    description of the folder hierarchy, given as regular expressions
+    (an introduction to regular expression in R can be found in the
+    stringr reference manual
+    https://stringr.tidyverse.org/articles/regular-expressions.html),
+    and extracts all suitable candidates:</p>
+    <code language="r script">library(miet)
+
+# this is the folder hierarchy location
+ROOT='/home/bcombes/dataExp/'
+
+# this is how the folders are structured
+pattern='{{centerId}}/{{subjectId}}'
+
+# this specifies each element of variable 'pattern'
+mEnv=new.env()
+mEnv$centerId='center\\d{2}' #centerId is coded by &quot;center&quot; plus 2 digits
+mEnv$subjectId='\\d{2}' #subjectId is coded by 2 digits
+
+population=miet_populate(ROOT,pattern,mEnv)
+print(population)
+# A tibble: 20 x 2
+#   centerId subjectId
+#   &lt;chr&gt;    &lt;chr&gt;
+# 1 center01 01
+# 2 center01 02
+# 3 center01 03
+# 4 center01 04
+# ...
+#[1] &quot;With path variable(s):  {{path}}&quot;
+    </code>
+    <p>The resulting <monospace>population</monospace> variable is a
+    tibble with one row for each of the final folder and two columns,
+    named <monospace>centerId</monospace> and
+    <monospace>subjectId</monospace>.</p>
+  </sec>
+  <sec id="extract">
+    <title>Extract</title>
+    <p>Once <monospace>population</monospace> is defined, for each of
+    its elements, we want to extract the mean of volume
+    <monospace>mtr.nii.gz</monospace> over the set of voxels of
+    <monospace>vertebraeLevel.nii.gz</monospace> which equals 3,4,5 or
+    6. The function <monospace>miet_extract</monospace> is designed for
+    this purpose:</p>
+    <code language="r script">
+MTRC3C6=miet_extract(population,
+                    formulaLabel='[[vertebraeLevel]] %in% seq(3,6)',
+                    valueListName='[[mtr]]',
+                    statFunction=mean)</code>
+    <p>The function <monospace>miet_extract</monospace> iterates over
+    the elements of <monospace>population</monospace>, extracts all the
+    voxels satisfying a given R expression given as a string and
+    computes a given statistic (here <monospace>mean</monospace>) over
+    them. To specify such expressions, <monospace>miet</monospace> uses
+    a special notation for MRI volume, <monospace>[[X]]</monospace> that
+    can read as “the 3D array corresponding to MRI file X.nii.gz in the
+    current acquisition folder”. The previous
+    <monospace>miet_extract</monospace> call should thus read as:</p>
+    <preformat>For each acquisitions set in 'population'
+    Compute the 'mean' of volume 'mtr.nii.gz' over voxels
+    for which 'vertebraeLevel.nii.gz in [3,6]'</preformat>
+    <p>Looking at the content of the resulting tibble:</p>
+    <code language="r script">print(MTRC3C6)
+
+# A tibble: 20 x 3
+#  metric   uniqueId    value
+#  &lt;chr&gt;    &lt;chr&gt;       &lt;dbl&gt;
+#1 mean_mtr center01_01  35.0
+#2 mean_mtr center01_02  34.7
+#3 mean_mtr center01_03  34.5
+#4 mean_mtr center01_04  35.3
+#...</code>
+    <p>We obtain a 3-column-tibble. Its first column contains the name
+    of the extracted metric (here it is always
+    <monospace>mean_mtr</monospace>), the second one is an identifier
+    toward the acquisition session and the last one is the value of the
+    mean MTR on C3C6 for the given acquisition session. Notice that
+    <monospace>miet</monospace> proposes other more versatile functions
+    (e.g. <monospace>miet_apply</monospace>) to extract statistics from
+    MRI.</p>
+  </sec>
+  <sec id="expand">
+    <title>Expand</title>
+    <p>Now, we want to include the subject body-mass index (that equals
+    subject-weight (in kg)/ subject-size<inline-formula><alternatives>
+    <tex-math><![CDATA[^2]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi></mml:mi><mml:mn>2</mml:mn></mml:msup></mml:math></alternatives></inline-formula>
+    (in meter<inline-formula><alternatives>
+    <tex-math><![CDATA[^2]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi></mml:mi><mml:mn>2</mml:mn></mml:msup></mml:math></alternatives></inline-formula>))
+    in our data. This value is typically extracted from e.g., a csv file
+    containing subject characteristics. In our example,</p>
+    <code language="r script">characteristics=read.csv(paste0(ROOT,'/characteristic.csv'),
+                         colClasses=c('character','numeric','numeric'))
+print(characteristics)
+
+#   subjectId size weight
+#1         01  1.6     68
+#2         02  1.7     80
+#3         03  1.5     50
+#4         04  1.7     62
+#...</code>
+    <p>The next step consists in gathering all the relevant elements
+    (here, mean MTR, subject id and center as well as its corresponding
+    weight and size characteristics) into a single tibble.
+    <monospace>miet_expand</monospace> is designed for such a purpose
+    and takes as arguments the population and a set of a tibbles to be
+    merged with:</p>
+    <code language="r script">
+expandedDf=miet_expand(population,MTRC3C6,
+                       characteristics)
+head(expandedDf)
+
+# A tibble: 6 x 9
+#  uniqueId   centerId subjectId mean_mtr  size  weight
+#  &lt;chr&gt;      &lt;chr&gt;    &lt;chr&gt;     &lt;dbl&gt;     &lt;dbl&gt;  &lt;dbl&gt;
+#1 center0... center01        01     36.6   1.6      68
+#2 center0... center01        02     34.8   1.7      80
+#3 center0... center01        03     35.7   1.5      50
+#4 center0... center01        04     37.0   1.7      62
+#...
+    </code>
+    <p>This new tibble gathers all the needed information and is now
+    ready to be visualised and analysed with the appropriate R
+    packages.</p>
+    <p>While this falls out of the immediate scope of
+    <monospace>miet</monospace>, we demonstrate that here:</p>
+    <code language="r script">library(ggplot2)
+library(dplyr)
+
+ggplot(expandedDf,aes(x=subjectId,y=mean_mtr))+
+        geom_point(aes(color=centerId,size=weight/size^2))</code>
+    <p>The resulting plot is shown in Figure 2.</p>
+    <fig>
+      <caption><p>Dispersion of MTR on C3C6</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="illus/ggp.png" xlink:title="" />
+    </fig>
+    <p>Let’s look at the statistics for each center:</p>
+    <preformat>expandedDf %&gt;% group_by(centerId) %&gt;%
+           summarise(mu=mean(mean_mtr),sigma=sd(mean_mtr))
+
+# A tibble: 2 x 3
+#  centerId    mu sigma
+#  &lt;chr&gt;    &lt;dbl&gt; &lt;dbl&gt;
+#1 center01  35.2 0.863
+#2 center02  35.1 0.988
+    </preformat>
+    <p>The difference between the two centers is low, with respect to
+    the data variability. Not surprisingly, there is no evidence against
+    a none-null center effect:</p>
+    <preformat>summary(lm(data=expandedDf,mean_mtr~centerId+subjectId))
+
+#Call:
+#lm(formula = mean_mtr ~ centerId + subjectId, data = expandedDf)
+#
+#Residuals:
+#    Min      1Q  Median      3Q     Max
+#-1.0910 -0.3297  0.0000  0.3297  1.0910
+#
+#Coefficients:
+#                   Estimate Std. Error t value Pr(&gt;|t|)
+#(Intercept)       3.542e+01  5.987e-01  59.154 7.41e-12 ***
+#centerIdcenter02  6.812e-05  3.787e-01   0.000   0.9999
+#...</preformat>
+    <p>We then choose to pool measurements from
+    <monospace>center01</monospace> and <monospace>center02</monospace>
+    to assess relationship to body mass index.</p>
+    <preformat>pooledDf = expandedDf %&gt;% group_by(subjectId) %&gt;%
+          summarize(mtr=mean(mean_mtr),bmi=first(weight)/first(size)^2)
+
+pooledDf %&gt;% ggplot(aes(x=mtr,y=bmi)) + geom_point() + geom_smooth(method='lm')</preformat>
+    <p>The resulting plot is given in Figure 3.</p>
+    <fig>
+      <caption><p>BMI as a function of MTR on C3C6</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="illus/BMIVsMTR.png" xlink:title="" />
+    </fig>
+    <p>Given this visualization, it is hard to conclude on the
+    relationship between BMI and MTR measurements on the basis of these
+    data.</p>
+  </sec>
+  <sec id="to-conclude-this-simple-example">
+    <title>To conclude this simple example</title>
+    <p>To conclude this simple example, we outline that using
+    <monospace>miet</monospace> avoided us to explicitly:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p>write loops over patient/acquisition/…</p>
+      </list-item>
+      <list-item>
+        <p>deal with MRI files</p>
+      </list-item>
+    </list>
+    <p>and thus allows code writing and reviewing to focus on the
+    statistics of interest.</p>
+    <p>The example developed in this section is intentionally designed
+    to be minimal: all default arguments match well with the situation.
+    <monospace>miet</monospace> provides ways to deal with a variety of
+    other situations. See the <monospace>miet</monospace> vignette
+    (available at
+    https://gitlab.inria.fr/miet/miet/blob/master/doc/vignette.pdf) for
+    more details.</p>
+  </sec>
+</sec>
+<sec id="availability">
+  <title>Availability</title>
+  <p><monospace>miet</monospace> is an open source software made
+  available under the MIT license. It can be installed from its gitlab
+  repository using the <monospace>devtools</monospace> package:
+  <monospace>devtools::install_git(&quot;https://gitlab.inria.fr/miet/miet.git&quot;)</monospace>.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We acknowledge Camille Maumet for sharing their enthusiasm toward
+  the publication of this work, as well as for their numerous relevant
+  comments. We acknowledge Julien Louis for their numerous relevant
+  comments. We acknowledge the reviewers for their comments and
+  suggestions.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-GrossmanU003A1994">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Grossman</surname><given-names>Robert I</given-names></name>
+          <name><surname>Gomori</surname><given-names>John M</given-names></name>
+          <name><surname>Ramer</surname><given-names>Karen N</given-names></name>
+          <name><surname>Lexa</surname><given-names>Frank J</given-names></name>
+          <name><surname>Schnall</surname><given-names>Mitchell D</given-names></name>
+        </person-group>
+        <article-title>Magnetization transfer: Theory and clinical applications in neuroradiology.</article-title>
+        <source>Radiographics</source>
+        <year iso-8601-date="1994">1994</year>
+        <volume>14</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1148/radiographics.14.2.8190954</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-TibbleU003A2019">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Müller</surname><given-names>Kirill</given-names></name>
+          <name><surname>Wickham</surname><given-names>Hadley</given-names></name>
+        </person-group>
+        <source>Tibble: Simple data frames</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://CRAN.R-project.org/package=tibble</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-PoldrackU003A2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Poldrack</surname><given-names>Russell A</given-names></name>
+        </person-group>
+        <article-title>Region of interest analysis for fMRI</article-title>
+        <source>Social cognitive and affective neuroscience</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>2</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1093/scan/nsm006</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

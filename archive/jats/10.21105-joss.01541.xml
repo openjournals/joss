@@ -1,0 +1,759 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1541</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01541</article-id>
+<title-group>
+<article-title>bayestestR: Describing Effects and their Uncertainty,
+Existence and Significance within the Bayesian Framework</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-5375-9967</contrib-id>
+<string-name>Dominique Makowski</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-4287-4801</contrib-id>
+<string-name>Mattan S. Ben-Shachar</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-8895-3206</contrib-id>
+<string-name>Daniel Lüdecke</string-name>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Nanyang Technological University, Singapore</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Ben-Gurion University of the Negev, Israel</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>University Medical Center Hamburg-Eppendorf,
+Germany</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-06-09">
+<day>9</day>
+<month>6</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>40</issue>
+<fpage>1541</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Bayesian statistics</kwd>
+<kwd>rstan</kwd>
+<kwd>eaystats</kwd>
+<kwd>posterior distribution</kwd>
+<kwd>Region of practical equivalence</kwd>
+<kwd>ROPE</kwd>
+<kwd>probability of direction</kwd>
+<kwd>Bayes factor</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>The Bayesian framework for statistics is quickly gaining in
+  popularity among scientists, for reasons such as reliability and
+  accuracy (particularly in noisy data and small samples), the
+  possibility of incorporating prior knowledge into the analysis, and
+  the intuitive interpretation of results
+  (<xref alt="Andrews &amp; Baguley, 2013" rid="ref-andrews2013prior" ref-type="bibr">Andrews
+  &amp; Baguley, 2013</xref>;
+  <xref alt="Etz &amp; Vandekerckhove, 2016" rid="ref-etz2016bayesian" ref-type="bibr">Etz
+  &amp; Vandekerckhove, 2016</xref>;
+  <xref alt="Kruschke, 2010" rid="ref-kruschke2010believe" ref-type="bibr">Kruschke,
+  2010</xref>;
+  <xref alt="Kruschke et al., 2012" rid="ref-kruschke2012time" ref-type="bibr">Kruschke
+  et al., 2012</xref>;
+  <xref alt="Wagenmakers et al., 2017" rid="ref-wagenmakers2018bayesian" ref-type="bibr">Wagenmakers
+  et al., 2017</xref>). Adopting the Bayesian framework is more of a
+  shift in the paradigm than a change in the methodology; all the common
+  statistical procedures (<italic>t</italic>-tests, correlations,
+  ANOVAs, regressions, etc.) can also be achieved within the Bayesian
+  framework. One of the core difference is that in the
+  <italic>frequentist</italic> view, the effects are fixed (but unknown)
+  and data are random. On the other hand, instead of having single
+  estimates of the “true effect”, the Bayesian inference process
+  computes the probability of different effects <italic>given the
+  observed data</italic>, resulting in a distribution of possible values
+  for the parameters, called the <italic>posterior
+  distribution</italic>. The <bold>bayestestR</bold> package provides
+  tools to describe these posterior distributions.</p>
+  <p>Effects in the Bayesian framework can be described by
+  <ext-link ext-link-type="uri" xlink:href="https://easystats.github.io/bayestestR/articles/guidelines.html">characterizing
+  their posterior distribution</ext-link>. Commonly reported indices
+  include measures of centrality (e.g., the median, mean or MAP
+  estimate) and uncertainty (the
+  <ext-link ext-link-type="uri" xlink:href="https://easystats.github.io/bayestestR/articles/credible_interval.html"><italic>credible</italic>
+  interval</ext-link> - CI). With caution, these can be considered the
+  counterparts to the coefficient point-estimates and confidence
+  intervals of the frequentist framework. Additionally,
+  <bold>bayestestR</bold> also focuses on implementing a Bayesian
+  null-hypothesis testing framework (in a Bayesian sense, i.e., extended
+  to general testing of “effect existence”) by providing access to both
+  established and exploratory indices of effect
+  <italic>existence</italic> and <italic>significance</italic> [such as
+  the ROPE, Kruschke &amp; Liddell
+  (<xref alt="2018" rid="ref-kruschke2018bayesian" ref-type="bibr">2018</xref>);
+  the MAP-based <italic>p</italic>-value, Mills
+  (<xref alt="2018" rid="ref-mills2018objective" ref-type="bibr">2018</xref>);
+  the Bayes factor, Morey &amp; Rouder
+  (<xref alt="2011" rid="ref-morey2011bayes" ref-type="bibr">2011</xref>);
+  or the Probability of Direction - <italic>pd</italic>].</p>
+  <p>Existing R packages allow users to easily fit a large variety of
+  models and extract and visualize the posterior draws. However, most of
+  these packages only return a limited set of indices (e.g.,
+  point-estimates and CIs). <bold>bayestestR</bold> provides a
+  comprehensive and consistent set of functions to analyze and describe
+  posterior distributions generated by a variety of models objects,
+  including popular modeling packages such as <bold>rstanarm</bold>
+  (<xref alt="Goodrich et al., 2018" rid="ref-goodrich2018rstanarm" ref-type="bibr">Goodrich
+  et al., 2018</xref>), <bold>brms</bold>
+  (<xref alt="Bürkner, 2017" rid="ref-burkner2017brms" ref-type="bibr">Bürkner,
+  2017</xref>), <bold>BayesFactor</bold>
+  (<xref alt="Morey &amp; Rouder, 2018" rid="ref-morey2018bayesfactor" ref-type="bibr">Morey
+  &amp; Rouder, 2018</xref>), and <bold>emmeans</bold>
+  (<xref alt="Lenth, 2019" rid="ref-lenth2019emmeans" ref-type="bibr">Lenth,
+  2019</xref>), thus making it a useful tool supporting the usage and
+  development of Bayesian statistics. The main functions are described
+  below, and full documentation is available on the
+  <ext-link ext-link-type="uri" xlink:href="https://easystats.github.io/bayestestR">package’s
+  website</ext-link>.</p>
+</sec>
+<sec id="examples-of-features">
+  <title>Examples of Features</title>
+  <p>The following demonstration of functions is accompanied by figures
+  to illustrate the conceptional ideas behind the related indices.
+  However, <bold>bayestestR</bold> functions also include plotting
+  capabilities via the
+  <ext-link ext-link-type="uri" xlink:href="https://easystats.github.io/see/"><bold>see</bold>
+  package</ext-link>
+  (<xref alt="Lüdecke, Waggoner, Ben-Shachar, et al., 2019" rid="ref-ludecke2019see" ref-type="bibr">Lüdecke,
+  Waggoner, Ben-Shachar, et al., 2019</xref>).</p>
+  <sec id="indices-of-centrality-point-estimates">
+    <title>Indices of Centrality: Point-estimates</title>
+    <p><bold>bayestestR</bold> offers two functions to compute
+    point-estimates from posterior distributions:
+    <monospace>map_estimate()</monospace> and
+    <monospace>point_estimate()</monospace>, the latter providing
+    options to calculate the mean, median or MAP estimate of a posterior
+    distribution (see <bold>Figure 1</bold>).
+    <ext-link ext-link-type="uri" xlink:href="https://easystats.github.io/bayestestR/reference/map_estimate.html"><monospace>map_estimate()</monospace></ext-link>
+    is a convenient function to calculate the <bold>Maximum A
+    Posteriori</bold> (MAP) estimate directly.</p>
+    <p>The <bold>posterior mean</bold> minimizes expected
+    <italic>squared</italic> error, whereas the <bold>posterior
+    median</bold> minimizes expected <italic>absolute</italic> error
+    (i.e., the difference of estimates from true values over samples).
+    The <bold>MAP estimate</bold> corresponds to the most probable value
+    of a posterior distribution.</p>
+    <code language="r script">set.seed(1)
+posterior &lt;- rchisq(100, 3)
+map_estimate(posterior)
+
+#&gt; MAP = 1.46
+
+point_estimate(posterior)
+
+#&gt; Median = 2.31
+
+point_estimate(posterior, centrality = &quot;mean&quot;)
+
+#&gt; Mean = 2.96
+
+point_estimate(posterior, centrality = &quot;map&quot;)
+
+#&gt; MAP = 1.46</code>
+    <fig>
+      <caption><p>Indices of centrality of the posterior distribution
+      that are often used as point-estimates: the mean (in green),
+      median (in red), and MAP estimate (in blue)</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="Figure1.png" xlink:title="" />
+    </fig>
+  </sec>
+  <sec id="quantifying-uncertainty-the-credible-interval-ci">
+    <title>Quantifying Uncertainty: The Credible Interval (CI)</title>
+    <p>In order to measure the uncertainty associated with the
+    estimation, <bold>bayestestR</bold> provides two functions:
+    <monospace>eti()</monospace>, the <bold>Equal-Tailed Interval
+    (ETI)</bold>, and <monospace>hdi()</monospace>, the <bold>Highest
+    Density Interval (HDI)</bold>. Both indices (accessible via the
+    <monospace>method</monospace> argument in the
+    <monospace>ci()</monospace> function) can be used in the context of
+    Bayesian posterior characterisation as <bold>Credible Interval
+    (CI)</bold>.</p>
+    <p><ext-link ext-link-type="uri" xlink:href="https://easystats.github.io/bayestestR/reference/hdi.html"><monospace>hdi()</monospace></ext-link>
+    computes the HDI of a posterior distribution, i.e., the interval
+    that contains all points within the interval having a higher
+    probability density than points outside the interval (see
+    <bold>Figure 2</bold>). HDIs have a particular property: Unlike an
+    equal-tailed interval (computed by
+    <ext-link ext-link-type="uri" xlink:href="https://easystats.github.io/bayestestR/reference/eti.html"><monospace>eti()</monospace></ext-link>)
+    that typically excludes 2.5% from each tail of the distribution, the
+    HDI is <italic>not</italic> equal-tailed and therefore always
+    includes the mode(s) of posterior distributions.</p>
+    <p>By default, <monospace>hdi()</monospace> and
+    <monospace>eti()</monospace> return the 89% intervals
+    (<monospace>ci = 0.89</monospace>), deemed to be more stable than,
+    for instance, 95% intervals. An effective sample size of at least
+    10.000 is recommended if 95% intervals should be computed
+    (<xref alt="Kruschke, 2015" rid="ref-kruschke2015doing" ref-type="bibr">Kruschke,
+    2015</xref>). Moreover, 89 indicates the arbitrariness of interval
+    limits - its only remarkable property is being the highest prime
+    number that does not exceed the already unstable 95% threshold
+    (<xref alt="McElreath, 2018" rid="ref-mcelreath2018statistical" ref-type="bibr">McElreath,
+    2018</xref>).</p>
+    <code language="r script">hdi(posterior)
+
+#&gt; # Highest Density Interval
+#&gt; 
+#&gt;       89% HDI
+#&gt;  [0.11, 6.05]
+
+eti(posterior)
+
+#&gt; # Equal-Tailed Interval
+#&gt; 
+#&gt;       89% ETI
+#&gt;  [0.42, 7.27]</code>
+    <fig>
+      <caption><p>Indices of uncertainty that can be used as Credible
+      Intervals (CIs): (A) the 89% Highest Density Interval (HDI); (B)
+      the 89% Equal-Tailed Interval (ETI).</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="Figure2.png" xlink:title="" />
+    </fig>
+  </sec>
+  <sec id="null-hypothesis-significance-testing-nhst">
+    <title>Null-Hypothesis Significance Testing (NHST)</title>
+    <p>The Bayesian framework allows one to neatly delineate and
+    quantify different aspects of hypothesis testing, including effect
+    <italic>existence</italic> and <italic>significance</italic>, and
+    different indices have been developed to describe them.</p>
+    <sec id="rope-and-test-for-practical-equivalence">
+      <title>ROPE and Test for Practical Equivalence</title>
+      <p><ext-link ext-link-type="uri" xlink:href="https://easystats.github.io/bayestestR/reference/rope.html"><monospace>rope()</monospace></ext-link>
+      computes the proportion of the HDI (default to the 89% HDI) of a
+      posterior distribution that lies within a Region Of Practical
+      Equivalence (the <bold>ROPE</bold>; see <bold>Figure 3</bold>,
+      panel A).</p>
+      <p>Statistically, the probability of a posterior distribution
+      being different than 0 does not make much sense (the probability
+      of it being different from a single point being infinite).
+      Therefore, the idea underlining ROPE is to let the user define an
+      area around the null value enclosing values that are
+      <italic>equivalent to the null</italic> value for practical
+      purposes
+      (<xref alt="Kruschke, 2018" rid="ref-kruschke2018rejecting" ref-type="bibr">Kruschke,
+      2018</xref>;
+      <xref alt="Kruschke &amp; Liddell, 2018" rid="ref-kruschke2018bayesian" ref-type="bibr">Kruschke
+      &amp; Liddell, 2018</xref>). In the absence of user-provided
+      values, <bold>bayestestR</bold> will automatically find an
+      appropriate range for the ROPE using the
+      <ext-link ext-link-type="uri" xlink:href="https://easystats.github.io/bayestestR/reference/rope_range.html"><monospace>rope_range()</monospace></ext-link>
+      function.</p>
+      <code language="r script">rope(distribution_normal(1000, mean = 1), range = c(-0.5, 0.5))
+
+#&gt; # Proportion of samples inside the ROPE [-0.50, 0.50]:
+#&gt; 
+#&gt;  inside ROPE
+#&gt;      27.16 %</code>
+      <fig>
+        <caption><p>Posterior distributions (in yellow) of effects (the
+        x-axis) with the illustration of indices of Null-Hypothesis
+        Significance Testing: (A) The ROPE; (B) The Probability of
+        Direction - pd; (C) The Savage-Dickey Bayes factor; (D) The
+        MAP-based p-value.</p></caption>
+        <graphic mimetype="image" mime-subtype="png" xlink:href="Figure3.png" xlink:title="" />
+      </fig>
+      <p>The proportion of HDI lying within this “null” region can be
+      used as an decision criterion for “null-hypothesis” testing. Such
+      a <bold>Test for Practical Equivalence</bold>, implemented via
+      <ext-link ext-link-type="uri" xlink:href="https://easystats.github.io/bayestestR/reference/equivalence_test.html"><monospace>equivalence_test()</monospace></ext-link>,
+      is based on the “HDI+ROPE decision rule”
+      (<xref alt="Kruschke, 2018" rid="ref-kruschke2018rejecting" ref-type="bibr">Kruschke,
+      2018</xref>) to check whether parameter values should be accepted
+      or rejected against an explicitly formulated “null hypothesis”
+      (i.e., a
+      <ext-link ext-link-type="uri" xlink:href="https://easystats.github.io/bayestestR/reference/rope.html">ROPE</ext-link>).
+      If the HDI is completely outside the ROPE, the “null hypothesis”
+      for this parameter is “rejected”. If the ROPE completely covers
+      the HDI, i.e., all most credible values of a parameter are inside
+      the ROPE, the null hypothesis is accepted. Otherwise, whether to
+      accept or reject the null hypothesis is undecided.</p>
+      <code language="r script">library(rstanarm)
+model &lt;- stan_glm(mpg ~ wt + gear, data = mtcars)
+equivalence_test(model)
+
+#&gt; # Test for Practical Equivalence
+#&gt; 
+#&gt;   ROPE: [-0.60 0.60]
+#&gt; 
+#&gt;    Parameter        H0 inside ROPE       89% HDI
+#&gt;  (Intercept)  Rejected      0.00 % [30.82 47.02]
+#&gt;           wt  Rejected      0.00 % [-6.63 -4.39]
+#&gt;         gear Undecided     52.54 % [-1.76  1.23]</code>
+    </sec>
+    <sec id="probability-of-direction-pd">
+      <title>Probability of Direction (<italic>pd</italic>)</title>
+      <p><ext-link ext-link-type="uri" xlink:href="https://easystats.github.io/bayestestR/reference/p_direction.html"><monospace>p_direction()</monospace></ext-link>
+      computes the <bold>Probability of Direction</bold>
+      (<italic>pd</italic>, also known as the Maximum Probability of
+      Effect - <italic>MPE</italic>). This index of effect existence
+      varies between 50% and 100% and can be interpreted as the
+      probability that a parameter (described by its posterior
+      distribution) is strictly positive or negative (whichever is the
+      most probable). It is mathematically defined as the proportion of
+      the posterior distribution that is of the median’s sign (see
+      <bold>Figure 3</bold>, panel B).</p>
+      <code language="r script">p_direction(distribution_normal(100, 0.4, 0.2))
+
+#&gt; # Probability of Direction (pd)
+#&gt; 
+#&gt; pd = 98.00%</code>
+    </sec>
+    <sec id="bayes-factor">
+      <title>Bayes Factor</title>
+      <p><ext-link ext-link-type="uri" xlink:href="https://easystats.github.io/bayestestR/reference/bayesfactor_parameters.html"><bold><monospace>bayesfactor_parameters()</monospace></bold></ext-link>
+      computes Bayes factors against the null (either a point or an
+      interval), based on prior and posterior samples of a single
+      parameter. This Bayes factor indicates the degree by which the
+      mass of the posterior distribution has shifted further away from
+      or closer to the null value(s) (relative to the prior
+      distribution), thus indicating if the null value has become less
+      or more likely given the observed data.</p>
+      <p>When the null is an interval, the Bayes factor is computed by
+      comparing the prior and posterior odds of the parameter falling
+      within or outside the null; when the null is a point, a
+      Savage-Dickey density ratio is computed, which is also an
+      approximation of a Bayes factor comparing the marginal likelihoods
+      of the model against a model in which the tested parameter has
+      been restricted to the point null
+      (<xref alt="Wagenmakers et al., 2010" rid="ref-wagenmakers2010bayesian" ref-type="bibr">Wagenmakers
+      et al., 2010</xref>).</p>
+      <code language="r script">prior &lt;- distribution_normal(1000, mean = 0, sd = 1)
+posterior &lt;- distribution_normal(1000, mean = 1, sd = 0.7)
+
+bayesfactor_parameters(posterior, prior, direction = &quot;two-sided&quot;, null = 0)
+
+#&gt; # Bayes Factor (Savage-Dickey density ratio)
+#&gt; 
+#&gt;  Bayes Factor
+#&gt;          1.98
+#&gt; 
+#&gt; * Evidence Against The Null: [0]</code>
+    </sec>
+    <sec id="map-based-p-value">
+      <title>MAP-based <italic>p</italic>-value</title>
+      <p><ext-link ext-link-type="uri" xlink:href="https://easystats.github.io/bayestestR/reference/p_map.html"><monospace>p_map()</monospace></ext-link>
+      computes the odds that a parameter (described by its posterior
+      distribution) has against the null hypothesis
+      (<italic>h0</italic>) using Mills’ <italic>Objective Bayesian
+      Hypothesis Testing</italic> framework
+      (<xref alt="Mills, 2018" rid="ref-mills2018objective" ref-type="bibr">Mills,
+      2018</xref>;
+      <xref alt="Mills &amp; Parent, 2014" rid="ref-mills2014bayesian" ref-type="bibr">Mills
+      &amp; Parent, 2014</xref>). It corresponds to the density value at
+      0 divided by the density at the MAP - the Maximum A Posteriori
+      (see <bold>Figure 3</bold>, panel D).</p>
+      <code language="r script">p_map(distribution_normal(1000, mean = 1))
+#&gt; # MAP-based p-value
+#&gt; 
+#&gt; p (MAP) = 0.629</code>
+    </sec>
+  </sec>
+  <sec id="visualisation-and-compatibility-with-models">
+    <title>Visualisation and Compatibility with Models</title>
+    <p>Most of bayestestR functions can be visualised (see <bold>Figure
+    4</bold>) by passing them to the <monospace>plot()</monospace>
+    function (the
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/easystats/see"><bold>see</bold></ext-link>
+    package needs to be installed). Moreover, these functions can be
+    directly applied to statistical models (fitted for instance with
+    <bold>rstanarm</bold> or <bold>brms</bold>), resulting in the
+    description of the parameters of the model.</p>
+    <code language="r script"># Load the rstanarm and the see package
+library(rstanarm)
+library(see)
+
+# Fit a Bayesian linear regression
+model &lt;- stan_glm(Petal.Width ~ Petal.Length * Sepal.Width, data = iris)
+
+# Store results
+result_pd &lt;- p_direction(model)
+
+# Print and plot results
+print(result_pd)
+
+# Probability of Direction (pd)
+
+                Parameter     pd
+              (Intercept) 72.47%
+             Petal.Length 99.88%
+              Sepal.Width 70.97%
+ Petal.Length:Sepal.Width 96.70%
+
+plot(result_pd)</code>
+    <fig>
+      <caption><p>Visualisation of the pd for the parameters of a
+      Bayesian regression model.</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="Figure4.png" xlink:title="" />
+    </fig>
+  </sec>
+</sec>
+<sec id="licensing-and-availability">
+  <title>Licensing and Availability</title>
+  <p><bold>bayestestR</bold> is licensed under the GNU General Public
+  License (v3.0), with all source code stored at GitHub
+  (https://github.com/easystats/bayestestR), and with a corresponding
+  issue tracker for bug reporting and feature enhancements. In the
+  spirit of honest and open science, we encourage requests/tips for
+  fixes, feature updates, as well as general questions and concerns via
+  direct interaction with contributors and developers.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p><bold>bayestestR</bold> is part of the
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/easystats/easystats"><italic>easystats</italic></ext-link>
+  ecosystem [relying on the <bold>insight</bold> package to access
+  information contained in models; Lüdecke, Waggoner, &amp; Makowski
+  (<xref alt="2019" rid="ref-ludecke2019insight" ref-type="bibr">2019</xref>)],
+  a collaborative project created to facilitate the usage of R. Thus, we
+  would like to thank the
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/orgs/easystats/people">council
+  of masters</ext-link> of easystats, all other padawan contributors, as
+  well as the users.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-ludecke2019see">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Lüdecke</surname><given-names>Daniel</given-names></name>
+          <name><surname>Waggoner</surname><given-names>Philip</given-names></name>
+          <name><surname>Ben-Shachar</surname><given-names>Mattan S.</given-names></name>
+          <name><surname>Makowski</surname><given-names>Dominique</given-names></name>
+        </person-group>
+        <source>See: Visualisation toolbox for ’easystats’ and extra geoms, themes and color palettes for ’ggplot2’</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://easystats.github.io/see/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-ludecke2019insight">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lüdecke</surname><given-names>Daniel</given-names></name>
+          <name><surname>Waggoner</surname><given-names>Philip</given-names></name>
+          <name><surname>Makowski</surname><given-names>Dominique</given-names></name>
+        </person-group>
+        <article-title>Insight: A unified interface to access information from model objects in R</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>4</volume>
+        <issue>38</issue>
+        <pub-id pub-id-type="doi">10.21105/joss.01412</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lenth2019emmeans">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Lenth</surname><given-names>Russell</given-names></name>
+        </person-group>
+        <source>Emmeans: Estimated marginal means, aka least-squares means</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://CRAN.R-project.org/package=emmeans</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-mcelreath2018statistical">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>McElreath</surname><given-names>Richard</given-names></name>
+        </person-group>
+        <source>Statistical rethinking</source>
+        <publisher-name>Chapman; Hall/CRC</publisher-name>
+        <year iso-8601-date="2018-01">2018</year><month>01</month>
+        <uri>https://doi.org/10.1201%2F9781315372495</uri>
+        <pub-id pub-id-type="doi">10.1201/9781315372495</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-wagenmakers2018bayesian">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wagenmakers</surname><given-names>Eric-Jan</given-names></name>
+          <name><surname>Marsman</surname><given-names>Maarten</given-names></name>
+          <name><surname>Jamil</surname><given-names>Tahira</given-names></name>
+          <name><surname>Ly</surname><given-names>Alexander</given-names></name>
+          <name><surname>Verhagen</surname><given-names>Josine</given-names></name>
+          <name><surname>Love</surname><given-names>Jonathon</given-names></name>
+          <name><surname>Selker</surname><given-names>Ravi</given-names></name>
+          <name><surname>Gronau</surname><given-names>Quentin F.</given-names></name>
+          <name><surname>Šmı́ra</surname><given-names>Martin</given-names></name>
+          <name><surname>Epskamp</surname><given-names>Sacha</given-names></name>
+          <name><surname>Matzke</surname><given-names>Dora</given-names></name>
+          <name><surname>Rouder</surname><given-names>Jeffrey N.</given-names></name>
+          <name><surname>Morey</surname><given-names>Richard D.</given-names></name>
+        </person-group>
+        <article-title>Bayesian inference for psychology. Part I: Theoretical advantages and practical ramifications</article-title>
+        <source>Psychonomic Bulletin &amp; Review</source>
+        <publisher-name>Springer Nature</publisher-name>
+        <year iso-8601-date="2017-08">2017</year><month>08</month>
+        <volume>25</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.3758%2Fs13423-017-1343-3</uri>
+        <pub-id pub-id-type="doi">10.3758/s13423-017-1343-3</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kruschke2018rejecting">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kruschke</surname><given-names>John K</given-names></name>
+        </person-group>
+        <article-title>Rejecting or accepting parameter values in Bayesian estimation</article-title>
+        <source>Advances in Methods and Practices in Psychological Science</source>
+        <publisher-name>SAGE Publications</publisher-name>
+        <year iso-8601-date="2018-05">2018</year><month>05</month>
+        <volume>1</volume>
+        <issue>2</issue>
+        <uri>https://doi.org/10.1177%2F2515245918771304</uri>
+        <pub-id pub-id-type="doi">10.1177/2515245918771304</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-goodrich2018rstanarm">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Goodrich</surname><given-names>Ben</given-names></name>
+          <name><surname>Gabry</surname><given-names>Jonah</given-names></name>
+          <name><surname>Ali</surname><given-names>Imad</given-names></name>
+          <name><surname>Brilleman</surname><given-names>Sam</given-names></name>
+        </person-group>
+        <article-title>Rstanarm: Bayesian applied regression modeling via Stan.</article-title>
+        <year iso-8601-date="2018">2018</year>
+        <uri>http://mc-stan.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-kruschke2018bayesian">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kruschke</surname><given-names>John K</given-names></name>
+          <name><surname>Liddell</surname><given-names>Torrin M</given-names></name>
+        </person-group>
+        <article-title>The Bayesian new statistics: Hypothesis testing, estimation, meta-analysis, and power analysis from a Bayesian perspective</article-title>
+        <source>Psychonomic Bulletin &amp; Review</source>
+        <publisher-name>Springer Nature</publisher-name>
+        <year iso-8601-date="2018-02">2018</year><month>02</month>
+        <volume>25</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.3758%2Fs13423-016-1221-4</uri>
+        <pub-id pub-id-type="doi">10.3758/s13423-016-1221-4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mills2018objective">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mills</surname><given-names>Jeffrey A</given-names></name>
+        </person-group>
+        <article-title>Objective Bayesian precise hypothesis testing</article-title>
+        <source>University of Cincinnati</source>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-burkner2017brms">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bürkner</surname><given-names>Paul-Christian</given-names></name>
+        </person-group>
+        <article-title>brms: An R package for Bayesian multilevel models using Stan</article-title>
+        <source>Journal of Statistical Software</source>
+        <publisher-name>Foundation for Open Access Statistic</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>80</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.18637%2Fjss.v080.i01</uri>
+        <pub-id pub-id-type="doi">10.18637/jss.v080.i01</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-etz2016bayesian">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Etz</surname><given-names>Alexander</given-names></name>
+          <name><surname>Vandekerckhove</surname><given-names>Joachim</given-names></name>
+        </person-group>
+        <article-title>A Bayesian perspective on the reproducibility project: psychology</article-title>
+        <source>PLOS ONE</source>
+        <person-group person-group-type="editor">
+          <name><surname>Marinazzo</surname><given-names>Daniele</given-names></name>
+        </person-group>
+        <publisher-name>Public Library of Science (PLoS)</publisher-name>
+        <year iso-8601-date="2016-02">2016</year><month>02</month>
+        <volume>11</volume>
+        <issue>2</issue>
+        <uri>https://doi.org/10.1371%2Fjournal.pone.0149794</uri>
+        <pub-id pub-id-type="doi">10.1371/journal.pone.0149794</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kruschke2015doing">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Kruschke</surname><given-names>John K</given-names></name>
+        </person-group>
+        <source>Doing Bayesian data analysis: A tutorial with R, JAGS, and Stan</source>
+        <publisher-name>Elsevier, Academic Press</publisher-name>
+        <publisher-loc>Amsterdam</publisher-loc>
+        <year iso-8601-date="2015">2015</year>
+        <isbn>978-0-12-405888-0</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-mills2014bayesian">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Mills</surname><given-names>Jeffrey A</given-names></name>
+          <name><surname>Parent</surname><given-names>Olivier</given-names></name>
+        </person-group>
+        <article-title>Bayesian MCMC Estimation</article-title>
+        <source>Handbook of regional science</source>
+        <person-group person-group-type="editor">
+          <name><surname>Fischer</surname><given-names>Manfred M.</given-names></name>
+          <name><surname>Nijkamp</surname><given-names>Peter</given-names></name>
+        </person-group>
+        <publisher-name>Springer</publisher-name>
+        <publisher-loc>Berlin, Heidelberg</publisher-loc>
+        <year iso-8601-date="2014">2014</year>
+        <uri>https://doi.org/10.1007%2F978-3-642-23430-9_89</uri>
+        <pub-id pub-id-type="doi">10.1007/978-3-642-23430-9_89</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-morey2018bayesfactor">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Morey</surname><given-names>Richard D.</given-names></name>
+          <name><surname>Rouder</surname><given-names>Jeffrey N.</given-names></name>
+        </person-group>
+        <source>BayesFactor: Computation of Bayes factors for common designs</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://CRAN.R-project.org/package=BayesFactor</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-andrews2013prior">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Andrews</surname><given-names>Mark</given-names></name>
+          <name><surname>Baguley</surname><given-names>Thom</given-names></name>
+        </person-group>
+        <article-title>Prior approval: The growth of Bayesian methods in psychology</article-title>
+        <source>British Journal of Mathematical and Statistical Psychology</source>
+        <publisher-name>Wiley</publisher-name>
+        <year iso-8601-date="2013-01">2013</year><month>01</month>
+        <volume>66</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1111%2Fbmsp.12004</uri>
+        <pub-id pub-id-type="doi">10.1111/bmsp.12004</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kruschke2012time">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kruschke</surname><given-names>John K</given-names></name>
+          <name><surname>Aguinis</surname><given-names>Herman</given-names></name>
+          <name><surname>Joo</surname><given-names>Harry</given-names></name>
+        </person-group>
+        <article-title>The time has come: Bayesian methods for data analysis in the organizational sciences</article-title>
+        <source>Organizational Research Methods</source>
+        <publisher-name>SAGE Publications</publisher-name>
+        <year iso-8601-date="2012-09">2012</year><month>09</month>
+        <volume>15</volume>
+        <issue>4</issue>
+        <uri>https://doi.org/10.1177%2F1094428112457829</uri>
+        <pub-id pub-id-type="doi">10.1177/1094428112457829</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-morey2011bayes">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Morey</surname><given-names>Richard D.</given-names></name>
+          <name><surname>Rouder</surname><given-names>Jeffrey N.</given-names></name>
+        </person-group>
+        <article-title>Bayes factor approaches for testing interval null hypotheses</article-title>
+        <source>Psychological Methods</source>
+        <publisher-name>American Psychological Association (APA)</publisher-name>
+        <year iso-8601-date="2011-12">2011</year><month>12</month>
+        <volume>16</volume>
+        <issue>4</issue>
+        <uri>https://doi.org/10.1037%2Fa0024377</uri>
+        <pub-id pub-id-type="doi">10.1037/a0024377</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-wagenmakers2010bayesian">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wagenmakers</surname><given-names>Eric-Jan</given-names></name>
+          <name><surname>Lodewyckx</surname><given-names>Tom</given-names></name>
+          <name><surname>Kuriyal</surname><given-names>Himanshu</given-names></name>
+          <name><surname>Grasman</surname><given-names>Raoul</given-names></name>
+        </person-group>
+        <article-title>Bayesian hypothesis testing for psychologists: A tutorial on the SavageDickey method</article-title>
+        <source>Cognitive Psychology</source>
+        <publisher-name>Elsevier BV</publisher-name>
+        <year iso-8601-date="2010-05">2010</year><month>05</month>
+        <volume>60</volume>
+        <issue>3</issue>
+        <uri>https://doi.org/10.1016%2Fj.cogpsych.2009.12.001</uri>
+        <pub-id pub-id-type="doi">10.1016/j.cogpsych.2009.12.001</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kruschke2010believe">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kruschke</surname><given-names>John K</given-names></name>
+        </person-group>
+        <article-title>What to believe: Bayesian methods for data analysis</article-title>
+        <source>Trends in Cognitive Sciences</source>
+        <publisher-name>Elsevier BV</publisher-name>
+        <year iso-8601-date="2010-07">2010</year><month>07</month>
+        <volume>14</volume>
+        <issue>7</issue>
+        <uri>https://doi.org/10.1016%2Fj.tics.2010.05.001</uri>
+        <pub-id pub-id-type="doi">10.1016/j.tics.2010.05.001</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

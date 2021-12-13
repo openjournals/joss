@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2030</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02030</article-id>
+<title-group>
+<article-title>FGTpartitioner: A rapid method for parsimonious
+delimitation of ancestry breakpoints in large genome-wide SNP
+datasets</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-8687-5905</contrib-id>
+<string-name>Tyler K. Chafin</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Tyler K. Chafin, Ph.D Candidate, University of
+Arkansas</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-12-31">
+<day>31</day>
+<month>12</month>
+<year>2019</year>
+</pub-date>
+<volume>5</volume>
+<issue>46</issue>
+<fpage>2030</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>phylogenomics</kwd>
+<kwd>recombination</kwd>
+<kwd>four-gamete test</kwd>
+<kwd>SNP analysis</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Partitioning large (e.g. chromosomal) alignments into ancestry
+  blocks is a common step in phylogenomic analyses
+  (<xref alt="Springer &amp; Gatesy, 2018" rid="ref-Springer2018" ref-type="bibr">Springer
+  &amp; Gatesy, 2018</xref>). However, current solutions require
+  complicated analytical assumptions, or are difficult to implement due
+  to excessive runtimes. Multiple approaches have been proposed for
+  delimiting ancestry blocks in genomes (i.e. establishing recombination
+  breakpoints), which generally fall into one of two categories: those
+  which require dense or phased genotypic data
+  (<xref alt="Liu et al., 2013" rid="ref-Liu2013" ref-type="bibr">Liu et
+  al., 2013</xref>); and those with complex analytical assumptions which
+  require the definition of informative prior probability distributions
+  and are computationally intensive
+  (<xref alt="Dutheil et al., 2009" rid="ref-Dutheil2009" ref-type="bibr">Dutheil
+  et al., 2009</xref>). Both conditions are problematic for genome-scale
+  studies of non-model species, where large-scale resequencing and
+  phased reference data are unavailable, and genomes are often sequenced
+  at low coverage.</p>
+  <p>I here describe a solution, <monospace>FGTpartitioner</monospace>,
+  which is specifically designed for use with non-model genomic data
+  without the need for high-quality phased reference data or dense
+  population-scale sampling. <monospace>FGTpartitioner</monospace>
+  delimits chromosome scale alignments using a fast interval-tree
+  approach which detects pairwise variants which violate the
+  four-gametes assumption
+  (<xref alt="Hudson &amp; Kaplan, 1985" rid="ref-Hudson1985" ref-type="bibr">Hudson
+  &amp; Kaplan, 1985</xref>), and rapidly resolves a most parsimonious
+  set of recombination events to yield non-overlapping intervals which
+  are both unambiguously defined and consistent regardless of processing
+  order. These sub-alignments are then suitable for separate
+  phylogenetic analysis, or as a ‘first pass’ which may facilitate
+  parallel application of finer-resolution (yet more computationally
+  intensive) methods.</p>
+  <p>After parsing user-inputs, the workflow of
+  <monospace>FGTpartitioner</monospace> is as follows:</p>
+  <list list-type="order">
+    <list-item>
+      <label>(1)</label>
+      <p>For each SNP, perform four-gamete tests sequentially for
+      rightward neighboring records, up to a maximal physical distance
+      (if defined) and stopping when a conflict (=’interval’) is found.
+      Intervals are stored in a self-balancing tree. When using
+      multiprocessing, daughter processes are each provided an offset
+      which guarantees a unique pairwise SNP comparison for each
+      iteration</p>
+    </list-item>
+    <list-item>
+      <label>(2)</label>
+      <p>Merge interval trees of daughter processes (if using optional
+      parallel computation)</p>
+    </list-item>
+    <list-item>
+      <label>(3)</label>
+      <p>Assign rank k per-interval, defined as the number of SNP
+      records (indexed by position) spanned by each interval</p>
+    </list-item>
+    <list-item>
+      <label>(4)</label>
+      <p>Order intervals by k; starting at min(k), resolve conflicts as
+      follows: For each candidate recombination site (defined as the
+      mid-point between SNPs), compute the depth d of spanning
+      intervals. The most parsimonious breakpoint is that which
+      maximizes d</p>
+    </list-item>
+  </list>
+  <p>These algorithm choices have several implications: indexing SNPs by
+  physical position guarantees that the same recombination sites will be
+  chosen given any arbitrary ordering of SNPs; and defining breakpoints
+  as physical centerpoints between nodes means that monomorphic sites
+  will be evenly divided on either side of a recombination event.
+  Because monomorphic sites by definition lack phylogenetic information,
+  they cannot be unambiguously assigned to any particular ancestry
+  block, thus my solution is to evenly divide them. Heterozygous sites
+  in diploid genomes are dealt with in multiple ways. By default,
+  <monospace>FGTpartitioner</monospace> will randomly resolve
+  haplotypes. The user can select an alternate resolution strategy which
+  will either treat a SNP pair as failing if any resolution meets the
+  four-gamete condition, or as passing if any possible resolution passes
+  (i.e. the ‘pessimistic’ and ‘optimistic’ strategies of Wang et al.
+  (<xref alt="2010" rid="ref-Wang2010" ref-type="bibr">2010</xref>)).</p>
+  <p>In conclusion, <monospace>FGTpartitioner</monospace> has several
+  advantages over similar methods: 1) algorithmic and performance
+  enhancements allow it to perform orders of magnitude faster, thus
+  extending application to larger genomes; and 2) the flexibility of
+  diploid resolution strategies precludes the need for haplotype phasing
+  a priori. Validation using empirical data indicated the suitability of
+  <monospace>FGTpartitioner</monospace> for highly distributed work on
+  high-performance computing clusters, with parallelization easily
+  facilitated by built-in options in the command-line interface.
+  Additionally, runtime and memory profiling indicate its applicability
+  on modern desktop workstations as well, when applied to moderately
+  sized datasets. Thus, it provides an efficient and under-friendly
+  solution to alignment pre-processing for phylogenomic studies, or as a
+  method of breaking up large alignments in order to efficiently
+  distribute computation for more rigorous recombination tests.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>I would like to thank VonHoldt et al.
+  (<xref alt="2016" rid="ref-VonHoldt2016" ref-type="bibr">2016</xref>)
+  and Kukekova et al.
+  (<xref alt="2018" rid="ref-Kukekova2018" ref-type="bibr">2018</xref>)
+  for making their raw datasets available via the NCBI SRA, and the
+  Arkansas High Performance Computing Center and my Ph. D. advisors Drs.
+  Michael and Marlis Douglas for access to computational resources which
+  I used for benchmarking this program.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Dutheil2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dutheil</surname><given-names>Julien Y.</given-names></name>
+          <name><surname>Ganapathy</surname><given-names>Ganesh</given-names></name>
+          <name><surname>Hobolth</surname><given-names>Asger</given-names></name>
+          <name><surname>Mailund</surname><given-names>Thomas</given-names></name>
+          <name><surname>Uyenoyama</surname><given-names>Marcy K.</given-names></name>
+          <name><surname>Schierup</surname><given-names>Mikkel H.</given-names></name>
+        </person-group>
+        <article-title>Ancestral population genomics: The coalescent hidden Markov model approach</article-title>
+        <source>Genetics</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume>183</volume>
+        <issue>1</issue>
+        <issn>00166731</issn>
+        <pub-id pub-id-type="doi">10.1534/genetics.109.103010</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Kukekova2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kukekova</surname><given-names>Anna V</given-names></name>
+          <name><surname>Johnson</surname><given-names>Jennifer L</given-names></name>
+          <name><surname>Xiang</surname><given-names>Xueyan</given-names></name>
+          <name><surname>Feng</surname><given-names>Shaohong</given-names></name>
+          <name><surname>Liu</surname><given-names>Shiping</given-names></name>
+          <name><surname>Rando</surname><given-names>Halie M</given-names></name>
+          <name><surname>Kharlamova</surname><given-names>Anastasiya V</given-names></name>
+          <name><surname>Herbeck</surname><given-names>Yury</given-names></name>
+          <name><surname>Serdyukova</surname><given-names>Natalya A</given-names></name>
+          <name><surname>Xiong</surname><given-names>Zijun</given-names></name>
+          <name><surname>Beklemischeva</surname><given-names>Violetta</given-names></name>
+          <name><surname>Koepfli</surname><given-names>Klaus-peter</given-names></name>
+          <name><surname>Gulevich</surname><given-names>Rimma G</given-names></name>
+          <name><surname>Vladimirova</surname><given-names>Anastasiya V</given-names></name>
+          <name><surname>Hekman</surname><given-names>Jessica P</given-names></name>
+          <name><surname>Perelman</surname><given-names>Polina L</given-names></name>
+          <name><surname>Graphodatsky</surname><given-names>Aleksander S</given-names></name>
+        </person-group>
+        <article-title>Red fox genome assembly identifies genomic regions associated with tame and aggressive behaviours</article-title>
+        <source>Nature Ecology &amp; Evolution</source>
+        <publisher-name>Springer US</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>2</volume>
+        <issue>September</issue>
+        <issn>2397-334X</issn>
+        <uri>http://dx.doi.org/10.1038/s41559-018-0611-6</uri>
+        <pub-id pub-id-type="doi">10.1038/s41559-018-0611-6</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hudson1985">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hudson</surname><given-names>R. R.</given-names></name>
+          <name><surname>Kaplan</surname><given-names>N. L.</given-names></name>
+        </person-group>
+        <article-title>Statistical properties of the number of recombination events in the history of a sample of DNA sequences</article-title>
+        <source>Genetics</source>
+        <year iso-8601-date="1985">1985</year>
+        <volume>111</volume>
+        <issue>1</issue>
+        <issn>00166731</issn>
+      </element-citation>
+    </ref>
+    <ref id="ref-Liu2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Liu</surname><given-names>Yushi</given-names></name>
+          <name><surname>Nyunoya</surname><given-names>Toru</given-names></name>
+          <name><surname>Leng</surname><given-names>Shuguang</given-names></name>
+          <name><surname>Belinsky</surname><given-names>Steven A.</given-names></name>
+          <name><surname>Tesfaigzi</surname><given-names>Yohannes</given-names></name>
+          <name><surname>Bruse</surname><given-names>Shannon</given-names></name>
+        </person-group>
+        <article-title>Softwares and methods for estimating genetic ancestry in human populations</article-title>
+        <source>Human Genomics</source>
+        <year iso-8601-date="2013">2013</year>
+        <volume>7</volume>
+        <issue>1</issue>
+        <issn>14797364</issn>
+        <pub-id pub-id-type="doi">10.1186/1479-7364-7-1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-VonHoldt2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>VonHoldt</surname><given-names>B. M.</given-names></name>
+          <name><surname>Cahill</surname><given-names>J. A.</given-names></name>
+          <name><surname>Fan</surname><given-names>Z.</given-names></name>
+          <name><surname>Gronau</surname><given-names>I.</given-names></name>
+          <name><surname>Robinson</surname><given-names>J.</given-names></name>
+          <name><surname>Pollinger</surname><given-names>J. P.</given-names></name>
+          <name><surname>Shapiro</surname><given-names>B.</given-names></name>
+          <name><surname>Wall</surname><given-names>J.</given-names></name>
+          <name><surname>Wayne</surname><given-names>R. K.</given-names></name>
+        </person-group>
+        <article-title>Whole-genome sequence analysis shows that two endemic species of North American wolf are admixtures of the coyote and gray wolf</article-title>
+        <source>Science Advances</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>2</volume>
+        <issue>7</issue>
+        <isbn>2375-2548</isbn>
+        <issn>2375-2548</issn>
+        <uri>http://advances.sciencemag.org/cgi/doi/10.1126/sciadv.1501714</uri>
+        <pub-id pub-id-type="doi">10.1126/sciadv.1501714</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Wang2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wang</surname><given-names>Jeremy</given-names></name>
+          <name><surname>Moore</surname><given-names>Kyle J.</given-names></name>
+          <name><surname>Zhang</surname><given-names>Qi</given-names></name>
+          <name><surname>Villena</surname><given-names>Fernando Pardo-Manual de</given-names></name>
+          <name><surname>Wang</surname><given-names>Wei</given-names></name>
+          <name><surname>McMillan</surname><given-names>Leonard</given-names></name>
+        </person-group>
+        <article-title>Genome-wide compatible SNP intervals and their properties</article-title>
+        <source>Proceedings of the First ACM International Conference on Bioinformatics and Computational Biology</source>
+        <year iso-8601-date="2010">2010</year>
+        <isbn>9781450304382</isbn>
+        <pub-id pub-id-type="doi">10.1145/1854776.1854788</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Springer2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Springer</surname><given-names>Mark S</given-names></name>
+          <name><surname>Gatesy</surname><given-names>John</given-names></name>
+        </person-group>
+        <article-title>Delimiting Coalescence Genes (C-Genes) in Phylogenomic Data Sets</article-title>
+        <source>Genes</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>9</volume>
+        <issue>123</issue>
+        <issn>20734425</issn>
+        <pub-id pub-id-type="doi">10.3390/genes9030123</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

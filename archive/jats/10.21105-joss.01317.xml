@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1317</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01317</article-id>
+<title-group>
+<article-title>lifelines: survival analysis in Python</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-1794-9143</contrib-id>
+<string-name>Cameron Davidson-Pilon</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Independent researcher</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-03-07">
+<day>7</day>
+<month>3</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>40</issue>
+<fpage>1317</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>survival analysis</kwd>
+<kwd>reliability analysis</kwd>
+<kwd>maximum likelihood</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>One frustration of data scientists and statisticians is moving
+  between programming languages to complete projects. The most common
+  two are R and Python. For example, a survival analysis model may be
+  fit using R’s <italic>survival-package</italic>
+  (<xref alt="Terry M Therneau, 2015" rid="ref-survival-package" ref-type="bibr">Terry
+  M Therneau, 2015</xref>) or <italic>flexsurv</italic>
+  (<xref alt="Christopher Jackson, 2016" rid="ref-flexsurv" ref-type="bibr">Christopher
+  Jackson, 2016</xref>), but needs to be deployed into a Python system.
+  Previously, this may have meant using Python libraries to call out to
+  R (still shuffling between two languages, but now abstracted), or
+  translating the fitted model to Python (likely to introduce bugs).
+  Libraries like Patsy
+  (<xref alt="Nathaniel J. Smith et al., 2018" rid="ref-nathaniel_j_smith_2018_1472929" ref-type="bibr">Nathaniel
+  J. Smith et al., 2018</xref>) and Statsmodels
+  (<xref alt="Skipper Seabold et al., 2017" rid="ref-skipper_seabold_2017_275519" ref-type="bibr">Skipper
+  Seabold et al., 2017</xref>) have helped data scientists and
+  statisticians work solely in Python. <italic>lifelines</italic>
+  extends the toolbox of data scientists so they can perform common
+  survival analysis tasks in Python. Its value comes from its intuitive
+  and well-documented API, its flexibility in modeling novel hazard
+  functions, and its easy deployment in production systems &amp;
+  research stations along side other Python libraries. The internals of
+  <italic>lifelines</italic> uses some novel approaches to survival
+  analysis algorithms like automatic differentiation and
+  meta-algorithms. We present high-level descriptions of these novel
+  approaches next.</p>
+  <p>One goal of <italic>lifelines</italic> is to be pure Python so as
+  to make installation and maintenance simple. This can be at odds with
+  users’ desire for high-performance model fitting. Though Python is
+  becoming more and more performant, datasets are getting larger and
+  larger at a faster rate. Internally, <italic>lifelines</italic> uses
+  some interesting tricks to improve performance. These approaches can
+  be applied to other Python libraries. For example, the Cox
+  proportional hazard model with Efron’s tie-handling method has a
+  complicated partial-likelihood
+  (<xref alt="Wikipedia contributors&quot;, 2019" rid="ref-wikiU003Aph" ref-type="bibr">Wikipedia
+  contributors&quot;, 2019</xref>):</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[
+  \ell(\beta) = \sum_j \left(\sum_{i\in H_j} X_i \cdot \beta -\sum_{\ell=0}^{m-1}\log\left(\sum_{i:Y_i\ge t_j}\theta_i - \frac{\ell}{m}\sum_{i\in H_j}\theta_i\right)\right),
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>ℓ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>β</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:munder><mml:mo>∑</mml:mo><mml:mi>j</mml:mi></mml:munder><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:munder><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>∈</mml:mo><mml:msub><mml:mi>H</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:mrow></mml:munder><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>⋅</mml:mo><mml:mi>β</mml:mi><mml:mo>−</mml:mo><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>ℓ</mml:mi><mml:mo>=</mml:mo><mml:mn>0</mml:mn></mml:mrow><mml:mrow><mml:mi>m</mml:mi><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:munderover><mml:mo>log</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:munder><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>:</mml:mo><mml:msub><mml:mi>Y</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>≥</mml:mo><mml:msub><mml:mi>t</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:mrow></mml:munder><mml:msub><mml:mi>θ</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:mfrac><mml:mi>ℓ</mml:mi><mml:mi>m</mml:mi></mml:mfrac><mml:munder><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>∈</mml:mo><mml:msub><mml:mi>H</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:mrow></mml:munder><mml:msub><mml:mi>θ</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>where <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta_i = \exp{(X_i \cdot \beta)}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>θ</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mo>exp</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>⋅</mml:mo><mml:mi>β</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>,
+  and the Hessian matrix is:</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[
+  \ell^{\prime\prime}(\beta) = -\sum_j \sum_{\ell=0}^{m-1} \left(\frac{\sum_{i:Y_i\ge t_j}\theta_iX_iX_i^\prime - \frac{\ell}{m}\sum_{i\in H_j}\theta_iX_iX_i^\prime}{\phi_{j,\ell,m}} - \frac{Z_{j,\ell,m} Z_{j,\ell,m}^\prime}{\phi_{j,\ell,m}^2}\right),
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mi>ℓ</mml:mi><mml:mrow><mml:mi>′</mml:mi><mml:mi>′</mml:mi></mml:mrow></mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>β</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>−</mml:mo><mml:munder><mml:mo>∑</mml:mo><mml:mi>j</mml:mi></mml:munder><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>ℓ</mml:mi><mml:mo>=</mml:mo><mml:mn>0</mml:mn></mml:mrow><mml:mrow><mml:mi>m</mml:mi><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:munderover><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mfrac><mml:mrow><mml:munder><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>:</mml:mo><mml:msub><mml:mi>Y</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>≥</mml:mo><mml:msub><mml:mi>t</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:mrow></mml:munder><mml:msub><mml:mi>θ</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:msubsup><mml:mi>X</mml:mi><mml:mi>i</mml:mi><mml:mi>′</mml:mi></mml:msubsup><mml:mo>−</mml:mo><mml:mfrac><mml:mi>ℓ</mml:mi><mml:mi>m</mml:mi></mml:mfrac><mml:munder><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>∈</mml:mo><mml:msub><mml:mi>H</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:mrow></mml:munder><mml:msub><mml:mi>θ</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:msubsup><mml:mi>X</mml:mi><mml:mi>i</mml:mi><mml:mi>′</mml:mi></mml:msubsup></mml:mrow><mml:msub><mml:mi>ϕ</mml:mi><mml:mrow><mml:mi>j</mml:mi><mml:mo>,</mml:mo><mml:mi>ℓ</mml:mi><mml:mo>,</mml:mo><mml:mi>m</mml:mi></mml:mrow></mml:msub></mml:mfrac><mml:mo>−</mml:mo><mml:mfrac><mml:mrow><mml:msub><mml:mi>Z</mml:mi><mml:mrow><mml:mi>j</mml:mi><mml:mo>,</mml:mo><mml:mi>ℓ</mml:mi><mml:mo>,</mml:mo><mml:mi>m</mml:mi></mml:mrow></mml:msub><mml:msubsup><mml:mi>Z</mml:mi><mml:mrow><mml:mi>j</mml:mi><mml:mo>,</mml:mo><mml:mi>ℓ</mml:mi><mml:mo>,</mml:mo><mml:mi>m</mml:mi></mml:mrow><mml:mi>′</mml:mi></mml:msubsup></mml:mrow><mml:msubsup><mml:mi>ϕ</mml:mi><mml:mrow><mml:mi>j</mml:mi><mml:mo>,</mml:mo><mml:mi>ℓ</mml:mi><mml:mo>,</mml:mo><mml:mi>m</mml:mi></mml:mrow><mml:mn>2</mml:mn></mml:msubsup></mml:mfrac><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>where</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[
+  \phi_{j,\ell,m} = \sum_{i:Y_i\ge t_j}\theta_i - \frac{\ell}{m}\sum_{i\in H_j}\theta_i
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>ϕ</mml:mi><mml:mrow><mml:mi>j</mml:mi><mml:mo>,</mml:mo><mml:mi>ℓ</mml:mi><mml:mo>,</mml:mo><mml:mi>m</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:munder><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>:</mml:mo><mml:msub><mml:mi>Y</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>≥</mml:mo><mml:msub><mml:mi>t</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:mrow></mml:munder><mml:msub><mml:mi>θ</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:mfrac><mml:mi>ℓ</mml:mi><mml:mi>m</mml:mi></mml:mfrac><mml:munder><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>∈</mml:mo><mml:msub><mml:mi>H</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:mrow></mml:munder><mml:msub><mml:mi>θ</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[
+  Z_{j,\ell,m} = \sum_{i:Y_i\ge t_j}\theta_iX_i - \frac{\ell}{m}\sum_{i\in H_j}\theta_iX_i.
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>Z</mml:mi><mml:mrow><mml:mi>j</mml:mi><mml:mo>,</mml:mo><mml:mi>ℓ</mml:mi><mml:mo>,</mml:mo><mml:mi>m</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:munder><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>:</mml:mo><mml:msub><mml:mi>Y</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>≥</mml:mo><mml:msub><mml:mi>t</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:mrow></mml:munder><mml:msub><mml:mi>θ</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:mfrac><mml:mi>ℓ</mml:mi><mml:mi>m</mml:mi></mml:mfrac><mml:munder><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>∈</mml:mo><mml:msub><mml:mi>H</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:mrow></mml:munder><mml:msub><mml:mi>θ</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>These could be implemented in Python using, for example, Python’s
+  native <monospace>for</monospace> loops. However, this would be too
+  slow. We would like to use NumPy, which offers vectorized operations.
+  However, even with NumPy, some Python <monospace>for</monospace> loops
+  still remain. <italic>lifelines</italic> implements these equations
+  using NumPy’s <monospace>einsum</monospace> function, which is used to
+  express tensor products in Einstein summation notation. The result is
+  that the tensor products, which are just <monospace>for</monospace>
+  loops, are pushed down as close to the C layer as possible. From
+  internal tests, using <monospace>einsum</monospace> resulted in a 4x
+  speed improvement.</p>
+  <p>Another optimization in the <italic>lifelines</italic>’
+  implementation of Cox proportional hazard model is using a
+  meta-algorithm to pick the most performant algorithm at runtime. Two
+  algorithms can be used to compute the partial likelihood (and its
+  gradient and Hessian). One algorithm is faster when there is a high
+  cardinality of times in the dataset (low count of ties), and the other
+  is faster when there is low cardinality of times (high count of ties).
+  A simple heuristic of when one is faster than the other does not
+  exist, as it depends on other factors like the size of the dataset and
+  the average count of data points per time. To overcome this, I
+  generated hundreds of artificial datasets of varying size, varying
+  cardinality of times, and varying average count of data points per
+  time. After running both algorithms against the datasets and recording
+  their durations, I fitted a linear regression model to predict the
+  ratio of duration. This model is accurate (R-squared over 80%), easy
+  to implement, and importantly can predict very fast. Thus, at runtime,
+  we compute summary values for the dataset and let the linear model
+  predict which algorithm will be faster. By choosing the appropriate
+  algorithm, we achieve an up-to 3x performance improvement on some
+  datasets. When other performance improvements are made to either
+  algorithm, we rerun the dataset generation and model training to get a
+  new linear model for prediction.</p>
+  <p>A non-performance innovation in <italic>lifelines</italic> is the
+  incredible flexibility for user-defined parametric cumulative hazards.
+  This allows the user to specify precise parametric models and perform
+  inference and statistical tests on them. This generalization of
+  parametric models, which previously was confined to well-known
+  probability distributions, is possible due to the automatic
+  differentiation engine, Autograd, and the fact that any probability
+  distribution can be defined by a cumulative hazard function.
+  <italic>lifelines</italic> has implemented the log-likelihood for an
+  arbitrary cumulative hazard, <inline-formula><alternatives>
+  <tex-math><![CDATA[H(t | \theta)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>H</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>,
+  including possible censoring and left-truncation:</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[
+  \log{l(\theta|t, c, s)} = \sum_{i: c_i=1}\left( \log{h(t_i)} - H(t_i)\right) - \sum_{i: c_i=0} H(t_i) + \sum_{i} H(s_i)
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>log</mml:mo><mml:mrow><mml:mi>l</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:mi>t</mml:mi><mml:mo>,</mml:mo><mml:mi>c</mml:mi><mml:mo>,</mml:mo><mml:mi>s</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow><mml:mo>=</mml:mo><mml:munder><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>:</mml:mo><mml:msub><mml:mi>c</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:munder><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mo>log</mml:mo><mml:mrow><mml:mi>h</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>t</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow><mml:mo>−</mml:mo><mml:mi>H</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>t</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:munder><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>:</mml:mo><mml:msub><mml:mi>c</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mn>0</mml:mn></mml:mrow></mml:munder><mml:mi>H</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>t</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:munder><mml:mo>∑</mml:mo><mml:mi>i</mml:mi></mml:munder><mml:mi>H</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>s</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>where <inline-formula><alternatives>
+  <tex-math><![CDATA[t_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>t</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  are the observed or censored times of subject
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[c_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>c</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  is 0 if the subject was censored, <inline-formula><alternatives>
+  <tex-math><![CDATA[s_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>s</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  is time the subject entered the study, and
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[h(t)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>h</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  is the hazard which is the derivative of the cumulative hazard with
+  respect to time. We use automatic differentiation to compute
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[h(t)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>h</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  and the gradient and Hessian with respect to the unknown parameters
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>.
+  The user only needs to specify a cumulative hazard (in Python code).
+  <italic>lifelines</italic> will invoke SciPy’s
+  <monospace>minimize</monospace> with the computed derivatives and
+  return the maximum likelihood estimators of the model, along with
+  standard errors, p-values, confidence intervals, etc. An example user
+  defined cumulative hazard is below:</p>
+  <preformat>from lifelines.fitters import ParametericUnivariateFitter
+
+class ThreeParamHazardFitter(ParametericUnivariateFitter):
+
+    _fitted_parameter_names = ['alpha_', 'beta_', 'gamma_']
+    _bounds = [(0, None), (75, None), (0, None)]
+
+    # this is the only function we need to define.
+    # It always takes two arguments:
+    #   params: an iterable that unpacks the parameters you'll need
+    #           in the order of _fitted_parameter_names
+    #   times: a NumPy vector of durations
+    def _cumulative_hazard(self, params, times):
+        a, b, c = params
+        return a / (b - times) ** c
+  </preformat>
+  <p>Some more examples of user-defined cumulative hazards are in the
+  main documentation, including how to add covariates.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>I’d like to acknowledge all the researchers in survival analysis,
+  specifically Terry Therneau and the other authors of R’s
+  <italic>survival</italic> package. I’d also like to acknowledge the
+  contributers to the <italic>lifelines</italic> projects.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-wikiU003Aph">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Wikipedia contributors&quot;</surname></name>
+        </person-group>
+        <article-title>Proportional hazards model — Wikipedia, the free encyclopedia</article-title>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://en.wikipedia.org/w/index.php?title=Proportional_hazards_model&amp;oldid=885553852</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-skipper_seabold_2017_275519">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>Skipper Seabold et al.</string-name>
+        </person-group>
+        <article-title>Statsmodels/statsmodels: Version 0.8.0 release</article-title>
+        <year iso-8601-date="2017-02">2017</year><month>02</month>
+        <uri>https://doi.org/10.5281/zenodo.275519</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.275519</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-nathaniel_j_smith_2018_1472929">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>Nathaniel J. Smith et al.</string-name>
+        </person-group>
+        <article-title>Pydata/patsy: v0.5.1</article-title>
+        <year iso-8601-date="2018-10">2018</year><month>10</month>
+        <uri>https://doi.org/10.5281/zenodo.1472929</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.1472929</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-flexsurv">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>Christopher Jackson</string-name>
+        </person-group>
+        <article-title>flexsurv: A platform for parametric survival modeling in R</article-title>
+        <source>Journal of Statistical Software</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>70</volume>
+        <issue>8</issue>
+        <pub-id pub-id-type="doi">10.18637/jss.v070.i08</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-survival-package">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>Terry M Therneau</string-name>
+        </person-group>
+        <source>A package for survival analysis in s</source>
+        <year iso-8601-date="2015">2015</year>
+        <uri>https://CRAN.R-project.org/package=survival</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

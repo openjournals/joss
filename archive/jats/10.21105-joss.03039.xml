@@ -1,0 +1,595 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3039</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03039</article-id>
+<title-group>
+<article-title>libecpint: A C++ library for the efficient evaluation of
+integrals over effective core potentials</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9977-0835</contrib-id>
+<string-name>Robert A. Shaw</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-6457-5837</contrib-id>
+<string-name>J. Grant Hill</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Chemistry, University of Sheffield, Sheffield
+S3 7HF, UK</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-02-02">
+<day>2</day>
+<month>2</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>60</issue>
+<fpage>3039</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>computational chemistry</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Effective core potentials (ECPs) are widely-used in computational
+  chemistry both to reduce the computational cost of
+  calculations,(<xref alt="M. Dolg, 2000" rid="ref-Dolg2000" ref-type="bibr">M.
+  Dolg, 2000</xref>) and include relevant physics that would not
+  otherwise be present
+  (<xref alt="M. Dolg, 2002" rid="ref-Dolg2002" ref-type="bibr">M. Dolg,
+  2002</xref>). In particular, for heavy main-group atoms
+  (<xref alt="Wadt &amp; Hay, 1985" rid="ref-Wadt1985" ref-type="bibr">Wadt
+  &amp; Hay, 1985</xref>) and transition metals
+  (<xref alt="Hay &amp; Wadt, 1985" rid="ref-Hay1985" ref-type="bibr">Hay
+  &amp; Wadt, 1985</xref>), the number of core electrons greatly
+  outnumbers the number of valence electrons. It is generally considered
+  that these will not play a significant role in chemical reactivity,
+  and thus can be frozen. Moreover, these electrons show significant
+  relativistic character
+  (<xref alt="M. Dolg, 2002" rid="ref-Dolg2002" ref-type="bibr">M. Dolg,
+  2002</xref>;
+  <xref alt="M. Dolg &amp; Cao, 2012" rid="ref-Dolg2012" ref-type="bibr">M.
+  Dolg &amp; Cao, 2012</xref>). Both of these issues can be resolved
+  with the introduction of an effective core, represented as a fixed
+  electronic potential. This potential is typically represented as a
+  linear combination of gaussians of varying angular momenta
+  (<xref alt="M. Dolg, 2000" rid="ref-Dolg2000" ref-type="bibr">M. Dolg,
+  2000</xref>).</p>
+  <p>The introduction of an ECP results in an additional term in the
+  core Hamiltonian, over which new electronic integrals must be
+  computed. These three-center integrals are far from trivial, and they
+  cannot in general be treated the same way as other electronic
+  integrals
+  (<xref alt="Flores-Moreno et al., 2006" rid="ref-FloresMoreno2006" ref-type="bibr">Flores-Moreno
+  et al., 2006</xref>;
+  <xref alt="McMurchie &amp; Davidson, 1981" rid="ref-McMurchie1981" ref-type="bibr">McMurchie
+  &amp; Davidson, 1981</xref>). Several widely used computational
+  chemistry codes lack the ability to calculate these integrals due to
+  the difficulty involved in their computation. The present library,
+  <monospace>libecpint</monospace>, provides an open-source solution to
+  this. It is a standalone library written in modern C++ capable of the
+  highly efficient computation of integrals over ECPs with gaussian
+  orbitals of arbitrary angular momentum, along with their first and
+  second geometric derivatives. The methods implemented are based on
+  novel algorithms that use automatic code generation and symbolic
+  simplification of recursive expressions, along with highly optimised
+  Gauss-Chebyshev quadrature.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Effective core potentials are an essential part of modern
+  computational chemistry. However, existing implementations are
+  typically unavailable or inaccessible for free use by the open source
+  community. Commonly used proprietary software, such as Gaussian
+  (<xref alt="Frisch et al., 2016" rid="ref-Gaussian16" ref-type="bibr">Frisch
+  et al., 2016</xref>) or Molpro
+  (<xref alt="Werner et al., 2019" rid="ref-MOLPRO" ref-type="bibr">Werner
+  et al., 2019</xref>), do not make details of their implementations
+  available, while the few open-source computational chemistry packages
+  either do not include ECP functionality or use outdated
+  implementations that would not be compatible with modern codebases. A
+  notable example of this is the widely-used Psi4 package
+  (<xref alt="Smith et al., 2020" rid="ref-Psi4" ref-type="bibr">Smith
+  et al., 2020</xref>), in which a rudimentary version of
+  <monospace>libecpint</monospace> was originally implemented. Prior to
+  this, the inclusion of ECPs was one of the most requested features by
+  the user base.</p>
+  <p>Additionally, there has been a recent renaissance in the
+  development of efficient algorithms for evaluating ECP integrals. In
+  particular, multiple research groups have outlined new approaches to
+  prescreening
+  integrals,(<xref alt="McKenzie et al., 2018" rid="ref-McKenzie2018" ref-type="bibr">McKenzie
+  et al., 2018</xref>;
+  <xref alt="Shaw &amp; Hill, 2017" rid="ref-Shaw2017" ref-type="bibr">Shaw
+  &amp; Hill, 2017</xref>;
+  <xref alt="Song et al., 2015" rid="ref-Song2015" ref-type="bibr">Song
+  et al., 2015</xref>) greatly reducing the computational expense. The
+  <monospace>libecpint</monospace> library implements many of these new
+  algorithms, combining the recursive methods and fine-grained screening
+  of Shaw et al.
+  (<xref alt="Shaw &amp; Hill, 2017" rid="ref-Shaw2017" ref-type="bibr">Shaw
+  &amp; Hill, 2017</xref>) with the higher-level screening of other
+  recent work
+  (<xref alt="McKenzie et al., 2018" rid="ref-McKenzie2018" ref-type="bibr">McKenzie
+  et al., 2018</xref>;
+  <xref alt="Song et al., 2015" rid="ref-Song2015" ref-type="bibr">Song
+  et al., 2015</xref>). The only known implementations of the latter
+  papers are otherwise only available in proprietary software. Therefore
+  <monospace>libecpint</monospace> represents a necessary contribution
+  to the wider open-source computational chemistry community. It has
+  already been adopted by multiple packages, including Entos QCore and
+  Serenity
+  (<xref alt="Barton et al., 2020" rid="ref-Serenity" ref-type="bibr">Barton
+  et al., 2020</xref>), and will be part of a future release of Psi4
+  (<xref alt="Smith et al., 2020" rid="ref-Psi4" ref-type="bibr">Smith
+  et al., 2020</xref>).</p>
+</sec>
+<sec id="functionalities">
+  <title>Functionalities</title>
+  <p>The core functionality of <monospace>libecpint</monospace> is the
+  evaluation of both type 1 and type 2 integrals over ECP integrals
+  parametrised in terms of contracted sets of primitive gaussians, as
+  described in Shaw et al.
+  (<xref alt="Shaw &amp; Hill, 2017" rid="ref-Shaw2017" ref-type="bibr">Shaw
+  &amp; Hill, 2017</xref>). The component parts divide into the
+  following functionalities:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>a built-in library of parametrised ECPs, with generic
+      containers for Gaussian-type ECPs;</p>
+    </list-item>
+    <list-item>
+      <p>a highly-optimised Bessel function evaluation routine;</p>
+    </list-item>
+    <list-item>
+      <p>screening of ECP integrals over shell pairs of orbital basis
+      functions
+      (<xref alt="McKenzie et al., 2018" rid="ref-McKenzie2018" ref-type="bibr">McKenzie
+      et al., 2018</xref>;
+      <xref alt="Song et al., 2015" rid="ref-Song2015" ref-type="bibr">Song
+      et al., 2015</xref>), across all ECPs in a system;</p>
+    </list-item>
+    <list-item>
+      <p>fine-grained screening of the individual type 2 integrals over
+      primitive gaussians;
+      (<xref alt="Shaw &amp; Hill, 2017" rid="ref-Shaw2017" ref-type="bibr">Shaw
+      &amp; Hill, 2017</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>recursive, automatically-generated radial integral code;
+      (<xref alt="Shaw &amp; Hill, 2017" rid="ref-Shaw2017" ref-type="bibr">Shaw
+      &amp; Hill, 2017</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>adaptive quadrature for integrals not covered by the recursive
+      routines;
+      (<xref alt="Flores-Moreno et al., 2006" rid="ref-FloresMoreno2006" ref-type="bibr">Flores-Moreno
+      et al., 2006</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>first- and second-order geometric derivatives of ECP integrals
+      over shell pairs of gaussians.</p>
+    </list-item>
+  </list>
+  <p>These features can be accessed via two levels of API:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>a high-level interface, where the user provides a molecular
+      geometry and basis set, then calls routines that return the full
+      tensor of integrals (or integral derivatives) across all shell
+      pairs;</p>
+    </list-item>
+    <list-item>
+      <p>a low-level interface, where the user provides parameters and
+      deals with the primitive integrals directly.</p>
+    </list-item>
+  </list>
+  <p>This allows a great deal of flexibility for different use cases,
+  potentially allowing for users to further develop or adapt the
+  routines themselves.</p>
+  <p>All primitive integral routines have been designed to be thread
+  safe, allowing users to readily parallelise their calculations. In
+  addition, there is a built in testing and benchmarking suite, allowing
+  for efficiency comparisons both with other codes, and when testing new
+  algorithmic developments.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>Thank you to Moritz Bensberg, Peter Bygraves, Thomas Dresselhaus,
+  Christopher Junghans, Peter Kraus, Jan Unsleber, and Jens Wehner, for
+  finding bugs and suggesting improvements to the initial release of
+  <monospace>libecpint</monospace>, and often providing helpful
+  solutions.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Dolg2000">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Dolg</surname><given-names>M</given-names></name>
+        </person-group>
+        <article-title>Effective Core Potentials</article-title>
+        <source>Modern Methods and Algorithms in Quantum Chemistry</source>
+        <person-group person-group-type="editor">
+          <name><surname>Grotendorst</surname><given-names>Johannes</given-names></name>
+        </person-group>
+        <publisher-name>John von Neumann Institute for Computing</publisher-name>
+        <year iso-8601-date="2000">2000</year>
+        <volume>3</volume>
+        <isbn>3-00-005834-6</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-Dolg2002">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Dolg</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>Chapter 14 Relativistic effective core potentials</article-title>
+        <source>Theoretical and Computational Chemistry</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2002">2002</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-01-28">2021</year><month>01</month><day>28</day></date-in-citation>
+        <volume>11</volume>
+        <isbn>978-0-444-51249-9</isbn>
+        <uri>https://linkinghub.elsevier.com/retrieve/pii/S1380732302800401</uri>
+        <pub-id pub-id-type="doi">10.1016/S1380-7323(02)80040-1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Wadt1985">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wadt</surname><given-names>Willard R.</given-names></name>
+          <name><surname>Hay</surname><given-names>P. Jeffrey</given-names></name>
+        </person-group>
+        <article-title>Ab initio effective core potentials for molecular calculations. Potentials for main group elements Na to Bi</article-title>
+        <source>The Journal of Chemical Physics</source>
+        <year iso-8601-date="1985-01">1985</year><month>01</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-01-28">2021</year><month>01</month><day>28</day></date-in-citation>
+        <volume>82</volume>
+        <issue>1</issue>
+        <issn>0021-9606, 1089-7690</issn>
+        <uri>http://aip.scitation.org/doi/10.1063/1.448800</uri>
+        <pub-id pub-id-type="doi">10.1063/1.448800</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hay1985">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hay</surname><given-names>P. Jeffrey</given-names></name>
+          <name><surname>Wadt</surname><given-names>Willard R.</given-names></name>
+        </person-group>
+        <article-title>Ab initio effective core potentials for molecular calculations. Potentials for the transition metal atoms Sc to Hg</article-title>
+        <source>The Journal of Chemical Physics</source>
+        <year iso-8601-date="1985-01">1985</year><month>01</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-01-28">2021</year><month>01</month><day>28</day></date-in-citation>
+        <volume>82</volume>
+        <issue>1</issue>
+        <issn>0021-9606, 1089-7690</issn>
+        <uri>http://aip.scitation.org/doi/10.1063/1.448799</uri>
+        <pub-id pub-id-type="doi">10.1063/1.448799</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Dolg2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dolg</surname><given-names>M.</given-names></name>
+          <name><surname>Cao</surname><given-names>X.</given-names></name>
+        </person-group>
+        <article-title>Relativistic Pseudopotentials: Their Development and Scope of Applications</article-title>
+        <source>Chemical Reviews</source>
+        <year iso-8601-date="2012-01">2012</year><month>01</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-01-28">2021</year><month>01</month><day>28</day></date-in-citation>
+        <volume>112</volume>
+        <issue>1</issue>
+        <issn>0009-2665, 1520-6890</issn>
+        <uri>https://pubs.acs.org/doi/10.1021/cr2001383</uri>
+        <pub-id pub-id-type="doi">10.1021/cr2001383</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-McMurchie1981">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>McMurchie</surname><given-names>Larry E</given-names></name>
+          <name><surname>Davidson</surname><given-names>Ernest R</given-names></name>
+        </person-group>
+        <article-title>Calculation of integrals over ab initio pseudopotentials</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="1981-12">1981</year><month>12</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-01-28">2021</year><month>01</month><day>28</day></date-in-citation>
+        <volume>44</volume>
+        <issue>2</issue>
+        <issn>00219991</issn>
+        <uri>https://linkinghub.elsevier.com/retrieve/pii/002199918190053X</uri>
+        <pub-id pub-id-type="doi">10.1016/0021-9991(81)90053-X</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-FloresMoreno2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Flores-Moreno</surname><given-names>Roberto</given-names></name>
+          <name><surname>Alvarez-Mendez</surname><given-names>Rodrigo J.</given-names></name>
+          <name><surname>Vela</surname><given-names>Alberto</given-names></name>
+          <name><surname>Köster</surname><given-names>Andreas M.</given-names></name>
+        </person-group>
+        <article-title>Half-numerical evaluation of pseudopotential integrals</article-title>
+        <source>Journal of Computational Chemistry</source>
+        <year iso-8601-date="2006-07">2006</year><month>07</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-01-28">2021</year><month>01</month><day>28</day></date-in-citation>
+        <volume>27</volume>
+        <issue>9</issue>
+        <issn>0192-8651, 1096-987X</issn>
+        <uri>http://doi.wiley.com/10.1002/jcc.20410</uri>
+        <pub-id pub-id-type="doi">10.1002/jcc.20410</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-McKenzie2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>McKenzie</surname><given-names>Simon C.</given-names></name>
+          <name><surname>Epifanovsky</surname><given-names>Evgeny</given-names></name>
+          <name><surname>Barca</surname><given-names>Giuseppe M. J.</given-names></name>
+          <name><surname>Gilbert</surname><given-names>Andrew T. B.</given-names></name>
+          <name><surname>Gill</surname><given-names>Peter M. W.</given-names></name>
+        </person-group>
+        <article-title>Efficient Method for Calculating Effective Core Potential Integrals</article-title>
+        <source>The Journal of Physical Chemistry A</source>
+        <year iso-8601-date="2018-03">2018</year><month>03</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-01-28">2021</year><month>01</month><day>28</day></date-in-citation>
+        <volume>122</volume>
+        <issue>11</issue>
+        <issn>1089-5639, 1520-5215</issn>
+        <uri>https://pubs.acs.org/doi/10.1021/acs.jpca.7b12679</uri>
+        <pub-id pub-id-type="doi">10.1021/acs.jpca.7b12679</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Shaw2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Shaw</surname><given-names>Robert A.</given-names></name>
+          <name><surname>Hill</surname><given-names>J. Grant</given-names></name>
+        </person-group>
+        <article-title>Prescreening and efficiency in the evaluation of integrals over ab initio effective core potentials</article-title>
+        <source>The Journal of Chemical Physics</source>
+        <year iso-8601-date="2017-08">2017</year><month>08</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-01-28">2021</year><month>01</month><day>28</day></date-in-citation>
+        <volume>147</volume>
+        <issue>7</issue>
+        <issn>0021-9606, 1089-7690</issn>
+        <uri>http://aip.scitation.org/doi/10.1063/1.4986887</uri>
+        <pub-id pub-id-type="doi">10.1063/1.4986887</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Song2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Song</surname><given-names>Chenchen</given-names></name>
+          <name><surname>Wang</surname><given-names>Lee-Ping</given-names></name>
+          <name><surname>Sachse</surname><given-names>Torsten</given-names></name>
+          <name><surname>Preiß</surname><given-names>Julia</given-names></name>
+          <name><surname>Presselt</surname><given-names>Martin</given-names></name>
+          <name><surname>Martínez</surname><given-names>Todd J.</given-names></name>
+        </person-group>
+        <article-title>Efficient implementation of effective core potential integrals and gradients on graphical processing units</article-title>
+        <source>The Journal of Chemical Physics</source>
+        <year iso-8601-date="2015-07">2015</year><month>07</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-01-28">2021</year><month>01</month><day>28</day></date-in-citation>
+        <volume>143</volume>
+        <issue>1</issue>
+        <issn>0021-9606, 1089-7690</issn>
+        <uri>http://aip.scitation.org/doi/10.1063/1.4922844</uri>
+        <pub-id pub-id-type="doi">10.1063/1.4922844</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Gaussian16">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Frisch</surname><given-names>M. J.</given-names></name>
+          <name><surname>Trucks</surname><given-names>G. W.</given-names></name>
+          <name><surname>Schlegel</surname><given-names>H. B.</given-names></name>
+          <name><surname>Scuseria</surname><given-names>G. E.</given-names></name>
+          <name><surname>Robb</surname><given-names>M. A.</given-names></name>
+          <name><surname>Cheeseman</surname><given-names>J. R.</given-names></name>
+          <name><surname>Scalmani</surname><given-names>G.</given-names></name>
+          <name><surname>Barone</surname><given-names>V.</given-names></name>
+          <name><surname>Petersson</surname><given-names>G. A.</given-names></name>
+          <name><surname>Nakatsuji</surname><given-names>H.</given-names></name>
+          <name><surname>Li</surname><given-names>X.</given-names></name>
+          <name><surname>Caricato</surname><given-names>M.</given-names></name>
+          <name><surname>Marenich</surname><given-names>A. V.</given-names></name>
+          <name><surname>Bloino</surname><given-names>J.</given-names></name>
+          <name><surname>Janesko</surname><given-names>B. G.</given-names></name>
+          <name><surname>Gomperts</surname><given-names>R.</given-names></name>
+          <name><surname>Mennucci</surname><given-names>B.</given-names></name>
+          <name><surname>Hratchian</surname><given-names>H. P.</given-names></name>
+          <name><surname>Ortiz</surname><given-names>J. V.</given-names></name>
+          <name><surname>Izmaylov</surname><given-names>A. F.</given-names></name>
+          <name><surname>Sonnenberg</surname><given-names>J. L.</given-names></name>
+          <name><surname>Williams-Young</surname><given-names>D.</given-names></name>
+          <name><surname>Ding</surname><given-names>F.</given-names></name>
+          <name><surname>Lipparini</surname><given-names>F.</given-names></name>
+          <name><surname>Egidi</surname><given-names>F.</given-names></name>
+          <name><surname>Goings</surname><given-names>J.</given-names></name>
+          <name><surname>Peng</surname><given-names>B.</given-names></name>
+          <name><surname>Petrone</surname><given-names>A.</given-names></name>
+          <name><surname>Henderson</surname><given-names>T.</given-names></name>
+          <name><surname>Ranasinghe</surname><given-names>D.</given-names></name>
+          <name><surname>Zakrzewski</surname><given-names>V. G.</given-names></name>
+          <name><surname>Gao</surname><given-names>J.</given-names></name>
+          <name><surname>Rega</surname><given-names>N.</given-names></name>
+          <name><surname>Zheng</surname><given-names>G.</given-names></name>
+          <name><surname>Liang</surname><given-names>W.</given-names></name>
+          <name><surname>Hada</surname><given-names>M.</given-names></name>
+          <name><surname>Ehara</surname><given-names>M.</given-names></name>
+          <name><surname>Toyota</surname><given-names>K.</given-names></name>
+          <name><surname>Fukuda</surname><given-names>R.</given-names></name>
+          <name><surname>Hasegawa</surname><given-names>J.</given-names></name>
+          <name><surname>Ishida</surname><given-names>M.</given-names></name>
+          <name><surname>Nakajima</surname><given-names>T.</given-names></name>
+          <name><surname>Honda</surname><given-names>Y.</given-names></name>
+          <name><surname>Kitao</surname><given-names>O.</given-names></name>
+          <name><surname>Nakai</surname><given-names>H.</given-names></name>
+          <name><surname>Vreven</surname><given-names>T.</given-names></name>
+          <name><surname>Throssell</surname><given-names>K.</given-names></name>
+          <name><surname>Montgomery</surname><given-names>J. A.</given-names><suffix>Jr.</suffix></name>
+          <name><surname>Peralta</surname><given-names>J. E.</given-names></name>
+          <name><surname>Ogliaro</surname><given-names>F.</given-names></name>
+          <name><surname>Bearpark</surname><given-names>M. J.</given-names></name>
+          <name><surname>Heyd</surname><given-names>J. J.</given-names></name>
+          <name><surname>Brothers</surname><given-names>E. N.</given-names></name>
+          <name><surname>Kudin</surname><given-names>K. N.</given-names></name>
+          <name><surname>Staroverov</surname><given-names>V. N.</given-names></name>
+          <name><surname>Keith</surname><given-names>T. A.</given-names></name>
+          <name><surname>Kobayashi</surname><given-names>R.</given-names></name>
+          <name><surname>Normand</surname><given-names>J.</given-names></name>
+          <name><surname>Raghavachari</surname><given-names>K.</given-names></name>
+          <name><surname>Rendell</surname><given-names>A. P.</given-names></name>
+          <name><surname>Burant</surname><given-names>J. C.</given-names></name>
+          <name><surname>Iyengar</surname><given-names>S. S.</given-names></name>
+          <name><surname>Tomasi</surname><given-names>J.</given-names></name>
+          <name><surname>Cossi</surname><given-names>M.</given-names></name>
+          <name><surname>Millam</surname><given-names>J. M.</given-names></name>
+          <name><surname>Klene</surname><given-names>M.</given-names></name>
+          <name><surname>Adamo</surname><given-names>C.</given-names></name>
+          <name><surname>Cammi</surname><given-names>R.</given-names></name>
+          <name><surname>Ochterski</surname><given-names>J. W.</given-names></name>
+          <name><surname>Martin</surname><given-names>R. L.</given-names></name>
+          <name><surname>Morokuma</surname><given-names>K.</given-names></name>
+          <name><surname>Farkas</surname><given-names>O.</given-names></name>
+          <name><surname>Foresman</surname><given-names>J. B.</given-names></name>
+          <name><surname>Fox</surname><given-names>D. J.</given-names></name>
+        </person-group>
+        <article-title>Gaussian 16 Revision C.01</article-title>
+        <year iso-8601-date="2016">2016</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-MOLPRO">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Werner</surname><given-names>H.-J.</given-names></name>
+          <name><surname>Knowles</surname><given-names>P. J.</given-names></name>
+          <name><surname>Knizia</surname><given-names>G.</given-names></name>
+          <name><surname>Manby</surname><given-names>F. R.</given-names></name>
+          <name><surname>Schütz</surname><given-names>M.</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>MOLPRO, version 2019.2, a package of ab initio programs</article-title>
+        <publisher-loc>molpro_address</publisher-loc>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Psi4">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Smith</surname><given-names>Daniel G. A.</given-names></name>
+          <name><surname>Burns</surname><given-names>Lori A.</given-names></name>
+          <name><surname>Simmonett</surname><given-names>Andrew C.</given-names></name>
+          <name><surname>Parrish</surname><given-names>Robert M.</given-names></name>
+          <name><surname>Schieber</surname><given-names>Matthew C.</given-names></name>
+          <name><surname>Galvelis</surname><given-names>Raimondas</given-names></name>
+          <name><surname>Kraus</surname><given-names>Peter</given-names></name>
+          <name><surname>Kruse</surname><given-names>Holger</given-names></name>
+          <name><surname>Di Remigio</surname><given-names>Roberto</given-names></name>
+          <name><surname>Alenaizan</surname><given-names>Asem</given-names></name>
+          <name><surname>James</surname><given-names>Andrew M.</given-names></name>
+          <name><surname>Lehtola</surname><given-names>Susi</given-names></name>
+          <name><surname>Misiewicz</surname><given-names>Jonathon P.</given-names></name>
+          <name><surname>Scheurer</surname><given-names>Maximilian</given-names></name>
+          <name><surname>Shaw</surname><given-names>Robert A.</given-names></name>
+          <name><surname>Schriber</surname><given-names>Jeffrey B.</given-names></name>
+          <name><surname>Xie</surname><given-names>Yi</given-names></name>
+          <name><surname>Glick</surname><given-names>Zachary L.</given-names></name>
+          <name><surname>Sirianni</surname><given-names>Dominic A.</given-names></name>
+          <name><surname>O’Brien</surname><given-names>Joseph Senan</given-names></name>
+          <name><surname>Waldrop</surname><given-names>Jonathan M.</given-names></name>
+          <name><surname>Kumar</surname><given-names>Ashutosh</given-names></name>
+          <name><surname>Hohenstein</surname><given-names>Edward G.</given-names></name>
+          <name><surname>Pritchard</surname><given-names>Benjamin P.</given-names></name>
+          <name><surname>Brooks</surname><given-names>Bernard R.</given-names></name>
+          <name><surname>Schaefer</surname><given-names>Henry F.</given-names></name>
+          <name><surname>Sokolov</surname><given-names>Alexander Yu.</given-names></name>
+          <name><surname>Patkowski</surname><given-names>Konrad</given-names></name>
+          <name><surname>DePrince</surname><given-names>A. Eugene</given-names></name>
+          <name><surname>Bozkaya</surname><given-names>Uğur</given-names></name>
+          <name><surname>King</surname><given-names>Rollin A.</given-names></name>
+          <name><surname>Evangelista</surname><given-names>Francesco A.</given-names></name>
+          <name><surname>Turney</surname><given-names>Justin M.</given-names></name>
+          <name><surname>Crawford</surname><given-names>T. Daniel</given-names></name>
+          <name><surname>Sherrill</surname><given-names>C. David</given-names></name>
+        </person-group>
+        <article-title>Psi4 1.4: Open-source software for high-throughput quantum chemistry</article-title>
+        <source>The Journal of Chemical Physics</source>
+        <year iso-8601-date="2020-05">2020</year><month>05</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-01-28">2021</year><month>01</month><day>28</day></date-in-citation>
+        <volume>152</volume>
+        <issue>18</issue>
+        <issn>0021-9606, 1089-7690</issn>
+        <uri>http://aip.scitation.org/doi/10.1063/5.0006002</uri>
+        <pub-id pub-id-type="doi">10.1063/5.0006002</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Serenity">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Barton</surname><given-names>Dennis</given-names></name>
+          <name><surname>Bensberg</surname><given-names>Moritz</given-names></name>
+          <name><surname>Böckers</surname><given-names>Michael</given-names></name>
+          <name><surname>Dresselhaus</surname><given-names>Thomas</given-names></name>
+          <name><surname>Eschenbach</surname><given-names>Patrick</given-names></name>
+          <name><surname>Hellmann</surname><given-names>Lars</given-names></name>
+          <name><surname>Klahr</surname><given-names>Kevin</given-names></name>
+          <name><surname>Massolle</surname><given-names>Anja</given-names></name>
+          <name><surname>Niemeyer</surname><given-names>Niklas</given-names></name>
+          <name><surname>Schnieders</surname><given-names>David</given-names></name>
+          <name><surname>Tölle</surname><given-names>Johannes</given-names></name>
+          <name><surname>Unsleber</surname><given-names>Jan Patrick</given-names></name>
+          <name><surname>Neugebauer</surname><given-names>Johannes</given-names></name>
+        </person-group>
+        <source>Qcserenity/serenity: Release 1.3.1</source>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2020-09">2020</year><month>09</month>
+        <uri>https://doi.org/10.5281/zenodo.4059510</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.4059510</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

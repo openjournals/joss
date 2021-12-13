@@ -1,0 +1,990 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2182</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02182</article-id>
+<title-group>
+<article-title>VlaPy: A Python package for Eulerian
+Vlasov-Poisson-Fokker-Planck Simulations</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-3599-5629</contrib-id>
+<string-name>Archis S. Joglekar</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-7387-0256</contrib-id>
+<string-name>Matthew C. Levy</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Noble.AI, 8 California St, Suite 400, San Francisco,
+California 94111</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-02-16">
+<day>16</day>
+<month>2</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>53</issue>
+<fpage>2182</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>plasma physics</kwd>
+<kwd>dynamics</kwd>
+<kwd>astrophysics</kwd>
+<kwd>fusion</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Here we introduce <monospace>VlaPy</monospace>: a
+  one-spatial-dimension, one-velocity-dimension (1D-1V), Eulerian
+  Vlasov-Poisson-Fokker-Planck (VPFP) simulation code written in
+  Python.</p>
+  <p>The Vlasov-Poisson-Fokker-Planck system of equations is commonly
+  used to study plasma and fluid physics in a broad set of topical
+  environments, ranging from space physics, to laboratory-created
+  plasmas for fusion applications
+  (<xref alt="Betti &amp; Hurricane, 2016" rid="ref-Betti2016" ref-type="bibr">Betti
+  &amp; Hurricane, 2016</xref>;
+  <xref alt="C. H. K. Chen et al., 2019" rid="ref-Chen2019" ref-type="bibr">C.
+  H. K. Chen et al., 2019</xref>;
+  <xref alt="Fasoli et al., 2016" rid="ref-Fasoli2016" ref-type="bibr">Fasoli
+  et al., 2016</xref>;
+  <xref alt="Ongena et al., 2016" rid="ref-Ongena2016" ref-type="bibr">Ongena
+  et al., 2016</xref>). More specifically, the Vlasov-Poisson system of
+  equations is typically employed to model collisionless plasmas. The
+  Fokker-Planck operator can be introduced into this system to represent
+  the effect of collisions. The primary advantage of this scheme is that
+  instead of relying on numerical diffusion to smooth small-scale
+  structures that arise when modeling collisionless plasmas, the
+  Fokker-Planck operator enables a physics-based smoothing
+  mechanism.</p>
+  <p>Our implementation is based on finite-difference and
+  pseudo-spectral methods. At the lowest level,
+  <monospace>VlaPy</monospace> evolves a two-dimensional (2D) grid
+  according to this set of coupled partial integro-differential
+  equations over time. In <monospace>VlaPy</monospace>, the simulation
+  dynamics can be initialized through user-specified initial conditions
+  or external forces.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>The 1D-1V VPFP equation set solved here has been applied in
+  research on laser-plasma interactions in the context of inertial
+  fusion
+  (<xref alt="J. W. Banks et al., 2016" rid="ref-Banks2016" ref-type="bibr">J.
+  W. Banks et al., 2016</xref>;
+  <xref alt="Fahlen et al., 2009" rid="ref-Fahlen2009" ref-type="bibr">Fahlen
+  et al., 2009</xref>), plasma-based accelerators
+  (<xref alt="Thomas, 2016" rid="ref-Thomas2016" ref-type="bibr">Thomas,
+  2016</xref>), space physics
+  (<xref alt="C. H. K. Chen et al., 2019" rid="ref-Chen2019" ref-type="bibr">C.
+  H. K. Chen et al., 2019</xref>), and fundamental plasma physics
+  (<xref alt="Heninger &amp; Morrison, 2018" rid="ref-Heninger2018" ref-type="bibr">Heninger
+  &amp; Morrison, 2018</xref>;
+  <xref alt="Pezzi et al., 2016" rid="ref-Pezzi2016" ref-type="bibr">Pezzi
+  et al., 2016</xref>). While there are VPFP software libraries which
+  are available in academic settings, research laboratories, and
+  industry
+  (<xref alt="J. W. Banks et al., 2017" rid="ref-Banks2017" ref-type="bibr">J.
+  W. Banks et al., 2017</xref>;
+  <xref alt="Joglekar et al., 2018" rid="ref-Joglekar2018" ref-type="bibr">Joglekar
+  et al., 2018</xref>), the community has yet to benefit from a
+  simple-to-read, open-source Python implementation. This lack of
+  capability is currently echoed in conversations within the
+  <monospace>PlasmaPy</monospace>
+  (<xref alt="PlasmaPy Community et al., 2018" rid="ref-plasmapy" ref-type="bibr">PlasmaPy
+  Community et al., 2018</xref>) community
+  (<monospace>PlasmaPy</monospace> is a collection of open-source plasma
+  physics resources). Our aim with <monospace>VlaPy</monospace> is to
+  take a step towards filling this need for a research and educational
+  tool in the open-source community.</p>
+  <p><monospace>VlaPy</monospace> is intended to help students learn
+  fundamental concepts and help researchers discover novel physics and
+  applications in plasma physics, fluid physics, computational physics,
+  and numerical methods. It is also designed to provide a
+  science-accessible introduction to industry and software engineering
+  best-practices, including unit and integrated testing, and extensible
+  and maintainable code.</p>
+  <p>The details of the <monospace>VlaPy</monospace> implementation are
+  provided in the following sections.</p>
+</sec>
+<sec id="equations">
+  <title>Equations</title>
+  <p>The Vlasov-Poisson-Fokker-Planck system can be decomposed into four
+  components. These components, represented using normalized units, are
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\tilde{v} = v/v_{th}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>v</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:mi>v</mml:mi><mml:mi>/</mml:mi><mml:msub><mml:mi>v</mml:mi><mml:mrow><mml:mi>t</mml:mi><mml:mi>h</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\tilde{t} = t / \omega_p^{-1}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>t</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:mi>t</mml:mi><mml:mi>/</mml:mi><mml:msubsup><mml:mi>ω</mml:mi><mml:mi>p</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup></mml:mrow></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\tilde{x} = x / \lambda_D]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>x</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:mi>x</mml:mi><mml:mi>/</mml:mi><mml:msub><mml:mi>λ</mml:mi><mml:mi>D</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\tilde{m} = m / m_e]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>m</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:mi>m</mml:mi><mml:mi>/</mml:mi><mml:msub><mml:mi>m</mml:mi><mml:mi>e</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\tilde{q} = q/e]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>q</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:mi>q</mml:mi><mml:mi>/</mml:mi><mml:mi>e</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\tilde{m} = m / m_e]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>m</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:mi>m</mml:mi><mml:mi>/</mml:mi><mml:msub><mml:mi>m</mml:mi><mml:mi>e</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\tilde{E} = e E / m_e v_{th} \omega_p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>E</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:mi>e</mml:mi><mml:mi>E</mml:mi><mml:mi>/</mml:mi><mml:msub><mml:mi>m</mml:mi><mml:mi>e</mml:mi></mml:msub><mml:msub><mml:mi>v</mml:mi><mml:mrow><mml:mi>t</mml:mi><mml:mi>h</mml:mi></mml:mrow></mml:msub><mml:msub><mml:mi>ω</mml:mi><mml:mi>p</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\tilde{f} = f / n_e v_{th}^{-3}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>f</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:mi>f</mml:mi><mml:mi>/</mml:mi><mml:msub><mml:mi>n</mml:mi><mml:mi>e</mml:mi></mml:msub><mml:msubsup><mml:mi>v</mml:mi><mml:mrow><mml:mi>t</mml:mi><mml:mi>h</mml:mi></mml:mrow><mml:mrow><mml:mo>−</mml:mo><mml:mn>3</mml:mn></mml:mrow></mml:msubsup></mml:mrow></mml:math></alternatives></inline-formula>
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[v_{th}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>v</mml:mi><mml:mrow><mml:mi>t</mml:mi><mml:mi>h</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+  is the thermal velocity, <inline-formula><alternatives>
+  <tex-math><![CDATA[\omega_p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>ω</mml:mi><mml:mi>p</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  is the electron plasma frequency, <inline-formula><alternatives>
+  <tex-math><![CDATA[m_e]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>m</mml:mi><mml:mi>e</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  is the electron mass, <inline-formula><alternatives>
+  <tex-math><![CDATA[\lambda_D]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>λ</mml:mi><mml:mi>D</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  is the Debye length, and <inline-formula><alternatives>
+  <tex-math><![CDATA[e]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>e</mml:mi></mml:math></alternatives></inline-formula>
+  is the elementary charge. The Fourier transform operator is
+  represented by <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{F}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  and the subscript to the operator indicates the dimension of the
+  transform. In what follows, we have omitted the tilde for brevity.</p>
+  <sec id="vlasov-equation">
+    <title>Vlasov Equation</title>
+    <p>The normalized, non-relativistic (<inline-formula><alternatives>
+    <tex-math><![CDATA[\gamma=1]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>γ</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>)
+    Vlasov equation for electrons is given by
+    <disp-formula><alternatives>
+    <tex-math><![CDATA[ \frac{\partial f}{\partial t} + v  \frac{\partial f}{\partial x} - E(x) \frac{\partial f}{\partial v} = 0, ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mfrac><mml:mrow><mml:mi>∂</mml:mi><mml:mi>f</mml:mi></mml:mrow><mml:mrow><mml:mi>∂</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:mfrac><mml:mo>+</mml:mo><mml:mi>v</mml:mi><mml:mfrac><mml:mrow><mml:mi>∂</mml:mi><mml:mi>f</mml:mi></mml:mrow><mml:mrow><mml:mi>∂</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:mfrac><mml:mo>−</mml:mo><mml:mi>E</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mfrac><mml:mrow><mml:mi>∂</mml:mi><mml:mi>f</mml:mi></mml:mrow><mml:mrow><mml:mi>∂</mml:mi><mml:mi>v</mml:mi></mml:mrow></mml:mfrac><mml:mo>=</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>where <inline-formula><alternatives>
+    <tex-math><![CDATA[f = f(x,v,t)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mo>=</mml:mo><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>v</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    is the electron velocity distribution function.</p>
+    <p>We use operator splitting to advance the time-step
+    (<xref alt="Strang, 1968" rid="ref-Strang1968" ref-type="bibr">Strang,
+    1968</xref>). Each one of those operators is then integrated
+    pseudo-spectrally using the following methodology.</p>
+    <p>We use the Fourier expansions of the distribution function, which
+    are given by <disp-formula><alternatives>
+    <tex-math><![CDATA[f(x_l,v_j) = \sum \hat{f_x}(k_x, v_j) \exp(i k_x x_l) = \sum \hat{f_v}(x_l, k_v) \exp(i k_v v_j).]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>l</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>v</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>∑</mml:mo><mml:mover><mml:msub><mml:mi>f</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>k</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>v</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>exp</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>i</mml:mi><mml:msub><mml:mi>k</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:msub><mml:mi>x</mml:mi><mml:mi>l</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>∑</mml:mo><mml:mover><mml:msub><mml:mi>f</mml:mi><mml:mi>v</mml:mi></mml:msub><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>l</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>k</mml:mi><mml:mi>v</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>exp</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>i</mml:mi><mml:msub><mml:mi>k</mml:mi><mml:mi>v</mml:mi></mml:msub><mml:msub><mml:mi>v</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>We first discretize <inline-formula><alternatives>
+    <tex-math><![CDATA[f(x,v,t) = f^n(x_l, v_j)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>v</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msup><mml:mi>f</mml:mi><mml:mi>n</mml:mi></mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>l</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>v</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>,
+    and then perform a Fourier expansion in
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{x}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>x</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+    for each grid value of <inline-formula><alternatives>
+    <tex-math><![CDATA[v]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>v</mml:mi></mml:math></alternatives></inline-formula>.</p>
+    <p>This gives</p>
+    <p><disp-formula><alternatives>
+    <tex-math><![CDATA[ f^n(x_l, v_j) = \sum \hat{f}^n_x(k_x, v_j) \exp(i k_x x_j) ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mi>f</mml:mi><mml:mi>n</mml:mi></mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>l</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>v</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>∑</mml:mo><mml:msubsup><mml:mover><mml:mi>f</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>x</mml:mi><mml:mi>n</mml:mi></mml:msubsup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>k</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>v</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>exp</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>i</mml:mi><mml:msub><mml:mi>k</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:msub><mml:mi>x</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>which is substituted into the Fourier transform of the advection
+    operator in <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{x}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>x</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:math></alternatives></inline-formula>,
+    as given by <disp-formula><alternatives>
+    <tex-math><![CDATA[ \mathcal{F}_x\left[ \frac{\partial f}{\partial t} = - v \frac{\partial f}{\partial x} \right].]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle><mml:mi>x</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mfrac><mml:mrow><mml:mi>∂</mml:mi><mml:mi>f</mml:mi></mml:mrow><mml:mrow><mml:mi>∂</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:mfrac><mml:mo>=</mml:mo><mml:mo>−</mml:mo><mml:mi>v</mml:mi><mml:mfrac><mml:mrow><mml:mi>∂</mml:mi><mml:mi>f</mml:mi></mml:mrow><mml:mrow><mml:mi>∂</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:mfrac><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>This process enables the decoupling of
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{x}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>x</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{v}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>v</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+    grids from the time dimension and allows us to write an Ordinary
+    Differential Equation in time for the discretized distribution
+    function <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{f_x}^n(k_x, v_j)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mover><mml:msub><mml:mi>f</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>n</mml:mi></mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>k</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>v</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.
+    This is given by</p>
+    <p><disp-formula><alternatives>
+    <tex-math><![CDATA[\frac{d \left[\hat{f_x}^n (k_x, v_j) \right]}{\hat{f_x}^n (k_x, v_j)} = -v_j~ (i k_x)~ dt. ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mfrac><mml:mrow><mml:mi>d</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:msup><mml:mover><mml:msub><mml:mi>f</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>n</mml:mi></mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>k</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>v</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow></mml:mrow><mml:mrow><mml:msup><mml:mover><mml:msub><mml:mi>f</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>n</mml:mi></mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>k</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>v</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:mfrac><mml:mo>=</mml:mo><mml:mo>−</mml:mo><mml:msub><mml:mi>v</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mspace width="0.222em"></mml:mspace><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>i</mml:mi><mml:msub><mml:mi>k</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mspace width="0.222em"></mml:mspace><mml:mi>d</mml:mi><mml:mi>t</mml:mi><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>Next, we solve for the change in the plasma distribution
+    function, integrate in time, and evaluate the integral at
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{f_x}^n]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mover><mml:msub><mml:mi>f</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>n</mml:mi></mml:msup></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{f_x}^{n+1}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mover><mml:msub><mml:mi>f</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:math></alternatives></inline-formula>
+    which gives</p>
+    <p><disp-formula><alternatives>
+    <tex-math><![CDATA[ \hat{f_x}^{n+1}(k_x, v_j) = \exp(-i k_x ~ v_j \Delta t) ~~ \hat{f_x}^n(k_x, v_j). ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mover><mml:msub><mml:mi>f</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>k</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>v</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>exp</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mo>−</mml:mo><mml:mi>i</mml:mi><mml:msub><mml:mi>k</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:mspace width="0.222em"></mml:mspace><mml:msub><mml:mi>v</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mi>Δ</mml:mi><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mspace width="0.222em"></mml:mspace><mml:mspace width="0.222em"></mml:mspace><mml:msup><mml:mover><mml:msub><mml:mi>f</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>n</mml:mi></mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>k</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>v</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>The <inline-formula><alternatives>
+    <tex-math><![CDATA[E \partial f/\partial v]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>E</mml:mi><mml:mi>∂</mml:mi><mml:mi>f</mml:mi><mml:mi>/</mml:mi><mml:mi>∂</mml:mi><mml:mi>v</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    term is evolved similarly using <disp-formula><alternatives>
+    <tex-math><![CDATA[ \hat{f_v}^{n+1}(x_l, k_v) = \exp(-i k_v ~ E_l \Delta t) ~~ \hat{f_v}^n(x_l, k_v). ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mover><mml:msub><mml:mi>f</mml:mi><mml:mi>v</mml:mi></mml:msub><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>l</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>k</mml:mi><mml:mi>v</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>exp</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mo>−</mml:mo><mml:mi>i</mml:mi><mml:msub><mml:mi>k</mml:mi><mml:mi>v</mml:mi></mml:msub><mml:mspace width="0.222em"></mml:mspace><mml:msub><mml:mi>E</mml:mi><mml:mi>l</mml:mi></mml:msub><mml:mi>Δ</mml:mi><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mspace width="0.222em"></mml:mspace><mml:mspace width="0.222em"></mml:mspace><mml:msup><mml:mover><mml:msub><mml:mi>f</mml:mi><mml:mi>v</mml:mi></mml:msub><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>n</mml:mi></mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>l</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>k</mml:mi><mml:mi>v</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>We have implemented a simple Leapfrog scheme as well as a 4th
+    order integrator called the Position-Extended-Forest-Ruth-Like
+    Algorithm (PEFRL)
+    (<xref alt="Omelyan et al., 2002" rid="ref-Omelyan2002" ref-type="bibr">Omelyan
+    et al., 2002</xref>)</p>
+    <sec id="tests">
+      <title>Tests</title>
+      <p>The implementation of this equation is tested in the integrated
+      tests section.</p>
+    </sec>
+  </sec>
+  <sec id="poisson-equation">
+    <title>Poisson Equation</title>
+    <p>The normalized Poisson equation is simply
+    <disp-formula><alternatives>
+    <tex-math><![CDATA[  \nabla^2 \Phi = - \rho ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mi>∇</mml:mi><mml:mn>2</mml:mn></mml:msup><mml:mi>Φ</mml:mi><mml:mo>=</mml:mo><mml:mo>−</mml:mo><mml:mi>ρ</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>Because the ion species are effectively static and form a
+    charge-neutralizing background to the electron dynamics, we can
+    express the Poisson equation as <disp-formula><alternatives>
+    <tex-math><![CDATA[ - \nabla E = - \rho_{net} = -(1 - \rho_e) ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>−</mml:mo><mml:mi>∇</mml:mi><mml:mi>E</mml:mi><mml:mo>=</mml:mo><mml:mo>−</mml:mo><mml:msub><mml:mi>ρ</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mi>e</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:mo>−</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:msub><mml:mi>ρ</mml:mi><mml:mi>e</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>This is justifed by the assumption that the relevant time-scales
+    are short compared to the time-scale associated to ion motion.</p>
+    <p>In one spatial dimension, this can be expressed as</p>
+    <p><disp-formula><alternatives>
+    <tex-math><![CDATA[ \frac{\partial}{\partial x} E(x) = 1 - \int f(x,v) ~dv ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mfrac><mml:mi>∂</mml:mi><mml:mrow><mml:mi>∂</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:mfrac><mml:mi>E</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:mo>∫</mml:mo><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>v</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mspace width="0.222em"></mml:mspace><mml:mi>d</mml:mi><mml:mi>v</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>and the discretized version that is solved is</p>
+    <p><disp-formula><alternatives>
+    <tex-math><![CDATA[  E(x_i)^{n} = \mathcal{F}_x^{-1}\left[\frac{\mathcal{F}_x\left(1 - \sum^j f^n(x_i,v_j) \Delta v\right)}{i k_x}\right] ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>E</mml:mi><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>n</mml:mi></mml:msup><mml:mo>=</mml:mo><mml:msubsup><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle><mml:mi>x</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mfrac><mml:mrow><mml:msub><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle><mml:mi>x</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:mover><mml:mo>∑</mml:mo><mml:mi>j</mml:mi></mml:mover><mml:msup><mml:mi>f</mml:mi><mml:mi>n</mml:mi></mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>v</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>Δ</mml:mi><mml:mi>v</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow><mml:mrow><mml:mi>i</mml:mi><mml:msub><mml:mi>k</mml:mi><mml:mi>x</mml:mi></mml:msub></mml:mrow></mml:mfrac><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <sec id="integrated-code-testing">
+      <title>Integrated Code Testing</title>
+      <p>Unit tests are provided for this operator to validate its
+      performance and operation under the above assumptions. These are
+      simply unit tests against analytical solutions of integrals of
+      periodic functions. They can be found in
+      <monospace>tests/test_fieldsolver.py</monospace>.</p>
+      <p>Below, we provide an example illustration of this validation.
+      The code is provided in
+      <monospace>notebooks/test_poisson.ipynb</monospace></p>
+      <graphic mimetype="application" mime-subtype="pdf" xlink:href="../notebooks/screenshots_for_example/poisson_solver.pdf" />
+    </sec>
+  </sec>
+  <sec id="fokker-planck-equation">
+    <title>Fokker-Planck Equation</title>
+    <p>We have implemented two simplified versions of the full
+    Fokker-Planck operator
+    (<xref alt="Dougherty, 1964" rid="ref-Dougherty1964" ref-type="bibr">Dougherty,
+    1964</xref>;
+    <xref alt="Lenard &amp; Bernstein, 1958" rid="ref-Lenard1958" ref-type="bibr">Lenard
+    &amp; Bernstein, 1958</xref>).</p>
+    <p>The first of these implementations (LB) has the governing
+    equation given by <disp-formula><alternatives>
+    <tex-math><![CDATA[\left(\frac{\delta f}{\delta t}\right)_{\text{coll}} = \nu \frac{\partial}{\partial v} \left( v f + v_0^2 \frac{\partial f}{\partial v}\right), ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mfrac><mml:mrow><mml:mi>δ</mml:mi><mml:mi>f</mml:mi></mml:mrow><mml:mrow><mml:mi>δ</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:mfrac><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mtext mathvariant="normal">coll</mml:mtext></mml:msub><mml:mo>=</mml:mo><mml:mi>ν</mml:mi><mml:mfrac><mml:mi>∂</mml:mi><mml:mrow><mml:mi>∂</mml:mi><mml:mi>v</mml:mi></mml:mrow></mml:mfrac><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>v</mml:mi><mml:mi>f</mml:mi><mml:mo>+</mml:mo><mml:msubsup><mml:mi>v</mml:mi><mml:mn>0</mml:mn><mml:mn>2</mml:mn></mml:msubsup><mml:mfrac><mml:mrow><mml:mi>∂</mml:mi><mml:mi>f</mml:mi></mml:mrow><mml:mrow><mml:mi>∂</mml:mi><mml:mi>v</mml:mi></mml:mrow></mml:mfrac><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+    where <disp-formula><alternatives>
+    <tex-math><![CDATA[v_0^2 = \int v^2 f(x,v) ~ dv, ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mi>v</mml:mi><mml:mn>0</mml:mn><mml:mn>2</mml:mn></mml:msubsup><mml:mo>=</mml:mo><mml:mo>∫</mml:mo><mml:msup><mml:mi>v</mml:mi><mml:mn>2</mml:mn></mml:msup><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>v</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mspace width="0.222em"></mml:mspace><mml:mi>d</mml:mi><mml:mi>v</mml:mi><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+    is the thermal velocity of the distribution.</p>
+    <p>The second of these implementations (DG) has a governing equation
+    given by <disp-formula><alternatives>
+    <tex-math><![CDATA[\left(\frac{\delta f}{\delta t}\right)_{\text{coll}} = \nu \frac{\partial}{\partial v} \left ( (v-\underline{v}) f + v_{t}^2 \frac{\partial f}{\partial v}\right), ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mfrac><mml:mrow><mml:mi>δ</mml:mi><mml:mi>f</mml:mi></mml:mrow><mml:mrow><mml:mi>δ</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:mfrac><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mtext mathvariant="normal">coll</mml:mtext></mml:msub><mml:mo>=</mml:mo><mml:mi>ν</mml:mi><mml:mfrac><mml:mi>∂</mml:mi><mml:mrow><mml:mi>∂</mml:mi><mml:mi>v</mml:mi></mml:mrow></mml:mfrac><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>v</mml:mi><mml:mo>−</mml:mo><mml:munder><mml:mi>v</mml:mi><mml:mo accent="true">_</mml:mo></mml:munder><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>f</mml:mi><mml:mo>+</mml:mo><mml:msubsup><mml:mi>v</mml:mi><mml:mi>t</mml:mi><mml:mn>2</mml:mn></mml:msubsup><mml:mfrac><mml:mrow><mml:mi>∂</mml:mi><mml:mi>f</mml:mi></mml:mrow><mml:mrow><mml:mi>∂</mml:mi><mml:mi>v</mml:mi></mml:mrow></mml:mfrac><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+    where <disp-formula><alternatives>
+    <tex-math><![CDATA[\underline{v} = \int v f(x,v) ~ dv,]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:munder><mml:mi>v</mml:mi><mml:mo accent="true">_</mml:mo></mml:munder><mml:mo>=</mml:mo><mml:mo>∫</mml:mo><mml:mi>v</mml:mi><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>v</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mspace width="0.222em"></mml:mspace><mml:mi>d</mml:mi><mml:mi>v</mml:mi><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+    is the mean velocity of the distribution and
+    <disp-formula><alternatives>
+    <tex-math><![CDATA[v_{t}^2 = \int (v-\underline{v})^2 f(x,v) ~ dv, ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mi>v</mml:mi><mml:mi>t</mml:mi><mml:mn>2</mml:mn></mml:msubsup><mml:mo>=</mml:mo><mml:mo>∫</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>v</mml:mi><mml:mo>−</mml:mo><mml:munder><mml:mi>v</mml:mi><mml:mo accent="true">_</mml:mo></mml:munder><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>v</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mspace width="0.222em"></mml:mspace><mml:mi>d</mml:mi><mml:mi>v</mml:mi><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+    is the thermal velocity of the shifted distribution.</p>
+    <p>The second implementation is an extension of the first, and
+    extends momentum conservation for distributions that have a non-zero
+    mean velocity.</p>
+    <p>We discretize this backward-in-time, centered-in-space. This
+    procedure results in the time-step scheme given by
+    <disp-formula><alternatives>
+    <tex-math><![CDATA[ f^{n} = \left[LD \times \bar{v}_{j+1}f^{n+1}_{j+1} + DI \times f^{n+1}_j + UD \times \bar{v}_{j-1}f^{n+1}_{j-1}  \right]. ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mi>f</mml:mi><mml:mi>n</mml:mi></mml:msup><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mi>L</mml:mi><mml:mi>D</mml:mi><mml:mo>×</mml:mo><mml:msub><mml:mover><mml:mi>v</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mrow><mml:mi>j</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msub><mml:msubsup><mml:mi>f</mml:mi><mml:mrow><mml:mi>j</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup><mml:mo>+</mml:mo><mml:mi>D</mml:mi><mml:mi>I</mml:mi><mml:mo>×</mml:mo><mml:msubsup><mml:mi>f</mml:mi><mml:mi>j</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup><mml:mo>+</mml:mo><mml:mi>U</mml:mi><mml:mi>D</mml:mi><mml:mo>×</mml:mo><mml:msub><mml:mover><mml:mi>v</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mrow><mml:mi>j</mml:mi><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msub><mml:msubsup><mml:mi>f</mml:mi><mml:mrow><mml:mi>j</mml:mi><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula>
+    <disp-formula><alternatives>
+    <tex-math><![CDATA[ LD = {\Delta t} \nu \left(-\frac{v_{0,t}^2}{\Delta v^2} - \frac{1}{2\Delta v}\right) ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>L</mml:mi><mml:mi>D</mml:mi><mml:mo>=</mml:mo><mml:mrow><mml:mi>Δ</mml:mi><mml:mi>t</mml:mi></mml:mrow><mml:mi>ν</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mo>−</mml:mo><mml:mfrac><mml:msubsup><mml:mi>v</mml:mi><mml:mrow><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:mi>t</mml:mi></mml:mrow><mml:mn>2</mml:mn></mml:msubsup><mml:mrow><mml:mi>Δ</mml:mi><mml:msup><mml:mi>v</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:mrow></mml:mfrac><mml:mo>−</mml:mo><mml:mfrac><mml:mn>1</mml:mn><mml:mrow><mml:mn>2</mml:mn><mml:mi>Δ</mml:mi><mml:mi>v</mml:mi></mml:mrow></mml:mfrac><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula>
+    <disp-formula><alternatives>
+    <tex-math><![CDATA[ DI =  \left(1+2{\Delta t} \nu \frac{v_{0,t}^2}{\Delta v^2}\right) ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>D</mml:mi><mml:mi>I</mml:mi><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo>+</mml:mo><mml:mn>2</mml:mn><mml:mrow><mml:mi>Δ</mml:mi><mml:mi>t</mml:mi></mml:mrow><mml:mi>ν</mml:mi><mml:mfrac><mml:msubsup><mml:mi>v</mml:mi><mml:mrow><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:mi>t</mml:mi></mml:mrow><mml:mn>2</mml:mn></mml:msubsup><mml:mrow><mml:mi>Δ</mml:mi><mml:msup><mml:mi>v</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:mrow></mml:mfrac><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula>
+    <disp-formula><alternatives>
+    <tex-math><![CDATA[ UD = {\Delta t} \nu \left(-\frac{v_{0,t}^2}{\Delta v^2} + \frac{1}{2\Delta v}\right) ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>U</mml:mi><mml:mi>D</mml:mi><mml:mo>=</mml:mo><mml:mrow><mml:mi>Δ</mml:mi><mml:mi>t</mml:mi></mml:mrow><mml:mi>ν</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mo>−</mml:mo><mml:mfrac><mml:msubsup><mml:mi>v</mml:mi><mml:mrow><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:mi>t</mml:mi></mml:mrow><mml:mn>2</mml:mn></mml:msubsup><mml:mrow><mml:mi>Δ</mml:mi><mml:msup><mml:mi>v</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:mrow></mml:mfrac><mml:mo>+</mml:mo><mml:mfrac><mml:mn>1</mml:mn><mml:mrow><mml:mn>2</mml:mn><mml:mi>Δ</mml:mi><mml:mi>v</mml:mi></mml:mrow></mml:mfrac><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula>
+    where <inline-formula><alternatives>
+    <tex-math><![CDATA[\bar{v} = v]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>v</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:mi>v</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    or <inline-formula><alternatives>
+    <tex-math><![CDATA[\bar{v} = v - \underline{v}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>v</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:mi>v</mml:mi><mml:mo>−</mml:mo><mml:munder><mml:mi>v</mml:mi><mml:mo accent="true">_</mml:mo></mml:munder></mml:mrow></mml:math></alternatives></inline-formula>
+    depending on the implementation.</p>
+    <p>This forms a tridiagonal system of equations that can be directly
+    inverted.</p>
+    <sec id="integrated-code-testing-1">
+      <title>Integrated Code Testing</title>
+      <p>Unit tests are provided for this operator. They can be found in
+      <monospace>tests/test_lb.py</monospace> and
+      <monospace>tests/test_dg.py</monospace>. The unit tests ensure
+      that</p>
+      <list list-type="order">
+        <list-item>
+          <p>The operator does not impact a Maxwell-Boltzmann
+          distribution already satisfying <inline-formula><alternatives>
+          <tex-math><![CDATA[v_{th} = v_0]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>v</mml:mi><mml:mrow><mml:mi>t</mml:mi><mml:mi>h</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:msub><mml:mi>v</mml:mi><mml:mn>0</mml:mn></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+        </list-item>
+        <list-item>
+          <p>The LB operator conserves number density, momentum, and
+          energy when initialized with a zero mean velocity.</p>
+        </list-item>
+        <list-item>
+          <p>The DG operator conserves number density, momentum, and
+          energy when initialized with a non-zero mean velocity.</p>
+        </list-item>
+      </list>
+      <p>The <monospace>notebooks/test_fokker_planck.ipynb</monospace>
+      notebook contains illustrations and examples for these tests.
+      Below, we show results from some of the tests for illustrative
+      purposes.</p>
+      <graphic mimetype="application" mime-subtype="pdf" xlink:href="../notebooks/collision_tests_plots/Maxwell_Solution.pdf" />
+      <graphic mimetype="application" mime-subtype="pdf" xlink:href="../notebooks/collision_tests_plots/LB_conservation.pdf" />
+      <graphic mimetype="application" mime-subtype="pdf" xlink:href="../notebooks/collision_tests_plots/LB_no_conservation.pdf" />
+      <graphic mimetype="application" mime-subtype="pdf" xlink:href="../notebooks/collision_tests_plots/DG_conservation.pdf" />
+      <p>We see from the above figures that the distribution relaxes to
+      a Maxwellian. Depending on the implementation, certain
+      characteristics of momentum conservation are enforced or
+      avoided.</p>
+    </sec>
+  </sec>
+</sec>
+<sec id="integrated-code-tests-against-plasma-physics-electron-plasma-waves-and-landau-damping">
+  <title>Integrated Code Tests against Plasma Physics: Electron Plasma
+  Waves and Landau Damping</title>
+  <p>Landau Damping is one of the most fundamental phenomena in plasma
+  physics. An extensive review is provided in
+  (<xref alt="Ryutov, 1999" rid="ref-Ryutov1999" ref-type="bibr">Ryutov,
+  1999</xref>).</p>
+  <p>Plasmas can support electrostatic oscillations. The oscillation
+  frequency is given by the electrostatic electron plasma wave (EPW)
+  dispersion relation. When a wave of sufficiently small amplitude is
+  driven at the resonant wave-number and frequency pairing, there is a
+  resonant exchange of energy between the plasma and the electric field,
+  and the electrons can damp the electric field. The damping rates, as
+  well as the resonant frequencies, are given in
+  (<xref alt="Canosa, 1973" rid="ref-Canosa1973" ref-type="bibr">Canosa,
+  1973</xref>).</p>
+  <p>In the <monospace>VlaPy</monospace> simulation code, we have
+  verified that the known damping rates for Landau Damping are
+  reproduced, for a few different wave-numbers. This is shown in
+  <monospace>notebooks/landau_damping.ipynb</monospace>.</p>
+  <p>We include validation against this phenomenon as an automated
+  integrated test. The tests can be found in
+  <monospace>tests/test_landau_damping.py</monospace></p>
+  <p>Below, we also illustrate a manual validation of this phenomenon
+  through the fully integrated workflow of running a simulation on a
+  local machine and sending the results to the MLFlow-driven logging
+  mechanism. After running a properly initialized simulation, we show
+  that the damping rate of an electron plasma wave with
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[k=0.3]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>k</mml:mi><mml:mo>=</mml:mo><mml:mn>0.3</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  is reproduced accurately through the UI. This can also be computed
+  manually (please see the testing code for details).</p>
+  <p><inline-graphic mimetype="image" mime-subtype="png" xlink:href="../notebooks/screenshots_for_example/ui.png" />
+  <inline-graphic mimetype="image" mime-subtype="png" xlink:href="../notebooks/screenshots_for_example/damping.png" /></p>
+  <p>To run the entire testing suite, make sure
+  <monospace>pytest</monospace> is installed, and call
+  <monospace>pytest</monospace> from the root folder for the repository.
+  Individual files can also be run by calling
+  <monospace>pytest tests/&lt;test_filename&gt;.py</monospace>.</p>
+</sec>
+<sec id="example-run-script-for-landau-damping">
+  <title>Example Run Script For Landau Damping</title>
+  <preformat>import numpy as np
+from vlapy import manager, initializers
+from vlapy.infrastructure import mlflow_helpers, print_to_screen
+from vlapy.diagnostics import landau_damping
+
+if __name__ == &quot;__main__&quot;:
+    # Pick a random wavenumber
+    k0 = np.random.uniform(0.3, 0.4, 1)[0]
+    
+    # This is a collisionless simulation. Provide float value if collisions should be simulated
+    log_nu_over_nu_ld = None
+    
+    # This initializes the default parameters
+    all_params_dict = initializers.make_default_params_dictionary()
+    
+    # This calculates the roots to the EPW dispersion relation given the wavenumber
+    all_params_dict = initializers.specify_epw_params_to_dict(
+        k0=k0, all_params_dict=all_params_dict
+    )
+    
+    # This specifies the collision frequency given nu_ld
+    all_params_dict = initializers.specify_collisions_to_dict(
+        log_nu_over_nu_ld=log_nu_over_nu_ld, all_params_dict=all_params_dict
+    )
+
+    # The solvers can be chosen here
+    all_params_dict[&quot;vlasov-poisson&quot;][&quot;time&quot;] = &quot;leapfrog&quot;
+    all_params_dict[&quot;vlasov-poisson&quot;][&quot;edfdv&quot;] = &quot;exponential&quot;
+    all_params_dict[&quot;vlasov-poisson&quot;][&quot;vdfdx&quot;] = &quot;exponential&quot;
+
+    all_params_dict[&quot;fokker-planck&quot;][&quot;type&quot;] = &quot;lb&quot;
+    all_params_dict[&quot;fokker-planck&quot;][&quot;solver&quot;] = &quot;batched_tridiagonal&quot;
+    
+    # The pulse shape can be chosen here
+    pulse_dictionary = {
+        &quot;first pulse&quot;: {
+            &quot;start_time&quot;: 0,
+            &quot;t_L&quot;: 6,
+            &quot;t_wL&quot;: 2.5,
+            &quot;t_R&quot;: 20,
+            &quot;t_wR&quot;: 2.5,
+            &quot;w0&quot;: all_params_dict[&quot;w_epw&quot;],
+            &quot;a0&quot;: 1e-7,
+            &quot;k0&quot;: k0,
+        }
+    }
+    
+    # Mlflow experiment name and location
+    mlflow_exp_name = &quot;landau-damping&quot;
+    
+    # Either an IP address for your MLflow server or &quot;local&quot; if no server specified
+    uris = {
+        &quot;tracking&quot;: &quot;local&quot;,
+    }
+    
+   
+    # Start!
+    that_run = manager.start_run(
+        all_params=all_params_dict,
+        pulse_dictionary=pulse_dictionary,
+        diagnostics=landau_damping.LandauDamping(
+            vph=all_params_dict[&quot;v_ph&quot;],
+            wepw=all_params_dict[&quot;w_epw&quot;],
+        ),
+        uris=uris,
+        name=mlflow_exp_name,
+    )
+    
+    # Assess if the simulation results match the actual damping rate
+    print(
+        mlflow_helpers.get_this_metric_of_this_run(&quot;damping_rate&quot;, that_run),
+        all_params_dict[&quot;nu_ld&quot;],
+    )</preformat>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We use xarray
+  (<xref alt="Hoyer &amp; Hamman, 2017" rid="ref-Hoyer2017" ref-type="bibr">Hoyer
+  &amp; Hamman, 2017</xref>) for file storage and MLFlow
+  (<xref alt="A. Chen et al., 2020" rid="ref-Chen2020" ref-type="bibr">A.
+  Chen et al., 2020</xref>) for experiment management. We also
+  acknowledge the valuable work behind NumPy
+  (<xref alt="Harris et al., 2020" rid="ref-Harris2020" ref-type="bibr">Harris
+  et al., 2020</xref>) and SciPy
+  (<xref alt="Virtanen et al., 2020" rid="ref-2020SciPy-NMeth" ref-type="bibr">Virtanen
+  et al., 2020</xref>).</p>
+  <p>We acknowledge valuable discussions with Pierre Navarro on the
+  implementation of the Vlasov equation.</p>
+  <p>We are grateful for the editors’ and reviewers’ thorough feedback
+  that improved the software as well as manuscript.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Banks2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Banks</surname><given-names>J W</given-names></name>
+          <name><surname>Brunner</surname><given-names>S</given-names></name>
+          <name><surname>Berger</surname><given-names>R L</given-names></name>
+          <name><surname>Arrighi</surname><given-names>W J</given-names></name>
+          <name><surname>Tran</surname><given-names>T M</given-names></name>
+        </person-group>
+        <article-title>Collisional damping rates for electron plasma waves reassessed</article-title>
+        <source>Physical Review E</source>
+        <year iso-8601-date="2017-10">2017</year><month>10</month>
+        <volume>96</volume>
+        <issue>4</issue>
+        <issn>2470-0045</issn>
+        <uri>https://link.aps.org/doi/10.1103/PhysRevE.96.043208</uri>
+        <pub-id pub-id-type="doi">10.1103/PhysRevE.96.043208</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Dougherty1964">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dougherty</surname><given-names>J. P.</given-names></name>
+        </person-group>
+        <article-title>Model Fokker-Planck Equation for a Plasma and Its Solution</article-title>
+        <source>Physics of Fluids</source>
+        <year iso-8601-date="1964">1964</year>
+        <volume>7</volume>
+        <issue>11</issue>
+        <issn>00319171</issn>
+        <uri>https://aip.scitation.org/doi/10.1063/1.2746779</uri>
+        <pub-id pub-id-type="doi">10.1063/1.2746779</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Strang1968">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Strang</surname><given-names>Gilbert</given-names></name>
+        </person-group>
+        <article-title>On the Construction and Comparison of Difference Schemes</article-title>
+        <source>SIAM Journal on Numerical Analysis</source>
+        <year iso-8601-date="1968-09">1968</year><month>09</month>
+        <volume>5</volume>
+        <issue>3</issue>
+        <issn>0036-1429</issn>
+        <uri>http://epubs.siam.org/doi/10.1137/0705041</uri>
+        <pub-id pub-id-type="doi">10.1137/0705041</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Joglekar2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Joglekar</surname><given-names>Archis S</given-names></name>
+          <name><surname>Winjum</surname><given-names>Benjamin J</given-names></name>
+          <name><surname>Tableman</surname><given-names>Adam</given-names></name>
+          <name><surname>Wen</surname><given-names>Han</given-names></name>
+          <name><surname>Tzoufras</surname><given-names>Michail</given-names></name>
+          <name><surname>Mori</surname><given-names>Warren B</given-names></name>
+        </person-group>
+        <article-title>Validation of OSHUN against collisionless and collisional plasma physics</article-title>
+        <source>Plasma Physics and Controlled Fusion</source>
+        <publisher-name>IOP Publishing</publisher-name>
+        <year iso-8601-date="2018-06">2018</year><month>06</month>
+        <volume>60</volume>
+        <issue>6</issue>
+        <issn>0741-3335</issn>
+        <uri>http://iopscience.iop.org/article/10.1088/1361-6587/aab978 http://stacks.iop.org/0741-3335/60/i=6/a=064010?key=crossref.71a4d809c09e954863819a819c5ceb29</uri>
+        <pub-id pub-id-type="doi">10.1088/1361-6587/aab978</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Lenard1958">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lenard</surname><given-names>A.</given-names></name>
+          <name><surname>Bernstein</surname><given-names>Ira B.</given-names></name>
+        </person-group>
+        <article-title>Plasma oscillations with diffusion in velocity space</article-title>
+        <source>Physical Review</source>
+        <year iso-8601-date="1958">1958</year>
+        <volume>112</volume>
+        <issue>5</issue>
+        <issn>0031899X</issn>
+        <pub-id pub-id-type="doi">10.1103/PhysRev.112.1456</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Canosa1973">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Canosa</surname><given-names>José</given-names></name>
+        </person-group>
+        <article-title>Numerical solution of Landau’s dispersion equation</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="1973-09">1973</year><month>09</month>
+        <volume>13</volume>
+        <issue>1</issue>
+        <issn>00219991</issn>
+        <uri>http://linkinghub.elsevier.com/retrieve/pii/0021999173901319</uri>
+        <pub-id pub-id-type="doi">10.1016/0021-9991(73)90131-9</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Ryutov1999">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ryutov</surname><given-names>D D</given-names></name>
+        </person-group>
+        <article-title>Landau damping: half a century with the great discovery</article-title>
+        <source>Plasma Physics and Controlled Fusion</source>
+        <year iso-8601-date="1999">1999</year>
+        <volume>41</volume>
+        <issue>3A</issue>
+        <issn>0741-3335</issn>
+        <pub-id pub-id-type="doi">10.1088/0741-3335/41/3A/001</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Omelyan2002">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Omelyan</surname><given-names>I. P.</given-names></name>
+          <name><surname>Mryglod</surname><given-names>I. M.</given-names></name>
+          <name><surname>Folk</surname><given-names>R.</given-names></name>
+        </person-group>
+        <article-title>Optimized Forest–Ruth- and Suzuki-like algorithms for integration of motion in many-body systems</article-title>
+        <source>Computer Physics Communications</source>
+        <year iso-8601-date="2002-07">2002</year><month>07</month>
+        <volume>146</volume>
+        <issue>2</issue>
+        <issn>00104655</issn>
+        <uri>https://linkinghub.elsevier.com/retrieve/pii/S0010465502004514</uri>
+        <pub-id pub-id-type="doi">10.1016/S0010-4655(02)00451-4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-plasmapy">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>PlasmaPy Community</string-name>
+          <name><surname>Murphy</surname><given-names>Nicholas A.</given-names></name>
+          <name><surname>Leonard</surname><given-names>Andrew J.</given-names></name>
+          <name><surname>Stańczak</surname><given-names>Dominik</given-names></name>
+          <name><surname>Kozlowski</surname><given-names>Pawel M.</given-names></name>
+          <name><surname>Langendorf</surname><given-names>Samuel J.</given-names></name>
+          <name><surname>Haggerty</surname><given-names>Colby C.</given-names></name>
+          <name><surname>Beckers</surname><given-names>Jasper P.</given-names></name>
+          <name><surname>Mumford</surname><given-names>Stuart J.</given-names></name>
+          <name><surname>Parashar</surname><given-names>Tulasi N.</given-names></name>
+          <name><surname>Huang</surname><given-names>Yi-Min</given-names></name>
+        </person-group>
+        <article-title>PlasmaPy: an open source community-developed Python package for plasma physics</article-title>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2018-04">2018</year><month>04</month>
+        <uri>https://doi.org/10.5281/zenodo.1238132</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.1238132</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Betti2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Betti</surname><given-names>R.</given-names></name>
+          <name><surname>Hurricane</surname><given-names>O. A.</given-names></name>
+        </person-group>
+        <article-title>Inertial-confinement fusion with lasers</article-title>
+        <source>Nature Physics</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>12</volume>
+        <issue>May</issue>
+        <issn>1745-2473</issn>
+        <uri>http://www.nature.com/doifinder/10.1038/nphys3736</uri>
+        <pub-id pub-id-type="doi">10.1038/nphys3736</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Fasoli2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fasoli</surname><given-names>A.</given-names></name>
+          <name><surname>Brunner</surname><given-names>S.</given-names></name>
+          <name><surname>Cooper</surname><given-names>W. A.</given-names></name>
+          <name><surname>Graves</surname><given-names>J. P.</given-names></name>
+          <name><surname>Ricci</surname><given-names>P.</given-names></name>
+          <name><surname>Sauter</surname><given-names>O.</given-names></name>
+          <name><surname>Villard</surname><given-names>L.</given-names></name>
+        </person-group>
+        <article-title>Computational challenges in magnetic-confinement fusion physics</article-title>
+        <source>Nature Physics</source>
+        <year iso-8601-date="2016-05">2016</year><month>05</month>
+        <volume>12</volume>
+        <issue>5</issue>
+        <issn>1745-2473</issn>
+        <uri>http://www.nature.com/articles/nphys3744</uri>
+        <pub-id pub-id-type="doi">10.1038/nphys3744</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Ongena2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ongena</surname><given-names>J.</given-names></name>
+          <name><surname>Koch</surname><given-names>R.</given-names></name>
+          <name><surname>Wolf</surname><given-names>R.</given-names></name>
+          <name><surname>Zohm</surname><given-names>H.</given-names></name>
+        </person-group>
+        <article-title>Magnetic-confinement fusion</article-title>
+        <source>Nature Physics</source>
+        <year iso-8601-date="2016-05">2016</year><month>05</month>
+        <volume>12</volume>
+        <issue>5</issue>
+        <issn>1745-2473</issn>
+        <uri>http://www.nature.com/articles/nphys3745</uri>
+        <pub-id pub-id-type="doi">10.1038/nphys3745</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hoyer2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hoyer</surname><given-names>Stephan</given-names></name>
+          <name><surname>Hamman</surname><given-names>Joseph J.</given-names></name>
+        </person-group>
+        <article-title>xarray: N-D labeled Arrays and Datasets in Python</article-title>
+        <source>Journal of Open Research Software</source>
+        <year iso-8601-date="2017-04">2017</year><month>04</month>
+        <volume>5</volume>
+        <issn>2049-9647</issn>
+        <uri>http://openresearchsoftware.metajnl.com/articles/10.5334/jors.148/</uri>
+        <pub-id pub-id-type="doi">10.5334/jors.148</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Chen2020">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Chen</surname><given-names>Andrew</given-names></name>
+          <name><surname>Chow</surname><given-names>Andy</given-names></name>
+          <name><surname>Davidson</surname><given-names>Aaron</given-names></name>
+          <name><surname>DCunha</surname><given-names>Arjun</given-names></name>
+          <name><surname>Ghodsi</surname><given-names>Ali</given-names></name>
+          <name><surname>Hong</surname><given-names>Sue Ann</given-names></name>
+          <name><surname>Konwinski</surname><given-names>Andy</given-names></name>
+          <name><surname>Mewald</surname><given-names>Clemens</given-names></name>
+          <name><surname>Murching</surname><given-names>Siddharth</given-names></name>
+          <name><surname>Nykodym</surname><given-names>Tomas</given-names></name>
+          <name><surname>Ogilvie</surname><given-names>Paul</given-names></name>
+          <name><surname>Parkhe</surname><given-names>Mani</given-names></name>
+          <name><surname>Singh</surname><given-names>Avesh</given-names></name>
+          <name><surname>Xie</surname><given-names>Fen</given-names></name>
+          <name><surname>Zaharia</surname><given-names>Matei</given-names></name>
+          <name><surname>Zang</surname><given-names>Richard</given-names></name>
+          <name><surname>Zheng</surname><given-names>Juntai</given-names></name>
+          <name><surname>Zumar</surname><given-names>Corey</given-names></name>
+        </person-group>
+        <article-title>Developments in MLflow: A System to Accelerate the Machine Learning Lifecycle</article-title>
+        <source>Proceedings of the fourth international workshop on data management for end-to-end machine learning</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="2020">2020</year>
+        <isbn>9781450380232</isbn>
+        <uri>https://doi.org/10.1145/3399579.3399867</uri>
+        <pub-id pub-id-type="doi">10.1145/3399579.3399867</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Fahlen2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fahlen</surname><given-names>J. E.</given-names></name>
+          <name><surname>Winjum</surname><given-names>B. J.</given-names></name>
+          <name><surname>Grismayer</surname><given-names>T.</given-names></name>
+          <name><surname>Mori</surname><given-names>W. B.</given-names></name>
+        </person-group>
+        <article-title>Propagation and damping of nonlinear plasma wave packets</article-title>
+        <source>Physical Review Letters</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume>102</volume>
+        <issue>24</issue>
+        <issn>00319007</issn>
+        <pub-id pub-id-type="doi">10.1103/PhysRevLett.102.245002</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Banks2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Banks</surname><given-names>J. W.</given-names></name>
+          <name><surname>Brunner</surname><given-names>S.</given-names></name>
+          <name><surname>Berger</surname><given-names>R. L.</given-names></name>
+          <name><surname>Tran</surname><given-names>T. M.</given-names></name>
+        </person-group>
+        <article-title>Vlasov simulations of electron-ion collision effects on damping of electron plasma waves</article-title>
+        <source>Physics of Plasmas</source>
+        <year iso-8601-date="2016-03">2016</year><month>03</month>
+        <volume>23</volume>
+        <issue>3</issue>
+        <issn>1070-664X</issn>
+        <uri>http://dx.doi.org/10.1063/1.4943194 http://aip.scitation.org/doi/10.1063/1.4943194</uri>
+        <pub-id pub-id-type="doi">10.1063/1.4943194</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Thomas2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Thomas</surname><given-names>A. G. R.</given-names></name>
+        </person-group>
+        <article-title>Vlasov simulations of thermal plasma waves with relativistic phase velocity in a Lorentz boosted frame</article-title>
+        <source>Physical Review E</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>94</volume>
+        <issue>5</issue>
+        <issn>2470-0045</issn>
+        <uri>http://link.aps.org/doi/10.1103/PhysRevE.94.053204</uri>
+        <pub-id pub-id-type="doi">10.1103/PhysRevE.94.053204</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Pezzi2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pezzi</surname><given-names>Oreste</given-names></name>
+          <name><surname>Valentini</surname><given-names>Francesco</given-names></name>
+          <name><surname>Veltri</surname><given-names>Pierluigi</given-names></name>
+        </person-group>
+        <article-title>Collisional Relaxation of Fine Velocity Structures in Plasmas</article-title>
+        <source>Physical Review Letters</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>116</volume>
+        <issue>14</issue>
+        <issn>10797114</issn>
+        <pub-id pub-id-type="doi">10.1103/PhysRevLett.116.145001</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Heninger2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Heninger</surname><given-names>J. M.</given-names></name>
+          <name><surname>Morrison</surname><given-names>P. J.</given-names></name>
+        </person-group>
+        <article-title>An integral transform technique for kinetic systems with collisions</article-title>
+        <source>Physics of Plasmas</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>25</volume>
+        <issue>8</issue>
+        <issn>10897674</issn>
+        <uri>https://arxiv.org/abs/1806.10203</uri>
+        <pub-id pub-id-type="doi">10.1063/1.5046194</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Chen2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Chen</surname><given-names>C. H. K.</given-names></name>
+          <name><surname>Klein</surname><given-names>K. G.</given-names></name>
+          <name><surname>Howes</surname><given-names>G. G.</given-names></name>
+        </person-group>
+        <article-title>Evidence for electron Landau damping in space plasma turbulence</article-title>
+        <source>Nature Communications</source>
+        <publisher-name>Springer US</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>10</volume>
+        <issue>1</issue>
+        <issn>20411723</issn>
+        <uri>http://dx.doi.org/10.1038/s41467-019-08435-3</uri>
+        <pub-id pub-id-type="doi">10.1038/s41467-019-08435-3</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Harris2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Harris</surname><given-names>Charles R.</given-names></name>
+          <name><surname>Millman</surname><given-names>K. Jarrod</given-names></name>
+          <name><surname>Walt</surname><given-names>Stéfan J. van der</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Wieser</surname><given-names>Eric</given-names></name>
+          <name><surname>Taylor</surname><given-names>Julian</given-names></name>
+          <name><surname>Berg</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Smith</surname><given-names>Nathaniel J.</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Picus</surname><given-names>Matti</given-names></name>
+          <name><surname>Hoyer</surname><given-names>Stephan</given-names></name>
+          <name><surname>Kerkwijk</surname><given-names>Marten H. van</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Haldane</surname><given-names>Allan</given-names></name>
+          <name><surname>Río</surname><given-names>Jaime Fernández del</given-names></name>
+          <name><surname>Wiebe</surname><given-names>Mark</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Gérard-Marchant</surname><given-names>Pierre</given-names></name>
+          <name><surname>Sheppard</surname><given-names>Kevin</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Abbasi</surname><given-names>Hameer</given-names></name>
+          <name><surname>Gohlke</surname><given-names>Christoph</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+        </person-group>
+        <article-title>Array Programming with NumPy</article-title>
+        <source>Nature</source>
+        <publisher-name>Springer US</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>585</volume>
+        <issue>February</issue>
+        <issn>1476-4687</issn>
+        <uri>http://arxiv.org/abs/2006.10256</uri>
+        <pub-id pub-id-type="doi">10.1038/s41586-020-2649-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-2020SciPy-NMeth">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+          <name><surname>Haberland</surname><given-names>Matt</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Burovski</surname><given-names>Evgeni</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Bright</surname><given-names>Jonathan</given-names></name>
+          <name><surname>van der Walt</surname><given-names>Stéfan J.</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Wilson</surname><given-names>Joshua</given-names></name>
+          <name><surname>Jarrod Millman</surname><given-names>K.</given-names></name>
+          <name><surname>Mayorov</surname><given-names>Nikolay</given-names></name>
+          <name><surname>Nelson</surname><given-names>Andrew R. J.</given-names></name>
+          <name><surname>Jones</surname><given-names>Eric</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Larson</surname><given-names>Eric</given-names></name>
+          <name><surname>Carey</surname><given-names>CJ</given-names></name>
+          <name><surname>Polat</surname><given-names>İlhan</given-names></name>
+          <name><surname>Feng</surname><given-names>Yu</given-names></name>
+          <name><surname>Moore</surname><given-names>Eric W.</given-names></name>
+          <name><surname>Vand erPlas</surname><given-names>Jake</given-names></name>
+          <name><surname>Laxalde</surname><given-names>Denis</given-names></name>
+          <name><surname>Perktold</surname><given-names>Josef</given-names></name>
+          <name><surname>Cimrman</surname><given-names>Robert</given-names></name>
+          <name><surname>Henriksen</surname><given-names>Ian</given-names></name>
+          <name><surname>Quintero</surname><given-names>E. A.</given-names></name>
+          <name><surname>Harris</surname><given-names>Charles R</given-names></name>
+          <name><surname>Archibald</surname><given-names>Anne M.</given-names></name>
+          <name><surname>Ribeiro</surname><given-names>Antônio H.</given-names></name>
+          <name><surname>Pedregosa</surname><given-names>Fabian</given-names></name>
+          <name><surname>van Mulbregt</surname><given-names>Paul</given-names></name>
+          <string-name>SciPy 1.0 Contributors</string-name>
+        </person-group>
+        <article-title>SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python</article-title>
+        <source>Nature Methods</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>17</volume>
+        <pub-id pub-id-type="doi">10.1038/s41592-019-0686-2</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

@@ -1,0 +1,693 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3454</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03454</article-id>
+<title-group>
+<article-title>SummationByPartsOperators.jl: A Julia library of provably
+stable discretization techniques with mimetic properties</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-3456-2277</contrib-id>
+<string-name>Hendrik Ranocha</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Applied Mathematics Münster, University of Münster,
+Germany</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-07-19">
+<day>19</day>
+<month>7</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>64</issue>
+<fpage>3454</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>numerical analysis</kwd>
+<kwd>differential equations</kwd>
+<kwd>summation-by-parts</kwd>
+<kwd>energy stability</kwd>
+<kwd>finite differences</kwd>
+<kwd>discontinuous Galerkin methods</kwd>
+<kwd>Fourier collocation methods</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><ext-link ext-link-type="uri" xlink:href="https://github.com/ranocha/SummationByPartsOperators.jl">SummationByPartsOperators.jl</ext-link>
+  is a Julia library of summation-by-parts (SBP) operators, which are
+  discrete derivative operators developed to get provably stable (semi-)
+  discretizations, paying special attention to boundary conditions.
+  Discretizations included in this framework are finite difference,
+  Fourier pseudospectral, continuous Galerkin, and discontinuous
+  Galerkin methods. The main aim of SummationByPartsOperators.jl is to
+  be useful for both students learning the basic concepts and
+  researchers developing new numerical algorithms based on SBP
+  operators. Therefore, SummationByPartsOperators.jl provides a unified
+  framework of all of these seemingly different discretizations. At the
+  same time, the implementation is reasonably optimized to achieve good
+  performance without sacrificing flexibility.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Partial differential equations (PDEs) are widely used in science
+  and engineering to create mathematical models of real-world processes.
+  Since PDEs often need to be solved numerically, a vast amount of
+  numerical methods has been developed. Since it is impossible to keep
+  up with all recent research, sub-communities focussing on specific
+  applications or numerical methods emerged. Sometimes, these
+  communities develop different vocabulary and notations, making it hard
+  for newcomers (or even experienced researchers) to see similarities
+  and connections between seemingly unrelated approaches. To transfer
+  new ideas and developments and knowledge from one community to
+  another, common abstractions can be helpful. The concept of SBP
+  operators is such an abstraction. In recent years, SBP operators have
+  attracted a lot of attention, in particular for PDEs modeling
+  advection-dominated problems, where they enabled the construction of
+  energy- or entropy-stable numerical methods, including finite
+  difference, discontinuous Galerkin, continuous Galerkin, and (pseudo-)
+  spectral methods. Their success is based on mimetic properties which
+  enable the transfer of results obtained for differential equations at
+  the continuous level to the discrete level. In particular, SBP
+  operators are designed to mimic integration-by-parts discretely as
+  summation-by-parts, enabling discrete analogues of energy/entropy
+  methods for PDEs.</p>
+  <p>SummationByPartsOperators.jl is written entirely in Julia
+  (<xref alt="Bezanson et al., 2017" rid="ref-bezanson2017julia" ref-type="bibr">Bezanson
+  et al., 2017</xref>). Making use of multiple dispatch and generic
+  types, SummationByPartsOperators.jl provides a unified interface for
+  different SBP operators. At the same time, the implementations are
+  reasonably fast (again, due to multiple dispatch and specialized
+  implementations for each operator class). Together, this facilitates
+  the development of new algorithms and research in numerical analysis,
+  which is the primary goal of this package. In addition,
+  SummationByPartsOperators.jl has been used in a number of
+  graduate-level numerical analysis courses, allowing students to
+  understand the connections between different SBP methods by presenting
+  them in a unified framework. In addition, some of the operators were
+  not available in open source software previously (to the best of the
+  author’s knowledge).</p>
+</sec>
+<sec id="features">
+  <title>Features</title>
+  <p>SummationByPartsOperators.jl implements numerical methods based on
+  SBP operators of the following classes:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>finite difference methods</p>
+    </list-item>
+    <list-item>
+      <p>Fourier collocation methods</p>
+    </list-item>
+    <list-item>
+      <p>continuous Galerkin methods</p>
+    </list-item>
+    <list-item>
+      <p>discontinuous Galerkin methods</p>
+    </list-item>
+  </list>
+  <p>Since a discrete derivative operator is a linear operator, all of
+  these SBP operators implement the basic interface of such linear
+  operators (<monospace>AbstractMatrix</monospace> in Julia) such as
+  multiplication by vectors and addition of operators. Finite difference
+  and Fourier operators on periodic domains also allow the construction
+  of rational functions of operators and their efficient implementation
+  using the fast Fourier transform
+  (<xref alt="Frigo &amp; Johnson, 2005" rid="ref-frigo2005design" ref-type="bibr">Frigo
+  &amp; Johnson, 2005</xref>).</p>
+  <p>In addition to basic SBP derivative operators,
+  SummationByPartsOperators.jl contains a number of related operators,
+  such as</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>SBP artificial dissipation operators</p>
+    </list-item>
+    <list-item>
+      <p>spectral viscosity operators for Fourier methods</p>
+    </list-item>
+    <list-item>
+      <p>modal filter operators for Fourier methods and Legendre
+      pseudospectral methods</p>
+    </list-item>
+  </list>
+  <p>Using Julia’s rich type system, all of these operators are
+  implemented as their own types. This enables several optimizations
+  such as a memory requirement independent of the number of grid points.
+  In contrast, implementations based on sparse/banded matrices have a
+  memory requirement growing linearly with the number of grid points. In
+  addition, the structure of the operators can be taken into account for
+  operator-vector multiplications, usually resulting in speed-ups of an
+  order of magnitude or more on consumer hardware. For example, the
+  application an optimized the sixth-order (in the interior) finite
+  difference SBP operator
+  (<xref alt="Almquist, 2017" rid="ref-almquist2017optimized" ref-type="bibr">Almquist,
+  2017</xref>) on a grid with 1000 nodes takes roughly 330 ns on a
+  consumer CPU from 2017 (Intel® Core™ i7-8700K) using version v0.5.5 of
+  SummationByPartsOperators.jl. In contrast, the same operation takes
+  roughly 3.9 microseconds using a sparse matrix format used in other
+  implementations of this operator
+  (<xref alt="Almquist, 2017" rid="ref-almquist2017optimized" ref-type="bibr">Almquist,
+  2017</xref>). This benchmark is based on the following code, which
+  also provides a very basic example of
+  SummationByPartsOperators.jl.</p>
+  <code language="julia"># install the package if necessary
+using Pkg; Pkg.add(&quot;SummationByPartsOperators&quot;)
+
+# load the package
+using SummationByPartsOperators
+
+# create a finite difference SBP operator
+D = derivative_operator(MattssonAlmquistVanDerWeide2018Accurate(),
+  derivative_order=1, accuracy_order=6,
+  xmin=0.0, xmax=1.0, N=10^3
+)
+
+# evaluate the function `sinpi` on the discrete grid
+x = grid(D); u = sinpi.(x)
+
+# use `D` to approximate the derivative of `u`
+du = D * u
+
+# compute the discrete L² error of the approximation
+integrate(u -&gt; u^2, du - pi * cospi.(x), D) |&gt; sqrt</code>
+  <p>The output of the last command will be a relatively small number on
+  the order of <monospace>4.2e-13</monospace>.</p>
+  <p>Following good software development practices,
+  SummationByPartsOperators.jl makes use of continuous integration and
+  automated tests required before merging pull requests. Documentation
+  is provided in form of docstrings, a general introduction, and
+  tutorials. In addition, SummationByPartsOperators.jl is a registered
+  Julia package and can be installed using the built-in package manager,
+  handling dependencies and version requirements automatically.</p>
+</sec>
+<sec id="related-research-and-software">
+  <title>Related research and software</title>
+  <p>There are of course many open-source software packages providing
+  discretizations of differential equations. However, many of them focus
+  on a single class of numerical methods or a specific application,
+  e.g.,</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>finite difference methods
+      (<ext-link ext-link-type="uri" xlink:href="https://github.com/SciML/DiffEqOperators.jl">DiffEqOperators.jl</ext-link>,
+      a part of DifferentialEquations.jl
+      (<xref alt="Rackauckas &amp; Nie, 2017" rid="ref-rackauckas2017differentialequations" ref-type="bibr">Rackauckas
+      &amp; Nie, 2017</xref>))</p>
+    </list-item>
+    <list-item>
+      <p>finite volume methods
+      (<ext-link ext-link-type="uri" xlink:href="https://github.com/CliMA/Oceananigans.jl">Oceananigans.jl</ext-link>
+      (<xref alt="Ramadhan et al., 2020" rid="ref-ramadhan2020oceananigans" ref-type="bibr">Ramadhan
+      et al., 2020</xref>),
+      <ext-link ext-link-type="uri" xlink:href="https://github.com/vavrines/Kinetic.jl">Kinetic.jl</ext-link>
+      (<xref alt="Xiao, 2021" rid="ref-xiao2021kinetic" ref-type="bibr">Xiao,
+      2021</xref>))</p>
+    </list-item>
+    <list-item>
+      <p>spectral methods
+      (<ext-link ext-link-type="uri" xlink:href="https://github.com/JuliaApproximation/ApproxFun.jl">ApproxFun.jl</ext-link>
+      (<xref alt="Olver &amp; Townsend, 2014" rid="ref-olver2014practical" ref-type="bibr">Olver
+      &amp; Townsend, 2014</xref>),
+      <ext-link ext-link-type="uri" xlink:href="https://github.com/FourierFlows/FourierFlows.jl">FourierFlows.jl</ext-link>
+      (<xref alt="Constantinou &amp; Wagner, 2021" rid="ref-constantinou2021fourierflows" ref-type="bibr">Constantinou
+      &amp; Wagner, 2021</xref>))</p>
+    </list-item>
+    <list-item>
+      <p>finite element methods
+      (<ext-link ext-link-type="uri" xlink:href="https://github.com/gridap/Gridap.jl">Gridap.jl</ext-link>
+      (<xref alt="Badia &amp; Verdugo, 2020" rid="ref-badia2020gridap" ref-type="bibr">Badia
+      &amp; Verdugo, 2020</xref>))</p>
+    </list-item>
+    <list-item>
+      <p>discontinuous spectral element methods
+      (<ext-link ext-link-type="uri" xlink:href="https://github.com/trixi-framework/Trixi.jl">Trixi.jl</ext-link>
+      (<xref alt="Ranocha, Schlottke-Lakemper, et al., 2021" rid="ref-ranocha2021adaptive" ref-type="bibr">Ranocha,
+      Schlottke-Lakemper, et al., 2021</xref>;
+      <xref alt="Schlottke-Lakemper et al., 2021" rid="ref-schlottkelakemper2021purely" ref-type="bibr">Schlottke-Lakemper
+      et al., 2021</xref>,
+      <xref alt="2020" rid="ref-schlottkelakemper2020trixi" ref-type="bibr">2020</xref>))</p>
+    </list-item>
+  </list>
+  <p>We are not aware of any open-source software library implementing
+  all of the SBP classes using a unified interface or even several
+  finite difference SBP operators on finite domains, which are usually
+  heavily optimized
+  (<xref alt="Mattsson et al., 2014" rid="ref-mattsson2014optimal" ref-type="bibr">Mattsson
+  et al., 2014</xref>,
+  <xref alt="2018" rid="ref-mattsson2018boundary" ref-type="bibr">2018</xref>)
+  and not available in other open source packages. Sometimes, restricted
+  sets of coefficients are available online
+  (<xref alt="Almquist, 2017" rid="ref-almquist2017optimized" ref-type="bibr">Almquist,
+  2017</xref>;
+  <xref alt="O’Reilly, 2019" rid="ref-oreilly2019sbp" ref-type="bibr">O’Reilly,
+  2019</xref>), but there is no other extensive collection of these
+  methods.</p>
+  <p>Of course, there is a plethora of additional open source software
+  implementing numerical methods for PDEs and each package has its own
+  design criteria and goals. SummationByPartsOperators.jl provides a
+  unified interface of different SBP operators. Thus, there is a partial
+  overlap with some of the packages mentioned above such as finite
+  difference operators on periodic domains (DiffEqOperators.jl, but with
+  a different handling of bounded domains) or Fourier methods on
+  periodic domains (ApproxFun.jl, but with a different interface and
+  extensions). In addition, many packages focus on a specific
+  application such as some specific fluid models (Oceananigans.jl,
+  FourierFlows.jl) or hyperbolic PDEs (Trixi.jl). In contrast,
+  SummationByPartsOperators.jl focuses on the numerical methods and
+  provides them in a form usable for rather general PDEs. For example,
+  there is ongoing work to use the basic operators provided by
+  SummationByPartsOperators.jl in Trixi.jl.</p>
+  <p>Some of the research projects that have made use of
+  SummationByPartsOperators.jl (most of which have led to its further
+  development) include numerical analysis of and algorithms for</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>nonlinear dispersive wave equations
+      (<xref alt="Ranocha, Mitsotakis, et al., 2021" rid="ref-ranocha2021broad" ref-type="bibr">Ranocha,
+      Mitsotakis, et al., 2021</xref>;
+      <xref alt="Ranocha, Quezada de Luna, et al., 2021" rid="ref-ranocha2021rate" ref-type="bibr">Ranocha,
+      Quezada de Luna, et al., 2021</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>hyperbolic conservation laws
+      (<xref alt="LeFloch &amp; Ranocha, 2021" rid="ref-lefloch2021kinetic" ref-type="bibr">LeFloch
+      &amp; Ranocha, 2021</xref>;
+      <xref alt="Öffner &amp; Ranocha, 2019" rid="ref-offner2019error" ref-type="bibr">Öffner
+      &amp; Ranocha, 2019</xref>;
+      <xref alt="Ranocha &amp; Gassner, 2021" rid="ref-ranocha2021preventing" ref-type="bibr">Ranocha
+      &amp; Gassner, 2021</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>ordinary differential equations
+      (<xref alt="Ranocha, 2021" rid="ref-ranocha2021strong" ref-type="bibr">Ranocha,
+      2021</xref>;
+      <xref alt="Ranocha &amp; Ketcheson, 2020" rid="ref-ranocha2020energy" ref-type="bibr">Ranocha
+      &amp; Ketcheson, 2020</xref>;
+      <xref alt="Ranocha &amp; Nordström, 2021" rid="ref-ranocha2021class" ref-type="bibr">Ranocha
+      &amp; Nordström, 2021</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>Helmholtz Hodge decomposition and analysis of plasma waves
+      (<xref alt="Ranocha et al., 2020" rid="ref-ranocha2020discrete" ref-type="bibr">Ranocha
+      et al., 2020</xref>)</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>Funded by the Deutsche Forschungsgemeinschaft (DFG, German Research
+  Foundation) under Grant SO~363/14-1 and Germany’s Excellence Strategy
+  EXC 2044-390685587, Mathematics Münster: Dynamics-Geometry-Structure
+  as well as King Abdullah University of Science and Technology
+  (KAUST).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-ranocha2021rate">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <name><surname>Ranocha</surname><given-names>Hendrik</given-names></name>
+          <name><surname>Quezada de Luna</surname><given-names>Manuel</given-names></name>
+          <name><surname>Ketcheson</surname><given-names>David I</given-names></name>
+        </person-group>
+        <article-title>On the rate of error growth in time for numerical solutions of nonlinear dispersive wave equations</article-title>
+        <year iso-8601-date="2021-02">2021</year><month>02</month>
+        <uri>https://arxiv.org/abs/2102.07376</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-ranocha2021broad">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ranocha</surname><given-names>Hendrik</given-names></name>
+          <name><surname>Mitsotakis</surname><given-names>Dimitrios</given-names></name>
+          <name><surname>Ketcheson</surname><given-names>David I</given-names></name>
+        </person-group>
+        <article-title>A broad class of conservative numerical methods for dispersive wave equations</article-title>
+        <source>Communications in Computational Physics</source>
+        <publisher-name>Global Science Press</publisher-name>
+        <year iso-8601-date="2021-02">2021</year><month>02</month>
+        <volume>29</volume>
+        <issue>4</issue>
+        <uri>https://arxiv.org/abs/2006.14802</uri>
+        <pub-id pub-id-type="doi">10.4208/cicp.OA-2020-0119</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lefloch2021kinetic">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>LeFloch</surname><given-names>Philippe G</given-names></name>
+          <name><surname>Ranocha</surname><given-names>Hendrik</given-names></name>
+        </person-group>
+        <article-title>Kinetic functions for nonclassical shocks, entropy stability, and discrete summation by parts</article-title>
+        <source>Journal of Scientific Computing</source>
+        <year iso-8601-date="2021-04">2021</year><month>04</month>
+        <volume>87</volume>
+        <uri>https://arxiv.org/abs/2007.08780</uri>
+        <pub-id pub-id-type="doi">10.1007/s10915-021-01463-6</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ranocha2021class">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ranocha</surname><given-names>Hendrik</given-names></name>
+          <name><surname>Nordström</surname><given-names>Jan</given-names></name>
+        </person-group>
+        <article-title>A new class of A stable summation by parts time integration schemes with strong initial conditions</article-title>
+        <source>Journal of Scientific Computing</source>
+        <year iso-8601-date="2021-03">2021</year><month>03</month>
+        <volume>87</volume>
+        <uri>https://arxiv.org/abs/2003.03889</uri>
+        <pub-id pub-id-type="doi">10.1007/s10915-021-01454-7</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ranocha2020energy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ranocha</surname><given-names>Hendrik</given-names></name>
+          <name><surname>Ketcheson</surname><given-names>David I</given-names></name>
+        </person-group>
+        <article-title>Energy stability of explicit Runge-Kutta methods for nonautonomous or nonlinear problems</article-title>
+        <source>SIAM Journal on Numerical Analysis</source>
+        <publisher-name>Society for Industrial; Applied Mathematics</publisher-name>
+        <year iso-8601-date="2020-11">2020</year><month>11</month>
+        <volume>58</volume>
+        <issue>6</issue>
+        <uri>https://arxiv.org/abs/1909.13215</uri>
+        <pub-id pub-id-type="doi">10.1137/19M1290346</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ranocha2021strong">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ranocha</surname><given-names>Hendrik</given-names></name>
+        </person-group>
+        <article-title>On strong stability of explicit Runge-Kutta methods for nonlinear semibounded operators</article-title>
+        <source>IMA Journal of Numerical Analysis</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2021-01">2021</year><month>01</month>
+        <volume>41</volume>
+        <issue>1</issue>
+        <uri>https://arxiv.org/abs/1811.11601</uri>
+        <pub-id pub-id-type="doi">10.1093/imanum/drz070</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ranocha2020discrete">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ranocha</surname><given-names>Hendrik</given-names></name>
+          <name><surname>Ostaszewski</surname><given-names>Katharina</given-names></name>
+          <name><surname>Heinisch</surname><given-names>Philip</given-names></name>
+        </person-group>
+        <article-title>Discrete vector calculus and Helmholtz Hodge decomposition for classical finite difference summation by parts operators</article-title>
+        <source>Communications on Applied Mathematics and Computation</source>
+        <year iso-8601-date="2020-02">2020</year><month>02</month>
+        <volume>2</volume>
+        <uri>https://arxiv.org/abs/1908.08732</uri>
+        <pub-id pub-id-type="doi">10.1007/s42967-019-00057-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-offner2019error">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Öffner</surname><given-names>Philipp</given-names></name>
+          <name><surname>Ranocha</surname><given-names>Hendrik</given-names></name>
+        </person-group>
+        <article-title>Error boundedness of discontinuous Galerkin methods with variable coefficients</article-title>
+        <source>Journal of Scientific Computing</source>
+        <year iso-8601-date="2019-06">2019</year><month>06</month>
+        <volume>79</volume>
+        <issue>3</issue>
+        <uri>https://arxiv.org/abs/1806.02018</uri>
+        <pub-id pub-id-type="doi">10.1007/s10915-018-00902-1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ranocha2021preventing">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ranocha</surname><given-names>Hendrik</given-names></name>
+          <name><surname>Gassner</surname><given-names>Gregor J</given-names></name>
+        </person-group>
+        <article-title>Preventing pressure oscillations does not fix local linear stability issues of entropy-based split-form high-order schemes</article-title>
+        <source>Communications on Applied Mathematics and Computation</source>
+        <year iso-8601-date="2021-08">2021</year><month>08</month>
+        <uri>https://arxiv.org/abs/2009.13139</uri>
+        <pub-id pub-id-type="doi">10.1007/s42967-021-00148-z</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ranocha2021adaptive">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <name><surname>Ranocha</surname><given-names>Hendrik</given-names></name>
+          <name><surname>Schlottke-Lakemper</surname><given-names>Michael</given-names></name>
+          <name><surname>Winters</surname><given-names>Andrew Ross</given-names></name>
+          <name><surname>Faulhaber</surname><given-names>Erik</given-names></name>
+          <name><surname>Chan</surname><given-names>Jesse</given-names></name>
+          <name><surname>Gassner</surname><given-names>Gregor</given-names></name>
+        </person-group>
+        <article-title>Adaptive numerical simulations with Trixi.jl: A case study of Julia for scientific computing</article-title>
+        <year iso-8601-date="2021-08">2021</year><month>08</month>
+        <uri>https://arxiv.org/abs/2108.06476</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-schlottkelakemper2021purely">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Schlottke-Lakemper</surname><given-names>Michael</given-names></name>
+          <name><surname>Winters</surname><given-names>Andrew R</given-names></name>
+          <name><surname>Ranocha</surname><given-names>Hendrik</given-names></name>
+          <name><surname>Gassner</surname><given-names>Gregor J</given-names></name>
+        </person-group>
+        <article-title>A purely hyperbolic discontinuous Galerkin approach for self-gravitating gas dynamics</article-title>
+        <source>Journal of Computational Physics</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2021-05">2021</year><month>05</month>
+        <uri>https://arxiv.org/abs/2008.10593</uri>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2021.110467</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-schlottkelakemper2020trixi">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Schlottke-Lakemper</surname><given-names>Michael</given-names></name>
+          <name><surname>Gassner</surname><given-names>Gregor J</given-names></name>
+          <name><surname>Ranocha</surname><given-names>Hendrik</given-names></name>
+          <name><surname>Winters</surname><given-names>Andrew R</given-names></name>
+        </person-group>
+        <article-title>Trixi.jl: A tree-based numerical simulation framework for hyperbolic PDEs written in Julia</article-title>
+        <publisher-name>https://github.com/trixi-framework/Trixi.jl</publisher-name>
+        <year iso-8601-date="2020-08">2020</year><month>08</month>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3996439</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-rackauckas2017differentialequations">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rackauckas</surname><given-names>Christopher</given-names></name>
+          <name><surname>Nie</surname><given-names>Qing</given-names></name>
+        </person-group>
+        <article-title>DifferentialEquations.jl – A performant and feature-rich ecosystem for solving differential equations in Julia</article-title>
+        <source>Journal of Open Research Software</source>
+        <publisher-name>Ubiquity Press</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>5</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.5334/jors.151</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bezanson2017julia">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bezanson</surname><given-names>Jeff</given-names></name>
+          <name><surname>Edelman</surname><given-names>Alan</given-names></name>
+          <name><surname>Karpinski</surname><given-names>Stefan</given-names></name>
+          <name><surname>Shah</surname><given-names>Viral B</given-names></name>
+        </person-group>
+        <article-title>Julia: A fresh approach to numerical computing</article-title>
+        <source>SIAM Review</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>59</volume>
+        <issue>1</issue>
+        <uri>https://arxiv.org/abs/1411.1607</uri>
+        <pub-id pub-id-type="doi">10.1137/141000671</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-olver2014practical">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Olver</surname><given-names>Sheehan</given-names></name>
+          <name><surname>Townsend</surname><given-names>Alex</given-names></name>
+        </person-group>
+        <article-title>A practical framework for infinite-dimensional linear algebra</article-title>
+        <source>2014 first workshop for high performance technical computing in dynamic languages</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <pub-id pub-id-type="doi">10.1109/HPTCDL.2014.10</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-constantinou2021fourierflows">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Constantinou</surname><given-names>Navid C</given-names></name>
+          <name><surname>Wagner</surname><given-names>Gregory L</given-names></name>
+        </person-group>
+        <article-title>FourierFlows/FourierFlows.jl: FourierFlows v0.6.18 (version v0.6.18)</article-title>
+        <publisher-name>https://github.com/FourierFlows/FourierFlows.jl</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <pub-id pub-id-type="doi">10.5281/zenodo.1161724</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-badia2020gridap">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Badia</surname><given-names>Santiago</given-names></name>
+          <name><surname>Verdugo</surname><given-names>Francesc</given-names></name>
+        </person-group>
+        <article-title>Gridap: An extensible finite element toolbox in Julia</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>5</volume>
+        <issue>52</issue>
+        <pub-id pub-id-type="doi">10.21105/joss.02520</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mattsson2014optimal">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mattsson</surname><given-names>Ken</given-names></name>
+          <name><surname>Almquist</surname><given-names>Martin</given-names></name>
+          <name><surname>Carpenter</surname><given-names>Mark H</given-names></name>
+        </person-group>
+        <article-title>Optimal diagonal-norm SBP operators</article-title>
+        <source>Journal of Computational Physics</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>264</volume>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2013.12.041</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mattsson2018boundary">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mattsson</surname><given-names>Ken</given-names></name>
+          <name><surname>Almquist</surname><given-names>Martin</given-names></name>
+          <name><surname>Weide</surname><given-names>Edwin van der</given-names></name>
+        </person-group>
+        <article-title>Boundary optimized diagonal-norm SBP operators</article-title>
+        <source>Journal of Computational Physics</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>374</volume>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2018.06.010</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ramadhan2020oceananigans">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ramadhan</surname><given-names>Ali</given-names></name>
+          <name><surname>Wagner</surname><given-names>Gregory LeClaire</given-names></name>
+          <name><surname>Hill</surname><given-names>Chris</given-names></name>
+          <name><surname>Campin</surname><given-names>Jean-Michel</given-names></name>
+          <name><surname>Churavy</surname><given-names>Valentin</given-names></name>
+          <name><surname>Besard</surname><given-names>Tim</given-names></name>
+          <name><surname>Souza</surname><given-names>Andre</given-names></name>
+          <name><surname>Edelman</surname><given-names>Alan</given-names></name>
+          <name><surname>Ferrari</surname><given-names>Raffaele</given-names></name>
+          <name><surname>Marshall</surname><given-names>John</given-names></name>
+        </person-group>
+        <article-title>Oceananigans.jl: Fast and friendly geophysical fluid dynamics on GPUs</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>5</volume>
+        <issue>53</issue>
+        <pub-id pub-id-type="doi">10.21105/joss.02018</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-xiao2021kinetic">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Xiao</surname><given-names>Tianbai</given-names></name>
+        </person-group>
+        <article-title>Kinetic.jl: A portable finite volume toolbox for scientific and neural computing</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2021">2021</year>
+        <volume>6</volume>
+        <issue>62</issue>
+        <pub-id pub-id-type="doi">10.21105/joss.03060</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-oreilly2019sbp">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>O’Reilly</surname><given-names>Ossian</given-names></name>
+        </person-group>
+        <article-title>Sbp</article-title>
+        <publisher-name>https://github.com/ooreilly/sbp</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-almquist2017optimized">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Almquist</surname><given-names>Martin</given-names></name>
+        </person-group>
+        <article-title>Optimized SBP operators</article-title>
+        <publisher-name>https://bitbucket.org/martinalmquist/optimized_sbp_operators</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-frigo2005design">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Frigo</surname><given-names>Matteo</given-names></name>
+          <name><surname>Johnson</surname><given-names>Steven G</given-names></name>
+        </person-group>
+        <article-title>The design and implementation of FFTW3</article-title>
+        <source>Proceedings of the IEEE</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2005">2005</year>
+        <volume>93</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1109/JPROC.2004.840301</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

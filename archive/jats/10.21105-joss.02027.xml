@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+</journal-title-group>
+<issn></issn>
+<publisher>
+<publisher-name></publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2027</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02027</article-id>
+<title-group>
+<article-title>shapr: An R-package for explaining machine learning
+models with dependence-aware Shapley values</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-4671-0337</contrib-id>
+<string-name>Nikolai Sellereite</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-3908-5155</contrib-id>
+<string-name>Martin Jullum</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Norwegian Computing Center</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-11-20">
+<day>20</day>
+<month>11</month>
+<year>2019</year>
+</pub-date>
+<volume>5</volume>
+<issue>46</issue>
+<fpage>2027</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>explainable AI</kwd>
+<kwd>interpretable machine learning</kwd>
+<kwd>shapley values</kwd>
+<kwd>feature dependence</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>A common task within machine learning is to train a model to
+  predict an unknown outcome (response variable) based on a set of known
+  input variables/features. When using such models for real life
+  applications, it is often crucial to understand why a certain set of
+  features lead to a specific prediction. Most machine learning models
+  are, however, complicated and hard to understand, so that they are
+  often viewed as “black-boxes”, that produce some output from some
+  input.</p>
+  <p>Shapley values
+  (<xref alt="Shapley, 1953" rid="ref-Shapley53" ref-type="bibr">Shapley,
+  1953</xref>) is a concept from cooperative game theory used to
+  distribute fairly a joint payoff among the cooperating players.
+  Štrumbelj &amp; Kononenko
+  (<xref alt="2010" rid="ref-kononenko2010efficient" ref-type="bibr">2010</xref>)
+  and later Scott M. Lundberg &amp; Lee
+  (<xref alt="2017" rid="ref-lundberg2017unified" ref-type="bibr">2017</xref>)
+  proposed to use the Shapley value framework to explain predictions by
+  distributing the prediction value on the input features. Established
+  methods and implementations for explaining predictions with Shapley
+  values like Shapley Sampling Values
+  (<xref alt="Štrumbelj &amp; Kononenko, 2014" rid="ref-vstrumbelj2014explaining" ref-type="bibr">Štrumbelj
+  &amp; Kononenko, 2014</xref>), SHAP/Kernel SHAP
+  (<xref alt="Scott M. Lundberg &amp; Lee, 2017" rid="ref-lundberg2017unified" ref-type="bibr">Scott
+  M. Lundberg &amp; Lee, 2017</xref>), and to some extent
+  TreeSHAP/TreeExplainer
+  (<xref alt="Scott M. Lundberg et al., 2018" rid="ref-lundberg2018consistent" ref-type="bibr">Scott
+  M. Lundberg et al., 2018</xref>;
+  <xref alt="Scott M. Lundberg et al., 2020" rid="ref-Lundberg2020" ref-type="bibr">Scott
+  M. Lundberg et al., 2020</xref>), assume that the features are
+  independent when approximating the Shapley values. The
+  <monospace>R</monospace>-package <monospace>shapr</monospace>,
+  however, implements the methodology proposed by Aas et al.
+  (<xref alt="2019" rid="ref-aas2019explaining" ref-type="bibr">2019</xref>),
+  where predictions are explained while accounting for the dependence
+  between the features, resulting in significantly more accurate
+  approximations to the Shapley values.</p>
+</sec>
+<sec id="implementation">
+  <title>Implementation</title>
+  <p><monospace>shapr</monospace> implements a variant of the Kernel
+  SHAP methodology
+  (<xref alt="Scott M. Lundberg &amp; Lee, 2017" rid="ref-lundberg2017unified" ref-type="bibr">Scott
+  M. Lundberg &amp; Lee, 2017</xref>) for efficiently dealing with the
+  combinatorial problem related to the Shapley value formula. The main
+  methodological contribution of Aas et al.
+  (<xref alt="2019" rid="ref-aas2019explaining" ref-type="bibr">2019</xref>)
+  is three different methods to estimate certain conditional expectation
+  quantities, referred to as the <italic>empirical</italic>,
+  <italic>Gaussian</italic> and <italic>copula</italic> approach.
+  Additionaly, the user has the option of combining the three
+  approaches. The implementation supports explanation of models fitted
+  with the following functions natively:
+  <monospace>stats::lm</monospace>
+  (<xref alt="R Core Team, 2019" rid="ref-rCore" ref-type="bibr">R Core
+  Team, 2019</xref>), <monospace>stats::glm</monospace>
+  (<xref alt="R Core Team, 2019" rid="ref-rCore" ref-type="bibr">R Core
+  Team, 2019</xref>), <monospace>ranger::ranger</monospace>
+  (<xref alt="Wright &amp; Ziegler, 2017" rid="ref-ranger" ref-type="bibr">Wright
+  &amp; Ziegler, 2017</xref>), <monospace>mgcv::gam</monospace>
+  (<xref alt="Wood, 2017" rid="ref-mgcv" ref-type="bibr">Wood,
+  2017</xref>) and
+  <monospace>xgboost::xgboost</monospace>/<monospace>xgboost::xgb.train</monospace>
+  (<xref alt="Chen et al., 2019" rid="ref-xgboost" ref-type="bibr">Chen
+  et al., 2019</xref>). Moreover, the package supports explanation of
+  custom models by supplying two simple additional class functions.</p>
+  <p>For reference, the package also includes a benchmark implementation
+  of the original (independence assuming) version of Kernel SHAP
+  (<xref alt="Scott M. Lundberg &amp; Lee, 2017" rid="ref-lundberg2017unified" ref-type="bibr">Scott
+  M. Lundberg &amp; Lee, 2017</xref>), providing identical results to
+  the “official” Kernel SHAP <monospace>Python</monospace> package
+  <monospace>shap</monospace>. This allows the user to easily see the
+  effect and importance of accounting for the feature dependence.</p>
+  <p>The user interface in the package has largely been adopted from the
+  <monospace>R</monospace>-package <monospace>lime</monospace>
+  (<xref alt="Pedersen &amp; Benesty, 2019" rid="ref-limeRpackage" ref-type="bibr">Pedersen
+  &amp; Benesty, 2019</xref>). The user first sets up the explainability
+  framework with the <monospace>shapr</monospace> function. Then the
+  output from <monospace>shapr</monospace> is provided to the
+  <monospace>explain</monospace> function, along with the data to
+  explain the prediction and the method that should be used to estimate
+  the aforementioned conditional expectations.</p>
+  <p>The majority of the code is in plain <monospace>R</monospace>
+  (<xref alt="R Core Team, 2019" rid="ref-rCore" ref-type="bibr">R Core
+  Team, 2019</xref>), while the most time consuming operations are coded
+  in <monospace>C++</monospace> through the <monospace>Rcpp</monospace>
+  package
+  (<xref alt="Eddelbuettel &amp; François, 2011" rid="ref-rcppRpackage" ref-type="bibr">Eddelbuettel
+  &amp; François, 2011</xref>) and <monospace>RcppArmadillo</monospace>
+  package
+  (<xref alt="Eddelbuettel &amp; Sanderson, 2014" rid="ref-eddelbuettel2014rcpparmadillo" ref-type="bibr">Eddelbuettel
+  &amp; Sanderson, 2014</xref>) for computational speed up. For RAM
+  efficiency and computational speed up of typical bookeeping
+  operations, we utilize the <monospace>data.table</monospace> package
+  (<xref alt="Dowle &amp; Srinivasan, 2019" rid="ref-datatableRpackage" ref-type="bibr">Dowle
+  &amp; Srinivasan, 2019</xref>) which does operations “by reference”,
+  i.e. without memory copies.</p>
+  <p>For a detailed description of the underlying methodology that the
+  package implements, we refer to the
+  <ext-link ext-link-type="uri" xlink:href="https://arxiv.org/abs/1903.10464">paper</ext-link>
+  (<xref alt="Aas et al., 2019" rid="ref-aas2019explaining" ref-type="bibr">Aas
+  et al., 2019</xref>) which uses the package in examples and simulation
+  studies. To get started with the package, we recommend going through
+  the package vignette and introductory examples available at the
+  package’s
+  <ext-link ext-link-type="uri" xlink:href="https://norskregnesentral.github.io/shapr/">pkgdown
+  site</ext-link>.</p>
+</sec>
+<sec id="acknowledgement">
+  <title>Acknowledgement</title>
+  <p>This work was supported by the Norwegian Research Council grant
+  237718 (Big Insight).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-aas2019explaining">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Aas</surname><given-names>Kjersti</given-names></name>
+          <name><surname>Jullum</surname><given-names>Martin</given-names></name>
+          <name><surname>Løland</surname><given-names>Anders</given-names></name>
+        </person-group>
+        <article-title>Explaining individual predictions when features are dependent: More accurate approximations to Shapley values</article-title>
+        <source>Arxiv preprint arxiv:1903.10464</source>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-lundberg2017unified">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Lundberg</surname><given-names>Scott M</given-names></name>
+          <name><surname>Lee</surname><given-names>Su-In</given-names></name>
+        </person-group>
+        <article-title>A unified approach to interpreting model predictions</article-title>
+        <source>Advances in neural information processing systems</source>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-kononenko2010efficient">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Štrumbelj</surname><given-names>Erik</given-names></name>
+          <name><surname>Kononenko</surname><given-names>Igor</given-names></name>
+        </person-group>
+        <article-title>An efficient explanation of individual classifications using game theory</article-title>
+        <source>Journal of machine learning research</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>11</volume>
+        <issue>Jan</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-vstrumbelj2014explaining">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Štrumbelj</surname><given-names>Erik</given-names></name>
+          <name><surname>Kononenko</surname><given-names>Igor</given-names></name>
+        </person-group>
+        <article-title>Explaining prediction models and individual predictions with feature contributions</article-title>
+        <source>Knowledge and information systems</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>41</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1007/s10115-013-0679-x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lundberg2018consistent">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lundberg</surname><given-names>Scott M</given-names></name>
+          <name><surname>Erion</surname><given-names>Gabriel G</given-names></name>
+          <name><surname>Lee</surname><given-names>Su-In</given-names></name>
+        </person-group>
+        <article-title>Consistent individualized feature attribution for tree ensembles</article-title>
+        <source>Arxiv preprint arxiv:1802.03888</source>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Shapley53">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Shapley</surname><given-names>Lloyd S.</given-names></name>
+        </person-group>
+        <article-title>A value for n-person games</article-title>
+        <source>Contributions to the theory of games</source>
+        <year iso-8601-date="1953">1953</year>
+        <volume>2</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-limeRpackage">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Pedersen</surname><given-names>Thomas Lin</given-names></name>
+          <name><surname>Benesty</surname><given-names>Michaël</given-names></name>
+        </person-group>
+        <source>lime: Local interpretable model-agnostic explanations</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://CRAN.R-project.org/package=lime</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-rcppRpackage">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Eddelbuettel</surname><given-names>Dirk</given-names></name>
+          <name><surname>François</surname><given-names>Romain</given-names></name>
+        </person-group>
+        <article-title>Rcpp: Seamless R and C++ integration</article-title>
+        <source>Journal of statistical software</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>40</volume>
+        <issue>8</issue>
+        <uri>http://www.jstatsoft.org/v40/i08/</uri>
+        <pub-id pub-id-type="doi">10.18637/jss.v040.i08</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-rCore">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>R Core Team</string-name>
+        </person-group>
+        <source>R: A language and environment for statistical computing</source>
+        <publisher-name>R foundation for statistical computing</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://www.R-project.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-datatableRpackage">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Dowle</surname><given-names>Matt</given-names></name>
+          <name><surname>Srinivasan</surname><given-names>Arun</given-names></name>
+        </person-group>
+        <source>data.table: Extension of ‘data.frame‘</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://CRAN.R-project.org/package=data.table</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Lundberg2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lundberg</surname><given-names>Scott M.</given-names></name>
+          <name><surname>Erion</surname><given-names>Gabriel G.</given-names></name>
+          <name><surname>Chen</surname><given-names>Hugh</given-names></name>
+          <name><surname>DeGrave</surname><given-names>Alex</given-names></name>
+          <name><surname>Prutkin</surname><given-names>Jordan M.</given-names></name>
+          <name><surname>Nair</surname><given-names>Bala</given-names></name>
+          <name><surname>Katz</surname><given-names>Ronit</given-names></name>
+          <name><surname>Himmelfarb</surname><given-names>Jonathan</given-names></name>
+          <name><surname>Bansal</surname><given-names>Nisha</given-names></name>
+          <name><surname>Lee</surname><given-names>Su-In</given-names></name>
+        </person-group>
+        <article-title>From local explanations to global understanding with explainable AI for trees</article-title>
+        <source>Nature machine intelligence</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>2</volume>
+        <pub-id pub-id-type="doi">10.1038/s42256-019-0138-9</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-eddelbuettel2014rcpparmadillo">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Eddelbuettel</surname><given-names>Dirk</given-names></name>
+          <name><surname>Sanderson</surname><given-names>Conrad</given-names></name>
+        </person-group>
+        <article-title>RcppArmadillo: Accelerating R with high-performance C++ linear algebra</article-title>
+        <source>Computational statistics &amp; data analysis</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>71</volume>
+        <pub-id pub-id-type="doi">10.1016/j.csda.2013.02.005</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ranger">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wright</surname><given-names>Marvin N.</given-names></name>
+          <name><surname>Ziegler</surname><given-names>Andreas</given-names></name>
+        </person-group>
+        <article-title>ranger: A fast implementation of random forests for high dimensional data in C++ and R</article-title>
+        <source>Journal of statistical software</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>77</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.18637/jss.v077.i01</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-xgboost">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Chen</surname><given-names>Tianqi</given-names></name>
+          <name><surname>He</surname><given-names>Tong</given-names></name>
+          <name><surname>Benesty</surname><given-names>Michael</given-names></name>
+          <name><surname>Khotilovich</surname><given-names>Vadim</given-names></name>
+          <name><surname>Tang</surname><given-names>Yuan</given-names></name>
+          <name><surname>Cho</surname><given-names>Hyunsu</given-names></name>
+          <name><surname>Chen</surname><given-names>Kailong</given-names></name>
+          <name><surname>Mitchell</surname><given-names>Rory</given-names></name>
+          <name><surname>Cano</surname><given-names>Ignacio</given-names></name>
+          <name><surname>Zhou</surname><given-names>Tianyi</given-names></name>
+          <name><surname>Li</surname><given-names>Mu</given-names></name>
+          <name><surname>Xie</surname><given-names>Junyuan</given-names></name>
+          <name><surname>Lin</surname><given-names>Min</given-names></name>
+          <name><surname>Geng</surname><given-names>Yifeng</given-names></name>
+          <name><surname>Li</surname><given-names>Yutian</given-names></name>
+        </person-group>
+        <source>Xgboost: Extreme gradient boosting</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://CRAN.R-project.org/package=xgboost</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-mgcv">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Wood</surname><given-names>S. N</given-names></name>
+        </person-group>
+        <source>Generalized additive models: An introduction with R</source>
+        <publisher-name>Chapman; Hall/CRC</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

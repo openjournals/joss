@@ -1,0 +1,592 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3860</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03860</article-id>
+<title-group>
+<article-title>flowTorch - a Python library for analysis and
+reduced-order modeling of fluid flows</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-5617-1560</contrib-id>
+<string-name>Andre Weiner</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-3219-0545</contrib-id>
+<string-name>Richard Semaan</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Technische Universität Braunschweig, Institute of Fluid
+Mechanics, Flow Modeling and Control Group</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-08-05">
+<day>5</day>
+<month>8</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>68</issue>
+<fpage>3860</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>PyTorch</kwd>
+<kwd>fluid flows</kwd>
+<kwd>reduced-order modeling</kwd>
+<kwd>modal analysis</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The <monospace>flowTorch</monospace> library enables researchers to
+  access, analyze, and model fluid flow data from experiments or
+  numerical simulations. Instead of a black-box end-to-end solution,
+  <monospace>flowTorch</monospace> provides modular components allowing
+  to assemble transparent and reproducible workflows with ease. Popular
+  data formats for fluid flows like
+  <ext-link ext-link-type="uri" xlink:href="https://www.openfoam.com/">OpenFOAM</ext-link>,
+  <ext-link ext-link-type="uri" xlink:href="https://vtk.org/">VTK</ext-link>,
+  or
+  <ext-link ext-link-type="uri" xlink:href="https://www.lavision.de/en/products/davis-software/">DaVis</ext-link>
+  may be accessed via a common interface in a few lines of Python code.
+  Internally, the data are organized as
+  <ext-link ext-link-type="uri" xlink:href="https://pytorch.org/">PyTorch</ext-link>
+  tensors. Relying on PyTorch tensors as primary data structure enables
+  fast array operations, parallel processing on CPU and GPU, and
+  exploration of novel deep learning-based analysis and modeling
+  approaches. The <monospace>flowTorch</monospace> packages also
+  includes a collection of Jupyter notebooks demonstrating how to apply
+  the library components in a variety of different use cases, e.g.,
+  finding coherent flow structures with modal analysis or creating
+  reduced-order models.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Thanks to the increased processing power of modern hardware, fluid
+  flow experiments as well as numerical simulations are producing vast
+  amounts of highly resolved, complex data. Those data offer great
+  opportunities to optimize industrial processes or to understand
+  natural phenomena. As modern datasets continue to grow,
+  post-processing pipelines will be increasingly important for
+  synthesizing different data formats and facilitating complex data
+  analysis. While most researchers prefer simple text-encoded
+  comma-separated value (CSV) files, big datasets require special binary
+  formats, such as
+  <ext-link ext-link-type="uri" xlink:href="https://www.hdfgroup.org/solutions/hdf5/">HDF5</ext-link>
+  or
+  <ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/NetCDF">NetCDF</ext-link>.
+  If the data are associated with a structured or an unstructured mesh,
+  VTK files are a popular choice. Other simulation libraries for fluid
+  flows, like OpenFOAM, organize mesh and field data in custom folder
+  and file structures. On the experimental side, software packages like
+  DaVis allow exporting particle image velocimetry (PIV) snapshots as
+  CSV files. Reading CSV files can be a daunting task, too. A sequence
+  of snapshots might be organized in one or multiple files. If the data
+  are stored in a single file, the file must be read first and then the
+  individual snapshots must be extracted following some initially
+  unknown pattern. If the data are spread out over multiple files, the
+  time might be encoded in the file name, but it could be also the case
+  that the files are located in individual folders whose names encode
+  the time. The latter structure is typical for OpenFOAM run time
+  post-processing data. Moreover, different software packages will
+  create different file headers, which may have to be parsed or
+  sometimes ignored. CSV, VTK, or OpenFOAM data may come as binary or
+  text-encoded files. This list is by no means comprehensive in terms of
+  available formats and presents only the tip of the iceberg.</p>
+  <p>A common research task may be to compare and combine different data
+  sources of the same fluid flow problem for cross-validation or to
+  leverage each source’s strengths in different kinds of analysis. A
+  typical example would be to compare or combine PIV data with sampled
+  planes extracted from a numerical simulation. The simulation offers
+  greater details and additional field information, while the PIV
+  experiment is more trustworthy since it is closer to the real
+  application. The PIV data may have to be processed and cleaned before
+  using it in consecutive analysis steps. Often, significant research
+  time is spent on accessing, converting, and processing the data with
+  different tools and different formats to finally analyze the data in
+  yet another tool. Text-encoded file format might be convenient at
+  first when exchanging data between tools, but for large datasets the
+  additional conversion is unsuitable.</p>
+  <p><monospace>flowTorch</monospace> aims to simplify access to data by
+  providing a unified interface to various data formats via the
+  subpackage <monospace>flowtorch.data</monospace>. Accessing data from
+  a distributed OpenFOAM simulation is as easy as loading VTK or PIV
+  data and requires only a few lines of Python code. All field data are
+  converted internally to PyTorch tensors
+  (<xref alt="Paszke et al., 2019" rid="ref-paszke2015" ref-type="bibr">Paszke
+  et al., 2019</xref>). Once the data are available as PyTorch tensors,
+  further processing steps like scaling, clipping, masking, splitting,
+  or merging are readily available as single function calls. The same is
+  true for computing the mean, the standard deviation, histograms, or
+  quantiles. Modal analysis techniques, like dynamic mode decomposition
+  (DMD)(<xref alt="Kutz et al., 2016" rid="ref-kutz2016" ref-type="bibr">Kutz
+  et al., 2016</xref>;
+  <xref alt="Schmid, 2010" rid="ref-schmid2010" ref-type="bibr">Schmid,
+  2010</xref>) and proper orthogonal decomposition
+  (POD)(<xref alt="Brunton &amp; Kutz, 2019" rid="ref-brunton2019" ref-type="bibr">Brunton
+  &amp; Kutz, 2019</xref>;
+  <xref alt="Semaan et al., 2020" rid="ref-semaan2020" ref-type="bibr">Semaan
+  et al., 2020</xref>), are available via the subpackage
+  <monospace>flowtorch.analysis</monospace>. The third subpackage,
+  <monospace>flowtorch.rom</monospace>, enables adding reduced-order
+  models (ROMs), like cluster-based network modeling
+  (CNM)(<xref alt="Fernex et al., 2021" rid="ref-fernex2021" ref-type="bibr">Fernex
+  et al., 2021</xref>), to the post-processing pipeline. Computationally
+  intensive tasks may be offloaded to the GPU if needed, which greatly
+  accelerates parameter studies. The entire analysis workflow described
+  in the previous section can be performed in a single ecosystem
+  sketched in
+  <xref alt="Figure 1" rid="figU003Aft_structure">Figure 1</xref>.
+  Moreover, re-using an analysis pipeline in a different problem setting
+  is straightforward.</p>
+  <fig>
+    <caption><p>Components of flowTorch and library
+    dependencies.<styled-content id="figU003Aft_structure"></styled-content></p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="media/flowtorch_components_plain.pdf" xlink:title="" />
+  </fig>
+  <p>Besides the subpackages already available in
+  <monospace>flowTorch</monospace>, the library also integrates nicely
+  with related software packages like
+  <ext-link ext-link-type="uri" xlink:href="https://www.paraview.org/">ParaView</ext-link>
+  or
+  <ext-link ext-link-type="uri" xlink:href="https://visit-dav.github.io/visit-website/index.html">VisIt</ext-link>
+  for mesh-based post-processing as well as specialized analysis and
+  modeling packages like PyDMD
+  (<xref alt="Demo et al., 2018" rid="ref-demo2018" ref-type="bibr">Demo
+  et al., 2018</xref>), PySINDy
+  (<xref alt="Silva et al., 2020" rid="ref-desilva2020" ref-type="bibr">Silva
+  et al., 2020</xref>), or
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/belson17/modred">modred</ext-link>.
+  Rather than re-implementing functionality already existing in other
+  established libraries, <monospace>flowTorch</monospace> wraps around
+  them to simplify their usage and streamline the overall
+  post-processing pipeline. For example, we use ParaView’s
+  <ext-link ext-link-type="uri" xlink:href="https://pypi.org/project/vtk/">vtk</ext-link>
+  package to access various types of VTK files in Python. Gathering
+  point coordinates, write times, or snapshots from several VTK files
+  requires very different steps than when dealing with OpenFOAM or DaVis
+  data. However, due to the common interface to data sources in
+  <monospace>flowTorch</monospace>, these tasks appear to be exactly the
+  same for the user. In contrast to <monospace>flowTorch</monospace>,
+  PyDMD offers a wide range of DMD variants but does not provide access
+  to data. If an advanced DMD algorithm is required, our library can be
+  used to access and pre-process a dataset, before PyDMD is used to
+  perform the modal decomposition.</p>
+  <p>Another more general issue we want to address is the
+  reproducibility of research outcomes. Popular algorithms, like POD or
+  DMD, may be relatively easy to implement with libraries like NumPy,
+  SciPy, or PyTorch. However, applying these algorithms to real datasets
+  typically requires several pre-processing steps, like cropping,
+  clipping, or normalizing the data, and careful tuning of the
+  algorithms’ free parameters (hyperparameters). Therefore, it is often
+  unclear which exact steps were taken to produce the reported results
+  and how robust the results are to changes in the free parameters or
+  the data. Even if the authors are willing to provide more details,
+  essential information may not be accessible due to black-box
+  (closed-source) analysis tools used somewhere in the process.</p>
+  <p>With <monospace>flowTorch</monospace>, we attempt to make analysis
+  and modeling workflows accessible, streamlined, and transparent in
+  several ways:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>we provide Jupyter notebooks with start-to-end workflows,
+      including short explanations for each step taken in the process;
+      the notebooks’ content varies from toy examples through common
+      benchmark problems to the analysis of real turbulent flow data;
+      the datasets used in the notebooks are also part of the
+      library</p>
+    </list-item>
+    <list-item>
+      <p>the library is modular and often wraps around other libraries
+      to make them easier to use; a few lines of Python code are
+      sufficient to implement a basic workflow; the modular structure
+      and the rich documentation of the source code simplify writing
+      extensions and enable quick automated experimentation</p>
+    </list-item>
+  </list>
+  <p>Ultimately, our goal is to reduce redundant work as much as
+  possible and enable users to focus on what matters - understanding and
+  modeling flow dynamics.</p>
+</sec>
+<sec id="examples">
+  <title>Examples</title>
+  <p>In this section, we demonstrate two applications of
+  <monospace>flowTorch</monospace>. In the first example, DMD is
+  employed to identify relevant modes in a transonic flow displaying
+  shock-boundary-layer interactions. In the second example, a ROM of the
+  flow past a circular cylinder
+  (<xref alt="Noack et al., 2003" rid="ref-noack2003" ref-type="bibr">Noack
+  et al., 2003</xref>) is constructed employing CNM
+  (<xref alt="Fernex et al., 2021" rid="ref-fernex2021" ref-type="bibr">Fernex
+  et al., 2021</xref>). Both examples are also available as Jupyter
+  notebooks and in the <monospace>flowTorch</monospace>
+  documentation.</p>
+  <sec id="dmd-analysis-of-airfoil-surface-data">
+    <title>DMD analysis of airfoil surface data</title>
+    <p>For this example, we need only a handful of
+    <monospace>flowTorch</monospace> components.</p>
+    <preformat>import torch as pt
+from flowtorch import DATASETS
+from flowtorch.data import CSVDataloader, mask_box
+from flowtorch.analysis import DMD</preformat>
+    <p><monospace>DATASETS</monospace> is a dictionary holding names and
+    paths of all available datasets. The
+    <monospace>CSVDataloader</monospace> provides easy access to the
+    data, and the <monospace>mask_box</monospace> function allows
+    selecting only a spatial subset of the raw data. As the name
+    suggests, the <monospace>DMD</monospace> class enables us to perform
+    a DMD analysis.</p>
+    <p>The dataset we use here consists of surface pressure coefficient
+    distributions sampled over a NACA-0012 airfoil in transonic flow
+    conditions. The OpenFOAM configuration files to produce the dataset
+    are available in a separate
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/AndreWeiner/naca0012_shock_buffet">GitHub
+    repository</ext-link>. At a Reynolds number of
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[Re=10^6]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>R</mml:mi><mml:mi>e</mml:mi><mml:mo>=</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>6</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>,
+    a Mach number of <inline-formula><alternatives>
+    <tex-math><![CDATA[Ma=0.75]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>M</mml:mi><mml:mi>a</mml:mi><mml:mo>=</mml:mo><mml:mn>0.75</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[\alpha = 4^\circ]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>α</mml:mi><mml:mo>=</mml:mo><mml:msup><mml:mn>4</mml:mn><mml:mo>∘</mml:mo></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>
+    angle of attack, the flow displays a so-called shock buffet on the
+    upper side of the airfoil. The shock buffet is a self-sustained
+    unsteady interaction between the shock and the boundary layer
+    separation. Our aim is to extract flow structures (modes) associated
+    with the buffet phenomenon.</p>
+    <p>A code snippet to read the data, mask part of it, and build the
+    data matrix reads:</p>
+    <preformat>...
+path = DATASETS[&quot;csv_naca0012_alpha4_surface&quot;]
+loader = CSVDataloader.from_foam_surface(
+    path, &quot;total(p)_coeff_airfoil.raw&quot;, &quot;cp&quot;)
+vertices = loader.vertices
+vertices /= (vertices[:, 0].max() - vertices[:, 0].min())
+mask = mask_box(vertices,
+    lower=[-1.0, 0.0, -1.0], upper=[0.9999, 1.0, 1.0])
+points_upper = mask.sum().item()
+data_matrix = pt.zeros((points_upper, len(times)), dtype=pt.float32)
+for i, time in enumerate(times):
+    snapshot = loader.load_snapshot(&quot;cp&quot;, time)
+    data_matrix[:, i] = pt.masked_select(snapshot, mask)</preformat>
+    <p>The <monospace>CSVDataloader</monospace> has a class method
+    designed to read raw sample data created by OpenFOAM simulations.
+    Every <monospace>Dataloader</monospace> implementation provides
+    access to one or multiple snapshots of one or multiple fields and
+    the associated vertices. The airfoil coordinates are typically
+    normalized with the chord length, which is the difference between
+    largest and smallest value of the <inline-formula><alternatives>
+    <tex-math><![CDATA[x]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>-coordinate
+    in the present example. The data contain pressure coefficients from
+    both upper and lower surfaces, so we create a spatial mask to
+    extract values from the upper surface. The DMD expects a data matrix
+    as input whose columns are individual snapshots. Therefore, we
+    allocate a new 2D tensor with as many rows as selected points and as
+    many columns as selected snapshots (the data loader also provides
+    access to the available write time - not shown here). Finally, we
+    loop over the snapshot times and fill the data matrix.</p>
+    <p>Creating a new <monospace>DMD</monospace> instance automatically
+    performs the mode decomposition based on the provided input. We can
+    analyze the obtained spectrum and the associated modes. The modes
+    have real and imaginary parts, which are equally important for the
+    reconstruction of the flow field. It is usually enough to visualize
+    either real or imaginary part for the physical interpretation of
+    modes.</p>
+    <preformat>dmd = DMD(data_matrix, dt, rank=200)
+amplitudes = dmd.amplitudes
+frequencies = dmd.frequency
+modes_real = dmd.modes.real</preformat>
+    <p>In contrast to POD, the DMD modes are not sorted by their
+    variance, but rather form a spectrum.
+    <xref alt="Figure 2" rid="figU003Admd">Figure 2</xref> presents the
+    real part of three spatial modes with the largest amplitudes. Also
+    shown is their corresponding frequency.</p>
+    <fig>
+      <caption><p>Real part of three dominant DMD modes over the upper
+      surface of a NACA-0012 airfoil. The modes are normalized to the
+      range <inline-formula><alternatives>
+      <tex-math><![CDATA[[0,1]]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>.
+      The coordinates are normalized with the chord
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[c]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>c</mml:mi></mml:math></alternatives></inline-formula>.
+      The shock is located at <inline-formula><alternatives>
+      <tex-math><![CDATA[x/c\approx 0.25]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>x</mml:mi><mml:mi>/</mml:mi><mml:mi>c</mml:mi><mml:mo>≈</mml:mo><mml:mn>0.25</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>.
+      Modes 8 and 18 are harmonics. The motion of the shock front is
+      correlated with changes in the pressure values close to the
+      trailing edge. This effect can be nicely observed via the mode
+      animations in the documentation and indicates the existence of a
+      physical link between both
+      effects.<styled-content id="figU003Admd"></styled-content></p></caption>
+      <graphic mimetype="application" mime-subtype="pdf" xlink:href="media/dmd_modes_airfoil_cp.pdf" xlink:title="" />
+    </fig>
+  </sec>
+  <sec id="cnm-of-the-flow-past-a-circular-cylinder">
+    <title>CNM of the flow past a circular cylinder</title>
+    <p>This example demonstrates how to model a flow using the CNM
+    algorithm
+    (<xref alt="Fernex et al., 2021" rid="ref-fernex2021" ref-type="bibr">Fernex
+    et al., 2021</xref>). Compared to the original CNM implementation
+    available on
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/fernexda/cnm">GitHub</ext-link>,
+    the version in <monospace>flowTorch</monospace> is refactored, more
+    user-friendly, and extendible. In <monospace>flowTorch</monospace>,
+    creating a ROM always consists of three steps: i)
+    encoding/reduction, ii) time evolution, and iii)
+    decoding/reconstruction. In the code snippet below, we use an
+    encoder based on the singular value decomposition (SVD) to reduce
+    the dimensionality of the original snapshot sequence, and then
+    predict the temporal evolution and reconstruct the flow over the
+    period of <inline-formula><alternatives>
+    <tex-math><![CDATA[1s]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>1</mml:mn><mml:mi>s</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+    <preformat>...
+from flowtorch.rom import CNM, SVDEncoder
+# load data
+...
+encoder = SVDEncoder(rank=20)
+info = encoder.train(data_matrix)
+reduced_state = encoder.encode(data_matrix)
+cnm = CNM(reduced_state, encoder, dt, n_clusters=20, model_order=4)
+prediction = cnm.predict(data_matrix[:, :5], end_time=1.0, step_size=dt)</preformat>
+    <p>The <monospace>predict</monospace> function computes the temporal
+    evolution in the reduced state space and automatically performs the
+    reconstruction. If we are only interested in the phase space, we can
+    use <monospace>predict_reduced</monospace> instead, and reconstruct
+    selected states using the encoder’s <monospace>decode</monospace>
+    method. The temporal evolution in the phase-space is displayed in
+    <xref alt="Figure 3" rid="figU003Acnm">Figure 3</xref>.</p>
+    <fig>
+      <caption><p>Phase-space representation of data clustering (large
+      dots) and trajectory; the numbering reflects the sequence in which
+      the centroids are visited; the smaller dots mark interpolated time
+      steps between the centroids and are colored by their cluster
+      affiliation (only for
+      visualization).<styled-content id="figU003Acnm"></styled-content></p></caption>
+      <graphic mimetype="application" mime-subtype="pdf" xlink:href="media/cnm_cluster_transition.pdf" xlink:title="" />
+    </fig>
+  </sec>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>The authors gratefully acknowledge financial support by the German
+  Research Foundation (DFG) received within the research unit
+  <ext-link ext-link-type="uri" xlink:href="https://www.for2895.uni-stuttgart.de/en/">FOR
+  2895</ext-link> <italic>Unsteady flow and interaction phenomena at
+  high speed stall conditions</italic>.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-semaan2020">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Semaan</surname><given-names>Richard</given-names></name>
+          <name><surname>Fernex</surname><given-names>Daniel</given-names></name>
+          <name><surname>Weiner</surname><given-names>Andre</given-names></name>
+          <name><surname>Noack</surname><given-names>Bernd R.</given-names></name>
+        </person-group>
+        <source>xROM: A toolkit for reduced-order modeling of fluid flows</source>
+        <person-group person-group-type="editor">
+          <name><surname>Semaan</surname><given-names>Richard</given-names></name>
+          <name><surname>Noack</surname><given-names>Bernd R.</given-names></name>
+        </person-group>
+        <publisher-name>Technische Universität Braunschweig</publisher-name>
+        <publisher-loc>Braunschweig</publisher-loc>
+        <year iso-8601-date="2020">2020</year>
+        <volume>1</volume>
+        <pub-id pub-id-type="doi">10.24355/dbbs.084-202007011404-0</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-schmid2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Schmid</surname><given-names>P. J.</given-names></name>
+        </person-group>
+        <article-title>Dynamic mode decomposition of numerical and experimental data</article-title>
+        <source>Journal of Fluid Mechanics</source>
+        <publisher-name>Cambridge University Press</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <volume>656</volume>
+        <pub-id pub-id-type="doi">10.1017/S0022112010001217</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-fernex2021">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fernex</surname><given-names>Daniel</given-names></name>
+          <name><surname>Noack</surname><given-names>Bernd R.</given-names></name>
+          <name><surname>Semaan</surname><given-names>Richard</given-names></name>
+        </person-group>
+        <article-title>Cluster-based network modelingfrom snapshots to complex dynamical systems</article-title>
+        <source>Science Advances</source>
+        <publisher-name>American Association for the Advancement of Science</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <volume>7</volume>
+        <issue>25</issue>
+        <pub-id pub-id-type="doi">10.1126/sciadv.abf5006</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-demo2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Demo</surname><given-names>Nicola</given-names></name>
+          <name><surname>Tezzele</surname><given-names>Marco</given-names></name>
+          <name><surname>Rozza</surname><given-names>Gianluigi</given-names></name>
+        </person-group>
+        <article-title>PyDMD: Python Dynamic Mode Decomposition</article-title>
+        <source>The Journal of Open Source Software</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>3</volume>
+        <issue>22</issue>
+        <pub-id pub-id-type="doi">10.21105/joss.00530</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-desilva2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Silva</surname><given-names>Brian de</given-names></name>
+          <name><surname>Champion</surname><given-names>Kathleen</given-names></name>
+          <name><surname>Quade</surname><given-names>Markus</given-names></name>
+          <name><surname>Loiseau</surname><given-names>Jean-Christophe</given-names></name>
+          <name><surname>Kutz</surname><given-names>J.</given-names></name>
+          <name><surname>Brunton</surname><given-names>Steven</given-names></name>
+        </person-group>
+        <article-title>PySINDy: A python package for the sparse identification of nonlinear dynamical systems from data</article-title>
+        <source>Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>5</volume>
+        <issue>49</issue>
+        <uri>https://doi.org/10.21105/joss.02104</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.02104</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-noack2003">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Noack</surname><given-names>Bernd R.</given-names></name>
+          <name><surname>Afanasiev</surname><given-names>Konstantin</given-names></name>
+          <name><surname>Morzyński</surname><given-names>Marek</given-names></name>
+          <name><surname>Tadmor</surname><given-names>Gilead</given-names></name>
+          <name><surname>Thiele</surname><given-names>Frank</given-names></name>
+        </person-group>
+        <article-title>A hierarchy of low-dimensional models for the transient and post-transient cylinder wake</article-title>
+        <source>Journal of Fluid Mechanics</source>
+        <publisher-name>Cambridge University Press</publisher-name>
+        <year iso-8601-date="2003">2003</year>
+        <volume>497</volume>
+        <pub-id pub-id-type="doi">10.1017/S0022112003006694</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-paszke2015">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Paszke</surname><given-names>Adam</given-names></name>
+          <name><surname>Gross</surname><given-names>Sam</given-names></name>
+          <name><surname>Massa</surname><given-names>Francisco</given-names></name>
+          <name><surname>Lerer</surname><given-names>Adam</given-names></name>
+          <name><surname>Bradbury</surname><given-names>James</given-names></name>
+          <name><surname>Chanan</surname><given-names>Gregory</given-names></name>
+          <name><surname>Killeen</surname><given-names>Trevor</given-names></name>
+          <name><surname>Lin</surname><given-names>Zeming</given-names></name>
+          <name><surname>Gimelshein</surname><given-names>Natalia</given-names></name>
+          <name><surname>Antiga</surname><given-names>Luca</given-names></name>
+          <name><surname>Desmaison</surname><given-names>Alban</given-names></name>
+          <name><surname>Kopf</surname><given-names>Andreas</given-names></name>
+          <name><surname>Yang</surname><given-names>Edward</given-names></name>
+          <name><surname>DeVito</surname><given-names>Zachary</given-names></name>
+          <name><surname>Raison</surname><given-names>Martin</given-names></name>
+          <name><surname>Tejani</surname><given-names>Alykhan</given-names></name>
+          <name><surname>Chilamkurthy</surname><given-names>Sasank</given-names></name>
+          <name><surname>Steiner</surname><given-names>Benoit</given-names></name>
+          <name><surname>Fang</surname><given-names>Lu</given-names></name>
+          <name><surname>Bai</surname><given-names>Junjie</given-names></name>
+          <name><surname>Chintala</surname><given-names>Soumith</given-names></name>
+        </person-group>
+        <article-title>PyTorch: An imperative style, high-performance deep learning library</article-title>
+        <source>Advances in neural information processing systems 32</source>
+        <person-group person-group-type="editor">
+          <name><surname>Wallach</surname><given-names>H.</given-names></name>
+          <name><surname>Larochelle</surname><given-names>H.</given-names></name>
+          <name><surname>Beygelzimer</surname><given-names>A.</given-names></name>
+          <name><surname>dAlché-Buc</surname><given-names>F.</given-names></name>
+          <name><surname>Fox</surname><given-names>E.</given-names></name>
+          <name><surname>Garnett</surname><given-names>R.</given-names></name>
+        </person-group>
+        <publisher-name>Curran Associates, Inc.</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <uri>http://papers.neurips.cc/paper/9015-pytorch-an-imperative-style-high-performance-deep-learning-library.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-kutz2016">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Kutz</surname><given-names>J. Nathan</given-names></name>
+          <name><surname>Brunton</surname><given-names>Steven L.</given-names></name>
+          <name><surname>Brunton</surname><given-names>Bingni W.</given-names></name>
+          <name><surname>Proctor</surname><given-names>Joshua L.</given-names></name>
+        </person-group>
+        <source>Dynamic mode decomposition</source>
+        <publisher-name>Society for Industrial; Applied Mathematics</publisher-name>
+        <publisher-loc>Philadelphia, PA</publisher-loc>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://epubs.siam.org/doi/abs/10.1137/1.9781611974508</uri>
+        <pub-id pub-id-type="doi">10.1137/1.9781611974508</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-brunton2019">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Brunton</surname><given-names>Steven L.</given-names></name>
+          <name><surname>Kutz</surname><given-names>J. Nathan</given-names></name>
+        </person-group>
+        <article-title>Singular value decomposition (SVD)</article-title>
+        <source>Data-driven science and engineering: Machine learning, dynamical systems, and control</source>
+        <publisher-name>Cambridge University Press</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <pub-id pub-id-type="doi">10.1017/9781108380690.002</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

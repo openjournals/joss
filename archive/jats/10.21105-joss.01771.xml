@@ -1,0 +1,703 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1771</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01771</article-id>
+<title-group>
+<article-title>AliasFinder: A Python script to search for the true
+planetary frequency within radial velocity data</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1166-9338</contrib-id>
+<string-name>Stephan Stock</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-3929-1442</contrib-id>
+<string-name>Jonas Kemmer</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Landessternwarte, Zentrum für Astronomie der Universität
+Heidelberg, Königstuhl 12, 69117 Heidelberg, Germany</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Fellow of the International Max Planck Research School for
+Astronomy and Cosmic Physics at the University of Heidelberg
+(IMPRS-HD)</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-07-23">
+<day>23</day>
+<month>7</month>
+<year>2019</year>
+</pub-date>
+<volume>5</volume>
+<issue>45</issue>
+<fpage>1771</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>astronomy</kwd>
+<kwd>exoplanets</kwd>
+<kwd>radial velocity</kwd>
+<kwd>signal search</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Planets around other stars, so called exoplanets, can be detected
+  with the radial velocity (RV) method which uses high-resolution
+  spectroscopy on the host star. The method transforms the measured
+  Doppler-shift in a stellar spectrum to a radial velocity. This
+  Doppler-shift is caused by the stellar reflex motion (wobbling), in
+  particular the line of sight movement of the star, due to its
+  gravitational interaction with the orbiting planet. By now the RV
+  method is the second most successful method and the first one to find
+  exoplanets. The detection of exoplanets by this method relies on
+  finding periodic signals in noisy time-series data (RVs over time)
+  using a periodogram analysis. However, gaps in the observations (e.g.,
+  stars can only be observed during night from the ground) can result in
+  strong aliases, an effect where two signals are almost
+  indistinguishable when sampled. Aliases normally occur at
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[f_{\text{Alias}}=f_{\text{True}}\pm m \cdot f_{\text{Sampling}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>f</mml:mi><mml:mtext mathvariant="normal">Alias</mml:mtext></mml:msub><mml:mo>=</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mtext mathvariant="normal">True</mml:mtext></mml:msub><mml:mo>±</mml:mo><mml:mi>m</mml:mi><mml:mo>⋅</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mtext mathvariant="normal">Sampling</mml:mtext></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[f_{\text{True}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mtext mathvariant="normal">True</mml:mtext></mml:msub></mml:math></alternatives></inline-formula>
+  is the true signal, <inline-formula><alternatives>
+  <tex-math><![CDATA[f_{\text{Sampling}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mtext mathvariant="normal">Sampling</mml:mtext></mml:msub></mml:math></alternatives></inline-formula>
+  the sampling frequency and <inline-formula><alternatives>
+  <tex-math><![CDATA[m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>m</mml:mi></mml:math></alternatives></inline-formula>
+  an integer value. This makes it difficult to assess the true period of
+  the planet and has already led to incorrectly published orbital
+  periods (see Dawson and Fabrcky 2010; Stock et al. in prep).</p>
+  <p><monospace>AliasFinder</monospace> is a Python script which can
+  help to identify the true signal within a time series data. The script
+  is based on a method described in Dawson &amp; Fabrycky
+  (<xref alt="2010" rid="ref-Dawson2010" ref-type="bibr">2010</xref>),
+  however <monospace>AliasFinder</monospace> uses some improvements
+  described in detail within Stock et al.(in prep.). To our knowledge,
+  there are no other public packages to perform alias testing based on
+  this methodology. The basic principle is to simulate an ensemble of
+  noisy time-series based on the original data sampling and noise level
+  and inject one of the signals observed within the original data into
+  this time-series. <monospace>AliasFinder</monospace> will then plot
+  the median GLS periodogram
+  (<xref alt="Zechmeister &amp; Kürster, 2009" rid="ref-Zechmeister2009" ref-type="bibr">Zechmeister
+  &amp; Kürster, 2009</xref>) from the simulations of the injected
+  signal overplotted with the original data periodogram. From the
+  comparison of the signal properties (signal power, frequency or phase)
+  at the injected frequency and its aliases between these two
+  periodograms one can then assess the true period of the signal. We
+  show a straightforward example of such a plot in Fig. 1. where we test
+  two possible true periods of a planet at either 2.64 d or 1.60 d which
+  was analyzed by Trifonov et al.
+  (<xref alt="2018" rid="ref-Trifonov2018" ref-type="bibr">2018</xref>).
+  From the comparison of the simulated time series (in black) to the
+  observed periodogram (in red) it is obvious that only the period of
+  2.64 d (f~0.38 1/d) is able to reproduce the data correctly.</p>
+  <p><monospace>AliasFinder</monospace> is specifically written for
+  Python 3 and should run with a standard Anaconda distribution with a
+  few additional packages. The script is executed by passing a yaml
+  parameter file with important information about the star, planetary
+  system and the measured RV signals.</p>
+  <p><monospace>AliasFinder</monospace> is developed to be used by
+  astronomers that search for exoplanets in RV data. Nevertheless the
+  software can in principle be used by anyone who needs to distinguish a
+  possible signal from its aliases within any noisy time-series if the
+  correct input format is respected. The script is already used within
+  Stock et al. (in prep.) and will be used in further studies in the
+  future. <monospace>AliasFinder</monospace> is designed to be fast
+  (multi-core support), user-friendly and produce high quality
+  publication plots as in Fig. 1. This software will encourage the usage
+  of alias testing within future scientific publications based on
+  time-series data, in particular RV data, and result in less
+  incorrectly published orbital periods for exoplanets.</p>
+  <fig>
+    <caption><p>Example of a test for aliases. The top panel shows the
+    resulting median periodogram (in black) derived from simulations of
+    an ensemble of GLS periodograms where a signal of 2.64 d (marked
+    with the vertical blue dashed line) was injected which was also
+    observed within the original data periodogram (in red). The two
+    lower panels show the simulated median periodogram where the first
+    order aliases of 2.64 d, which are at 1.6 d and 0.72 d, are injected
+    (also marked with the blue dashed line). The periodograms in each
+    row are automatically plotted to regions that allow one to
+    distinguish the true period from its first order aliases. The
+    interquartile range and the range of 90% and 99% of the simulated
+    periodograms are shown as the shaded grey area. The angular mean of
+    the phase of each peak and its standard deviation are shown in the
+    clock diagram (red: simulated; grey: data).</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="example2.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We acknowledge contributions from Paul Heeren, and support from
+  Sabine Reffert, and Trifon Trifonov during the genesis of this
+  project. We would also like to thank our two referees Juan Luis Cano
+  Rodríguez and Wilfred Tyler Gee, whose comments helped to
+  significantly improve the quality of the
+  <monospace>AliasFinder</monospace> during the publication process.
+  This research made use of Astropy
+  (<xref alt="Astropy Collaboration et al., 2013" rid="ref-Astropy_comm" ref-type="bibr">Astropy
+  Collaboration et al., 2013</xref>) a community-developed core Python
+  package for Astronomy
+  (<xref alt="Astropy Collaboration et al., 2018" rid="ref-Astropy2018" ref-type="bibr">Astropy
+  Collaboration et al., 2018</xref>). We made use of NumPy
+  (<xref alt="Oliphant, 2006" rid="ref-oliphant2006guide" ref-type="bibr">Oliphant,
+  2006</xref>), tqdm
+  (<xref alt="da Costa-Luis, 2019" rid="ref-tqdm" ref-type="bibr">da
+  Costa-Luis, 2019</xref>), SciPy
+  (<xref alt="Virtanen et al., 2019" rid="ref-Scipy2019" ref-type="bibr">Virtanen
+  et al., 2019</xref>) and matplotlib
+  (<xref alt="Hunter, 2007" rid="ref-Hunter2007" ref-type="bibr">Hunter,
+  2007</xref>).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Zechmeister2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zechmeister</surname><given-names>M.</given-names></name>
+          <name><surname>Kürster</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>The generalised Lomb-Scargle periodogram. A new formalism for the floating-mean and Keplerian periodograms</article-title>
+        <source>Astronomy &amp; Astrophysics</source>
+        <year iso-8601-date="2009-03">2009</year><month>03</month>
+        <volume>496</volume>
+        <uri>https://arxiv.org/abs/0901.2573</uri>
+        <pub-id pub-id-type="doi">10.1051/0004-6361:200811296</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Dawson2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dawson</surname><given-names>R. I.</given-names></name>
+          <name><surname>Fabrycky</surname><given-names>D. C.</given-names></name>
+        </person-group>
+        <article-title>Radial Velocity Planets De-aliased: A New, Short Period for Super-Earth 55 Cnc e</article-title>
+        <source>Astrophysical Journal</source>
+        <year iso-8601-date="2010-10">2010</year><month>10</month>
+        <volume>722</volume>
+        <uri>https://arxiv.org/abs/1005.4050</uri>
+        <pub-id pub-id-type="doi">10.1088/0004-637X/722/1/937</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Trifonov2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Trifonov</surname><given-names>T.</given-names></name>
+          <name><surname>Kürster</surname><given-names>M.</given-names></name>
+          <name><surname>Zechmeister</surname><given-names>M.</given-names></name>
+          <name><surname>Tal-Or</surname><given-names>L.</given-names></name>
+          <name><surname>Caballero</surname><given-names>J. A.</given-names></name>
+          <name><surname>Quirrenbach</surname><given-names>A.</given-names></name>
+          <name><surname>Amado</surname><given-names>P. J.</given-names></name>
+          <name><surname>Ribas</surname><given-names>I.</given-names></name>
+          <name><surname>Reiners</surname><given-names>A.</given-names></name>
+          <name><surname>Reffert</surname><given-names>S.</given-names></name>
+          <name><surname>Dreizler</surname><given-names>S.</given-names></name>
+          <name><surname>Hatzes</surname><given-names>A. P.</given-names></name>
+          <name><surname>Kaminski</surname><given-names>A.</given-names></name>
+          <name><surname>Launhardt</surname><given-names>R.</given-names></name>
+          <name><surname>Henning</surname><given-names>Th.</given-names></name>
+          <name><surname>Montes</surname><given-names>D.</given-names></name>
+          <name><surname>Béjar</surname><given-names>V. J. S.</given-names></name>
+          <name><surname>Mundt</surname><given-names>R.</given-names></name>
+          <name><surname>Pavlov</surname><given-names>A.</given-names></name>
+          <name><surname>Schmitt</surname><given-names>J. H. M. M.</given-names></name>
+          <name><surname>Seifert</surname><given-names>W.</given-names></name>
+          <name><surname>Morales</surname><given-names>J. C.</given-names></name>
+          <name><surname>Nowak</surname><given-names>G.</given-names></name>
+          <name><surname>Jeffers</surname><given-names>S. V.</given-names></name>
+          <name><surname>Rodrı́guez-López</surname><given-names>C.</given-names></name>
+          <name><surname>del Burgo</surname><given-names>C.</given-names></name>
+          <name><surname>Anglada-Escudé</surname><given-names>G.</given-names></name>
+          <name><surname>López-Santiago</surname><given-names>J.</given-names></name>
+          <name><surname>Mathar</surname><given-names>R. J.</given-names></name>
+          <name><surname>Ammler-von Eiff</surname><given-names>M.</given-names></name>
+          <name><surname>Guenther</surname><given-names>E. W.</given-names></name>
+          <name><surname>Barrado</surname><given-names>D.</given-names></name>
+          <name><surname>González Hernández</surname><given-names>J. I.</given-names></name>
+          <name><surname>Mancini</surname><given-names>L.</given-names></name>
+          <name><surname>Stürmer</surname><given-names>J.</given-names></name>
+          <name><surname>Abril</surname><given-names>M.</given-names></name>
+          <name><surname>Aceituno</surname><given-names>J.</given-names></name>
+          <name><surname>Alonso-Floriano</surname><given-names>F. J.</given-names></name>
+          <name><surname>Antona</surname><given-names>R.</given-names></name>
+          <name><surname>Anwand-Heerwart</surname><given-names>H.</given-names></name>
+          <name><surname>Arroyo-Torres</surname><given-names>B.</given-names></name>
+          <name><surname>Azzaro</surname><given-names>M.</given-names></name>
+          <name><surname>Baroch</surname><given-names>D.</given-names></name>
+          <name><surname>Bauer</surname><given-names>F. F.</given-names></name>
+          <name><surname>Becerril</surname><given-names>S.</given-names></name>
+          <name><surname>Benı́tez</surname><given-names>D.</given-names></name>
+          <name><surname>Berdiñas</surname><given-names>Z. M.</given-names></name>
+          <name><surname>Bergond</surname><given-names>G.</given-names></name>
+          <name><surname>Blümcke</surname><given-names>M.</given-names></name>
+          <name><surname>Brinkmöller</surname><given-names>M.</given-names></name>
+          <name><surname>Cano</surname><given-names>J.</given-names></name>
+          <name><surname>Cárdenas Vázquez</surname><given-names>M. C.</given-names></name>
+          <name><surname>Casal</surname><given-names>E.</given-names></name>
+          <name><surname>Cifuentes</surname><given-names>C.</given-names></name>
+          <name><surname>Claret</surname><given-names>A.</given-names></name>
+          <name><surname>Colomé</surname><given-names>J.</given-names></name>
+          <name><surname>Cortés-Contreras</surname><given-names>M.</given-names></name>
+          <name><surname>Czesla</surname><given-names>S.</given-names></name>
+          <name><surname>Dı́ez-Alonso</surname><given-names>E.</given-names></name>
+          <name><surname>Feiz</surname><given-names>C.</given-names></name>
+          <name><surname>Fernández</surname><given-names>M.</given-names></name>
+          <name><surname>Ferro</surname><given-names>I. M.</given-names></name>
+          <name><surname>Fuhrmeister</surname><given-names>B.</given-names></name>
+          <name><surname>Galadı́-Enrı́quez</surname><given-names>D.</given-names></name>
+          <name><surname>Garcia-Piquer</surname><given-names>A.</given-names></name>
+          <name><surname>Garcı́a Vargas</surname><given-names>M. L.</given-names></name>
+          <name><surname>Gesa</surname><given-names>L.</given-names></name>
+          <name><surname>Gómez Galera</surname><given-names>V.</given-names></name>
+          <name><surname>González-Peinado</surname><given-names>R.</given-names></name>
+          <name><surname>Grözinger</surname><given-names>U.</given-names></name>
+          <name><surname>Grohnert</surname><given-names>S.</given-names></name>
+          <name><surname>Guàrdia</surname><given-names>J.</given-names></name>
+          <name><surname>Guijarro</surname><given-names>A.</given-names></name>
+          <name><surname>de Guindos</surname><given-names>E.</given-names></name>
+          <name><surname>Gutiérrez-Soto</surname><given-names>J.</given-names></name>
+          <name><surname>Hagen</surname><given-names>H. -J.</given-names></name>
+          <name><surname>Hauschildt</surname><given-names>P. H.</given-names></name>
+          <name><surname>Hedrosa</surname><given-names>R. P.</given-names></name>
+          <name><surname>Helmling</surname><given-names>J.</given-names></name>
+          <name><surname>Hermelo</surname><given-names>I.</given-names></name>
+          <name><surname>Hernández Arabı́</surname><given-names>R.</given-names></name>
+          <name><surname>Hernández Castaño</surname><given-names>L.</given-names></name>
+          <name><surname>Hernández Hernando</surname><given-names>F.</given-names></name>
+          <name><surname>Herrero</surname><given-names>E.</given-names></name>
+          <name><surname>Huber</surname><given-names>A.</given-names></name>
+          <name><surname>Huke</surname><given-names>P.</given-names></name>
+          <name><surname>Johnson</surname><given-names>E.</given-names></name>
+          <name><surname>de Juan</surname><given-names>E.</given-names></name>
+          <name><surname>Kim</surname><given-names>M.</given-names></name>
+          <name><surname>Klein</surname><given-names>R.</given-names></name>
+          <name><surname>Klüter</surname><given-names>J.</given-names></name>
+          <name><surname>Klutsch</surname><given-names>A.</given-names></name>
+          <name><surname>Lafarga</surname><given-names>M.</given-names></name>
+          <name><surname>Lampón</surname><given-names>M.</given-names></name>
+          <name><surname>Lara</surname><given-names>L. M.</given-names></name>
+          <name><surname>Laun</surname><given-names>W.</given-names></name>
+          <name><surname>Lemke</surname><given-names>U.</given-names></name>
+          <name><surname>Lenzen</surname><given-names>R.</given-names></name>
+          <name><surname>López del Fresno</surname><given-names>M.</given-names></name>
+          <name><surname>López-González</surname><given-names>M. J.</given-names></name>
+          <name><surname>López-Puertas</surname><given-names>M.</given-names></name>
+          <name><surname>López Salas</surname><given-names>J. F.</given-names></name>
+          <name><surname>Luque</surname><given-names>R.</given-names></name>
+          <name><surname>Magán Madinabeitia</surname><given-names>H.</given-names></name>
+          <name><surname>Mall</surname><given-names>U.</given-names></name>
+          <name><surname>Mandel</surname><given-names>H.</given-names></name>
+          <name><surname>Marfil</surname><given-names>E.</given-names></name>
+          <name><surname>Marı́n Molina</surname><given-names>J. A.</given-names></name>
+          <name><surname>Maroto Fernández</surname><given-names>D.</given-names></name>
+          <name><surname>Martı́n</surname><given-names>E. L.</given-names></name>
+          <name><surname>Martı́n-Ruiz</surname><given-names>S.</given-names></name>
+          <name><surname>Marvin</surname><given-names>C. J.</given-names></name>
+          <name><surname>Mirabet</surname><given-names>E.</given-names></name>
+          <name><surname>Moya</surname><given-names>A.</given-names></name>
+          <name><surname>Moreno-Raya</surname><given-names>M. E.</given-names></name>
+          <name><surname>Nagel</surname><given-names>E.</given-names></name>
+          <name><surname>Naranjo</surname><given-names>V.</given-names></name>
+          <name><surname>Nortmann</surname><given-names>L.</given-names></name>
+          <name><surname>Ofir</surname><given-names>A.</given-names></name>
+          <name><surname>Oreiro</surname><given-names>R.</given-names></name>
+          <name><surname>Pallé</surname><given-names>E.</given-names></name>
+          <name><surname>Panduro</surname><given-names>J.</given-names></name>
+          <name><surname>Pascual</surname><given-names>J.</given-names></name>
+          <name><surname>Passegger</surname><given-names>V. M.</given-names></name>
+          <name><surname>Pedraz</surname><given-names>S.</given-names></name>
+          <name><surname>Pérez-Calpena</surname><given-names>A.</given-names></name>
+          <name><surname>Pérez Medialdea</surname><given-names>D.</given-names></name>
+          <name><surname>Perger</surname><given-names>M.</given-names></name>
+          <name><surname>Perryman</surname><given-names>M. A. C.</given-names></name>
+          <name><surname>Pluto</surname><given-names>M.</given-names></name>
+          <name><surname>Rabaza</surname><given-names>O.</given-names></name>
+          <name><surname>Ramón</surname><given-names>A.</given-names></name>
+          <name><surname>Rebolo</surname><given-names>R.</given-names></name>
+          <name><surname>Redondo</surname><given-names>P.</given-names></name>
+          <name><surname>Reinhardt</surname><given-names>S.</given-names></name>
+          <name><surname>Rhode</surname><given-names>P.</given-names></name>
+          <name><surname>Rix</surname><given-names>H. -W.</given-names></name>
+          <name><surname>Rodler</surname><given-names>F.</given-names></name>
+          <name><surname>Rodrı́guez</surname><given-names>E.</given-names></name>
+          <name><surname>Rodrı́guez Trinidad</surname><given-names>A.</given-names></name>
+          <name><surname>Rohloff</surname><given-names>R. -R.</given-names></name>
+          <name><surname>Rosich</surname><given-names>A.</given-names></name>
+          <name><surname>Sadegi</surname><given-names>S.</given-names></name>
+          <name><surname>Sánchez-Blanco</surname><given-names>E.</given-names></name>
+          <name><surname>Sánchez Carrasco</surname><given-names>M. A.</given-names></name>
+          <name><surname>Sánchez-López</surname><given-names>A.</given-names></name>
+          <name><surname>Sanz-Forcada</surname><given-names>J.</given-names></name>
+          <name><surname>Sarkis</surname><given-names>P.</given-names></name>
+          <name><surname>Sarmiento</surname><given-names>L. F.</given-names></name>
+          <name><surname>Schäfer</surname><given-names>S.</given-names></name>
+          <name><surname>Schiller</surname><given-names>J.</given-names></name>
+          <name><surname>Schöfer</surname><given-names>P.</given-names></name>
+          <name><surname>Schweitzer</surname><given-names>A.</given-names></name>
+          <name><surname>Solano</surname><given-names>E.</given-names></name>
+          <name><surname>Stahl</surname><given-names>O.</given-names></name>
+          <name><surname>Strachan</surname><given-names>J. B. P.</given-names></name>
+          <name><surname>Suárez</surname><given-names>J. C.</given-names></name>
+          <name><surname>Tabernero</surname><given-names>H. M.</given-names></name>
+          <name><surname>Tala</surname><given-names>M.</given-names></name>
+          <name><surname>Tulloch</surname><given-names>S. M.</given-names></name>
+          <name><surname>Veredas</surname><given-names>G.</given-names></name>
+          <name><surname>Vico Linares</surname><given-names>J. I.</given-names></name>
+          <name><surname>Vilardell</surname><given-names>F.</given-names></name>
+          <name><surname>Wagner</surname><given-names>K.</given-names></name>
+          <name><surname>Winkler</surname><given-names>J.</given-names></name>
+          <name><surname>Wolthoff</surname><given-names>V.</given-names></name>
+          <name><surname>Xu</surname><given-names>W.</given-names></name>
+          <name><surname>Yan</surname><given-names>F.</given-names></name>
+          <name><surname>Zapatero Osorio</surname><given-names>M. R.</given-names></name>
+        </person-group>
+        <article-title>The CARMENES search for exoplanets around M dwarfs . First visual-channel radial-velocity measurements and orbital parameter updates of seven M-dwarf planetary systems</article-title>
+        <source>Astronomy &amp; Astrophysics</source>
+        <year iso-8601-date="2018-02">2018</year><month>02</month>
+        <volume>609</volume>
+        <uri>https://arxiv.org/abs/1710.01595</uri>
+        <pub-id pub-id-type="doi">10.1051/0004-6361/201731442</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-oliphant2006guide">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Oliphant</surname><given-names>Travis E</given-names></name>
+        </person-group>
+        <source>A guide to NumPy</source>
+        <publisher-name>Trelgol Publishing USA</publisher-name>
+        <year iso-8601-date="2006">2006</year>
+        <volume>1</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-Astropy2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>Astropy Collaboration</string-name>
+          <name><surname>Price-Whelan</surname><given-names>A. M.</given-names></name>
+          <name><surname>Sipőcz</surname><given-names>B. M.</given-names></name>
+          <name><surname>Günther</surname><given-names>H. M.</given-names></name>
+          <name><surname>Lim</surname><given-names>P. L.</given-names></name>
+          <name><surname>Crawford</surname><given-names>S. M.</given-names></name>
+          <name><surname>Conseil</surname><given-names>S.</given-names></name>
+          <name><surname>Shupe</surname><given-names>D. L.</given-names></name>
+          <name><surname>Craig</surname><given-names>M. W.</given-names></name>
+          <name><surname>Dencheva</surname><given-names>N.</given-names></name>
+          <name><surname>Ginsburg</surname><given-names>A.</given-names></name>
+          <name><surname>Vand erPlas</surname><given-names>J. T.</given-names></name>
+          <name><surname>Bradley</surname><given-names>L. D.</given-names></name>
+          <name><surname>Pérez-Suárez</surname><given-names>D.</given-names></name>
+          <name><surname>de Val-Borro</surname><given-names>M.</given-names></name>
+          <name><surname>Aldcroft</surname><given-names>T. L.</given-names></name>
+          <name><surname>Cruz</surname><given-names>K. L.</given-names></name>
+          <name><surname>Robitaille</surname><given-names>T. P.</given-names></name>
+          <name><surname>Tollerud</surname><given-names>E. J.</given-names></name>
+          <name><surname>Ardelean</surname><given-names>C.</given-names></name>
+          <name><surname>Babej</surname><given-names>T.</given-names></name>
+          <name><surname>Bach</surname><given-names>Y. P.</given-names></name>
+          <name><surname>Bachetti</surname><given-names>M.</given-names></name>
+          <name><surname>Bakanov</surname><given-names>A. V.</given-names></name>
+          <name><surname>Bamford</surname><given-names>S. P.</given-names></name>
+          <name><surname>Barentsen</surname><given-names>G.</given-names></name>
+          <name><surname>Barmby</surname><given-names>P.</given-names></name>
+          <name><surname>Baumbach</surname><given-names>A.</given-names></name>
+          <name><surname>Berry</surname><given-names>K. L.</given-names></name>
+          <name><surname>Biscani</surname><given-names>F.</given-names></name>
+          <name><surname>Boquien</surname><given-names>M.</given-names></name>
+          <name><surname>Bostroem</surname><given-names>K. A.</given-names></name>
+          <name><surname>Bouma</surname><given-names>L. G.</given-names></name>
+          <name><surname>Brammer</surname><given-names>G. B.</given-names></name>
+          <name><surname>Bray</surname><given-names>E. M.</given-names></name>
+          <name><surname>Breytenbach</surname><given-names>H.</given-names></name>
+          <name><surname>Buddelmeijer</surname><given-names>H.</given-names></name>
+          <name><surname>Burke</surname><given-names>D. J.</given-names></name>
+          <name><surname>Calderone</surname><given-names>G.</given-names></name>
+          <name><surname>Cano Rodrı́guez</surname><given-names>J. L.</given-names></name>
+          <name><surname>Cara</surname><given-names>M.</given-names></name>
+          <name><surname>Cardoso</surname><given-names>J. V. M.</given-names></name>
+          <name><surname>Cheedella</surname><given-names>S.</given-names></name>
+          <name><surname>Copin</surname><given-names>Y.</given-names></name>
+          <name><surname>Corrales</surname><given-names>L.</given-names></name>
+          <name><surname>Crichton</surname><given-names>D.</given-names></name>
+          <name><surname>D’Avella</surname><given-names>D.</given-names></name>
+          <name><surname>Deil</surname><given-names>C.</given-names></name>
+          <name><surname>Depagne</surname><given-names>É.</given-names></name>
+          <name><surname>Dietrich</surname><given-names>J. P.</given-names></name>
+          <name><surname>Donath</surname><given-names>A.</given-names></name>
+          <name><surname>Droettboom</surname><given-names>M.</given-names></name>
+          <name><surname>Earl</surname><given-names>N.</given-names></name>
+          <name><surname>Erben</surname><given-names>T.</given-names></name>
+          <name><surname>Fabbro</surname><given-names>S.</given-names></name>
+          <name><surname>Ferreira</surname><given-names>L. A.</given-names></name>
+          <name><surname>Finethy</surname><given-names>T.</given-names></name>
+          <name><surname>Fox</surname><given-names>R. T.</given-names></name>
+          <name><surname>Garrison</surname><given-names>L. H.</given-names></name>
+          <name><surname>Gibbons</surname><given-names>S. L. J.</given-names></name>
+          <name><surname>Goldstein</surname><given-names>D. A.</given-names></name>
+          <name><surname>Gommers</surname><given-names>R.</given-names></name>
+          <name><surname>Greco</surname><given-names>J. P.</given-names></name>
+          <name><surname>Greenfield</surname><given-names>P.</given-names></name>
+          <name><surname>Groener</surname><given-names>A. M.</given-names></name>
+          <name><surname>Grollier</surname><given-names>F.</given-names></name>
+          <name><surname>Hagen</surname><given-names>A.</given-names></name>
+          <name><surname>Hirst</surname><given-names>P.</given-names></name>
+          <name><surname>Homeier</surname><given-names>D.</given-names></name>
+          <name><surname>Horton</surname><given-names>A. J.</given-names></name>
+          <name><surname>Hosseinzadeh</surname><given-names>G.</given-names></name>
+          <name><surname>Hu</surname><given-names>L.</given-names></name>
+          <name><surname>Hunkeler</surname><given-names>J. S.</given-names></name>
+          <name><surname>Ivezić</surname><given-names>Ž.</given-names></name>
+          <name><surname>Jain</surname><given-names>A.</given-names></name>
+          <name><surname>Jenness</surname><given-names>T.</given-names></name>
+          <name><surname>Kanarek</surname><given-names>G.</given-names></name>
+          <name><surname>Kendrew</surname><given-names>S.</given-names></name>
+          <name><surname>Kern</surname><given-names>N. S.</given-names></name>
+          <name><surname>Kerzendorf</surname><given-names>W. E.</given-names></name>
+          <name><surname>Khvalko</surname><given-names>A.</given-names></name>
+          <name><surname>King</surname><given-names>J.</given-names></name>
+          <name><surname>Kirkby</surname><given-names>D.</given-names></name>
+          <name><surname>Kulkarni</surname><given-names>A. M.</given-names></name>
+          <name><surname>Kumar</surname><given-names>A.</given-names></name>
+          <name><surname>Lee</surname><given-names>A.</given-names></name>
+          <name><surname>Lenz</surname><given-names>D.</given-names></name>
+          <name><surname>Littlefair</surname><given-names>S. P.</given-names></name>
+          <name><surname>Ma</surname><given-names>Z.</given-names></name>
+          <name><surname>Macleod</surname><given-names>D. M.</given-names></name>
+          <name><surname>Mastropietro</surname><given-names>M.</given-names></name>
+          <name><surname>McCully</surname><given-names>C.</given-names></name>
+          <name><surname>Montagnac</surname><given-names>S.</given-names></name>
+          <name><surname>Morris</surname><given-names>B. M.</given-names></name>
+          <name><surname>Mueller</surname><given-names>M.</given-names></name>
+          <name><surname>Mumford</surname><given-names>S. J.</given-names></name>
+          <name><surname>Muna</surname><given-names>D.</given-names></name>
+          <name><surname>Murphy</surname><given-names>N. A.</given-names></name>
+          <name><surname>Nelson</surname><given-names>S.</given-names></name>
+          <name><surname>Nguyen</surname><given-names>G. H.</given-names></name>
+          <name><surname>Ninan</surname><given-names>J. P.</given-names></name>
+          <name><surname>Nöthe</surname><given-names>M.</given-names></name>
+          <name><surname>Ogaz</surname><given-names>S.</given-names></name>
+          <name><surname>Oh</surname><given-names>S.</given-names></name>
+          <name><surname>Parejko</surname><given-names>J. K.</given-names></name>
+          <name><surname>Parley</surname><given-names>N.</given-names></name>
+          <name><surname>Pascual</surname><given-names>S.</given-names></name>
+          <name><surname>Patil</surname><given-names>R.</given-names></name>
+          <name><surname>Patil</surname><given-names>A. A.</given-names></name>
+          <name><surname>Plunkett</surname><given-names>A. L.</given-names></name>
+          <name><surname>Prochaska</surname><given-names>J. X.</given-names></name>
+          <name><surname>Rastogi</surname><given-names>T.</given-names></name>
+          <name><surname>Reddy Janga</surname><given-names>V.</given-names></name>
+          <name><surname>Sabater</surname><given-names>J.</given-names></name>
+          <name><surname>Sakurikar</surname><given-names>P.</given-names></name>
+          <name><surname>Seifert</surname><given-names>M.</given-names></name>
+          <name><surname>Sherbert</surname><given-names>L. E.</given-names></name>
+          <name><surname>Sherwood-Taylor</surname><given-names>H.</given-names></name>
+          <name><surname>Shih</surname><given-names>A. Y.</given-names></name>
+          <name><surname>Sick</surname><given-names>J.</given-names></name>
+          <name><surname>Silbiger</surname><given-names>M. T.</given-names></name>
+          <name><surname>Singanamalla</surname><given-names>S.</given-names></name>
+          <name><surname>Singer</surname><given-names>L. P.</given-names></name>
+          <name><surname>Sladen</surname><given-names>P. H.</given-names></name>
+          <name><surname>Sooley</surname><given-names>K. A.</given-names></name>
+          <name><surname>Sornarajah</surname><given-names>S.</given-names></name>
+          <name><surname>Streicher</surname><given-names>O.</given-names></name>
+          <name><surname>Teuben</surname><given-names>P.</given-names></name>
+          <name><surname>Thomas</surname><given-names>S. W.</given-names></name>
+          <name><surname>Tremblay</surname><given-names>G. R.</given-names></name>
+          <name><surname>Turner</surname><given-names>J. E. H.</given-names></name>
+          <name><surname>Terrón</surname><given-names>V.</given-names></name>
+          <name><surname>van Kerkwijk</surname><given-names>M. H.</given-names></name>
+          <name><surname>de la Vega</surname><given-names>A.</given-names></name>
+          <name><surname>Watkins</surname><given-names>L. L.</given-names></name>
+          <name><surname>Weaver</surname><given-names>B. A.</given-names></name>
+          <name><surname>Whitmore</surname><given-names>J. B.</given-names></name>
+          <name><surname>Woillez</surname><given-names>J.</given-names></name>
+          <name><surname>Zabalza</surname><given-names>V.</given-names></name>
+          <string-name>Astropy Contributors</string-name>
+        </person-group>
+        <article-title>The Astropy Project: Building an Open-science Project and Status of the v2.0 Core Package</article-title>
+        <source>Astronomical Journal</source>
+        <year iso-8601-date="2018-09">2018</year><month>09</month>
+        <volume>156</volume>
+        <issue>3</issue>
+        <uri>https://arxiv.org/abs/1801.02634</uri>
+        <pub-id pub-id-type="doi">10.3847/1538-3881/aabc4f</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Astropy_comm">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>Astropy Collaboration</string-name>
+          <name><surname>Robitaille</surname><given-names>Thomas P.</given-names></name>
+          <name><surname>Tollerud</surname><given-names>Erik J.</given-names></name>
+          <name><surname>Greenfield</surname><given-names>Perry</given-names></name>
+          <name><surname>Droettboom</surname><given-names>Michael</given-names></name>
+          <name><surname>Bray</surname><given-names>Erik</given-names></name>
+          <name><surname>Aldcroft</surname><given-names>Tom</given-names></name>
+          <name><surname>Davis</surname><given-names>Matt</given-names></name>
+          <name><surname>Ginsburg</surname><given-names>Adam</given-names></name>
+          <name><surname>Price-Whelan</surname><given-names>Adrian M.</given-names></name>
+          <name><surname>Kerzendorf</surname><given-names>Wolfgang E.</given-names></name>
+          <name><surname>Conley</surname><given-names>Alexander</given-names></name>
+          <name><surname>Crighton</surname><given-names>Neil</given-names></name>
+          <name><surname>Barbary</surname><given-names>Kyle</given-names></name>
+          <name><surname>Muna</surname><given-names>Demitri</given-names></name>
+          <name><surname>Ferguson</surname><given-names>Henry</given-names></name>
+          <name><surname>Grollier</surname><given-names>Frédéric</given-names></name>
+          <name><surname>Parikh</surname><given-names>Madhura M.</given-names></name>
+          <name><surname>Nair</surname><given-names>Prasanth H.</given-names></name>
+          <name><surname>Unther</surname><given-names>Hans M.</given-names></name>
+          <name><surname>Deil</surname><given-names>Christoph</given-names></name>
+          <name><surname>Woillez</surname><given-names>Julien</given-names></name>
+          <name><surname>Conseil</surname><given-names>Simon</given-names></name>
+          <name><surname>Kramer</surname><given-names>Roban</given-names></name>
+          <name><surname>Turner</surname><given-names>James E. H.</given-names></name>
+          <name><surname>Singer</surname><given-names>Leo</given-names></name>
+          <name><surname>Fox</surname><given-names>Ryan</given-names></name>
+          <name><surname>Weaver</surname><given-names>Benjamin A.</given-names></name>
+          <name><surname>Zabalza</surname><given-names>Victor</given-names></name>
+          <name><surname>Edwards</surname><given-names>Zachary I.</given-names></name>
+          <name><surname>Azalee Bostroem</surname><given-names>K.</given-names></name>
+          <name><surname>Burke</surname><given-names>D. J.</given-names></name>
+          <name><surname>Casey</surname><given-names>Andrew R.</given-names></name>
+          <name><surname>Crawford</surname><given-names>Steven M.</given-names></name>
+          <name><surname>Dencheva</surname><given-names>Nadia</given-names></name>
+          <name><surname>Ely</surname><given-names>Justin</given-names></name>
+          <name><surname>Jenness</surname><given-names>Tim</given-names></name>
+          <name><surname>Labrie</surname><given-names>Kathleen</given-names></name>
+          <name><surname>Lim</surname><given-names>Pey Lian</given-names></name>
+          <name><surname>Pierfederici</surname><given-names>Francesco</given-names></name>
+          <name><surname>Pontzen</surname><given-names>Andrew</given-names></name>
+          <name><surname>Ptak</surname><given-names>Andy</given-names></name>
+          <name><surname>Refsdal</surname><given-names>Brian</given-names></name>
+          <name><surname>Servillat</surname><given-names>Mathieu</given-names></name>
+          <name><surname>Streicher</surname><given-names>Ole</given-names></name>
+        </person-group>
+        <article-title>Astropy: A community Python package for astronomy</article-title>
+        <source>Astronomy &amp; Astrophysics</source>
+        <year iso-8601-date="2013-10">2013</year><month>10</month>
+        <volume>558</volume>
+        <uri>https://arxiv.org/abs/1307.6212</uri>
+        <pub-id pub-id-type="doi">10.1051/0004-6361/201322068</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-tqdm">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>da Costa-Luis</surname><given-names>Casper</given-names></name>
+        </person-group>
+        <article-title>tqdm: A Fast, Extensible Progress Meter for Python and CLI</article-title>
+        <source>The Journal of Open Source Software</source>
+        <year iso-8601-date="2019-05">2019</year><month>05</month>
+        <volume>4</volume>
+        <issue>37</issue>
+        <pub-id pub-id-type="doi">10.21105/joss.01277</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hunter2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hunter</surname><given-names>J. D.</given-names></name>
+        </person-group>
+        <article-title>Matplotlib: A 2D graphics environment</article-title>
+        <source>Computing in Science &amp; Engineering</source>
+        <publisher-name>IEEE COMPUTER SOC</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>9</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2007.55</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Scipy2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+          <name><surname>Haberland</surname><given-names>Matt</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Burovski</surname><given-names>Evgeni</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Bright</surname><given-names>Jonathan</given-names></name>
+          <name><surname>van der Walt</surname><given-names>Stéfan J.</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Wilson</surname><given-names>Joshua</given-names></name>
+          <name><surname>Jarrod Millman</surname><given-names>K.</given-names></name>
+          <name><surname>Mayorov</surname><given-names>Nikolay</given-names></name>
+          <name><surname>Nelson</surname><given-names>Andrew R. J.</given-names></name>
+          <name><surname>Jones</surname><given-names>Eric</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Larson</surname><given-names>Eric</given-names></name>
+          <name><surname>Carey</surname><given-names>CJ</given-names></name>
+          <name><surname>Polat</surname><given-names>İlhan</given-names></name>
+          <name><surname>Feng</surname><given-names>Yu</given-names></name>
+          <name><surname>Moore</surname><given-names>Eric W.</given-names></name>
+          <name><surname>Vand erPlas</surname><given-names>Jake</given-names></name>
+          <name><surname>Laxalde</surname><given-names>Denis</given-names></name>
+          <name><surname>Perktold</surname><given-names>Josef</given-names></name>
+          <name><surname>Cimrman</surname><given-names>Robert</given-names></name>
+          <name><surname>Henriksen</surname><given-names>Ian</given-names></name>
+          <name><surname>Quintero</surname><given-names>E. A.</given-names></name>
+          <name><surname>Harris</surname><given-names>Charles R</given-names></name>
+          <name><surname>Archibald</surname><given-names>Anne M.</given-names></name>
+          <name><surname>Ribeiro</surname><given-names>Antônio H.</given-names></name>
+          <name><surname>Pedregosa</surname><given-names>Fabian</given-names></name>
+          <name><surname>van Mulbregt</surname><given-names>Paul</given-names></name>
+          <name><surname>Contributors</surname><given-names>SciPy 1. 0</given-names></name>
+        </person-group>
+        <article-title>SciPy 1.0–Fundamental Algorithms for Scientific Computing in Python</article-title>
+        <source>arXiv e-prints</source>
+        <year iso-8601-date="2019-07">2019</year><month>07</month>
+        <uri>https://arxiv.org/abs/1907.10121</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

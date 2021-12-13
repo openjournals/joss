@@ -1,0 +1,881 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2781</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02781</article-id>
+<title-group>
+<article-title>climpred: Verification of weather and climate
+forecasts</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-2309-8245</contrib-id>
+<string-name>Riley X. Brady</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-0216-2241</contrib-id>
+<string-name>Aaron Spring</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Atmospheric and Oceanic Sciences and
+Institute of Arctic and Alpine Research, University of Colorado Boulder,
+Boulder, Colorado USA</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Max Planck Institute for Meteorology, Hamburg,
+Germany</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>International Max Planck Research School on Earth System
+Modelling, Hamburg, Germany</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-02-22">
+<day>22</day>
+<month>2</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>59</issue>
+<fpage>2781</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>python</kwd>
+<kwd>climate</kwd>
+<kwd>forecasting</kwd>
+<kwd>geospatial</kwd>
+<kwd>big data</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Predicting extreme events and variations in weather and climate
+  provides crucial information for economic, social, and environmental
+  decision-making
+  (<xref alt="Merryfield et al., 2020" rid="ref-MerryfieldU003A2020" ref-type="bibr">Merryfield
+  et al., 2020</xref>). However, quantifying prediction skill for
+  multi-dimensional geospatial model output is computationally expensive
+  and a difficult coding challenge. The large datasets (order gigabytes
+  to terabytes) require parallel and out-of-memory computing to be
+  analyzed efficiently. Further, aligning the many forecast
+  initializations with differing observational products is a
+  straight-forward, but exhausting and error-prone exercise for
+  researchers.</p>
+  <p>To simplify and standardize forecast verification across scales
+  from hourly weather to decadal climate forecasts, we built
+  <monospace>climpred</monospace>: a community-driven python package for
+  computationally efficient and methodologically consistent verification
+  of ensemble prediction models. The code base is maintained through
+  open-source development. It leverages <monospace>xarray</monospace>
+  (<xref alt="Hoyer &amp; Hamman, 2017" rid="ref-HoyerU003A2017" ref-type="bibr">Hoyer
+  &amp; Hamman, 2017</xref>) to anticipate core prediction ensemble
+  dimensions (ensemble <monospace>member</monospace>,
+  <monospace>init</monospace>ialization date and
+  <monospace>lead</monospace> time) and <monospace>dask</monospace>
+  (<xref alt="Dask Development Team, 2016" rid="ref-dask" ref-type="bibr">Dask
+  Development Team, 2016</xref>;
+  <xref alt="Rocklin, 2015" rid="ref-RocklinU003A2015" ref-type="bibr">Rocklin,
+  2015</xref>) to perform out-of-memory and parallelized computations on
+  large datasets.</p>
+  <p> <monospace>climpred</monospace> aims to offer a comprehensive set
+  of analysis tools for assessing the quality of dynamical forecasts
+  relative to verification products (<italic>e.g.</italic>,
+  observations, reanalysis products, control simulations). The package
+  includes a suite of deterministic and probabilistic verification
+  metrics that are constantly expanded by the community and are
+  generally organized in our companion package,
+  <monospace>xskillscore</monospace>.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>While other climate verification packages exist
+  (<italic>e.g.</italic>, <monospace>s2dverification</monospace>
+  (<xref alt="Manubens et al., 2018" rid="ref-ManubensU003A2018" ref-type="bibr">Manubens
+  et al., 2018</xref>) written in R and <monospace>MurCSS</monospace>
+  (<xref alt="Illing et al., 2014" rid="ref-IllingU003A2014" ref-type="bibr">Illing
+  et al., 2014</xref>) written with python-based
+  <monospace>CDO</monospace>-bindings
+  (<xref alt="Schulzweida, 2019" rid="ref-CDO" ref-type="bibr">Schulzweida,
+  2019</xref>)), <monospace>climpred</monospace> is unique for many
+  reasons.</p>
+  <list list-type="order">
+    <list-item>
+      <p><monospace>climpred</monospace> spans broad temporal scales of
+      prediction, supporting the weather, subseasonal-to-seasonal (S2S),
+      and seasonal-to-decadal (S2D) communities.</p>
+    </list-item>
+    <list-item>
+      <p><monospace>climpred</monospace> is highly modular and supports
+      the research process from end-to-end, from loading in model
+      output, to interactive pre-processing and analysis, to
+      visualization.</p>
+    </list-item>
+    <list-item>
+      <p><monospace>climpred</monospace> supports
+      <monospace>dask</monospace>
+      (<xref alt="Dask Development Team, 2016" rid="ref-dask" ref-type="bibr">Dask
+      Development Team, 2016</xref>;
+      <xref alt="Rocklin, 2015" rid="ref-RocklinU003A2015" ref-type="bibr">Rocklin,
+      2015</xref>) and thus works across all computational scales, from
+      personal laptops to supercomputers (HPC).</p>
+    </list-item>
+    <list-item>
+      <p>Flexibility and scaling leads to verification of global 5° x 5°
+      resolution climate predictions in 8 seconds, compared to the 8
+      minutes required by <monospace>MurCSS</monospace>. However, note
+      that <monospace>climpred</monospace> modularizes its workflow such
+      that the verification step is performed on already pre-processed
+      output, while <monospace>MurCSS</monospace> uses a more rigid
+      framework that always required pre-processing. This time scale of
+      seconds allows for a truly interactive analysis experience.</p>
+    </list-item>
+    <list-item>
+      <p><monospace>climpred</monospace> is part of the wider scientific
+      python community, <monospace>pangeo</monospace>
+      (<xref alt="Abernathey et al., 2017" rid="ref-AbernatheyU003A2017" ref-type="bibr">Abernathey
+      et al., 2017</xref>;
+      <xref alt="Eynard-Bontemps et al., 2019" rid="ref-EynardU003A2019" ref-type="bibr">Eynard-Bontemps
+      et al., 2019</xref>). A wide adoption of
+      <monospace>climpred</monospace> could standardize prediction model
+      evaluation and make verification reproducible
+      (<xref alt="Irving, 2015" rid="ref-IrvingU003A2015" ref-type="bibr">Irving,
+      2015</xref>).</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="prediction-simulation-types">
+  <title>Prediction Simulation Types</title>
+  <p>Weather and climate modeling institutions typically run so-called
+  “hindcasts,” where dynamical models are retrospectively initialized
+  from many past observed climate states
+  (<xref alt="Meehl et al., 2009" rid="ref-MeehlU003A2009" ref-type="bibr">Meehl
+  et al., 2009</xref>). Initializations are then slightly perturbed to
+  generate an ensemble of forecasts that diverge solely due to their
+  sensitive dependence on initial conditions
+  (<xref alt="Lorenz, 1963" rid="ref-LorenzU003A1963" ref-type="bibr">Lorenz,
+  1963</xref>). Hindcasts are evaluated by using some statistical metric
+  to score their performance against historical observations. “Skill” is
+  established by comparing these results to the performance of some
+  “reference” forecast (Jolliffe &amp; Stephenson
+  (<xref alt="2012" rid="ref-JolliffeU003A2012" ref-type="bibr">2012</xref>);
+  <italic>e.g.</italic>, a persistence forecast). The main assumption is
+  that the skill established relative to the past will propagate to
+  forecasts of the future.</p>
+  <p>A more idealized approach is the so-called “perfect-model”
+  framework, which is ideal for investigating processes leading to
+  potentially exploitable predictability
+  (<xref alt="Bushuk et al., 2018" rid="ref-BushukU003A2018" ref-type="bibr">Bushuk
+  et al., 2018</xref>;
+  <xref alt="Griffies &amp; Bryan, 1997" rid="ref-GriffiesU003A1997" ref-type="bibr">Griffies
+  &amp; Bryan, 1997</xref>;
+  <xref alt="Séférian et al., 2018" rid="ref-SeferianU003A2018" ref-type="bibr">Séférian
+  et al., 2018</xref>;
+  <xref alt="Spring &amp; Ilyina, 2020" rid="ref-SpringU003A2020" ref-type="bibr">Spring
+  &amp; Ilyina, 2020</xref>). Ensemble members are spun off an
+  individual model (by slightly perturbing its state) to predict its own
+  evolution. This avoids initialization shocks
+  (<xref alt="Kröger et al., 2017" rid="ref-KrogerU003A2017" ref-type="bibr">Kröger
+  et al., 2017</xref>), since the framework is self-contained. However,
+  it cannot predict the real world. The perfect-model setup rather
+  estimates the theoretical upper limit timescale after which the value
+  of dynamical initialization is lost due to chaos in the Earth system,
+  assuming that the model perfectly replicates the dynamics of the real
+  world. Skill quantification is accomplished by considering one
+  ensemble member as the verification data and the remaining members as
+  the forecasts
+  (<xref alt="Griffies &amp; Bryan, 1997" rid="ref-GriffiesU003A1997" ref-type="bibr">Griffies
+  &amp; Bryan, 1997</xref>).</p>
+</sec>
+<sec id="climpred-classes-and-object-oriented-verification">
+  <title>Climpred Classes and Object-Oriented Verification</title>
+  <p><monospace>climpred</monospace> supports both prediction system
+  formats, offering <monospace>HindcastEnsemble</monospace> and
+  <monospace>PerfectModelEnsemble</monospace> objects.
+  <monospace>HindcastEnsemble</monospace> is instantiated with an
+  <monospace>initialized</monospace> hindcast ensemble dataset and
+  requires an <monospace>observation</monospace>al dataset against which
+  to verify. <monospace>PerfectModelEnsemble</monospace> is instantiated
+  with an <monospace>initialized</monospace> perfect-model ensemble
+  dataset and also accepts a <monospace>control</monospace> dataset
+  against which to evaluate forecasts. Both objects can also track an
+  <monospace>uninitialized</monospace> dataset, which represents a
+  historical simulation that evolves solely due to random internal
+  climate variability or can be used to isolate the influence of
+  external forcing (e.g.,
+  <xref alt="Kay et al., 2014" rid="ref-KayU003A2014" ref-type="bibr">Kay
+  et al., 2014</xref>).</p>
+  <p>Assessing skill for <monospace>PredictionEnsemble</monospace>
+  objects (the parent class to <monospace>HindcastEnsemble</monospace>
+  and <monospace>PerfectModelEnsemble</monospace>) is standardized into
+  a one-liner:</p>
+  <code language="python">PredictionEnsemble.verify(
+    # Score forecast using the Anomaly Correlation Coefficient.
+    metric='acc',
+    # Compare the ensemble mean to observations.
+    comparison='e2o',
+    # Keep the same set of initializations at each lead time.
+    alignment='same_inits',
+    # Reduce the verification over the initialization dimension.
+    dim='init',
+    # Score performance of a persistence forecast as well.
+    reference='persistence',
+)</code>
+  <p>Each keyword argument allows flexibility from the user’s end—one
+  can select from a library of metrics, comparison types, alignment
+  strategies, dimensional reductions, and reference forecasts. The most
+  unique feature to <monospace>climpred</monospace>, however, is the
+  ability for users to choose the alignment strategy to pair
+  initialization dates with verification dates over numerous lead times.
+  In other words, initialization dates need to be converted to target
+  forecast dates by shifting them using the lead time coordinate. This
+  is tedious, since one must remedy disparities in calendar types
+  between the model and observations and account for the time span of or
+  gaps in observations relative to the time span of the model.</p>
+  <p>There is seemingly no unified approach to how hindcast
+  initialization dates are aligned with observational dates in the
+  academic literature. The authors of <monospace>climpred</monospace>
+  thus identified three techniques, which can be selected by the
+  user:</p>
+  <list list-type="order">
+    <list-item>
+      <p>Maximize the degrees of freedom by selecting all initialization
+      dates that verify with the available observations at each lead. In
+      turn, initializations and verification dates are not held constant
+      for each lead.</p>
+    </list-item>
+    <list-item>
+      <p>Use the identical set of initializations that can verify over
+      the given observational window at all leads. However, the
+      verification dates change at each lead.</p>
+    </list-item>
+    <list-item>
+      <p>Use the identical verification window at each lead, while
+      allowing the set of initializations used at each lead to
+      change.</p>
+    </list-item>
+  </list>
+  <p>These strategies are shown graphically and explained in more detail
+  in the documentation. Note that <monospace>climpred</monospace> offers
+  extensive analysis functionality in addition to forecast verification,
+  such as spatiotemporal smoothing
+  (<xref alt="Goddard et al., 2013" rid="ref-GoddardU003A2013" ref-type="bibr">Goddard
+  et al., 2013</xref>), bias removal
+  (<xref alt="Boer et al., 2016" rid="ref-BoerU003A2016" ref-type="bibr">Boer
+  et al., 2016</xref>), significance testing
+  (<xref alt="Boer et al., 2016" rid="ref-BoerU003A2016" ref-type="bibr">Boer
+  et al., 2016</xref>;
+  <xref alt="DelSole &amp; Tippett, 2016" rid="ref-DelSoleU003A2016" ref-type="bibr">DelSole
+  &amp; Tippett, 2016</xref>;
+  <xref alt="Goddard et al., 2013" rid="ref-GoddardU003A2013" ref-type="bibr">Goddard
+  et al., 2013</xref>), and a graphics library.</p>
+</sec>
+<sec id="use-in-academic-literature">
+  <title>Use in Academic Literature</title>
+  <p><monospace>climpred</monospace> has been used to drive analysis in
+  three academic papers so far. Brady et al.
+  (<xref alt="2020" rid="ref-BradyU003A2020" ref-type="bibr">2020</xref>)
+  used the <monospace>HindcastEnsemble</monospace> class to highlight
+  multi-year predictability of ocean acidification in the California
+  Current; Spring &amp; Ilyina
+  (<xref alt="2020" rid="ref-SpringU003A2020" ref-type="bibr">2020</xref>)
+  and Spring et al.
+  (<xref alt="2021" rid="ref-SpringU003A2021" ref-type="bibr">2021</xref>)
+  used the <monospace>PerfectModelEnsemble</monospace> class to
+  highlight predictability horizons in the global carbon cycle; and
+  Krumhardt et al.
+  (<xref alt="2020" rid="ref-KrumhardtU003A2020" ref-type="bibr">2020</xref>)
+  used the <monospace>HindcastEnsemble</monospace> class to illuminate
+  multi-year predictability in marine Net Primary Productivity.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We thank Andrew Huang for early stage refactoring and continued
+  feedback on <monospace>climpred</monospace>. We also thank Kathy
+  Pegion for pioneering the seasonal, monthly, and subseasonal time
+  resolutions. Thanks in addition to Ray Bell for initiating and
+  maintaining <monospace>xskillscore</monospace>, which serves to host
+  the majority of metrics used in <monospace>climpred</monospace>.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-BoerU003A2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Boer</surname><given-names>G. J.</given-names></name>
+          <name><surname>Smith</surname><given-names>D. M.</given-names></name>
+          <name><surname>Cassou</surname><given-names>C.</given-names></name>
+          <name><surname>Doblas-Reyes</surname><given-names>F.</given-names></name>
+          <name><surname>Danabasoglu</surname><given-names>G.</given-names></name>
+          <name><surname>Kirtman</surname><given-names>B.</given-names></name>
+          <name><surname>Kushnir</surname><given-names>Y.</given-names></name>
+          <name><surname>Kimoto</surname><given-names>M.</given-names></name>
+          <name><surname>Meehl</surname><given-names>G. A.</given-names></name>
+          <name><surname>Msadek</surname><given-names>R.</given-names></name>
+          <name><surname>Mueller</surname><given-names>W. A.</given-names></name>
+          <name><surname>Taylor</surname><given-names>K. E.</given-names></name>
+          <name><surname>Zwiers</surname><given-names>F.</given-names></name>
+          <name><surname>Rixen</surname><given-names>M.</given-names></name>
+          <name><surname>Ruprich-Robert</surname><given-names>Y.</given-names></name>
+          <name><surname>Eade</surname><given-names>R.</given-names></name>
+        </person-group>
+        <article-title>The Decadal Climate Prediction Project (DCPP) contribution to CMIP6</article-title>
+        <source>Geosci. Model Dev.</source>
+        <year iso-8601-date="2016-10">2016</year><month>10</month>
+        <volume>9</volume>
+        <issue>10</issue>
+        <issn>1991-9603</issn>
+        <pub-id pub-id-type="doi">10/f89qdf</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-BradyU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Brady</surname><given-names>Riley X.</given-names></name>
+          <name><surname>Lovenduski</surname><given-names>Nicole S.</given-names></name>
+          <name><surname>Yeager</surname><given-names>Stephen G.</given-names></name>
+          <name><surname>Long</surname><given-names>Matthew C.</given-names></name>
+          <name><surname>Lindsay</surname><given-names>Keith</given-names></name>
+        </person-group>
+        <article-title>Skillful multiyear predictions of ocean acidification in the California Current System</article-title>
+        <source>Nature Communications</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="2020-05">2020</year><month>05</month>
+        <volume>11</volume>
+        <issue>1</issue>
+        <issn>2041-1723</issn>
+        <pub-id pub-id-type="doi">10/ggtpks</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-BushukU003A2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bushuk</surname><given-names>Mitchell</given-names></name>
+          <name><surname>Msadek</surname><given-names>Rym</given-names></name>
+          <name><surname>Winton</surname><given-names>Michael</given-names></name>
+          <name><surname>Vecchi</surname><given-names>Gabriel</given-names></name>
+          <name><surname>Yang</surname><given-names>Xiaosong</given-names></name>
+          <name><surname>Rosati</surname><given-names>Anthony</given-names></name>
+          <name><surname>Gudgel</surname><given-names>Rich</given-names></name>
+        </person-group>
+        <article-title>Regional Arctic seaice prediction: Potential versus operational seasonal forecast skill</article-title>
+        <source>Climate Dynamics</source>
+        <year iso-8601-date="2018-06">2018</year><month>06</month>
+        <issn>0930-7575, 1432-0894</issn>
+        <pub-id pub-id-type="doi">10/gd7hfq</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-CDO">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Schulzweida</surname><given-names>Uwe</given-names></name>
+        </person-group>
+        <article-title>CDO: Climate Data Operators</article-title>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://doi.org/10.5281/zenodo.2558193</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-dask">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>Dask Development Team</string-name>
+        </person-group>
+        <article-title>Dask: Library for dynamic task scheduling</article-title>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://dask.org</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-DelSoleU003A2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>DelSole</surname><given-names>Timothy</given-names></name>
+          <name><surname>Tippett</surname><given-names>Michael K.</given-names></name>
+        </person-group>
+        <article-title>Forecast comparison based on random walks</article-title>
+        <source>Monthly Weather Review</source>
+        <publisher-name>American Meteorological Society</publisher-name>
+        <year iso-8601-date="2016-02">2016</year><month>02</month>
+        <volume>144</volume>
+        <issue>2</issue>
+        <issn>0027-0644</issn>
+        <pub-id pub-id-type="doi">10/f782pf</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-AbernatheyU003A2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Abernathey</surname><given-names>Ryan</given-names></name>
+          <name><surname>Paul</surname><given-names>Kevin</given-names></name>
+          <name><surname>Hamman</surname><given-names>Joe</given-names></name>
+          <name><surname>Rocklin</surname><given-names>Matthew</given-names></name>
+          <name><surname>Lepore</surname><given-names>Chiara</given-names></name>
+          <name><surname>Tippett</surname><given-names>Michael</given-names></name>
+          <name><surname>Henderson</surname><given-names>Naomi</given-names></name>
+          <name><surname>Seager</surname><given-names>Richard</given-names></name>
+          <name><surname>May</surname><given-names>Ryan</given-names></name>
+          <name><surname>Del Vento</surname><given-names>Davide</given-names></name>
+        </person-group>
+        <article-title>Pangeo NSF Earthcube Proposal</article-title>
+        <publisher-name>figshare</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <pub-id pub-id-type="doi">10/gh3ts4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-EynardU003A2019">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Eynard-Bontemps</surname><given-names>Guillaume</given-names></name>
+          <name><surname>Abernathey</surname><given-names>Ryan</given-names></name>
+          <name><surname>Hamman</surname><given-names>Joseph</given-names></name>
+          <name><surname>Ponte</surname><given-names>Aurelien</given-names></name>
+          <name><surname>Willi</surname><given-names>Rath</given-names></name>
+        </person-group>
+        <article-title>The Pangeo big data ecosystem and its use at CNES</article-title>
+        <year iso-8601-date="2019">2019</year>
+        <isbn>978-92-76-00034-1</isbn>
+        <uri>https://archimer.ifremer.fr/doc/00503/61441/</uri>
+        <pub-id pub-id-type="doi">10.2760/848593</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-GoddardU003A2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Goddard</surname><given-names>L.</given-names></name>
+          <name><surname>Kumar</surname><given-names>A.</given-names></name>
+          <name><surname>Solomon</surname><given-names>A.</given-names></name>
+          <name><surname>Smith</surname><given-names>D.</given-names></name>
+          <name><surname>Boer</surname><given-names>G.</given-names></name>
+          <name><surname>Gonzalez</surname><given-names>P.</given-names></name>
+          <name><surname>Kharin</surname><given-names>V.</given-names></name>
+          <name><surname>Merryfield</surname><given-names>W.</given-names></name>
+          <name><surname>Deser</surname><given-names>C.</given-names></name>
+          <name><surname>Mason</surname><given-names>S. J.</given-names></name>
+          <name><surname>Kirtman</surname><given-names>B. P.</given-names></name>
+          <name><surname>Msadek</surname><given-names>R.</given-names></name>
+          <name><surname>Sutton</surname><given-names>R.</given-names></name>
+          <name><surname>Hawkins</surname><given-names>E.</given-names></name>
+          <name><surname>Fricker</surname><given-names>T.</given-names></name>
+          <name><surname>Hegerl</surname><given-names>G.</given-names></name>
+          <name><surname>Ferro</surname><given-names>C. a. T.</given-names></name>
+          <name><surname>Stephenson</surname><given-names>D. B.</given-names></name>
+          <name><surname>Meehl</surname><given-names>G. A.</given-names></name>
+          <name><surname>Stockdale</surname><given-names>T.</given-names></name>
+          <name><surname>Burgman</surname><given-names>R.</given-names></name>
+          <name><surname>Greene</surname><given-names>A. M.</given-names></name>
+          <name><surname>Kushnir</surname><given-names>Y.</given-names></name>
+          <name><surname>Newman</surname><given-names>M.</given-names></name>
+          <name><surname>Carton</surname><given-names>J.</given-names></name>
+          <name><surname>Fukumori</surname><given-names>I.</given-names></name>
+          <name><surname>Delworth</surname><given-names>T.</given-names></name>
+        </person-group>
+        <article-title>A verification framework for interannual-to-decadal predictions experiments</article-title>
+        <source>Climate Dynamics</source>
+        <year iso-8601-date="2013-01">2013</year><month>01</month>
+        <volume>40</volume>
+        <issue>1-2</issue>
+        <issn>0930-7575, 1432-0894</issn>
+        <pub-id pub-id-type="doi">10/f4jjvf</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-GriffiesU003A1997">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Griffies</surname><given-names>Stephen M.</given-names></name>
+          <name><surname>Bryan</surname><given-names>Kirk</given-names></name>
+        </person-group>
+        <article-title>Predictability of North Atlantic multidecadal climate variability</article-title>
+        <source>science</source>
+        <year iso-8601-date="1997-01">1997</year><month>01</month>
+        <volume>275</volume>
+        <issue>5297</issue>
+        <issn>0036-8075, 1095-9203</issn>
+        <pub-id pub-id-type="doi">10/dp65gs</pub-id>
+        <pub-id pub-id-type="pmid">8985005</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-HoyerU003A2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hoyer</surname><given-names>Stephan</given-names></name>
+          <name><surname>Hamman</surname><given-names>Joe</given-names></name>
+        </person-group>
+        <article-title>Xarray: N-D labeled arrays and datasets in python</article-title>
+        <source>Journal of Open Research Software</source>
+        <year iso-8601-date="2017-04">2017</year><month>04</month>
+        <volume>5</volume>
+        <issue>1</issue>
+        <issn>2049-9647</issn>
+        <pub-id pub-id-type="doi">10/gdqdmw</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-IllingU003A2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Illing</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Kadow</surname><given-names>Christopher</given-names></name>
+          <name><surname>Oliver</surname><given-names>Kunst</given-names></name>
+          <name><surname>Cubasch</surname><given-names>Ulrich</given-names></name>
+        </person-group>
+        <article-title>MurCSS: A tool for standardized evaluation of decadal hindcast systems</article-title>
+        <source>Journal of Open Research Software</source>
+        <year iso-8601-date="2014-09">2014</year><month>09</month>
+        <volume>2</volume>
+        <issue>1</issue>
+        <issn>2049-9647</issn>
+        <pub-id pub-id-type="doi">10/gfxr7x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-IrvingU003A2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Irving</surname><given-names>Damien</given-names></name>
+        </person-group>
+        <article-title>A Minimum Standard for Publishing Computational Results in the Weather and Climate Sciences</article-title>
+        <source>Bulletin of the American Meteorological Society</source>
+        <year iso-8601-date="2015-10">2015</year><month>10</month>
+        <volume>97</volume>
+        <issue>7</issue>
+        <issn>0003-0007</issn>
+        <pub-id pub-id-type="doi">10/gf4wzh</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-JolliffeU003A2012">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Jolliffe</surname><given-names>Ian T</given-names></name>
+          <name><surname>Stephenson</surname><given-names>David B</given-names></name>
+        </person-group>
+        <source>Forecast verification: A practitioner’s guide in atmospheric science</source>
+        <publisher-name>John Wiley &amp; Sons</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-KayU003A2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kay</surname><given-names>J. E.</given-names></name>
+          <name><surname>Deser</surname><given-names>C.</given-names></name>
+          <name><surname>Phillips</surname><given-names>A.</given-names></name>
+          <name><surname>Mai</surname><given-names>A.</given-names></name>
+          <name><surname>Hannay</surname><given-names>C.</given-names></name>
+          <name><surname>Strand</surname><given-names>G.</given-names></name>
+          <name><surname>Arblaster</surname><given-names>J. M.</given-names></name>
+          <name><surname>Bates</surname><given-names>S. C.</given-names></name>
+          <name><surname>Danabasoglu</surname><given-names>G.</given-names></name>
+          <name><surname>Edwards</surname><given-names>J.</given-names></name>
+          <name><surname>Holland</surname><given-names>M.</given-names></name>
+          <name><surname>Kushner</surname><given-names>P.</given-names></name>
+          <name><surname>Lamarque</surname><given-names>J.-F.</given-names></name>
+          <name><surname>Lawrence</surname><given-names>D.</given-names></name>
+          <name><surname>Lindsay</surname><given-names>K.</given-names></name>
+          <name><surname>Middleton</surname><given-names>A.</given-names></name>
+          <name><surname>Munoz</surname><given-names>E.</given-names></name>
+          <name><surname>Neale</surname><given-names>R.</given-names></name>
+          <name><surname>Oleson</surname><given-names>K.</given-names></name>
+          <name><surname>Polvani</surname><given-names>L.</given-names></name>
+          <name><surname>Vertenstein</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>The Community Earth System Model (CESM) large ensemble project: A community resource for studying climate change in the presence of internal climate variability</article-title>
+        <source>Bulletin of the American Meteorological Society</source>
+        <year iso-8601-date="2014-11">2014</year><month>11</month>
+        <volume>96</volume>
+        <issue>8</issue>
+        <issn>0003-0007</issn>
+        <pub-id pub-id-type="doi">10/f7r9st</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-KrogerU003A2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kröger</surname><given-names>Jürgen</given-names></name>
+          <name><surname>Pohlmann</surname><given-names>Holger</given-names></name>
+          <name><surname>Sienz</surname><given-names>Frank</given-names></name>
+          <name><surname>Marotzke</surname><given-names>Jochem</given-names></name>
+          <name><surname>Baehr</surname><given-names>Johanna</given-names></name>
+          <name><surname>Köhl</surname><given-names>Armin</given-names></name>
+          <name><surname>Modali</surname><given-names>Kameswarrao</given-names></name>
+          <name><surname>Polkova</surname><given-names>Iuliia</given-names></name>
+          <name><surname>Stammer</surname><given-names>Detlef</given-names></name>
+          <name><surname>Vamborg</surname><given-names>Freja S. E.</given-names></name>
+          <name><surname>Müller</surname><given-names>Wolfgang A.</given-names></name>
+        </person-group>
+        <article-title>Full-field initialized decadal predictions with the MPI earth system model: An initial shock in the North Atlantic</article-title>
+        <source>Climate Dynamics</source>
+        <year iso-8601-date="2017-12">2017</year><month>12</month>
+        <issn>0930-7575, 1432-0894</issn>
+        <pub-id pub-id-type="doi">10/gdsnf8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-KrumhardtU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Krumhardt</surname><given-names>K. M.</given-names></name>
+          <name><surname>Lovenduski</surname><given-names>N. S.</given-names></name>
+          <name><surname>Long</surname><given-names>M. C.</given-names></name>
+          <name><surname>Luo</surname><given-names>J. Y.</given-names></name>
+          <name><surname>Lindsay</surname><given-names>K.</given-names></name>
+          <name><surname>Yeager</surname><given-names>S.</given-names></name>
+          <name><surname>Harrison</surname><given-names>C.</given-names></name>
+        </person-group>
+        <article-title>Potential predictability of net primary production in the ocean</article-title>
+        <source>Global Biogeochemical Cycles</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>34</volume>
+        <issue>6</issue>
+        <issn>1944-9224</issn>
+        <pub-id pub-id-type="doi">10/gg9ss8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LorenzU003A1963">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lorenz</surname><given-names>Edward N</given-names></name>
+        </person-group>
+        <article-title>Deterministic nonperiodic flow</article-title>
+        <source>Journal of the atmospheric sciences</source>
+        <year iso-8601-date="1963">1963</year>
+        <volume>20</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1175/1520-0469(1963)020&lt;0130:DNF&gt;2.0.CO;2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ManubensU003A2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Manubens</surname><given-names>Nicolau</given-names></name>
+          <name><surname>Caron</surname><given-names>Louis-Philippe</given-names></name>
+          <name><surname>Hunter</surname><given-names>Alasdair</given-names></name>
+          <name><surname>Bellprat</surname><given-names>Omar</given-names></name>
+          <name><surname>Exarchou</surname><given-names>Eleftheria</given-names></name>
+          <name><surname>Fučkar</surname><given-names>Neven S.</given-names></name>
+          <name><surname>Garcia-Serrano</surname><given-names>Javier</given-names></name>
+          <name><surname>Massonnet</surname><given-names>François</given-names></name>
+          <name><surname>Ménégoz</surname><given-names>Martin</given-names></name>
+          <name><surname>Sicardi</surname><given-names>Valentina</given-names></name>
+          <name><surname>Batté</surname><given-names>Lauriane</given-names></name>
+          <name><surname>Prodhomme</surname><given-names>Chloé</given-names></name>
+          <name><surname>Torralba</surname><given-names>Verónica</given-names></name>
+          <name><surname>Cortesi</surname><given-names>Nicola</given-names></name>
+          <name><surname>Mula-Valls</surname><given-names>Oriol</given-names></name>
+          <name><surname>Serradell</surname><given-names>Kim</given-names></name>
+          <name><surname>Guemas</surname><given-names>Virginie</given-names></name>
+          <name><surname>Doblas-Reyes</surname><given-names>Francisco J.</given-names></name>
+        </person-group>
+        <article-title>An R package for climate forecast verification</article-title>
+        <source>Environmental Modelling &amp; Software</source>
+        <year iso-8601-date="2018-05">2018</year><month>05</month>
+        <volume>103</volume>
+        <issn>1364-8152</issn>
+        <pub-id pub-id-type="doi">10/gc9wzk</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MeehlU003A2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Meehl</surname><given-names>Gerald A.</given-names></name>
+          <name><surname>Goddard</surname><given-names>Lisa</given-names></name>
+          <name><surname>Murphy</surname><given-names>James</given-names></name>
+          <name><surname>Stouffer</surname><given-names>Ronald J.</given-names></name>
+          <name><surname>Boer</surname><given-names>George</given-names></name>
+          <name><surname>Danabasoglu</surname><given-names>Gokhan</given-names></name>
+          <name><surname>Dixon</surname><given-names>Keith</given-names></name>
+          <name><surname>Giorgetta</surname><given-names>Marco A.</given-names></name>
+          <name><surname>Greene</surname><given-names>Arthur M.</given-names></name>
+          <name><surname>Hawkins</surname><given-names>Ed</given-names></name>
+          <name><surname>Hegerl</surname><given-names>Gabriele</given-names></name>
+          <name><surname>Karoly</surname><given-names>David</given-names></name>
+          <name><surname>Keenlyside</surname><given-names>Noel</given-names></name>
+          <name><surname>Kimoto</surname><given-names>Masahide</given-names></name>
+          <name><surname>Kirtman</surname><given-names>Ben</given-names></name>
+          <name><surname>Navarra</surname><given-names>Antonio</given-names></name>
+          <name><surname>Pulwarty</surname><given-names>Roger</given-names></name>
+          <name><surname>Smith</surname><given-names>Doug</given-names></name>
+          <name><surname>Stammer</surname><given-names>Detlef</given-names></name>
+          <name><surname>Stockdale</surname><given-names>Timothy</given-names></name>
+        </person-group>
+        <article-title>Decadal prediction: Can it be skillful?</article-title>
+        <source>Bulletin of the American Meteorological Society</source>
+        <year iso-8601-date="2009-10">2009</year><month>10</month>
+        <volume>90</volume>
+        <issue>10</issue>
+        <issn>0003-0007</issn>
+        <pub-id pub-id-type="doi">10/dpsjbp</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MerryfieldU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Merryfield</surname><given-names>William J.</given-names></name>
+          <name><surname>Baehr</surname><given-names>Johanna</given-names></name>
+          <name><surname>Batté</surname><given-names>Lauriane</given-names></name>
+          <name><surname>Becker</surname><given-names>Emily J.</given-names></name>
+          <name><surname>Butler</surname><given-names>Amy H.</given-names></name>
+          <name><surname>Coelho</surname><given-names>Caio A. S.</given-names></name>
+          <name><surname>Danabasoglu</surname><given-names>Gokhan</given-names></name>
+          <name><surname>Dirmeyer</surname><given-names>Paul A.</given-names></name>
+          <name><surname>Doblas-Reyes</surname><given-names>Francisco J.</given-names></name>
+          <name><surname>Domeisen</surname><given-names>Daniela I. V.</given-names></name>
+          <name><surname>Ferranti</surname><given-names>Laura</given-names></name>
+          <name><surname>Ilynia</surname><given-names>Tatiana</given-names></name>
+          <name><surname>Kumar</surname><given-names>Arun</given-names></name>
+          <name><surname>Müller</surname><given-names>Wolfgang A.</given-names></name>
+          <name><surname>Rixen</surname><given-names>Michel</given-names></name>
+          <name><surname>Robertson</surname><given-names>Andrew W.</given-names></name>
+          <name><surname>Smith</surname><given-names>Doug M.</given-names></name>
+          <name><surname>Takaya</surname><given-names>Yuhei</given-names></name>
+          <name><surname>Tuma</surname><given-names>Matthias</given-names></name>
+          <name><surname>Vitart</surname><given-names>Frederic</given-names></name>
+          <name><surname>White</surname><given-names>Christopher J.</given-names></name>
+          <name><surname>Alvarez</surname><given-names>Mariano S.</given-names></name>
+          <name><surname>Ardilouze</surname><given-names>Constantin</given-names></name>
+          <name><surname>Attard</surname><given-names>Hannah</given-names></name>
+          <name><surname>Baggett</surname><given-names>Cory</given-names></name>
+          <name><surname>Balmaseda</surname><given-names>Magdalena A.</given-names></name>
+          <name><surname>Beraki</surname><given-names>Asmerom F.</given-names></name>
+          <name><surname>Bhattacharjee</surname><given-names>Partha S.</given-names></name>
+          <name><surname>Bilbao</surname><given-names>Roberto</given-names></name>
+          <name><surname>de Andrade</surname><given-names>Felipe M.</given-names></name>
+          <name><surname>DeFlorio</surname><given-names>Michael J.</given-names></name>
+          <name><surname>Díaz</surname><given-names>Leandro B.</given-names></name>
+          <name><surname>Ehsan</surname><given-names>Muhammad Azhar</given-names></name>
+          <name><surname>Fragkoulidis</surname><given-names>Georgios</given-names></name>
+          <name><surname>Grainger</surname><given-names>Sam</given-names></name>
+          <name><surname>Green</surname><given-names>Benjamin W.</given-names></name>
+          <name><surname>Hell</surname><given-names>Momme C.</given-names></name>
+          <name><surname>Infanti</surname><given-names>Johnna M.</given-names></name>
+          <name><surname>Isensee</surname><given-names>Katharina</given-names></name>
+          <name><surname>Kataoka</surname><given-names>Takahito</given-names></name>
+          <name><surname>Kirtman</surname><given-names>Ben P.</given-names></name>
+          <name><surname>Klingaman</surname><given-names>Nicholas P.</given-names></name>
+          <name><surname>Lee</surname><given-names>June-Yi</given-names></name>
+          <name><surname>Mayer</surname><given-names>Kirsten</given-names></name>
+          <name><surname>McKay</surname><given-names>Roseanna</given-names></name>
+          <name><surname>Mecking</surname><given-names>Jennifer V.</given-names></name>
+          <name><surname>Miller</surname><given-names>Douglas E.</given-names></name>
+          <name><surname>Neddermann</surname><given-names>Nele</given-names></name>
+          <name><surname>Justin Ng</surname><given-names>Ching Ho</given-names></name>
+          <name><surname>Ossó</surname><given-names>Albert</given-names></name>
+          <name><surname>Pankatz</surname><given-names>Klaus</given-names></name>
+          <name><surname>Peatman</surname><given-names>Simon</given-names></name>
+          <name><surname>Pegion</surname><given-names>Kathy</given-names></name>
+          <name><surname>Perlwitz</surname><given-names>Judith</given-names></name>
+          <name><surname>Recalde-Coronel</surname><given-names>G. Cristina</given-names></name>
+          <name><surname>Reintges</surname><given-names>Annika</given-names></name>
+          <name><surname>Renkl</surname><given-names>Christoph</given-names></name>
+          <name><surname>Solaraju-Murali</surname><given-names>Balakrishnan</given-names></name>
+          <name><surname>Spring</surname><given-names>Aaron</given-names></name>
+          <name><surname>Stan</surname><given-names>Cristiana</given-names></name>
+          <name><surname>Sun</surname><given-names>Y. Qiang</given-names></name>
+          <name><surname>Tozer</surname><given-names>Carly R.</given-names></name>
+          <name><surname>Vigaud</surname><given-names>Nicolas</given-names></name>
+          <name><surname>Woolnough</surname><given-names>Steven</given-names></name>
+          <name><surname>Yeager</surname><given-names>Stephen</given-names></name>
+        </person-group>
+        <article-title>Current and Emerging Developments in Subseasonal to Decadal Prediction</article-title>
+        <source>Bulletin of the American Meteorological Society</source>
+        <publisher-name>American Meteorological Society</publisher-name>
+        <year iso-8601-date="2020-06">2020</year><month>06</month>
+        <volume>101</volume>
+        <issue>6</issue>
+        <issn>0003-0007</issn>
+        <pub-id pub-id-type="doi">10/ggvcqv</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-RocklinU003A2015">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Rocklin</surname><given-names>Matthew</given-names></name>
+        </person-group>
+        <article-title>Dask: Parallel Computation with Blocked algorithms and Task Scheduling</article-title>
+        <source>Python in Science Conference</source>
+        <publisher-loc>Austin, Texas</publisher-loc>
+        <year iso-8601-date="2015">2015</year>
+        <pub-id pub-id-type="doi">10/gfz6s5</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SeferianU003A2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Séférian</surname><given-names>Roland</given-names></name>
+          <name><surname>Berthet</surname><given-names>Sarah</given-names></name>
+          <name><surname>Chevallier</surname><given-names>Matthieu</given-names></name>
+        </person-group>
+        <article-title>Assessing the decadal predictability of land and ocean carbon uptake</article-title>
+        <source>Geophysical Research Letters</source>
+        <year iso-8601-date="2018-03">2018</year><month>03</month>
+        <issn>00948276</issn>
+        <pub-id pub-id-type="doi">10/gdb424</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SpringU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Spring</surname><given-names>Aaron</given-names></name>
+          <name><surname>Ilyina</surname><given-names>Tatiana</given-names></name>
+        </person-group>
+        <article-title>Predictability horizons in the global carbon cycle inferred from a perfect-model framework</article-title>
+        <source>Geophysical Research Letters</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>47</volume>
+        <issue>9</issue>
+        <issn>1944-8007</issn>
+        <pub-id pub-id-type="doi">10/ggtbv2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SpringU003A2021">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Spring</surname><given-names>Aaron</given-names></name>
+          <name><surname>Dunkl</surname><given-names>István</given-names></name>
+          <name><surname>Li</surname><given-names>Hongmei</given-names></name>
+          <name><surname>Brovkin</surname><given-names>Victor</given-names></name>
+          <name><surname>Ilyina</surname><given-names>Tatiana</given-names></name>
+        </person-group>
+        <article-title>Trivial improvements of predictive skill due to direct reconstruction of global carbon cycle</article-title>
+        <source>Earth System Dynamics Discussions</source>
+        <year iso-8601-date="2021">2021</year>
+        <issn>2190-4979</issn>
+        <pub-id pub-id-type="doi">10/gh3tn3</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

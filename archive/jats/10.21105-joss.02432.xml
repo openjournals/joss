@@ -1,0 +1,630 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2432</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02432</article-id>
+<title-group>
+<article-title>cerebra: A tool for fast and accurate summarizing of
+variant calling format (VCF) files</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-2544-4225</contrib-id>
+<string-name>Lincoln Harris</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Rohan Vanheusden</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-4412-7970</contrib-id>
+<string-name>Olga Botvinnik</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-4002-8158</contrib-id>
+<string-name>Spyros Darmanis</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Chan Zuckerberg Biohub, San Francisco, CA, United
+States</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<volume>5</volume>
+<issue>54</issue>
+<fpage>2432</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>python</kwd>
+<kwd>genomics</kwd>
+<kwd>variant calling</kwd>
+<kwd>VCF</kwd>
+<kwd>single-cell</kwd>
+<kwd>cancer</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="motivation">
+  <title>Motivation</title>
+  <p>A single “typo” in the genome can have profound consequences on an
+  organism’s biology. Identifying the protein changes that accompany
+  these genomic typos is a fundamental challenge in bioinformatics.
+  Tools exist for identifying genomic variants and predicting their
+  associated polypeptide-level changes, however, wrangling genomic
+  variant calls and protein variant predictions across thousands of
+  samples remains a substantial challenge.
+  <monospace>cerebra</monospace> addresses this need by offering a fast
+  and accurate framework for summarizing genomic variant calls and
+  protein variant predictions across many samples.</p>
+  <p>To find variants in the genome, researchers often begin with a
+  <ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/DNA_sequencing">DNA-sequencing</ext-link>
+  (DNA-seq) or
+  <ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/RNA-Seq">RNA-sequencing</ext-link>
+  (RNA-seq) experiment on their samples of interest. Sequencing is
+  followed by alignment of reads to the reference genome with tools like
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/alexdobin/STAR">STAR</ext-link>
+  or
+  <ext-link ext-link-type="uri" xlink:href="http://bio-bwa.sourceforge.net/">BWA</ext-link>,
+  followed by variant calling with tools like
+  <ext-link ext-link-type="uri" xlink:href="https://software.broadinstitute.org/gatk/documentation/tooldocs/3.8-0/org_broadinstitute_gatk_tools_walkers_haplotypecaller_HaplotypeCaller.php">GATK
+  HaplotypeCaller</ext-link> or
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/ekg/freebayes">freebayes</ext-link>
+  (<xref alt="Dobin et al., 2013" rid="ref-star" ref-type="bibr">Dobin
+  et al., 2013</xref>;
+  <xref alt="Garrison &amp; Marth, 2012" rid="ref-freebayes" ref-type="bibr">Garrison
+  &amp; Marth, 2012</xref>;
+  <xref alt="Li &amp; Durbin, 2009" rid="ref-bwa" ref-type="bibr">Li
+  &amp; Durbin, 2009</xref>;
+  <xref alt="Poplin et al., 2018" rid="ref-haplocaller" ref-type="bibr">Poplin
+  et al., 2018</xref>). Variant callers produce tab delimited text files
+  in the
+  <ext-link ext-link-type="uri" xlink:href="https://samtools.github.io/hts-specs/VCFv4.2.pdf">variant
+  calling format</ext-link> (VCF) for each processed sample. VCF files
+  encode: i) the genomic position, ii) reference vs. observed DNA
+  sequence, and iii) quality associated with each observed variant.
+  Shown below are the first 4 lines of a sample VCF file. Note that only
+  a single record is displayed, and that the record line has been
+  artificially wrapped.</p>
+  <preformat>##fileformat=VCFv4.2
+##source=HaplotypeCaller
+#CHROM  POS ID  REF ALT QUAL    FILTER  INFO    FORMAT
+chr1    631391  .   C   T   72.28   .   AC=2;AF=1.00;AN=2;DP=2;
+        ExcessHet=3.0103;FS=0.000;MLEAC=1;MLEAF=0.500;MQ=NaN;
+        QD=25.36;SOR=2.303  GT:AD:DP:GQ:PL  1/1:0,2:2:6:84,6,0</preformat>
+  <p>Current methods for variant calling are incredibly powerful and
+  robust, however, a single sequencing run can generate as many as
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[10^{8}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mn>10</mml:mn><mml:mn>8</mml:mn></mml:msup></mml:math></alternatives></inline-formula>
+  unique VCF records. Only a small portion of these VCF records are
+  likely to be relevant to the researcher. In addition, variant callers
+  report only the genomic location of the variant, and not the effect
+  the variant has on the translated protein sequence. To address the
+  unmet need for high-throughput VCF summary tools, we introduce
+  <monospace>cerebra</monospace>, a python package that provides fast
+  and accurate protein variant summarizing of VCF files.</p>
+</sec>
+<sec id="functionality">
+  <title>Functionality</title>
+  <p><monospace>cerebra</monospace> comprises three modules: i)
+  <monospace>germline-filter</monospace> is intended for working with
+  cancer data and removes variants that are common between tumor and
+  normal samples, ii) <monospace>count-variants</monospace> reports
+  total number of variants in each sample, and iii)
+  <monospace>find-peptide-variants</monospace> reports the likely
+  protein variants in each sample. Here we use <italic>variant</italic>
+  to refer to single nucleotide polymorphisms (SNPs) and short
+  insertions/deletions. <monospace>cerebra</monospace> is not capable of
+  reporting larger structural variants such as copy number variations
+  and chromosomal rearrangements.</p>
+  <p>A data structure crucial to <monospace>cerebra</monospace> is the
+  <italic>genome interval tree</italic>, which matches RNA transcripts
+  and polypeptides to each feature in the genome
+  (<xref alt="Figure 1" rid="workflow">Figure 1</xref>).
+  <ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/Interval_tree">Interval
+  trees</ext-link> are self-balancing binary search trees that store
+  numeric intervals and can quickly retrieve every such interval that
+  overlaps a given query interval
+  (<italic><ext-link ext-link-type="uri" xlink:href="https://www.coursera.org/lecture/algorithms-part1/interval-search-trees-ot9vw">see
+  also</ext-link></italic>). Given <italic>n</italic> nodes, interval
+  trees have theoretical average-case O(log<italic>n</italic>) and
+  worst-case O(<italic>n</italic>) time complexity for search
+  operations, making them tractable for genome-scale operations
+  (<xref alt="Cormen et al., 2009" rid="ref-CormenU003A2009" ref-type="bibr">Cormen
+  et al., 2009</xref>,
+  <italic><ext-link ext-link-type="uri" xlink:href="https://www.coursera.org/lecture/algorithms-part1/interval-search-trees-ot9vw">see
+  also</ext-link></italic>). Tree construction proceeds at
+  O(<italic>n</italic>log<italic>n</italic>) time complexity, making
+  construction rather than search the bottleneck for most VCF sets
+  (<xref alt="Alekseyenko &amp; Lee, 2007" rid="ref-AlekseyenkoU003A2007" ref-type="bibr">Alekseyenko
+  &amp; Lee, 2007</xref>). The <italic>genome interval tree</italic> is
+  constructed with a reference genome sequence
+  (<ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/FASTA_format">FASTA
+  format</ext-link>, often with a <monospace>.fa</monospace> extension),
+  and a genome annotation
+  (<ext-link ext-link-type="uri" xlink:href="https://www.gencodegenes.org/pages/data_format.html">gene
+  transfer format, GTF</ext-link>, <monospace>.gtf</monospace>
+  extension). We rely on the
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/biocore-ntnu/ncls">ncls</ext-link>
+  python library for fast interval tree construction and lookup
+  operations
+  (<xref alt="Alekseyenko &amp; Lee, 2007" rid="ref-AlekseyenkoU003A2007" ref-type="bibr">Alekseyenko
+  &amp; Lee, 2007</xref>).</p>
+  <p>In order to analyze multiple VCF records at once, we use
+  <ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/Multiprocessing">multiprocessing</ext-link>
+  with the Python
+  <ext-link ext-link-type="uri" xlink:href="https://pypi.org/project/pathos/">pathos</ext-link>
+  library module
+  (<xref alt="McKerns et al., 2011" rid="ref-pathos" ref-type="bibr">McKerns
+  et al., 2011</xref>). We extract relevant information – including
+  genomic interval, observed base, and read coverage – from each variant
+  record. In the <monospace>germline-filter</monospace> module variants
+  are compared to one another and filtered out if found to be identical.
+  In <monospace>count-variants</monospace> variants are simply matched
+  to whichever gene they came from. In
+  <monospace>find-peptide-variants</monospace> variants are queried
+  against our <italic>genome interval tree</italic> – if a matching
+  interval is found we convert the DNA-level variant to a protein
+  variant. Finally, protein variants across all VCF files are reported
+  in tabular format.</p>
+  <fig>
+    <caption><p>Workflow describing the
+    <monospace>find-peptide-variants</monospace> module. We construct a
+    genome interval tree from a genome annotation (.gtf) and a reference
+    genome sequence (.fa), then process VCF files in parallel to create
+    a single tabular output file (CSV or
+    JSON).<styled-content id="workflow"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="jpeg" xlink:href="fig1.jpg" xlink:title="" />
+  </fig>
+</sec>
+<sec id="germline-filter">
+  <title><monospace>germline-filter</monospace></title>
+  <p>Variant calling is often applied to the study of cancer. If the
+  research project is centered around a “tumor vs. normal” question,
+  then <monospace>germline-filter</monospace> is the proper starting
+  point. This module removes germline variants that are common between
+  tumor and normal samples, and thus excludes variants unlikely to be
+  pathogenic for the cancer under study. The user provides a very simple
+  metadata file (see
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/czbiohub/cerebra/blob/master/docs/USAGE.md">USAGE.md</ext-link>)
+  that indicates which tumor samples correspond to which normal samples.
+  Using the
+  <ext-link ext-link-type="uri" xlink:href="https://pypi.org/project/vcfpy/">vcfpy</ext-link>
+  library we quickly identify shared variants across tumor/normal
+  matched VCF files, then write new VCFs that contain only the unique
+  variants
+  (<xref alt="Holtgrewe &amp; Beule, 2016" rid="ref-vcfpy" ref-type="bibr">Holtgrewe
+  &amp; Beule, 2016</xref>). These steps are performed by a
+  <ext-link ext-link-type="uri" xlink:href="https://pypi.org/project/pathos/">subprocess
+  pool</ext-link> so that we can process multiple discrete chunks of
+  input at the same time.</p>
+  <p>The output of <monospace>germline-filter</monospace> is a set of
+  trimmed-down VCF files, which will be used for the next two steps. If
+  you do not have access to “normal” samples then proceed directly to
+  <monospace>count-variants</monospace> or
+  <monospace>find-peptide-variants</monospace>.</p>
+</sec>
+<sec id="count-variants">
+  <title><monospace>count-variants</monospace></title>
+  <p>The <monospace>count-variants</monospace> module reports the raw
+  variant counts for every gene across every sample. We first create a
+  <italic>genome interval tree</italic> from the reference GTF, then
+  read in a VCF file and convert it to a
+  <ext-link ext-link-type="uri" xlink:href="https://pypi.org/project/vcfpy/">vcfpy</ext-link>
+  object, then processes VCF records in
+  <ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/Multiprocessing">parallel</ext-link>.
+  Each variant is matched to its corresponding gene, and gene-wise
+  counts are stored in
+  <ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/Shared_memory">shared
+  memory</ext-link>.</p>
+  <p>If working with cancer samples, the user has the option to limit
+  the reported variants to those also found in Wellcome Sanger
+  Institute’s
+  <ext-link ext-link-type="uri" xlink:href="https://cancer.sanger.ac.uk/cosmic">COSMIC</ext-link>
+  database
+  (<xref alt="Tate et al., 2018" rid="ref-cosmic" ref-type="bibr">Tate
+  et al., 2018</xref>). While certainly not exhaustive, this database
+  contains an extensive list of known human variants. This option is
+  designed to limit the search space to known and potentially actionable
+  targets.</p>
+  <p><monospace>count-variants</monospace> produces two output files,
+  one containing raw variant counts and one containing COSMIC filtered
+  variant counts for every gene in the genome.</p>
+</sec>
+<sec id="find-peptide-variants">
+  <title><monospace>find-peptide-variants</monospace></title>
+  <p>The <monospace>find-peptide-variants</monospace> module reports the
+  protein variants potentially associated with each genomic variant.
+  First we load the reference GTF, then construct an index (.fai) of the
+  genome fasta file with
+  <ext-link ext-link-type="uri" xlink:href="https://pypi.org/project/pyfaidx/">pyfaidx</ext-link>
+  to enable fast random memory access
+  (<xref alt="Shirley et al., 2015" rid="ref-pyfaidx" ref-type="bibr">Shirley
+  et al., 2015</xref>). We then create a <italic>genome interval
+  tree</italic> that will be used to quickly match genomic coordinates
+  from VCF records to protein variants. The user again has the option to
+  limit the search space to variants found in the COSMIC database. VCF
+  records are read in simultaneously; individual records are converted
+  to <italic>GenomePosition</italic> objects to keep track of their
+  genomic intervals and observed DNA bases.
+  <italic>GenomePositions</italic> are then queried against the
+  <italic>genome interval tree</italic>. If an overlapping interval is
+  found, we retrieve the protein variant from this node of the
+  <italic>genome interval tree</italic>. Protein variants are converted
+  to
+  <ext-link ext-link-type="uri" xlink:href="https://www.ensembl.org/index.html">ENSEMBL</ext-link>
+  protein IDs, in accordance with the
+  <ext-link ext-link-type="uri" xlink:href="https://varnomen.hgvs.org/">HGVS</ext-link>
+  sequence variant nomenclature
+  (<xref alt="Dunnen et al., 2016" rid="ref-hgvs" ref-type="bibr">Dunnen
+  et al., 2016</xref>;
+  <xref alt="Yates et al., 2019" rid="ref-ensembl" ref-type="bibr">Yates
+  et al., 2019</xref>). The output is a hierarchically ordered text file
+  (CSV or JSON) that reports the the ENSEMBL protein ID and the gene
+  associated with each variant, for each experimental sample.</p>
+  <p>Variant callers are known to produce a great deal of false
+  positives, especially when applied to single-cell RNA-seq data
+  (<xref alt="Enge et al., 2017" rid="ref-EngeU003A2017" ref-type="bibr">Enge
+  et al., 2017</xref>). To address this concern, we have included the
+  <monospace>coverage</monospace> option. If indicated this option will
+  report counts for both variant and wildtype reads at all variant loci.
+  We reasoned that variants with a high degree of read support are less
+  likely to be false positives. This option is designed to give the user
+  more confidence in individual variant calls.</p>
+  <p>We should emphasize that
+  <monospace>find-peptide-variants</monospace> does not
+  <italic>definitively</italic> report protein variants but rather the
+  <italic>likely</italic> set of protein variants. Definitively
+  reporting protein variants from RNA-seq requires knowledge of
+  alternate splicing – this represents an open problem in the field
+  (<xref alt="Huang &amp; Sanguinetti, 2017" rid="ref-HuangU003A2017" ref-type="bibr">Huang
+  &amp; Sanguinetti, 2017</xref>). For example, if a read picks up a
+  variant in exon 2 of a given gene, we can report each of the potential
+  isoforms of that gene that contain exon 2, but we <bold>cannot</bold>
+  infer which of those particular isoforms are actually present in our
+  sample (see <xref alt="Figure 2" rid="splice">Figure 2</xref>). For
+  the example shown in <xref alt="Figure 2" rid="splice">Figure 2</xref>
+  we would translate and report <italic>t1</italic> and
+  <italic>t3</italic> as both of these contain exon 2. It is possible
+  the sample does not actually express both of these isoforms, however,
+  determining the isoform landscape of a sample from RNA-seq is outside
+  the scope of this project.</p>
+  <fig>
+    <caption><p>For a given mutational event,
+    <monospace>cerebra</monospace> reports ALL potentially affected
+    isoforms.<styled-content id="splice"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="jpeg" xlink:href="fig2.jpg" xlink:title="" />
+  </fig>
+  <p>To assess performance of
+  <monospace>find-peptide-variants</monospace> we obtained VCFs from a
+  single-cell RNA-seq study conducted on lung adenocarcinoma patient
+  samples
+  (<xref alt="Maynard et al., 2020" rid="ref-MaynardU003A2020" ref-type="bibr">Maynard
+  et al., 2020</xref>). These VCFs were produced with STAR (alignment)
+  and GATK HaplotypeCaller (variant calling), and are on the order of
+  megabytes, typical of a single-cell RNA-seq experiment.
+  <monospace>cerebra</monospace> was run on standard hardware (MacBook
+  Pro, 2.5GHz quad-core processor, 16 GB RAM). As show in
+  <xref alt="Figure 3" rid="runtime">Figure 3</xref>
+  <monospace>cerebra</monospace> processed a set of 100 VCF files in
+  approximately 34 minutes.</p>
+  <fig>
+    <caption><p><monospace>cerebra</monospace> processes 100 VCF files
+    (~400 Mb in total) in ~34
+    minutes.<styled-content id="runtime"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="jpeg" xlink:href="fig3.jpg" xlink:title="" />
+  </fig>
+  <p>The first 10 or so minutes of
+  <monospace>cerebra find-peptide-variants</monospace> do not involve
+  any VCF processing, instead, this time is attributed to the
+  <italic>genome interval tree</italic> construction phase. After the
+  tree is built, files are processed in a near-linear manner. Also of
+  note is that <monospace>cerebra</monospace>’s search operations take
+  advantage of multiprocessing. <monospace>cerebra</monospace> should
+  scale better to high-memory machines than single-threaded tools,
+  though it has been designed to run on standard hardware.</p>
+</sec>
+<sec id="conclusions">
+  <title>Conclusions</title>
+  <p>RNA/DNA sequencing paired with fast and accurate summarizing of
+  variants is often crucial to understanding the biology of an
+  experimental system. We present a tool that can be used to quickly
+  summarize the variant calls contained within a large set of VCF files.
+  As sequencing costs continue to drop, large-scale variant calling will
+  become more accessible, and summary tools like
+  <monospace>cerebra</monospace> will become essential for drawing
+  meaningful conclusions in a reasonable time frame. Our tool offers the
+  advantages of parallel processing and a single, easy-to-interpret
+  output file (CSV or JSON).</p>
+  <p><monospace>cerebra</monospace> is already enabling research, see
+  (<xref alt="Maynard et al., 2020" rid="ref-MaynardU003A2020" ref-type="bibr">Maynard
+  et al., 2020</xref>), a study that examines the tumor microenvironment
+  of late-stage drug-resistant carcinomas with single-cell
+  RNA-sequencing. Understanding the mutational landscape of individual
+  tumors was essential to this study, and given the sheer volume of VCF
+  records, would not have been possible without
+  <monospace>cerebra</monospace>. We hope that
+  <monospace>cerebra</monospace> can provide an easy-to-use framework
+  for future studies in the same vein.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>Funding for this work was provided by the
+  <ext-link ext-link-type="uri" xlink:href="https://www.czbiohub.org/">Chan
+  Zuckerberg Biohub</ext-link>. The authors would like to thank Ashley
+  Maynard, Angela Pisco and Daniel Le for helpful discussions and
+  support.</p>
+</sec>
+<sec id="correspondence">
+  <title>Correspondence</title>
+  <p>Please contact <monospace>ljharris018@gmail.com</monospace></p>
+</sec>
+<sec id="code">
+  <title>Code</title>
+  <p><monospace>cerebra</monospace> is written in Python 3. Code and
+  detailed installation instructions can be found at
+  https://github.com/czbiohub/cerebra. In addition,
+  <monospace>cerebra</monospace> can be found on
+  <ext-link ext-link-type="uri" xlink:href="https://pypi.org/project/cerebra/">PyPi</ext-link>
+  and
+  <ext-link ext-link-type="uri" xlink:href="https://hub.docker.com/r/lincolnharris/cerebra">Dockerhub</ext-link>.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-AlekseyenkoU003A2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Alekseyenko</surname><given-names>A</given-names></name>
+          <name><surname>Lee</surname><given-names>C</given-names></name>
+        </person-group>
+        <article-title>Nested Containment List (NCList): a new algorithm for accelerating interval query of genome alignment and interval databases</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2007">2007</year>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btl647</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bwa">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Li</surname><given-names>H</given-names></name>
+          <name><surname>Durbin</surname><given-names>R</given-names></name>
+        </person-group>
+        <article-title>Fast and accurate short read alignment with Burrows-Wheeler Transform</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2009">2009</year>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btp324</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-CormenU003A2009">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Cormen</surname><given-names>T</given-names></name>
+          <name><surname>Leiserson</surname><given-names>C</given-names></name>
+          <name><surname>Rivest</surname><given-names>R</given-names></name>
+          <name><surname>Stein</surname><given-names>C</given-names></name>
+        </person-group>
+        <source>Introduction to Algorithms</source>
+        <publisher-name>MIT Press</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <isbn>978-0-262-03384-8</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-cosmic">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tate</surname><given-names>J</given-names></name>
+          <name><surname>Bamford</surname><given-names>S</given-names></name>
+          <name><surname>Jubb</surname><given-names>H</given-names></name>
+          <name><surname>Sondka</surname><given-names>Z</given-names></name>
+          <name><surname>Beare</surname><given-names>DM</given-names></name>
+          <name><surname>Bindal</surname><given-names>N</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>COSMIC: the Catalogue Of Somatic Mutations In Cancer</article-title>
+        <source>Nucleic Acids Research</source>
+        <year iso-8601-date="2018">2018</year>
+        <pub-id pub-id-type="doi">10.1093/nar/gky1015</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-EngeU003A2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Enge</surname><given-names>M</given-names></name>
+          <name><surname>Efsun</surname><given-names>AH</given-names></name>
+          <name><surname>Mignardi</surname><given-names>M</given-names></name>
+          <name><surname>Beausang</surname><given-names>J</given-names></name>
+          <name><surname>Bottino</surname><given-names>R</given-names></name>
+          <name><surname>Quake</surname><given-names>S</given-names></name>
+        </person-group>
+        <article-title>Single-Cell Analysis of Human Pancreas Reveals Transcriptional Signatures of Aging and Somatic Mutation Patterns</article-title>
+        <source>Cell</source>
+        <year iso-8601-date="2017">2017</year>
+        <pub-id pub-id-type="doi">10.1016/j.cell.2017.09.004</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ensembl">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yates</surname><given-names>AD</given-names></name>
+          <name><surname>Achuthan</surname><given-names>P</given-names></name>
+          <name><surname>Akanni</surname><given-names>W</given-names></name>
+          <name><surname>Allen</surname><given-names>J</given-names></name>
+          <name><surname>Allen</surname><given-names>J</given-names></name>
+          <name><surname>Alvarez-Jarreta</surname><given-names>J</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Ensembl 2020</article-title>
+        <source>Nucleic Acids Research</source>
+        <year iso-8601-date="2019">2019</year>
+        <pub-id pub-id-type="doi">10.1093/nar/gkz966</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-freebayes">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Garrison</surname><given-names>E</given-names></name>
+          <name><surname>Marth</surname><given-names>G</given-names></name>
+        </person-group>
+        <article-title>Haplotype-based variant detection from short-read sequencing</article-title>
+        <source>arXiv</source>
+        <year iso-8601-date="2012">2012</year>
+        <uri>https://arxiv.org/abs/1207.3907</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-haplocaller">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Poplin</surname><given-names>R</given-names></name>
+          <name><surname>Ruano-Rubio</surname><given-names>V</given-names></name>
+          <name><surname>DePristo</surname><given-names>M</given-names></name>
+          <name><surname>Fennell</surname><given-names>TJ</given-names></name>
+          <name><surname>Carneiro</surname><given-names>MO</given-names></name>
+          <name><surname>Van der Auwera</surname><given-names>GA</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Scaling accurate genetic variant discovery to tens of thousands of samples</article-title>
+        <source>bioRxiv</source>
+        <year iso-8601-date="2018">2018</year>
+        <pub-id pub-id-type="doi">10.1101/201178</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hgvs">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dunnen</surname><given-names>JT den</given-names></name>
+          <name><surname>Dalgleish</surname><given-names>R</given-names></name>
+          <name><surname>Maglott</surname><given-names>DR</given-names></name>
+          <name><surname>Hart</surname><given-names>RK</given-names></name>
+          <name><surname>Greenblatt</surname><given-names>MS</given-names></name>
+          <name><surname>McGowan-Jordan</surname><given-names>J</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>HGVS Recommendations for the Description of Sequence Variants: 2016 Update</article-title>
+        <source>Human Mutation</source>
+        <year iso-8601-date="2016">2016</year>
+        <pub-id pub-id-type="doi">10.1002/humu.22981</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-HuangU003A2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Huang</surname><given-names>Y</given-names></name>
+          <name><surname>Sanguinetti</surname><given-names>G</given-names></name>
+        </person-group>
+        <article-title>BRIE: transcriptome-wide splicing quantification in single cells</article-title>
+        <source>Genome Biology</source>
+        <year iso-8601-date="2017">2017</year>
+        <pub-id pub-id-type="doi">10.1186/s13059-017-1248-5</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MaynardU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Maynard</surname><given-names>A</given-names></name>
+          <name><surname>McCoach</surname><given-names>C</given-names></name>
+          <name><surname>Rotow</surname><given-names>JK</given-names></name>
+          <name><surname>Harris</surname><given-names>L</given-names></name>
+          <name><surname>Haderk</surname><given-names>F</given-names></name>
+          <name><surname>Kerr</surname><given-names>L</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Therapy-Induced Evolution of Human Lung Cancer Revealed by Single-Cell RNA Sequencing</article-title>
+        <source>Cell</source>
+        <year iso-8601-date="2020">2020</year>
+        <pub-id pub-id-type="doi">10.1016/j.cell.2020.07.017</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pathos">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>McKerns</surname><given-names>M</given-names></name>
+          <name><surname>Strand</surname><given-names>L</given-names></name>
+          <name><surname>Sullivan</surname><given-names>A</given-names></name>
+          <name><surname>Fang</surname><given-names>A</given-names></name>
+          <name><surname>Aivazis</surname><given-names>MAG</given-names></name>
+        </person-group>
+        <article-title>Building a framework for predictive science</article-title>
+        <source>Proceedings of the 10th Python in Science Conference</source>
+        <year iso-8601-date="2011">2011</year>
+        <uri>http://arxiv.org/pdf/1202.1056</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-pyfaidx">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Shirley</surname><given-names>M</given-names></name>
+          <name><surname>Zhaorong</surname><given-names>M</given-names></name>
+          <name><surname>Pedersen</surname><given-names>B</given-names></name>
+          <name><surname>Wheelan</surname><given-names>S</given-names></name>
+        </person-group>
+        <article-title>Efficient &quot;pythonic&quot; access to FASTA files using pyfaidx</article-title>
+        <source>PeerJ PrePrints</source>
+        <year iso-8601-date="2015">2015</year>
+        <pub-id pub-id-type="doi">10.7287/peerj.preprints.970v1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-star">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dobin</surname><given-names>A</given-names></name>
+          <name><surname>Davis</surname><given-names>CA</given-names></name>
+          <name><surname>Schlesinger</surname><given-names>F</given-names></name>
+          <name><surname>Drenkow</surname><given-names>J</given-names></name>
+          <name><surname>Zaleski</surname><given-names>C</given-names></name>
+          <name><surname>Jha</surname><given-names>S</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>STAR: ultrafast universal RNA-seq aligner</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2013">2013</year>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/bts635</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-vcfpy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Holtgrewe</surname><given-names>M</given-names></name>
+          <name><surname>Beule</surname><given-names>D</given-names></name>
+        </person-group>
+        <article-title>VCFPy: a Python 3 library with good support for both reading and writing VCF</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2016">2016</year>
+        <pub-id pub-id-type="doi">10.21105/joss.00085</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

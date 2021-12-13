@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2331</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02331</article-id>
+<title-group>
+<article-title>Flint: a simulator for biological and physiological
+models in ordinary and stochastic differential equations</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-7074-4561</contrib-id>
+<string-name>Takeshi Abe</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-5519-4306</contrib-id>
+<string-name>Yoshiyuki Asai</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Graduate School of Medicine, Yamaguchi
+University</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-08-17">
+<day>17</day>
+<month>8</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>53</issue>
+<fpage>2331</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>biology</kwd>
+<kwd>physiology</kwd>
+<kwd>numerical analysis</kwd>
+<kwd>simulation</kwd>
+<kwd>ODE</kwd>
+<kwd>SDE</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>Understanding the dynamics of living organisms often requires a
+  mathematical model that describes the hypotheses to be tested. It is
+  widely recognized that the class of ordinary differential equations
+  (ODE) is suitable for describing the time course of variables in a
+  deterministic system, stemming from a simple assumption about the rate
+  of their change. One such example is the chemical reaction accelerated
+  by an enzyme following Michaelis-Menten kinetics; another is the
+  action potential of cardiac cells driven by modulation of ion
+  channels. By virtue of differential equations, these celullar models
+  can be integrated into models at the tissue or organ level. In fact,
+  ways to integrate a computational model of the physiological functions
+  of the whole individual have been explored since the end of the last
+  century, under the name physiome
+  (<xref alt="Leem, 2016" rid="ref-leem_perspectives_2016" ref-type="bibr">Leem,
+  2016</xref>).</p>
+  <p>It is, however, technically challenging for practitioners in the
+  field of biology or physiology to express their hypotheses on
+  biological organisms in a precise system of ODEs. In order to make it
+  easier to edit a model in a problem that implicitly specifies the
+  ODEs, several domain-specific languages have been proposed and
+  standardized, including CellML
+  (<xref alt="Lloyd et al., 2004" rid="ref-lloyd_cellml_2004" ref-type="bibr">Lloyd
+  et al., 2004</xref>), the Physiological Hierarchy Markup Language
+  (PHML) devised by Asai and colleagues
+  (<xref alt="Y. Asai et al., 2015" rid="ref-asai_databases_2015" ref-type="bibr">Y.
+  Asai et al., 2015</xref>), and the Systems Biology Markup Language
+  (SBML) devised by Hucka et al.
+  (<xref alt="2003" rid="ref-hucka_systems_2003" ref-type="bibr">2003</xref>).
+  Although the design principles of each modeling language vary,
+  computational analysis of any model in these languages comprises a
+  shared set of procedures based on the theory of differential equations
+  and dynamical systems.</p>
+  <p>In this work we introduce <monospace>Flint</monospace>, a simulator
+  software for models written in the above languages. The simulator
+  allows users to transform a given model into a system of ODEs and
+  solve it in a numerical manner. It also supports stochastic
+  differential equations (SDE), a non-deterministic extension of ODEs,
+  which makes it possible to involve random elements, e.g. noise, in the
+  dynamics.</p>
+  <p>The development of <monospace>Flint</monospace> has been tied in
+  with the physiome.jp project
+  (<xref alt="Nomura, 2010" rid="ref-nomura_toward_2010" ref-type="bibr">Nomura,
+  2010</xref>), which aims to establish a computational platform for
+  multiscale <italic>in silico</italic> studies on the physiome. As part
+  of the platform, <monospace>Flint</monospace> complements the features
+  of an authoring software PhysioDesigner for PHML
+  (<xref alt="Yoshiyuki Asai et al., 2012" rid="ref-asai_multilevel_2012" ref-type="bibr">Yoshiyuki
+  Asai et al., 2012</xref>), though they are deliberately separate
+  programs. Driven by demands from the project’s collaborators, we have
+  enhanced <monospace>Flint</monospace> to support different modeling
+  standards. For example, in order to leverage a published SBML model of
+  subcellular signaling to build tissue or higher-level physiological
+  ones, there is a technical proposal embedding it in PHML
+  (<xref alt="Yoshiyuki Asai et al., 2014" rid="ref-asai_versatile_2014" ref-type="bibr">Yoshiyuki
+  Asai et al., 2014</xref>). Simulating such models is a reason for
+  adopting <monospace>Flint</monospace> even when other state-of-the-art
+  tools are publicly available, e.g., COPASI
+  (<xref alt="Hoops et al., 2006" rid="ref-hoops_copasicomplex_2006" ref-type="bibr">Hoops
+  et al., 2006</xref>), which focuses on its own format.
+  <monospace>Flint</monospace>’s main contribution is to provide an
+  open, language-agnostic resource for reproducible simulation
+  studies.</p>
+</sec>
+<sec id="implementation">
+  <title>Implementation</title>
+  <sec id="user-interface">
+    <title>User interface</title>
+    <p><monospace>Flint</monospace> is a standalone program that runs on
+    consumer desktop environments such as Microsoft Windows, Apple
+    macOS, and Linux with GTK. For the simplest usage, its graphical
+    user interface runs a simulation of a given model with only two
+    steps: open the model file, and select the Run button. Running
+    simulations at the command line is also supported, although only a
+    limited number of functions are available in the command line
+    interface. The simulator delegates the task of displaying the output
+    to gnuplot
+    (<xref alt="Williams et al., 2017" rid="ref-gnuplot_2017" ref-type="bibr">Williams
+    et al., 2017</xref>).</p>
+  </sec>
+  <sec id="numerical-algorithms-to-solve-a-system-of-differential-equations">
+    <title>Numerical algorithms to solve a system of differential
+    equations</title>
+    <p><monospace>Flint</monospace> compiles a model written in a
+    supported XML language into internal bytecode for simulation, and
+    then evaluates it with particular initial values. Our current
+    implementation provides three algorithms for solving initial-value
+    problems for ODEs numerically: the forward Euler method, the
+    Runge-Kutta 4th-order method, and the adaptive-step additive
+    Runge-Kutta scheme implemented in the SUNDIALS library
+    (<xref alt="Hindmarsh et al., 2005" rid="ref-hindmarsh2005sundials" ref-type="bibr">Hindmarsh
+    et al., 2005</xref>). The Euler-Maruyama method is used for solving
+    SDEs
+    (<xref alt="Higham, 2001" rid="ref-higham_algorithmic_2001" ref-type="bibr">Higham,
+    2001</xref>).</p>
+  </sec>
+  <sec id="multithreading-for-parallel-simulation">
+    <title>Multithreading for parallel simulation</title>
+    <p>Solving an initial-value problem numerically is only the first
+    step towards a full analysis of the dynamics of the model. Further
+    investigation often asks for different values of initial values or
+    parameters. For instance, hypotheses on biological switches have
+    been stated in terms of dynamical bifurcations, and demonstrated by
+    a series of simulations over changing values of parameters, in both
+    deterministic
+    (<xref alt="Fussmann et al., 2000" rid="ref-fussmann_crossing_2000" ref-type="bibr">Fussmann
+    et al., 2000</xref>) and stochastic
+    (<xref alt="Samoilov et al., 2005" rid="ref-samoilov_stochastic_2005" ref-type="bibr">Samoilov
+    et al., 2005</xref>) paradigms. <monospace>Flint</monospace> employs
+    multithreading to increase the number of simulations that run in
+    parallel. Parallelization is automatically performed when the user
+    assigns multiple values to some parameter of a model for simulation,
+    and honors the number of available CPU cores, which can be adjusted
+    in the preferences.</p>
+  </sec>
+  <sec id="grid-search-algorithm-for-parameter-fitting">
+    <title>Grid search algorithm for parameter fitting</title>
+    <p>The larger the number of variables and parameters in a given
+    model, the more resource-consuming its simulation becomes. This is
+    also the case when estimating plausible values of parameters
+    consistent with prior knowledge on the behavior of the underlying
+    system. Taking residual sum of squares (RSS) as a measure of the
+    goodness of fit, estimation of parameter values for ODEs turns into
+    a non-linear least-squares problem
+    (<xref alt="Madsen et al., 2004" rid="ref-IMM2004-03215" ref-type="bibr">Madsen
+    et al., 2004</xref>). <monospace>Flint</monospace> deals with the
+    challenge the modeler faces when fitting the value of parameters via
+    the least-squares method, taking advantage of multithreading if
+    available. Given grid points in the parameter space as an input set,
+    <monospace>Flint</monospace> performs the following branch-and-bound
+    algorithm to reduce the number of simultaneously running jobs for
+    the grid search:</p>
+    <fig>
+      <caption><p>An algorithm for grid search to fit parameter
+      values.<styled-content id="figU003Aalgorithm"></styled-content></p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="algorithm.png" xlink:title="" />
+    </fig>
+    <p>Unlike existing heuristics for solving non-linear least-squares,
+    the above algorithm can find a global minimum, provided that the
+    input grid contains it. It is also easy to benefit from parallel
+    computing to reduce processing time. The only shared resource among
+    parallel processes is <inline-formula><alternatives>
+    <tex-math><![CDATA[m]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>m</mml:mi></mml:math></alternatives></inline-formula>
+    in Fig. 1, namely a double floating-point number with its mutex,
+    which means the overhead is marginal. Users can define the range of
+    each parameter as well as the way to enumerate grid points, e.g., by
+    a pseudorandom number generator. This feature will help researchers
+    gain insight about a subset of parameter values of
+    biological/physiological interest at an early stage of modeling.</p>
+  </sec>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We acknowledge Dr Masao Okita for his invaluable comments on
+  shared-memory parallelism implemented in
+  <monospace>Flint</monospace>.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-asai_databases_2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Asai</surname><given-names>Y.</given-names></name>
+          <name><surname>Abe</surname><given-names>T.</given-names></name>
+          <name><surname>Li</surname><given-names>L.</given-names></name>
+          <name><surname>Oka</surname><given-names>H.</given-names></name>
+          <name><surname>Nomura</surname><given-names>T.</given-names></name>
+          <name><surname>Kitano</surname><given-names>H.</given-names></name>
+        </person-group>
+        <article-title>Databases for multilevel biophysiology research available at Physiome.jp</article-title>
+        <source>Frontiers in Physiology</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>6</volume>
+        <issue>SEP</issue>
+        <pub-id pub-id-type="doi">10.3389/fphys.2015.00251</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-asai_versatile_2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Asai</surname><given-names>Yoshiyuki</given-names></name>
+          <name><surname>Abe</surname><given-names>Takeshi</given-names></name>
+          <name><surname>Oka</surname><given-names>Hideki</given-names></name>
+          <name><surname>Okita</surname><given-names>Masao</given-names></name>
+          <name><surname>Hagihara</surname><given-names>Ken-ichi</given-names></name>
+          <name><surname>Ghosh</surname><given-names>Samik</given-names></name>
+          <name><surname>Matsuoka</surname><given-names>Yukiko</given-names></name>
+          <name><surname>Kurachi</surname><given-names>Yoshihisa</given-names></name>
+          <name><surname>Nomura</surname><given-names>Taishin</given-names></name>
+          <name><surname>Kitano</surname><given-names>Hiroaki</given-names></name>
+        </person-group>
+        <article-title>A Versatile Platform for Multilevel Modeling of Physiological Systems: SBML-PHML Hybrid Modeling and Simulation</article-title>
+        <source>Advanced Biomedical Engineering</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>3</volume>
+        <pub-id pub-id-type="doi">10.14326/abe.3.50</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-asai_multilevel_2012">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Asai</surname><given-names>Yoshiyuki</given-names></name>
+          <name><surname>Abe</surname><given-names>Takeshi</given-names></name>
+          <name><surname>Okita</surname><given-names>Masao</given-names></name>
+          <name><surname>Okuyama</surname><given-names>Tomohiro</given-names></name>
+          <name><surname>Yoshioka</surname><given-names>Nobukazu</given-names></name>
+          <name><surname>Yokoyama</surname><given-names>Shigetsohi</given-names></name>
+          <name><surname>Nagaku</surname><given-names>Masaru</given-names></name>
+          <name><surname>Hagihara</surname><given-names>Ken-Ichi</given-names></name>
+          <name><surname>Kitano</surname><given-names>Hiroaki</given-names></name>
+        </person-group>
+        <article-title>Multilevel Modeling of Physiological Systems and Simulation Platform: PhysioDesigner, Flint and Flint K3 Service</article-title>
+        <source>2012 IEEE/IPSJ 12th International Symposium on Applications and the Internet</source>
+        <year iso-8601-date="2012-07">2012</year><month>07</month>
+        <pub-id pub-id-type="doi">10.1109/SAINT.2012.40</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-higham_algorithmic_2001">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Higham</surname><given-names>Desmond J</given-names></name>
+        </person-group>
+        <article-title>An Algorithmic Introduction to Numerical Simulation of Stochastic Differential Equations</article-title>
+        <source>SIAM Review</source>
+        <year iso-8601-date="2001">2001</year>
+        <volume>43</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1137/S0036144500378302</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lloyd_cellml_2004">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lloyd</surname><given-names>Catherine M.</given-names></name>
+          <name><surname>Halstead</surname><given-names>Matt D. B.</given-names></name>
+          <name><surname>Nielsen</surname><given-names>Poul F.</given-names></name>
+        </person-group>
+        <article-title>CellML: Its future, present and past</article-title>
+        <source>Progress in Biophysics and Molecular Biology</source>
+        <year iso-8601-date="2004-06">2004</year><month>06</month>
+        <volume>85</volume>
+        <issue>2</issue>
+        <issn>0079-6107</issn>
+        <pub-id pub-id-type="doi">10.1016/j.pbiomolbio.2004.01.004</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hucka_systems_2003">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hucka</surname><given-names>M.</given-names></name>
+          <name><surname>Finney</surname><given-names>A.</given-names></name>
+          <name><surname>Sauro</surname><given-names>H. M.</given-names></name>
+          <name><surname>Bolouri</surname><given-names>H.</given-names></name>
+          <name><surname>Doyle</surname><given-names>J. C.</given-names></name>
+          <name><surname>Kitano</surname><given-names>H.</given-names></name>
+          <name><surname>Arkin</surname><given-names>A. P.</given-names></name>
+          <name><surname>Bornstein</surname><given-names>B. J.</given-names></name>
+          <name><surname>Bray</surname><given-names>D.</given-names></name>
+          <name><surname>Cornish-Bowden</surname><given-names>A.</given-names></name>
+          <name><surname>Cuellar</surname><given-names>A. A.</given-names></name>
+          <name><surname>Dronov</surname><given-names>S.</given-names></name>
+          <name><surname>Gilles</surname><given-names>E. D.</given-names></name>
+          <name><surname>Ginkel</surname><given-names>M.</given-names></name>
+          <name><surname>Gor</surname><given-names>V.</given-names></name>
+          <name><surname>Goryanin</surname><given-names>I. I.</given-names></name>
+          <name><surname>Hedley</surname><given-names>W. J.</given-names></name>
+          <name><surname>Hodgman</surname><given-names>T. C.</given-names></name>
+          <name><surname>Hofmeyr</surname><given-names>J.-H.</given-names></name>
+          <name><surname>Hunter</surname><given-names>P. J.</given-names></name>
+          <name><surname>Juty</surname><given-names>N. S.</given-names></name>
+          <name><surname>Kasberger</surname><given-names>J. L.</given-names></name>
+          <name><surname>Kremling</surname><given-names>A.</given-names></name>
+          <name><surname>Kummer</surname><given-names>U.</given-names></name>
+          <name><surname>Le Novère</surname><given-names>N.</given-names></name>
+          <name><surname>Loew</surname><given-names>L. M.</given-names></name>
+          <name><surname>Lucio</surname><given-names>D.</given-names></name>
+          <name><surname>Mendes</surname><given-names>P.</given-names></name>
+          <name><surname>Minch</surname><given-names>E.</given-names></name>
+          <name><surname>Mjolsness</surname><given-names>E. D.</given-names></name>
+          <name><surname>Nakayama</surname><given-names>Y.</given-names></name>
+          <name><surname>Nelson</surname><given-names>M. R.</given-names></name>
+          <name><surname>Nielsen</surname><given-names>P. F.</given-names></name>
+          <name><surname>Sakurada</surname><given-names>T.</given-names></name>
+          <name><surname>Schaff</surname><given-names>J. C.</given-names></name>
+          <name><surname>Shapiro</surname><given-names>B. E.</given-names></name>
+          <name><surname>Shimizu</surname><given-names>T. S.</given-names></name>
+          <name><surname>Spence</surname><given-names>H. D.</given-names></name>
+          <name><surname>Stelling</surname><given-names>J.</given-names></name>
+          <name><surname>Takahashi</surname><given-names>K.</given-names></name>
+          <name><surname>Tomita</surname><given-names>M.</given-names></name>
+          <name><surname>Wagner</surname><given-names>J.</given-names></name>
+          <name><surname>Wang</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>The systems biology markup language (SBML): A medium for representation and exchange of biochemical network models</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2003-03">2003</year><month>03</month>
+        <volume>19</volume>
+        <issue>4</issue>
+        <issn>1367-4803</issn>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btg015</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hindmarsh2005sundials">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hindmarsh</surname><given-names>Alan C</given-names></name>
+          <name><surname>Brown</surname><given-names>Peter N</given-names></name>
+          <name><surname>Grant</surname><given-names>Keith E</given-names></name>
+          <name><surname>Lee</surname><given-names>Steven L</given-names></name>
+          <name><surname>Serban</surname><given-names>Radu</given-names></name>
+          <name><surname>Shumaker</surname><given-names>Dan E</given-names></name>
+          <name><surname>Woodward</surname><given-names>Carol S</given-names></name>
+        </person-group>
+        <article-title>SUNDIALS: Suite of nonlinear and differential/algebraic equation solvers</article-title>
+        <source>ACM Transactions on Mathematical Software (TOMS)</source>
+        <publisher-name>ACM</publisher-name>
+        <year iso-8601-date="2005">2005</year>
+        <volume>31</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1145/1089014.1089020</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-IMM2004-03215">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Madsen</surname><given-names>K.</given-names></name>
+          <name><surname>Nielsen</surname><given-names>H. B.</given-names></name>
+          <name><surname>Tingleff</surname><given-names>O.</given-names></name>
+        </person-group>
+        <article-title>Methods for non-linear least squares problems (2nd ed.)</article-title>
+        <publisher-name>Informatics; Mathematical Modelling, Technical University of Denmark, DTU</publisher-name>
+        <publisher-loc>Richard Petersens Plads, Building 321, DK-2800 Kgs. Lyngby</publisher-loc>
+        <year iso-8601-date="2004">2004</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-nomura_toward_2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Nomura</surname><given-names>Taishin</given-names></name>
+        </person-group>
+        <article-title>Toward Integration of Biological and Physiological Functions at Multiple Levels</article-title>
+        <source>Frontiers in Physiology</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>1</volume>
+        <issn>1664-042X</issn>
+        <pub-id pub-id-type="doi">10.3389/fphys.2010.00164</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hoops_copasicomplex_2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hoops</surname><given-names>Stefan</given-names></name>
+          <name><surname>Sahle</surname><given-names>Sven</given-names></name>
+          <name><surname>Gauges</surname><given-names>Ralph</given-names></name>
+          <name><surname>Lee</surname><given-names>Christine</given-names></name>
+          <name><surname>Pahle</surname><given-names>Jürgen</given-names></name>
+          <name><surname>Simus</surname><given-names>Natalia</given-names></name>
+          <name><surname>Singhal</surname><given-names>Mudita</given-names></name>
+          <name><surname>Xu</surname><given-names>Liang</given-names></name>
+          <name><surname>Mendes</surname><given-names>Pedro</given-names></name>
+          <name><surname>Kummer</surname><given-names>Ursula</given-names></name>
+        </person-group>
+        <article-title>COPASI—a COmplex PAthway SImulator</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2006-12">2006</year><month>12</month>
+        <volume>22</volume>
+        <issue>24</issue>
+        <issn>1367-4803</issn>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btl485</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-fussmann_crossing_2000">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fussmann</surname><given-names>Gregor F.</given-names></name>
+          <name><surname>Ellner</surname><given-names>Stephen P.</given-names></name>
+          <name><surname>Shertzer</surname><given-names>Kyle W.</given-names></name>
+          <name><surname>Hairston</surname><given-names>Nelson G.</given-names></name>
+        </person-group>
+        <article-title>Crossing the Hopf Bifurcation in a Live Predator-Prey System</article-title>
+        <source>Science</source>
+        <year iso-8601-date="2000-11">2000</year><month>11</month>
+        <volume>290</volume>
+        <issue>5495</issue>
+        <issn>0036-8075, 1095-9203</issn>
+        <pub-id pub-id-type="doi">10.1126/science.290.5495.1358</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-samoilov_stochastic_2005">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Samoilov</surname><given-names>Michael</given-names></name>
+          <name><surname>Plyasunov</surname><given-names>Sergey</given-names></name>
+          <name><surname>Arkin</surname><given-names>Adam P.</given-names></name>
+        </person-group>
+        <article-title>Stochastic amplification and signaling in enzymatic futile cycles through noise-induced bistability with oscillations</article-title>
+        <source>Proceedings of the National Academy of Sciences</source>
+        <year iso-8601-date="2005-02">2005</year><month>02</month>
+        <volume>102</volume>
+        <issue>7</issue>
+        <issn>0027-8424, 1091-6490</issn>
+        <pub-id pub-id-type="doi">10.1073/pnas.0406841102</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-leem_perspectives_2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Leem</surname><given-names>Chae Hun</given-names></name>
+        </person-group>
+        <article-title>Perspectives of physiome research</article-title>
+        <source>Integrative Medicine Research</source>
+        <year iso-8601-date="2016-03">2016</year><month>03</month>
+        <volume>5</volume>
+        <issue>1</issue>
+        <issn>2213-4220</issn>
+        <pub-id pub-id-type="doi">10.1016/j.imr.2015.12.004</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gnuplot_2017">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Williams</surname><given-names>Thomas</given-names></name>
+          <name><surname>Kelley</surname><given-names>Colin</given-names></name>
+          <name><surname>Merrit</surname><suffix>E. A.</suffix></name>
+          <name><surname>al.</surname></name>
+        </person-group>
+        <article-title>Gnuplot 5.2: An interactive plotting program</article-title>
+        <publisher-name>http://www.gnuplot.info/</publisher-name>
+        <year iso-8601-date="2017-09">2017</year><month>09</month>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

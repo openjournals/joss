@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2768</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02768</article-id>
+<title-group>
+<article-title>nap: A molecular dynamics package with
+parameter-optimization programs for classical and machine-learning
+potentials</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-8244-5844</contrib-id>
+<string-name>Ryo KOBAYASHI</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Physical Science and Engineering, Nagoya
+Institute of Technology, Gokiso, Showa, Nagoya 466-8555,
+Japan</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-08-28">
+<day>28</day>
+<month>8</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>57</issue>
+<fpage>2768</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>materials science</kwd>
+<kwd>molecular dynamics</kwd>
+<kwd>interatomic potential</kwd>
+<kwd>neural-network potential</kwd>
+<kwd>meta-heuristics</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The <bold>nap</bold> is a package for molecular dynamics (MD)
+  simulation consisting of an MD program (<bold>pmd</bold>) that can
+  perform large-scale simulation using a spatial-decomposition technique
+  and two parameter-optimization programs: one for classical (CL)
+  potentials (<bold>fp.py</bold>) and another for machine-learning (ML)
+  potentials (<bold>fitpot</bold>). Since the numbers of parameters to
+  be optimized are much different between CL and ML potentials,
+  optimization approaches for them are also different; meta-heuristic
+  global minimum-search algorithms for the CL potentials, in which the
+  numbers of parameters are usually much less than one hundred, and
+  gradient-based methods for the ML potentials. The parameters of CL
+  potentials can be optimized to any target quantity that can be
+  computed using the potentials since meta-heuristic methods do not
+  require the derivatives of the quantity with respect to parameters. On
+  the other hand, ML-potential parameters can be optimized to only
+  energies, forces on atoms and stress components of reference systems,
+  mainly because gradient-based methods require the derivatives of other
+  quantities with respect to parameters, and the analytical derivatives
+  and the coding of them are usually painful and sometimes impossible.
+  Potentials can be used in combination with any other potential, such
+  as pair and angular potentials, short-range and long-range potentials,
+  CL and ML potentials. With using the <bold>nap</bold> package, users
+  can perform MD simulation of solid-state materials with the choice of
+  different levels of complexity (CL or ML) by creating interatomic
+  potentials optimized to quantum-mechanical calculation data even if no
+  potential is available.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>MD simulation is widely used in many research fields such as
+  materials science, chemistry, physics, etc., to study dynamics of
+  atoms or molecules. In order to perform MD simulation of systems
+  including large number of atoms, where quantum-mechanical calculations
+  can not be used due to their computational cost, empirical interatomic
+  potentials between species are required. And the results of MD
+  simulation are strongly dependent on the property or accuracy of the
+  potentials used in the simulation. Hence, there are a lot of CL
+  potential models have been proposed such as Lennard-Jones (LJ)
+  potential for van der Waals interaction, Coulombic potential for ionic
+  interaction, Morse potential for covalent interactions
+  (<xref alt="Morse, 1929" rid="ref-Morse1929-ow" ref-type="bibr">Morse,
+  1929</xref>), angular-dependent models for angles between covalent
+  bonds, bond-order models for more complex systems, etc. Recently ML
+  potentials have been also actively studied because they are usually
+  more flexible and can reproduce reference data more precisely than CL
+  potentials. Even though the potential is flexible or suitable to
+  problems considered, the parameters in the potential model still need
+  to be optimized to well reproduce the properties or phenomena that are
+  in focus.</p>
+  <p>There are already a lot of MD programs such as LAMMPS
+  (<xref alt="Plimpton, 1995" rid="ref-Plimpton1995-az" ref-type="bibr">Plimpton,
+  1995</xref>) and IMD
+  (<xref alt="Stadler et al., 1997" rid="ref-Stadler1997-wr" ref-type="bibr">Stadler
+  et al., 1997</xref>), and some of them can use both CL and ML
+  potentials. And also there are some parameter-optimization programs
+  that can produce parameter sets available in the other MD programs
+  such as aenet
+  (<xref alt="Artrith &amp; Urban, 2016" rid="ref-Artrith2016-mu" ref-type="bibr">Artrith
+  &amp; Urban, 2016</xref>) for ML potentials and potfit
+  (<xref alt="Brommer et al., 2015" rid="ref-Brommer2015-hw" ref-type="bibr">Brommer
+  et al., 2015</xref>;
+  <xref alt="Brommer &amp; Gähler, 2007" rid="ref-Brommer2007-kr" ref-type="bibr">Brommer
+  &amp; Gähler, 2007</xref>) for CL potentials. However, there is also a
+  demand of combining ML potentials and simpler CL potentials, e.g., ML
+  potential with Coulomb interactions
+  (<xref alt="Morawietz &amp; Behler, 2013" rid="ref-Morawietz2013-qq" ref-type="bibr">Morawietz
+  &amp; Behler, 2013</xref>) and ML potential with core-core repulsions
+  (<xref alt="Wang et al., 2019" rid="ref-Wang2019-py" ref-type="bibr">Wang
+  et al., 2019</xref>), since creating an ML potential that covers very
+  short-range and/or very long-range interactions is very inefficient.
+  Thus it is beneficial if the programs of parameter-optimization for
+  both CL and ML potentials are in one package and highly connected to
+  one MD program and it will be more efficient than using several
+  different programs to optimize parameters of CL and ML potentials.</p>
+</sec>
+<sec id="programs-and-functionalities">
+  <title>Programs and functionalities</title>
+  <list list-type="bullet">
+    <list-item>
+      <p><bold>pmd</bold>: A Fortran program to perform MD simulation.
+      It can perform large-scale MD simulation efficiently by using
+      linked-cell list
+      (<xref alt="Allen &amp; Tildesley, 2017" rid="ref-Allen2017-nw" ref-type="bibr">Allen
+      &amp; Tildesley, 2017</xref>) and spatial decomposition with MPI
+      parallelization. Several widely-used interatomic potentials for
+      solid-state materials are implemented, for example, pair
+      potentials such as LJ, Morse, Coulomb and screened Coulomb;
+      angular-dependent potentials such as Stillinger-Weber
+      (<xref alt="Stillinger &amp; Weber, 1985" rid="ref-Stillinger1985-gy" ref-type="bibr">Stillinger
+      &amp; Weber, 1985</xref>) and Tersoff
+      (<xref alt="Tersoff, 1988" rid="ref-Tersoff1988-bo" ref-type="bibr">Tersoff,
+      1988</xref>); multi-body potentials such as Finnis-Sinclair
+      (<xref alt="Finnis &amp; Sinclair, 1984" rid="ref-Finnis1984-hv" ref-type="bibr">Finnis
+      &amp; Sinclair, 1984</xref>) and embeded-atom method
+      (<xref alt="Daw &amp; Baskes, 1984" rid="ref-Daw1984-hj" ref-type="bibr">Daw
+      &amp; Baskes, 1984</xref>); machine-learning potentials such as
+      linear-regression
+      (<xref alt="Seko et al., 2014" rid="ref-Seko2014-mh" ref-type="bibr">Seko
+      et al., 2014</xref>) and neural-network (NN)
+      (<xref alt="Behler &amp; Parrinello, 2007" rid="ref-Behler2007-hr" ref-type="bibr">Behler
+      &amp; Parrinello, 2007</xref>).</p>
+    </list-item>
+    <list-item>
+      <p><bold>fp.py</bold>: A Python program to optimize the parameters
+      of classical potentials using meta-heuristic algorithms such as
+      cuckoo search
+      (<xref alt="Yang &amp; Deb, 2009" rid="ref-Yang2009-at" ref-type="bibr">Yang
+      &amp; Deb, 2009</xref>). Meta-heuristic algorithms need to perform
+      MD simulations and to evaluate the quantities to be compared with
+      target values of each individual representing a candidate
+      parameter set. These jobs by individuals are performed as child
+      processes of the program by calling a shell script that describes
+      what to compute using given parameters. This program has a
+      functionality of automatic update of the search range of
+      parameters and it allows to optimize parameters efficiently and
+      less dependent on the initial ranges of parameters
+      (<xref alt="Kobayashi et al., 2020" rid="ref-Kobayashi2020-rz" ref-type="bibr">Kobayashi
+      et al., 2020</xref>).</p>
+    </list-item>
+    <list-item>
+      <p><bold>fitpot</bold>: A Fortran program to optimize the
+      parameters of ML potentials, such as linear regression and NN,
+      using gradient-based methods
+      (<xref alt="Kobayashi et al., 2017" rid="ref-Kobayashi2017-ky" ref-type="bibr">Kobayashi
+      et al., 2017</xref>). It can use high-performance computer
+      resources to evaluate energies, forces and stresses of a huge
+      number of sample systems in parallel using the MPI library, which
+      is sometimes crucial since in general ML models require a lot of
+      sampling to avoid over-fitting and make them robust.</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This work was supported in part by JSPS KAKENHI Grant Number
+  JP20H05290 (Grant-in-Aid for Scientific Research on Innovative Areas
+  “Interface Ionics”) and by the “Materials Research by Information
+  Integration” Initiative (MI2I) project of the “Support Program for
+  Starting Up Innovation Hub” from JST.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Kobayashi2020-rz">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kobayashi</surname><given-names>Ryo</given-names></name>
+          <name><surname>Miyaji</surname><given-names>Yasuhiro</given-names></name>
+          <name><surname>Nakano</surname><given-names>Koki</given-names></name>
+          <name><surname>Nakayama</surname><given-names>Masanobu</given-names></name>
+        </person-group>
+        <article-title>High-throughput production of force-fields for solid-state electrolyte materials</article-title>
+        <source>APL Materials</source>
+        <publisher-name>American Institute of Physics</publisher-name>
+        <year iso-8601-date="2020-08">2020</year><month>08</month>
+        <volume>8</volume>
+        <issue>8</issue>
+        <pub-id pub-id-type="doi">10.1063/5.0015373</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Wang2019-py">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wang</surname><given-names>Hao</given-names></name>
+          <name><surname>Guo</surname><given-names>Xun</given-names></name>
+          <name><surname>Zhang</surname><given-names>Linfeng</given-names></name>
+          <name><surname>Wang</surname><given-names>Han</given-names></name>
+          <name><surname>Xue</surname><given-names>Jianming</given-names></name>
+        </person-group>
+        <article-title>Deep learning inter-atomic potential model for accurate irradiation damage simulations</article-title>
+        <source>Appl. Phys. Lett.</source>
+        <publisher-name>AIP Publishing LLC</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>114</volume>
+        <issue>24</issue>
+        <issn>0003-6951</issn>
+        <pub-id pub-id-type="doi">10.1063/1.5098061</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Kobayashi2017-ky">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kobayashi</surname><given-names>Ryo</given-names></name>
+          <name><surname>Giofré</surname><given-names>Daniele</given-names></name>
+          <name><surname>Junge</surname><given-names>Till</given-names></name>
+          <name><surname>Ceriotti</surname><given-names>Michele</given-names></name>
+          <name><surname>Curtin</surname><given-names>William Arthur</given-names></name>
+        </person-group>
+        <article-title>Neural network potential for Al-Mg-Si alloys</article-title>
+        <source>Physical Review Materials</source>
+        <publisher-name>American Physical Society</publisher-name>
+        <year iso-8601-date="2017-10">2017</year><month>10</month>
+        <volume>1</volume>
+        <issue>5</issue>
+        <pub-id pub-id-type="doi">10.1103/PhysRevMaterials.1.053604</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Allen2017-nw">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Allen</surname><given-names>Michael P</given-names></name>
+          <name><surname>Tildesley</surname><given-names>Dominic J</given-names></name>
+        </person-group>
+        <source>Computer simulation of liquids</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2017-08">2017</year><month>08</month>
+        <isbn>9780198803201</isbn>
+        <pub-id pub-id-type="doi">10.1093/oso/9780198803195.001.0001</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Artrith2016-mu">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Artrith</surname><given-names>Nongnuch</given-names></name>
+          <name><surname>Urban</surname><given-names>Alexander</given-names></name>
+        </person-group>
+        <article-title>An implementation of artificial neural-network potentials for atomistic materials simulations: Performance for TiO2</article-title>
+        <source>Comput. Mater. Sci.</source>
+        <publisher-name>Elsevier B.V.</publisher-name>
+        <year iso-8601-date="2016-03">2016</year><month>03</month>
+        <volume>114</volume>
+        <issue>C</issue>
+        <pub-id pub-id-type="doi">10.1016/j.commatsci.2015.11.047</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Brommer2015-hw">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Brommer</surname><given-names>Peter</given-names></name>
+          <name><surname>Kiselev</surname><given-names>Alexander</given-names></name>
+          <name><surname>Schopf</surname><given-names>Daniel</given-names></name>
+          <name><surname>Beck</surname><given-names>Philipp</given-names></name>
+          <name><surname>Roth</surname><given-names>Johannes</given-names></name>
+          <name><surname>Trebin</surname><given-names>Hans-Rainer</given-names></name>
+        </person-group>
+        <article-title>Classical interaction potentials for diverse materials from ab initio data: A review of potfit</article-title>
+        <source>Modell. Simul. Mater. Sci. Eng.</source>
+        <publisher-name>IOP Publishing</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <volume>23</volume>
+        <issue>7</issue>
+        <pub-id pub-id-type="doi">10.1088/0965-0393/23/7/074002</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Seko2014-mh">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Seko</surname><given-names>Atsuto</given-names></name>
+          <name><surname>Takahashi</surname><given-names>Akira</given-names></name>
+          <name><surname>Takahashi</surname><given-names>Akira</given-names></name>
+          <name><surname>Tanaka</surname><given-names>Isao</given-names></name>
+          <name><surname>Tanaka</surname><given-names>Isao</given-names></name>
+        </person-group>
+        <article-title>Sparse representation for a potential energy surface</article-title>
+        <source>Phys. Rev. B: Condens. Matter Mater. Phys.</source>
+        <year iso-8601-date="2014-07">2014</year><month>07</month>
+        <volume>90</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1103/PhysRevB.90.024101</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Morawietz2013-qq">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Morawietz</surname><given-names>Tobias</given-names></name>
+          <name><surname>Behler</surname><given-names>Jörg</given-names></name>
+        </person-group>
+        <article-title>A density-functional theory-based neural network potential for water clusters including van der Waals corrections</article-title>
+        <source>J. Phys. Chem. A</source>
+        <year iso-8601-date="2013-08">2013</year><month>08</month>
+        <volume>117</volume>
+        <issue>32</issue>
+        <issn>1089-5639</issn>
+        <pub-id pub-id-type="doi">10.1021/jp401225b</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Yang2009-at">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Yang</surname><given-names>Xin-She</given-names></name>
+          <name><surname>Deb</surname><given-names>Suash</given-names></name>
+        </person-group>
+        <article-title>Cuckoo search via levy flights</article-title>
+        <source>2009 world congress on nature &amp; biologically inspired computing (NaBIC)</source>
+        <publisher-name>IEEE</publisher-name>
+        <publisher-loc>Coimbatore, India</publisher-loc>
+        <year iso-8601-date="2009">2009</year>
+        <pub-id pub-id-type="doi">10.1109/NABIC.2009.5393690</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Behler2007-hr">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Behler</surname><given-names>Jörg</given-names></name>
+          <name><surname>Parrinello</surname><given-names>Michele</given-names></name>
+        </person-group>
+        <article-title>Generalized Neural-Network representation of High-Dimensional Potential-Energy surfaces</article-title>
+        <source>Phys. Rev. Lett.</source>
+        <year iso-8601-date="2007-04">2007</year><month>04</month>
+        <volume>98</volume>
+        <issue>14</issue>
+        <issn>0031-9007</issn>
+        <pub-id pub-id-type="doi">10.1103/PhysRevLett.98.146401</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Brommer2007-kr">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Brommer</surname><given-names>Peter</given-names></name>
+          <name><surname>Gähler</surname><given-names>Franz</given-names></name>
+        </person-group>
+        <article-title>Potfit: Effective potentials from ab initio data</article-title>
+        <source>Modell. Simul. Mater. Sci. Eng.</source>
+        <year iso-8601-date="2007">2007</year>
+        <volume>15</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1088/0965-0393/15/3/008</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Stadler1997-wr">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Stadler</surname><given-names>J</given-names></name>
+          <name><surname>Mikulla</surname><given-names>R</given-names></name>
+          <name><surname>Trebin</surname><given-names>H-R</given-names></name>
+        </person-group>
+        <article-title>IMD: A software package for molecular dynamics studies on parallel computers</article-title>
+        <source>Int. J. Mod. Phys. C</source>
+        <publisher-name>World Scientific Publishing Co.</publisher-name>
+        <year iso-8601-date="1997-10">1997</year><month>10</month>
+        <volume>08</volume>
+        <issue>05</issue>
+        <issn>0129-1831</issn>
+        <pub-id pub-id-type="doi">10.1142/S0129183197000990</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Plimpton1995-az">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Plimpton</surname><given-names>S</given-names></name>
+        </person-group>
+        <article-title>Fast parallel algorithms for short-range molecular dynamics</article-title>
+        <source>J. Comput. Phys.</source>
+        <publisher-name>Elsevier Inc.</publisher-name>
+        <year iso-8601-date="1995-01">1995</year><month>01</month>
+        <volume>117</volume>
+        <issue>1</issue>
+        <issn>0021-9991</issn>
+        <pub-id pub-id-type="doi">10.1006/jcph.1995.1039</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Tersoff1988-bo">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tersoff</surname><given-names>J</given-names></name>
+        </person-group>
+        <article-title>New empirical approach for the structure and energy of covalent systems</article-title>
+        <source>Phys. Rev. B: Condens. Matter Mater. Phys.</source>
+        <year iso-8601-date="1988-01">1988</year><month>01</month>
+        <volume>37</volume>
+        <issue>12</issue>
+        <pub-id pub-id-type="doi">10.1103/PhysRevB.37.6991</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Stillinger1985-gy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Stillinger</surname><given-names>F H</given-names></name>
+          <name><surname>Weber</surname><given-names>T A</given-names></name>
+        </person-group>
+        <article-title>Computer simulation of local order in condensed phases of silicon</article-title>
+        <source>Phys. Rev. B: Condens. Matter Mater. Phys.</source>
+        <year iso-8601-date="1985-01">1985</year><month>01</month>
+        <volume>31</volume>
+        <issue>8</issue>
+        <pub-id pub-id-type="doi">10.1103/PhysRevB.31.5262</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Daw1984-hj">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Daw</surname><given-names>Murray S</given-names></name>
+          <name><surname>Baskes</surname><given-names>M I</given-names></name>
+        </person-group>
+        <article-title>Embedded-atom method: Derivation and application to impurities, surfaces, and other defects in metals</article-title>
+        <source>Phys. Rev. B: Condens. Matter Mater. Phys.</source>
+        <publisher-name>American Physical Society</publisher-name>
+        <year iso-8601-date="1984-06">1984</year><month>06</month>
+        <volume>29</volume>
+        <issue>12</issue>
+        <pub-id pub-id-type="doi">10.1103/PhysRevB.29.6443</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Finnis1984-hv">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Finnis</surname><given-names>Mike W</given-names></name>
+          <name><surname>Sinclair</surname><given-names>J E</given-names></name>
+        </person-group>
+        <article-title>A simple empirical n-body potential for transition metals</article-title>
+        <source>Philos. Mag. A</source>
+        <year iso-8601-date="1984-01">1984</year><month>01</month>
+        <volume>50</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1080/01418618408244210</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Morse1929-ow">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Morse</surname><given-names>Philip M</given-names></name>
+        </person-group>
+        <article-title>Diatomic molecules according to the wave mechanics. II. Vibrational levels</article-title>
+        <source>Phys. Rev.</source>
+        <publisher-name>American Physical Society</publisher-name>
+        <year iso-8601-date="1929-07">1929</year><month>07</month>
+        <volume>34</volume>
+        <issue>1</issue>
+        <issn>0959-8472</issn>
+        <pub-id pub-id-type="doi">10.1103/PhysRev.34.57</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

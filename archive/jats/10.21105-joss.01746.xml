@@ -1,0 +1,622 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1746</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01746</article-id>
+<title-group>
+<article-title>Larq: An Open-Source Library for Training Binarized
+Neural Networks</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-8697-9920</contrib-id>
+<string-name>Lukas Geiger</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Plumerai Team</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Plumerai Research</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-09-09">
+<day>9</day>
+<month>9</month>
+<year>2019</year>
+</pub-date>
+<volume>5</volume>
+<issue>45</issue>
+<fpage>1746</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>python</kwd>
+<kwd>tensorflow</kwd>
+<kwd>keras</kwd>
+<kwd>deep-learning</kwd>
+<kwd>machine-learning</kwd>
+<kwd>binarized-neural-networks</kwd>
+<kwd>quantized-neural-networks</kwd>
+<kwd>efficient-deep-learning</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>Modern deep learning methods have been successfully applied to many
+  different tasks and have the potential to revolutionize everyday
+  lives. However, existing neural networks that use 32 bits to encode
+  each weight and activation often have an energy budget that far
+  exceeds the capabilities of mobile or embedded devices. One common way
+  to improve computational efficiency is to reduce the precision of the
+  network to 16-bit or 8-bit, also known as quantization. Binarized
+  Neural Networks (BNNs) represent an extreme case of quantized
+  networks, that cannot be viewed as approximations to real-valued
+  networks and therefore requires special tools and optimization
+  strategies
+  (<xref alt="Helwegen et al., 2019" rid="ref-bop" ref-type="bibr">Helwegen
+  et al., 2019</xref>). In these networks both weights and activations
+  are restricted to <inline-formula><alternatives>
+  <tex-math><![CDATA[\{-1, +1\}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mo>−</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mo>+</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+  (<xref alt="Hubara et al., 2016" rid="ref-binarynet" ref-type="bibr">Hubara
+  et al., 2016</xref>). Compared to an equivalent 8-bit quantized
+  network BNNs require 8 times smaller memory size and 8 times fewer
+  memory accesses, which reduces energy consumption drastically when
+  deployed on optimized hardware
+  (<xref alt="Hubara et al., 2016" rid="ref-binarynet" ref-type="bibr">Hubara
+  et al., 2016</xref>). However, many open research questions remain
+  until the use of BNNs and other extremely quantized neural networks
+  becomes widespread in industry.
+  <ext-link ext-link-type="uri" xlink:href="https://larq.dev"><monospace>larq</monospace></ext-link>
+  is an ecosystem of Python packages for BNNs and other Quantized Neural
+  Networks (QNNs). It is intended to facilitate researchers to resolve
+  these outstanding questions.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Fortunately, many researchers already publish code along with their
+  papers, though, in absence of a common API to define extremely
+  quantized networks, authors end up re-implementing a large amount of
+  code, making it difficult to share improvements and make rapid
+  progress. Existing tools for BNN research either focus on deployment
+  or require a high learning curve to use and contribute to
+  (<xref alt="Bethge et al., 2018" rid="ref-bmxnetv2" ref-type="bibr">Bethge
+  et al., 2018</xref>;
+  <xref alt="Zhang et al., 2019" rid="ref-dabnn" ref-type="bibr">Zhang
+  et al., 2019</xref>). The API of
+  <ext-link ext-link-type="uri" xlink:href="https://larq.dev"><monospace>larq</monospace></ext-link>
+  is built on top of <monospace>tensorflow.keras</monospace>
+  (<xref alt="Abadi et al., 2015" rid="ref-tensorflow" ref-type="bibr">Abadi
+  et al., 2015</xref>;
+  <xref alt="Chollet, 2015" rid="ref-keras" ref-type="bibr">Chollet,
+  2015</xref>) and is designed to provide an easy to use, composable way
+  to design and train BNNs. While popular libraries like TensorFlow
+  Lite, TensorFlow Model Optimization or PyTorch focus on 16-bit or
+  8-bit quantization
+  (<xref alt="Abadi et al., 2015" rid="ref-tensorflow" ref-type="bibr">Abadi
+  et al., 2015</xref>;
+  <xref alt="Paszke et al., 2017" rid="ref-pytorch" ref-type="bibr">Paszke
+  et al., 2017</xref>), <monospace>larq</monospace> aims to extend this
+  towards lower bit-widths.</p>
+  <p>We and many other researchers in the field often encounter major
+  problems when it comes to reproducing existing literature, due to
+  incomplete or even broken code of official implementations. To
+  encourage reproducible research,
+  <ext-link ext-link-type="uri" xlink:href="https://larq.dev/models"><monospace>larq/zoo</monospace></ext-link>
+  provides tested and maintained implementations and pretrained weights
+  for a variety of popular extremely quantized models
+  (<xref alt="Bethge et al., 2019" rid="ref-binary_dense_net" ref-type="bibr">Bethge
+  et al., 2019</xref>;
+  <xref alt="Hubara et al., 2016" rid="ref-binarynet" ref-type="bibr">Hubara
+  et al., 2016</xref>;
+  <xref alt="Liu et al., 2018" rid="ref-bireal_net" ref-type="bibr">Liu
+  et al., 2018</xref>;
+  <xref alt="Rastegari et al., 2016" rid="ref-xnor_net" ref-type="bibr">Rastegari
+  et al., 2016</xref>;
+  <xref alt="Zhou et al., 2016" rid="ref-dorefa" ref-type="bibr">Zhou et
+  al., 2016</xref>) helping researchers focus on their work instead of
+  spending time on reproducing existing work.</p>
+</sec>
+<sec id="background-neural-network-binarization">
+  <title>Background: Neural Network Binarization</title>
+  <p>Binarization of artificial deep neural networks poses two
+  fundamental challenges to regular deep learning strategies, which are
+  all based on backpropagation and stochastic gradient descent
+  (<xref alt="Bottou, 1991" rid="ref-bottou1991" ref-type="bibr">Bottou,
+  1991</xref>;
+  <xref alt="Rumelhart et al., 1986" rid="ref-rumelhart" ref-type="bibr">Rumelhart
+  et al., 1986</xref>): the gradient of the binarization function
+  vanishes almost everywhere and a weight in the set
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\{-1, +1\}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mo>−</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mo>+</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+  cannot absorb small update steps. Therefore, binarization was long
+  deemed unfeasible.</p>
+  <p>A solution to both problems was suggested by Hinton, who proposed
+  the Straight-Through Estimator, which ignores the binarization during
+  the backward pass
+  (<xref alt="Hinton, 2012" rid="ref-hinton_coursera" ref-type="bibr">Hinton,
+  2012</xref>). The viability of this approach was demonstrated by
+  BinaryConnect
+  (<xref alt="Courbariaux et al., 2015" rid="ref-binaryconnect" ref-type="bibr">Courbariaux
+  et al., 2015</xref>) and BinaryNet
+  (<xref alt="Hubara et al., 2016" rid="ref-binarynet" ref-type="bibr">Hubara
+  et al., 2016</xref>), proving that binarization of networks was
+  possible even for complex tasks.</p>
+  <p>Since then, the field of BNNs and closely related Ternary Neural
+  Networks has become a prime candidate to enable efficient inference
+  for deep neural networks. Numerous papers have explored novel
+  architectures
+  (<xref alt="Liu et al., 2018" rid="ref-bireal_net" ref-type="bibr">Liu
+  et al., 2018</xref>;
+  <xref alt="Rastegari et al., 2016" rid="ref-xnor_net" ref-type="bibr">Rastegari
+  et al., 2016</xref>;
+  <xref alt="Zhu et al., 2019" rid="ref-Zhu2018" ref-type="bibr">Zhu et
+  al., 2019</xref>;
+  <xref alt="Zhuang et al., 2019" rid="ref-Zhuang2018" ref-type="bibr">Zhuang
+  et al., 2019</xref>) and optimization strategies
+  (<xref alt="Alizadeh et al., 2019" rid="ref-Alizadeh2019" ref-type="bibr">Alizadeh
+  et al., 2019</xref>;
+  <xref alt="Helwegen et al., 2019" rid="ref-bop" ref-type="bibr">Helwegen
+  et al., 2019</xref>), and the accuracy gap between efficient BNNs and
+  regular DNNs is rapidly closing.</p>
+</sec>
+<sec id="training-extremely-quantized-neural-networks-with-larq">
+  <title>Training extremely quantized neural networks with
+  <monospace>larq</monospace></title>
+  <p>Quantization is the process of mapping a set of continuous values
+  to a smaller countable set. BNNs are a special case of QNNs, where the
+  quantization output <inline-formula><alternatives>
+  <tex-math><![CDATA[x_q]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>x</mml:mi><mml:mi>q</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  is binary:</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[
+  x_q = q(x), \quad x_q \in \{-1, +1\}, x \in \mathbb{R}
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>x</mml:mi><mml:mi>q</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mi>q</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mspace width="1.0em"></mml:mspace><mml:msub><mml:mi>x</mml:mi><mml:mi>q</mml:mi></mml:msub><mml:mo>∈</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mo>−</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mo>+</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="false" form="postfix">}</mml:mo><mml:mo>,</mml:mo><mml:mi>x</mml:mi><mml:mo>∈</mml:mo><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p><monospace>larq</monospace> is built around the concept of
+  quantizers <inline-formula><alternatives>
+  <tex-math><![CDATA[q(x)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>q</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  and quantized layers that compute</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[
+  \sigma(f(q_{\, \mathrm{kernel}}(\boldsymbol{w}), q_{\, \mathrm{input}}(\boldsymbol{x})) + b)
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>σ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>q</mml:mi><mml:mrow><mml:mspace width="0.167em"></mml:mspace><mml:mstyle mathvariant="normal"><mml:mi>k</mml:mi><mml:mi>e</mml:mi><mml:mi>r</mml:mi><mml:mi>n</mml:mi><mml:mi>e</mml:mi><mml:mi>l</mml:mi></mml:mstyle></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐰</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:msub><mml:mi>q</mml:mi><mml:mrow><mml:mspace width="0.167em"></mml:mspace><mml:mstyle mathvariant="normal"><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mi>p</mml:mi><mml:mi>u</mml:mi><mml:mi>t</mml:mi></mml:mstyle></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mi>b</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>with full precision weights <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{w}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐰</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>,
+  arbitrary precision input <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{x}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>,
+  layer operation <inline-formula><alternatives>
+  <tex-math><![CDATA[f]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>
+  (e.g. <inline-formula><alternatives>
+  <tex-math><![CDATA[f(\boldsymbol{w}, \boldsymbol{x}) = \boldsymbol{x}^T \boldsymbol{w}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐰</mml:mi></mml:mstyle><mml:mo>,</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msup><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>T</mml:mi></mml:msup><mml:mstyle mathvariant="bold"><mml:mi>𝐰</mml:mi></mml:mstyle></mml:mrow></mml:math></alternatives></inline-formula>
+  for a densely-connected layer), activation
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\sigma]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>σ</mml:mi></mml:math></alternatives></inline-formula>
+  and bias <inline-formula><alternatives>
+  <tex-math><![CDATA[b]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>b</mml:mi></mml:math></alternatives></inline-formula>.
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[q_{\, \mathrm{kernel}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>q</mml:mi><mml:mrow><mml:mspace width="0.167em"></mml:mspace><mml:mstyle mathvariant="normal"><mml:mi>k</mml:mi><mml:mi>e</mml:mi><mml:mi>r</mml:mi><mml:mi>n</mml:mi><mml:mi>e</mml:mi><mml:mi>l</mml:mi></mml:mstyle></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[q_{\, \mathrm{input}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>q</mml:mi><mml:mrow><mml:mspace width="0.167em"></mml:mspace><mml:mstyle mathvariant="normal"><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mi>p</mml:mi><mml:mi>u</mml:mi><mml:mi>t</mml:mi></mml:mstyle></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+  are quantizers that define an operation for quantizing a kernel and
+  inputs, respectively, and a pseudo-gradient used for automatic
+  differentiation so that operations of the layer can be executed in
+  reduced precision. The source code and documentation be found at
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/larq/larq">github.com/larq/larq</ext-link>
+  and
+  <ext-link ext-link-type="uri" xlink:href="https://larq.dev">larq.dev</ext-link>
+  respectively.</p>
+  <p>While <monospace>larq</monospace> can be used to train networks
+  with arbitrary bit-widths, it provides tools specifically designed to
+  aid in BNN development, such as specialized optimizers, training
+  metrics, and profiling tools.</p>
+</sec>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The flexible yet easy to use API of <monospace>larq</monospace> is
+  aimed at both researchers in the field of efficient deep learning and
+  practitioners who want to explore BNNs for their applications.
+  Furthermore, <monospace>larq</monospace> makes it easier for beginners
+  and students to get started with BNNs. We are working to expand the
+  audience by adding support for deploying BNNs on embedded devices,
+  making <monospace>larq</monospace> useful for real applications. By
+  building a community-driven open source project, we hope to accelerate
+  research in the field of BNNs and other QNNs to enable deep learning
+  in resource-constrained environments.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-tensorflow">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Abadi</surname><given-names>Martı́n</given-names></name>
+          <name><surname>Agarwal</surname><given-names>Ashish</given-names></name>
+          <name><surname>Barham</surname><given-names>Paul</given-names></name>
+          <name><surname>Brevdo</surname><given-names>Eugene</given-names></name>
+          <name><surname>Chen</surname><given-names>Zhifeng</given-names></name>
+          <name><surname>Citro</surname><given-names>Craig</given-names></name>
+          <name><surname>Corrado</surname><given-names>Greg S.</given-names></name>
+          <name><surname>Davis</surname><given-names>Andy</given-names></name>
+          <name><surname>Dean</surname><given-names>Jeffrey</given-names></name>
+          <name><surname>Devin</surname><given-names>Matthieu</given-names></name>
+          <name><surname>Ghemawat</surname><given-names>Sanjay</given-names></name>
+          <name><surname>Goodfellow</surname><given-names>Ian</given-names></name>
+          <name><surname>Harp</surname><given-names>Andrew</given-names></name>
+          <name><surname>Irving</surname><given-names>Geoffrey</given-names></name>
+          <name><surname>Isard</surname><given-names>Michael</given-names></name>
+          <name><surname>Jia</surname><given-names>Yangqing</given-names></name>
+          <name><surname>Jozefowicz</surname><given-names>Rafal</given-names></name>
+          <name><surname>Kaiser</surname><given-names>Lukasz</given-names></name>
+          <name><surname>Kudlur</surname><given-names>Manjunath</given-names></name>
+          <name><surname>Levenberg</surname><given-names>Josh</given-names></name>
+          <name><surname>Mané</surname><given-names>Dandelion</given-names></name>
+          <name><surname>Monga</surname><given-names>Rajat</given-names></name>
+          <name><surname>Moore</surname><given-names>Sherry</given-names></name>
+          <name><surname>Murray</surname><given-names>Derek</given-names></name>
+          <name><surname>Olah</surname><given-names>Chris</given-names></name>
+          <name><surname>Schuster</surname><given-names>Mike</given-names></name>
+          <name><surname>Shlens</surname><given-names>Jonathon</given-names></name>
+          <name><surname>Steiner</surname><given-names>Benoit</given-names></name>
+          <name><surname>Sutskever</surname><given-names>Ilya</given-names></name>
+          <name><surname>Talwar</surname><given-names>Kunal</given-names></name>
+          <name><surname>Tucker</surname><given-names>Paul</given-names></name>
+          <name><surname>Vanhoucke</surname><given-names>Vincent</given-names></name>
+          <name><surname>Vasudevan</surname><given-names>Vijay</given-names></name>
+          <name><surname>Viégas</surname><given-names>Fernanda</given-names></name>
+          <name><surname>Vinyals</surname><given-names>Oriol</given-names></name>
+          <name><surname>Warden</surname><given-names>Pete</given-names></name>
+          <name><surname>Wattenberg</surname><given-names>Martin</given-names></name>
+          <name><surname>Wicke</surname><given-names>Martin</given-names></name>
+          <name><surname>Yu</surname><given-names>Yuan</given-names></name>
+          <name><surname>Zheng</surname><given-names>Xiaoqiang</given-names></name>
+        </person-group>
+        <article-title>TensorFlow: Large-scale machine learning on heterogeneous systems</article-title>
+        <year iso-8601-date="2015">2015</year>
+        <uri>https://www.tensorflow.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-keras">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Chollet</surname><given-names>François</given-names></name>
+        </person-group>
+        <article-title>Keras</article-title>
+        <publisher-name>https://keras.io</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-pytorch">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Paszke</surname><given-names>Adam</given-names></name>
+          <name><surname>Gross</surname><given-names>Sam</given-names></name>
+          <name><surname>Chintala</surname><given-names>Soumith</given-names></name>
+          <name><surname>Chanan</surname><given-names>Gregory</given-names></name>
+          <name><surname>Yang</surname><given-names>Edward</given-names></name>
+          <name><surname>DeVito</surname><given-names>Zachary</given-names></name>
+          <name><surname>Lin</surname><given-names>Zeming</given-names></name>
+          <name><surname>Desmaison</surname><given-names>Alban</given-names></name>
+          <name><surname>Antiga</surname><given-names>Luca</given-names></name>
+          <name><surname>Lerer</surname><given-names>Adam</given-names></name>
+        </person-group>
+        <article-title>Automatic differentiation in PyTorch</article-title>
+        <source>NIPS autodiff workshop</source>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-bmxnetv2">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bethge</surname><given-names>Joseph</given-names></name>
+          <name><surname>Bornstein</surname><given-names>Marvin</given-names></name>
+          <name><surname>Loy</surname><given-names>Adrian</given-names></name>
+          <name><surname>Yang</surname><given-names>Haojin</given-names></name>
+          <name><surname>Meinel</surname><given-names>Christoph</given-names></name>
+        </person-group>
+        <article-title>Training competitive binary neural networks from scratch</article-title>
+        <source>CoRR</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>abs/1812.01965</volume>
+        <uri>https://arxiv.org/abs/1812.01965</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-dabnn">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zhang</surname><given-names>Jianhao</given-names></name>
+          <name><surname>Pan</surname><given-names>Yingwei</given-names></name>
+          <name><surname>Yao</surname><given-names>Ting</given-names></name>
+          <name><surname>Zhao</surname><given-names>He</given-names></name>
+          <name><surname>Mei</surname><given-names>Tao</given-names></name>
+        </person-group>
+        <article-title>daBNN: A super fast inference framework for binary neural networks on ARM devices</article-title>
+        <source>Proceedings of the 27th ACM International Conference on Multimedia</source>
+        <publisher-name>ACM Press</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <isbn>9781450368896</isbn>
+        <pub-id pub-id-type="doi">10.1145/3343031.3350534</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bop">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Helwegen</surname><given-names>Koen</given-names></name>
+          <name><surname>Widdicombe</surname><given-names>James</given-names></name>
+          <name><surname>Geiger</surname><given-names>Lukas</given-names></name>
+          <name><surname>Liu</surname><given-names>Zechun</given-names></name>
+          <name><surname>Cheng</surname><given-names>Kwang-Ting</given-names></name>
+          <name><surname>Nusselder</surname><given-names>Roeland</given-names></name>
+        </person-group>
+        <article-title>Latent weights do not exist: Rethinking binarized neural network optimization</article-title>
+        <source>Advances in neural information processing systems 32</source>
+        <person-group person-group-type="editor">
+          <name><surname>Wallach</surname><given-names>H.</given-names></name>
+          <name><surname>Larochelle</surname><given-names>H.</given-names></name>
+          <name><surname>Beygelzimer</surname><given-names>A.</given-names></name>
+          <name><surname>dAlché-Buc</surname><given-names>F.</given-names></name>
+          <name><surname>Fox</surname><given-names>E.</given-names></name>
+          <name><surname>Garnett</surname><given-names>R.</given-names></name>
+        </person-group>
+        <publisher-name>Curran Associates, Inc.</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <uri>http://papers.nips.cc/paper/8971-latent-weights-do-not-exist-rethinking-binarized-neural-network-optimization.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-binarynet">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Hubara</surname><given-names>Itay</given-names></name>
+          <name><surname>Courbariaux</surname><given-names>Matthieu</given-names></name>
+          <name><surname>Soudry</surname><given-names>Daniel</given-names></name>
+          <name><surname>El-Yaniv</surname><given-names>Ran</given-names></name>
+          <name><surname>Bengio</surname><given-names>Yoshua</given-names></name>
+        </person-group>
+        <article-title>Binarized neural networks</article-title>
+        <source>Advances in neural information processing systems 29</source>
+        <person-group person-group-type="editor">
+          <name><surname>Lee</surname><given-names>D. D.</given-names></name>
+          <name><surname>Sugiyama</surname><given-names>M.</given-names></name>
+          <name><surname>Luxburg</surname><given-names>U. V.</given-names></name>
+          <name><surname>Guyon</surname><given-names>I.</given-names></name>
+          <name><surname>Garnett</surname><given-names>R.</given-names></name>
+        </person-group>
+        <publisher-name>Curran Associates, Inc.</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <uri>http://papers.nips.cc/paper/6573-binarized-neural-networks.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-binary_dense_net">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bethge</surname><given-names>Joseph</given-names></name>
+          <name><surname>Yang</surname><given-names>Haojin</given-names></name>
+          <name><surname>Bornstein</surname><given-names>Marvin</given-names></name>
+          <name><surname>Meinel</surname><given-names>Christoph</given-names></name>
+        </person-group>
+        <article-title>Back to simplicity: How to train accurate BNNs from scratch?</article-title>
+        <source>CoRR</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>abs/1906.08637</volume>
+        <uri>https://arxiv.org/abs/1906.08637</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-bireal_net">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Liu</surname><given-names>Zechun</given-names></name>
+          <name><surname>Wu</surname><given-names>Baoyuan</given-names></name>
+          <name><surname>Luo</surname><given-names>Wenhan</given-names></name>
+          <name><surname>Yang</surname><given-names>Xin</given-names></name>
+          <name><surname>Liu</surname><given-names>Wei</given-names></name>
+          <name><surname>Cheng</surname><given-names>Kwang-Ting</given-names></name>
+        </person-group>
+        <article-title>Bi-real net: Enhancing the performance of 1-bit CNNs with improved representational capability and advanced training algorithm</article-title>
+        <source>Computer vision – ECCV 2018</source>
+        <person-group person-group-type="editor">
+          <name><surname>Ferrari</surname><given-names>Vittorio</given-names></name>
+          <name><surname>Hebert</surname><given-names>Martial</given-names></name>
+          <name><surname>Sminchisescu</surname><given-names>Cristian</given-names></name>
+          <name><surname>Weiss</surname><given-names>Yair</given-names></name>
+        </person-group>
+        <publisher-name>Springer International Publishing</publisher-name>
+        <publisher-loc>Cham</publisher-loc>
+        <year iso-8601-date="2018">2018</year>
+        <isbn>978-3-030-01267-0</isbn>
+        <pub-id pub-id-type="doi">10.1007/978-3-030-01267-0_44</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-xnor_net">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Rastegari</surname><given-names>Mohammad</given-names></name>
+          <name><surname>Ordonez</surname><given-names>Vicente</given-names></name>
+          <name><surname>Redmon</surname><given-names>Joseph</given-names></name>
+          <name><surname>Farhadi</surname><given-names>Ali</given-names></name>
+        </person-group>
+        <article-title>XNOR-net: ImageNet classification using binary convolutional neural networks</article-title>
+        <source>Computer vision – ECCV 2016</source>
+        <person-group person-group-type="editor">
+          <name><surname>Leibe</surname><given-names>Bastian</given-names></name>
+          <name><surname>Matas</surname><given-names>Jiri</given-names></name>
+          <name><surname>Sebe</surname><given-names>Nicu</given-names></name>
+          <name><surname>Welling</surname><given-names>Max</given-names></name>
+        </person-group>
+        <publisher-name>Springer International Publishing</publisher-name>
+        <publisher-loc>Cham</publisher-loc>
+        <year iso-8601-date="2016">2016</year>
+        <isbn>978-3-319-46493-0</isbn>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-46493-0_32</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-dorefa">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zhou</surname><given-names>Shuchang</given-names></name>
+          <name><surname>Ni</surname><given-names>Zekun</given-names></name>
+          <name><surname>Zhou</surname><given-names>Xinyu</given-names></name>
+          <name><surname>Wen</surname><given-names>He</given-names></name>
+          <name><surname>Wu</surname><given-names>Yuxin</given-names></name>
+          <name><surname>Zou</surname><given-names>Yuheng</given-names></name>
+        </person-group>
+        <article-title>DoReFa-net: Training low bitwidth convolutional neural networks with low bitwidth gradients</article-title>
+        <source>CoRR</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>abs/1606.06160</volume>
+        <uri>https://arxiv.org/abs/1606.06160</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-rumelhart">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rumelhart</surname><given-names>David E.</given-names></name>
+          <name><surname>Hinton</surname><given-names>Geoffrey E.</given-names></name>
+          <name><surname>Williams</surname><given-names>Ronald J.</given-names></name>
+        </person-group>
+        <article-title>Learning representations by back-propagating errors</article-title>
+        <source>Nature</source>
+        <year iso-8601-date="1986">1986</year>
+        <volume>323</volume>
+        <issue>6088</issue>
+        <isbn>262661160</isbn>
+        <issn>280836</issn>
+        <pub-id pub-id-type="doi">10.1038/323533a0</pub-id>
+        <pub-id pub-id-type="pmid">134</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hinton_coursera">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hinton</surname><given-names>Geoffrey</given-names></name>
+        </person-group>
+        <article-title>Neural networks for machine learning</article-title>
+        <source>Coursera Video Lectures</source>
+        <year iso-8601-date="2012">2012</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-binaryconnect">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Courbariaux</surname><given-names>Matthieu</given-names></name>
+          <name><surname>Bengio</surname><given-names>Yoshua</given-names></name>
+          <name><surname>David</surname><given-names>Jean-Pierre</given-names></name>
+        </person-group>
+        <article-title>BinaryConnect: Training deep neural networks with binary weights during propagations</article-title>
+        <source>Advances in neural information processing systems 28</source>
+        <person-group person-group-type="editor">
+          <name><surname>Cortes</surname><given-names>C.</given-names></name>
+          <name><surname>Lawrence</surname><given-names>N. D.</given-names></name>
+          <name><surname>Lee</surname><given-names>D. D.</given-names></name>
+          <name><surname>Sugiyama</surname><given-names>M.</given-names></name>
+          <name><surname>Garnett</surname><given-names>R.</given-names></name>
+        </person-group>
+        <publisher-name>Curran Associates, Inc.</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <uri>http://papers.nips.cc/paper/5647-binaryconnect-training-deep-neural-networks-with-binary-weights-during-propagations.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Alizadeh2019">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Alizadeh</surname><given-names>Milad</given-names></name>
+          <name><surname>Fernández-Marqués</surname><given-names>Javier</given-names></name>
+          <name><surname>Lane</surname><given-names>Nicholas D.</given-names></name>
+          <name><surname>Gal</surname><given-names>Yarin</given-names></name>
+        </person-group>
+        <article-title>An empirical study of binary neural networks’ optimisation</article-title>
+        <source>7th international conference on learning representations, ICLR 2019, new orleans, LA, USA, may 6-9, 2019</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://openreview.net/forum?id=rJfUCoR5KX</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Zhu2018">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Zhu</surname><given-names>Shilin</given-names></name>
+          <name><surname>Dong</surname><given-names>Xin</given-names></name>
+          <name><surname>Su</surname><given-names>Hao</given-names></name>
+        </person-group>
+        <article-title>Binary ensemble neural network: More bits per network or more networks per bit?</article-title>
+        <source>2019 IEEE/CVF conference on computer vision and pattern recognition (CVPR)</source>
+        <year iso-8601-date="2019">2019</year>
+        <issn>1063-6919</issn>
+        <uri>http://openaccess.thecvf.com/content_CVPR_2019/papers/Zhu_Binary_Ensemble_Neural_Network_More_Bits_per_Network_or_More_CVPR_2019_paper.pdf</uri>
+        <pub-id pub-id-type="doi">10.1109/CVPR.2019.00506</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Zhuang2018">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Zhuang</surname><given-names>Bohan</given-names></name>
+          <name><surname>Shen</surname><given-names>Chunhua</given-names></name>
+          <name><surname>Tan</surname><given-names>Mingkui</given-names></name>
+          <name><surname>Liu</surname><given-names>Lingqiao</given-names></name>
+          <name><surname>Reid</surname><given-names>Ian</given-names></name>
+        </person-group>
+        <article-title>Structured binary neural networks for accurate image classification and semantic segmentation</article-title>
+        <source>The IEEE conference on computer vision and pattern recognition (CVPR)</source>
+        <year iso-8601-date="2019">2019</year>
+        <issn>1063-6919</issn>
+        <uri>http://openaccess.thecvf.com/content_CVPR_2019/papers/Zhuang_Structured_Binary_Neural_Networks_for_Accurate_Image_Classification_and_Semantic_CVPR_2019_paper.pdf</uri>
+        <pub-id pub-id-type="doi">10.1109/CVPR.2019.00050</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bottou1991">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bottou</surname><given-names>Léon</given-names></name>
+        </person-group>
+        <article-title>Stochastic gradient learning in neural networks</article-title>
+        <source>Proceedings of Neuro Nimes</source>
+        <year iso-8601-date="1991">1991</year>
+        <volume>91</volume>
+        <issue>8</issue>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

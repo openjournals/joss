@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2843</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02843</article-id>
+<title-group>
+<article-title>ADI.jl: A Julia Package for High-Contrast
+Imaging</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-6341-310X</contrib-id>
+<string-name>Miles Lucas</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-1341-5531</contrib-id>
+<string-name>Michael Bottom</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Institute for Astronomy, University of
+Hawai’i</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-11-02">
+<day>2</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>56</issue>
+<fpage>2843</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>astronomy</kwd>
+<kwd>high-contrast imaging</kwd>
+<kwd>direct imaging</kwd>
+<kwd>image processing</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>High-contrast imaging (HCI) is a powerful technique for discovering
+  and characterizing exoplanets. Being able to probe the architecture,
+  formation, and atmospheres of planets <italic>directly</italic> is
+  necessary for advancing companion formation and evolution theory
+  (<xref alt="Bowler, 2016" rid="ref-bowler_imaging_2016" ref-type="bibr">Bowler,
+  2016</xref>). The process required to image an exoplanet is daunting,
+  however, due to the brightness and proximity of their host stars. One
+  part of making such a difficult detection is the image processing of
+  HCI data to remove systematic signals and attenuate noise. The size of
+  HCI data and complexity of processing algorithms requires an efficient
+  numerical framework that simultaneously offers modularity for rapid
+  experimentation and discovery.</p>
+  <p>Angular differential imaging (ADI) is an observational technique
+  for HCI that utilizes the Earth’s rotation throughout a night of
+  observing
+  (<xref alt="Liu, 2004" rid="ref-liuU003A2004" ref-type="bibr">Liu,
+  2004</xref>;
+  <xref alt="Marois et al., 2006" rid="ref-marois_angular_2006" ref-type="bibr">Marois
+  et al., 2006</xref>). Normally telescopes have optics to counter this
+  rotation, but disabling these optics and taking images throughout the
+  night will give a sequence of frames where the sky appears to rotate.
+  The telescope optics produce a systematic noise that will not rotate
+  with the sky, although it can slowly vary over time. The sequence of
+  frames are pre-processed to calibrate the images and fix defects like
+  bad pixels. The pre-processed images are then co-aligned and
+  concatenated together into a data cube. ADI algorithms exploit the
+  difference in rotation to approximate and subtract the systematics
+  without substantially overfitting the signals from potential
+  companions.</p>
+  <p>ADI algorithms differ in how they estimate the noise model. For
+  example instead of estimating the systematics from the
+  <italic>target</italic> star, a <italic>reference</italic> star can be
+  used (reference differential imaging, RDI). Instead of using the
+  entire frame, the cube can be processed in annuli corresponding to
+  different circumstellar regions. These geometric techniques are
+  independent of the underlying description of the algorithms.
+  Similarly, GPU programming or out-of-core processing are computational
+  techniques which appear like implementation details in comparison to
+  the algorithms or how they are applied. Creating a
+  <italic>modular</italic> and <italic>generic</italic> framework for
+  HCI enables scientists to explore different algorithms and techniques
+  flexibly, allowing more thorough and deeper investigations into the
+  capabilities of HCI for finding exoplanets.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p><monospace>ADI.jl</monospace> is a Julia framework for
+  post-processing high-contrast imaging (HCI) data. By organizing
+  algorithms separately from their application,
+  <monospace>ADI.jl</monospace> offers a modular API that benefits both
+  observers and algorithm designers. Observers can rapidly experiment
+  with multiple post-processing algorithms and techniques to optimally
+  reduce their data. Julia’s dynamic just-in-time (JIT) LLVM compiler
+  (<xref alt="Bezanson et al., 2018" rid="ref-2018arXiv180803370B" ref-type="bibr">Bezanson
+  et al., 2018</xref>,
+  <xref alt="2017" rid="ref-Julia-2017" ref-type="bibr">2017</xref>)
+  means this experimentation comes at a low runtime cost to the
+  observer, enabling broader experimentation or higher throughput, for
+  example, in the case of survey pipelines.</p>
+  <p>Algorithm designers will find that Julia is highly composable, so
+  extending or adding a new algorithm only requires writing the code
+  that is <italic>unique to that algorithm</italic>. Julia’s language
+  interoperability also means the algorithm can be implemented in Python
+  or C, for example. In other words, to be able to fully use the
+  post-processing capabilities of <monospace>ADI.jl</monospace> a new
+  algorithm only needs to implement one or two methods. Furthermore,
+  computational techniques like GPU programming are available
+  <italic>generically</italic> through packages like
+  <monospace>CUDA.jl</monospace>
+  (<xref alt="Besard et al., 2018" rid="ref-besard2018juliagpu" ref-type="bibr">Besard
+  et al., 2018</xref>).</p>
+  <p>Currently <monospace>ADI.jl</monospace> supports full-frame ADI and
+  RDI processing, with experimental support for spectral differential
+  imaging (SDI). The algorithms that are currently implemented are
+  median subtraction
+  (<xref alt="Marois et al., 2006" rid="ref-marois_angular_2006" ref-type="bibr">Marois
+  et al., 2006</xref>), principal component analysis [PCA/KLIP; Soummer
+  et al.
+  (<xref alt="2012" rid="ref-soummer_detection_2012" ref-type="bibr">2012</xref>)],
+  non-negative matrix factorization [NMF; Ren et al.
+  (<xref alt="2018" rid="ref-ren_non-negative_2018" ref-type="bibr">2018</xref>)],
+  and fixed-point greedy disk subtraction [GreeDS; Pairet et al.
+  (<xref alt="2019" rid="ref-pairet_reference-less_2019" ref-type="bibr">2019</xref>);
+  Pairet et al.
+  (<xref alt="2020" rid="ref-pairet_mayonnaise_2020" ref-type="bibr">2020</xref>)].
+  In addition, common metrics such as S/N maps and contrast curves are
+  available for posterior analysis. Forward modeling is being built in a
+  separate Julia package, <monospace>Firefly.jl</monospace>, as part of
+  active research.</p>
+</sec>
+<sec id="comparisons-with-existing-software">
+  <title>Comparisons with existing software</title>
+  <p>High-contrast imaging as a field predominantly utilizes Python for
+  data reduction. We break down some of the necessary computations into
+  <italic>pre-processing</italic>, which includes raw calibration of
+  data, the centering and stacking of the data cube, bad-pixel removal,
+  etc., <italic>post-processing</italic>, which includes the PSF
+  approximation and subtraction, <italic>detection metrics</italic>
+  which includes methods for analyzing post-processed data to make
+  detections or find limits of detections, and finally <italic>forward
+  modeling</italic> which includes various statistical models for
+  companions and disks that can be used with post-processing algorithms
+  in a maximum likelihood framework. <monospace>ADI.jl</monospace>
+  primarily focuses on post-processing and detection metrics.</p>
+  <p>Some notable libraries for HCI tasks include the Vortex Imaging
+  Pipeline (<monospace>VIP</monospace>)
+  (<xref alt="Gomez Gonzalez et al., 2016" rid="ref-gomez_gonzalez_vip_2016" ref-type="bibr">Gomez
+  Gonzalez et al., 2016</xref>), <monospace>pyKLIP</monospace>
+  (<xref alt="Wang et al., 2015" rid="ref-2015ascl.soft06001W" ref-type="bibr">Wang
+  et al., 2015</xref>), and <monospace>PynPoint</monospace>
+  (<xref alt="Stolker et al., 2019" rid="ref-pynpointU003A2019" ref-type="bibr">Stolker
+  et al., 2019</xref>). A table of the feature sets of these packages
+  alongside <monospace>ADI.jl</monospace> is presented in the
+  <ext-link ext-link-type="uri" xlink:href="https://juliahci.github.io/ADI.jl/dev/gettingstarted/#Feature-comparison">online
+  documentation</ext-link>. In particular, <monospace>VIP</monospace>
+  has served as a useful source of information regarding HCI
+  image-processing as well as detailed implementations of common ADI
+  algorithms. This has been indispensable in the development of
+  <monospace>ADI.jl</monospace>, although this package is not a direct
+  translation. In our small benchmark suite,
+  <monospace>ADI.jl</monospace> is roughly the same speed or slightly
+  quicker than <monospace>VIP</monospace> for the algorithms we tested,
+  except for NMF, while detection maps were ~2 orders of magnitude
+  quicker.</p>
+  <p>In general <monospace>VIP</monospace> offers the most diversity in
+  algorithms and their applications, but not all algorithms are as
+  feature-complete as the PCA implementation. <monospace>VIP</monospace>
+  also contains many useful utilities for pre-processing and a pipeline
+  framework. <monospace>pyKLIP</monospace> primarily uses the PCA (KLIP)
+  algorithm, but offers many forward modeling implementations.
+  <monospace>PynPoint</monospace> has a highly modular pre-processing
+  module that is focused on pipelines.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>We acknowledge the <monospace>VIP</monospace> team for creating a
+  package that has been an indispensable resource in the creation of
+  <monospace>ADI.jl</monospace>. We also acknowledge the ongoing
+  research using <monospace>ADI.jl</monospace> for forward modeling of
+  exoplanets with the package <monospace>Firefly.jl</monospace>.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-pairet_reference-less_2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pairet</surname><given-names>Benoît</given-names></name>
+          <name><surname>Cantalloube</surname><given-names>Faustine</given-names></name>
+          <name><surname>Jacques</surname><given-names>Laurent</given-names></name>
+        </person-group>
+        <article-title>Reference-less algorithm for circumstellar disks imaging</article-title>
+        <source>arXiv:1812.01333 [astro-ph]</source>
+        <year iso-8601-date="2019-02">2019</year><month>02</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-06-09">2020</year><month>06</month><day>09</day></date-in-citation>
+        <uri>http://arxiv.org/abs/1812.01333</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-bowler_imaging_2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bowler</surname><given-names>Brendan P.</given-names></name>
+        </person-group>
+        <article-title>Imaging Extrasolar Giant Planets</article-title>
+        <source>PASP</source>
+        <year iso-8601-date="2016-10">2016</year><month>10</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-07-13">2020</year><month>07</month><day>13</day></date-in-citation>
+        <volume>128</volume>
+        <issue>968</issue>
+        <issn>0004-6280, 1538-3873</issn>
+        <uri>http://arxiv.org/abs/1605.02731</uri>
+        <pub-id pub-id-type="doi">10.1088/1538-3873/128/968/102001</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-liuU003A2004">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Liu</surname><given-names>Michael C.</given-names></name>
+        </person-group>
+        <article-title>Substructure in the Circumstellar Disk Around the Young Star AU Microscopii</article-title>
+        <source>Science</source>
+        <year iso-8601-date="2004-09">2004</year><month>09</month>
+        <volume>305</volume>
+        <issue>5689</issue>
+        <uri>https://arxiv.org/abs/astro-ph/0408164</uri>
+        <pub-id pub-id-type="doi">10.1126/science.1102929</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-marois_angular_2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Marois</surname><given-names>Christian</given-names></name>
+          <name><surname>Lafrenière</surname><given-names>David</given-names></name>
+          <name><surname>Doyon</surname><given-names>René</given-names></name>
+          <name><surname>Macintosh</surname><given-names>Bruce</given-names></name>
+          <name><surname>Nadeau</surname><given-names>Daniel</given-names></name>
+        </person-group>
+        <article-title>Angular Differential Imaging: A Powerful High-Contrast Imaging Technique</article-title>
+        <source>The Astrophysical Journal</source>
+        <year iso-8601-date="2006-04">2006</year><month>04</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-07-15">2020</year><month>07</month><day>15</day></date-in-citation>
+        <volume>641</volume>
+        <issn>0004-637X</issn>
+        <uri>http://adsabs.harvard.edu/abs/2006ApJ...641..556M</uri>
+        <pub-id pub-id-type="doi">10.1086/500401</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gomez_gonzalez_vip_2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gomez Gonzalez</surname><given-names>Carlos Alberto</given-names></name>
+          <name><surname>Wertz</surname><given-names>Olivier</given-names></name>
+          <name><surname>Christiaens</surname><given-names>Valentin</given-names></name>
+          <name><surname>Absil</surname><given-names>Olivier</given-names></name>
+          <name><surname>Mawet</surname><given-names>Dimitri</given-names></name>
+        </person-group>
+        <article-title>VIP: Vortex Image Processing pipeline for high-contrast direct imaging of exoplanets</article-title>
+        <source>Astrophysics Source Code Library</source>
+        <year iso-8601-date="2016-03">2016</year><month>03</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-07-29">2020</year><month>07</month><day>29</day></date-in-citation>
+        <uri>http://adsabs.harvard.edu/abs/2016ascl.soft03003G</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-soummer_detection_2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Soummer</surname><given-names>Rémi</given-names></name>
+          <name><surname>Pueyo</surname><given-names>Laurent</given-names></name>
+          <name><surname>Larkin</surname><given-names>James</given-names></name>
+        </person-group>
+        <article-title>Detection and Characterization of Exoplanets and Disks Using Projections on Karhunen-Loève Eigenimages</article-title>
+        <source>The Astrophysical Journal Letters</source>
+        <year iso-8601-date="2012-08">2012</year><month>08</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-08-04">2020</year><month>08</month><day>04</day></date-in-citation>
+        <volume>755</volume>
+        <uri>http://adsabs.harvard.edu/abs/2012ApJ...755L..28S</uri>
+        <pub-id pub-id-type="doi">10.1088/2041-8205/755/2/L28</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pairet_mayonnaise_2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pairet</surname><given-names>Benoît</given-names></name>
+          <name><surname>Cantalloube</surname><given-names>Faustine</given-names></name>
+          <name><surname>Jacques</surname><given-names>Laurent</given-names></name>
+        </person-group>
+        <article-title>MAYONNAISE: A morphological components analysis pipeline for circumstellar disks and exoplanets imaging in the near infrared</article-title>
+        <source>arXiv:2008.05170 [astro-ph]</source>
+        <year iso-8601-date="2020-08">2020</year><month>08</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-08-17">2020</year><month>08</month><day>17</day></date-in-citation>
+        <uri>http://arxiv.org/abs/2008.05170</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-ren_non-negative_2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ren</surname><given-names>Bin</given-names></name>
+          <name><surname>Pueyo</surname><given-names>Laurent</given-names></name>
+          <name><surname>Zhu</surname><given-names>Guangtun Ben</given-names></name>
+          <name><surname>Debes</surname><given-names>John</given-names></name>
+          <name><surname>Duchêne</surname><given-names>Gaspard</given-names></name>
+        </person-group>
+        <article-title>Non-negative Matrix Factorization: Robust Extraction of Extended Structures</article-title>
+        <source>The Astrophysical Journal</source>
+        <year iso-8601-date="2018-01">2018</year><month>01</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-08-29">2020</year><month>08</month><day>29</day></date-in-citation>
+        <volume>852</volume>
+        <uri>http://adsabs.harvard.edu/abs/2018ApJ...852..104R</uri>
+        <pub-id pub-id-type="doi">10.3847/1538-4357/aaa1f2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Julia-2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bezanson</surname><given-names>Jeff</given-names></name>
+          <name><surname>Edelman</surname><given-names>Alan</given-names></name>
+          <name><surname>Karpinski</surname><given-names>Stefan</given-names></name>
+          <name><surname>Shah</surname><given-names>Viral B</given-names></name>
+        </person-group>
+        <article-title>Julia: A fresh approach to numerical computing</article-title>
+        <source>SIAM Review</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>59</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1137/141000671</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-2018arXiv180803370B">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bezanson</surname><given-names>Jeff</given-names></name>
+          <name><surname>Bolewski</surname><given-names>Jake</given-names></name>
+          <name><surname>Chen</surname><given-names>Jiahao</given-names></name>
+        </person-group>
+        <article-title>Fast Flexible Function Dispatch in Julia</article-title>
+        <source>arXiv e-prints</source>
+        <year iso-8601-date="2018-08">2018</year><month>08</month>
+        <uri>https://arxiv.org/abs/1808.03370</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-pynpointU003A2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Stolker</surname><given-names>T.</given-names></name>
+          <name><surname>Bonse</surname><given-names>M. J.</given-names></name>
+          <name><surname>Quanz</surname><given-names>S. P.</given-names></name>
+          <name><surname>Amara</surname><given-names>A.</given-names></name>
+          <name><surname>Cugno</surname><given-names>G.</given-names></name>
+          <name><surname>Bohn</surname><given-names>A. J.</given-names></name>
+          <name><surname>Boehle</surname><given-names>A.</given-names></name>
+        </person-group>
+        <article-title>PynPoint: a modular pipeline architecture for processing and analysis of high-contrast imaging data</article-title>
+        <source>Astronomy &amp; Astrophysics</source>
+        <year iso-8601-date="2019-01">2019</year><month>01</month>
+        <volume>621</volume>
+        <uri>https://arxiv.org/abs/1811.03336</uri>
+        <pub-id pub-id-type="doi">10.1051/0004-6361/201834136</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-2015ascl.soft06001W">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wang</surname><given-names>Jason J.</given-names></name>
+          <name><surname>Ruffio</surname><given-names>Jean-Baptise</given-names></name>
+          <name><surname>De Rosa</surname><given-names>Robert J.</given-names></name>
+          <name><surname>Aguilar</surname><given-names>Jonathan</given-names></name>
+          <name><surname>Wolff</surname><given-names>Schuyler G.</given-names></name>
+          <name><surname>Pueyo</surname><given-names>Laurent</given-names></name>
+        </person-group>
+        <article-title>pyKLIP: PSF Subtraction for Exoplanets and Disks</article-title>
+        <source>Astrophysics Source Code Library</source>
+        <year iso-8601-date="2015-06">2015</year><month>06</month>
+        <uri>https://ui.adsabs.harvard.edu/abs/2015ascl.soft06001W</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-besard2018juliagpu">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Besard</surname><given-names>Tim</given-names></name>
+          <name><surname>Foket</surname><given-names>Christophe</given-names></name>
+          <name><surname>De Sutter</surname><given-names>Bjorn</given-names></name>
+        </person-group>
+        <article-title>Effective extensible programming: Unleashing Julia on GPUs</article-title>
+        <source>IEEE Transactions on Parallel and Distributed Systems</source>
+        <year iso-8601-date="2018">2018</year>
+        <issn>1045-9219</issn>
+        <uri>https://arxiv.org/abs/1712.03112</uri>
+        <pub-id pub-id-type="doi">10.1109/TPDS.2018.2872064</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

@@ -1,0 +1,593 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2313</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02313</article-id>
+<title-group>
+<article-title>DORiE: A Discontinuous Galerkin Solver for Soil Water
+Flow and Passive Solute Transport Based on DUNE</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-4667-3652</contrib-id>
+<string-name>Lukas Riedel</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-0814-9670</contrib-id>
+<string-name>Santiago Ospina De Los Ríos</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-4465-7317</contrib-id>
+<string-name>Dion Häfner</string-name>
+<xref ref-type="aff" rid="aff-4"/>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-3295-7347</contrib-id>
+<string-name>Ole Klein</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Institute of Environmental Physics, Heidelberg
+University</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Interdisciplinary Center for Scientific Computing,
+Heidelberg University</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Heidelberg Graduate School of Mathematical and
+Computational Methods for the Sciences, Heidelberg
+University</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-4">
+<institution-wrap>
+<institution>Niels Bohr Institute, University of
+Copenhagen</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-06-05">
+<day>5</day>
+<month>6</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>52</issue>
+<fpage>2313</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Soil Hydrology</kwd>
+<kwd>Porous Media</kwd>
+<kwd>Solute Transport</kwd>
+<kwd>Discontinuous Galerkin Method</kwd>
+<kwd>Finite Element Method</kwd>
+<kwd>Python</kwd>
+<kwd>Docker</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>DORiE is a software framework for modelling and simulating
+  transient water flow and passive solute transport in unsaturated
+  porous media with discontinuous Galerkin (DG) methods using the
+  Distributed and Unified Numerics Environment (DUNE). It supports
+  computations with higher-order function spaces on structured and
+  unstructured, non-conforming grids and features advanced numerical
+  routines like flux reconstruction and adaptive grid refinement. DORiE
+  wraps high numerical precision and an accurate physical process
+  representation into an application tailored to soil physicists, which
+  is controlled entirely via configuration files and a command line
+  interface. The application is available as Docker Image from
+  DockerHub<xref ref-type="fn" rid="fn1">1</xref>, and can be compiled
+  from source.</p>
+</sec>
+<sec id="background">
+  <title>Background</title>
+  <p>Soil water flow and its transport of solutes are key ecosystem
+  processes governing groundwater recharge, root water uptake, and
+  freshwater buffering. The spatial scale of soil horizons and pedons,
+  in which the Richards equation applies, is critical for these
+  processes
+  (<xref alt="Vogel, 2019" rid="ref-vogel_scale_2019" ref-type="bibr">Vogel,
+  2019</xref>). At this scale, the intricate soil architecture and
+  general multi-scale heterogeneity features both smooth transitions and
+  sharp boundaries. In conjunction with the highly non-linear hydraulic
+  properties of the soil, simulating soil water flow therefore demands
+  robust, flexible, and performant numerical solvers.</p>
+  <p>Discontinuous Galerkin finite element methods are high-order,
+  locally conservative discretization schemes suitable for solving a
+  wide range of partial differential equations. Through recent advances
+  in numerics and the availability of suitable software and hardware,
+  they have become feasible for problems with a wide range of length
+  scales. Their formulations can be applied to various grid element
+  geometries and non-conforming meshes, and typically outperform finite
+  volume and continuous Galerkin methods in terms of numerical accuracy
+  and efficiency
+  (<xref alt="Di Pietro &amp; Ern, 2012" rid="ref-di_pietro_mathematical_2012" ref-type="bibr">Di
+  Pietro &amp; Ern, 2012</xref>).</p>
+  <p>DG methods for linear advection-diffusion equations are well
+  established
+  (<xref alt="Ern et al., 2009" rid="ref-ern_discontinuous_2009" ref-type="bibr">Ern
+  et al., 2009</xref>). The feasibility of locally adaptive DG methods
+  for solving the Richards equation has also been studied extensively,
+  e.g. by Li et al.
+  (<xref alt="2007" rid="ref-li_adaptive_2007" ref-type="bibr">2007</xref>).
+  Nevertheless, DG methods are rarely used to solve subsurface flow
+  problems because they are difficult to formulate and their increased
+  efficiency is counteracted by a larger computational cost for the same
+  mesh
+  (<xref alt="Miller et al., 2013" rid="ref-miller_numerical_2013" ref-type="bibr">Miller
+  et al., 2013</xref>). Farthing &amp; Ogden
+  (<xref alt="2017" rid="ref-farthing_numerical_2017" ref-type="bibr">2017</xref>)
+  mention several successful applications of DG methods on two-phase
+  flow problems and the Richards equation but feature no application
+  with DG approximation scheme in their “list of representative research
+  and production Richards’ equation codes”. DuMuX, as one particular
+  framework for solving flow and transport equations in porous media
+  with DUNE, only offers a Richards model in quasi two-phase flow
+  description and variations of finite volume discretization schemes
+  (<xref alt="Flemisch et al., 2011" rid="ref-flemisch_dumux_2011" ref-type="bibr">Flemisch
+  et al., 2011</xref>).</p>
+</sec>
+<sec id="feature-overview">
+  <title>Feature Overview</title>
+  <p>DORiE is a DG solver for the Richards equation and the
+  convection-dispersion equation in unsaturated porous media, and a
+  module of the DUNE framework
+  (<xref alt="Blatt et al., 2016" rid="ref-blatt_distributed_2016" ref-type="bibr">Blatt
+  et al., 2016</xref>). Primarily using DUNE-PDELab
+  (<xref alt="Bastian et al., 2010" rid="ref-bastian_generic_2010" ref-type="bibr">Bastian
+  et al., 2010</xref>), it implements cell-centered finite volume (CCFV)
+  and symmetric weighted interior penalty discontinuous Galerkin
+  (SWIP-DG) discretization schemes for both soil water flow and solute
+  transport with various options for controlling upwinding, DG interior
+  penalty, and DG penalty factors
+  (<xref alt="Di Pietro &amp; Ern, 2012" rid="ref-di_pietro_mathematical_2012" ref-type="bibr">Di
+  Pietro &amp; Ern, 2012</xref>;
+  <xref alt="Ern et al., 2009" rid="ref-ern_discontinuous_2009" ref-type="bibr">Ern
+  et al., 2009</xref>). For solving equation systems, DORiE uses the
+  algebraic multigrid solver optimized for DG methods introduced by
+  Bastian
+  (<xref alt="2014" rid="ref-bastian_fully-coupled_2014" ref-type="bibr">2014</xref>).
+  On unstructured grids, it supports local adaptive grid refinement
+  (h-refinement) based on an a-posteriori diffusive flux error estimator
+  of the water flux
+  (<xref alt="Ern &amp; Stephansen, 2008" rid="ref-ern_posteriori_2008" ref-type="bibr">Ern
+  &amp; Stephansen, 2008</xref>). Since solving the transport problem
+  requires a locally conservative water flux in the convection term,
+  DORiE applies local <inline-formula><alternatives>
+  <tex-math><![CDATA[H(\mathrm{div})]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>H</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="normal"><mml:mi>d</mml:mi><mml:mi>i</mml:mi><mml:mi>v</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  flux reconstruction using Raviart-Thomas finite elements as described
+  by Ern et al.
+  (<xref alt="2007" rid="ref-ern_accurate_2007" ref-type="bibr">2007</xref>)
+  to the water flow solution and optionally to the solute transport
+  solution. Additionally, the framework encapsulates the Gaussian random
+  field generator of the DUNE-Randomfield module for creating
+  pseudo-random soil architectures
+  (<xref alt="Klein, 2016" rid="ref-ole_klein_dune_2020" ref-type="bibr">Klein,
+  2016</xref>).</p>
+  <p>We especially focused on convenient modelling of soil architectures
+  and boundary conditions via common file formats, which is intended to
+  make these features available to scientists with little to no
+  programming background. The simulation and random field routines are
+  controlled via INI configuration files which reference additional
+  input files. DORiE uses YAML files for specifying hydraulic parameters
+  and possibly transient boundary conditions, and HDF5 files
+  (<xref alt="The HDF Group, 1997" rid="ref-the_hdf_group_hierarchical_1997" ref-type="bibr">The
+  HDF Group, 1997</xref>) as input files for field data like initial
+  conditions, grid mappings, and scaling fields. While rectangular grids
+  are generated within DORiE, unstructured grids can be built with the
+  open-source generator GMSH
+  (<xref alt="Geuzaine &amp; Remacle, 2009" rid="ref-geuzaine_gmsh_2009" ref-type="bibr">Geuzaine
+  &amp; Remacle, 2009</xref>) and then loaded into the application. The
+  simulation output is provided as VTK files
+  (<xref alt="Schroeder et al., 2006" rid="ref-schroeder_visualization_2006" ref-type="bibr">Schroeder
+  et al., 2006</xref>) which can be evaluated by third-party software or
+  with the Python module included in DORiE.</p>
+</sec>
+<sec id="research-and-use-cases">
+  <title>Research and Use Cases</title>
+  <p>DORiE has been coupled to a data assimilation framework for
+  estimating hydraulic states, parameters, and soil heterogeneity using
+  ensemble Kalman filters based on synthetic and real data. It supports
+  a tight integration of both code bases and allows for its models being
+  instantiated right inside the data assimilation framework. This
+  enables the efficient adjustment of model states and parameters in
+  place without the need to transfer data files or call external
+  executables. A recent study uses the resulting software for
+  investigating the feasibility and effectiveness of representing a
+  two-dimensional, heterogeneous flow field as one-dimensional field
+  with reduced heterogeneity
+  (<xref alt="Bauser et al., 2020" rid="ref-hannes_h_bauser_challenges_2020" ref-type="bibr">Bauser
+  et al., 2020</xref>). Additionally, DORiE has been used for student
+  exercises in several iterations of the “Physics of Terrestrial
+  Systems” lecture at the Department of Physics and Astronomy,
+  Heidelberg University, targeted at physics students in the master of
+  science curriculum.</p>
+</sec>
+<sec id="showcases">
+  <title>Showcases</title>
+  <p>We demonstrate the capabilities of DORiE in two exemplary showcases
+  depicted in <xref alt="Figure 1" rid="figU003Asolute">Figure 1</xref>
+  and <xref alt="Figure 2" rid="figU003Aadaptive">Figure 2</xref>.</p>
+  <fig>
+    <caption><p>Simulation results for solute transport in heterogeneous
+    soil consisting of one coarse- and one fine-grained material. The
+    material architecture is created with the included random field
+    generator. The lower boundary condition is a water table with
+    constant solute concentration. At the upper boundary, we model
+    evaporation and a no-flow boundary for solute. <bold>Top</bold>:
+    Steady-state soil water content and water flux (direction and
+    magnitude visualized by arrows) throughout the simulation.
+    <bold>Bottom</bold>: Total solute concentration in the soil after
+    some 58 d of simulation time. Note that the solute accumulates at
+    the surface.
+    <styled-content id="figU003Asolute"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="solute.png" xlink:title="" />
+  </fig>
+  <fig>
+    <caption><p>Simulation results for infiltration into sandy soil with
+    small-scale heterogeneity created with the included random field
+    generator. The lower boundary condition is a water table and we
+    model constant heavy rainfall at the upper boundary. The initial
+    condition is hydraulic equilibrium. The grid is visualized in grey.
+    <bold>Top</bold>: Hydraulic conductivity for a completely
+    water-saturated domain. The grid is shown in its coarsest state with
+    which the simulation is started. <bold>Bottom</bold>: Soil water
+    content, water flux (direction and magnitude visualized by arrows),
+    and refined grid after 4 h of simulation time.
+    <styled-content id="figU003Aadaptive"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="adaptive.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We thank Felix Riexinger for his contribution to the first
+  pre-release version of DORiE and Kurt Roth for supervising the
+  project. We also thank Hannes H. Bauser for his constructive comments
+  on this paper. LR was funded by Ministerium für Wissenschaft,
+  Forschung und Kunst Baden-Württemberg (Az 33-7533.-30-20/6/2).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-ern_posteriori_2008">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ern</surname><given-names>Alexandre</given-names></name>
+          <name><surname>Stephansen</surname><given-names>Annette F.</given-names></name>
+        </person-group>
+        <article-title>A posteriori energy-norm error estimates for advection-diffusion equations approximated by weighted interior penalty methods</article-title>
+        <source>Journal of Computational Mathematics</source>
+        <year iso-8601-date="2008">2008</year>
+        <volume>26</volume>
+        <issue>4</issue>
+        <uri>https://www.jstor.org/stable/43693458</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-ern_discontinuous_2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ern</surname><given-names>Alexandre</given-names></name>
+          <name><surname>Stephansen</surname><given-names>Annette F.</given-names></name>
+          <name><surname>Zunino</surname><given-names>Paolo</given-names></name>
+        </person-group>
+        <article-title>A discontinuous Galerkin method with weighted averages for advection–diffusion equations with locally small and anisotropic diffusivity</article-title>
+        <source>IMA Journal of Numerical Analysis</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume>29</volume>
+        <pub-id pub-id-type="doi">10.1093/imanum/drm050</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-miller_numerical_2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Miller</surname><given-names>Cass T.</given-names></name>
+          <name><surname>Dawson</surname><given-names>Clint N.</given-names></name>
+          <name><surname>Farthing</surname><given-names>Matthew W.</given-names></name>
+          <name><surname>Hou</surname><given-names>Thomas Y.</given-names></name>
+          <name><surname>Huang</surname><given-names>Jingfang</given-names></name>
+          <name><surname>Kees</surname><given-names>Christopher E.</given-names></name>
+          <name><surname>Kelley</surname><given-names>C. T.</given-names></name>
+          <name><surname>Langtangen</surname><given-names>Hans Petter</given-names></name>
+        </person-group>
+        <article-title>Numerical simulation of water resources problems: Models, methods, and trends</article-title>
+        <source>Advances in Water Resources</source>
+        <year iso-8601-date="2013">2013</year>
+        <volume>51</volume>
+        <pub-id pub-id-type="doi">10.1016/j.advwatres.2012.05.008</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-schroeder_visualization_2006">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Schroeder</surname><given-names>Will</given-names></name>
+          <name><surname>Martin</surname><given-names>Ken</given-names></name>
+          <name><surname>Lorensen</surname><given-names>Bill</given-names></name>
+        </person-group>
+        <source>The Visualization Toolkit</source>
+        <person-group person-group-type="editor">
+          <name><surname>Squillacote</surname><given-names>Amy</given-names></name>
+        </person-group>
+        <publisher-name>Kitware, Inc.</publisher-name>
+        <year iso-8601-date="2006">2006</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-10-30">2017</year><month>10</month><day>30</day></date-in-citation>
+        <isbn>978-1-930934-19-1</isbn>
+        <uri>https://www.kitware.com/products/books/VTKTextbook.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-bastian_generic_2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bastian</surname><given-names>Peter</given-names></name>
+          <name><surname>Heimann</surname><given-names>Felix</given-names></name>
+          <name><surname>Marnach</surname><given-names>Sven</given-names></name>
+        </person-group>
+        <article-title>Generic implementation of finite element methods in the Distributed and Unified Numerics Environment (DUNE)</article-title>
+        <source>Kybernetika</source>
+        <year iso-8601-date="2010">2010</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-10-12">2017</year><month>10</month><day>12</day></date-in-citation>
+        <volume>46</volume>
+        <issue>2</issue>
+        <uri>dml.cz/dmlcz/140745</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-blatt_distributed_2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Blatt</surname><given-names>Markus</given-names></name>
+          <name><surname>Burchardt</surname><given-names>Ansgar</given-names></name>
+          <name><surname>Dedner</surname><given-names>Andreas</given-names></name>
+          <name><surname>Engwer</surname><given-names>Christian</given-names></name>
+          <name><surname>Fahlke</surname><given-names>Jorrit</given-names></name>
+          <name><surname>Flemisch</surname><given-names>Bernd</given-names></name>
+          <name><surname>Gersbacher</surname><given-names>Christoph</given-names></name>
+          <name><surname>Gräser</surname><given-names>Carsten</given-names></name>
+          <name><surname>Gruber</surname><given-names>Felix</given-names></name>
+          <name><surname>Grüninger</surname><given-names>Christoph</given-names></name>
+          <name><surname>Kempf</surname><given-names>Dominic</given-names></name>
+          <name><surname>Klöfkorn</surname><given-names>Robert</given-names></name>
+          <name><surname>Malkmus</surname><given-names>Tobias</given-names></name>
+          <name><surname>Müthing</surname><given-names>Steffen</given-names></name>
+          <name><surname>Nolte</surname><given-names>Martin</given-names></name>
+          <name><surname>Piatkowski</surname><given-names>Marian</given-names></name>
+          <name><surname>Sander</surname><given-names>Oliver</given-names></name>
+        </person-group>
+        <article-title>The Distributed and Unified Numerics Environment, Version 2.4</article-title>
+        <source>Archive of Numerical Software</source>
+        <year iso-8601-date="2016">2016</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-10-20">2017</year><month>10</month><day>20</day></date-in-citation>
+        <volume>4</volume>
+        <issue>100</issue>
+        <uri>https://www.dune-project.org/</uri>
+        <pub-id pub-id-type="doi">10.11588/ans.2016.100.26526</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-di_pietro_mathematical_2012">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Di Pietro</surname><given-names>Daniele Antonio</given-names></name>
+          <name><surname>Ern</surname><given-names>Alexandre</given-names></name>
+        </person-group>
+        <source>Mathematical Aspects of Disconinuous Galerkin Methods</source>
+        <person-group person-group-type="editor">
+          <name><surname>Allaire</surname><given-names>G.</given-names></name>
+          <name><surname>Garnier</surname><given-names>J.</given-names></name>
+        </person-group>
+        <publisher-name>Springer</publisher-name>
+        <publisher-loc>Berlin; Heidelberg</publisher-loc>
+        <year iso-8601-date="2012">2012</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-642-22980-0</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bastian_fully-coupled_2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bastian</surname><given-names>Peter</given-names></name>
+        </person-group>
+        <article-title>A fully-coupled discontinuous Galerkin method for two-phase flow in porous media with discontinuous capillary pressure</article-title>
+        <source>Computational Geosciences</source>
+        <year iso-8601-date="2014-10">2014</year><month>10</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-02-03">2020</year><month>02</month><day>03</day></date-in-citation>
+        <volume>18</volume>
+        <issue>5</issue>
+        <issn>1573-1499</issn>
+        <uri>https://doi.org/10.1007/s10596-014-9426-y</uri>
+        <pub-id pub-id-type="doi">10.1007/s10596-014-9426-y</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ern_accurate_2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ern</surname><given-names>Alexandre</given-names></name>
+          <name><surname>Nicaise</surname><given-names>Serge</given-names></name>
+          <name><surname>Vohralík</surname><given-names>Martin</given-names></name>
+        </person-group>
+        <article-title>An accurate H(div) flux reconstruction for discontinuous Galerkin approximations of elliptic problems</article-title>
+        <source>Comptes Rendus Mathematique</source>
+        <year iso-8601-date="2007-12">2007</year><month>12</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-02-04">2020</year><month>02</month><day>04</day></date-in-citation>
+        <volume>345</volume>
+        <issue>12</issue>
+        <issn>1631-073X</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S1631073X07004360</uri>
+        <pub-id pub-id-type="doi">10.1016/j.crma.2007.10.036</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-geuzaine_gmsh_2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Geuzaine</surname><given-names>Christophe</given-names></name>
+          <name><surname>Remacle</surname><given-names>Jean-François</given-names></name>
+        </person-group>
+        <article-title>Gmsh: A 3-D finite element mesh generator with built-in pre- and post-processing facilities</article-title>
+        <source>International Journal for Numerical Methods in Engineering</source>
+        <year iso-8601-date="2009">2009</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-02-04">2020</year><month>02</month><day>04</day></date-in-citation>
+        <volume>79</volume>
+        <issue>11</issue>
+        <issn>1097-0207</issn>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1002/nme.2579</uri>
+        <pub-id pub-id-type="doi">10.1002/nme.2579</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-the_hdf_group_hierarchical_1997">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>The HDF Group</string-name>
+        </person-group>
+        <article-title>Hierarchical Data Format, Version 5</article-title>
+        <year iso-8601-date="1997">1997</year>
+        <uri>http://www.hdfgroup.org/HDF5/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-vogel_scale_2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Vogel</surname><given-names>Hans-Jörg</given-names></name>
+        </person-group>
+        <article-title>Scale issues in soil hydrology</article-title>
+        <source>Vadose Zone Journal</source>
+        <year iso-8601-date="2019-07">2019</year><month>07</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-02-04">2020</year><month>02</month><day>04</day></date-in-citation>
+        <volume>18</volume>
+        <issue>1</issue>
+        <issn>1539-1663</issn>
+        <uri>https://dl.sciencesocieties.org/publications/vzj/abstracts/18/1/190001</uri>
+        <pub-id pub-id-type="doi">10.2136/vzj2019.01.0001</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ole_klein_dune_2020">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Klein</surname><given-names>Ole</given-names></name>
+        </person-group>
+        <article-title>DUNE Randomfield</article-title>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://gitlab.dune-project.org/oklein/dune-randomfield</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-hannes_h_bauser_challenges_2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bauser</surname><given-names>Hannes H.</given-names></name>
+          <name><surname>Riedel</surname><given-names>Lukas</given-names></name>
+          <name><surname>Berg</surname><given-names>Daniel</given-names></name>
+          <name><surname>Troch</surname><given-names>Peter</given-names></name>
+          <name><surname>Roth</surname><given-names>Kurt</given-names></name>
+        </person-group>
+        <article-title>Challenges with effective representations of heterogeneity in soil hydrology based on local water content measurements</article-title>
+        <source>Vadose Zone Journal</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>19</volume>
+        <pub-id pub-id-type="doi">10.1002/vzj2.20040</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-li_adaptive_2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Li</surname><given-names>H.</given-names></name>
+          <name><surname>Farthing</surname><suffix>Matthew W.</suffix></name>
+          <name><surname>Miller</surname><given-names>Cass T.</given-names></name>
+        </person-group>
+        <article-title>Adaptive local discontinuous Galerkin approximation to Richards’ equation</article-title>
+        <source>Advances in Water Resources</source>
+        <year iso-8601-date="2007">2007</year>
+        <volume>30</volume>
+        <issue>9</issue>
+        <pub-id pub-id-type="doi">10.1016/j.advwatres.2007.02.007</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-farthing_numerical_2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Farthing</surname><given-names>Matthew W.</given-names></name>
+          <name><surname>Ogden</surname><given-names>Fred L.</given-names></name>
+        </person-group>
+        <article-title>Numerical solution of Richards’ equation: A review of advances and challenges</article-title>
+        <source>Soil Science Society of America Journal</source>
+        <year iso-8601-date="2017-11">2017</year><month>11</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-04-07">2020</year><month>04</month><day>07</day></date-in-citation>
+        <volume>81</volume>
+        <issue>6</issue>
+        <issn>0361-5995</issn>
+        <uri>https://acsess.onlinelibrary.wiley.com/doi/10.2136/sssaj2017.02.0058</uri>
+        <pub-id pub-id-type="doi">10.2136/sssaj2017.02.0058</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-flemisch_dumux_2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Flemisch</surname><given-names>B.</given-names></name>
+          <name><surname>Darcis</surname><given-names>M.</given-names></name>
+          <name><surname>Erbertseder</surname><given-names>K.</given-names></name>
+          <name><surname>Faigle</surname><given-names>B.</given-names></name>
+          <name><surname>Lauser</surname><given-names>A.</given-names></name>
+          <name><surname>Mosthaf</surname><given-names>K.</given-names></name>
+          <name><surname>Müthing</surname><given-names>S.</given-names></name>
+          <name><surname>Nuske</surname><given-names>P.</given-names></name>
+          <name><surname>Tatomir</surname><given-names>A.</given-names></name>
+          <name><surname>Wolff</surname><given-names>M.</given-names></name>
+          <name><surname>Helmig</surname><given-names>R.</given-names></name>
+        </person-group>
+        <article-title>DuMux: DUNE for multi-{phase,component,scale,physics,…} flow and transport in porous media</article-title>
+        <source>Advances in Water Resources</source>
+        <year iso-8601-date="2011-09">2011</year><month>09</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-04-09">2020</year><month>04</month><day>09</day></date-in-citation>
+        <volume>34</volume>
+        <issue>9</issue>
+        <issn>03091708</issn>
+        <uri>https://linkinghub.elsevier.com/retrieve/pii/S030917081100056X</uri>
+        <pub-id pub-id-type="doi">10.1016/j.advwatres.2011.03.007</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+<fn-group>
+  <fn id="fn1">
+    <label>1</label><p>https://hub.docker.com/r/dorie/dorie</p>
+  </fn>
+</fn-group>
+</back>
+</article>

@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2158</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02158</article-id>
+<title-group>
+<article-title>py-pde: A Python package for solving partial differential
+equations</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-3909-3334</contrib-id>
+<string-name>David Zwicker</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Max Planck Institute for Dynamics and Self-Organization,
+Göttingen, Germany</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-03-02">
+<day>2</day>
+<month>3</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>48</issue>
+<fpage>2158</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>partial differential equation</kwd>
+<kwd>dynamical systems</kwd>
+<kwd>finite-difference</kwd>
+<kwd>just-in-time compilation</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Partial differential equations (PDEs) play a central role in
+  describing the dynamics of physical systems in research and in
+  practical applications. However, equations appearing in realistic
+  scenarios are typically non-linear and analytical solutions rarely
+  exist. Instead, such systems are solved by numerical integration to
+  provide insight into their behavior. Moreover, such investigations can
+  motivate approximative solutions, which might then lead to analytical
+  insight.</p>
+  <p>The <monospace>py-pde</monospace> python package presented in this
+  paper allows researchers to quickly and conveniently simulate and
+  analyze PDEs of the general form <disp-formula><alternatives>
+  <tex-math><![CDATA[
+      \partial_t u(\boldsymbol x, t) = \mathcal D[u(\boldsymbol x, t)] 
+          + \eta(u, \boldsymbol x, t) \;,
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>∂</mml:mi><mml:mi>t</mml:mi></mml:msub><mml:mi>u</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mstyle mathvariant="script"><mml:mi>𝒟</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mi>u</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mi>η</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>u</mml:mi><mml:mo>,</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mspace width="0.278em"></mml:mspace><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal D]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>𝒟</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  is a (non-linear) differential operator that defines the time
+  evolution of a (set of) physical fields <inline-formula><alternatives>
+  <tex-math><![CDATA[u]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>u</mml:mi></mml:math></alternatives></inline-formula>
+  with possibly tensorial character, which depend on spatial coordinates
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  and time <inline-formula><alternatives>
+  <tex-math><![CDATA[t]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>t</mml:mi></mml:math></alternatives></inline-formula>.
+  The framework also supports stochastic differential equations in the
+  Itô representation, indicated by the noise term
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\eta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>η</mml:mi></mml:math></alternatives></inline-formula>
+  in the equation above.</p>
+  <p>The main goal of the <monospace>py-pde</monospace> package is to
+  provide a convenient way to analyze general PDEs, while at the same
+  time allowing for enough flexibility to easily implement specialized
+  code for particular cases. Since the code is written in pure Python,
+  it can be easily installed via pip by simply calling
+  <monospace>pip install py-pde</monospace>. However, the central parts
+  are just-in-time compiled using <monospace>numba</monospace>
+  (<xref alt="Lam et al., 2015" rid="ref-numba" ref-type="bibr">Lam et
+  al., 2015</xref>) for computational efficiency. To improve user
+  interaction further, some arguments accept mathematical expressions
+  that are parsed by <monospace>sympy</monospace>
+  (<xref alt="Meurer et al., 2017" rid="ref-sympy" ref-type="bibr">Meurer
+  et al., 2017</xref>) and are compiled optionally. This approach lowers
+  the barrier for new users while also providing speed and flexibility
+  for advanced use cases. Moreover, the package provides convenience
+  functions for creating suitable initial conditions, for controlling
+  what is analyzed as well as stored during a simulation, and for
+  visualizing the final results. The <monospace>py-pde</monospace>
+  package thus serves as a toolbox for exploring PDEs for researchers as
+  well as for students who want to delve into the fascinating world of
+  dynamical systems.</p>
+</sec>
+<sec id="methods">
+  <title>Methods</title>
+  <p>The basic objects of the <monospace>py-pde</monospace> package are
+  scalar and tensorial fields defined on various discretized grids.
+  These grids can deal with periodic boundary conditions and they allow
+  exploiting spatial symmetries that might be present in the physical
+  problem. For instance, the scalar field <inline-formula><alternatives>
+  <tex-math><![CDATA[f(z, r) = \sqrt{z} * e^{-r^2}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>z</mml:mi><mml:mo>,</mml:mo><mml:mi>r</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msqrt><mml:mi>z</mml:mi></mml:msqrt><mml:mo>*</mml:mo><mml:msup><mml:mi>e</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:msup><mml:mi>r</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:mrow></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>
+  in cylindrical coordinates assuming azimuthal symmetry can be
+  visualized using</p>
+  <code language="python">    grid = pde.CylindricalSymGrid(radius=5, bounds_z=[0, 1], shape=(32, 8))
+    field = pde.ScalarField.from_expression(grid, 'sqrt(z) * exp(-r**2)')
+    field.plot()</code>
+  <p>The package defines common differential operators that act directly
+  on the fields. For instance, calling
+  <monospace>field.gradient(bc='neumann')</monospace> returns a vector
+  field on the same cylindrical grid where the components correspond to
+  the gradient of <monospace>field</monospace> assuming Neumann boundary
+  conditions. Here, differential operators are evaluated using the
+  finite difference method (FDM) and the package supports various
+  boundary conditions, which can be separately specified per field and
+  boundary. The discretized fields are the foundation of the
+  <monospace>py-pde</monospace> package and allow the comfortable
+  construction of initial conditions, the visualization of final
+  results, and the detailed investigation of intermediate data.</p>
+  <p>The main part of the <monospace>py-pde</monospace> package provides
+  the infrastructure for solving partial differential equations. Here,
+  we use the method of lines by explicitly discretizing space using the
+  grid classes described above. This reduces the PDEs to a set of
+  ordinary differential equations, which can be solved using standard
+  methods. For instance, the diffusion equation
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\partial_t u = \nabla^2 u]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>∂</mml:mi><mml:mi>t</mml:mi></mml:msub><mml:mi>u</mml:mi><mml:mo>=</mml:mo><mml:msup><mml:mi>∇</mml:mi><mml:mn>2</mml:mn></mml:msup><mml:mi>u</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  on the cylindrical grid defined above can be solved by</p>
+  <code language="python">    eq = pde.DiffusionPDE()
+    result = eq.solve(field, t_range=[0, 10])</code>
+  <p>Note that the partial differential equation is defined independent
+  of the grid, allowing use of the same implementation for various
+  geometries. The package provides simple implementations of standard
+  PDEs, but extensions are simple to realize. In particular, the
+  differential operator <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal D]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>𝒟</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  can be implemented in pure Python for initial testing, while a more
+  specialized version compiled with <monospace>numba</monospace>
+  (<xref alt="Lam et al., 2015" rid="ref-numba" ref-type="bibr">Lam et
+  al., 2015</xref>) might be added later for speed. This approach allows
+  fast testing of new PDEs while also providing an avenue for efficient
+  calculations later.</p>
+  <p>The flexibility of <monospace>py-pde</monospace> is one of its key
+  features. For instance, while the package implements forward and
+  backward Euler methods as well as a Runge-Kutta scheme, users might
+  require more sophisticated solvers. We already provide a wrapper for
+  the excellent <monospace>scipy.integrate.solve_ivp</monospace> method
+  from the SciPy package
+  (<xref alt="Virtanen et al., 2020" rid="ref-SciPy2020" ref-type="bibr">Virtanen
+  et al., 2020</xref>) and further additions are straightforward.
+  Finally, the explicit Euler stepper provided by
+  <monospace>py-pde</monospace> also supports stochastic differential
+  equations in the Itô representation. The standard PDE classes support
+  additive Gaussian white noise, but alternatives, including
+  multiplicative noise, can be specified in user-defined classes. This
+  feature allows users to quickly test the effect of noise on dynamical
+  systems without in-depth knowledge of the associated numerical
+  implementation.</p>
+  <p>Finally, the package provides many convenience methods that allow
+  analyzing simulations on the fly, storing data persistently, and
+  visualizing the temporal evolution of quantities of interest. These
+  features might be helpful even when not dealing with PDEs. For
+  instance, the result of applying differential operators on the
+  discretized fields can be visualized directly. Here, the excellent
+  integration of <monospace>matplotlib</monospace>
+  (<xref alt="Hunter, 2007" rid="ref-matplotlib" ref-type="bibr">Hunter,
+  2007</xref>) into Jupyter notebooks
+  (<xref alt="Pérez &amp; Granger, 2007" rid="ref-ipython" ref-type="bibr">Pérez
+  &amp; Granger, 2007</xref>) allows for an efficient workflow.</p>
+  <p>The <monospace>py-pde</monospace> package employs a consistent
+  object-oriented approach, where each component can be extended and
+  some can even be used in isolation. For instance, the numba-compiled
+  finite-difference operators, which support flexible boundary
+  conditions, can be applied to <monospace>numpy.ndarrays</monospace>
+  directly, e.g., in custom applications. Generally, the just-in-time
+  compilation provided by numba
+  (<xref alt="Lam et al., 2015" rid="ref-numba" ref-type="bibr">Lam et
+  al., 2015</xref>) allows for numerically efficient code while making
+  deploying code easy. In particular, the package can be distributed to
+  a cluster using <monospace>pip</monospace> without worrying about
+  setting paths or compiling source code.</p>
+  <p>The <monospace>py-pde</monospace> package joins a long list of
+  software packages that aid researchers in analyzing PDEs. Lately,
+  there have been several attempts at simplifying the process of
+  translating the mathematical formulation of a PDE to a numerical
+  implementation on the computer. Most notably, the finite-difference
+  approach has been favored by the packages
+  <monospace>scikit-finite-diff</monospace>
+  (<xref alt="Cellier &amp; Ruyer-Quil, 2019" rid="ref-Cellier2019" ref-type="bibr">Cellier
+  &amp; Ruyer-Quil, 2019</xref>) and <monospace>Devito</monospace>
+  (<xref alt="Louboutin et al., 2019" rid="ref-devito" ref-type="bibr">Louboutin
+  et al., 2019</xref>). Conversely, finite-element and finite-volume
+  methods provide more flexibility in the geometries considered and have
+  been used in major packages, including <monospace>FEniCS</monospace>
+  (<xref alt="Alnæs et al., 2015" rid="ref-Fenics" ref-type="bibr">Alnæs
+  et al., 2015</xref>), <monospace>FiPy</monospace>
+  (<xref alt="Guyer et al., 2009" rid="ref-FiPy" ref-type="bibr">Guyer
+  et al., 2009</xref>), <monospace>pyclaw</monospace>
+  (<xref alt="Ketcheson et al., 2012" rid="ref-pyclaw" ref-type="bibr">Ketcheson
+  et al., 2012</xref>), and <monospace>SfePy</monospace>
+  (<xref alt="Cimrman et al., 2019" rid="ref-SfePy" ref-type="bibr">Cimrman
+  et al., 2019</xref>). Finally, spectral methods are another popular
+  approach for calculating differentials of discretized fields, e.g., in
+  the <monospace>dedalus project</monospace>
+  (<xref alt="Burns et al., 2019" rid="ref-dedalus" ref-type="bibr">Burns
+  et al., 2019</xref>). While these methods could in principle also be
+  implemented in <monospace>py-pde</monospace>, they are limited to a
+  small set of viable boundary conditions and are thus not the primary
+  focus. Instead, <monospace>py-pde</monospace> aims at providing a full
+  toolchain for creating, simulating, and analyzing PDEs and the
+  associated fields. While being useful in research,
+  <monospace>py-pde</monospace> might thus also suitable for
+  education.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>I am thankful to Jan Kirschbaum, Ajinkya Kulkarni, Estefania Vidal,
+  and Noah Ziethen for discussions and critical testing of this
+  package.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-numba">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Lam</surname><given-names>Siu Kwan</given-names></name>
+          <name><surname>Pitrou</surname><given-names>Antoine</given-names></name>
+          <name><surname>Seibert</surname><given-names>Stanley</given-names></name>
+        </person-group>
+        <article-title>Numba: A LLVM-Based Python JIT Compiler</article-title>
+        <source>Proceedings of the second workshop on the LLVM compiler infrastructure in HPC</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="2015">2015</year>
+        <isbn>9781450340052</isbn>
+        <uri>https://doi.org/10.1145/2833157.2833162</uri>
+        <pub-id pub-id-type="doi">10.1145/2833157.2833162</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Cellier2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cellier</surname><given-names>Nicolas</given-names></name>
+          <name><surname>Ruyer-Quil</surname><given-names>Christian</given-names></name>
+        </person-group>
+        <article-title>scikit-finite-diff, a new tool for PDE solving</article-title>
+        <source>Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>4</volume>
+        <issue>38</issue>
+        <uri>https://doi.org/10.21105/joss.01356</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.01356</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-dedalus">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Burns</surname><given-names>Keaton J.</given-names></name>
+          <name><surname>Vasil</surname><given-names>Geoffrey M.</given-names></name>
+          <name><surname>Oishi</surname><given-names>Jeffrey S.</given-names></name>
+          <name><surname>Lecoanet</surname><given-names>Daniel</given-names></name>
+          <name><surname>Brown</surname><given-names>Benjamin P.</given-names></name>
+        </person-group>
+        <article-title>Dedalus: A Flexible Framework for Numerical Simulations with Spectral Methods</article-title>
+        <source>arXiv e-prints</source>
+        <year iso-8601-date="2019-05">2019</year><month>05</month>
+        <uri>https://arxiv.org/abs/1905.10388</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Fenics">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Alnæs</surname><given-names>Martin S.</given-names></name>
+          <name><surname>Blechta</surname><given-names>Jan</given-names></name>
+          <name><surname>Hake</surname><given-names>Johan</given-names></name>
+          <name><surname>Johansson</surname><given-names>August</given-names></name>
+          <name><surname>Kehlet</surname><given-names>Benjamin</given-names></name>
+          <name><surname>Logg</surname><given-names>Anders</given-names></name>
+          <name><surname>Richardson</surname><given-names>Chris</given-names></name>
+          <name><surname>Ring</surname><given-names>Johannes</given-names></name>
+          <name><surname>Rognes</surname><given-names>Marie E.</given-names></name>
+          <name><surname>Wells</surname><given-names>Garth N.</given-names></name>
+        </person-group>
+        <article-title>The FEniCS Project Version 1.5</article-title>
+        <source>Archive of Numerical Software</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>3</volume>
+        <issue>100</issue>
+        <pub-id pub-id-type="doi">10.11588/ans.2015.100.20553</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pyclaw">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ketcheson</surname><given-names>David I.</given-names></name>
+          <name><surname>Mandli</surname><given-names>Kyle T.</given-names></name>
+          <name><surname>Ahmadia</surname><given-names>Aron J.</given-names></name>
+          <name><surname>Alghamdi</surname><given-names>Amal</given-names></name>
+          <name><surname>Quezada de Luna</surname><given-names>Manuel</given-names></name>
+          <name><surname>Parsani</surname><given-names>Matteo</given-names></name>
+          <name><surname>Knepley</surname><given-names>Matthew G.</given-names></name>
+          <name><surname>Emmett</surname><given-names>Matthew</given-names></name>
+        </person-group>
+        <article-title>PyClaw: Accessible, Extensible, Scalable Tools for Wave Propagation Problems</article-title>
+        <source>SIAM Journal on Scientific Computing</source>
+        <year iso-8601-date="2012-11">2012</year><month>11</month>
+        <volume>34</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1137/110856976</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-FiPy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Guyer</surname><given-names>Jonathan E.</given-names></name>
+          <name><surname>Wheeler</surname><given-names>Daniel</given-names></name>
+          <name><surname>Warren</surname><given-names>James A.</given-names></name>
+        </person-group>
+        <article-title>FiPy: Partial differential equations with Python</article-title>
+        <source>Computing in Science &amp; Engineering</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <volume>11</volume>
+        <issue>3</issue>
+        <uri>http://www.ctcms.nist.gov/fipy</uri>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2009.52</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SfePy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cimrman</surname><given-names>Robert</given-names></name>
+          <name><surname>Lukeš</surname><given-names>Vladimír</given-names></name>
+          <name><surname>Rohan</surname><given-names>Eduard</given-names></name>
+        </person-group>
+        <article-title>Multiscale finite element calculations in Python using SfePy</article-title>
+        <source>Advances in Computational Mathematics</source>
+        <year iso-8601-date="2019">2019</year>
+        <issn>1572-9044</issn>
+        <uri>https://doi.org/10.1007/s10444-019-09666-0</uri>
+        <pub-id pub-id-type="doi">10.1007/s10444-019-09666-0</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-devito">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Louboutin</surname><given-names>M.</given-names></name>
+          <name><surname>Lange</surname><given-names>M.</given-names></name>
+          <name><surname>Luporini</surname><given-names>F.</given-names></name>
+          <name><surname>Kukreja</surname><given-names>N.</given-names></name>
+          <name><surname>Witte</surname><given-names>P. A.</given-names></name>
+          <name><surname>Herrmann</surname><given-names>F. J.</given-names></name>
+          <name><surname>Velesko</surname><given-names>P.</given-names></name>
+          <name><surname>Gorman</surname><given-names>G. J.</given-names></name>
+        </person-group>
+        <article-title>Devito (v3.1.0): An embedded domain-specific language for finite differences and geophysical exploration</article-title>
+        <source>Geoscientific Model Development</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>12</volume>
+        <issue>3</issue>
+        <uri>https://www.geosci-model-dev.net/12/1165/2019/</uri>
+        <pub-id pub-id-type="doi">10.5194/gmd-12-1165-2019</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ipython">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pérez</surname><given-names>Fernando</given-names></name>
+          <name><surname>Granger</surname><given-names>Brian E.</given-names></name>
+        </person-group>
+        <article-title>IPython: A system for interactive scientific computing</article-title>
+        <source>Computing in Science &amp; Engineering</source>
+        <publisher-name>IEEE Computer Society</publisher-name>
+        <year iso-8601-date="2007-05">2007</year><month>05</month>
+        <volume>9</volume>
+        <issue>3</issue>
+        <issn>1521-9615</issn>
+        <uri>https://ipython.org</uri>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2007.53</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-matplotlib">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hunter</surname><given-names>J. D.</given-names></name>
+        </person-group>
+        <article-title>Matplotlib: A 2D graphics environment</article-title>
+        <source>Computing in Science &amp; Engineering</source>
+        <publisher-name>IEEE COMPUTER SOC</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>9</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2007.55</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sympy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Meurer</surname><given-names>Aaron</given-names></name>
+          <name><surname>Smith</surname><given-names>Christopher P.</given-names></name>
+          <name><surname>Paprocki</surname><given-names>Mateusz</given-names></name>
+          <name><surname>Čertík</surname><given-names>Ondřej</given-names></name>
+          <name><surname>Kirpichev</surname><given-names>Sergey B.</given-names></name>
+          <name><surname>Rocklin</surname><given-names>Matthew</given-names></name>
+          <name><surname>Kumar</surname><given-names>AMiT</given-names></name>
+          <name><surname>Ivanov</surname><given-names>Sergiu</given-names></name>
+          <name><surname>Moore</surname><given-names>Jason K.</given-names></name>
+          <name><surname>Singh</surname><given-names>Sartaj</given-names></name>
+          <name><surname>Rathnayake</surname><given-names>Thilina</given-names></name>
+          <name><surname>Vig</surname><given-names>Sean</given-names></name>
+          <name><surname>Granger</surname><given-names>Brian E.</given-names></name>
+          <name><surname>Muller</surname><given-names>Richard P.</given-names></name>
+          <name><surname>Bonazzi</surname><given-names>Francesco</given-names></name>
+          <name><surname>Gupta</surname><given-names>Harsh</given-names></name>
+          <name><surname>Vats</surname><given-names>Shivam</given-names></name>
+          <name><surname>Johansson</surname><given-names>Fredrik</given-names></name>
+          <name><surname>Pedregosa</surname><given-names>Fabian</given-names></name>
+          <name><surname>Curry</surname><given-names>Matthew J.</given-names></name>
+          <name><surname>Terrel</surname><given-names>Andy R.</given-names></name>
+          <name><surname>Roučka</surname><given-names>Štěpán</given-names></name>
+          <name><surname>Saboo</surname><given-names>Ashutosh</given-names></name>
+          <name><surname>Fernando</surname><given-names>Isuru</given-names></name>
+          <name><surname>Kulal</surname><given-names>Sumith</given-names></name>
+          <name><surname>Cimrman</surname><given-names>Robert</given-names></name>
+          <name><surname>Scopatz</surname><given-names>Anthony</given-names></name>
+        </person-group>
+        <article-title>SymPy: symbolic computing in Python</article-title>
+        <source>PeerJ Computer Science</source>
+        <year iso-8601-date="2017-01">2017</year><month>01</month>
+        <volume>3</volume>
+        <issn>2376-5992</issn>
+        <uri>https://doi.org/10.7717/peerj-cs.103</uri>
+        <pub-id pub-id-type="doi">10.7717/peerj-cs.103</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SciPy2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+          <name><surname>Haberland</surname><given-names>Matt</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Burovski</surname><given-names>Evgeni</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Bright</surname><given-names>Jonathan</given-names></name>
+          <name><surname>van der Walt</surname><given-names>Stéfan J.</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Wilson</surname><given-names>Joshua</given-names></name>
+          <name><surname>Jarrod Millman</surname><given-names>K.</given-names></name>
+          <name><surname>Mayorov</surname><given-names>Nikolay</given-names></name>
+          <name><surname>Nelson</surname><given-names>Andrew R. J.</given-names></name>
+          <name><surname>Jones</surname><given-names>Eric</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Larson</surname><given-names>Eric</given-names></name>
+          <name><surname>Carey</surname><given-names>CJ</given-names></name>
+          <name><surname>Polat</surname><given-names>İlhan</given-names></name>
+          <name><surname>Feng</surname><given-names>Yu</given-names></name>
+          <name><surname>Moore</surname><given-names>Eric W.</given-names></name>
+          <name><surname>Vand erPlas</surname><given-names>Jake</given-names></name>
+          <name><surname>Laxalde</surname><given-names>Denis</given-names></name>
+          <name><surname>Perktold</surname><given-names>Josef</given-names></name>
+          <name><surname>Cimrman</surname><given-names>Robert</given-names></name>
+          <name><surname>Henriksen</surname><given-names>Ian</given-names></name>
+          <name><surname>Quintero</surname><given-names>E. A.</given-names></name>
+          <name><surname>Harris</surname><given-names>Charles R</given-names></name>
+          <name><surname>Archibald</surname><given-names>Anne M.</given-names></name>
+          <name><surname>Ribeiro</surname><given-names>Antônio H.</given-names></name>
+          <name><surname>Pedregosa</surname><given-names>Fabian</given-names></name>
+          <name><surname>van Mulbregt</surname><given-names>Paul</given-names></name>
+          <name><surname>Contributors</surname><given-names>SciPy 1. 0</given-names></name>
+        </person-group>
+        <article-title>SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python</article-title>
+        <source>Nature Methods</source>
+        <year iso-8601-date="2020">2020</year>
+        <pub-id pub-id-type="doi">10.1038/s41592-019-0686-2</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

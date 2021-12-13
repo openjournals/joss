@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2752</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02752</article-id>
+<title-group>
+<article-title>The o80 C++ templated toolbox: Designing customized
+Python APIs for synchronizing realtime processes</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<string-name>Vincent Berenz</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="corresp" rid="cor-1"><sup>*</sup></xref>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Maximilien Naveau</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Felix Widmaier</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Manuel Wüthrich</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Jean-Claude Passy</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Simon Guist</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Dieter Büchler</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Max Planck Institute for Intelligent Systems, Tübingen,
+Germany</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<author-notes>
+<corresp id="cor-1">* E-mail: <email></email></corresp>
+</author-notes>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-07-05">
+<day>5</day>
+<month>7</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>66</issue>
+<fpage>2752</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Python</kwd>
+<kwd>processes</kwd>
+<kwd>robotics</kwd>
+<kwd>shared memory</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>o80 (pronounced “oh-eighty”) is software for synchronizing and
+  organizing message exchange between (realtime) processes via simple
+  customized Python APIs. Its target domain is robotics and machine
+  learning. Our motivation for developing o80 is to ease the setup of
+  robotics experiments (i.e., integration of various hardware and
+  software) by machine learning scientists. Such setup typically
+  requires time and technical effort, especially when realtime processes
+  are involved. Ideally, scientists should have access to a simple
+  Python API that hides the lower level communication details and simply
+  allows the sending of actions and receiving of observations. o80 is a
+  tool box for creating such API.</p>
+  <p>o80 is, in some aspects, similar to ROS’s actionlib
+  (<xref alt="Carroll et al., 2009" rid="ref-actionlib" ref-type="bibr">Carroll
+  et al., 2009</xref>), as both allow a process to create and monitor
+  execution of commands executed by another process, with Python and C++
+  interoperability. A particular feature of o80 is its support for
+  queues of command and the ability to request the server to
+  automatically perform linear interpolation between them. o80 also
+  introduces new synchronization methods (see “bursting mode” in the
+  next section). Unlike actionlib, o80 does not support network
+  communication as it expects the processes it orchestrates to run on
+  the same computer.</p>
+</sec>
+<sec id="overview">
+  <title>Overview</title>
+  <p>For implementing synchronization, o80 organizes two types of
+  processes:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>A server process encapsulates an instance of the o80 back-end
+      and an instance of a driver. At each iteration, the back-end
+      instance computes for each actuator the desired state to be
+      transmitted to the hardware via the driver. The back-end also
+      reads sensory information from the driver. Typically, the server
+      process is programmed in C++ in consideration of realtime
+      needs.</p>
+    </list-item>
+    <list-item>
+      <p>A client process encapsulates instances of the o80 front-end,
+      which provides: 1) an interface to send commands to the back-end
+      (e.g., requests to compute desired states), 2) methods for
+      querying sensory information, and 3) methods for synchronizing the
+      client with the server process.</p>
+    </list-item>
+  </list>
+  <p>In the background, back-end and front-end(s) communicate by
+  exchanging serialized object instances via a interprocess shared
+  memory. Serialization is based on the cereal library
+  (<xref alt="W. &amp; Voorhies, 2017" rid="ref-cereal" ref-type="bibr">W.
+  &amp; Voorhies, 2017</xref>), and the shared memory is based on the
+  Boost interprocess library
+  (<xref alt="Schling, 2011" rid="ref-boost" ref-type="bibr">Schling,
+  2011</xref>).</p>
+  <p>o80 is templated over actuator states and driver, and may therefore
+  support a wide range of systems.</p>
+  <p>o80’s core API supports:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>methods for specifying via commands either full desired state
+      trajectories or partial trajectories relying on interpolation.</p>
+    </list-item>
+    <list-item>
+      <p>interpolation methods based on specified duration, speed, or
+      number of server iterations.</p>
+    </list-item>
+    <list-item>
+      <p>methods for either queuing or interrupting trajectories.</p>
+    </list-item>
+    <list-item>
+      <p>frontend methods for setting commands that are either blocking
+      or non blocking.</p>
+    </list-item>
+    <list-item>
+      <p>frontend methods for retrieving sensory data that request the
+      latest available information, sensor information corresponding to
+      a specific past server iteration, or the full history of sensory
+      information.</p>
+    </list-item>
+    <list-item>
+      <p>client processes and the server processes that run
+      asynchronously or synchronously.</p>
+    </list-item>
+  </list>
+  <p>Synchronization methods may be based on a fixed desired frequency
+  set for the server, or may be set up by the client process (“bursting
+  mode”).</p>
+  <p>The o80 library may be considered complex, as it is versatile and
+  can be used in the context of a wide range of control strategies. Yet,
+  the objective of o80 is to provide robot users with a simple Python
+  API. For this purpose, o80 provides convenience functions for
+  generating application tailored Python bindings. The expected usage is
+  that an expert developer uses o80 to design the Python API that will
+  hide, from end users, the complexities related to interprocess
+  communication and synchronization. Scientists may then use this
+  simplified API to design new robotic experiments. In this sense, o80
+  aims to be a toolbox for creating customized Python APIs. Generation
+  of Python bindings via the o80 API is based on pybind11
+  (<xref alt="Wenzel et al., 2016" rid="ref-pybind11" ref-type="bibr">Wenzel
+  et al., 2016</xref>).</p>
+</sec>
+<sec id="modular-implementation">
+  <title>Modular Implementation</title>
+  <p>o80 is based on open source packages that are maintained by the Max
+  Planck Institute for Intelligent Systems, and that may be reused in
+  other contexts. These packages are available on the GitHub
+  organizations “intelligent-soft-robots”, “machines-in-motion”,
+  “mpi-is”, and “open dynamic robot initiative”. Examples of such
+  packages are:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>synchronizer: a library for synchronizing processes</p>
+    </list-item>
+    <list-item>
+      <p>shared memory: a wrapper over the Boost interprocess library
+      that makes exchange of serialized data over an interprocess shared
+      memory trivial</p>
+    </list-item>
+    <list-item>
+      <p>time series: a templated circular buffer with time stamps,
+      supporting multiprocess access and synchronization</p>
+    </list-item>
+  </list>
+  <p>The complete list, the sources, the binaries, as well as the
+  documentation of theses packages can be found online
+  (<xref alt="Naveau et al., 2020" rid="ref-corerobotics" ref-type="bibr">Naveau
+  et al., 2020</xref>).</p>
+</sec>
+<sec id="examples-of-usage">
+  <title>Examples of usage</title>
+  <sec id="integration-with-sl">
+    <title>Integration with SL</title>
+    <p>An instance of the o80 backend has been integrated into the SL
+    realtime library
+    (<xref alt="Schaal, 2009" rid="ref-sl" ref-type="bibr">Schaal,
+    2009</xref>) used for the control of the Apollo manipulator
+    (<xref alt="Kappler et al., 2018" rid="ref-apollo" ref-type="bibr">Kappler
+    et al., 2018</xref>). This allows scientists to program robot
+    behavior using a simple Python interface running at a low
+    non-realtime frequency that synchronizes with the realtime higher
+    frequency C++ control loop of the robot. This interface was used,
+    for example, for the experiments described in
+    (<xref alt="Baumann et al., 2020" rid="ref-icsds" ref-type="bibr">Baumann
+    et al., 2020</xref>).</p>
+  </sec>
+  <sec id="hysr-training">
+    <title>HYSR training</title>
+    <p>o80 has been used in the context of reinforcement learning
+    applied to real robotic hardware.
+    (<xref alt="Büchler et al., 2020" rid="ref-pam" ref-type="bibr">Büchler
+    et al., 2020</xref>) describes a setup in which a robot arm driven
+    by pneumatic artificial muscles autonomously learns to play table
+    tennis using an hybrid sim and real training approach (HYSR), i.e,
+    performing real hardware motions to interact with simulated balls.
+    o80 was used in this context to:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p>provide a Python API that has been integrated into a Gym
+        environment to provide an interface to reinforcement algorithms
+        (<xref alt="Brockman et al., 2016" rid="ref-gym" ref-type="bibr">Brockman
+        et al., 2016</xref>)</p>
+      </list-item>
+      <list-item>
+        <p>setting up the synchronization between the real robot control
+        and the MuJoCo simulator
+        (<xref alt="Todorov et al., 2012" rid="ref-mujoco" ref-type="bibr">Todorov
+        et al., 2012</xref>) used for HYSR</p>
+      </list-item>
+      <list-item>
+        <p>setting up asynchronous processes for live plotting of the
+        robot state</p>
+      </list-item>
+    </list>
+    <p>The code and documentation of this project are available as open
+    source online
+    (<xref alt="Berenz et al., 2020" rid="ref-pamsource" ref-type="bibr">Berenz
+    et al., 2020</xref>).</p>
+  </sec>
+  <sec id="franka-emica-panda-robot-system">
+    <title>Franka Emica Panda Robot System</title>
+    <p>o80 drivers for the Franka Emica Panda Robot System are also
+    available
+    (<xref alt="Kyrylo, 2021" rid="ref-o80_franka" ref-type="bibr">Kyrylo,
+    2021</xref>).</p>
+  </sec>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-boost">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Schling</surname><given-names>Boris</given-names></name>
+        </person-group>
+        <source>The Boost C++ libraries</source>
+        <publisher-name>XML Press</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <isbn>0982219199</isbn>
+        <uri>https://www.boost.org/doc/libs/1_63_0/doc/html/interprocess.html</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-o80_franka">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Kyrylo</surname><given-names>Sovailo</given-names></name>
+        </person-group>
+        <article-title>o80 franka</article-title>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://github.com/Data-Science-in-Mechanical-Engineering/franka_o80</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-cereal">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>W.</surname><given-names>Shane Grant</given-names></name>
+          <name><surname>Voorhies</surname><given-names>Randolph</given-names></name>
+        </person-group>
+        <article-title>cereal - a C++11 library for serialization</article-title>
+        <year iso-8601-date="2017">2017</year>
+        <uri>http://uscilab.github.io/cereal/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-corerobotics">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Naveau</surname><given-names>Maximilien</given-names></name>
+          <name><surname>Berenz</surname><given-names>Vincent</given-names></name>
+          <name><surname>Widemaier</surname><given-names>Felix</given-names></name>
+          <name><surname>Viereck</surname><given-names>Julian</given-names></name>
+          <name><surname>Wüthrich</surname><given-names>Manuel</given-names></name>
+        </person-group>
+        <article-title>corerobotics</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>http://people.tuebingen.mpg.de/mpi-is-software/corerobotics/docs</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-actionlib">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Carroll</surname><given-names>Michael</given-names></name>
+          <name><surname>Perron</surname><given-names>Jakob</given-names></name>
+          <name><surname>Marder-Eppstein</surname><given-names>Eitan</given-names></name>
+          <name><surname>Pradeep</surname><given-names>Vijay</given-names></name>
+          <name><surname>Arguedas</surname><given-names>Mikael</given-names></name>
+        </person-group>
+        <article-title>actionlib</article-title>
+        <year iso-8601-date="2009">2009</year>
+        <uri>http://wiki.ros.org/actionlib</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-pybind11">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Wenzel</surname><given-names>Jakob</given-names></name>
+          <name><surname>Rhinelander</surname><given-names>Jason</given-names></name>
+          <name><surname>Moldovan</surname><given-names>Dean</given-names></name>
+        </person-group>
+        <article-title>pybind11 — seamless operability between C++11 and Python</article-title>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://github.com/pybind/pybind11</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-sl">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Schaal</surname><given-names>Stefan</given-names></name>
+        </person-group>
+        <article-title>The SL simulation and real-time control software package</article-title>
+        <year iso-8601-date="2009">2009</year>
+        <uri>http://www-clmc.usc.edu/publications/S/schaal-TRSL.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-apollo">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kappler</surname><given-names>Daniel</given-names></name>
+          <name><surname>Meier</surname><given-names>Franziska</given-names></name>
+          <name><surname>Issac</surname><given-names>Jan</given-names></name>
+          <name><surname>Mainprice</surname><given-names>Jim</given-names></name>
+          <name><surname>Garcia Cifuentes</surname><given-names>Cristina</given-names></name>
+          <name><surname>Wüthrich</surname><given-names>Manuel</given-names></name>
+          <name><surname>Berenz</surname><given-names>Vincent</given-names></name>
+          <name><surname>Schaal</surname><given-names>Stefan</given-names></name>
+          <name><surname>Ratliff</surname><given-names>Nathan</given-names></name>
+          <name><surname>Bohg</surname><given-names>Jeannette</given-names></name>
+        </person-group>
+        <article-title>Real-time perception meets reactive motion generation</article-title>
+        <source>IEEE Robotics and Automation Letters</source>
+        <year iso-8601-date="2018-07">2018</year><month>07</month>
+        <volume>3</volume>
+        <issue>3</issue>
+        <uri>https://arxiv.org/abs/1703.03512</uri>
+        <pub-id pub-id-type="doi">10.1109/LRA.2018.2795645</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-icsds">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Baumann</surname><given-names>Dominik</given-names></name>
+          <name><surname>Solowjow</surname><given-names>Friedrich</given-names></name>
+          <name><surname>Johansson</surname><given-names>Karl H.</given-names></name>
+          <name><surname>Trimpe</surname><given-names>Sebastian</given-names></name>
+        </person-group>
+        <article-title>Identifying causal structure in dynamical systems</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://arxiv.org/abs/2006.03906</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-pam">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Büchler</surname><given-names>Dieter</given-names></name>
+          <name><surname>Guist</surname><given-names>Simon</given-names></name>
+          <name><surname>Calandra</surname><given-names>Roberto</given-names></name>
+          <name><surname>Vincent</surname><given-names>Berenz</given-names></name>
+          <name><surname>Schölkopf</surname><given-names>Bernhard</given-names></name>
+          <name><surname>Peters</surname><given-names>Jan</given-names></name>
+        </person-group>
+        <article-title>Learning to play table tennis from scratch using muscular robots</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://arxiv.org/abs/2006.05935</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-mujoco">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Todorov</surname><given-names>Emanuel</given-names></name>
+          <name><surname>Erez</surname><given-names>Tom</given-names></name>
+          <name><surname>Tassa</surname><given-names>Yuval</given-names></name>
+        </person-group>
+        <article-title>MuJoCo: A physics engine for model-based control.</article-title>
+        <source>IROS</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <isbn>978-1-4673-1737-5</isbn>
+        <uri>http://dblp.uni-trier.de/db/conf/iros/iros2012.html#TodorovET12</uri>
+        <pub-id pub-id-type="doi">10.1109/iros.2012.6386109</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gym">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Brockman</surname><given-names>Greg</given-names></name>
+          <name><surname>Cheung</surname><given-names>Vicki</given-names></name>
+          <name><surname>Pettersson</surname><given-names>Ludwig</given-names></name>
+          <name><surname>Schneider</surname><given-names>Jonas</given-names></name>
+          <name><surname>Schulman</surname><given-names>John</given-names></name>
+          <name><surname>Tang</surname><given-names>Jie</given-names></name>
+          <name><surname>Zaremba</surname><given-names>Wojciech</given-names></name>
+        </person-group>
+        <article-title>OpenAI gym</article-title>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://arxiv.org/abs/1606.01540</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-pamsource">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Berenz</surname><given-names>Vincent</given-names></name>
+          <name><surname>Guist</surname><given-names>Simon</given-names></name>
+          <name><surname>Büchler</surname><given-names>Dieter</given-names></name>
+        </person-group>
+        <article-title>PAM robot software documentation</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>http://people.tuebingen.mpg.de/mpi-is-software/pam/docs/</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

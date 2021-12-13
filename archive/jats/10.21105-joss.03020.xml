@@ -1,0 +1,763 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3020</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03020</article-id>
+<title-group>
+<article-title>NLMech: Implementation of finite difference/meshfree
+discretization of nonlocal fracture models</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-2158-364X</contrib-id>
+<string-name>Prashant K. Jha</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-0872-7098</contrib-id>
+<string-name>Patrick Diehl</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Oden Institute for Computational Engineering and Sciences,
+The University of Texas at Austin, Austin, TX, United States of
+America</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Center for Computation &amp; Technology, Louisiana State
+University, Baton Rouge, LA, United States of America</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-11-25">
+<day>25</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>65</issue>
+<fpage>3020</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Peridynamics</kwd>
+<kwd>Finite difference</kwd>
+<kwd>Finite element</kwd>
+<kwd>HPX</kwd>
+<kwd>Asynchronous many-task systems</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<fig>
+  <caption><p>NLMech’s logo which shows the obtained damage of a
+  peridynamic
+  simulation.<styled-content id="figU003Alogo"></styled-content></p></caption>
+  <graphic mimetype="image" mime-subtype="png" xlink:href="../assets/logo/logo_joss.png" xlink:title="" />
+</fig>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The open source code <italic>NLMech</italic> is an implementation
+  of finite difference approximation of nonlocal models,  peridynamic.
+  Peridynamic (PD)
+  (<xref alt="Silling et al., 2007" rid="ref-silling2007peridynamic" ref-type="bibr">Silling
+  et al., 2007</xref>;
+  <xref alt="Silling &amp; Askari, 2005" rid="ref-silling2005meshfree" ref-type="bibr">Silling
+  &amp; Askari, 2005</xref>) is a nonlocal formulation of classical
+  continuum mechanics that is particularly robust in mechanical
+  deformations involving crack (discontinuous displacement) and damage.
+  The model seamlessly handles the two regimes of deformation:
+  elastic/smooth deformation and fracture. The constitutive laws
+  describing the material behavior are simple to conceptualize and
+  implement. Particularly, in numerical implementation, no special care
+  for the modeling of cracks is required. Successful comparison of PD
+  against a variety of experiments has been done
+  (<xref alt="Diehl et al., 2019, p. diehl2021comparative" rid="ref-diehl2019review" ref-type="bibr">Diehl
+  et al., 2019, p. diehl2021comparative</xref>).</p>
+  <p>Unlike classical continuum mechanics, where the internal force is
+  written in terms of the stress, in PD, the internal force at a given
+  material point is due to the sum of the pairwise forces of the
+  neighboring points.  the force in PD is expressed as the integral of
+  the pairwise force density between the given point and another point
+  in the neighborhood. The neighborhood of point
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>
+  is typically defined as all points in the sphere of radius
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\delta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>δ</mml:mi></mml:math></alternatives></inline-formula>,
+  centered at <inline-formula><alternatives>
+  <tex-math><![CDATA[x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>,
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[\delta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>δ</mml:mi></mml:math></alternatives></inline-formula>
+  is the nonlocal length scale and is referred to as the . PD is often
+  divided in two classes: bond-based and state-based models. In
+  bond-based models, the two material points interact via a pairwise
+  force law, and the forces between the material points do not depend on
+  the deformation state of surrounding points. In contrast, in the
+  state-based models the volumetric deformation in the neighborhood of
+  two points plays a role in the pairwise force. The governing equation
+  of motion for the bond-based PD
+  (<xref alt="Silling &amp; Askari, 2005" rid="ref-silling2005meshfree" ref-type="bibr">Silling
+  &amp; Askari, 2005</xref>) reads as</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[ \varrho(\mathbf{X})\ddot{\mathbf{u}}(t,\mathbf{X}) = \int\limits_{B_\delta(\mathbf{X})}\mathbf{f}(\mathbf{u}(t,\mathbf{X}')-\mathbf{u}(t,\mathbf{X}),\mathbf{X}'-\mathbf{X}) d\mathbf{X}' + \mathbf{b}(t,\mathbf{X}) \text{ in } D]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>𝜚</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mover><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mo accent="true">̈</mml:mo></mml:mover><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>,</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:munder><mml:mo>∫</mml:mo><mml:mrow><mml:msub><mml:mi>B</mml:mi><mml:mi>δ</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:munder><mml:mstyle mathvariant="bold"><mml:mi>𝐟</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>,</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mi>′</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>,</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mi>′</mml:mi><mml:mo>−</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>d</mml:mi><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mi>′</mml:mi><mml:mo>+</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐛</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>,</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mrow><mml:mspace width="0.333em"></mml:mspace><mml:mtext mathvariant="normal"> in </mml:mtext><mml:mspace width="0.333em"></mml:mspace></mml:mrow><mml:mi>D</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>and the governing equation for the state-based PD
+  (<xref alt="Silling et al., 2007" rid="ref-silling2007peridynamic" ref-type="bibr">Silling
+  et al., 2007</xref>) reads as</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[  \varrho (\mathbf{X})\ddot{\mathbf{u}}(t,\mathbf{X}) =  \int\limits_{B_\delta(\mathbf{X})} (T[\mathbf{X},t]\langle \mathbf{X}' - \mathbf{X} \rangle - T[\mathbf{X}',t]\langle \mathbf{X} - \mathbf{X}' \rangle) d\mathbf{X}' + \mathbf{b}(t,\mathbf{X}) \text{ in } D \text{.} ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>𝜚</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mover><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mo accent="true">̈</mml:mo></mml:mover><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>,</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:munder><mml:mo>∫</mml:mo><mml:mrow><mml:msub><mml:mi>B</mml:mi><mml:mi>δ</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:munder><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>T</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mo stretchy="false" form="prefix">⟨</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mi>′</mml:mi><mml:mo>−</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mo stretchy="false" form="postfix">⟩</mml:mo><mml:mo>−</mml:mo><mml:mi>T</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mi>′</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mo stretchy="false" form="prefix">⟨</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mo>−</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mi>′</mml:mi><mml:mo stretchy="false" form="postfix">⟩</mml:mo><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>d</mml:mi><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mi>′</mml:mi><mml:mo>+</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐛</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>,</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐗</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mrow><mml:mspace width="0.333em"></mml:mspace><mml:mtext mathvariant="normal"> in </mml:mtext><mml:mspace width="0.333em"></mml:mspace></mml:mrow><mml:mi>D</mml:mi><mml:mtext mathvariant="normal">.</mml:mtext></mml:mrow></mml:math></alternatives></disp-formula>
+  Here <inline-formula><alternatives>
+  <tex-math><![CDATA[\varrho]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>𝜚</mml:mo></mml:math></alternatives></inline-formula>
+  denotes density of the material, <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{u}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  displacement field in the material, <inline-formula><alternatives>
+  <tex-math><![CDATA[\ddot{\mathbf{u}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mo accent="true">̈</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+  acceleration, and <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{b}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐛</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  external force density. The constitutive law, relating bond strain
+  with bond force, is prescribed using either the pairwise force
+  function <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{f}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐟</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  or the PD state <inline-formula><alternatives>
+  <tex-math><![CDATA[T]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>T</mml:mi></mml:math></alternatives></inline-formula>
+  (<xref alt="Silling et al., 2007" rid="ref-silling2007peridynamic" ref-type="bibr">Silling
+  et al., 2007</xref>). In the NLMech library, the following material
+  models are implemented:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Elastic state-based PD model
+      (<xref alt="Silling et al., 2007" rid="ref-silling2007peridynamic" ref-type="bibr">Silling
+      et al., 2007</xref>),</p>
+    </list-item>
+    <list-item>
+      <p>Prototype micro-elastic brittle bond-based PD model
+      (<xref alt="Silling &amp; Askari, 2005" rid="ref-silling2005meshfree" ref-type="bibr">Silling
+      &amp; Askari, 2005</xref>),</p>
+    </list-item>
+    <list-item>
+      <p>Nonlinear bond-based PD model
+      (<xref alt="R. Lipton, 2014" rid="ref-lipton2014dynamic" ref-type="bibr">R.
+      Lipton, 2014</xref>,
+      <xref alt="2016" rid="ref-lipton2016cohesive" ref-type="bibr">2016</xref>),
+      and</p>
+    </list-item>
+    <list-item>
+      <p>Nonlocal double-well state-based peridynamic model
+      (<xref alt="Jha &amp; Lipton, 2019" rid="ref-jha2019numerical" ref-type="bibr">Jha
+      &amp; Lipton, 2019</xref>;
+      <xref alt="R. Lipton et al., 2018b" rid="ref-Lipton2018" ref-type="bibr">R.
+      Lipton et al., 2018b</xref>).</p>
+    </list-item>
+  </list>
+  <p>Examples for these types of model implementations are provided in
+  the
+  <ext-link ext-link-type="uri" xlink:href="https://nonlocalmodels.github.io/examples/">documentation</ext-link>.</p>
+  <p>Currently, the library supports finite difference (or more
+  generally meshfree) discretization. Using the triangulation of an
+  arbitrary domain, the library can create a meshfree discretization.
+  The library is equipped with necessary modules, such as FE elements
+  and quadrature integration rules, for finite element discretization of
+  PD. Next, we briefly discuss the finite difference/meshfree
+  discretization of PD.
+  <xref alt="Figure 2" rid="figU003Adiscrete">Figure 2</xref> shows the
+  domain D discretized with the nodes <inline-formula><alternatives>
+  <tex-math><![CDATA[X = \{ X_i \in \mathbb{R}^3 \vert i=1,\ldots,n\}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>X</mml:mi><mml:mo>=</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>∈</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:mn>3</mml:mn></mml:msup><mml:mo stretchy="false" form="postfix">|</mml:mo><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>…</mml:mi><mml:mo>,</mml:mo><mml:mi>n</mml:mi><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>.
+  Each node <inline-formula><alternatives>
+  <tex-math><![CDATA[X_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  represents a small area/volume denoted by
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[V_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>V</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>.
+  In PD, as previously mentioned, each point
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[X_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  interacts with neighboring points in the sphere (discrete)
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[B_\delta(X_i) = \{X_j: |X_i - X_j| < \delta \}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>B</mml:mi><mml:mi>δ</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo>:</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mo>&lt;</mml:mo><mml:mi>δ</mml:mi><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+  <fig>
+    <caption><p>Adapted from
+    (<xref alt="Diehl, 2020" rid="ref-Diehl2020" ref-type="bibr">Diehl,
+    2020</xref>).<styled-content id="figU003Adiscrete"></styled-content></p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="discrete.pdf" xlink:title="" />
+  </fig>
+  <p>The discrete equation of motion is written as, for the bond-based
+  PD,</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[ \varrho(X_i)\ddot{\mathbf{u}}(t,X_i) = \sum\limits_{j \in B_\delta(X_i)}\mathbf{f}(\mathbf{u}(t,X_j)-\mathbf{u}(t,X_i),X_j-X_i) V_j + \mathbf{b}(t,X_i) \text{ in } D,]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>𝜚</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mover><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mo accent="true">̈</mml:mo></mml:mover><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:munder><mml:mo>∑</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>∈</mml:mo><mml:msub><mml:mi>B</mml:mi><mml:mi>δ</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:munder><mml:mstyle mathvariant="bold"><mml:mi>𝐟</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:msub><mml:mi>V</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo>+</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐛</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mrow><mml:mspace width="0.333em"></mml:mspace><mml:mtext mathvariant="normal"> in </mml:mtext><mml:mspace width="0.333em"></mml:mspace></mml:mrow><mml:mi>D</mml:mi><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>and, the state-based PD,</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[  \varrho (X_i)\ddot{\mathbf{u}}(t,X_i) =  \sum\limits_{j \in B_\delta(X_i)} (T[X_i,t]\langle X_j - X_i \rangle - T[X_j,t]\langle X_i - X_j \rangle) V_j + \mathbf{b}(t,X_i) \text{ in } D \text{.} ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>𝜚</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mover><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mo accent="true">̈</mml:mo></mml:mover><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:munder><mml:mo>∑</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>∈</mml:mo><mml:msub><mml:mi>B</mml:mi><mml:mi>δ</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:munder><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>T</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mo stretchy="false" form="prefix">⟨</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="false" form="postfix">⟩</mml:mo><mml:mo>−</mml:mo><mml:mi>T</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mo stretchy="false" form="prefix">⟨</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="false" form="postfix">⟩</mml:mo><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:msub><mml:mi>V</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo>+</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐛</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mrow><mml:mspace width="0.333em"></mml:mspace><mml:mtext mathvariant="normal"> in </mml:mtext><mml:mspace width="0.333em"></mml:mspace></mml:mrow><mml:mi>D</mml:mi><mml:mtext mathvariant="normal">.</mml:mtext></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>Here <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{u}(t,X_i)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  denotes the displacement of node <inline-formula><alternatives>
+  <tex-math><![CDATA[X_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>X</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  at time <inline-formula><alternatives>
+  <tex-math><![CDATA[0 \leq t\leq T]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>0</mml:mn><mml:mo>≤</mml:mo><mml:mi>t</mml:mi><mml:mo>≤</mml:mo><mml:mi>T</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.
+  For the time discretization, we can consider: implicit time
+  integration and explicit time integration using either a central
+  difference or velocity verlet scheme.</p>
+  <sec id="software-implementation-and-applications">
+    <title>Software Implementation and Applications</title>
+    <p>NLMech relies on the following open source softwares: HPX
+    (<xref alt="Kaiser et al., 2020" rid="ref-Kaiser2020" ref-type="bibr">Kaiser
+    et al., 2020</xref>), Blaze
+    (<xref alt="Iglberger et al., 2012" rid="ref-iglberger2012high" ref-type="bibr">Iglberger
+    et al., 2012</xref>), Blaze_Iterative, Gmsh
+    (<xref alt="Geuzaine &amp; Remacle, 2009" rid="ref-geuzaine2009gmsh" ref-type="bibr">Geuzaine
+    &amp; Remacle, 2009</xref>), VTK
+    (<xref alt="Schroeder et al., 2004" rid="ref-schroeder2004visualization" ref-type="bibr">Schroeder
+    et al., 2004</xref>), and yaml-cpp. For details about the specific
+    version, we refer to NLMech’s
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/nonlocalmodels/NLMech#building">documentation</ext-link>.</p>
+    <p>NLMech was used for the following applications/publications:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p>Numerical convergence of finite difference approximations for
+        state based perdidynamic fracture models
+        (<xref alt="Jha &amp; Lipton, 2019" rid="ref-jha2019numerical" ref-type="bibr">Jha
+        &amp; Lipton, 2019</xref>)</p>
+      </list-item>
+      <list-item>
+        <p>Complex fracture nucleation and evolution with nonlocal
+        elastodynamics
+        (<xref alt="R. P. Lipton et al., 2019" rid="ref-lipton2019complex" ref-type="bibr">R.
+        P. Lipton et al., 2019</xref>)</p>
+      </list-item>
+      <list-item>
+        <p>Free damage propagation with memory
+        (<xref alt="R. Lipton et al., 2018a" rid="ref-lipton2018free" ref-type="bibr">R.
+        Lipton et al., 2018a</xref>)</p>
+      </list-item>
+      <list-item>
+        <p>Kinetic relations and local energy balance for linear elastic
+        fracture mechanics from a nonlocal peridynamic model
+        (<xref alt="Jha &amp; Lipton, 2020" rid="ref-jha2020kinetic" ref-type="bibr">Jha
+        &amp; Lipton, 2020</xref>)</p>
+      </list-item>
+      <list-item>
+        <p>A Fracture Multiscale Model for Peridynamic enrichment within
+        the Partition of Unity Method
+        (<xref alt="Birner et al., 2021" rid="ref-DBLPU003AjournalsU002FcorrU002Fabs-2108-02336" ref-type="bibr">Birner
+        et al., 2021</xref>)</p>
+      </list-item>
+      <list-item>
+        <p>Peridynamics for Quasistatic Fracture Modeling
+        (<xref alt="Bhattacharya et al., 2021" rid="ref-bhattacharya2021peridynamics" ref-type="bibr">Bhattacharya
+        et al., 2021</xref>)</p>
+      </list-item>
+    </list>
+    <p>For an updated list of applications/publications, we refer to
+    corresponding
+    <ext-link ext-link-type="uri" xlink:href="https://nonlocalmodels.github.io/publications/">NLMech
+    documentation</ext-link>.</p>
+  </sec>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Nonlocal models, like peridynamic, are computationally expensive.
+  Several publications on GPU-based implementations
+  (<xref alt="Diehl, 2012" rid="ref-diehl2012implementierung" ref-type="bibr">Diehl,
+  2012</xref>;
+  <xref alt="Diehl &amp; Schweitzer, 2015" rid="ref-diehl2015efficient" ref-type="bibr">Diehl
+  &amp; Schweitzer, 2015</xref>;
+  <xref alt="Mossaiby et al., 2017" rid="ref-mossaiby2017opencl" ref-type="bibr">Mossaiby
+  et al., 2017</xref>) and one commercial implementation in LS-DYNA
+  (<xref alt="Ren et al., 2017" rid="ref-ren20173d" ref-type="bibr">Ren
+  et al., 2017</xref>) can be found in literature. However, from an open
+  source perspective, only two other peridynamic implementations are
+  available:
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/peridigm/peridigm">Peridigm</ext-link>
+  (<xref alt="Littlewood, 2015" rid="ref-littlewood2015roadmap" ref-type="bibr">Littlewood,
+  2015</xref>) and
+  <ext-link ext-link-type="uri" xlink:href="https://lammps.sandia.gov/doc/pair_peri.html">PDLammps</ext-link>
+  (<xref alt="Parks et al., 2008" rid="ref-parks2008implementing" ref-type="bibr">Parks
+  et al., 2008</xref>). Both of these codes rely on the Message Passing
+  Interface (MPI). On modern supercomputers, many core architectures
+  where the threads per computational node increase, it is more and more
+  important to focus on the fine-grain parallelism with increasing cores
+  per computational nodes. NLMech is based on the C++ standard library
+  for parallelism and concurrency (HPX)
+  (<xref alt="Kaiser et al., 2020" rid="ref-Kaiser2020" ref-type="bibr">Kaiser
+  et al., 2020</xref>). For more details on utilization of asynchronous
+  many-task systems, we refer to Diehl et al.
+  (<xref alt="2020" rid="ref-diehl2018implementation" ref-type="bibr">2020</xref>).
+  The library implements the experimental nonlinear bond-based and
+  state-based models, and the process of adding new material models is
+  simple following the existing templates.</p>
+</sec>
+<sec id="future-directions">
+  <title>Future directions</title>
+  <p>We are interested in extending/improving the library with</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>implementation of new material models,</p>
+    </list-item>
+    <list-item>
+      <p>higher order time discretization schemes,</p>
+    </list-item>
+    <list-item>
+      <p>local-nonlocal coupling methods, and</p>
+    </list-item>
+    <list-item>
+      <p>further optimization of nonlocal computation.</p>
+    </list-item>
+  </list>
+  <p>If you are interested in contributing, please read our
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/nonlocalmodels/NLMech#contributing">guidelines</ext-link>
+  and our
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/nonlocalmodels/NLMech/blob/master/CODE_OF_CONDUCT.md">code
+  of conduct</ext-link> before doing so.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>NLMech has been funded by:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Army Research Office Grant # W911NF-16-1-0456 to PI Dr. Robert
+      Lipton (Professor at Louisiana State University). This grant
+      supported Prashant K. Jha on a postdoctoral position from October
+      2016 - July 2019.</p>
+    </list-item>
+    <list-item>
+      <p>Canada Research Chairs Program under the Canada Research Chair
+      in Multiscale Modelling of Advanced Aerospace Materials held by M.
+      Lévesque; Natural Sciences and Engineering Research Council of
+      Canada (NSERC) Discovery Grants Program under Discovery Grant
+      RGPIN-2016-06412.</p>
+    </list-item>
+    <list-item>
+      <p>We are grateful for the support of the Google Summer of Code
+      program funding internships.</p>
+    </list-item>
+  </list>
+  <p>For a updated list of previous and current funding, we refer to the
+  corresponding
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/nonlocalmodels/NLMech#acknowledgements">NLMech
+  website</ext-link>.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-geuzaine2009gmsh">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Geuzaine</surname><given-names>Christophe</given-names></name>
+          <name><surname>Remacle</surname><given-names>Jean-François</given-names></name>
+        </person-group>
+        <article-title>Gmsh: A 3-d finite element mesh generator with built-in pre-and post-processing facilities</article-title>
+        <source>International journal for numerical methods in engineering</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <volume>79</volume>
+        <issue>11</issue>
+        <pub-id pub-id-type="doi">10.1002/nme.2579</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-jha2019numerical">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jha</surname><given-names>Prashant K</given-names></name>
+          <name><surname>Lipton</surname><given-names>Robert</given-names></name>
+        </person-group>
+        <article-title>Numerical convergence of finite difference approximations for state based peridynamic fracture models</article-title>
+        <source>Computer Methods in Applied Mechanics and Engineering</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>351</volume>
+        <pub-id pub-id-type="doi">10.1016/j.cma.2019.03.024</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lipton2019complex">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lipton</surname><given-names>Robert P</given-names></name>
+          <name><surname>Lehoucq</surname><given-names>Richard B</given-names></name>
+          <name><surname>Jha</surname><given-names>Prashant K</given-names></name>
+        </person-group>
+        <article-title>Complex fracture nucleation and evolution with nonlocal elastodynamics</article-title>
+        <source>Journal of Peridynamics and Nonlocal Modeling</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>1</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1007/s42102-019-00010-0</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lipton2018free">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lipton</surname><given-names>Robert</given-names></name>
+          <name><surname>Said</surname><given-names>Eyad</given-names></name>
+          <name><surname>Jha</surname><given-names>Prashant</given-names></name>
+        </person-group>
+        <article-title>Free damage propagation with memory</article-title>
+        <source>Journal of Elasticity</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>133</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1007/s10659-018-9672-7</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-jha2020kinetic">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jha</surname><given-names>Prashant K</given-names></name>
+          <name><surname>Lipton</surname><given-names>Robert P</given-names></name>
+        </person-group>
+        <article-title>Kinetic relations and local energy balance for LEFM from a nonlocal peridynamic model</article-title>
+        <source>International Journal of Fracture</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <pub-id pub-id-type="doi">10.1007/s10704-020-00480-0</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-littlewood2015roadmap">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Littlewood</surname><given-names>David J</given-names></name>
+        </person-group>
+        <article-title>Roadmap for peridynamic software implementation</article-title>
+        <source>SAND Report, Sandia National Laboratories, Albuquerque, NM and Livermore, CA</source>
+        <year iso-8601-date="2015">2015</year>
+        <pub-id pub-id-type="doi">10.2172/1226115</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-parks2008implementing">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Parks</surname><given-names>Michael L</given-names></name>
+          <name><surname>Lehoucq</surname><given-names>Richard B</given-names></name>
+          <name><surname>Plimpton</surname><given-names>Steven J</given-names></name>
+          <name><surname>Silling</surname><given-names>Stewart A</given-names></name>
+        </person-group>
+        <article-title>Implementing peridynamics within a molecular dynamics code</article-title>
+        <source>Computer Physics Communications</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2008">2008</year>
+        <volume>179</volume>
+        <issue>11</issue>
+        <pub-id pub-id-type="doi">10.1016/j.cpc.2008.06.011</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ren20173d">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ren</surname><given-names>Bo</given-names></name>
+          <name><surname>Wu</surname><given-names>CT</given-names></name>
+          <name><surname>Askari</surname><given-names>E</given-names></name>
+        </person-group>
+        <article-title>A 3D discontinuous galerkin finite element method with the bond-based peridynamics model for dynamic brittle failure analysis</article-title>
+        <source>International Journal of Impact Engineering</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>99</volume>
+        <pub-id pub-id-type="doi">10.1016/j.ijimpeng.2016.09.003</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mossaiby2017opencl">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mossaiby</surname><given-names>Farshid</given-names></name>
+          <name><surname>Shojaei</surname><given-names>A</given-names></name>
+          <name><surname>Zaccariotto</surname><given-names>M</given-names></name>
+          <name><surname>Galvanetto</surname><given-names>U</given-names></name>
+        </person-group>
+        <article-title>OpenCL implementation of a high performance 3D peridynamic model on graphics accelerators</article-title>
+        <source>Computers &amp; Mathematics with Applications</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>74</volume>
+        <issue>8</issue>
+        <pub-id pub-id-type="doi">10.1016/j.camwa.2017.06.045</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-diehl2012implementierung">
+      <element-citation publication-type="thesis">
+        <person-group person-group-type="author">
+          <name><surname>Diehl</surname><given-names>Patrick</given-names></name>
+        </person-group>
+        <article-title>Implementierung eines peridynamik-verfahrens auf GPU</article-title>
+        <year iso-8601-date="2012">2012</year>
+        <pub-id pub-id-type="doi">10.18419/opus-2879</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-diehl2015efficient">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Diehl</surname><given-names>Patrick</given-names></name>
+          <name><surname>Schweitzer</surname><given-names>Marc Alexander</given-names></name>
+        </person-group>
+        <article-title>Efficient neighbor search for particle methods on GPUs</article-title>
+        <source>Meshfree methods for partial differential equations VII</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-06898-5_5</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-silling2007peridynamic">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Silling</surname><given-names>Stewart A</given-names></name>
+          <name><surname>Epton</surname><given-names>M</given-names></name>
+          <name><surname>Weckner</surname><given-names>O</given-names></name>
+          <name><surname>Xu</surname><given-names>Ji</given-names></name>
+          <name><surname>Askari</surname></name>
+        </person-group>
+        <article-title>Peridynamic states and constitutive modeling</article-title>
+        <source>Journal of Elasticity</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>88</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1007/s10659-007-9125-1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lipton2014dynamic">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lipton</surname><given-names>Robert</given-names></name>
+        </person-group>
+        <article-title>Dynamic brittle fracture as a small horizon limit of peridynamics</article-title>
+        <source>Journal of Elasticity</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>117</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1007/s10659-013-9463-0</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lipton2016cohesive">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lipton</surname><given-names>Robert</given-names></name>
+        </person-group>
+        <article-title>Cohesive dynamics and brittle fracture</article-title>
+        <source>Journal of Elasticity</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>124</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1007/s10659-015-9564-z</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-silling2005meshfree">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Silling</surname><given-names>Stewart A</given-names></name>
+          <name><surname>Askari</surname><given-names>Ebrahim</given-names></name>
+        </person-group>
+        <article-title>A meshfree method based on the peridynamic model of solid mechanics</article-title>
+        <source>Computers &amp; structures</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2005">2005</year>
+        <volume>83</volume>
+        <issue>17-18</issue>
+        <pub-id pub-id-type="doi">10.1016/j.compstruc.2004.11.026</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Lipton2018">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Lipton</surname><given-names>Robert</given-names></name>
+          <name><surname>Said</surname><given-names>Eyad</given-names></name>
+          <name><surname>Jha</surname><given-names>Prashant K.</given-names></name>
+        </person-group>
+        <article-title>Dynamic brittle fracture from nonlocal double-well potentials: A state-based model</article-title>
+        <source>Handbook of nonlocal continuum mechanics for materials and structures</source>
+        <person-group person-group-type="editor">
+          <name><surname>Voyiadjis</surname><given-names>George Z.</given-names></name>
+        </person-group>
+        <publisher-name>Springer International Publishing</publisher-name>
+        <publisher-loc>Cham</publisher-loc>
+        <year iso-8601-date="2018">2018</year>
+        <isbn>978-3-319-22977-5</isbn>
+        <uri>https://doi.org/10.1007/978-3-319-22977-5_33-1</uri>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-22977-5_33-1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Kaiser2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kaiser</surname><given-names>Hartmut</given-names></name>
+          <name><surname>Diehl</surname><given-names>Patrick</given-names></name>
+          <name><surname>Lemoine</surname><given-names>Adrian S.</given-names></name>
+          <name><surname>Lelbach</surname><given-names>Bryce Adelstein</given-names></name>
+          <name><surname>Amini</surname><given-names>Parsa</given-names></name>
+          <name><surname>Berge</surname><given-names>Agustı́n</given-names></name>
+          <name><surname>Biddiscombe</surname><given-names>John</given-names></name>
+          <name><surname>Brandt</surname><given-names>Steven R.</given-names></name>
+          <name><surname>Gupta</surname><given-names>Nikunj</given-names></name>
+          <name><surname>Heller</surname><given-names>Thomas</given-names></name>
+          <name><surname>Huck</surname><given-names>Kevin</given-names></name>
+          <name><surname>Khatami</surname><given-names>Zahra</given-names></name>
+          <name><surname>Kheirkhahan</surname><given-names>Alireza</given-names></name>
+          <name><surname>Reverdell</surname><given-names>Auriane</given-names></name>
+          <name><surname>Shirzad</surname><given-names>Shahrzad</given-names></name>
+          <name><surname>Simberg</surname><given-names>Mikael</given-names></name>
+          <name><surname>Wagle</surname><given-names>Bibek</given-names></name>
+          <name><surname>Wei</surname><given-names>Weile</given-names></name>
+          <name><surname>Zhang</surname><given-names>Tianyi</given-names></name>
+        </person-group>
+        <article-title>HPX - the c++ standard library for parallelism and concurrency</article-title>
+        <source>Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>5</volume>
+        <issue>53</issue>
+        <uri>https://doi.org/10.21105/joss.02352</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.02352</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-iglberger2012high">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Iglberger</surname><given-names>Klaus</given-names></name>
+          <name><surname>Hager</surname><given-names>Georg</given-names></name>
+          <name><surname>Treibig</surname><given-names>Jan</given-names></name>
+          <name><surname>Rüde</surname><given-names>Ulrich</given-names></name>
+        </person-group>
+        <article-title>High performance smart expression template math libraries</article-title>
+        <source>2012 international conference on high performance computing &amp; simulation (HPCS)</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <pub-id pub-id-type="doi">10.1109/hpcsim.2012.6266939</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-schroeder2004visualization">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Schroeder</surname><given-names>Will J</given-names></name>
+          <name><surname>Lorensen</surname><given-names>Bill</given-names></name>
+          <name><surname>Martin</surname><given-names>Ken</given-names></name>
+        </person-group>
+        <source>The visualization toolkit: An object-oriented approach to 3D graphics</source>
+        <publisher-name>Kitware</publisher-name>
+        <year iso-8601-date="2004">2004</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-diehl2019review">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Diehl</surname><given-names>Patrick</given-names></name>
+          <name><surname>Prudhomme</surname><given-names>Serge</given-names></name>
+          <name><surname>Lévesque</surname><given-names>Martin</given-names></name>
+        </person-group>
+        <article-title>A review of benchmark experiments for the validation of peridynamics models</article-title>
+        <source>Journal of Peridynamics and Nonlocal Modeling</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>1</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1007/s42102-018-0004-x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-diehl2018implementation">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Diehl</surname><given-names>Patrick</given-names></name>
+          <name><surname>Jha</surname><given-names>Prashant K</given-names></name>
+          <name><surname>Kaiser</surname><given-names>Hartmut</given-names></name>
+          <name><surname>Lipton</surname><given-names>Robert</given-names></name>
+          <name><surname>Lévesque</surname><given-names>Martin</given-names></name>
+        </person-group>
+        <article-title>An asynchronous and task-based implementation of peridynamics utilizing HPX—the c++ standard library for parallelism and concurrency</article-title>
+        <source>SN Applied Sciences</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>2</volume>
+        <issue>12</issue>
+        <pub-id pub-id-type="doi">10.1007/s42452-020-03784-x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Diehl2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Diehl</surname><given-names>Patrick</given-names></name>
+        </person-group>
+        <article-title>EMU-nodal discretization</article-title>
+        <year iso-8601-date="2020-05">2020</year><month>05</month>
+        <uri>https://figshare.com/articles/figure/EMU-nodal_discretization/12320726</uri>
+        <pub-id pub-id-type="doi">10.6084/m9.figshare.12320726.v1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-DBLPU003AjournalsU002FcorrU002Fabs-2108-02336">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Birner</surname><given-names>Matthias</given-names></name>
+          <name><surname>Diehl</surname><given-names>Patrick</given-names></name>
+          <name><surname>Lipton</surname><given-names>Robert</given-names></name>
+          <name><surname>Schweitzer</surname><given-names>Marc Alexander</given-names></name>
+        </person-group>
+        <article-title>A fracture multiscale model for peridynamic enrichment within the partition of unity method: Part I</article-title>
+        <source>CoRR</source>
+        <year iso-8601-date="2021">2021</year>
+        <volume>abs/2108.02336</volume>
+        <uri>https://arxiv.org/abs/2108.02336</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-bhattacharya2021peridynamics">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Bhattacharya</surname><given-names>Debdeep</given-names></name>
+          <name><surname>Diehl</surname><given-names>Patrick</given-names></name>
+          <name><surname>Lipton</surname><given-names>Robert P.</given-names></name>
+        </person-group>
+        <article-title>Peridynamics for quasistatic fracture modeling</article-title>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://arxiv.org/abs/2107.14665</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

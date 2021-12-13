@@ -1,0 +1,971 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1573</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01573</article-id>
+<title-group>
+<article-title>TimeSeriesClustering: An extensible framework in
+Julia</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-4061-2226</contrib-id>
+<string-name>Holger Teichgraeber</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1992-310X</contrib-id>
+<string-name>Lucas Elias Kuepper</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-2528-1473</contrib-id>
+<string-name>Adam R. Brandt</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Energy Resources Engineering, Stanford
+University</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-09-02">
+<day>2</day>
+<month>9</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>41</issue>
+<fpage>1573</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>unsupervised learning</kwd>
+<kwd>representative periods</kwd>
+<kwd>optimization</kwd>
+<kwd>machine learning</kwd>
+<kwd>time series</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>TimeSeriesClustering</monospace> is a Julia
+  implementation of unsupervised learning methods for time series
+  datasets. It provides functionality for clustering and aggregating,
+  detecting motifs, and quantifying similarity between time series
+  datasets. The software provides a type system for temporal data, and
+  provides an implementation of the most commonly used clustering
+  methods and extreme value selection methods for temporal data.
+  <monospace>TimeSeriesClustering</monospace> provides simple
+  integration of multi-dimensional time-series data (e.g., multiple
+  attributes such as wind availability, solar availability, and
+  electricity demand) in a single aggregation process. The software is
+  applicable to general time series datasets and lends itself well to a
+  multitude of application areas within the field of time series data
+  mining. <monospace>TimeSeriesClustering</monospace> was originally
+  developed to perform time series aggregation for energy systems
+  optimization problems. Because of the software’s origin, many of the
+  examples in this work stem from the field of energy systems
+  optimization.</p>
+  <sec id="general-package-features">
+    <title>General package features</title>
+    <p>The unique design of <monospace>TimeSeriesClustering</monospace>
+    allows for scientific comparison of the performance of different
+    time-series aggregation methods, both in terms of the statistical
+    error measure and in terms of its impact on the application outcome.
+    The clustering methods that are implemented in
+    <monospace>TimeSeriesClustering</monospace> follow the framework
+    presented by Teichgraeber &amp; Brandt
+    (<xref alt="2019" rid="ref-TeichgraeberU003A2019" ref-type="bibr">2019</xref>),
+    and the extreme value selection methods follow the framework
+    presented by Lindenmeyer et al.
+    (<xref alt="2020" rid="ref-LindenmeyerU003A2020" ref-type="bibr">2020</xref>).
+    Using these frameworks allows
+    <monospace>TimeSeriesClustering</monospace> to be generally
+    extensible to new aggregation methods in the future.</p>
+    <p>The following are the key features that
+    <monospace>TimeSeriesClustering</monospace> provides. Implementation
+    details can be found in the software’s documentation.</p>
+    <list list-type="bullet">
+      <list-item>
+        <p><italic>The type system</italic>: The data type (called
+        struct in Julia) <monospace>ClustData</monospace> stores all
+        time-series data in a common format. Besides the data itself, it
+        automatically processes and stores information that is relevant
+        for later use in the application for which the time-series data
+        will be used. The data type <monospace>ClustResult</monospace>
+        additionally stores information relevant for evaluating
+        clustering performance. These data types make
+        <monospace>TimeSeriesClustering</monospace> easy to integrate
+        with any analysis that relies on iterative evaluation of the
+        clustering and aggregation methods.</p>
+      </list-item>
+      <list-item>
+        <p><italic>The aggregation methods</italic>: The most commonly
+        used clustering methods and extreme value selection methods are
+        implemented with a common interface, allowing for simple
+        comparison of these methods on a given data set and optimization
+        problem.</p>
+      </list-item>
+      <list-item>
+        <p><italic>The generalized import of time series in csv
+        format</italic>: Time series can be loaded through csv files in
+        a pre-defined format. From this, variable names, which we call
+        attributes, and node names are automatically loaded and stored.
+        The original time series can be sliced into periods of
+        user-defined length. This information can later be used in the
+        definition of the sets of the optimization problem.</p>
+      </list-item>
+      <list-item>
+        <p><italic>Multiple attributes and nodes</italic>: Multiple time
+        series, one for each attribute (and node, if the data has a
+        spatial component), are automatically combined and aggregated
+        simultaneously.</p>
+      </list-item>
+    </list>
+  </sec>
+  <sec id="package-features-useful-for-energy-systems-optimization">
+    <title>Package features useful for energy systems
+    optimization</title>
+    <p><monospace>TimeSeriesClustering</monospace> was originally
+    developed for time-series input data to energy systems optimization
+    problems. In this section, we describe some of its features with
+    respect to their use in energy systems optimization.</p>
+    <p>In energy systems optimization, the choice of temporal modeling,
+    especially of time-series aggregation methods, can have significant
+    impact on overall optimization outcome, which in the end is used to
+    make policy and business decisions. It is thus important to not view
+    time-series aggregation and optimization model formulation as two
+    seperate, consecutive steps, but to integrate time-series
+    aggregation into the overall process of building an optimization
+    model in an iterative manner. Because the most commonly used
+    clustering methods and extreme value selection methods are
+    implemented with a common interface,
+    <monospace>TimeSeriesClustering</monospace> allows for this
+    iterative integration in a simple way.</p>
+    <p>The type system for temporal data provided by
+    <monospace>TimeSeriesClustering</monospace> allows for easy
+    integration with the formulation of optimization problems. The
+    information stored in the datatype <monospace>ClustData</monospace>,
+    such as the number of periods, the number of time steps per period,
+    and the chronology of the periods, can be used to formulate the sets
+    of an optimization problem.</p>
+    <p><monospace>TimeSeriesClustering</monospace> provides two sample
+    optimization problems to illustrate the integration of time-series
+    aggregation and optimization problem formulation through our type
+    system. However, it is generally thought to be independent of the
+    application at hand, and others are encouraged to use the package as
+    a base for their own optimization problem formulation. The Julia
+    package
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/YoungFaithful/CapacityExpansion.jl"><monospace>CapacityExpansion</monospace></ext-link>
+    provides a detailed generation and transmission capacity expansion
+    model built upon <monospace>TimeSeriesClustering</monospace>, and
+    illustrates its capabilities in conjunction with a complex
+    optimization problem formulation.</p>
+  </sec>
+  <sec id="timeseriesclustering-within-the-broader-ecosystem">
+    <title><monospace>TimeSeriesClustering</monospace> within the
+    broader ecosystem</title>
+    <p><monospace>TimeSeriesClustering</monospace> is the first package
+    to provide broadly applicable unsupervised learning methods
+    specifically for time series in Julia
+    (<xref alt="Bezanson et al., 2017" rid="ref-BezansonU003A2017" ref-type="bibr">Bezanson
+    et al., 2017</xref>). There are several other related packages that
+    provide useful tools for these tasks, both in Julia and in the
+    general open-source community, and we describe them in order to
+    provide guidance on the broader tools available for these kinds of
+    modeling problems.</p>
+    <p>The
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/JuliaStats/Clustering.jl"><monospace>Clustering</monospace></ext-link>
+    package in Julia provides a broad range of clustering methods and
+    and allows computation of clustering validation measures.
+    <monospace>TimeSeriesClustering</monospace> provides a simplified
+    workflow for clustering time series, and works on top of the
+    <monospace>Clustering</monospace> package by making use of a subset
+    of the clustering methods implemented in the
+    <monospace>Clustering</monospace> package.
+    <monospace>TimeSeriesClustering</monospace> has several features
+    that add to the functionality, such as automatically clustering
+    multiple attributes simultaneously and providing multiple
+    initializations for partitional clustering algorithms.</p>
+    <p>The
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/IBM/TSML.jl"><monospace>TSML</monospace></ext-link>
+    package in Julia provides processing and machine learning methods
+    for time-series data. Its focus is on time-series data with date and
+    time stamps, and it provides a broad range of processing tools. It
+    integrates with other machine learning libraries within the broader
+    Julia ecoysystem.</p>
+    <p>The
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/JuliaStats/TimeSeries.jl"><monospace>TimeSeries</monospace></ext-link>
+    package in Julia provides a way to store data with time stamps, and
+    perform table opertions and plotting based on time stamps. The
+    <monospace>TimeSeries</monospace> package may be useful for
+    pre-processing or post-processing data in conjunction with
+    <monospace>TimeSeriesClustering</monospace>. The main difference is
+    in the way data is stored: In the <monospace>TimeSeries</monospace>
+    package, data is stored based on time stamps. In
+    <monospace>TimeSeriesClustering</monospace>, we store data based on
+    index and time step length, which is relevant to clustering and its
+    applications.</p>
+    <p>In python, clustering and time-series analysis tasks can be
+    performed using packages such as
+    <ext-link ext-link-type="uri" xlink:href="https://scikit-learn.org/stable/"><monospace>scikit-learn</monospace></ext-link>
+    (<xref alt="Pedregosa et al., 2011" rid="ref-PedregosaU003A2011" ref-type="bibr">Pedregosa
+    et al., 2011</xref>) and
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/annoviko/pyclustering/"><monospace>PyClustering</monospace></ext-link>
+    (<xref alt="Novikov, 2019" rid="ref-NovikovU003A2019" ref-type="bibr">Novikov,
+    2019</xref>). The package
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/rtavenar/tslearn"><monospace>tslearn</monospace></ext-link>
+    provides clustering methods specifically for time series, both the
+    conventional k-means method and shape-based methods such as k-shape
+    and dynamic time warping barycenter averaging. The
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/TDAmeritrade/stumpy"><monospace>STUMPY</monospace></ext-link>
+    package
+    (<xref alt="Law, 2019" rid="ref-LawU003A2019" ref-type="bibr">Law,
+    2019</xref>) calculates something called the matrix profile, which
+    can be used for many data mining tasks.</p>
+    <p>In R, time series clustering can be performed using the
+    <ext-link ext-link-type="uri" xlink:href="https://cran.r-project.org/web/packages/TSclust/index.html"><monospace>tsclust</monospace></ext-link>
+    package
+    (<xref alt="Montero &amp; Vilar, 2014" rid="ref-MonteroU003A2014" ref-type="bibr">Montero
+    &amp; Vilar, 2014</xref>), and the
+    <ext-link ext-link-type="uri" xlink:href="http://dtw.r-forge.r-project.org/"><monospace>dtw</monospace></ext-link>
+    package
+    (<xref alt="Giorgino, 2009" rid="ref-GiorginoU003A2009" ref-type="bibr">Giorgino,
+    2009</xref>) provides functionality for dynamic time warping,
+    i.e. when the shape of the time series matters for clustering.</p>
+    <p>With specific focus on energy systems optimization, time-series
+    aggregation has been included in two open-source packages to date,
+    both in written in Python.
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/FZJ-IEK3-VSA/tsam"><monospace>TSAM</monospace></ext-link>
+    (<xref alt="Kotzur &amp; Kaldemeyer, 2017" rid="ref-TSAM" ref-type="bibr">Kotzur
+    &amp; Kaldemeyer, 2017</xref>) provides an implementation of several
+    time-series aggregation methods in Python.
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/calliope-project/calliope"><monospace>Calliope</monospace></ext-link>
+    (<xref alt="Pfenninger &amp; Pickering, 2018" rid="ref-PfenningerU003A2018" ref-type="bibr">Pfenninger
+    &amp; Pickering, 2018</xref>) is a capacity expansion modeling
+    software in Python that includes time-series aggregation for the use
+    case of generation and transmission capacity expansion modeling.
+    <monospace>TimeSeriesClustering</monospace> is the first package to
+    provide time-series aggregation in Julia
+    (<xref alt="Bezanson et al., 2017" rid="ref-BezansonU003A2017" ref-type="bibr">Bezanson
+    et al., 2017</xref>). For energy systems optimization, this is
+    advantageous because it can be used in conjunction with the
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/JuliaOpt/JuMP.jl"><monospace>JuMP</monospace></ext-link>
+    package
+    (<xref alt="Dunning et al., 2017" rid="ref-DunningU003A2017" ref-type="bibr">Dunning
+    et al., 2017</xref>) in Julia, which provides an excellent modeling
+    language for optimization problems. Furthermore,
+    <monospace>TimeSeriesClustering</monospace> includes both clustering
+    and extreme value selection, and integrates them into the same
+    output type. This is important in order to retain the
+    characteristics of the time-series that are relevant to many
+    optimization problems.</p>
+  </sec>
+</sec>
+<sec id="application-areas">
+  <title>Application areas</title>
+  <p><monospace>TimeSeriesClustering</monospace> is broadly applicable
+  to many fields where time series analysis occurs. Time-series
+  clustering and aggregation methods alone have applications in the
+  fields of aviation, astronomy, biology, climate, energy, environment,
+  finance, medicine, psychology, robotics, speech recognition, and user
+  analysis Aghabozorgi et al.
+  (<xref alt="2015" rid="ref-AghabozorgiU003A2015" ref-type="bibr">2015</xref>).
+  These methods can be used for time-series representation and indexing,
+  which helps reduce the dimension (i.e., the number of data points) of
+  the original data
+  (<xref alt="Fu, 2011" rid="ref-FuU003A2011" ref-type="bibr">Fu,
+  2011</xref>).</p>
+  <p>Many tasks in time series data mining also fall into the
+  application area of our software Hebert et al.
+  (<xref alt="2014" rid="ref-HebertU003A2014" ref-type="bibr">2014</xref>).
+  Here, our software can be used to measure similarity between
+  time-series datasets
+  (<xref alt="Serrà &amp; Arcos, 2014" rid="ref-SerraU003A2014" ref-type="bibr">Serrà
+  &amp; Arcos, 2014</xref>). Closely related is the task of finding
+  time-series motifs Mueen
+  (<xref alt="2014" rid="ref-MueenU003A2014" ref-type="bibr">2014</xref>).
+  Time-series motifs are pairs of individual time series that are very
+  similar to each other. This task occurs in many disciplines, for
+  example in finding repeated animal behavior
+  (<xref alt="Mueen et al., 2013" rid="ref-MueenU003A2013" ref-type="bibr">Mueen
+  et al., 2013</xref>), finding regulatory elements in DNA
+  (<xref alt="Das &amp; Dai, 2007" rid="ref-DasU003A2007" ref-type="bibr">Das
+  &amp; Dai, 2007</xref>), and finding patterns in EEG signals
+  (<xref alt="Castro &amp; Azevedo, 2010" rid="ref-CastroU003A2010" ref-type="bibr">Castro
+  &amp; Azevedo, 2010</xref>). Another application area of our software
+  is segmentation and clustering of audio datasets Kamper et al.
+  (<xref alt="2017" rid="ref-KamperU003A2017" ref-type="bibr">2017</xref>).</p>
+  <p>In the remainder of this section, we provide an overview of how
+  time-series aggregation applies to the input data of optimization
+  problems.</p>
+  <p>Generally, optimization is concerned with the maximization or
+  minimization of a certain objective subject to a number of
+  constraints. The range of optimization problems
+  <monospace>TimeSeriesClustering</monospace> is applicable to is broad.
+  They generally fall into the class of design and operations problems,
+  also called planning problems or two-stage optimization problems. In
+  these problems, decisions on two time horizons have to be made:
+  long-term design decisions, as to what equipment to buy, and
+  short-term operating decisions, as to when to operate that equipment.
+  Because the two time horizons are intertwined, operating decisions
+  impact the system design, and vice versa. Operating decisions are of a
+  temporal nature, and the amount of temporal input data for these
+  optimization problems often makes them computationally intractable.
+  Usually, time series of length <inline-formula><alternatives>
+  <tex-math><![CDATA[N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
+  (e.g., hourly electricity demand for one year, where
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[N=8760]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>N</mml:mi><mml:mo>=</mml:mo><mml:mn>8760</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>)
+  are split into <inline-formula><alternatives>
+  <tex-math><![CDATA[\hat{K}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>K</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+  periods of length <inline-formula><alternatives>
+  <tex-math><![CDATA[T=\frac{N}{\hat{K}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>T</mml:mi><mml:mo>=</mml:mo><mml:mfrac><mml:mi>N</mml:mi><mml:mover><mml:mi>K</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:mfrac></mml:mrow></mml:math></alternatives></inline-formula>
+  (e.g., <inline-formula><alternatives>
+  <tex-math><![CDATA[\hat{K}=365]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>K</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:mn>365</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  daily periods, with <inline-formula><alternatives>
+  <tex-math><![CDATA[T=24]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>T</mml:mi><mml:mo>=</mml:mo><mml:mn>24</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>),
+  and each of the <inline-formula><alternatives>
+  <tex-math><![CDATA[\hat{K}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>K</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+  periods is treated independently in the operations stage of the
+  optimization problem. Using time-series aggregation methods, we can
+  represent the data with <inline-formula><alternatives>
+  <tex-math><![CDATA[K < \hat{K}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>K</mml:mi><mml:mo>&lt;</mml:mo><mml:mover><mml:mi>K</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:mrow></mml:math></alternatives></inline-formula>
+  periods, which results in reduced computational complexity and
+  improved modeling performance.</p>
+  <p>Many of the design and operations optimization problems to which
+  time-series aggregation has been applied are in the general domain of
+  energy systems optimization. These problems include generation and
+  transmission capacity expansion problems
+  (<xref alt="Nahmmacher et al., 2016" rid="ref-NahmmacherU003A2016" ref-type="bibr">Nahmmacher
+  et al., 2016</xref>;
+  <xref alt="Pfenninger, 2017" rid="ref-PfenningerU003A2017" ref-type="bibr">Pfenninger,
+  2017</xref>), local energy supply system design problems
+  (<xref alt="Bahl et al., 2017" rid="ref-BahlU003A2017" ref-type="bibr">Bahl
+  et al., 2017</xref>;
+  <xref alt="Kotzur et al., 2018" rid="ref-KotzurU003A2018" ref-type="bibr">Kotzur
+  et al., 2018</xref>), and individual technology design problems
+  (<xref alt="Brodrick et al., 2017" rid="ref-BrodrickU003A2017" ref-type="bibr">Brodrick
+  et al., 2017</xref>;
+  <xref alt="Teichgraeber et al., 2017" rid="ref-TeichgraeberU003A2017" ref-type="bibr">Teichgraeber
+  et al., 2017</xref>). Time series of interest in these problems
+  include energy demands (electricity, heating, cooling), electricity
+  prices, wind and solar availability factors, and temperatures.</p>
+  <p>Many other planning problems in operations research that involve
+  time-varying operations have similar characteristics that make them
+  suitable for time-series aggregation. Some examples are aggregate and
+  detailed production scheduling, job shop design and scheduling,
+  distribution system (warehouse) design and control
+  (<xref alt="Dempster et al., 1981" rid="ref-DempsterU003A1981" ref-type="bibr">Dempster
+  et al., 1981</xref>), and electric vehicle charging station sizing
+  (<xref alt="Jia et al., 2012" rid="ref-JiaU003A2012" ref-type="bibr">Jia
+  et al., 2012</xref>). Time series of interest in these problems
+  include product demands, electricity prices, and electricity demands.
+  A related class of problems to which
+  <monospace>TimeSeriesClustering</monospace> can be useful is scenario
+  reduction for stochastic programming
+  (<xref alt="Karuppiah et al., 2010" rid="ref-KaruppiahU003A2010" ref-type="bibr">Karuppiah
+  et al., 2010</xref>). Two-stage stochastic programs have similar
+  characteristics to the previously described two-stage problems, and
+  are often computationally intractable due to a large number of
+  scenarios. <monospace>TimeSeriesClustering</monospace> can be used to
+  reduce a large number of scenarios <inline-formula><alternatives>
+  <tex-math><![CDATA[\hat{K}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>K</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+  into a computationally tractable number of scenarios
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[K < \hat{K}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>K</mml:mi><mml:mo>&lt;</mml:mo><mml:mover><mml:mi>K</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:mrow></mml:math></alternatives></inline-formula>.
+  Furthermore, <monospace>TimeSeriesClustering</monospace> could be used
+  in operational contexts such as developing operational strategies for
+  typical days, or aggregating repetitive operating conditions for use
+  in model predictive control. Because it keeps track of the chronology
+  of the periods, it can also be used to calculate transition
+  probabilities between clustered periods for Markov chain modeling.</p>
+  <p><monospace>TimeSeriesClustering</monospace> has been used in
+  several research projects to date. It has been used to compare both
+  conventionally-used clustering methods and shape-based clustering
+  methods and their characteristics
+  (<xref alt="Teichgraeber &amp; Brandt, 2019" rid="ref-TeichgraeberU003A2019" ref-type="bibr">Teichgraeber
+  &amp; Brandt, 2019</xref>), and also to compare extreme value
+  selection methods
+  (<xref alt="Lindenmeyer et al., 2020" rid="ref-LindenmeyerU003A2020" ref-type="bibr">Lindenmeyer
+  et al., 2020</xref>). It has also been used to analyze temporal
+  modeling detail in energy systems modeling with high renewable energy
+  penetration
+  (<xref alt="Kuepper, 2019" rid="ref-KuepperU003A2019" ref-type="bibr">Kuepper,
+  2019</xref>). <monospace>TimeSeriesClustering</monospace> also serves
+  as input to
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/YoungFaithful/CapacityExpansion.jl"><monospace>CapacityExpansion</monospace></ext-link>,
+  a scalable capacity expansion model in Julia. Furthermore,
+  <monospace>TimeSeriesClustering</monospace> has been used as an
+  educational tool. It is frequently used for class projects in the
+  Stanford University course “Optimization of Energy Systems”, and has
+  also served as a basis for the capacity expansion studies evaluated in
+  homeworks for the Stanford University course “Advanced Methods in
+  Modeling for Climate and Energy Policy”.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-TeichgraeberU003A2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Teichgraeber</surname><given-names>Holger</given-names></name>
+          <name><surname>Brandt</surname><given-names>Adam R</given-names></name>
+        </person-group>
+        <article-title>Clustering methods to find representative periods for the optimization of energy systems : an initial framework and comparison</article-title>
+        <source>Applied Energy</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>239</volume>
+        <issn>0306-2619</issn>
+        <uri>https://doi.org/10.1016/j.apenergy.2019.02.012</uri>
+        <pub-id pub-id-type="doi">10.1016/j.apenergy.2019.02.012</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LindenmeyerU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lindenmeyer</surname><given-names>Constantin</given-names></name>
+          <name><surname>Teichgraeber</surname><given-names>Holger</given-names></name>
+          <name><surname>Baumgaertner</surname><given-names>Nils</given-names></name>
+          <name><surname>Kotzur</surname><given-names>Leander</given-names></name>
+          <name><surname>Robinius</surname><given-names>Martin</given-names></name>
+          <name><surname>Bardow</surname><given-names>Andre</given-names></name>
+          <name><surname>Brandt</surname><given-names>Adam R</given-names></name>
+        </person-group>
+        <article-title>Extreme events as part of representative periods for the optimization of residential energy supply systems</article-title>
+        <source>Energy (Manuscript in preparation)</source>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-NovikovU003A2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Novikov</surname><given-names>Andrei</given-names></name>
+        </person-group>
+        <article-title>PyClustering: Data Mining Library</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>4</volume>
+        <issue>36</issue>
+        <pub-id pub-id-type="doi">10.21105/joss.01230</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MonteroU003A2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Montero</surname><given-names>Pablo</given-names></name>
+          <name><surname>Vilar</surname><given-names>José A.</given-names></name>
+        </person-group>
+        <article-title>TSclust: An R package for time series clustering</article-title>
+        <source>Journal of Statistical Software</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>62</volume>
+        <issue>1</issue>
+        <uri>http://www.jstatsoft.org/v62/i01/</uri>
+        <pub-id pub-id-type="doi">10.18637/jss.v062.i01</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-GiorginoU003A2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Giorgino</surname><given-names>Toni</given-names></name>
+        </person-group>
+        <article-title>Computing and visualizing dynamic time warping alignments in r: The dtw package</article-title>
+        <source>Journal of Statistical Software</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume>31</volume>
+        <issue>7</issue>
+        <issn>1548-7660</issn>
+        <uri>https://www.jstatsoft.org/v031/i07</uri>
+        <pub-id pub-id-type="doi">10.18637/jss.v031.i07</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LawU003A2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Law</surname><given-names>Sean</given-names></name>
+        </person-group>
+        <article-title>STUMPY: A Powerful and Scalable Python Library for Time Series Data Mining</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>4</volume>
+        <issue>39</issue>
+        <pub-id pub-id-type="doi">10.21105/joss.01504</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-PedregosaU003A2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pedregosa</surname><given-names>F.</given-names></name>
+          <name><surname>Varoquaux</surname><given-names>G.</given-names></name>
+          <name><surname>Gramfort</surname><given-names>A.</given-names></name>
+          <name><surname>Michel</surname><given-names>V.</given-names></name>
+          <name><surname>Thirion</surname><given-names>B.</given-names></name>
+          <name><surname>Grisel</surname><given-names>O.</given-names></name>
+          <name><surname>Blondel</surname><given-names>M.</given-names></name>
+          <name><surname>Prettenhofer</surname><given-names>P.</given-names></name>
+          <name><surname>Weiss</surname><given-names>R.</given-names></name>
+          <name><surname>Dubourg</surname><given-names>V.</given-names></name>
+          <name><surname>Vanderplas</surname><given-names>J.</given-names></name>
+          <name><surname>Passos</surname><given-names>A.</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>D.</given-names></name>
+          <name><surname>Brucher</surname><given-names>M.</given-names></name>
+          <name><surname>Perrot</surname><given-names>M.</given-names></name>
+          <name><surname>Duchesnay</surname><given-names>E.</given-names></name>
+        </person-group>
+        <article-title>Scikit-learn: Machine learning in Python</article-title>
+        <source>Journal of Machine Learning Research</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>12</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-TSAM">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <name><surname>Kotzur</surname><given-names>Leander</given-names></name>
+          <name><surname>Kaldemeyer</surname><given-names>Cord</given-names></name>
+        </person-group>
+        <article-title>TSAM</article-title>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://github.com/FZJ-IEK3-VSA/tsam</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.2547683</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-PfenningerU003A2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pfenninger</surname><given-names>Stefan</given-names></name>
+          <name><surname>Pickering</surname><given-names>Bryn</given-names></name>
+        </person-group>
+        <article-title>Calliope: a multi-scale energy systems modelling framework</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>3</volume>
+        <issue>29</issue>
+        <pub-id pub-id-type="doi">10.21105/joss.00825</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-TeichgraeberU003A2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Teichgraeber</surname><given-names>Holger</given-names></name>
+          <name><surname>Brodrick</surname><given-names>Philip G.</given-names></name>
+          <name><surname>Brandt</surname><given-names>Adam R.</given-names></name>
+        </person-group>
+        <article-title>Optimal design and operations of a flexible oxyfuel natural gas plant</article-title>
+        <source>Energy</source>
+        <publisher-name>Elsevier Ltd</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>141</volume>
+        <issn>03605442</issn>
+        <pub-id pub-id-type="doi">10.1016/j.energy.2017.09.087</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-BrodrickU003A2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Brodrick</surname><given-names>Philip G.</given-names></name>
+          <name><surname>Brandt</surname><given-names>Adam R.</given-names></name>
+          <name><surname>Durlofsky</surname><given-names>Louis J.</given-names></name>
+        </person-group>
+        <article-title>Operational optimization of an integrated solar combined cycle under practical time-dependent constraints</article-title>
+        <source>Energy</source>
+        <publisher-name>Elsevier Ltd</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>141</volume>
+        <issn>03605442</issn>
+        <pub-id pub-id-type="doi">10.1016/j.energy.2017.11.059</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-BahlU003A2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bahl</surname><given-names>Björn</given-names></name>
+          <name><surname>Kümpel</surname><given-names>Alexander</given-names></name>
+          <name><surname>Seele</surname><given-names>Hagen</given-names></name>
+          <name><surname>Lampe</surname><given-names>Matthias</given-names></name>
+          <name><surname>Bardow</surname><given-names>André</given-names></name>
+        </person-group>
+        <article-title>Time-series aggregation for synthesis problems by bounding error in the objective function</article-title>
+        <source>Energy</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>135</volume>
+        <issn>0360-5442</issn>
+        <pub-id pub-id-type="doi">10.1016/j.energy.2017.06.082</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-KotzurU003A2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kotzur</surname><given-names>Leander</given-names></name>
+          <name><surname>Markewitz</surname><given-names>Peter</given-names></name>
+          <name><surname>Robinius</surname><given-names>Martin</given-names></name>
+          <name><surname>Stolten</surname><given-names>Detlef</given-names></name>
+        </person-group>
+        <article-title>Impact of different time series aggregation methods on optimal energy system design</article-title>
+        <source>Renewable Energy</source>
+        <publisher-name>Elsevier Ltd</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>117</volume>
+        <issn>18790682</issn>
+        <pub-id pub-id-type="doi">10.1016/j.renene.2017.10.017</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-NahmmacherU003A2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Nahmmacher</surname><given-names>Paul</given-names></name>
+          <name><surname>Schmid</surname><given-names>Eva</given-names></name>
+          <name><surname>Hirth</surname><given-names>Lion</given-names></name>
+          <name><surname>Knopf</surname><given-names>Brigitte</given-names></name>
+        </person-group>
+        <article-title>Carpe diem: A novel approach to select representative days for long-term power system modeling</article-title>
+        <source>Energy</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>112</volume>
+        <issn>03605442</issn>
+        <pub-id pub-id-type="doi">10.1016/j.energy.2016.06.081</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-PfenningerU003A2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pfenninger</surname><given-names>Stefan</given-names></name>
+        </person-group>
+        <article-title>Dealing with multiple decades of hourly wind and PV time series in energy models: A comparison of methods to reduce time resolution and the planning implications of inter-annual variability</article-title>
+        <source>Applied Energy</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>197</volume>
+        <issn>03062619</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S0306261917302775</uri>
+        <pub-id pub-id-type="doi">10.1016/j.apenergy.2017.03.051</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-DempsterU003A1981">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dempster</surname><given-names>M A H</given-names></name>
+          <name><surname>Fisher</surname><given-names>M L</given-names></name>
+          <name><surname>L.</surname><given-names>Jansen</given-names></name>
+          <name><surname>B. J.</surname><given-names>Lageweg</given-names></name>
+          <name><surname>J. K.</surname><given-names>Lenstra</given-names></name>
+          <name><surname>A. H. G.</surname><given-names>Rinnooy Kan</given-names></name>
+        </person-group>
+        <article-title>Analytical Evaluation of Hierarchical planning systems</article-title>
+        <source>Operations Research</source>
+        <year iso-8601-date="1981">1981</year>
+        <volume>29</volume>
+        <issue>4</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-JiaU003A2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jia</surname><given-names>Long</given-names></name>
+          <name><surname>Hu</surname><given-names>Zechun</given-names></name>
+          <name><surname>Song</surname><given-names>Yonghua</given-names></name>
+          <name><surname>Luo</surname><given-names>Zhuowei</given-names></name>
+        </person-group>
+        <article-title>Optimal siting and sizing of electric vehicle charging stations</article-title>
+        <source>2012 IEEE International Electric Vehicle Conference, IEVC 2012</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <pub-id pub-id-type="doi">10.1109/IEVC.2012.6183283</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-KaruppiahU003A2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Karuppiah</surname><given-names>Ramkumar</given-names></name>
+          <name><surname>Martín</surname><given-names>Mariano</given-names></name>
+          <name><surname>Grossmann</surname><given-names>Ignacio E.</given-names></name>
+        </person-group>
+        <article-title>A simple heuristic for reducing the number of scenarios in two-stage stochastic programming</article-title>
+        <source>Computers and Chemical Engineering</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>34</volume>
+        <issue>8</issue>
+        <issn>00981354</issn>
+        <pub-id pub-id-type="doi">10.1016/j.compchemeng.2009.10.009</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-KuepperU003A2019">
+      <element-citation publication-type="thesis">
+        <person-group person-group-type="author">
+          <name><surname>Kuepper</surname><given-names>Lucas Elias</given-names></name>
+        </person-group>
+        <article-title>Investigation of time-series aggregation methods for infrastructure optimization of low emissions energy systems</article-title>
+        <publisher-name>Stanford University, RWTH Aachen University</publisher-name>
+        <publisher-loc>Aachen</publisher-loc>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-DunningU003A2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dunning</surname><given-names>Iain</given-names></name>
+          <name><surname>Huchette</surname><given-names>Joey</given-names></name>
+          <name><surname>Lubin</surname><given-names>Miles</given-names></name>
+        </person-group>
+        <article-title>JuMP: A modeling language for mathematical optimization</article-title>
+        <source>SIAM Review</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>59</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1137/15M1020575</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-BezansonU003A2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bezanson</surname><given-names>Jeff</given-names></name>
+          <name><surname>Edelman</surname><given-names>Alan</given-names></name>
+          <name><surname>Karpinski</surname><given-names>Stefan</given-names></name>
+          <name><surname>Shah</surname><given-names>Viral B.</given-names></name>
+        </person-group>
+        <article-title>Julia: A Fresh Approach to Numerical Computing</article-title>
+        <source>SIAM Review</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>59</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1137/141000671</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-AghabozorgiU003A2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Aghabozorgi</surname><given-names>Saeed</given-names></name>
+          <name><surname>Seyed Shirkhorshidi</surname><given-names>Ali</given-names></name>
+          <name><surname>Ying Wah</surname><given-names>Teh</given-names></name>
+        </person-group>
+        <article-title>Time-series clustering - A decade review</article-title>
+        <source>Information Systems</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <volume>53</volume>
+        <pub-id pub-id-type="doi">10.1016/j.is.2015.04.007</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LiaoU003A2005">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Warren Liao</surname><given-names>T.</given-names></name>
+        </person-group>
+        <article-title>Clustering of time series data—a survey</article-title>
+        <source>Pattern Recognition</source>
+        <year iso-8601-date="2005">2005</year>
+        <volume>38</volume>
+        <issue>11</issue>
+        <pub-id pub-id-type="doi">10.1016/j.patcog.2005.01.025</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-FuU003A2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fu</surname><given-names>Tak Chung</given-names></name>
+        </person-group>
+        <article-title>A review on time series data mining</article-title>
+        <source>Engineering Applications of Artificial Intelligence</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <volume>24</volume>
+        <issue>1</issue>
+        <uri>http://dx.doi.org/10.1016/j.engappai.2010.09.007</uri>
+        <pub-id pub-id-type="doi">10.1016/j.engappai.2010.09.007</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MueenU003A2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mueen</surname><given-names>Abdullah</given-names></name>
+          <name><surname>Keogh</surname><given-names>Eamonn</given-names></name>
+          <name><surname>Zhu</surname><given-names>Qiang</given-names></name>
+          <name><surname>Cash</surname><given-names>Sydney</given-names></name>
+          <name><surname>Westover</surname><given-names>Brandon</given-names></name>
+        </person-group>
+        <article-title>Exact Discovery of Time Series Motifs</article-title>
+        <year iso-8601-date="2013">2013</year>
+        <pub-id pub-id-type="doi">10.1137/1.9781611972795.41</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-DasU003A2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Das</surname><given-names>Modan K.</given-names></name>
+          <name><surname>Dai</surname><given-names>Ho Kwok</given-names></name>
+        </person-group>
+        <article-title>A survey of DNA motif finding algorithms</article-title>
+        <source>BMC Bioinformatics</source>
+        <year iso-8601-date="2007">2007</year>
+        <volume>8</volume>
+        <pub-id pub-id-type="doi">10.1186/1471-2105-8-S7-S21</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MueenU003A2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mueen</surname><given-names>Abdullah</given-names></name>
+        </person-group>
+        <article-title>Time series motif discovery: Dimensions and applications</article-title>
+        <source>Wiley Interdisciplinary Reviews: Data Mining and Knowledge Discovery</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>4</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1002/widm.1119</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-CastroU003A2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Castro</surname><given-names>Nuno</given-names></name>
+          <name><surname>Azevedo</surname><given-names>Paulo</given-names></name>
+        </person-group>
+        <article-title>Multiresolution motif discovery in time series</article-title>
+        <source>Proceedings of the 10th SIAM International Conference on Data Mining, SDM 2010</source>
+        <year iso-8601-date="2010">2010</year>
+        <pub-id pub-id-type="doi">https://doi.org/10.1137/1.9781611972801.73</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SerraU003A2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Serrà</surname><given-names>Joan</given-names></name>
+          <name><surname>Arcos</surname><given-names>Josep Ll</given-names></name>
+        </person-group>
+        <article-title>An empirical evaluation of similarity measures for time series classification</article-title>
+        <source>Knowledge-Based Systems</source>
+        <publisher-name>Elsevier B.V.</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>67</volume>
+        <pub-id pub-id-type="doi">10.1016/j.knosys.2014.04.035</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SieglerU003A1997">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Siegler</surname><given-names>Matthew A</given-names></name>
+          <name><surname>Jain</surname><given-names>Uday</given-names></name>
+          <name><surname>Raj</surname><given-names>Bhiksha</given-names></name>
+          <name><surname>Stern</surname><given-names>Richard M</given-names></name>
+        </person-group>
+        <article-title>Automatic Segmentation, Classification and Clustering of Broadcast News Audio</article-title>
+        <source>Proc. DARPA Speech Recognition Workshop</source>
+        <year iso-8601-date="1997">1997</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-KamperU003A2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kamper</surname><given-names>Herman</given-names></name>
+          <name><surname>Livescu</surname><given-names>Karen</given-names></name>
+          <name><surname>Goldwater</surname><given-names>Sharon</given-names></name>
+        </person-group>
+        <article-title>An embedded segmental k-means model for unsupervised segmentation and clustering of speech</article-title>
+        <source>IEEE Workshop on Automatic Speech Recognition and Understanding</source>
+        <year iso-8601-date="2017">2017</year>
+        <pub-id pub-id-type="doi">https://doi.org/10.1109/asru.2017.8269008</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LefevreU003A2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lefèvre</surname><given-names>Sébastien</given-names></name>
+          <name><surname>Vincent</surname><given-names>Nicole</given-names></name>
+        </person-group>
+        <article-title>A two level strategy for audio segmentation</article-title>
+        <source>Digital Signal Processing: A Review Journal</source>
+        <publisher-name>Elsevier Inc.</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <volume>21</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1016/j.dsp.2010.07.003</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-YankovU003A2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yankov</surname><given-names>Dragomir</given-names></name>
+          <name><surname>Keogh</surname><given-names>Eamonn</given-names></name>
+          <name><surname>Medina</surname><given-names>Jose</given-names></name>
+          <name><surname>Chiu</surname><given-names>Bill</given-names></name>
+          <name><surname>Zordan</surname><given-names>Victor</given-names></name>
+        </person-group>
+        <article-title>Detecting time series motifs under uniform scaling</article-title>
+        <source>Proceedings of the 13th ACM SIGKDD international conference on Knowledge discovery and data mining</source>
+        <year iso-8601-date="2007">2007</year>
+        <pub-id pub-id-type="doi">10.1145/1281192.1281282</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LinU003A2002">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lin</surname><given-names>Jessica</given-names></name>
+          <name><surname>Keogh</surname><given-names>Eamonn</given-names></name>
+          <name><surname>Lonardi</surname><given-names>Stefano</given-names></name>
+          <name><surname>Patel</surname><given-names>Pranav</given-names></name>
+        </person-group>
+        <article-title>Finding motifs in time series</article-title>
+        <source>Proc. of the 2nd Workshop on Temporal Data Mining</source>
+        <year iso-8601-date="2002">2002</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-HebertU003A2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hebert</surname><given-names>Daniel</given-names></name>
+          <name><surname>Anderson</surname><given-names>Billie</given-names></name>
+          <name><surname>Olinsky</surname><given-names>Alan</given-names></name>
+          <name><surname>Hardin</surname><given-names>J. Michael</given-names></name>
+        </person-group>
+        <article-title>Time Series Data Mining</article-title>
+        <source>International Journal of Business Analytics</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>1</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.4018/ijban.2014100104</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

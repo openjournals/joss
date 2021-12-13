@@ -1,0 +1,915 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3249</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03249</article-id>
+<title-group>
+<article-title>OpenOmics: A bioinformatics API to integrate multi-omics
+datasets and interface with public databases.</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-2575-9633</contrib-id>
+<string-name>Nhat C. Tran</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="corresp" rid="cor-1"><sup>*</sup></xref>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Jean X. Gao</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Computer Science and Engineering, The
+University of Texas at Arlington</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<author-notes>
+<corresp id="cor-1">* E-mail: <email></email></corresp>
+</author-notes>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-01-25">
+<day>25</day>
+<month>1</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>61</issue>
+<fpage>3249</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>bioinformatics</kwd>
+<kwd>multiomics</kwd>
+<kwd>data integration</kwd>
+<kwd>big data</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Leveraging large-scale multi-omics data is emerging as the primary
+  approach for systemic research of human diseases and general
+  biological processes. As data integration and feature engineering are
+  the vital steps in these bioinformatics projects, there currently
+  lacks a tool for standardized preprocessing of heterogeneous
+  multi-omics and annotation data within the context of a clinical
+  cohort. OpenOmics is a Python library for integrating heterogeneous
+  multi-omics data and interfacing with popular public annotation
+  databases, e.g., GENCODE, Ensembl, BioGRID. The library is designed to
+  be highly flexible to allow the user to parameterize the construction
+  of integrated datasets, interactive to assist complex data exploratory
+  analyses, and scalable to facilitate working with large datasets on
+  standard machines. In this paper, we demonstrate the software design
+  choices to support the wide-ranging use cases of OpenOmics with the
+  goal of maximizing usability and reproducibility of the data
+  integration framework.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Recent advances in sequencing technology and computational methods
+  have enabled the means to generate large-scale, high-throughput
+  multi-omics data
+  (<xref alt="Lappalainen et al., 2013" rid="ref-lappalainen2013transcriptome" ref-type="bibr">Lappalainen
+  et al., 2013</xref>), providing unprecedented research opportunities
+  for cancer and other diseases. These methods have already been applied
+  to a number of problems within bioinformatics, and indeed several
+  integrative disease studies
+  (<xref alt="Hassan et al., 2020" rid="ref-hassan2020integration" ref-type="bibr">Hassan
+  et al., 2020</xref>;
+  <xref alt="Network et al., 2014" rid="ref-cancer2014comprehensive" ref-type="bibr">Network
+  et al., 2014</xref>;
+  <xref alt="Ren et al., 2016" rid="ref-ren2016integration" ref-type="bibr">Ren
+  et al., 2016</xref>;
+  <xref alt="Zhang et al., 2014" rid="ref-zhang2014proteogenomic" ref-type="bibr">Zhang
+  et al., 2014</xref>). In addition to the genome-wide measurements of
+  different genetic characterizations, the growing public knowledge-base
+  of functional annotations
+  (<xref alt="Consortium, 2016" rid="ref-rnacentral2016rnacentral" ref-type="bibr">Consortium,
+  2016</xref>;
+  <xref alt="Derrien et al., 2012" rid="ref-derrien2012gencode" ref-type="bibr">Derrien
+  et al., 2012</xref>), experimentally-verified interactions
+  (<xref alt="Chou et al., 2015" rid="ref-chou2015mirtarbase" ref-type="bibr">Chou
+  et al., 2015</xref>,
+  <xref alt="2017" rid="ref-chou2017mirtarbase" ref-type="bibr">2017</xref>;
+  <xref alt="Oughtred et al., 2018" rid="ref-oughtred2019biogrid" ref-type="bibr">Oughtred
+  et al., 2018</xref>;
+  <xref alt="Yuan et al., 2013" rid="ref-yuan2013npinter" ref-type="bibr">Yuan
+  et al., 2013</xref>), and gene-disease associations
+  (<xref alt="Chen et al., 2012" rid="ref-chen2012lncrnadisease" ref-type="bibr">Chen
+  et al., 2012</xref>;
+  <xref alt="Huang et al., 2018" rid="ref-huang2018hmdd" ref-type="bibr">Huang
+  et al., 2018</xref>;
+  <xref alt="Piñero et al., 2016" rid="ref-pinero2016disgenet" ref-type="bibr">Piñero
+  et al., 2016</xref>) also provides the prior-knowledge essential for
+  system-level analyses. Leveraging these data sources allow for a
+  systematic investigation of disease mechanisms at multiple molecular
+  and regulatory layers; however, such task remains nontrivial due to
+  the complexity of multi-omics data.</p>
+  <p>While researchers have developed several mature tools to access or
+  analyze a particular single omic data type
+  (<xref alt="Stuart &amp; Satija, 2019" rid="ref-stuart2019integrative" ref-type="bibr">Stuart
+  &amp; Satija, 2019</xref>;
+  <xref alt="Wolf et al., 2018" rid="ref-wolf2018scanpy" ref-type="bibr">Wolf
+  et al., 2018</xref>), the current state of integrative data platforms
+  for multi-omics data is lacking due to three reasons. First, pipelines
+  for data integration carry out a sequential tasks that does not
+  process multi-omics datasets holistically. Second, the vast size and
+  heterogeneity of the data poses a challenge on the necessary data
+  storage and computational processing. And third, implementations of
+  data pipelines are close-ended for down-stream analysis or not
+  conductive to data exploration use-cases. Additionally, there is
+  currently a need for increased transparency in the process of
+  multi-omics data integration, and a standardized data preprocessing
+  strategy is important for the interpretation and exchange of
+  bioinformatic projects. Currently, there exist very few systems that,
+  on the one hand, supports standardized handling of multi-omics
+  datasets but also allows to query the integrated dataset within the
+  context of a clinical cohort.</p>
+</sec>
+<sec id="related-works">
+  <title>Related works</title>
+  <p>There are several existing platforms that aids in the integration
+  of multi-omics data, such as Galaxy, Anduril, MixOmics and O-Miner.
+  First, Galaxy
+  (<xref alt="Boekel et al., 2015" rid="ref-boekel2015multi" ref-type="bibr">Boekel
+  et al., 2015</xref>) and Anduril
+  (<xref alt="Cervera et al., 2019" rid="ref-cervera2019anduril" ref-type="bibr">Cervera
+  et al., 2019</xref>) are mature platforms and has an established
+  workflow framework for genomic and transcriptomic data analysis.
+  Galaxy contains hundreds of state-of-the-art tools of these core
+  domains for processing and assembling high-throughput sequencing data.
+  Second, MixOmics
+  (<xref alt="Rohart et al., 2017" rid="ref-rohart2017mixomics" ref-type="bibr">Rohart
+  et al., 2017</xref>) is an R library dedicated to the multivariate
+  analysis of biological data sets with a specific focus on data
+  exploration, dimension reduction and visualisation. Third, O-Miner
+  (<xref alt="Sangaralingam et al., 2019" rid="ref-sangaralingam2019multi" ref-type="bibr">Sangaralingam
+  et al., 2019</xref>) is web tool that provides a pipeline for analysis
+  of both transcriptomic and genomic data starting from raw image files
+  through in-depth bioinformatics analysis. However, as large-scale
+  multi-omic data analysis demands continue to grow, the technologies
+  and data analysis needs continually change to adapt with
+  <monospace>big data</monospace>. For instance, the data manipulation
+  required for multi-omics integration requires a multitude of complex
+  operations, but the point and click interface given in existing Galaxy
+  tools can be limiting or not computationally efficient. Although the
+  MixOmics toolkit provides an R programming interface, it doesn’t yet
+  leverage high-performance distributed storage or computing resources.
+  Finally, while O-Miner can perform end-to-end analysis in an
+  integrated platform, its interim analysis results cannot be exported
+  elsewhere for down-stream analysis.</p>
+  <fig>
+    <caption><p>Overall OpenOmics System Architecture, Data Flow, and
+    Use
+    Cases.<styled-content id="architecture"></styled-content></p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="figure.pdf" xlink:title="" />
+  </fig>
+</sec>
+<sec id="the-openomics-library">
+  <title>The OpenOmics library</title>
+  <p>OpenOmics consists of two core modules: multi-omics integration and
+  annotation interface. An overview visualization of the OpenOmics
+  system architecture is provided in
+  <xref alt="Figure 1" rid="architecture">Figure 1</xref>.</p>
+  <sec id="multi-omics-integration">
+    <title>Multi-omics integration</title>
+    <p>Tabular data are everywhere in bioinformatics. To record
+    expression quantifications, annotations, or variant calls, data are
+    typically stored in various tabular-like formats, such as BED, GTF,
+    MAF, and VCF, which can be preprocessed and normalized to row
+    indexed formats. Given any processed single-omic dataset, the
+    library generalizes the data as a tabular structure where rows
+    correspond to observation samples and columns correspond to
+    measurements of different biomolecules. The core functionality of
+    the Multi-omics Integration module is to integrate the multiple
+    single-omic datasets for the overlapping samples. By generating
+    multi-omics data for the same set of samples, our tool can provide
+    the necessary data structure to develop insights into the flow of
+    biological information across multiple genome, epigenome,
+    transcriptome, proteome, metabolome and phenome levels. The user can
+    import and integrate the following supported omic types:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p>Genomics: single nucleotide variants (SNV), copy number
+        variation (CNV)</p>
+      </list-item>
+      <list-item>
+        <p>Epigenomics: DNA methylation</p>
+      </list-item>
+      <list-item>
+        <p>Transcriptomics: RNA-Seq, miRNA expression, lncRNA
+        expression, microarrays</p>
+      </list-item>
+      <list-item>
+        <p>Proteomics: reverse phase protein array (RPPA), iTRAQ</p>
+      </list-item>
+    </list>
+    <p>After importing each single omics data, OpenOmics stores a Pandas
+    Dataframe
+    (<xref alt="McKinney, 2010" rid="ref-mckinney-proc-scipy-2010" ref-type="bibr">McKinney,
+    2010</xref>) that is flexible for a wide range of tabular
+    operations. For instance, the user is presented with several
+    functions for preprocessing of the expression quantifications to
+    normalize, filter outliers, or reduce noise.</p>
+    <p>Within a study cohort, the clinical characteristics are crucial
+    for the study of a disease or biological phenomenon. The user can
+    characterize the set of samples using the Clinical Data structure,
+    which is comprised of two levels: Patient and Biospecimen. A Patient
+    can have attribute fields on demographics, clinical diagnosis,
+    disease progression, treatment responses, and survival outcomes.
+    Typically, multi-omics data observations are captured at the
+    Biospecimen level and each Patient can have multiple Biospecimens.
+    OpenOmics tracks the ID’s of biospecimens and the patient it belongs
+    to, so the multi-omics data are organized in a hierarchical order to
+    enable aggregated operations.</p>
+  </sec>
+  <sec id="annotation-interface">
+    <title>Annotation interface</title>
+    <p>After importing and integrating the multi-omic data, the user can
+    supplement their dataset with various annotation attributes from
+    public data repositories such as GENCODE, Ensembl, and RNA Central.
+    With just a few operations, the user can easily download a data
+    repository of choice, select relevant attributes, and efficiently
+    join a variable number of annotation columns to their genomics,
+    transcriptomics, and proteomics data. The full list of databases and
+    the availability of annotation attributes is listed in Table 1.</p>
+    <p>For each public database, the Annotation Interface module
+    provides a series of interfaces to perform specific importing,
+    preprocessing, and annotation tasks. At the import step, the module
+    can either fetch the database files via a file-transfer-protocol
+    (ftp) URL or load a locally downloaded file. At this step, the user
+    can specify the species, genome build, and version of the database
+    by providing a ftp URL of choice. To streamline this process, the
+    module automatically caches downloaded file to disk, uncompress
+    them, and handle different file extensions, including FASTA, GTF,
+    VCF, and other tabular formats. Then, at the preprocessing step, the
+    module selects only the relevant attribute fields specified by the
+    user and perform necessary data cleanings. Finally, the annotation
+    data can be annotated to an omics dataset by performing a SQL-like
+    join operation on a user-specified index of the biomolecule name or
+    ID. If the user wishes to import an annotation database not yet
+    included in OpenOmics, they can extend the Annotation Dataset API to
+    specify their own importing, preprocessing, and annotation tasks in
+    an object-oriented manner.</p>
+    <p>An innovative feature of our integration module is the ability to
+    cross-reference the gene ID’s between different annotation systems
+    or data sources. When importing a dataset, the user can specify the
+    level of genomic index, such as at the gene, transcript, protein, or
+    peptide level, and whether it is a gene name or gene ID. Since
+    multiple single-omics datasets can use different gene nomenclatures,
+    the user is able to convert between the different gene indexing
+    methods by reindexing the annotation dataframe with a index column
+    of choice. This not only allows the Annotation Interface to select
+    and join the annotation data to the correct index level, but also
+    allow the user to customize the selection and aggregation of
+    biological measurements at different levels.</p>
+    <table-wrap>
+      <table>
+        <thead>
+          <tr>
+            <th>Data Repository</th>
+            <th>Annotation Data Available</th>
+            <th>Index</th>
+            <th># entries</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>GENCODE</td>
+            <td>Genomic annotations, primary sequence</td>
+            <td>RNAs</td>
+            <td>60,660</td>
+          </tr>
+          <tr>
+            <td>Ensembl</td>
+            <td>Genomic annotations</td>
+            <td>Genes</td>
+            <td>232,186</td>
+          </tr>
+          <tr>
+            <td>MiRBase</td>
+            <td>MicroRNA sequences and annotatinos</td>
+            <td>MicroRNAs</td>
+            <td>38,589</td>
+          </tr>
+          <tr>
+            <td>RNA Central</td>
+            <td>ncRNA sequence and annotation collection</td>
+            <td>ncRNAs</td>
+            <td>14,784,981</td>
+          </tr>
+          <tr>
+            <td>NONCODE</td>
+            <td>lncRNA sequences and annotations</td>
+            <td>LncRNAs</td>
+            <td>173,112</td>
+          </tr>
+          <tr>
+            <td>lncrnadb</td>
+            <td>lncRNA functional annotations</td>
+            <td>LncRNAs</td>
+            <td>100</td>
+          </tr>
+          <tr>
+            <td>Pfam</td>
+            <td>Protein family annotation</td>
+            <td>Proteins</td>
+            <td>18,259</td>
+          </tr>
+          <tr>
+            <td>Rfam</td>
+            <td>RNA family annotations</td>
+            <td>ncRNAs</td>
+            <td>2,600</td>
+          </tr>
+          <tr>
+            <td>Gene Ontology</td>
+            <td>Functional, cellular, and molecular annotations</td>
+            <td>Genes</td>
+            <td>44,117</td>
+          </tr>
+          <tr>
+            <td>KEGG</td>
+            <td>High-level functional pathways</td>
+            <td>Genes</td>
+            <td>22,409</td>
+          </tr>
+          <tr>
+            <td>DisGeNet</td>
+            <td>gene-disease associations</td>
+            <td>Genes</td>
+            <td>1,134,942</td>
+          </tr>
+          <tr>
+            <td>HMDD</td>
+            <td>microRNA-disease associations</td>
+            <td>MicroRNAs</td>
+            <td>35,547</td>
+          </tr>
+          <tr>
+            <td>lncRNAdisease</td>
+            <td>lncRNA-disease associations</td>
+            <td>LncRNAs</td>
+            <td>3,000</td>
+          </tr>
+          <tr>
+            <td>OMIM</td>
+            <td>Ontology of human diseases</td>
+            <td>Diseases</td>
+            <td>25,670</td>
+          </tr>
+        </tbody>
+      </table>
+    </table-wrap>
+    <p>Table 1: Public annotation databases and availability of data in
+    the Human genome.</p>
+  </sec>
+</sec>
+<sec id="system-design">
+  <title>System design</title>
+  <p>This section describes the various implementation details behind
+  the scalable processing and efficient data storage, and the design
+  choices in the development operations.</p>
+  <p>While the in-memory Pandas dataframes utilized in our data
+  structures are fast, they have size and speed limitations when the
+  dataset size approaches the system memory limit. When this is an
+  issue, the user can enable out-of-memory distributed data processing
+  on all OpenOmics operations, implemented by the Dask framework
+  (<xref alt="Rocklin, 2015" rid="ref-matthew_rocklin-proc-scipy-2015" ref-type="bibr">Rocklin,
+  2015</xref>). When memory resources is limited, data in a Dask
+  dataframe can be read directly from disk and is only brought into
+  memory when needed during computations (also called lazy evaluations).
+  When performing data query operations on Dask dataframes, a task graph
+  containing each operation is built and is only evaluated on command,
+  in a process called lazy loading.</p>
+  <p>Operations on Dask dataframes are the same as Pandas dataframes,
+  but can utilize multiple workers and can scale up to clusters by
+  connecting to a cluster client with minimal configuration. To enable
+  this feature in OpenOmics, the user simply needs to explicitly enable
+  an option when importing an omics dataset, importing an
+  annotation/interaction database, or importing a MultiOmics file
+  structure on disk.</p>
+  <sec id="software-requirements">
+    <title>Software requirements</title>
+    <p>OpenOmics is distributed as a readily installable Python package
+    from the Python Package Index (PyPI) repository. For users to
+    install OpenOmics in their own Python environment, several software
+    dependencies are automatically downloaded to reproduce the computing
+    environment.</p>
+    <p>OpenOmics is compatible with Python 3.6 or higher, and is
+    operational on both Linux and Windows operating systems. The
+    software requires as little as 4 GB of RAM and 2 CPU cores, and can
+    computationally scale up to large-memory multi-worker distributed
+    systems such as a compute cluster. To take advantage of increased
+    computational resource, OpenOmics simply requires one line of code
+    to activate parallel computing functionalities.</p>
+  </sec>
+  <sec id="development-operations">
+    <title>Development operations</title>
+    <p>We developed OpenOmics following modern software best-practices
+    and package publishing standards. For the version control of our
+    source-code, we utilized a public GitHub repository which contains
+    two branches, master and develop. The master branch contains stable
+    and well-tested releases of the package, while the develop branch is
+    used for building new features or software refactoring. Before each
+    version is released, we utilize Github Actions for continuous
+    integration, building, and testing for version and dependency
+    compatibility. Our automated test suite covers essential functions
+    of the package and a reasonable range of inputs and conditions.</p>
+  </sec>
+</sec>
+<sec id="conclusion">
+  <title>Conclusion</title>
+  <p>A standardized data preprocessing strategy is essential for the
+  interpretation and exchange of bioinformatics research. OpenOmics
+  provides researchers with the means to consistently describe the
+  processing and analysis of their experimental datasets. It equips the
+  user, a bioinformatician, with the ability to preprocess, query, and
+  analyze data with modern and scalable software technology. As the wide
+  array of tools and methods available in the public domain are largely
+  isolated, OpenOmics aims toward a uniform framework that can
+  effectively process and analyze multi-omics data in an end-to-end
+  manner along with biologist-friendly visualization and
+  interpretation.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>N/A.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-mckinney-proc-scipy-2010">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>McKinney</surname></name>
+        </person-group>
+        <article-title>Data Structures for Statistical Computing in Python</article-title>
+        <source>Proceedings of the 9th Python in Science Conference</source>
+        <person-group person-group-type="editor">
+          <name><surname>Walt</surname></name>
+          <name><surname>Millman</surname></name>
+        </person-group>
+        <year iso-8601-date="2010">2010</year>
+        <pub-id pub-id-type="doi"> 10.25080/Majora-92bf1922-00a </pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-matthew_rocklin-proc-scipy-2015">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Rocklin</surname><given-names>Matthew</given-names></name>
+        </person-group>
+        <article-title>Dask: Parallel computation with blocked algorithms and task scheduling</article-title>
+        <source>Proceedings of the 14th python in science conference</source>
+        <person-group person-group-type="editor">
+          <name><surname>Huff</surname><given-names>Kathryn</given-names></name>
+          <name><surname>Bergstra</surname><given-names>James</given-names></name>
+        </person-group>
+        <year iso-8601-date="2015">2015</year>
+        <pub-id pub-id-type="doi">10.25080/Majora-7b98e3ed-013</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-cancer2014comprehensive">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Network</surname><given-names>Cancer Genome Atlas Research</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Comprehensive molecular profiling of lung adenocarcinoma</article-title>
+        <source>Nature</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>511</volume>
+        <issue>7511</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-wolf2018scanpy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wolf</surname><given-names>F Alexander</given-names></name>
+          <name><surname>Angerer</surname><given-names>Philipp</given-names></name>
+          <name><surname>Theis</surname><given-names>Fabian J</given-names></name>
+        </person-group>
+        <article-title>SCANPY: Large-scale single-cell gene expression data analysis</article-title>
+        <source>Genome biology</source>
+        <publisher-name>BioMed Central</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>19</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1186/s13059-017-1382-0</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hassan2020integration">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hassan</surname><given-names>Mohammed A</given-names></name>
+          <name><surname>Al-Sakkaf</surname><given-names>Kaltoom</given-names></name>
+          <name><surname>Shait Mohammed</surname><given-names>Mohammed Razeeth</given-names></name>
+          <name><surname>Dallol</surname><given-names>Ashraf</given-names></name>
+          <name><surname>Al-Maghrabi</surname><given-names>Jaudah</given-names></name>
+          <name><surname>Aldahlawi</surname><given-names>Alia</given-names></name>
+          <name><surname>Ashoor</surname><given-names>Sawsan</given-names></name>
+          <name><surname>Maamra</surname><given-names>Mabrouka</given-names></name>
+          <name><surname>Ragoussis</surname><given-names>Jiannis</given-names></name>
+          <name><surname>Wu</surname><given-names>Wei</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Integration of transcriptome and metabolome provides unique insights to pathways associated with obese breast cancer patients</article-title>
+        <source>Frontiers in Oncology</source>
+        <publisher-name>Frontiers</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>10</volume>
+        <pub-id pub-id-type="doi">10.3389/fonc.2020.00804</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-stuart2019integrative">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Stuart</surname><given-names>Tim</given-names></name>
+          <name><surname>Satija</surname><given-names>Rahul</given-names></name>
+        </person-group>
+        <article-title>Integrative single-cell analysis</article-title>
+        <source>Nature Reviews Genetics</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>20</volume>
+        <issue>5</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-cervera2019anduril">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cervera</surname><given-names>Alejandra</given-names></name>
+          <name><surname>Rantanen</surname><given-names>Ville</given-names></name>
+          <name><surname>Ovaska</surname><given-names>Kristian</given-names></name>
+          <name><surname>Laakso</surname><given-names>Marko</given-names></name>
+          <name><surname>Nuñez-Fontarnau</surname><given-names>Javier</given-names></name>
+          <name><surname>Alkodsi</surname><given-names>Amjad</given-names></name>
+          <name><surname>Casado</surname><given-names>Julia</given-names></name>
+          <name><surname>Facciotto</surname><given-names>Chiara</given-names></name>
+          <name><surname>Häkkinen</surname><given-names>Antti</given-names></name>
+          <name><surname>Louhimo</surname><given-names>Riku</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Anduril 2: Upgraded large-scale data integration framework</article-title>
+        <source>Bioinformatics</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>35</volume>
+        <issue>19</issue>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btz133</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lappalainen2013transcriptome">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lappalainen</surname><given-names>Tuuli</given-names></name>
+          <name><surname>Sammeth</surname><given-names>Michael</given-names></name>
+          <name><surname>Friedländer</surname><given-names>Marc R</given-names></name>
+          <name><surname>Ac‘t Hoen</surname><given-names>Peter</given-names></name>
+          <name><surname>Monlong</surname><given-names>Jean</given-names></name>
+          <name><surname>Rivas</surname><given-names>Manuel A</given-names></name>
+          <name><surname>Gonzalez-Porta</surname><given-names>Mar</given-names></name>
+          <name><surname>Kurbatova</surname><given-names>Natalja</given-names></name>
+          <name><surname>Griebel</surname><given-names>Thasso</given-names></name>
+          <name><surname>Ferreira</surname><given-names>Pedro G</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Transcriptome and genome sequencing uncovers functional variation in humans</article-title>
+        <source>Nature</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <volume>501</volume>
+        <issue>7468</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-zhang2014proteogenomic">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zhang</surname><given-names>Bing</given-names></name>
+          <name><surname>Wang</surname><given-names>Jing</given-names></name>
+          <name><surname>Wang</surname><given-names>Xiaojing</given-names></name>
+          <name><surname>Zhu</surname><given-names>Jing</given-names></name>
+          <name><surname>Liu</surname><given-names>Qi</given-names></name>
+          <name><surname>Shi</surname><given-names>Zhiao</given-names></name>
+          <name><surname>Chambers</surname><given-names>Matthew C</given-names></name>
+          <name><surname>Zimmerman</surname><given-names>Lisa J</given-names></name>
+          <name><surname>Shaddox</surname><given-names>Kent F</given-names></name>
+          <name><surname>Kim</surname><given-names>Sangtae</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Proteogenomic characterization of human colon and rectal cancer</article-title>
+        <source>Nature</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>513</volume>
+        <issue>7518</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-ren2016integration">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ren</surname><given-names>Shancheng</given-names></name>
+          <name><surname>Shao</surname><given-names>Yaping</given-names></name>
+          <name><surname>Zhao</surname><given-names>Xinjie</given-names></name>
+          <name><surname>Hong</surname><given-names>Christopher S</given-names></name>
+          <name><surname>Wang</surname><given-names>Fubo</given-names></name>
+          <name><surname>Lu</surname><given-names>Xin</given-names></name>
+          <name><surname>Li</surname><given-names>Jia</given-names></name>
+          <name><surname>Ye</surname><given-names>Guozhu</given-names></name>
+          <name><surname>Yan</surname><given-names>Min</given-names></name>
+          <name><surname>Zhuang</surname><given-names>Zhengping</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Integration of metabolomics and transcriptomics reveals major metabolic pathways and potential biomarker involved in prostate cancer</article-title>
+        <source>Molecular &amp; Cellular Proteomics</source>
+        <publisher-name>ASBMB</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>15</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1074/mcp.M115.052381</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-rohart2017mixomics">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rohart</surname><given-names>Florian</given-names></name>
+          <name><surname>Gautier</surname><given-names>Benoı̂t</given-names></name>
+          <name><surname>Singh</surname><given-names>Amrit</given-names></name>
+          <name><surname>Lê Cao</surname><given-names>Kim-Anh</given-names></name>
+        </person-group>
+        <article-title>mixOmics: An r package for ‘omics feature selection and multiple data integration</article-title>
+        <source>PLoS computational biology</source>
+        <publisher-name>Public Library of Science</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>13</volume>
+        <issue>11</issue>
+        <pub-id pub-id-type="doi">10.1371/journal.pcbi.1005752</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-boekel2015multi">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Boekel</surname><given-names>Jorrit</given-names></name>
+          <name><surname>Chilton</surname><given-names>John M</given-names></name>
+          <name><surname>Cooke</surname><given-names>Ira R</given-names></name>
+          <name><surname>Horvatovich</surname><given-names>Peter L</given-names></name>
+          <name><surname>Jagtap</surname><given-names>Pratik D</given-names></name>
+          <name><surname>Käll</surname><given-names>Lukas</given-names></name>
+          <name><surname>Lehtiö</surname><given-names>Janne</given-names></name>
+          <name><surname>Lukasse</surname><given-names>Pieter</given-names></name>
+          <name><surname>Moerland</surname><given-names>Perry D</given-names></name>
+          <name><surname>Griffin</surname><given-names>Timothy J</given-names></name>
+        </person-group>
+        <article-title>Multi-omic data analysis using galaxy</article-title>
+        <source>Nature biotechnology</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <volume>33</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1038/nbt.3134</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sangaralingam2019multi">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sangaralingam</surname><given-names>Ajanthah</given-names></name>
+          <name><surname>Dayem Ullah</surname><given-names>Abu Z</given-names></name>
+          <name><surname>Marzec</surname><given-names>Jacek</given-names></name>
+          <name><surname>Gadaleta</surname><given-names>Emanuela</given-names></name>
+          <name><surname>Nagano</surname><given-names>Ai</given-names></name>
+          <name><surname>Ross-Adams</surname><given-names>Helen</given-names></name>
+          <name><surname>Wang</surname><given-names>Jun</given-names></name>
+          <name><surname>Lemoine</surname><given-names>Nicholas R</given-names></name>
+          <name><surname>Chelala</surname><given-names>Claude</given-names></name>
+        </person-group>
+        <article-title>‘Multi-omic’data analysis using o-miner</article-title>
+        <source>Briefings in bioinformatics</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>20</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1093/bib/bbx080</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-rnacentral2016rnacentral">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Consortium</surname><given-names>RNAcentral</given-names></name>
+        </person-group>
+        <article-title>RNAcentral: A comprehensive database of non-coding RNA sequences</article-title>
+        <source>Nucleic acids research</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-derrien2012gencode">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Derrien</surname><given-names>Thomas</given-names></name>
+          <name><surname>Johnson</surname><given-names>Rory</given-names></name>
+          <name><surname>Bussotti</surname><given-names>Giovanni</given-names></name>
+          <name><surname>Tanzer</surname><given-names>Andrea</given-names></name>
+          <name><surname>Djebali</surname><given-names>Sarah</given-names></name>
+          <name><surname>Tilgner</surname><given-names>Hagen</given-names></name>
+          <name><surname>Guernec</surname><given-names>Gregory</given-names></name>
+          <name><surname>Martin</surname><given-names>David</given-names></name>
+          <name><surname>Merkel</surname><given-names>Angelika</given-names></name>
+          <name><surname>Knowles</surname><given-names>David G</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>The GENCODE v7 catalog of human long noncoding RNAs: Analysis of their gene structure, evolution, and expression</article-title>
+        <source>Genome research</source>
+        <publisher-name>Cold Spring Harbor Lab</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>22</volume>
+        <issue>9</issue>
+        <pub-id pub-id-type="doi">10.1101/gr.132159.111</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-huang2018hmdd">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Huang</surname><given-names>Zhou</given-names></name>
+          <name><surname>Shi</surname><given-names>Jiangcheng</given-names></name>
+          <name><surname>Gao</surname><given-names>Yuanxu</given-names></name>
+          <name><surname>Cui</surname><given-names>Chunmei</given-names></name>
+          <name><surname>Zhang</surname><given-names>Shan</given-names></name>
+          <name><surname>Li</surname><given-names>Jianwei</given-names></name>
+          <name><surname>Zhou</surname><given-names>Yuan</given-names></name>
+          <name><surname>Cui</surname><given-names>Qinghua</given-names></name>
+        </person-group>
+        <article-title>HMDD v3. 0: A database for experimentally supported human microRNA–disease associations</article-title>
+        <source>Nucleic acids research</source>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-pinero2016disgenet">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Piñero</surname><given-names>Janet</given-names></name>
+          <name><surname>Bravo</surname><given-names>Àlex</given-names></name>
+          <name><surname>Queralt-Rosinach</surname><given-names>Núria</given-names></name>
+          <name><surname>Gutiérrez-Sacristán</surname><given-names>Alba</given-names></name>
+          <name><surname>Deu-Pons</surname><given-names>Jordi</given-names></name>
+          <name><surname>Centeno</surname><given-names>Emilio</given-names></name>
+          <name><surname>Garcı́a-Garcı́a</surname><given-names>Javier</given-names></name>
+          <name><surname>Sanz</surname><given-names>Ferran</given-names></name>
+          <name><surname>Furlong</surname><given-names>Laura I</given-names></name>
+        </person-group>
+        <article-title>DisGeNET: A comprehensive platform integrating information on human disease-associated genes and variants</article-title>
+        <source>Nucleic acids research</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <pub-id pub-id-type="doi">10.1093/nar/gkw943</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-chen2012lncrnadisease">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Chen</surname><given-names>Geng</given-names></name>
+          <name><surname>Wang</surname><given-names>Ziyun</given-names></name>
+          <name><surname>Wang</surname><given-names>Dongqing</given-names></name>
+          <name><surname>Qiu</surname><given-names>Chengxiang</given-names></name>
+          <name><surname>Liu</surname><given-names>Mingxi</given-names></name>
+          <name><surname>Chen</surname><given-names>Xing</given-names></name>
+          <name><surname>Zhang</surname><given-names>Qipeng</given-names></name>
+          <name><surname>Yan</surname><given-names>Guiying</given-names></name>
+          <name><surname>Cui</surname><given-names>Qinghua</given-names></name>
+        </person-group>
+        <article-title>LncRNADisease: A database for long-non-coding RNA-associated diseases</article-title>
+        <source>Nucleic acids research</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>41</volume>
+        <issue>D1</issue>
+        <pub-id pub-id-type="doi">10.1093/nar/gks1099</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-yuan2013npinter">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yuan</surname><given-names>Jiao</given-names></name>
+          <name><surname>Wu</surname><given-names>Wei</given-names></name>
+          <name><surname>Xie</surname><given-names>Chaoyong</given-names></name>
+          <name><surname>Zhao</surname><given-names>Guoguang</given-names></name>
+          <name><surname>Zhao</surname><given-names>Yi</given-names></name>
+          <name><surname>Chen</surname><given-names>Runsheng</given-names></name>
+        </person-group>
+        <article-title>NPInter v2. 0: An updated database of ncRNA interactions</article-title>
+        <source>Nucleic acids research</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <volume>42</volume>
+        <issue>D1</issue>
+        <pub-id pub-id-type="doi">10.1093/nar/gkt1057</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-chou2015mirtarbase">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Chou</surname><given-names>Chih-Hung</given-names></name>
+          <name><surname>Chang</surname><given-names>Nai-Wen</given-names></name>
+          <name><surname>Shrestha</surname><given-names>Sirjana</given-names></name>
+          <name><surname>Hsu</surname><given-names>Sheng-Da</given-names></name>
+          <name><surname>Lin</surname><given-names>Yu-Ling</given-names></name>
+          <name><surname>Lee</surname><given-names>Wei-Hsiang</given-names></name>
+          <name><surname>Yang</surname><given-names>Chi-Dung</given-names></name>
+          <name><surname>Hong</surname><given-names>Hsiao-Chin</given-names></name>
+          <name><surname>Wei</surname><given-names>Ting-Yen</given-names></name>
+          <name><surname>Tu</surname><given-names>Siang-Jyun</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>miRTarBase 2016: Updates to the experimentally validated miRNA-target interactions database</article-title>
+        <source>Nucleic acids research</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <volume>44</volume>
+        <issue>D1</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-chou2017mirtarbase">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Chou</surname><given-names>Chih-Hung</given-names></name>
+          <name><surname>Shrestha</surname><given-names>Sirjana</given-names></name>
+          <name><surname>Yang</surname><given-names>Chi-Dung</given-names></name>
+          <name><surname>Chang</surname><given-names>Nai-Wen</given-names></name>
+          <name><surname>Lin</surname><given-names>Yu-Ling</given-names></name>
+          <name><surname>Liao</surname><given-names>Kuang-Wen</given-names></name>
+          <name><surname>Huang</surname><given-names>Wei-Chi</given-names></name>
+          <name><surname>Sun</surname><given-names>Ting-Hsuan</given-names></name>
+          <name><surname>Tu</surname><given-names>Siang-Jyun</given-names></name>
+          <name><surname>Lee</surname><given-names>Wei-Hsiang</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>miRTarBase update 2018: A resource for experimentally validated microRNA-target interactions</article-title>
+        <source>Nucleic acids research</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>46</volume>
+        <issue>D1</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-oughtred2019biogrid">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Oughtred</surname><given-names>Rose</given-names></name>
+          <name><surname>Stark</surname><given-names>Chris</given-names></name>
+          <name><surname>Breitkreutz</surname><given-names>Bobby-Joe</given-names></name>
+          <name><surname>Rust</surname><given-names>Jennifer</given-names></name>
+          <name><surname>Boucher</surname><given-names>Lorrie</given-names></name>
+          <name><surname>Chang</surname><given-names>Christie</given-names></name>
+          <name><surname>Kolas</surname><given-names>Nadine</given-names></name>
+          <name><surname>O’Donnell</surname><given-names>Lara</given-names></name>
+          <name><surname>Leung</surname><given-names>Genie</given-names></name>
+          <name><surname>McAdam</surname><given-names>Rochelle</given-names></name>
+          <name><surname>Zhang</surname><given-names>Frederick</given-names></name>
+          <name><surname>Dolma</surname><given-names>Sonam</given-names></name>
+          <name><surname>Willems</surname><given-names>Andrew</given-names></name>
+          <name><surname>Coulombe-Huntington</surname><given-names>Jasmin</given-names></name>
+          <name><surname>Chatr-aryamontri</surname><given-names>Andrew</given-names></name>
+          <name><surname>Dolinski</surname><given-names>Kara</given-names></name>
+          <name><surname>Tyers</surname><given-names>Mike</given-names></name>
+        </person-group>
+        <article-title>The BioGRID interaction database: 2019 update</article-title>
+        <source>Nucleic Acids Research</source>
+        <year iso-8601-date="2018-11">2018</year><month>11</month>
+        <volume>47</volume>
+        <issue>D1</issue>
+        <issn>0305-1048</issn>
+        <uri>https://doi.org/10.1093/nar/gky1079</uri>
+        <pub-id pub-id-type="doi">10.1093/nar/gky1079</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

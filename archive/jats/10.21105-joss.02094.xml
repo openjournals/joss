@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2094</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02094</article-id>
+<title-group>
+<article-title>MTEX2Gmsh: a tool for generating 2D meshes from EBSD
+data</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-2881-8942</contrib-id>
+<string-name>Dorian Depriester</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-7781-5855</contrib-id>
+<string-name>Régis Kubler</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>MSMP laboratory (EA 7350), Ecole Nationale Supérieure
+d’Arts et Métiers, 2 cours des Arts et Métiers - 13617 Aix-en-Provence,
+France</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-12-13">
+<day>13</day>
+<month>12</month>
+<year>2019</year>
+</pub-date>
+<volume>5</volume>
+<issue>52</issue>
+<fpage>2094</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Polycrystals</kwd>
+<kwd>FEM</kwd>
+<kwd>Grain Boundary</kwd>
+<kwd>EBSD</kwd>
+<kwd>mesh</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>In material sciences applied to crystalline materials, such as
+  metals or ceramics, the grain morphology (size and shape) and the
+  crystallographic texture are of great importance for understanding the
+  macroscopic behaviour of the materials. Micromechanics of
+  polycrystalline aggregates consists in evaluating the
+  thermo-mechanical behaviour of the aggregates at their grain scale. If
+  the investigated material is subjected to macroscopic deformation, the
+  local strain can be obtained either experimentally, thanks to
+  full-field measurement methods such as microgrid technique
+  (<xref alt="Allais et al., 1994" rid="ref-AllaisU003A1994" ref-type="bibr">Allais
+  et al., 1994</xref>) or Digital Image Correlation (DIC)
+  (<xref alt="Hild et al., 2002" rid="ref-HildU003A2002" ref-type="bibr">Hild
+  et al., 2002</xref>), or thanks to numerical simulation of the
+  microstructure. The latter needs to take into account the mechanical
+  heterogeneities (due to the different constituents) and the anisotropy
+  of each phase, depending on its crystalline orientation.</p>
+  <p>Orientation Imaging Microscopy (OIM), usually made from Electron
+  Backscatter Diffraction (EBSD), is now widely used as a
+  characterization technique. Indeed, it is in great interest for
+  investigating the grain morphology and local crystal orientations in
+  crystalline materials. Raw EBSD data can be considered as matrices of
+  measurements of crystallographic data: each dot contains information
+  about the phase and its orientation at the corresponding position.</p>
+  <p>In order to perform Finite Element Analysis (FEA) on a polycrystal,
+  one needs to first generate a mesh based on either EBSD or
+  reconstructed grains. In this mesh, the Grain Boundaries (GBs) must be
+  accurately described since they play an important role in the overall
+  behaviour of aggregates. Indeed, it is known that GBs increase the
+  energy of the materials. The interfacial energy between two adjacent
+  grains due to their boundary depends, among other parameters, on their
+  misorientation and on the surface normal of the boundary
+  (<xref alt="Priester, 2012" rid="ref-PriesterU003A2012" ref-type="bibr">Priester,
+  2012</xref>). In addition, Zhong et al.
+  (<xref alt="2017" rid="ref-ZhongU003A2017" ref-type="bibr">2017</xref>)
+  mentioned that the GB curvature is one of the most important
+  properties of a microstructure. For instance, the driving force for
+  grain growth depends on the local curvature of the GBs.</p>
+  <p>Latypov et al.
+  (<xref alt="2016" rid="ref-LatypovU003A2016" ref-type="bibr">2016</xref>)
+  proposed a program to generate regular pseudo-3D mesh, consisting in
+  brick elements with only one element in thickness. Nevertheless, this
+  program results in serrated descriptions of the GBs because of the
+  regular structure of EBSD data. In addition, the element size must be
+  constant, possibly resulting in a huge number of elements, depending
+  on the size and the spatial resolution of the orientation map.
+  Dancette et al.
+  (<xref alt="2016" rid="ref-DancetteU003A2016" ref-type="bibr">2016</xref>)
+  proposed the following method to generate a conforming mesh with
+  smooth GBs:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>computation of the GBs based on a proper criterion;</p>
+    </list-item>
+    <list-item>
+      <p>grain reconstruction using a graph theory-based method;</p>
+    </list-item>
+    <list-item>
+      <p>spline interpolation of the GBs;</p>
+    </list-item>
+    <list-item>
+      <p>meshing.</p>
+    </list-item>
+  </list>
+  <p>The criterion used by the previous authors for defining the GBs,
+  called weight in the context of graph theory, was specially designed
+  for cubic phases. The geometry was meshed using the Gmsh software
+  (<xref alt="Geuzaine &amp; Remacle, 2009" rid="ref-GeuzaineU003A2009" ref-type="bibr">Geuzaine
+  &amp; Remacle, 2009</xref>).</p>
+  <p>As a conclusion, it appears that no existing tool for generating
+  meshes from EBSD data is able to provide a robust grain description
+  (e.g. suitable for any kind of phase and geometry) together with
+  customizable features (e.g. variable element sizes). The proposed
+  software, named
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/DorianDepriester/mtex2Gmsh"><monospace>MTEX2Gmsh</monospace></ext-link>
+  works regardless the number of phases and the symmetries of those
+  phases. In addition, it provides a smooth and accurate definition of
+  the GBs. It is based on the MTEX toolbox for Matlab
+  (<xref alt="Bachmann et al., 2011" rid="ref-BachmannU003A2011" ref-type="bibr">Bachmann
+  et al., 2011</xref>) and the Gmsh software. Figure 1 schematically
+  illustrates the proposed algorithm.
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/DorianDepriester/mtex2Gmsh"><monospace>MTEX2Gmsh</monospace></ext-link>
+  allows to mesh the volume with a couple of options, such as:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>increasing element size with increasing distance from the
+      grains boundaries;</p>
+    </list-item>
+    <list-item>
+      <p>element type (tetrahedron, wedge or brick elements);</p>
+    </list-item>
+    <list-item>
+      <p>nesting the Region of Interest (ROI) into a larger medium.</p>
+    </list-item>
+  </list>
+  <p>This sofware comes with an Abaqus plugin for importing the mesh and
+  allocating the phase and Euler Angles of each grain.</p>
+  <fig>
+    <caption><p>Schematic representation of the algorithm used in
+    <monospace>MTEX2Gmsh</monospace>: 1) once the grains are
+    reconstructed using to <monospace>MTEX</monospace>
+    (<xref alt="Bachmann et al., 2011" rid="ref-BachmannU003A2011" ref-type="bibr">Bachmann
+    et al., 2011</xref>), the algorithm fetches all triple junctions
+    (TJ) in the whole map; 2) each grain boundary is divided into
+    TJ-to-TJ segments; 3) all those segments are smoothed using Bspline
+    approximation; 3) this decriptions of the grains can be converted
+    into Gmsh-readable files
+    (<xref alt="Geuzaine &amp; Remacle, 2009" rid="ref-GeuzaineU003A2009" ref-type="bibr">Geuzaine
+    &amp; Remacle, 2009</xref>), allowing to mesh the whole region
+    efficiently. The Bspline approximation results in very accurate
+    definitions of the GBs, with limited serration (usually introduced
+    by the EBSD resolution) and limited number of
+    elements.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="GraphicalAbstract.png" xlink:title="" />
+  </fig>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-DancetteU003A2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dancette</surname><given-names>S.</given-names></name>
+          <name><surname>Browet</surname><given-names>A.</given-names></name>
+          <name><surname>Martin</surname><given-names>G.</given-names></name>
+          <name><surname>Willemet</surname><given-names>M.</given-names></name>
+          <name><surname>Delannay</surname><given-names>L.</given-names></name>
+        </person-group>
+        <article-title>Automatic processing of an orientation map into a finite element mesh that conforms to grain boundaries</article-title>
+        <source>Modelling and Simulation in Materials Science and Engineering</source>
+        <publisher-name>IOP Publishing</publisher-name>
+        <year iso-8601-date="2016-06">2016</year><month>06</month>
+        <volume>24</volume>
+        <issue>5</issue>
+        <pub-id pub-id-type="doi">10.1088/0965-0393/24/5/055014</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LatypovU003A2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Latypov</surname><given-names>M. I.</given-names></name>
+          <name><surname>Shin</surname><given-names>S.</given-names></name>
+          <name><surname>De Cooman</surname><given-names>B. C.</given-names></name>
+          <name><surname>Kim</surname><given-names>H. S.</given-names></name>
+        </person-group>
+        <article-title>Micromechanical finite element analysis of strain partitioning in multiphase medium manganese TWIP+TRIP steel</article-title>
+        <source>Acta Materialia</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>108</volume>
+        <issn>13596454</issn>
+        <pub-id pub-id-type="doi">10.1016/j.actamat.2016.02.001</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-AllaisU003A1994">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Allais</surname><given-names>L.</given-names></name>
+          <name><surname>Bornert</surname><given-names>M.</given-names></name>
+          <name><surname>Bretheau</surname><given-names>T.</given-names></name>
+          <name><surname>Caldemaison</surname><given-names>D.</given-names></name>
+        </person-group>
+        <article-title>Experimental characterization of the local strain field in a heterogeneous elastoplastic material</article-title>
+        <source>Acta Metallurgica et materialia</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="1994">1994</year>
+        <volume>42</volume>
+        <issue>11</issue>
+        <pub-id pub-id-type="doi">10.1016/0956-7151(94)90452-9</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-HildU003A2002">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hild</surname><given-names>F.</given-names></name>
+          <name><surname>Raka</surname><given-names>B.</given-names></name>
+          <name><surname>Baudequin</surname><given-names>M.</given-names></name>
+          <name><surname>Roux</surname><given-names>S.</given-names></name>
+          <name><surname>Cantelaube</surname><given-names>F.</given-names></name>
+        </person-group>
+        <article-title>Multiscale displacement field measurements of compressed mineral-wool samples by digital image correlation</article-title>
+        <source>Appl. Opt.</source>
+        <publisher-name>OSA</publisher-name>
+        <year iso-8601-date="2002-11">2002</year><month>11</month>
+        <volume>41</volume>
+        <issue>32</issue>
+        <pub-id pub-id-type="doi">10.1364/AO.41.006815</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-PriesterU003A2012">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Priester</surname><given-names>L.</given-names></name>
+        </person-group>
+        <source>Grain boundaries: From theory to engineering</source>
+        <publisher-name>Springer Science &amp; Business Media</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>172</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-ZhongU003A2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zhong</surname><given-names>X.</given-names></name>
+          <name><surname>Rowenhorst</surname><given-names>D. J.</given-names></name>
+          <name><surname>Beladi</surname><given-names>H.</given-names></name>
+          <name><surname>Rohrer</surname><given-names>G. S.</given-names></name>
+        </person-group>
+        <article-title>The five-parameter grain boundary curvature distribution in an austenitic and ferritic steel</article-title>
+        <source>Acta Materialia</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>123</volume>
+        <issn>1359-6454</issn>
+        <pub-id pub-id-type="doi">10.1016/j.actamat.2016.10.030</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-GeuzaineU003A2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Geuzaine</surname><given-names>C.</given-names></name>
+          <name><surname>Remacle</surname><given-names>J.-F.</given-names></name>
+        </person-group>
+        <article-title>Gmsh: A 3-D finite element mesh generator with built-in pre-and post-processing facilities</article-title>
+        <source>International journal for numerical methods in engineering</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <volume>79</volume>
+        <issue>11</issue>
+        <pub-id pub-id-type="doi">10.1002/nme.2579</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-BachmannU003A2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bachmann</surname><given-names>F.</given-names></name>
+          <name><surname>Hielscher</surname><given-names>R.</given-names></name>
+          <name><surname>Schaeben</surname><given-names>H.</given-names></name>
+        </person-group>
+        <article-title>Grain detection from 2d and 3d EBSD data—specification of the MTEX algorithm</article-title>
+        <source>Ultramicroscopy</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>111</volume>
+        <issue>12</issue>
+        <issn>0304-3991</issn>
+        <pub-id pub-id-type="doi">10.1016/j.ultramic.2011.08.002</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

@@ -1,0 +1,1451 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1701</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01701</article-id>
+<title-group>
+<article-title>DEPP - Differential Evolution Parallel
+Program</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-5930-8371</contrib-id>
+<string-name>Jonas Joacir Radtke</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1888-9181</contrib-id>
+<string-name>Guilherme Bertoldo</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1195-5377</contrib-id>
+<string-name>Carlos Henrique Marchi</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Federal University of Technology - Paraná</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Federal University of Paraná</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-07-02">
+<day>2</day>
+<month>7</month>
+<year>2019</year>
+</pub-date>
+<volume>5</volume>
+<issue>47</issue>
+<fpage>1701</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Optimization</kwd>
+<kwd>Differential Evolution</kwd>
+<kwd>MPI</kwd>
+<kwd>Fortran 2008</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Optimization is a mathematical problem often found in science and
+  engineering. Currently, however, there is no general method to face
+  this problem. Solutions are generally addressed by two approaches,
+  both iterative: (a) quasi-Newton methods
+  (<xref alt="Griva et al., 2009" rid="ref-GrivaU003A2009" ref-type="bibr">Griva
+  et al., 2009</xref>) and (b) heuristic methods
+  (<xref alt="Coley, 1999" rid="ref-ColeyU003A1999" ref-type="bibr">Coley,
+  1999</xref>;
+  <xref alt="Feoktistov, 2006" rid="ref-FeoktistovU003A2006" ref-type="bibr">Feoktistov,
+  2006</xref>). Each one has advantages depending on the problem to be
+  optimized. Quasi-Newton methods, in general, converge faster then
+  heuristic methods provided the function to be optimized (the objective
+  function) is smooth. Heuristic methods, on the other hand, are more
+  appropriate to deal with noisy objective functions, to handle failures
+  in the calculation of the objective function and are less susceptible
+  to be retained in local optimum than quasi-Newton methods.</p>
+  <p>Among the heuristic methods, Differential Evolution (DE)
+  (<xref alt="Price et al., 2005" rid="ref-PriceU003A2005" ref-type="bibr">Price
+  et al., 2005</xref>;
+  <xref alt="Storn &amp; Price, 1997" rid="ref-StornU003A1997" ref-type="bibr">Storn
+  &amp; Price, 1997</xref>) had emerged as a simple and efficient method
+  for finding the global maximum. This method is based on the principles
+  of biological evolution.</p>
+  <p>To combine the robustness of heuristic methods with the high
+  convergence speed of quasi-Newton methods, Loris Vincenzi and Marco
+  Savoia
+  (<xref alt="Vincenzi &amp; Savoia, 2015" rid="ref-VincenziU003A2015" ref-type="bibr">Vincenzi
+  &amp; Savoia, 2015</xref>) proposed coupling Differential Evolution
+  heuristic with Response Surfaces
+  (<xref alt="Khuri &amp; Cornell, 1996" rid="ref-KhuriU003A1996" ref-type="bibr">Khuri
+  &amp; Cornell, 1996</xref>;
+  <xref alt="Myers et al., 2009" rid="ref-MyersU003A2009" ref-type="bibr">Myers
+  et al., 2009</xref>). Fitting Response Surfaces during optimization
+  and finding their optima mimics quasi-Newton methods. The authors
+  showed that this approach reduced significantly the effort to solve
+  some problems within a given tolerance (in general, more than 50%
+  compared to the original heuristic method).</p>
+  <p>Based on the paper of Loris Vincenzi and Marco Savoia, but applying
+  a different algorithm, a software called DEPP, an acronym for
+  Differential Evolution Parallel Program, was developed. DEPP source
+  code is written following Fortran 2008 standard
+  (<xref alt="Brainerd, 2015" rid="ref-BrainerdU003A2015" ref-type="bibr">Brainerd,
+  2015</xref>), it is based on the object-oriented paradigm and it
+  includes MPI parallelization
+  (<xref alt="Message Passing Interface Forum, 2009" rid="ref-TennesseeU003A2009" ref-type="bibr">Message
+  Passing Interface Forum, 2009</xref>). The main algorithm was prepared
+  to simplify the development and extension of the code, relying on
+  abstract classes and polymorphism. Following this idea, design
+  patterns
+  (<xref alt="Freeman et al., 2004" rid="ref-FreemanU003A2004" ref-type="bibr">Freeman
+  et al., 2004</xref>) were also applied. Object instances are generated
+  through the Factory Design Pattern and Adapter Design Pattern was
+  applied to encapsulate MPI commands, for instance. In this way, users
+  may implement new optimization methods without changing the main
+  algorithm.</p>
+  <p>Due to its supporting theory, DEPP is well suited to address
+  optimization problems of multimodal, noisy, poor-precision-calculated
+  and failure-susceptible objective functions, taking advantage of
+  acceleration provided by parallelization and hybridization models,
+  like Differential Evolution-Response Surface coupling.</p>
+  <p>In the following sections, a brief description of DEPP, its
+  supporting theory, and some examples are presented.</p>
+</sec>
+<sec id="secU003Adescription">
+  <title>Software description</title>
+  <sec id="secU003Aarch">
+    <title>Software Architecture</title>
+    <p>DEPP source code was written following the FORTRAN 2008 standard
+    language
+    (<xref alt="Brainerd, 2015" rid="ref-BrainerdU003A2015" ref-type="bibr">Brainerd,
+    2015</xref>), it uses the Message Passing Interface (MPI) directives
+    (<xref alt="Message Passing Interface Forum, 2009" rid="ref-TennesseeU003A2009" ref-type="bibr">Message
+    Passing Interface Forum, 2009</xref>) for parallel processing and
+    takes advantage of the Object-Oriented Paradigm.</p>
+    <p>Thanks to Object-Oriented Programming, the source code was
+    designed to simplify the implementation of new methods. The
+    algorithm works on abstract classes separated, basically, as (i)
+    population initializers, (ii) search strategies, (iii) fitness
+    calculation and (iv) stop conditions. The concrete classes are
+    generated using the Factory Design Pattern
+    (<xref alt="Freeman et al., 2004" rid="ref-FreemanU003A2004" ref-type="bibr">Freeman
+    et al., 2004</xref>). All MPI commands are encapsulated into proper
+    classes, following the logic of the Adapter Design Pattern. In this
+    way, users interested in the implementation of new methods will not
+    concern about MPI details.</p>
+    <p>DEPP treats the fitness function as a black-box, that must be
+    provided by an external program (EP). This approach increases the
+    range of the application of DEPP, since in many cases the fitness
+    function can not be written as a DEPP subroutine.</p>
+    <p>Communication between DEPP and the external program is performed
+    by disk files. DEPP calls the EP by command-line, passing to it the
+    name of a file as an argument. This file contains the name of
+    another file (where the external program must save fitness), the
+    dimension of the trial solution vector <bold>X</bold> and the
+    components X1, X2, … of <bold>X</bold>, e.g.,</p>
+    <preformat>&lt;path/filename&gt; = arqfit: name of the file to save fitness
+        &lt;value&gt; =     nu: number of unknowns (dim. of the trial vector X)
+  &lt;value of X1&gt;
+        .
+        .
+        .
+ &lt;value of Xnu&gt;</preformat>
+    <p>On the other hand, the external program must calculate, and save
+    the fitness in the file indicated by DEPP with an exit status code
+    (to be further explained). This file reads as</p>
+    <preformat>&lt;value&gt; = Fitness
+&lt;value&gt; = Exit status code</preformat>
+    <p>The basic algorithm of DEPP is illustrated in Figure 1. DEPP
+    reads the input data from a configuration file, whose name is passed
+    to it by a command-line argument. The stop condition is analyzed. In
+    the first iteration, the stop condition is generally not satisfied
+    (it may not be true when starting from a backup). When the stop
+    condition is satisfied, the iterative procedure is finished and the
+    output data is saved in the <italic>depp_output</italic> directory.
+    Otherwise, a trial population is generated. DEPP sends the
+    information to a set of threads (T1,<inline-formula><alternatives>
+    <tex-math><![CDATA[\cdots]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>⋯</mml:mi></mml:math></alternatives></inline-formula>,
+    TN) using MPI. Then, each of these threads runs a copy of the
+    external program (EP) for a given individual of the population.
+    After that, DEPP receives the calculated objective function and
+    compares their fitness with the fitness of the current population.
+    Only the best individuals are held. A backup is optionally generated
+    and the iterative cycle is restarted. During the calculation of the
+    objective function, some failures may occur. DEPP handles failures
+    using an exit status code returned by the external program. If the
+    exit code is 0, the calculations were performed correctly; if 1 is
+    returned, then a failure occurred and the trial individual is
+    discarded; if 2 is returned, then a failure occurred, the trial
+    individual is discarded and a new one is generated. All the failures
+    are registered for the posterior user’s analysis.</p>
+    <fig>
+      <caption><p>DEPP’s basic algorithm.</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="algorithm1.png" xlink:title="" />
+    </fig>
+    <p>The folder structure of DEPP is shown in Figure 2. The directory
+    <italic>src</italic> contains the DEPP source code. After
+    compilation, the executable <italic>depp.x</italic> is moved to
+    <italic>bin</italic> directory. <italic>test</italic> folder
+    contains Bash scripts
+    (<xref alt="Ramey &amp; Fox, 2016" rid="ref-RameyU003A2016" ref-type="bibr">Ramey
+    &amp; Fox, 2016</xref>) to perform code verification and
+    installation check-up. Examples are provided within
+    <italic>examples</italic> directory.</p>
+    <fig>
+      <caption><p>Folder structure of DEPP.</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="folder_structure.png" xlink:title="" />
+    </fig>
+  </sec>
+  <sec id="secU003Atheory">
+    <title>Supporting theory</title>
+    <p>The following sections describe the optimization theory behind
+    the current implementation of DEPP. It must be emphasized that DEPP
+    was designed based on an Object-Oriented Paradigm, in such a way to
+    simplify the implementation of new and better methods.</p>
+    <sec id="secU003ADE">
+      <title>Differential Evolution</title>
+      <p>The Differential Evolution algorithm is based on the principles
+      of biological evolution. Basically, it works as follows. Given a
+      population (set of discrete points in the domain of search), new
+      individuals (trial points) are generated by “mutation” and
+      “crossing over”. Here, “mutation” means a rule for creating new
+      trial individuals while “crossing over” means a rule of exchanging
+      information between a trial individual and an individual of the
+      population. The fitness (objective function) of the new
+      individuals is compared to the fitness of the parent individuals
+      and the worse individuals are eliminated. The procedure is
+      repeated for several generations (iterations) until a criterion of
+      convergence is satisfied within a given tolerance.</p>
+      <p>The current version of DEPP focus on a particular kind of
+      maximization problem, often found in practical applications, i.e.,
+      <named-content id="eqU003Amaximization" content-type="equation"><disp-formula><alternatives>
+      <tex-math><![CDATA[\begin{aligned}
+              \underset{\boldsymbol{x}}{\text{maximize}} &\quad f(\boldsymbol{x}) \\
+              \text{subject to}&\\
+              &\quad \boldsymbol{L} \le \boldsymbol{x}  \le \boldsymbol{U},
+      \end{aligned}
+      \label{eq:maximization}]]></tex-math>
+      <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtable><mml:mtr><mml:mtd columnalign="right"><mml:munder><mml:mtext mathvariant="normal">maximize</mml:mtext><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle></mml:munder></mml:mtd><mml:mtd columnalign="left"><mml:mspace width="1.0em"></mml:mspace><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"><mml:mtext mathvariant="normal">subject to</mml:mtext></mml:mtd><mml:mtd columnalign="left"></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"></mml:mtd><mml:mtd columnalign="left"><mml:mspace width="1.0em"></mml:mspace><mml:mstyle mathvariant="bold"><mml:mi>𝐋</mml:mi></mml:mstyle><mml:mo>≤</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo>≤</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐔</mml:mi></mml:mstyle><mml:mo>,</mml:mo></mml:mtd></mml:mtr></mml:mtable></mml:math></alternatives></disp-formula></named-content>
+      where <inline-formula><alternatives>
+      <tex-math><![CDATA[f]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>
+      is a real-valued function, also known as the objective function,
+      depending on a D-dimensional vector <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{x}=(x_1, \cdots, x_D)]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:mi>⋯</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>D</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+      of real variables. The variable <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{x}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+      is confined in a box with lower <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{L}=(L_1,\cdots, L_D)]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐋</mml:mi></mml:mstyle><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>L</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:mi>⋯</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>L</mml:mi><mml:mi>D</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+      and upper <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{U}=(U_1,\cdots, U_D)]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐔</mml:mi></mml:mstyle><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>U</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:mi>⋯</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>U</mml:mi><mml:mi>D</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+      bounds.</p>
+      <p>The first step toward solving this optimization problem is the
+      population initialization. For the first generation
+      (<inline-formula><alternatives>
+      <tex-math><![CDATA[g=1]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>g</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>),
+      a population (set of points) <inline-formula><alternatives>
+      <tex-math><![CDATA[\{\boldsymbol{x}_i\}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[1\le i \le N_p]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>1</mml:mn><mml:mo>≤</mml:mo><mml:mi>i</mml:mi><mml:mo>≤</mml:mo><mml:msub><mml:mi>N</mml:mi><mml:mi>p</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+      is created randomly within the box <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{L} \le \boldsymbol{x} \le \boldsymbol{U}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐋</mml:mi></mml:mstyle><mml:mo>≤</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo>≤</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐔</mml:mi></mml:mstyle></mml:mrow></mml:math></alternatives></inline-formula>,
+      <italic>e.g.</italic> <disp-formula><alternatives>
+      <tex-math><![CDATA[x_{ij}=L_j+(U_j-L_j) \mathcal{R},\quad 1\le j \le D,]]></tex-math>
+      <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>x</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:msub><mml:mi>L</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo>+</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>U</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mi>L</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mstyle mathvariant="script"><mml:mi>ℛ</mml:mi></mml:mstyle><mml:mo>,</mml:mo><mml:mspace width="1.0em"></mml:mspace><mml:mn>1</mml:mn><mml:mo>≤</mml:mo><mml:mi>j</mml:mi><mml:mo>≤</mml:mo><mml:mi>D</mml:mi><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+      where <inline-formula><alternatives>
+      <tex-math><![CDATA[\mathcal{R}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>ℛ</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+      is a random number uniformly distributed in
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[[0,1)]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">[</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="false" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+      and <inline-formula><alternatives>
+      <tex-math><![CDATA[x_{ij}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>x</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+      is the <inline-formula><alternatives>
+      <tex-math><![CDATA[j]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>j</mml:mi></mml:math></alternatives></inline-formula>-th
+      element of the <inline-formula><alternatives>
+      <tex-math><![CDATA[i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>-th
+      individual.</p>
+      <p>After the population initialization, the fitness of each
+      individual <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{x}_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      is calculated.</p>
+      <p>For the next generations, trial individuals are calculated
+      based on the population of the previous generations. Trial
+      individuals are created by a process of mutation and crossing over
+      as follows. For each individual <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{x}_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      of the previous population, other three distinct individuals
+      (<inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{x}_{i_1}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:msub><mml:mi>i</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:msub></mml:math></alternatives></inline-formula>,
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{x}_{i_2}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:msub><mml:mi>i</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:msub></mml:math></alternatives></inline-formula>
+      and <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{x}_{i_3}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:msub><mml:mi>i</mml:mi><mml:mn>3</mml:mn></mml:msub></mml:msub></mml:math></alternatives></inline-formula>)
+      of the same population are randomly selected and a mutant
+      individual <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{v}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐯</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+      is created <disp-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{v}=\boldsymbol{x}_{i_1}+F(\boldsymbol{x}_{i_3}-\boldsymbol{x}_{i_2}),]]></tex-math>
+      <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐯</mml:mi></mml:mstyle><mml:mo>=</mml:mo><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:msub><mml:mi>i</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:msub><mml:mo>+</mml:mo><mml:mi>F</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:msub><mml:mi>i</mml:mi><mml:mn>3</mml:mn></mml:msub></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:msub><mml:mi>i</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+      where <inline-formula><alternatives>
+      <tex-math><![CDATA[F]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>F</mml:mi></mml:math></alternatives></inline-formula>
+      is the differentiation parameter. Then, the mutant individual and
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{x}_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      cross over, producing the trial individual
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{u}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>.
+      The components <inline-formula><alternatives>
+      <tex-math><![CDATA[u_j]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>u</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      (<inline-formula><alternatives>
+      <tex-math><![CDATA[1 \le j \le D]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>1</mml:mn><mml:mo>≤</mml:mo><mml:mi>j</mml:mi><mml:mo>≤</mml:mo><mml:mi>D</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>)
+      of <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{u}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+      are given by
+      <named-content id="eqU003Acrossover" content-type="equation"><disp-formula><alternatives>
+      <tex-math><![CDATA[u_{j}=\begin{cases} 
+      v_{j} &  \text{if}~~\mathcal{R} < C_r~~\text{or}~~j = j^*, \\
+      x_{ij} & \text{otherwise}.
+      \end{cases}
+      \label{eq:crossover}]]></tex-math>
+      <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>u</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">{</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="left"><mml:msub><mml:mi>v</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:mtd><mml:mtd columnalign="left"><mml:mtext mathvariant="normal">if</mml:mtext><mml:mspace width="0.222em"></mml:mspace><mml:mspace width="0.222em"></mml:mspace><mml:mstyle mathvariant="script"><mml:mi>ℛ</mml:mi></mml:mstyle><mml:mo>&lt;</mml:mo><mml:msub><mml:mi>C</mml:mi><mml:mi>r</mml:mi></mml:msub><mml:mspace width="0.222em"></mml:mspace><mml:mspace width="0.222em"></mml:mspace><mml:mtext mathvariant="normal">or</mml:mtext><mml:mspace width="0.222em"></mml:mspace><mml:mspace width="0.222em"></mml:mspace><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:msup><mml:mi>j</mml:mi><mml:mo>*</mml:mo></mml:msup><mml:mo>,</mml:mo></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="left"><mml:msub><mml:mi>x</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub></mml:mtd><mml:mtd columnalign="left"><mml:mtext mathvariant="normal">otherwise</mml:mtext><mml:mi>.</mml:mi></mml:mtd></mml:mtr></mml:mtable></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula></named-content>
+      In the previous equation, <inline-formula><alternatives>
+      <tex-math><![CDATA[C_r]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>C</mml:mi><mml:mi>r</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      is the crossover parameter and <inline-formula><alternatives>
+      <tex-math><![CDATA[j^*]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>j</mml:mi><mml:mo>*</mml:mo></mml:msup></mml:math></alternatives></inline-formula>
+      is an integer randomly chosen between 1 and
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[D]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>D</mml:mi></mml:math></alternatives></inline-formula>.
+      If the trial individual violates the constraints, i.e. if it is
+      not within <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{L} \le \boldsymbol{u} \le \boldsymbol{U}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐋</mml:mi></mml:mstyle><mml:mo>≤</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mo>≤</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐔</mml:mi></mml:mstyle></mml:mrow></mml:math></alternatives></inline-formula>,
+      then the process of generating a trial individual is repeated.</p>
+      <p>The fitness of the trial individual is compared to the fitness
+      of <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{x}_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>.
+      If <inline-formula><alternatives>
+      <tex-math><![CDATA[f(\boldsymbol{x}_i)\le f(\boldsymbol{u})]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>≤</mml:mo><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>,
+      then <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{u}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+      replaces <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{x}_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>.
+      This is the so-called selection.</p>
+      <p>New generations are created until a stopping condition is
+      satisfied. DEPP implements a composition of the following stopping
+      conditions: (i) best fitness stagnation, (ii) maximum number of
+      generations and (iii) population convergence measure. In the first
+      one, the generation cycle is interrupted if no improvement of the
+      fitness function is achieved within <inline-formula><alternatives>
+      <tex-math><![CDATA[N_A]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>N</mml:mi><mml:mi>A</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      generations. The second condition establishes the maximum number
+      of generations allowed. Finally, in the third condition, the cycle
+      is interrupted if the P-measure <inline-formula><alternatives>
+      <tex-math><![CDATA[P_m]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>P</mml:mi><mml:mi>m</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      (<xref alt="Feoktistov, 2006" rid="ref-FeoktistovU003A2006" ref-type="bibr">Feoktistov,
+      2006</xref>) is lower or equal to a given tolerance. The P-measure
+      is evaluated as <disp-formula><alternatives>
+      <tex-math><![CDATA[P_m=\max_{1 \le i \le N_p} |\boldsymbol{x}'_i-\boldsymbol{x}'_m|,]]></tex-math>
+      <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>P</mml:mi><mml:mi>m</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:munder><mml:mo>max</mml:mo><mml:mrow><mml:mn>1</mml:mn><mml:mo>≤</mml:mo><mml:mi>i</mml:mi><mml:mo>≤</mml:mo><mml:msub><mml:mi>N</mml:mi><mml:mi>p</mml:mi></mml:msub></mml:mrow></mml:munder><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:msub><mml:mi>′</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:msub><mml:mi>′</mml:mi><mml:mi>m</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+      where <inline-formula><alternatives>
+      <tex-math><![CDATA[|\cdot|]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:mo>⋅</mml:mo><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+      is the <inline-formula><alternatives>
+      <tex-math><![CDATA[L_2]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>L</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+      norm, the components of <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{x}'_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:msub><mml:mi>′</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+      are given by <disp-formula><alternatives>
+      <tex-math><![CDATA[x'_{ij}=\frac{x_{ij}-L_j}{U_j-L_j}, \quad 1 \le j \le D]]></tex-math>
+      <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>x</mml:mi><mml:msub><mml:mi>′</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:mfrac><mml:mrow><mml:msub><mml:mi>x</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mi>L</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:mrow><mml:mrow><mml:msub><mml:mi>U</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mi>L</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:mrow></mml:mfrac><mml:mo>,</mml:mo><mml:mspace width="1.0em"></mml:mspace><mml:mn>1</mml:mn><mml:mo>≤</mml:mo><mml:mi>j</mml:mi><mml:mo>≤</mml:mo><mml:mi>D</mml:mi></mml:mrow></mml:math></alternatives></disp-formula>
+      and <disp-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{x}'_m=\frac{1}{N_p}\sum_{i=1}^{N_p}\boldsymbol{x}'_i.]]></tex-math>
+      <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:msub><mml:mi>′</mml:mi><mml:mi>m</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mfrac><mml:mn>1</mml:mn><mml:msub><mml:mi>N</mml:mi><mml:mi>p</mml:mi></mml:msub></mml:mfrac><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>N</mml:mi><mml:mi>p</mml:mi></mml:msub></mml:munderover><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:msub><mml:mi>′</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+      <p>The approach presented in this section has three parameters:
+      the population size <inline-formula><alternatives>
+      <tex-math><![CDATA[N_p]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>N</mml:mi><mml:mi>p</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+      the differentiation parameter <inline-formula><alternatives>
+      <tex-math><![CDATA[F]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>F</mml:mi></mml:math></alternatives></inline-formula>
+      and the crossover parameter <inline-formula><alternatives>
+      <tex-math><![CDATA[C_r]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>C</mml:mi><mml:mi>r</mml:mi></mml:msub></mml:math></alternatives></inline-formula>.
+      Feoktistov
+      (<xref alt="2006" rid="ref-FeoktistovU003A2006" ref-type="bibr">2006</xref>)
+      gives reference values/ranges of these parameters based on
+      optimization studies performed on many test functions.</p>
+    </sec>
+    <sec id="secU003ADERSM">
+      <title>Differential Evolution and Response Surface
+      Methodology</title>
+      <p>In order to accelerate the convergence of DE, Vincenzi &amp;
+      Savoia
+      (<xref alt="2015" rid="ref-VincenziU003A2015" ref-type="bibr">2015</xref>)
+      proposed a new mutation operation based on the Response Surface
+      Methodology (RSM)
+      (<xref alt="Khuri &amp; Cornell, 1996" rid="ref-KhuriU003A1996" ref-type="bibr">Khuri
+      &amp; Cornell, 1996</xref>;
+      <xref alt="Myers et al., 2009" rid="ref-MyersU003A2009" ref-type="bibr">Myers
+      et al., 2009</xref>). The basic idea consists of fitting a simple
+      response surface to a selected set of individuals of the
+      population. The mutant vector is, then, obtained by maximizing the
+      response surface, which is done through matrix inversion. For a
+      given benchmark, the authors showed that the number of generations
+      necessary to reach a given precision was substantially reduced
+      (more than 50%).</p>
+      <p>Vincenzi and Savoia considered two response surfaces. The first
+      one is a quadratic polynomial <inline-formula><alternatives>
+      <tex-math><![CDATA[P(\boldsymbol{x})]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>P</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>,
+      given by
+      <named-content id="eqU003Aquadratic" content-type="equation"><disp-formula><alternatives>
+      <tex-math><![CDATA[P(\boldsymbol{x})=\beta_0+\sum_{i=1}^D\beta_i x_i+\sum_{i=1}^D\beta_{ii} x_i^2+\sum_{i=1}^{D-1}\sum_{j=i+1}^D\beta_{ij} x_ix_j,
+      \label{eq:quadratic}]]></tex-math>
+      <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>P</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msub><mml:mi>β</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mo>+</mml:mo><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>D</mml:mi></mml:munderover><mml:msub><mml:mi>β</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>+</mml:mo><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>D</mml:mi></mml:munderover><mml:msub><mml:mi>β</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub><mml:msubsup><mml:mi>x</mml:mi><mml:mi>i</mml:mi><mml:mn>2</mml:mn></mml:msubsup><mml:mo>+</mml:mo><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mrow><mml:mi>D</mml:mi><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:munderover><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mi>i</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>D</mml:mi></mml:munderover><mml:msub><mml:mi>β</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:msub><mml:mi>x</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></named-content>
+      where <inline-formula><alternatives>
+      <tex-math><![CDATA[\beta]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>β</mml:mi></mml:math></alternatives></inline-formula>
+      are coefficients to be fitted. The quadratic polynomial has
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[N_{f_m}=(D+1)(D+2)/2]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>N</mml:mi><mml:msub><mml:mi>f</mml:mi><mml:mi>m</mml:mi></mml:msub></mml:msub><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>D</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>D</mml:mi><mml:mo>+</mml:mo><mml:mn>2</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>/</mml:mi><mml:mn>2</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+      coefficients and, so, it requires, at least, the same number of
+      points to be fitted. Note that the number of points grows
+      significantly when the number of unknowns
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[D]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>D</mml:mi></mml:math></alternatives></inline-formula>
+      is increased. That is why Vincenzi and Savoia proposed a second
+      model.</p>
+      <p>The second model is an “Incomplete Quadratic Model”, where the
+      terms <inline-formula><alternatives>
+      <tex-math><![CDATA[\beta_{ij}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>β</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+      of the previous equation are neglected. In this case, the minimum
+      number of fitting points is reduced to
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[N_{f_m}=2D+1]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>N</mml:mi><mml:msub><mml:mi>f</mml:mi><mml:mi>m</mml:mi></mml:msub></mml:msub><mml:mo>=</mml:mo><mml:mn>2</mml:mn><mml:mi>D</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>.
+      On the other hand, the accuracy of the model is also reduced.</p>
+      <p>The DE-RSM hybridization implemented in DEPP was inspired in
+      the work of Vincenzi and Savoia, but with some modifications that
+      are explained below.</p>
+      <p>DEPP stores a history list, <italic>i.e.</italic> a list of all
+      individuals calculated since the first generation and their
+      corresponding fitness. This list is employed to generate mutant
+      vectors by RSM hybridization and may be used by other methods to
+      be implemented in the future.</p>
+      <p>According to the DE algorithm, for each individual
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{x}_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      of the population, a trial individual
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{u}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+      is created, resulting from a mutation and a crossing over. When
+      the RSM hybridization is active, the mutant vector may be created
+      by the DE procedure explained in the previous section or by
+      hybridization with RSM. The following conditions must be satisfied
+      simultaneously for applying RSM:</p>
+      <list list-type="bullet">
+        <list-item>
+          <p>The number of individuals in the history list must be, at
+          least, twice the number of individuals required to fit the
+          response surface <inline-formula><alternatives>
+          <tex-math><![CDATA[N_f]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>N</mml:mi><mml:mi>f</mml:mi></mml:msub></mml:math></alternatives></inline-formula>.
+          Notice that <inline-formula><alternatives>
+          <tex-math><![CDATA[N_{f_m}\le N_f]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>N</mml:mi><mml:msub><mml:mi>f</mml:mi><mml:mi>m</mml:mi></mml:msub></mml:msub><mml:mo>≤</mml:mo><mml:msub><mml:mi>N</mml:mi><mml:mi>f</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>;</p>
+        </list-item>
+        <list-item>
+          <p>A random number <inline-formula><alternatives>
+          <tex-math><![CDATA[\mathcal{R}]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>ℛ</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+          (within [0,1)) must be less than the probability of
+          hybridization <inline-formula><alternatives>
+          <tex-math><![CDATA[f_h]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mi>h</mml:mi></mml:msub></mml:math></alternatives></inline-formula>.</p>
+        </list-item>
+      </list>
+      <p>The probability of hybridization <inline-formula><alternatives>
+      <tex-math><![CDATA[f_h]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mi>h</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      may be prescribed by the user or may be calculated dynamically
+      during the optimization. The dynamic calculation of
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[f_h]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mi>h</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      considers the probability of success
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[f_s]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      when applying RSM. More precisely, <disp-formula><alternatives>
+      <tex-math><![CDATA[f_h=
+      \begin{cases}
+      f_{h_{min}} & f_s \le f_{h_{min}}, \\
+      f_s & f_{h_{min}} < f_s < f_{h_{max}}, \\
+      f_{h_{max}} & f_{h_{max}} \le f_s, \\
+      \end{cases}]]></tex-math>
+      <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>f</mml:mi><mml:mi>h</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">{</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="left"><mml:msub><mml:mi>f</mml:mi><mml:msub><mml:mi>h</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub></mml:msub></mml:mtd><mml:mtd columnalign="left"><mml:msub><mml:mi>f</mml:mi><mml:mi>s</mml:mi></mml:msub><mml:mo>≤</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:msub><mml:mi>h</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub></mml:msub><mml:mo>,</mml:mo></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="left"><mml:msub><mml:mi>f</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:mtd><mml:mtd columnalign="left"><mml:msub><mml:mi>f</mml:mi><mml:msub><mml:mi>h</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub></mml:msub><mml:mo>&lt;</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mi>s</mml:mi></mml:msub><mml:mo>&lt;</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:msub><mml:mi>h</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>a</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:msub><mml:mo>,</mml:mo></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="left"><mml:msub><mml:mi>f</mml:mi><mml:msub><mml:mi>h</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>a</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:msub></mml:mtd><mml:mtd columnalign="left"><mml:msub><mml:mi>f</mml:mi><mml:msub><mml:mi>h</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>a</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:msub><mml:mo>≤</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mi>s</mml:mi></mml:msub><mml:mo>,</mml:mo></mml:mtd></mml:mtr></mml:mtable></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula>
+      where <inline-formula><alternatives>
+      <tex-math><![CDATA[f_{h_{min}}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:msub><mml:mi>h</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub></mml:msub></mml:math></alternatives></inline-formula>
+      and <inline-formula><alternatives>
+      <tex-math><![CDATA[f_{h_{max}}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:msub><mml:mi>h</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>a</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:msub></mml:math></alternatives></inline-formula>
+      are the minimum and maximum allowed values of
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[f_h]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mi>h</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+      respectively.</p>
+      <p>The probability of success of RSM
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[f_s]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      is the ratio of the number of times that the hybridization
+      contributed to maximizing the objective function to the last
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[N_p]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>N</mml:mi><mml:mi>p</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      times RSM hybridization was applied. In the first generations,
+      when the number of samples is less than
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[N_p]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>N</mml:mi><mml:mi>p</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[f_s]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      is not available. In this case, <inline-formula><alternatives>
+      <tex-math><![CDATA[f_h]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mi>h</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      is equal to <inline-formula><alternatives>
+      <tex-math><![CDATA[f_{h0}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mn>0</mml:mn></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>,
+      an initial value of the fraction of hybridization.</p>
+      <p>Suppose, now, that a mutant vector, associated with individual
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{x}_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+      will be calculated by DE-RSM hybridization. In order to fit a
+      response surface, it is necessary to select a set of individuals.
+      This selection is made in two steps. First, the history list is
+      ordered from the best individual to the worst one and the i-th
+      best individual <inline-formula><alternatives>
+      <tex-math><![CDATA[\hat{\boldsymbol{x}}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo accent="true">̂</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+      is taken (target individual). Second, the history list is
+      reordered from the closest to the furthermost individual to the
+      target individual. From this list, <inline-formula><alternatives>
+      <tex-math><![CDATA[N_f-1]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>N</mml:mi><mml:mi>f</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+      individuals are selected according to the following rules,
+      starting from the closest individual:</p>
+      <list list-type="bullet">
+        <list-item>
+          <p>The distance between <inline-formula><alternatives>
+          <tex-math><![CDATA[\hat{\boldsymbol{x}}]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo accent="true">̂</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+          and the candidate individual <inline-formula><alternatives>
+          <tex-math><![CDATA[\boldsymbol{x}_k]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>k</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+          must satisfy <disp-formula><alternatives>
+          <tex-math><![CDATA[\sqrt{\sum_{j=1}^{D}\left(\frac{\hat{x}_j-x_{kj}}{U_j-L_j}\right)^2} \ge \eta_{\text{tol}},]]></tex-math>
+          <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msqrt><mml:mrow><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>D</mml:mi></mml:munderover><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mfrac><mml:mrow><mml:msub><mml:mover><mml:mi>x</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>j</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mrow><mml:mi>k</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub></mml:mrow><mml:mrow><mml:msub><mml:mi>U</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mi>L</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:mrow></mml:mfrac><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup></mml:mrow></mml:msqrt><mml:mo>≥</mml:mo><mml:msub><mml:mi>η</mml:mi><mml:mtext mathvariant="normal">tol</mml:mtext></mml:msub><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+          where <inline-formula><alternatives>
+          <tex-math><![CDATA[\eta_{\text{tol}}]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>η</mml:mi><mml:mtext mathvariant="normal">tol</mml:mtext></mml:msub></mml:math></alternatives></inline-formula>
+          is a prescribed tolerance. In other words, there is a minimum
+          distance between the target individual and its neighbors.</p>
+        </list-item>
+        <list-item>
+          <p>The candidate individual <inline-formula><alternatives>
+          <tex-math><![CDATA[\boldsymbol{x}_k]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>k</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+          is selected with a probability of 50%.</p>
+        </list-item>
+      </list>
+      <p>Once the fitting individuals are selected, the coefficients of
+      the response surface are determined using the weighted least
+      squares method
+      (<xref alt="Khuri &amp; Cornell, 1996" rid="ref-KhuriU003A1996" ref-type="bibr">Khuri
+      &amp; Cornell, 1996</xref>).</p>
+      <p>Two weighting functions are implemented in DEPP: uniform and
+      exponential
+      (<xref alt="Vincenzi &amp; Savoia, 2015" rid="ref-VincenziU003A2015" ref-type="bibr">Vincenzi
+      &amp; Savoia, 2015</xref>). The exponential weighting function
+      reads as <disp-formula><alternatives>
+      <tex-math><![CDATA[w(\boldsymbol{x}_k)=
+      \begin{cases}
+      \exp{\left(\frac{f(\boldsymbol{x}_k)-f_{\text{best}}}{f_{\text{best}}}\right)} & f_{\text{best}}\neq 0\\
+      \exp{\left(f(\boldsymbol{x}_k)-f_{\text{best}}\right)} & f_{\text{best}}= 0,
+      \end{cases}]]></tex-math>
+      <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>w</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>k</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">{</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="left"><mml:mo>exp</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mfrac><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>k</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mtext mathvariant="normal">best</mml:mtext></mml:msub></mml:mrow><mml:msub><mml:mi>f</mml:mi><mml:mtext mathvariant="normal">best</mml:mtext></mml:msub></mml:mfrac><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd><mml:mtd columnalign="left"><mml:msub><mml:mi>f</mml:mi><mml:mtext mathvariant="normal">best</mml:mtext></mml:msub><mml:mo>≠</mml:mo><mml:mn>0</mml:mn></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="left"><mml:mo>exp</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>k</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mtext mathvariant="normal">best</mml:mtext></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd><mml:mtd columnalign="left"><mml:msub><mml:mi>f</mml:mi><mml:mtext mathvariant="normal">best</mml:mtext></mml:msub><mml:mo>=</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo></mml:mtd></mml:mtr></mml:mtable></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula>
+      where <inline-formula><alternatives>
+      <tex-math><![CDATA[\boldsymbol{x}_k]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>k</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      is any of the selected individuals for fitting and
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[f_{\text{best}}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mtext mathvariant="normal">best</mml:mtext></mml:msub></mml:math></alternatives></inline-formula>
+      is the best fitness among the individuals selected for
+      fitting.</p>
+      <p>Finally, the mutant vector is obtained by maximizing the
+      response surface.</p>
+      <p>If the application of RSM fails or the trial individual is out
+      of range, then a pure DE individual is created.</p>
+    </sec>
+  </sec>
+</sec>
+<sec id="secU003Aexamples">
+  <title>Examples</title>
+  <p>Four test functions, whose maximizers are known analytically, were
+  chosen for illustrating the application of DEPP:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Step function
+      (<xref alt="Zhang &amp; Sanderson, 2009" rid="ref-ZhangU003A2009" ref-type="bibr">Zhang
+      &amp; Sanderson, 2009</xref>)</p>
+      <p><inline-formula><alternatives>
+      <tex-math><![CDATA[f(\boldsymbol{x})=-\sum_{i=1}^{D} \left( \lfloor x_i-0.5 \rfloor \right)^2]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>−</mml:mo><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>D</mml:mi></mml:msubsup><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mo stretchy="false" form="prefix">⌊</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:mn>0.5</mml:mn><mml:mo stretchy="false" form="postfix">⌋</mml:mo><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>,</p>
+    </list-item>
+  </list>
+  <fig>
+    <caption><p>Step function.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="function02.png" xlink:title="" />
+  </fig>
+  <list list-type="bullet">
+    <list-item>
+      <p>Rosenbrock function
+      (<xref alt="Feoktistov, 2006" rid="ref-FeoktistovU003A2006" ref-type="bibr">Feoktistov,
+      2006</xref>)</p>
+      <p><inline-formula><alternatives>
+      <tex-math><![CDATA[f(\boldsymbol{x})=-\sum_{i=1}^{D-1} 100\left( x_i^2-x_{i+1}\right)^2+(1-x_i)^2]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>−</mml:mo><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mrow><mml:mi>D</mml:mi><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup><mml:mn>100</mml:mn><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mi>x</mml:mi><mml:mi>i</mml:mi><mml:mn>2</mml:mn></mml:msubsup><mml:mo>−</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup><mml:mo>+</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>,</p>
+    </list-item>
+  </list>
+  <fig>
+    <caption><p>Rosenbrock function.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="function09.png" xlink:title="" />
+  </fig>
+  <list list-type="bullet">
+    <list-item>
+      <p>Noisy Quartic function
+      (<xref alt="Zhang &amp; Sanderson, 2009" rid="ref-ZhangU003A2009" ref-type="bibr">Zhang
+      &amp; Sanderson, 2009</xref>)</p>
+      <p><inline-formula><alternatives>
+      <tex-math><![CDATA[f(\boldsymbol{x})=-\mathcal{R}-\sum_{i=1}^{D} i~x_i^4]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>−</mml:mo><mml:mstyle mathvariant="script"><mml:mi>ℛ</mml:mi></mml:mstyle><mml:mo>−</mml:mo><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>D</mml:mi></mml:msubsup><mml:mi>i</mml:mi><mml:mspace width="0.222em"></mml:mspace><mml:msubsup><mml:mi>x</mml:mi><mml:mi>i</mml:mi><mml:mn>4</mml:mn></mml:msubsup></mml:mrow></mml:math></alternatives></inline-formula>,</p>
+    </list-item>
+  </list>
+  <p>where <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{R}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>ℛ</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  is a uniform random number belonging to <inline-formula><alternatives>
+  <tex-math><![CDATA[[0,1)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">[</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="false" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>,</p>
+  <fig>
+    <caption><p>Noisy Quartic function.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="function13.png" xlink:title="" />
+  </fig>
+  <list list-type="bullet">
+    <list-item>
+      <p>Schwefel 2.26 function
+      (<xref alt="Zhang &amp; Sanderson, 2009" rid="ref-ZhangU003A2009" ref-type="bibr">Zhang
+      &amp; Sanderson, 2009</xref>)</p>
+      <p><inline-formula><alternatives>
+      <tex-math><![CDATA[f(\boldsymbol{x})=-418.98288727243369~D+\sum_{i=1}^{D} x_i\sin{\left(\sqrt{|x_i|}\right)}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>−</mml:mo><mml:mn>418.98288727243369</mml:mn><mml:mspace width="0.222em"></mml:mspace><mml:mi>D</mml:mi><mml:mo>+</mml:mo><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>D</mml:mi></mml:msubsup><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>sin</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msqrt><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow></mml:msqrt><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+    </list-item>
+  </list>
+  <fig>
+    <caption><p>Schwefel 2.26 function.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="function14.png" xlink:title="" />
+  </fig>
+  <p>These functions were chosen because they present particular
+  features that make optimization difficult. The Step function (Fig. 3),
+  a set of flat surfaces, poses a hard problem to optimizers relying on
+  functions’ derivatives. This is even worse for the Noisy Quartic
+  function (Fig. 4), which has a noisy plateau near its maximum.
+  Rosenbrock’s function (Fig. 5), although smooth, has a sharp narrow
+  ridge around a parabola, which makes it a challenge to find an
+  appropriate search direction. Finally, Schwefel 2.26 (Fig. 6) has
+  several local optima, which may lead to premature convergence.</p>
+  <p>The maximizers <inline-formula><alternatives>
+  <tex-math><![CDATA[x_i^*]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mi>x</mml:mi><mml:mi>i</mml:mi><mml:mo>*</mml:mo></mml:msubsup></mml:math></alternatives></inline-formula>
+  and the domain of optimization of the test functions are presented in
+  Table 1.</p>
+  <table-wrap>
+    <caption>
+      <p>Lower <inline-formula><alternatives>
+      <tex-math><![CDATA[L_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>L</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      and upper <inline-formula><alternatives>
+      <tex-math><![CDATA[U_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>U</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      bounds for maximization and the global maximizer
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[x_i^*]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mi>x</mml:mi><mml:mi>i</mml:mi><mml:mo>*</mml:mo></mml:msubsup></mml:math></alternatives></inline-formula>
+      (<inline-formula><alternatives>
+      <tex-math><![CDATA[1\le i \le D]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>1</mml:mn><mml:mo>≤</mml:mo><mml:mi>i</mml:mi><mml:mo>≤</mml:mo><mml:mi>D</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>).</p>
+    </caption>
+    <table>
+      <thead>
+        <tr>
+          <th align="center">Function</th>
+          <th align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[L_i]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>L</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula></th>
+          <th align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[U_i]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>U</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula></th>
+          <th align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[x_i^*]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mi>x</mml:mi><mml:mi>i</mml:mi><mml:mo>*</mml:mo></mml:msubsup></mml:math></alternatives></inline-formula></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="center">Step</td>
+          <td align="center">-100</td>
+          <td align="center">100</td>
+          <td align="center">0.5</td>
+        </tr>
+        <tr>
+          <td align="center">Rosenbrock</td>
+          <td align="center">-2</td>
+          <td align="center">2</td>
+          <td align="center">1</td>
+        </tr>
+        <tr>
+          <td align="center">Noisy Quartic</td>
+          <td align="center">-1.28</td>
+          <td align="center">1.28</td>
+          <td align="center">0</td>
+        </tr>
+        <tr>
+          <td align="center">Schwefel 2.26</td>
+          <td align="center">-500</td>
+          <td align="center">500</td>
+          <td align="center">420.968597844358</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>Additionally, this example aims (i) to show the effect of
+  DE-Response Surface (DE-RSM) coupling on reducing the number of
+  iterations required to achieve convergence and (ii) to show the effect
+  of parallelization on reducing the optimization time. In order to
+  accomplish the first task, the four test functions were optimized for
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[D \in \{2, 4, 8\}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>D</mml:mi><mml:mo>∈</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mn>2</mml:mn><mml:mo>,</mml:mo><mml:mn>4</mml:mn><mml:mo>,</mml:mo><mml:mn>8</mml:mn><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+  dimensions using DE and DE-RSM. For the second task, the number of
+  dimensions was restricted to <inline-formula><alternatives>
+  <tex-math><![CDATA[D=2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>D</mml:mi><mml:mo>=</mml:mo><mml:mn>2</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>,
+  but for each call of the external software that calculates the
+  objective function, it was added a delay of 1 s in order to simulate a
+  computationally expensive program. Since DE is a stochastic method, in
+  both tasks, the final results are the average of 50 optimizations.</p>
+  <p>The parameters applied in the optimization are as follows. The
+  population size is <inline-formula><alternatives>
+  <tex-math><![CDATA[N_p=20]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>N</mml:mi><mml:mi>p</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mn>20</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  for <inline-formula><alternatives>
+  <tex-math><![CDATA[D=2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>D</mml:mi><mml:mo>=</mml:mo><mml:mn>2</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[N_p=40]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>N</mml:mi><mml:mi>p</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mn>40</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  for <inline-formula><alternatives>
+  <tex-math><![CDATA[D=4]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>D</mml:mi><mml:mo>=</mml:mo><mml:mn>4</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[D=8]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>D</mml:mi><mml:mo>=</mml:mo><mml:mn>8</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>.
+  For pure DE, <inline-formula><alternatives>
+  <tex-math><![CDATA[F=0.85]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>F</mml:mi><mml:mo>=</mml:mo><mml:mn>0.85</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[C_r=0.5]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>C</mml:mi><mml:mi>r</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mn>0.5</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>.
+  Hybridization uses quadratic polynomial as the response surface. The
+  fraction of hybridization is calculated dynamically using
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[f_{h0}=0.35]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>f</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mn>0</mml:mn></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:mn>0.35</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[f_{\text{min}}=0.1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>f</mml:mi><mml:mtext mathvariant="normal">min</mml:mtext></mml:msub><mml:mo>=</mml:mo><mml:mn>0.1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[f_{\text{max}}=0.9]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>f</mml:mi><mml:mtext mathvariant="normal">max</mml:mtext></mml:msub><mml:mo>=</mml:mo><mml:mn>0.9</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>.
+  The crossing over parameter of RSM is <inline-formula><alternatives>
+  <tex-math><![CDATA[C_r=1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>C</mml:mi><mml:mi>r</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>.
+  The number of individuals selected for fitting the response surface is
+  twice the minimum required, <italic>i.e.</italic>
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[N_f=2N_{f_{m}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>N</mml:mi><mml:mi>f</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mn>2</mml:mn><mml:msub><mml:mi>N</mml:mi><mml:msub><mml:mi>f</mml:mi><mml:mi>m</mml:mi></mml:msub></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>.
+  The tolerance for selecting individuals for fitting is
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\eta_{\text{tol}}=0.0001]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>η</mml:mi><mml:mtext mathvariant="normal">tol</mml:mtext></mml:msub><mml:mo>=</mml:mo><mml:mn>0.0001</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>.
+  Uniform weighting is applied for fitting. Concerning the stopping
+  conditions, the maximum number of generations allowed is 5000, the
+  maximum number of generations allowed without improving fitness
+  function is 40, for <inline-formula><alternatives>
+  <tex-math><![CDATA[D=2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>D</mml:mi><mml:mo>=</mml:mo><mml:mn>2</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>,
+  and 80, for <inline-formula><alternatives>
+  <tex-math><![CDATA[D\in\{4;8\}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>D</mml:mi><mml:mo>∈</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mn>4</mml:mn><mml:mo>;</mml:mo><mml:mn>8</mml:mn><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>,
+  and the tolerance of P-measure is <inline-formula><alternatives>
+  <tex-math><![CDATA[P_m\le P_{\text{tol}}=5\times 10^{-4}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>P</mml:mi><mml:mi>m</mml:mi></mml:msub><mml:mo>≤</mml:mo><mml:msub><mml:mi>P</mml:mi><mml:mtext mathvariant="normal">tol</mml:mtext></mml:msub><mml:mo>=</mml:mo><mml:mn>5</mml:mn><mml:mo>×</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mrow><mml:mo>−</mml:mo><mml:mn>4</mml:mn></mml:mrow></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+  <p>For the test functions considered, numerical results show that
+  DE-Response Surface (DE-RSM) coupling reduces the number of
+  generations necessary to find the global maximizer. Table 2 compares
+  the mean number of generations <inline-formula><alternatives>
+  <tex-math><![CDATA[G]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>G</mml:mi></mml:math></alternatives></inline-formula>
+  necessary to reach stop condition and the probability of success
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[P_s]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>P</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  to achieve the global maximum. The number in parenthesis is the
+  standard deviation <inline-formula><alternatives>
+  <tex-math><![CDATA[\sigma]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>σ</mml:mi></mml:math></alternatives></inline-formula>.
+  The poor performance of DE in finding the global maximum of
+  Rosenbrock’s function is due to stop condition. In this case, the
+  number of generations without improving the fitness function was
+  exceeded and optimization was interrupted.</p>
+  <table-wrap>
+    <caption>
+      <p>Number of generations <inline-formula><alternatives>
+      <tex-math><![CDATA[G]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>G</mml:mi></mml:math></alternatives></inline-formula>
+      to reach stop condition and probability of success
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[P_s]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>P</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:math></alternatives></inline-formula>.</p>
+    </caption>
+    <table>
+      <thead>
+        <tr>
+          <th align="center"></th>
+          <th align="center"></th>
+          <th align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[G]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>G</mml:mi></mml:math></alternatives></inline-formula></th>
+          <th align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[G]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>G</mml:mi></mml:math></alternatives></inline-formula></th>
+          <th align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[P_s]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>P</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:math></alternatives></inline-formula></th>
+          <th align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[P_s]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>P</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:math></alternatives></inline-formula></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="center">Function</td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[D]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>D</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td align="center">DE</td>
+          <td align="center">DE-RSM</td>
+          <td align="center">DE</td>
+          <td align="center">DE-RSM</td>
+        </tr>
+        <tr>
+          <td align="center">———–</td>
+          <td align="center">—</td>
+          <td align="center">——–</td>
+          <td align="center">——–</td>
+          <td align="center">—–</td>
+          <td align="center">——</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">2</td>
+          <td align="center">59 (4)</td>
+          <td align="center">42 (0)</td>
+          <td align="center">100</td>
+          <td align="center">100</td>
+        </tr>
+        <tr>
+          <td align="center">Step</td>
+          <td align="center">4</td>
+          <td align="center">130 (4)</td>
+          <td align="center">82 (0)</td>
+          <td align="center">100</td>
+          <td align="center">100</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">8</td>
+          <td align="center">221 (9)</td>
+          <td align="center">85 (0)</td>
+          <td align="center">100</td>
+          <td align="center">100</td>
+        </tr>
+        <tr>
+          <td align="center">———–</td>
+          <td align="center"></td>
+          <td align="center"></td>
+          <td align="center"></td>
+          <td align="center"></td>
+          <td align="center"></td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">2</td>
+          <td align="center">106 (10)</td>
+          <td align="center">35 (4)</td>
+          <td align="center">100</td>
+          <td align="center">100</td>
+        </tr>
+        <tr>
+          <td align="center">Rosenbrock</td>
+          <td align="center">4</td>
+          <td align="center">636 (131)</td>
+          <td align="center">101 (17)</td>
+          <td align="center">94</td>
+          <td align="center">100</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">8</td>
+          <td align="center">1526 (395)</td>
+          <td align="center">288 (68)</td>
+          <td align="center">20</td>
+          <td align="center">100</td>
+        </tr>
+        <tr>
+          <td align="center">———–</td>
+          <td align="center"></td>
+          <td align="center"></td>
+          <td align="center"></td>
+          <td align="center"></td>
+          <td align="center"></td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">2</td>
+          <td align="center">82 (30)</td>
+          <td align="center">80 (30)</td>
+          <td align="center">100</td>
+          <td align="center">100</td>
+        </tr>
+        <tr>
+          <td align="center">Noisy Quartic</td>
+          <td align="center">4</td>
+          <td align="center">178 (60)</td>
+          <td align="center">155 (59)</td>
+          <td align="center">100</td>
+          <td align="center">100</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">8</td>
+          <td align="center">222 (60)</td>
+          <td align="center">154 (72)</td>
+          <td align="center">100</td>
+          <td align="center">100</td>
+        </tr>
+        <tr>
+          <td align="center">———–</td>
+          <td align="center"></td>
+          <td align="center"></td>
+          <td align="center"></td>
+          <td align="center"></td>
+          <td align="center"></td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">2</td>
+          <td align="center">47 (4)</td>
+          <td align="center">20 (3)</td>
+          <td align="center">98</td>
+          <td align="center">90</td>
+        </tr>
+        <tr>
+          <td align="center">Schwefel 2.26</td>
+          <td align="center">4</td>
+          <td align="center">107 (6)</td>
+          <td align="center">43 (4)</td>
+          <td align="center">100</td>
+          <td align="center">100</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">8</td>
+          <td align="center">262 (12)</td>
+          <td align="center">116 (11)</td>
+          <td align="center">100</td>
+          <td align="center">98</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>The maximizer <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{x}^*]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo>*</mml:mo></mml:msup></mml:math></alternatives></inline-formula>
+  of optimization was considered a success if
+  <disp-formula><alternatives>
+  <tex-math><![CDATA[
+  |f(\boldsymbol{x}^*)-f(\boldsymbol{x}_a^*)| \le F_{\text{tol}}\quad \text{or} \quad |\boldsymbol{x}^*-\boldsymbol{x}^*_a| \le P_{\text{tol}},
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msup><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo>*</mml:mo></mml:msup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>a</mml:mi><mml:mo>*</mml:mo></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mo>≤</mml:mo><mml:msub><mml:mi>F</mml:mi><mml:mtext mathvariant="normal">tol</mml:mtext></mml:msub><mml:mspace width="1.0em"></mml:mspace><mml:mtext mathvariant="normal">or</mml:mtext><mml:mspace width="1.0em"></mml:mspace><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:msup><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo>*</mml:mo></mml:msup><mml:mo>−</mml:mo><mml:msubsup><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>a</mml:mi><mml:mo>*</mml:mo></mml:msubsup><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mo>≤</mml:mo><mml:msub><mml:mi>P</mml:mi><mml:mtext mathvariant="normal">tol</mml:mtext></mml:msub><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{x}^*_a]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>a</mml:mi><mml:mo>*</mml:mo></mml:msubsup></mml:math></alternatives></inline-formula>
+  is the analytical global maximizer and <inline-formula><alternatives>
+  <tex-math><![CDATA[F_{\text{tol}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>F</mml:mi><mml:mtext mathvariant="normal">tol</mml:mtext></mml:msub></mml:math></alternatives></inline-formula>
+  is given by <disp-formula><alternatives>
+  <tex-math><![CDATA[
+  F_{\text{tol}}=\max_{\boldsymbol{x}}{|f(\boldsymbol{x})-f(\boldsymbol{x}_a^*)|},\quad \text{subject to}\quad |\boldsymbol{x}-\boldsymbol{x}^*_a| \le P_{\text{tol}}.
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>F</mml:mi><mml:mtext mathvariant="normal">tol</mml:mtext></mml:msub><mml:mo>=</mml:mo><mml:munder><mml:mo>max</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle></mml:munder><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>a</mml:mi><mml:mo>*</mml:mo></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mspace width="1.0em"></mml:mspace><mml:mtext mathvariant="normal">subject to</mml:mtext><mml:mspace width="1.0em"></mml:mspace><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo>−</mml:mo><mml:msubsup><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>a</mml:mi><mml:mo>*</mml:mo></mml:msubsup><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mo>≤</mml:mo><mml:msub><mml:mi>P</mml:mi><mml:mtext mathvariant="normal">tol</mml:mtext></mml:msub><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>Finally, Tab. 3 presents the mean computational time per generation
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\tau]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>τ</mml:mi></mml:math></alternatives></inline-formula>
+  for different number of threads <inline-formula><alternatives>
+  <tex-math><![CDATA[N_t]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>N</mml:mi><mml:mi>t</mml:mi></mml:msub></mml:math></alternatives></inline-formula>.
+  As can be seen, <inline-formula><alternatives>
+  <tex-math><![CDATA[\tau_{N_t}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>τ</mml:mi><mml:msub><mml:mi>N</mml:mi><mml:mi>t</mml:mi></mml:msub></mml:msub></mml:math></alternatives></inline-formula>
+  is approximately proportional to <inline-formula><alternatives>
+  <tex-math><![CDATA[\tau_1/N_t]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>τ</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mi>/</mml:mi><mml:msub><mml:mi>N</mml:mi><mml:mi>t</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+  <table-wrap>
+    <caption>
+      <p>Mean computational time per generation
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[\tau]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>τ</mml:mi></mml:math></alternatives></inline-formula>
+      for different numbers of threads <inline-formula><alternatives>
+      <tex-math><![CDATA[N_t]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>N</mml:mi><mml:mi>t</mml:mi></mml:msub></mml:math></alternatives></inline-formula>.
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[D=2]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>D</mml:mi><mml:mo>=</mml:mo><mml:mn>2</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+    </caption>
+    <table>
+      <thead>
+        <tr>
+          <th align="center"></th>
+          <th align="center"></th>
+          <th align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[\tau]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>τ</mml:mi></mml:math></alternatives></inline-formula>
+          (s)</th>
+          <th align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[\tau]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>τ</mml:mi></mml:math></alternatives></inline-formula>
+          (s)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="center">Function</td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[N_t]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>N</mml:mi><mml:mi>t</mml:mi></mml:msub></mml:math></alternatives></inline-formula></td>
+          <td align="center">DE</td>
+          <td align="center">DE-RSM</td>
+        </tr>
+        <tr>
+          <td align="center">——</td>
+          <td align="center">—</td>
+          <td align="center">—</td>
+          <td align="center">—</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">1</td>
+          <td align="center">20.27</td>
+          <td align="center">20.27</td>
+        </tr>
+        <tr>
+          <td align="center">Step</td>
+          <td align="center">2</td>
+          <td align="center">10.11</td>
+          <td align="center">10.10</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">3</td>
+          <td align="center">7.07</td>
+          <td align="center">7.09</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">4</td>
+          <td align="center">5.06</td>
+          <td align="center">5.06</td>
+        </tr>
+        <tr>
+          <td align="center">——</td>
+          <td align="center"></td>
+          <td align="center"></td>
+          <td align="center"></td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">1</td>
+          <td align="center">20.23</td>
+          <td align="center">20.28</td>
+        </tr>
+        <tr>
+          <td align="center">Rosenbrock</td>
+          <td align="center">2</td>
+          <td align="center">10.11</td>
+          <td align="center">10.11</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">3</td>
+          <td align="center">7.10</td>
+          <td align="center">7.08</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">4</td>
+          <td align="center">5.07</td>
+          <td align="center">5.07</td>
+        </tr>
+        <tr>
+          <td align="center">——</td>
+          <td align="center"></td>
+          <td align="center"></td>
+          <td align="center"></td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">1</td>
+          <td align="center">20.23</td>
+          <td align="center">20.19</td>
+        </tr>
+        <tr>
+          <td align="center">Noisy Quartic</td>
+          <td align="center">2</td>
+          <td align="center">10.11</td>
+          <td align="center">10.12</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">3</td>
+          <td align="center">7.07</td>
+          <td align="center">7.07</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">4</td>
+          <td align="center">5.08</td>
+          <td align="center">5.07</td>
+        </tr>
+        <tr>
+          <td align="center">——</td>
+          <td align="center"></td>
+          <td align="center"></td>
+          <td align="center"></td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">1</td>
+          <td align="center">20.21</td>
+          <td align="center">20.26</td>
+        </tr>
+        <tr>
+          <td align="center">Schwefel 2.26</td>
+          <td align="center">2</td>
+          <td align="center">10.14</td>
+          <td align="center">10.13</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">3</td>
+          <td align="center">7.09</td>
+          <td align="center">7.08</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center">4</td>
+          <td align="center">5.07</td>
+          <td align="center">5.09</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+</sec>
+<sec id="secU003Aacknow">
+  <title>Acknowledgments</title>
+  <p>We would like to thank CNPq (National Counsel of Technological and
+  Scientific Development, Brazil), CAPES (Coordination for the
+  Improvement of Higher Education Personnel, Brazil), for their
+  financial support, and UTFPR-FB (Universidade Tecnológica Federal do
+  Paraná-Francisco Beltrão) for its technological support. The third
+  author is supported by a CNPq scholarship.</p>
+</sec>
+<sec id="funding">
+  <title>Funding</title>
+  <p>This study was financed in part by the Coordenação de
+  Aperfeiçoamento de Pessoal de Nível Superior - Brasil (CAPES) -
+  Finance Code 001.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-GrivaU003A2009">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Griva</surname><given-names>I</given-names></name>
+          <name><surname>Nash</surname><given-names>S G</given-names></name>
+          <name><surname>Sofer</surname><given-names>A</given-names></name>
+        </person-group>
+        <source>Linear and nonlinear optimization</source>
+        <publisher-name>SIAM</publisher-name>
+        <publisher-loc>Philadelphia</publisher-loc>
+        <year iso-8601-date="2009">2009</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-FeoktistovU003A2006">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Feoktistov</surname><given-names>Vitaliy</given-names></name>
+        </person-group>
+        <source>Differential evolution: In search of solutions</source>
+        <publisher-name>Springer Science+Business Media</publisher-name>
+        <publisher-loc>New York</publisher-loc>
+        <year iso-8601-date="2006">2006</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-ColeyU003A1999">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Coley</surname><given-names>D A</given-names></name>
+        </person-group>
+        <source>An introduction to genetic algorithms for scientists and engineers</source>
+        <publisher-name>World Scientific</publisher-name>
+        <publisher-loc>Singapore</publisher-loc>
+        <year iso-8601-date="1999">1999</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-VincenziU003A2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Vincenzi</surname><given-names>Loris</given-names></name>
+          <name><surname>Savoia</surname><given-names>Marco</given-names></name>
+        </person-group>
+        <article-title>Coupling response surface and differential evolution for parameter identification problems</article-title>
+        <source>Computer-Aided Civil And Infrastructure Engineering</source>
+        <year iso-8601-date="2015-05">2015</year><month>05</month>
+        <volume>30</volume>
+        <issue>5, SI</issue>
+        <issn>1093-9687</issn>
+        <pub-id pub-id-type="doi">10.1111/mice.12124</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-FreemanU003A2004">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Freeman</surname><given-names>Eric</given-names></name>
+          <name><surname>Freeman</surname><given-names>Elisabeth</given-names></name>
+          <name><surname>Bates</surname><given-names>Bert</given-names></name>
+          <name><surname>Sierra</surname><given-names>Kathy</given-names></name>
+        </person-group>
+        <source>Head first design patterns</source>
+        <publisher-name>O’Reilly Media</publisher-name>
+        <publisher-loc>Sebastopol, CA</publisher-loc>
+        <year iso-8601-date="2004">2004</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-StornU003A1997">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Storn</surname><given-names>Rainer</given-names></name>
+          <name><surname>Price</surname><given-names>Kenneth</given-names></name>
+        </person-group>
+        <article-title>Differential evolution – a simple and efficient heuristic for global optimization over continuous spaces</article-title>
+        <source>Journal of Global Optimization</source>
+        <year iso-8601-date="1997-12">1997</year><month>12</month>
+        <volume>11</volume>
+        <issue>4</issue>
+        <issn>1573-2916</issn>
+        <pub-id pub-id-type="doi">10.1023/A:1008202821328</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-PriceU003A2005">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Price</surname><given-names>K V</given-names></name>
+          <name><surname>Storn</surname><given-names>R M</given-names></name>
+          <name><surname>Lampinen</surname><given-names>J A</given-names></name>
+        </person-group>
+        <source>Differential evolution: A practical approach to global optimization</source>
+        <publisher-name>Springer</publisher-name>
+        <publisher-loc>Berlin; New York</publisher-loc>
+        <year iso-8601-date="2005">2005</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-KhuriU003A1996">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Khuri</surname><given-names>A. I.</given-names></name>
+          <name><surname>Cornell</surname><given-names>J. A.</given-names></name>
+        </person-group>
+        <source>Response Surface: Design and Analyses</source>
+        <publisher-name>Marcel Dekker,Inc</publisher-name>
+        <publisher-loc>New York</publisher-loc>
+        <year iso-8601-date="1996">1996</year>
+        <volume>152</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-MyersU003A2009">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Myers</surname><given-names>Raymond H</given-names></name>
+          <name><surname>Montgomery</surname><given-names>Douglas C</given-names></name>
+          <name><surname>Anderson-Cook</surname><given-names>Christine M</given-names></name>
+        </person-group>
+        <source>Response surface methodology: Process and product optimization using designed experiments</source>
+        <publisher-name>Wiley</publisher-name>
+        <publisher-loc>Hoboken, N.J.</publisher-loc>
+        <year iso-8601-date="2009">2009</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-BrainerdU003A2015">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Brainerd</surname><given-names>Walter S.</given-names></name>
+        </person-group>
+        <source>Guide to Fortran 2008 Programming</source>
+        <publisher-name>Springer-Verlag</publisher-name>
+        <publisher-loc>London</publisher-loc>
+        <year iso-8601-date="2015">2015</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-TennesseeU003A2009">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <string-name>Message Passing Interface Forum</string-name>
+        </person-group>
+        <article-title>MPI: A Message-Passing Interface Standard</article-title>
+        <publisher-name>University of Tennessee</publisher-name>
+        <publisher-loc>Tennessee</publisher-loc>
+        <year iso-8601-date="2009">2009</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-RameyU003A2016">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Ramey</surname><given-names>Chet</given-names></name>
+          <name><surname>Fox</surname><given-names>Brian</given-names></name>
+        </person-group>
+        <source>Bash reference manual</source>
+        <publisher-name>Case Western Reserve University; Free Software Foundation</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-ZhangU003A2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zhang</surname><given-names>Jingqiao</given-names></name>
+          <name><surname>Sanderson</surname><given-names>Arthur C.</given-names></name>
+        </person-group>
+        <article-title>JADE: Adaptive Differential Evolution With Optional External Archive</article-title>
+        <source>IEEE Transactions on Evolutionary Computation</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume>13</volume>
+        <issue>5</issue>
+        <issn>{1089-778X}</issn>
+        <pub-id pub-id-type="doi">10.1109/TEVC.2009.2014613</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3440</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03440</article-id>
+<title-group>
+<article-title>Nominally: A Name Parser for Record
+Linkage</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9520-1360</contrib-id>
+<string-name>Matthew VanEseltine</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Institute for Social Research, University of
+Michigan</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-05-21">
+<day>21</day>
+<month>5</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>66</issue>
+<fpage>3440</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>data science</kwd>
+<kwd>record linkage</kwd>
+<kwd>entity resolution</kwd>
+<kwd>name parsing</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>With ever greater data availability, the importance of successfully
+  connecting people across disparate datasets grows. As we link records
+  from multiple sources, we would like to identify and measure
+  similarities of names such as “Matthew VanEseltine” in one database,
+  “Matt Van Eseltine” in another, and “Vaneseltine, M PhD” in a third.
+  <monospace>Nominally</monospace> assists in initial stages of record
+  linkage, where datasets are cleaned and preprocessed, by simplifying
+  and parsing single-string personal names into six core fields: title,
+  first, middle, last, suffix, and nickname.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p><monospace>Nominally</monospace> is a user-friendly Python package
+  designed to parse large lists of names. It is independent of any
+  specific data science framework and requires minimal dependencies. The
+  <monospace>nominally</monospace> API provides simple command-line,
+  function, and class access and easily integrates with the
+  <monospace>pandas</monospace>
+  (<xref alt="McKinney, 2010" rid="ref-McKinney2010" ref-type="bibr">McKinney,
+  2010</xref>) data analysis library. The aim is to parse thousands or
+  millions of strings into name parts for record linkage that maintain
+  relevant features while excluding irrelevant details.</p>
+  <p>Human names can be difficult to work with in data. Varying quality
+  and practices across institutions and datasets introduce noise and
+  cause misrepresentation, increasing linkage and deduplication
+  challenges. Common errors and discrepancies include (and this list is
+  by no means exhaustive):</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Arbitrarily split first and middle names.</p>
+    </list-item>
+    <list-item>
+      <p>Misplaced prefixes of last names such as “van” and “de la.”</p>
+    </list-item>
+    <list-item>
+      <p>Multiple last names partitioned into middle name fields.</p>
+    </list-item>
+    <list-item>
+      <p>Titles and suffixes variously recorded in different fields,
+      with or without separators.</p>
+    </list-item>
+    <list-item>
+      <p>Inconsistent capture of accents, the ’okina, and other
+      non-ASCII characters.</p>
+    </list-item>
+    <list-item>
+      <p>Single name fields arbitrarily concatenating name parts.</p>
+    </list-item>
+  </list>
+  <p>Cumulative variations and errors can combine to make the seemingly
+  straightforward job of simply identifying first and last names rather
+  difficult. <monospace>Nominally</monospace> is designed to
+  consistently extract key features of personal names using a rule-based
+  system
+  (<xref alt="Christen, 2012" rid="ref-Christen2012" ref-type="bibr">Christen,
+  2012</xref>). No prior differentiation is assumed between name fields;
+  that is, <monospace>nominally</monospace> operates under the least
+  informative case where only a single string name field is available.
+  <monospace>Nominally</monospace> aggressively cleans input; scrapes
+  titles, nicknames, and suffixes; and parses apart first, middle, and
+  last names.</p>
+  <p>In its simplest application, <monospace>nominally</monospace>
+  parses one name string into a dictionary of segmented name fields:</p>
+  <code language="python">&gt;&gt;&gt; from nominally import parse_name
+&gt;&gt;&gt; parse_name(&quot;Vimes, jr, Mr. Samuel 'Sam'&quot;)
+{
+    'title': 'mr',
+    'first': 'samuel',
+    'middle': '',
+    'last': 'vimes',
+    'suffix': 'jr',
+    'nickname': 'sam'
+}</code>
+  <p>Possible combinations of name parts are too extensive to itemize,
+  but as a further example <monospace>nominally</monospace> extracts
+  appropriate and comparable fields from these divergent presentations
+  of a single name:</p>
+  <table-wrap>
+    <table>
+      <thead>
+        <tr>
+          <th>Input</th>
+          <th>Title</th>
+          <th>First</th>
+          <th>Middle</th>
+          <th>Last</th>
+          <th>Suffix</th>
+          <th>Nickname</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>S.T. VIMES JUNIOR</td>
+          <td></td>
+          <td>s</td>
+          <td>t</td>
+          <td>vimes</td>
+          <td>jr</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Vimes, Samuel T.</td>
+          <td></td>
+          <td>samuel</td>
+          <td>t</td>
+          <td>vimes</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>samüél t vimés</td>
+          <td></td>
+          <td>samuel</td>
+          <td>t</td>
+          <td>vimes</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Samuel “sam” Thomas Vimes</td>
+          <td></td>
+          <td>samuel</td>
+          <td>thomas</td>
+          <td>vimes</td>
+          <td></td>
+          <td>sam</td>
+        </tr>
+        <tr>
+          <td>Dr. Samuel Thomas Vimes, Ph.D.</td>
+          <td>dr</td>
+          <td>samuel</td>
+          <td>thomas</td>
+          <td>vimes</td>
+          <td>phd</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Samuel T. Vimes, Jr. 24601</td>
+          <td></td>
+          <td>samuel</td>
+          <td>t</td>
+          <td>vimes</td>
+          <td>jr</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>vimes, jr. phd, samuel</td>
+          <td></td>
+          <td>samuel</td>
+          <td></td>
+          <td>vimes</td>
+          <td>jr phd</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p><monospace>Nominally</monospace> is designed for large-scale work.
+  We employ <monospace>nominally</monospace> as part of record linkage
+  in building the UMETRICS data at the Institute for Research on
+  Innovation &amp; Science
+  (<xref alt="IRIS, 2020" rid="ref-UMETRICS2020" ref-type="bibr">IRIS,
+  2020</xref>), which involves processing millions of name records of
+  university employees, principal investigators, and published
+  authors.</p>
+</sec>
+<sec id="comparisons-with-existing-software">
+  <title>Comparisons with Existing Software</title>
+  <p>Multiple open-source Python packages focus on parsing names,
+  including <monospace>python-nameparser</monospace>
+  (<xref alt="Gulbranson, 2020" rid="ref-python-nameparser" ref-type="bibr">Gulbranson,
+  2020</xref>), <monospace>probablepeople</monospace>
+  (<xref alt="DataMade, 2019" rid="ref-probablepeople" ref-type="bibr">DataMade,
+  2019</xref>), and <monospace>name-cleaver</monospace>
+  (<xref alt="Sunlight Labs, 2013" rid="ref-name-cleaver" ref-type="bibr">Sunlight
+  Labs, 2013</xref>). <monospace>Nominally</monospace> improves upon
+  these packages in its core use case: parsing single human names of
+  Western name order (first middle last).
+  <monospace>Nominally</monospace> began from a fork of
+  <monospace>python-nameparser</monospace>, initially aiming to refactor
+  code and improve certain test cases. Development continued through a
+  complete overhaul, and <monospace>nominally</monospace> now accurately
+  handles a greater range of names without requiring user customization.
+  <monospace>Probablepeople</monospace> and
+  <monospace>name-cleaver</monospace> both cast a wider net,
+  simultaneously addressing capture of multiple names, politicians, or
+  companies. By narrowing the scope to single human names,
+  <monospace>nominally</monospace> loses the broader applications of
+  these packages but gains accuracy in its core capacity.</p>
+  <p>Large-scale data systems tend to impose a great many assumptions
+  about the form and features of human names
+  (<xref alt="McKenzie, 2010" rid="ref-McKenzie2010" ref-type="bibr">McKenzie,
+  2010</xref>). As part of linking such systems together,
+  <monospace>nominally</monospace> necessarily works within some such
+  assumptions. <monospace>Nominally</monospace> does not attempt to
+  identify a correct or ideal name, but rather to generate useful
+  features of names using Western name order. Not all names can be
+  accurately captured, and not all errors can be corrected, but many
+  variations can be productively aligned.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>Special thanks go to IRIS staff at the University of Michigan, who
+  have run <monospace>nominally</monospace> at scale, provided feedback,
+  and reported bugs. <monospace>Nominally</monospace> is indebted to the
+  foundation of the <monospace>python-nameparser</monospace> project;
+  its base of tests and name lists have been especially helpful
+  throughout <monospace>nominally</monospace>’s development.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Christen2012">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Christen</surname><given-names>Peter</given-names></name>
+        </person-group>
+        <article-title>Data pre-processing</article-title>
+        <source>Data matching: Concepts and techniques for record linkage, entity resolution, and duplicate detection</source>
+        <publisher-name>Springer Berlin Heidelberg</publisher-name>
+        <publisher-loc>Berlin, Heidelberg</publisher-loc>
+        <year iso-8601-date="2012">2012</year>
+        <isbn>978-3-642-31164-2</isbn>
+        <uri>https://doi.org/10.1007/978-3-642-31164-2_3</uri>
+        <pub-id pub-id-type="doi">10.1007/978-3-642-31164-2_3</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-McKenzie2010">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>McKenzie</surname><given-names>Patrick</given-names></name>
+        </person-group>
+        <article-title>Falsehoods programmers believe about names</article-title>
+        <year iso-8601-date="2010">2010</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-05-19">2021</year><month>05</month><day>19</day></date-in-citation>
+        <uri>https://www.kalzumeus.com/2010/06/17/falsehoods-programmers-believe-about-names/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-name-cleaver">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>Sunlight Labs</string-name>
+        </person-group>
+        <article-title>Name-cleaver</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>https://github.com/sunlightlabs/name-cleaver; GitHub</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-McKinney2010">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>McKinney</surname><given-names>Wes</given-names></name>
+        </person-group>
+        <article-title>Data structures for statistical computing in python</article-title>
+        <source>Proceedings of the 9th python in science conference</source>
+        <person-group person-group-type="editor">
+          <name><surname>Walt</surname><given-names>Stéfan van der</given-names></name>
+          <name><surname>Millman</surname><given-names>Jarrod</given-names></name>
+        </person-group>
+        <year iso-8601-date="2010">2010</year>
+        <pub-id pub-id-type="doi">10.25080/Majora-92bf1922-00a</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-probablepeople">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>DataMade</string-name>
+        </person-group>
+        <article-title>Probablepeople</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>https://github.com/datamade/probablepeople; GitHub</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-python-nameparser">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Gulbranson</surname><given-names>Derek</given-names></name>
+        </person-group>
+        <article-title>Python-nameparser</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>https://github.com/derek73/python-nameparser; GitHub</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-UMETRICS2020">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>IRIS</surname></name>
+        </person-group>
+        <article-title>IRIS UMETRICS 2020 linkage files</article-title>
+        <publisher-loc>Ann Arbor, MI</publisher-loc>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://doi.org/10.21987/70kd-x544</uri>
+        <pub-id pub-id-type="doi">10.21987/70kd-x544</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

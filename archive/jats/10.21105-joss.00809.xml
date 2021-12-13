@@ -1,0 +1,1082 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">809</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00809</article-id>
+<title-group>
+<article-title>unyt: Handle, manipulate, and convert data with units in
+Python</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-5557-267X</contrib-id>
+<string-name>Nathan J. Goldbaum</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-3175-2347</contrib-id>
+<string-name>John A. ZuHone</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-5294-0198</contrib-id>
+<string-name>Matthew J. Turk</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-1709-3744</contrib-id>
+<string-name>Kacper Kowalik</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-4423-0660</contrib-id>
+<string-name>Anna L. Rosen</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>National Center for Supercomputing Applications, University
+of Illinois at Urbana-Champaign. 1205 W Clark St, Urbana, IL USA
+61801</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Harvard-Smithsonian Center for Astrophysics. 60 Garden St,
+Cambridge, MA USA 02138</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2018-05-24">
+<day>24</day>
+<month>5</month>
+<year>2018</year>
+</pub-date>
+<volume>3</volume>
+<issue>28</issue>
+<fpage>809</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>units</kwd>
+<kwd>quantities</kwd>
+<kwd>NumPy</kwd>
+<kwd>sympy</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Software that processes real-world data or that models a physical
+  system must have some way of managing units. This might be as simple
+  as the convention that all floating point numbers are understood to be
+  in the same physical unit system (for example, the SI MKS units
+  system). While simple approaches like this do work in practice, they
+  also are fraught with possible error, both by programmers modifying
+  the code who unintentionally misinterpret the units, and by users of
+  the software who must take care to supply data in the correct units or
+  who need to infer the units of data returned by the software.
+  Famously, NASA lost contact with the Mars Climate Orbiter spacecraft
+  after it crash-landed on the surface of Mars due to the use of English
+  Imperial units rather than metric units in the spacecraft control
+  software
+  (<xref alt="Board, 1999" rid="ref-nasa1999" ref-type="bibr">Board,
+  1999</xref>).</p>
+  <p>The <monospace>unyt</monospace> library is designed both to aid
+  quick calculations at an interactive Python prompt and to be tightly
+  integrated into a larger Python application or library. The top-level
+  <monospace>unyt</monospace> namespace ships with a large number of
+  predefined units and physical constants to aid setting up quick
+  calculations without needing to look up unit data or the value of a
+  physical constant. Using the <monospace>unyt</monospace> library as an
+  interactive calculation aid only requires knowledge of basic Python
+  syntax and awareness of a few of the methods of the
+  <monospace>unyt_array</monospace> class — for example, the
+  <monospace>unyt_array.to()</monospace> method to convert data to a
+  different unit. As the complexity of the usage increases,
+  <monospace>unyt</monospace> provides a number of optional features to
+  aid these cases, including custom unit registries containing both
+  predefined physical units as well as user-defined units, built-in
+  output to disk via the pickle protocol and to HDF5 files using the
+  <monospace>h5py</monospace> library
+  (<xref alt="Collette, 2013" rid="ref-h5py" ref-type="bibr">Collette,
+  2013</xref>), and round-trip converters for unit objects defined by
+  other popular Python unit libraries.</p>
+  <p>Physical units in the <monospace>unyt</monospace> class are defined
+  in terms of the dimensions of the unit, a string representation, and a
+  floating point scaling to the MKS unit system. Rather than
+  implementing algebra for unit expressions, we rely on the
+  <monospace>SymPy</monospace> symbolic algebra library
+  (<xref alt="Meurer et al., 2017" rid="ref-SymPy" ref-type="bibr">Meurer
+  et al., 2017</xref>) to handle symbolic algebraic manipulation. The
+  <monospace>unyt.Unit</monospace> object can represent arbitrary units
+  formed out of base dimensions in the SI unit system: time, length,
+  mass, temperature, luminance, and electric current. We currently treat
+  units such as mol with the seventh SI base dimension, amount of
+  substance, as dimensionless, although we are open to changing this
+  based on feedback from users. The <monospace>unyt</monospace> library
+  supports forming quantities defined in other unit systems — in
+  particular CGS Gaussian units common in astrophysics as well as
+  geometrized “natural” units common in relativistic calculations. In
+  addition, <monospace>unyt</monospace> ships with a number of other
+  useful predefined unit systems including imperial units; Planck units;
+  a unit system for calculations in the solar system; and a “galactic”
+  unit system based on the solar mass, kiloparsecs, and Myr, a
+  convention common in galactic astronomy.</p>
+  <p>In addition to the <monospace>unyt.Unit</monospace> class,
+  <monospace>unyt</monospace> also provides a two subclasses of the
+  NumPy
+  (<xref alt="Oliphant, 2006" rid="ref-NumPy" ref-type="bibr">Oliphant,
+  2006</xref>) <monospace>ndarray</monospace>
+  (<xref alt="Walt et al., 2011" rid="ref-vanderwalt2011" ref-type="bibr">Walt
+  et al., 2011</xref>), <monospace>unyt.unyt_array</monospace> and
+  <monospace>unyt.unyt_quantity</monospace> to represent arrays and
+  scalars with units attached, respectively. The
+  <monospace>unyt</monospace> library also provides a
+  <monospace>unyt.UnitRegistry</monospace> class to allow custom systems
+  of units, for example to track the internal unit system used in a
+  simulation. These subclasses are tightly integrated with the NumPy
+  ufunc system, which ensures that algebraic calculations that include
+  data with units automatically check to make sure the units are
+  consistent, and allow automatic converting of the final answer of a
+  calculation into a convenient unit.</p>
+  <p>We direct readers interested in usage examples and a guide for
+  integrating <monospace>unyt</monospace> into an existing Python
+  application or workflow to the unyt documentation hosted at
+  http://unyt.readthedocs.io/en/latest/.</p>
+</sec>
+<sec id="comparison-with-pint-and-astropy.units">
+  <title>Comparison with <monospace>Pint</monospace> and
+  <monospace>astropy.units</monospace></title>
+  <p>The scientific Python ecosystem has a long history of efforts to
+  develop a library to handle unit conversions and enforce unit
+  consistency. For a relatively recent review of these efforts, see
+  (<xref alt="Bekolay, 2013" rid="ref-bekolay2013" ref-type="bibr">Bekolay,
+  2013</xref>). While we won’t exhaustively cover extant Python
+  libraries for handling units in this paper, we will focus on
+  <monospace>Pint</monospace>
+  (<xref alt="Grecco, 2018" rid="ref-Pint" ref-type="bibr">Grecco,
+  2018</xref>) and <monospace>astropy.units</monospace>
+  (<xref alt="The Astropy Collaboration et al., 2018" rid="ref-astropy" ref-type="bibr">The
+  Astropy Collaboration et al., 2018</xref>), which both provide a
+  robust implementation of an array container with units attached and
+  are commonly used in research software projects. At time of writing a
+  GitHub search for <monospace>import astropy.units</monospace> returns
+  approximately 10,500 results and a search for
+  <monospace>import pint</monospace> returns approximately 1,500
+  results.</p>
+  <p>While <monospace>unyt</monospace> provides functionality that
+  overlaps with <monospace>astropy.units</monospace> and
+  <monospace>Pint</monospace>, there are important differences which we
+  elaborate on below. In addition, it is worth noting that all three
+  codebases had origins at roughly the same time period.
+  <monospace>Pint</monospace> initially began development in 2012
+  according to the git repository logs. Likewise
+  <monospace>astropy.units</monospace> began development in 2012 and was
+  released as part of <monospace>astropy 0.2</monospace> in 2013,
+  although the initial implementation was adapted from the
+  <monospace>pynbody</monospace> library
+  (<xref alt="Pontzen et al., 2013" rid="ref-pynbody" ref-type="bibr">Pontzen
+  et al., 2013</xref>), which started its units implementation in 2010
+  according to the git repository logs. In the case of
+  <monospace>unyt</monospace>, it originated via the
+  <monospace>dimensionful</monospace> library
+  (<xref alt="Stark, 2012" rid="ref-dimensionful" ref-type="bibr">Stark,
+  2012</xref>) in 2012. Later, <monospace>dimensionful</monospace> was
+  elaborated on and improved to become <monospace>yt.units</monospace>,
+  the unit system for the <monospace>yt</monospace> library
+  (<xref alt="Turk et al., 2011" rid="ref-yt" ref-type="bibr">Turk et
+  al., 2011</xref>) at a <monospace>yt</monospace> developer workshop in
+  2013 and was subsequently released as part of
+  <monospace>yt 3.0</monospace> in 2014. One of the design goals for the
+  <monospace>yt</monospace> unit system was the ability to dynamically
+  define “code” units (e.g. units internal to data loaded by yt) as well
+  as units that depend on details of the dataset — in particular
+  cosmological comoving units and the “little
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[h]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>h</mml:mi></mml:math></alternatives></inline-formula>”
+  factor, used to parameterize the Hubble constant in cosmology
+  calculations
+  (<xref alt="Croton, 2013" rid="ref-croton2013" ref-type="bibr">Croton,
+  2013</xref>). For cosmology simulations in particular, comparing data
+  with different unit systems can be tricky because one might want to
+  use data from multiple outputs in a time series, with each output
+  having a different mapping from internal units to physical units. This
+  despite the fact that each output in the time series represents the
+  same physical system and common workflows involve combining data from
+  multiple outputs. This requirement to manage complex custom units and
+  interoperate between custom unit systems drove the
+  <monospace>yt</monospace> community to independently develop a custom
+  unit system solution. We have decided to repackage and improve
+  <monospace>yt.units</monospace> in the form of
+  <monospace>unyt</monospace> to both make it easier to work on and
+  improve the unit system and encourage use of the unit system for
+  scientific Python users who do not want to install a heavy-weight
+  dependency like <monospace>yt</monospace>.</p>
+  <p>Below we present a table comparing <monospace>unyt</monospace> with
+  <monospace>astropy.units</monospace> and <monospace>Pint</monospace>.
+  Estimates for lines of code in the library were generated using the
+  <monospace>cloc</monospace> tool
+  (<xref alt="Danial, 2018" rid="ref-cloc" ref-type="bibr">Danial,
+  2018</xref>); blank and comment lines are excluded from the estimate.
+  Test coverage was estimated using the <monospace>coveralls</monospace>
+  output for <monospace>Pint</monospace> and
+  <monospace>astropy.units</monospace> and using the
+  <monospace>codecov.io</monospace> output for
+  <monospace>unyt</monospace>.</p>
+  <table-wrap>
+    <table>
+      <thead>
+        <tr>
+          <th>Library</th>
+          <th><monospace>unyt</monospace></th>
+          <th><monospace>astropy.units</monospace></th>
+          <th><monospace>Pint</monospace></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Lines of code</td>
+          <td>5128</td>
+          <td>10163</td>
+          <td>8908</td>
+        </tr>
+        <tr>
+          <td>Lines of code excluding tests</td>
+          <td>3195</td>
+          <td>5504</td>
+          <td>4499</td>
+        </tr>
+        <tr>
+          <td>Test Coverage</td>
+          <td>99.91%</td>
+          <td>93.63%</td>
+          <td>77.44%</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>We offer lines of code as a very rough estimate for the
+  “hackability” of the codebase. In general, smaller codebases with
+  higher test coverage have fewer defects
+  (<xref alt="Gopinath et al., 2014" rid="ref-Gopinath2014" ref-type="bibr">Gopinath
+  et al., 2014</xref>;
+  <xref alt="Koru et al., 2007" rid="ref-Koru2007" ref-type="bibr">Koru
+  et al., 2007</xref>;
+  <xref alt="Lipow, 1982" rid="ref-Lipow1982" ref-type="bibr">Lipow,
+  1982</xref>). This comparison is somewhat unfair in favor of
+  <monospace>unyt</monospace> in that
+  <monospace>astropy.units</monospace> only depends on NumPy and
+  <monospace>Pint</monospace> has no dependencies, while
+  <monospace>unyt</monospace> depends on both
+  <monospace>SymPy</monospace> and NumPy. Much of the reduction in the
+  size of the <monospace>unyt</monospace> library can be attributed to
+  offloading the handling of algebra to <monospace>SymPy</monospace>
+  rather than needing to implement the algebra of unit symbols directly
+  in <monospace>unyt</monospace>. For potential users who are wary of
+  adding <monospace>SymPy</monospace> as a dependency, that might argue
+  in favor of using <monospace>Pint</monospace> in favor of
+  <monospace>unyt</monospace>.</p>
+  <sec id="astropy.units">
+    <title><monospace>astropy.units</monospace></title>
+    <p>The <monospace>astropy.units</monospace> subpackage provides a
+    <monospace>PrefixUnit</monospace> class, a
+    <monospace>Quantity</monospace> class that represents both scalar
+    and array data with attached units, and a large number of predefined
+    unit symbols. The preferred way to create
+    <monospace>Quantity</monospace> instances is via multiplication with
+    a <monospace>PrefixUnit</monospace> instance. Similar to
+    <monospace>unyt</monospace>, the <monospace>Quantity</monospace>
+    class is implemented via a subclass of the NumPy
+    <monospace>ndarray</monospace> class. Indeed, in many ways the
+    everyday usage patterns of <monospace>astropy.units</monospace> and
+    <monospace>unyt</monospace> are similar, although
+    <monospace>unyt</monospace> is not quite a drop-in replacement for
+    <monospace>astropy.units</monospace> as there are some API
+    differences. The main functional difference between
+    <monospace>astropy.units</monospace> and <monospace>unyt</monospace>
+    is that <monospace>astropy.units</monospace> is a subpackage of the
+    larger <monospace>astropy</monospace> package. This means that
+    depending on <monospace>astropy.units</monospace> requires
+    installing a large collection of astronomically focused software
+    included in the <monospace>astropy</monospace> package, including a
+    substantial amount of compiled C code. This presents a barrier to
+    usage for potential users of <monospace>astropy.units</monospace>
+    who are not astronomers or do not need the observational astronomy
+    capabilities provided by <monospace>astropy</monospace>.</p>
+  </sec>
+  <sec id="pint">
+    <title><monospace>Pint</monospace></title>
+    <p>The <monospace>Pint</monospace> package provides a different API
+    for accessing units compared with <monospace>unyt</monospace> and
+    <monospace>astropy.units</monospace>. Rather than making units
+    immediately importable from the <monospace>Pint</monospace>
+    namespace, <monospace>Pint</monospace> instead requires users to
+    instantiate a <monospace>UnitRegistry</monospace> instance
+    (unrelated to the <monospace>unyt.UnitRegistry</monospace> class),
+    which in turn has <monospace>Unit</monospace> instances as
+    attributes. Just like with <monospace>unyt</monospace> and
+    <monospace>astropy.units</monospace>, creating a
+    <monospace>Quantity</monospace> instance requires multiplying an
+    array or scalar by a <monospace>Unit</monospace> instance. Exposing
+    the <monospace>UnitRegistry</monospace> directly to all users like
+    this does force users of the library to think about which system of
+    units they are working with, which may be beneficial in some cases,
+    however it also means that users have a bit of extra cognitive
+    overhead they need to deal with every time they use
+    <monospace>Pint</monospace>.</p>
+    <fig>
+      <caption><p>A benchmark comparing the ratio of the time to apply
+      units to lists and NumPy <monospace>ndarray</monospace> instances
+      to the time to interpret the same list or
+      <monospace>ndarray</monospace> to an
+      <monospace>ndarray</monospace>. This ratio,
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[T_{\textrm{package}}/T_{\textrm{numpy}}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>T</mml:mi><mml:mtext mathvariant="normal">package</mml:mtext></mml:msub><mml:mi>/</mml:mi><mml:msub><mml:mi>T</mml:mi><mml:mtext mathvariant="normal">numpy</mml:mtext></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+      corresponds to the overhead of converting data to work with one of
+      the three packages. Values close to unity correspond to zero or
+      negligible overhead, while values larger than unity correspond to
+      measurable overhead. Optimally all values would be near unity. In
+      practice, applying units to small arrays incurs substantial
+      overhead. Each test is shown for three different sizes of input
+      data, including inputs with size 3, 1,000, and 1,000,000. The
+      black lines at the top of the bars indicate the sample standard
+      deviation. The <inline-formula><alternatives>
+      <tex-math><![CDATA[T_{\textrm{numpy}}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>T</mml:mi><mml:mtext mathvariant="normal">numpy</mml:mtext></mml:msub></mml:math></alternatives></inline-formula>
+      time is calculated by benchmarking the time to perform
+      <monospace>np.asarray(data)</monospace> where
+      <monospace>data</monospace> is either a
+      <monospace>list</monospace> or an
+      <monospace>ndarray</monospace>.</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="apply.png" xlink:title="" />
+    </fig>
+    <p>In addition, the <monospace>Quantity</monospace> class provided
+    by <monospace>Pint</monospace> is not a subclass of NumPy’s
+    <monospace>ndarray</monospace>. Instead, it is a wrapper around an
+    internal <monospace>ndarray</monospace> buffer. This simplifies the
+    implementation of <monospace>Pint</monospace> by avoiding the
+    somewhat arcane process for creating an
+    <monospace>ndarray</monospace> subclass, although the
+    <monospace>Pint</monospace> <monospace>Quantity</monospace> class
+    must also be careful to emulate the full NumPy
+    <monospace>ndarray</monospace> API so that it can be a drop-in
+    replacement for <monospace>ndarray</monospace>.</p>
+    <p>Finally, in comparing the output of our benchmarks of
+    <monospace>Pint</monospace>, <monospace>astropy.units</monospace>,
+    and <monospace>unyt</monospace>, we found that in-place operations
+    making use of a NumPy <monospace>ufunc</monospace> will unexpectedly
+    strip units in <monospace>Pint</monospace>. For example, if
+    <monospace>a</monospace> and <monospace>b</monospace> are
+    <monospace>Pint</monospace> <monospace>Quantity</monospace>
+    instances, <monospace>np.add(a, b, out=out))</monospace> will
+    operate on <monospace>a</monospace> and <monospace>b</monospace> as
+    if neither have units attached. Interestingly, without the
+    <monospace>out</monospace> keyword, <monospace>Pint</monospace> does
+    get the correct answer, so it is possible that this is a bug in
+    <monospace>Pint</monospace>, and we have reported it as such
+    upstream (see https://github.com/hgrecco/pint/issues/644).</p>
+  </sec>
+  <sec id="performance-comparison">
+    <title>Performance Comparison</title>
+    <p>Checking units will always add some overhead over using
+    hard-coded unit conversion factors. Thus a library that is entrusted
+    with checking units in an application should incur the minimum
+    possible overhead to avoid triggering performance regressions after
+    integrating unit checking into an application. Optimally, a unit
+    library will add zero overhead regardless of the size of the array.
+    In practice that is not the case for any of the three libraries
+    under consideration, and there is a minimum array size above which
+    the overhead of doing a mathematical operation exceeds the overhead
+    of checking units. It is thus worth benchmarking unit libraries in a
+    fair manner, comparing with the same operation implemented using
+    plain NumPy.</p>
+    <fig>
+      <caption><p>A benchmark comparing the time to square an array and
+      to take the square root of an array. See Figure 1 for a detailed
+      explanation of the plot style.</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="unary.png" xlink:title="" />
+    </fig>
+    <p>Here we present such a set of benchmarks. We made use of the
+    <monospace>perf</monospace>
+    (<xref alt="Stinner, 2018" rid="ref-perf" ref-type="bibr">Stinner,
+    2018</xref>) Python benchmarking tool, which not only provides
+    facilities for establishing the statistical significance of a
+    benchmark run, but also can tune a linux system to turn off
+    operating system and hardware features like CPU throttling that
+    might introduce variance in a benchmark. We made use of a Dell
+    Latitude E7270 laptop equipped with an Intel i5-6300U CPU clocked at
+    2.4 GHz. The testing environment was based on
+    <monospace>Python 3.6.3</monospace> and had
+    <monospace>NumPy 1.14.2</monospace>,
+    <monospace>sympy 1.1.1</monospace>,
+    <monospace>fastcache 1.0.2</monospace>,
+    <monospace>Astropy 3.0.1</monospace>, and
+    <monospace>Pint 0.8.1</monospace> installed.
+    <monospace>fastcache</monospace>
+    (<xref alt="Brady, 2017" rid="ref-fastcache" ref-type="bibr">Brady,
+    2017</xref>) is an optional dependency of
+    <monospace>SymPy</monospace> that provides an optimized LRU cache
+    implemented in C that can substantially speed up
+    <monospace>SymPy</monospace>. The system was instrumented using
+    <monospace>perf system tune</monospace> to turn off CPU features
+    that might interfere with stable benchmarks. We did not make any
+    boot-time Linux kernel parameter changes.</p>
+    <fig>
+      <caption><p>A benchmark comparing the time to perform various
+      binary arithmetic operations on input operans that have different
+      but dimensionallty compatible units. See Figure 1 for a detailed
+      explanation of the plot style.</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="binary_different_units.png" xlink:title="" />
+    </fig>
+    <p>For each of the benchmarks we show the ratio of the time to
+    perform an operation with one of <monospace>unyt</monospace>,
+    <monospace>Pint</monospace>, and
+    <monospace>astopy.units</monospace>, <inline-formula><alternatives>
+    <tex-math><![CDATA[T_{\textrm{package}}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>T</mml:mi><mml:mtext mathvariant="normal">package</mml:mtext></mml:msub></mml:math></alternatives></inline-formula>,
+    to the time it takes for NumPy to perform the equivalent operation,
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[T_{\textrm{numpy}}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>T</mml:mi><mml:mtext mathvariant="normal">numpy</mml:mtext></mml:msub></mml:math></alternatives></inline-formula>.
+    For example, for the comparison of the performance of
+    <monospace>np.add(a, b)</monospace> where <monospace>a</monospace>
+    and <monospace>b</monospace> have different units with the same
+    dimension, the corresponding benchmark to generate
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[T_{\textrm{numpy}}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>T</mml:mi><mml:mtext mathvariant="normal">numpy</mml:mtext></mml:msub></mml:math></alternatives></inline-formula>
+    would use the code <monospace>np.add(a, c*b)</monospace> where
+    <monospace>a</monospace> and <monospace>b</monospace> would be
+    <monospace>ndarray</monospace> instances and
+    <monospace>c</monospace> would be the floating point conversion
+    factor between the units of <monospace>a</monospace> and
+    <monospace>b</monospace>. Much of the time in
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[T_{\textrm{package}}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>T</mml:mi><mml:mtext mathvariant="normal">package</mml:mtext></mml:msub></mml:math></alternatives></inline-formula>
+    relative to <inline-formula><alternatives>
+    <tex-math><![CDATA[T_{\textrm{numpy}}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>T</mml:mi><mml:mtext mathvariant="normal">numpy</mml:mtext></mml:msub></mml:math></alternatives></inline-formula>
+    is spent in the respective packages calculating the appropriate
+    conversion factor <monospace>c</monospace>. Thus the comparisons
+    below depict very directly the overhead for using a unit library
+    over an equivalent operation that uses hard-coded unit-conversion
+    factors.</p>
+    <p>In some cases when the operands of an operation have different
+    dimensionally compatible units, using a unit library will produce a
+    result <italic>faster</italic> than a pure-numpy implementation. In
+    cases where this happens, the resulting
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[T_{\textrm{package}}/T_{\textrm{numpy}}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>T</mml:mi><mml:mtext mathvariant="normal">package</mml:mtext></mml:msub><mml:mi>/</mml:mi><mml:msub><mml:mi>T</mml:mi><mml:mtext mathvariant="normal">numpy</mml:mtext></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+    measurement will come out less than unity. As an example, consider
+    the operation of one milligram multiplied by 3 kilograms. In this
+    case one could write down the answer as
+    e.g. <monospace>3000 mg</monospace>,
+    <monospace>0.003 kg</monospace>, or <monospace>3 kg*g</monospace>.
+    In the former two cases, one of the operands needs to be scaled by a
+    floating point conversion factor to ensure that both operands have
+    the same unit before the pure-numpy implementation can actually
+    evaluate the result, since each array can only have one unit. In the
+    latter case the conversion factor is implicitly handled by the unit
+    metadata. Note that this effect will only happen if the operands of
+    an operation have different units. If the units are the same there
+    is no need to calculate a conversion factor to convert the operands
+    to the same unit system, so the pure-numpy operation avoids the
+    extra cost that a unit library avoids in all cases.</p>
+    <fig>
+      <caption><p>A benchmark comparing the time to perform various
+      binary arithmetic operations on input operands that have the same
+      units. See Figure 1 for a detailed explanation of the plot
+      style.</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="binary_same_units.png" xlink:title="" />
+    </fig>
+    <sec id="applying-units-to-data">
+      <title>Applying units to data</title>
+      <p>In Figure 1 we plot the overhead for applying units to data,
+      showing both Python lists and NumPy <monospace>ndarray</monospace>
+      instances as the input to apply data to. Since all three libraries
+      eventually convert input data to a NumPy
+      <monospace>ndarray</monospace>, the comparison with array inputs
+      more explicitly shows the overhead for <italic>just</italic>
+      applying units to data. When applying units to a list, all three
+      libraries as well as NumPy need to first copy the contents of the
+      list into a NumPy array or a subclass of
+      <monospace>ndarray</monospace>. This explains why the overhead is
+      systematically lower when starting with a list.</p>
+      <fig>
+        <caption><p>A benchmark comparing the overhead for computing
+        various NumPy <monospace>ufunc</monospace> operations. The
+        operands of all binary <monospace>ufuncs</monospace> have the
+        same units. See Figure 1 for a detailed explanation of the plot
+        style.</p></caption>
+        <graphic mimetype="image" mime-subtype="png" xlink:href="ufunc.png" xlink:title="" />
+      </fig>
+      <p>In all cases, <monospace>unyt</monospace> either is fastest by
+      a statistically significant margin, or ties with
+      <monospace>astropy</monospace>. Even for large input arrays,
+      <monospace>Pint</monospace> still has statistically significant
+      overhead, while both <monospace>unyt</monospace> and
+      <monospace>astropy.units</monospace> have negligible overhead once
+      the input array size reaches <inline-formula><alternatives>
+      <tex-math><![CDATA[10^6]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mn>10</mml:mn><mml:mn>6</mml:mn></mml:msup></mml:math></alternatives></inline-formula>
+      elements.</p>
+    </sec>
+    <sec id="unary-arithmetic-operations">
+      <title>Unary arithmetic operations</title>
+      <p>Expressions involving powers of data with units, including
+      integer and fractional powers, are very common in the physical
+      sciences. It is therefore very important for a library that
+      handles units to be able to track this case in a performant way.
+      In Figure 2 we present a benchmark comparing
+      <monospace>Pint</monospace>, <monospace>unyt</monospace>, and
+      <monospace>astropy.units</monospace> for the squaring and square
+      root operation. In all cases, <monospace>unyt</monospace> has the
+      lowest overhead, with <monospace>Pint</monospace> coming in
+      second, and <monospace>astropy.units</monospace> trailing. Note
+      that the x-axis is plotted on a log scale, so
+      <monospace>astropy</monospace> is as much as 4 times slower than
+      <monospace>unyt</monospace> for these operations.</p>
+    </sec>
+    <sec id="binary-arithmetic-operations">
+      <title>Binary arithmetic operations</title>
+      <p>Binary operations form the core of arithmetic. It is vital for
+      a library that handles unit manipulation to both transparently
+      convert units when necessary and to ensure that expressions
+      involving quantities with units are dimensionally consistent. In
+      Figure 3 and 4 we present benchmarks for binary arithmetic
+      expressions, both with input data that has the same units and with
+      input data with different units but the same dimensions. In most
+      cases, <monospace>unyt</monospace> has less overhead than both
+      <monospace>astropy</monospace> and <monospace>Pint</monospace>,
+      although there are a few anomalies that are worth explaining in
+      more detail. For comparison operations,
+      <monospace>Pint</monospace> exhibits a slowdown even on large
+      input arrays. This is not present for other binary operations, so
+      it is possible that this overhead might be eliminated with a code
+      change in <monospace>Pint</monospace>.</p>
+      <p>For multiplication on large arrays, all three libraries have
+      measured overhead of <inline-formula><alternatives>
+      <tex-math><![CDATA[\sim 0.5]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>∼</mml:mo><mml:mn>0.5</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+      than that of the “equivalent” Numpy operation. See the discussion
+      in the “Performance Comparison” section above for why this
+      happens, but briefly, in all three libraries there is no need to
+      multiply the result of a multiplication operation by an additional
+      constant to ensure the result has a well-defined unit, while a
+      pure NumPy implementation would need to multiply the result by a
+      constant to ensure both operands of the operation are in the same
+      units.</p>
+      <p>For division, both <monospace>Pint</monospace> and
+      <monospace>astropy.units</monospace> exhibit the same behavior as
+      for multiplication, and for similar reasons: the result of the
+      division operation is output with units given by the ratio of the
+      input units. On the other hand, <monospace>unyt</monospace> will
+      automatically cancel the dimensionally compatible units in the
+      ratio and return a result with dimensionless units. To make that
+      concrete, in <monospace>astropy</monospace> and
+      <monospace>Pint</monospace>, the result of
+      <monospace>(4*g) / (2*kg)</monospace> is
+      <monospace>2 g/kg</monospace> while <monospace>unyt</monospace>
+      would report <monospace>.002</monospace>.</p>
+      <fig>
+        <caption><p>The same as Figure 5, but with in-place
+        <monospace>ufunc</monospace> operations. See Figure 1 for a
+        detailed explanation of the plot style.</p></caption>
+        <graphic mimetype="image" mime-subtype="png" xlink:href="ufuncout.png" xlink:title="" />
+      </fig>
+    </sec>
+    <sec id="numpy-ufunc-performance">
+      <title>NumPy <monospace>ufunc</monospace> performance</title>
+      <p>Lastly, in Figures 5 and 6, we present benchmarks of NumPy
+      <monospace>ufunc</monospace> operations. A NumPy
+      <monospace>ufunc</monospace> is a fast C implementation of a basic
+      mathematical operation. This includes arithmetic operators as well
+      as trigonometric and special functions. By using a
+      <monospace>ufunc</monospace> directly, one bypasses the Python
+      object protocol and short-circuits directly to the low-level NumPy
+      math kernels. We show both directly using the NumPy
+      <monospace>ufunc</monospace> operators (Figure 5) as well as using
+      the same operators with a pre-allocated output array to benchmark
+      in-place operations.</p>
+      <p>As for the other benchmarks, <monospace>unyt</monospace> tends
+      to have the lowest amount of overhead, although there are some
+      significant exceptions. For <monospace>np.power</monospace>,
+      <monospace>Pint</monospace> has the lowest overhead, except for
+      very large input arrays, where the overhead for all three
+      libraries is negligible. On the other hand, for
+      <monospace>np.sqrt</monospace>, <monospace>np.equal</monospace>,
+      <monospace>np.add</monospace>, and
+      <monospace>np.subtract</monospace>, <monospace>Pint</monospace>
+      still has statistically significant overhead for large input
+      arrays. Finally, for the in-place <monospace>ufunc</monospace>
+      comparison, <monospace>Pint</monospace> has the lowest overhead
+      for all operations. However, as discussed above, this is because
+      of a bug in <monospace>Pint</monospace> which causes the library
+      to ignore units when calling a <monospace>ufunc</monospace> with
+      the <monospace>out</monospace> keyword set.</p>
+    </sec>
+  </sec>
+</sec>
+<sec id="conclusions">
+  <title>Conclusions</title>
+  <p>In this paper we present the <monospace>unyt</monospace> library,
+  giving background on the reasons for its existence and some historical
+  context for its origin. We also present a set of benchmarks for common
+  arithmetic operations, comparing the performance of
+  <monospace>unyt</monospace> with <monospace>Pint</monospace> and
+  <monospace>astropy.units</monospace>. In general, we find that
+  <monospace>unyt</monospace> either outperforms or matches the
+  performance <monospace>astropy.units</monospace> and
+  <monospace>Pint</monospace>, depending on the operation and size of
+  the input data. We also demonstrate that the
+  <monospace>unyt</monospace> library constitutes a smaller codebase
+  with higher test coverage than both <monospace>Pint</monospace> and
+  <monospace>astropy.units</monospace>.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>NJG would like to thank Brandon Carswell and Alex Farthing of the
+  NCSA IT staff for providing a laptop with Linux installed for the
+  performance benchmark. This work was supported by NSF grant
+  OAC-1663914 (NJG, MJT), by the Gordon and Betty Moore Foundation’s
+  Data-Driven Discovery Initiative through Grant GBMF4561 (MJT) and by
+  NASA through Einstein Postdoctoral Fellowship grant number PF7-180166
+  awarded by the Chandra X-ray Center, which is operated by the
+  Smithsonian Astrophysical Observatory for NASA under contract
+  NAS8-03060 (ALR).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-SymPy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Meurer</surname><given-names>Aaron</given-names></name>
+          <name><surname>Smith</surname><given-names>Christopher P.</given-names></name>
+          <name><surname>Paprocki</surname><given-names>Mateusz</given-names></name>
+          <name><surname>Čertík</surname><given-names>Ondřej</given-names></name>
+          <name><surname>Kirpichev</surname><given-names>Sergey B.</given-names></name>
+          <name><surname>Rocklin</surname><given-names>Matthew</given-names></name>
+          <name><surname>Kumar</surname><given-names>AMiT</given-names></name>
+          <name><surname>Ivanov</surname><given-names>Sergiu</given-names></name>
+          <name><surname>Moore</surname><given-names>Jason K.</given-names></name>
+          <name><surname>Singh</surname><given-names>Sartaj</given-names></name>
+          <name><surname>Rathnayake</surname><given-names>Thilina</given-names></name>
+          <name><surname>Vig</surname><given-names>Sean</given-names></name>
+          <name><surname>Granger</surname><given-names>Brian E.</given-names></name>
+          <name><surname>Muller</surname><given-names>Richard P.</given-names></name>
+          <name><surname>Bonazzi</surname><given-names>Francesco</given-names></name>
+          <name><surname>Gupta</surname><given-names>Harsh</given-names></name>
+          <name><surname>Vats</surname><given-names>Shivam</given-names></name>
+          <name><surname>Johansson</surname><given-names>Fredrik</given-names></name>
+          <name><surname>Pedregosa</surname><given-names>Fabian</given-names></name>
+          <name><surname>Curry</surname><given-names>Matthew J.</given-names></name>
+          <name><surname>Terrel</surname><given-names>Andy R.</given-names></name>
+          <name><surname>Roučka</surname><given-names>Štěpán</given-names></name>
+          <name><surname>Saboo</surname><given-names>Ashutosh</given-names></name>
+          <name><surname>Fernando</surname><given-names>Isuru</given-names></name>
+          <name><surname>Kulal</surname><given-names>Sumith</given-names></name>
+          <name><surname>Cimrman</surname><given-names>Robert</given-names></name>
+          <name><surname>Scopatz</surname><given-names>Anthony</given-names></name>
+        </person-group>
+        <article-title>SymPy: Symbolic computing in python</article-title>
+        <source>PeerJ Computer Science</source>
+        <year iso-8601-date="2017-01">2017</year><month>01</month>
+        <volume>3</volume>
+        <issn>2376-5992</issn>
+        <uri>https://doi.org/10.7717/peerj-cs.103</uri>
+        <pub-id pub-id-type="doi">10.7717/peerj-cs.103</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-vanderwalt2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Walt</surname><given-names>S. van der</given-names></name>
+          <name><surname>Colbert</surname><given-names>S. C.</given-names></name>
+          <name><surname>Varoquaux</surname><given-names>G.</given-names></name>
+        </person-group>
+        <article-title>The NumPy array: A structure for efficient numerical computation</article-title>
+        <source>Computing in Science Engineering</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>13</volume>
+        <issue>2</issue>
+        <issn>1521-9615</issn>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2011.37</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-NumPy">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Oliphant</surname><given-names>Travis E</given-names></name>
+        </person-group>
+        <source>A guide to NumPy</source>
+        <publisher-name>Trelgol Publishing</publisher-name>
+        <year iso-8601-date="2006">2006</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-h5py">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Collette</surname><given-names>Andrew</given-names></name>
+        </person-group>
+        <source>Python and HDF5</source>
+        <publisher-name>O’Reilly</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-bekolay2013">
+      <element-citation publication-type="manuscript">
+        <person-group person-group-type="author">
+          <name><surname>Bekolay</surname><given-names>Trevor</given-names></name>
+        </person-group>
+        <article-title>A comprehensive look at representing physical quantities in python</article-title>
+        <year iso-8601-date="2013">2013</year>
+        <uri>https://www.youtube.com/watch?v=N-edLdxiM40</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-dimensionful">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Stark</surname><given-names>Casey W.</given-names></name>
+        </person-group>
+        <article-title>Dimensionful</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>https://github.com/caseywstark/dimensionful; GitHub</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-yt">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Turk</surname><given-names>M. J.</given-names></name>
+          <name><surname>Smith</surname><given-names>B. D.</given-names></name>
+          <name><surname>Oishi</surname><given-names>J. S.</given-names></name>
+          <name><surname>Skory</surname><given-names>S.</given-names></name>
+          <name><surname>Skillman</surname><given-names>S. W.</given-names></name>
+          <name><surname>Abel</surname><given-names>T.</given-names></name>
+          <name><surname>Norman</surname><given-names>M. L.</given-names></name>
+        </person-group>
+        <article-title>yt: A Multi-code Analysis Toolkit for Astrophysical Simulation Data</article-title>
+        <source>The Astrophysical Journal Supplement Series</source>
+        <year iso-8601-date="2011-01">2011</year><month>01</month>
+        <volume>192</volume>
+        <uri>https://arxiv.org/abs/1011.3514</uri>
+        <pub-id pub-id-type="doi">10.1088/0067-0049/192/1/9</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pynbody">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Pontzen</surname><given-names>A.</given-names></name>
+          <name><surname>Roškar</surname><given-names>R.</given-names></name>
+          <name><surname>Stinson</surname><given-names>G. S.</given-names></name>
+          <name><surname>Woods</surname><given-names>R.</given-names></name>
+          <name><surname>Reed</surname><given-names>D. M.</given-names></name>
+          <name><surname>Coles</surname><given-names>J.</given-names></name>
+          <name><surname>Quinn</surname><given-names>T. R.</given-names></name>
+        </person-group>
+        <article-title>pynbody: Astrophysics Simulation Analysis for Python</article-title>
+        <publisher-name>http://ascl.net/1305.002</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-astropy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>The Astropy Collaboration</string-name>
+          <name><surname>Price-Whelan</surname><given-names>A. M.</given-names></name>
+          <name><surname>Sipőcz</surname><given-names>B. M.</given-names></name>
+          <name><surname>Günther</surname><given-names>H. M.</given-names></name>
+          <name><surname>Lim</surname><given-names>P. L.</given-names></name>
+          <name><surname>Crawford</surname><given-names>S. M.</given-names></name>
+          <name><surname>Conseil</surname><given-names>S.</given-names></name>
+          <name><surname>Shupe</surname><given-names>D. L.</given-names></name>
+          <name><surname>Craig</surname><given-names>M. W.</given-names></name>
+          <name><surname>Dencheva</surname><given-names>N.</given-names></name>
+          <name><surname>Ginsburg</surname><given-names>A.</given-names></name>
+          <name><surname>VanderPlas</surname><given-names>J. T.</given-names></name>
+          <name><surname>Bradley</surname><given-names>L. D.</given-names></name>
+          <name><surname>Pérez-Suárez</surname><given-names>D.</given-names></name>
+          <name><surname>de Val-Borro</surname><given-names>M.</given-names></name>
+          <name><surname>Aldcroft</surname><given-names>T. L.</given-names></name>
+          <name><surname>Cruz</surname><given-names>K. L.</given-names></name>
+          <name><surname>Robitaille</surname><given-names>T. P.</given-names></name>
+          <name><surname>Tollerud</surname><given-names>E. J.</given-names></name>
+          <name><surname>Ardelean</surname><given-names>C.</given-names></name>
+          <name><surname>Babej</surname><given-names>T.</given-names></name>
+          <name><surname>Bachetti</surname><given-names>M.</given-names></name>
+          <name><surname>Bakanov</surname><given-names>A. V.</given-names></name>
+          <name><surname>Bamford</surname><given-names>S. P.</given-names></name>
+          <name><surname>Barentsen</surname><given-names>G.</given-names></name>
+          <name><surname>Barmby</surname><given-names>P.</given-names></name>
+          <name><surname>Baumbach</surname><given-names>A.</given-names></name>
+          <name><surname>Berry</surname><given-names>K. L.</given-names></name>
+          <name><surname>Biscani</surname><given-names>F.</given-names></name>
+          <name><surname>Boquien</surname><given-names>M.</given-names></name>
+          <name><surname>Bostroem</surname><given-names>K. A.</given-names></name>
+          <name><surname>Bouma</surname><given-names>L. G.</given-names></name>
+          <name><surname>Brammer</surname><given-names>G. B.</given-names></name>
+          <name><surname>Bray</surname><given-names>E. M.</given-names></name>
+          <name><surname>Breytenbach</surname><given-names>H.</given-names></name>
+          <name><surname>Buddelmeijer</surname><given-names>H.</given-names></name>
+          <name><surname>Burke</surname><given-names>D. J.</given-names></name>
+          <name><surname>Calderone</surname><given-names>G.</given-names></name>
+          <name><surname>Cano Rodrı́guez</surname><given-names>J. L.</given-names></name>
+          <name><surname>Cara</surname><given-names>M.</given-names></name>
+          <name><surname>Cardoso</surname><given-names>J. V. M.</given-names></name>
+          <name><surname>Cheedella</surname><given-names>S.</given-names></name>
+          <name><surname>Copin</surname><given-names>Y.</given-names></name>
+          <name><surname>Crichton</surname><given-names>D.</given-names></name>
+          <name><surname>DÁvella</surname><given-names>D.</given-names></name>
+          <name><surname>Deil</surname><given-names>C.</given-names></name>
+          <name><surname>Depagne</surname><given-names>É.</given-names></name>
+          <name><surname>Dietrich</surname><given-names>J. P.</given-names></name>
+          <name><surname>Donath</surname><given-names>A.</given-names></name>
+          <name><surname>Droettboom</surname><given-names>M.</given-names></name>
+          <name><surname>Earl</surname><given-names>N.</given-names></name>
+          <name><surname>Erben</surname><given-names>T.</given-names></name>
+          <name><surname>Fabbro</surname><given-names>S.</given-names></name>
+          <name><surname>Ferreira</surname><given-names>L. A.</given-names></name>
+          <name><surname>Finethy</surname><given-names>T.</given-names></name>
+          <name><surname>Fox</surname><given-names>R. T.</given-names></name>
+          <name><surname>Garrison</surname><given-names>L. H.</given-names></name>
+          <name><surname>Gibbons</surname><given-names>S. L. J.</given-names></name>
+          <name><surname>Goldstein</surname><given-names>D. A.</given-names></name>
+          <name><surname>Gommers</surname><given-names>R.</given-names></name>
+          <name><surname>Greco</surname><given-names>J. P.</given-names></name>
+          <name><surname>Greenfield</surname><given-names>P.</given-names></name>
+          <name><surname>Groener</surname><given-names>A. M.</given-names></name>
+          <name><surname>Grollier</surname><given-names>F.</given-names></name>
+          <name><surname>Hagen</surname><given-names>A.</given-names></name>
+          <name><surname>Hirst</surname><given-names>P.</given-names></name>
+          <name><surname>Homeier</surname><given-names>D.</given-names></name>
+          <name><surname>Horton</surname><given-names>A. J.</given-names></name>
+          <name><surname>Hosseinzadeh</surname><given-names>G.</given-names></name>
+          <name><surname>Hu</surname><given-names>L.</given-names></name>
+          <name><surname>Hunkeler</surname><given-names>J. S.</given-names></name>
+          <name><surname>Ivezić</surname><given-names>Ž.</given-names></name>
+          <name><surname>Jain</surname><given-names>A.</given-names></name>
+          <name><surname>Jenness</surname><given-names>T.</given-names></name>
+          <name><surname>Kanarek</surname><given-names>G.</given-names></name>
+          <name><surname>Kendrew</surname><given-names>S.</given-names></name>
+          <name><surname>Kern</surname><given-names>N. S.</given-names></name>
+          <name><surname>Kerzendorf</surname><given-names>W. E.</given-names></name>
+          <name><surname>Khvalko</surname><given-names>A.</given-names></name>
+          <name><surname>King</surname><given-names>J.</given-names></name>
+          <name><surname>Kirkby</surname><given-names>D.</given-names></name>
+          <name><surname>Kulkarni</surname><given-names>A. M.</given-names></name>
+          <name><surname>Kumar</surname><given-names>A.</given-names></name>
+          <name><surname>Lee</surname><given-names>A.</given-names></name>
+          <name><surname>Lenz</surname><given-names>D.</given-names></name>
+          <name><surname>Littlefair</surname><given-names>S. P.</given-names></name>
+          <name><surname>Ma</surname><given-names>Z.</given-names></name>
+          <name><surname>Macleod</surname><given-names>D. M.</given-names></name>
+          <name><surname>Mastropietro</surname><given-names>M.</given-names></name>
+          <name><surname>McCully</surname><given-names>C.</given-names></name>
+          <name><surname>Montagnac</surname><given-names>S.</given-names></name>
+          <name><surname>Morris</surname><given-names>B. M.</given-names></name>
+          <name><surname>Mueller</surname><given-names>M.</given-names></name>
+          <name><surname>Mumford</surname><given-names>S. J.</given-names></name>
+          <name><surname>Muna</surname><given-names>D.</given-names></name>
+          <name><surname>Murphy</surname><given-names>N. A.</given-names></name>
+          <name><surname>Nelson</surname><given-names>S.</given-names></name>
+          <name><surname>Nguyen</surname><given-names>G. H.</given-names></name>
+          <name><surname>Ninan</surname><given-names>J. P.</given-names></name>
+          <name><surname>Nöthe</surname><given-names>M.</given-names></name>
+          <name><surname>Ogaz</surname><given-names>S.</given-names></name>
+          <name><surname>Oh</surname><given-names>S.</given-names></name>
+          <name><surname>Parejko</surname><given-names>J. K.</given-names></name>
+          <name><surname>Parley</surname><given-names>N.</given-names></name>
+          <name><surname>Pascual</surname><given-names>S.</given-names></name>
+          <name><surname>Patil</surname><given-names>R.</given-names></name>
+          <name><surname>Patil</surname><given-names>A. A.</given-names></name>
+          <name><surname>Plunkett</surname><given-names>A. L.</given-names></name>
+          <name><surname>Prochaska</surname><given-names>J. X.</given-names></name>
+          <name><surname>Rastogi</surname><given-names>T.</given-names></name>
+          <name><surname>Reddy Janga</surname><given-names>V.</given-names></name>
+          <name><surname>Sabater</surname><given-names>J.</given-names></name>
+          <name><surname>Sakurikar</surname><given-names>P.</given-names></name>
+          <name><surname>Seifert</surname><given-names>M.</given-names></name>
+          <name><surname>Sherbert</surname><given-names>L. E.</given-names></name>
+          <name><surname>Sherwood-Taylor</surname><given-names>H.</given-names></name>
+          <name><surname>Shih</surname><given-names>A. Y.</given-names></name>
+          <name><surname>Sick</surname><given-names>J.</given-names></name>
+          <name><surname>Silbiger</surname><given-names>M. T.</given-names></name>
+          <name><surname>Singanamalla</surname><given-names>S.</given-names></name>
+          <name><surname>Singer</surname><given-names>L. P.</given-names></name>
+          <name><surname>Sladen</surname><given-names>P. H.</given-names></name>
+          <name><surname>Sooley</surname><given-names>K. A.</given-names></name>
+          <name><surname>Sornarajah</surname><given-names>S.</given-names></name>
+          <name><surname>Streicher</surname><given-names>O.</given-names></name>
+          <name><surname>Teuben</surname><given-names>P.</given-names></name>
+          <name><surname>Thomas</surname><given-names>S. W.</given-names></name>
+          <name><surname>Tremblay</surname><given-names>G. R.</given-names></name>
+          <name><surname>Turner</surname><given-names>J. E. H.</given-names></name>
+          <name><surname>Terrón</surname><given-names>V.</given-names></name>
+          <name><surname>van Kerkwijk</surname><given-names>M. H.</given-names></name>
+          <name><surname>de la Vega</surname><given-names>A.</given-names></name>
+          <name><surname>Watkins</surname><given-names>L. L.</given-names></name>
+          <name><surname>Weaver</surname><given-names>B. A.</given-names></name>
+          <name><surname>Whitmore</surname><given-names>J. B.</given-names></name>
+          <name><surname>Woillez</surname><given-names>J.</given-names></name>
+          <name><surname>Zabalza</surname><given-names>V.</given-names></name>
+        </person-group>
+        <article-title>The Astropy Project: Building an inclusive, open-science project and status of the v2.0 core package</article-title>
+        <source>ArXiv e-prints</source>
+        <publisher-name>https://arxiv.org/abs/1801.02634</publisher-name>
+        <year iso-8601-date="2018-01">2018</year><month>01</month>
+        <uri>https://arxiv.org/abs/1801.02634</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Pint">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Grecco</surname><given-names>Hernan E.</given-names></name>
+        </person-group>
+        <article-title>Pint</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>https://github.com/hgrecco/pint; GitHub</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-cloc">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Danial</surname><given-names>Al</given-names></name>
+        </person-group>
+        <article-title>Cloc</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>https://github.com/AlDanial/cloc; GitHub</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-perf">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Stinner</surname><given-names>Victor</given-names></name>
+        </person-group>
+        <article-title>Perf</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>https://github.com/vstinner/perf; GitHub</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-fastcache">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Brady</surname><given-names>Peter</given-names></name>
+        </person-group>
+        <article-title>Fastcache</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>https://github.com/pbrady/fastcache; GitHub</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Gopinath2014">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Gopinath</surname><given-names>Rahul</given-names></name>
+          <name><surname>Jensen</surname><given-names>Carlos</given-names></name>
+          <name><surname>Groce</surname><given-names>Alex</given-names></name>
+        </person-group>
+        <article-title>Code coverage for suite evaluation by developers</article-title>
+        <source>Proceedings of the 36th international conference on software engineering</source>
+        <publisher-name>ACM</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="2014">2014</year>
+        <isbn>978-1-4503-2756-5</isbn>
+        <uri>http://doi.acm.org/10.1145/2568225.2568278</uri>
+        <pub-id pub-id-type="doi">10.1145/2568225.2568278</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Koru2007">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Koru</surname><given-names>A. G.</given-names></name>
+          <name><surname>Zhang</surname><given-names>D.</given-names></name>
+          <name><surname>Liu</surname><given-names>H.</given-names></name>
+        </person-group>
+        <article-title>Modeling the effect of size on defect proneness for open-source software</article-title>
+        <source>Predictor models in software engineering, 2007. PROMISE’07: ICSE workshops 2007. International workshop on</source>
+        <year iso-8601-date="2007-05">2007</year><month>05</month>
+        <volume></volume>
+        <issn></issn>
+        <pub-id pub-id-type="doi">10.1109/PROMISE.2007.9</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Lipow1982">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lipow</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>Number of faults per line of code</article-title>
+        <source>IEEE Trans. Softw. Eng.</source>
+        <publisher-name>IEEE Press</publisher-name>
+        <publisher-loc>Piscataway, NJ, USA</publisher-loc>
+        <year iso-8601-date="1982-07">1982</year><month>07</month>
+        <volume>8</volume>
+        <issue>4</issue>
+        <issn>0098-5589</issn>
+        <uri>http://dx.doi.org/10.1109/TSE.1982.235579</uri>
+        <pub-id pub-id-type="doi">10.1109/TSE.1982.235579</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-croton2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Croton</surname><given-names>D. J.</given-names></name>
+        </person-group>
+        <article-title>Damn You, Little h! (Or, Real-World Applications of the Hubble Constant Using Observed and Simulated Data)</article-title>
+        <source>Publications of the Astronomical Society of Australia</source>
+        <year iso-8601-date="2013-10">2013</year><month>10</month>
+        <volume>30</volume>
+        <uri>https://arxiv.org/abs/1308.4150</uri>
+        <pub-id pub-id-type="doi">10.1017/pasa.2013.31</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-nasa1999">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Board</surname><given-names>Mars Climate Orbiter Mishap Investigation</given-names></name>
+        </person-group>
+        <source>Mars climate orbiter mishap investigation board: Phase i report</source>
+        <publisher-name>Jet Propulsion Laboratory</publisher-name>
+        <year iso-8601-date="1999">1999</year>
+        <uri>https://books.google.com/books?id=4OMIHQAACAAJ</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

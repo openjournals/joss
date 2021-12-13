@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">960</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00960</article-id>
+<title-group>
+<article-title>Local clustering</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-6226-4277</contrib-id>
+<string-name>Peter Volf</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Independent developer</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2018-09-14">
+<day>14</day>
+<month>9</month>
+<year>2018</year>
+</pub-date>
+<volume>3</volume>
+<issue>30</issue>
+<fpage>960</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>graph theory</kwd>
+<kwd>clustering algorithm</kwd>
+<kwd>ranking</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>Graph clustering algorithms aim to divide the nodes of a graph into
+  one or more clusters based on some measure of similarity. There are
+  many different ways to define a cluster depending on the goal of the
+  analysis. In graph cluster analysis the usual definition of a cluster
+  is a group of nodes that are relatively densely interconnected but
+  have few connections towards nodes outside of the cluster.</p>
+  <p>For an overview of graph clustering algorithms see
+  (<xref alt="Schaeffer, 2007" rid="ref-SchaefferU003A2007" ref-type="bibr">Schaeffer,
+  2007</xref>). The more developed field within graph clustering is
+  global clustering. Global algorithms are allowed to look at the whole
+  graph while calculating its clusters. Well known global clustering
+  algorithms include
+  (<xref alt="Blondel, 2008" rid="ref-BlondelU003A2008" ref-type="bibr">Blondel,
+  2008</xref>),
+  (<xref alt="Dongen, 2000" rid="ref-DongenU003A2000" ref-type="bibr">Dongen,
+  2000</xref>),
+  (<xref alt="G. Newman M., 2004" rid="ref-NewmanU003A2004" ref-type="bibr">G.
+  Newman M., 2004</xref>),
+  (<xref alt="M. Newman, 2006" rid="ref-NewmanU003A2006" ref-type="bibr">M.
+  Newman, 2006</xref>),
+  (<xref alt="Pons, 2006" rid="ref-PonsU003A2006" ref-type="bibr">Pons,
+  2006</xref>) and
+  (<xref alt="Raghavan, 2007" rid="ref-RaghavanU003A2007" ref-type="bibr">Raghavan,
+  2007</xref>).</p>
+  <p>Local clustering algorithms get a small set of source nodes
+  (typically a single node) as input and calculate the cluster they
+  belong to in the graph. While doing so, local algorithms are only
+  allowed to look at the already visited nodes of the graph and their
+  neighbours.</p>
+  <p>Graph cluster analysis is used in a wide variety of fields. This
+  project does not target one specific field, instead it aims to be a
+  general tool for graph cluster analysis for cases where global cluster
+  analysis is not applicable or practical for example because of the
+  size of the data set or because a different (local) perspective is
+  required.</p>
+</sec>
+<sec id="algorithm">
+  <title>Algorithm</title>
+  <p>This Python project implements the (hierarchical) Hermina-Janos
+  local clustering algorithm. The algorithm is independent of the used
+  cluster definition, instead it defines an
+  <ext-link ext-link-type="uri" xlink:href="src/localclustering/definitions/base.py">interface</ext-link>
+  which cluster definitions must implement. One such cluster definition,
+  a simple connectivity based one, is available as part of the project
+  and it was used to generate the example figure as well as all other
+  results that can be found in the repository.</p>
+  <fig>
+    <caption><p>The cluster of Elvis Presley in Spotify’s Related
+    Artists graph.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="documents/cluster_example.png" xlink:title="" />
+  </fig>
+  <p>The following sections provide a high-level overview of the
+  algorithm and cluster definition. For more details and analysis,
+  please see the
+  <ext-link ext-link-type="uri" xlink:href="documents/algorithm.rst">algorithm
+  description</ext-link> and
+  <ext-link ext-link-type="uri" xlink:href="documents/Algorithm%20Analysis%20with%20the%20Spotify%20Related%20Artists%20Graph.ipynb">IPython
+  notebook</ext-link> that are provided as part of the project.</p>
+  <sec id="local-clustering-algorithm">
+    <title>Local clustering algorithm</title>
+    <p>The Hermina-Janos algorithm is a simple iterative process that
+    repeats the following two steps until it reaches a stable state:</p>
+    <list list-type="order">
+      <list-item>
+        <p>Expansion step: For each node in the neighbourhood of the
+        cluster, decide whether adding it to the cluster would increase
+        the cluster’s quality, collect all the neighbours whose addition
+        would improve the cluster and add them to the cluster in one
+        step.</p>
+      </list-item>
+      <list-item>
+        <p>Reduction step: For each node on the border of the cluster,
+        decide whether removing it from the cluster would increase the
+        cluster’s quality, collect all the nodes whose removal would
+        improve the cluster and remove them from the cluster in one
+        step.</p>
+      </list-item>
+    </list>
+    <p>The process can be thought of as a sort of label propagation
+    (<xref alt="Raghavan, 2007" rid="ref-RaghavanU003A2007" ref-type="bibr">Raghavan,
+    2007</xref>), where the cluster competes against its surroundings
+    until an equilibrium is reached.</p>
+  </sec>
+  <sec id="hierarchical-local-clustering-algorithm">
+    <title>Hierarchical local clustering algorithm</title>
+    <p>The hierarchical version of the Hermina-Janos local clustering
+    algorithm extends the base version with an extra layer that allows
+    it uncover clusters at different hierarchy levels or “distances”
+    from the source nodes of the cluster analysis.</p>
+    <p>Similarly to the base algorithm, the hierarchical Hermina-Janos
+    algorithm is also an iterative process with the following two
+    steps:</p>
+    <list list-type="order">
+      <list-item>
+        <p>Local clustering step: Use the Hermina-Janos local clustering
+        algorithm with the current configuration of the used cluster
+        definition to calculate the cluster.</p>
+      </list-item>
+      <list-item>
+        <p>Cluster definition relaxation step: This is a highly cluster
+        definition-dependent step where the algorithm adjusts or relaxes
+        the cluster definition’s parameters so in the next iteration the
+        local clustering algorithm will be able to further extend the
+        cluster.</p>
+      </list-item>
+    </list>
+  </sec>
+  <sec id="cluster-definitions">
+    <title>Cluster definitions</title>
+    <p>Cluster definitions must implement a cluster quality metric such
+    as min-cut in a way that allows them to answer the following two
+    questions for the clustering algorithms:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p>Given a node that is in the neighbourhood of the cluster and
+        the cluster itself, would adding the node to the cluster improve
+        the cluster’s quality?</p>
+      </list-item>
+      <list-item>
+        <p>Given a node that is in the cluster and the cluster itself,
+        would removing the node from the cluster improve the cluster’s
+        quality?</p>
+      </list-item>
+    </list>
+    <p>Furthermore, for a cluster definition to be hierarchical, it must
+    be able to adjust or relax its parameters and to do so in a way that
+    allows more nodes to be included in the cluster during the next
+    local clustering iteration with the definition.</p>
+    <sec id="connectivity-based-cluster-definition">
+      <title>Connectivity based cluster definition</title>
+      <p>The connectivity based cluster definition is the default
+      (hierarchical) cluster definition implementation in this
+      project.</p>
+      <p>The cluster definition broadly works in the following way:</p>
+      <list list-type="order">
+        <list-item>
+          <p>It calculates the <italic>quality difference</italic> the
+          node provides or would provide for the cluster.</p>
+        </list-item>
+        <list-item>
+          <p>It calculates the minimum quality difference - the
+          <italic>threshold</italic> - to compare the quality difference
+          to.</p>
+        </list-item>
+        <list-item>
+          <p><italic>Addition</italic>: if the quality difference of the
+          addition is greater than or equal to the threshold, then the
+          node should be added. <italic>Removal</italic>: if the quality
+          difference of the removal is less than the threshold, then the
+          node should be removed.</p>
+        </list-item>
+      </list>
+      <p>The cluster definition has the following configurable
+      parameters:</p>
+      <list list-type="bullet">
+        <list-item>
+          <p><italic>Weighting coefficient</italic>: An edge weight
+          multiplier for the edges that have at least one of their
+          endpoints within the cluster. This is the parameter the
+          cluster definition adjusts during hierarchical clustering.</p>
+        </list-item>
+        <list-item>
+          <p><italic>Threshold modifier</italic>: The calculated base
+          threshold is multiplied by the value of this parameter before
+          being used to make a decision regarding a given node.</p>
+        </list-item>
+      </list>
+      <p>The quality difference is calculated in the following way: sum
+      the edge weights multiplied by the weighting coefficient for each
+      edge that connects the given node to the cluster.</p>
+      <p>The threshold is calculated in the following way: take the
+      minimum of the following values and multiply it by the threshold
+      modifier:</p>
+      <list list-type="bullet">
+        <list-item>
+          <p>Half the number of nodes in the cluster minus 1.</p>
+        </list-item>
+        <list-item>
+          <p>Half the degree of the given node.</p>
+        </list-item>
+        <list-item>
+          <p>The sum of the degrees of the nodes within the cluster
+          divided by 2 times the number of nodes within the cluster.</p>
+        </list-item>
+      </list>
+      <p>The cluster definition adjusts itself to the next hierarchy
+      level by finding the value to multiply the weighting coefficient
+      with in order for the cluster definition to be able to include at
+      least one more node in the cluster.</p>
+      <p>For more details, please see the implementation.</p>
+    </sec>
+  </sec>
+</sec>
+<sec id="tools-and-utilities">
+  <title>Tools and utilities</title>
+  <p>The project provides a ranking component that can be used to rank
+  the nodes in the cluster and their neighbours by their importance or
+  contribution to the cluster (as defined by the used cluster
+  definition).</p>
+  <p>A component for recording the steps the algorithms have taken is
+  also provided. It makes it possible to trace back each decision and
+  step the algorithms have made to see exactly how the result was
+  calculated.</p>
+</sec>
+<sec id="ideas-for-future-work">
+  <title>Ideas for future work</title>
+  <list list-type="bullet">
+    <list-item>
+      <p>Reimplementation for parallel computing: Most of the
+      calculations the algorithms make (the only exception being the
+      actual cluster update) can be executed in parallel, which could
+      significantly improve performance.</p>
+    </list-item>
+    <list-item>
+      <p>New cluster definitions: Only one cluster definition is
+      provided in the project. More cluster definitions can be
+      implemented for example by building on cluster quality metrics
+      such as modularity
+      (<xref alt="G. Newman M., 2004" rid="ref-NewmanU003A2004" ref-type="bibr">G.
+      Newman M., 2004</xref>).</p>
+    </list-item>
+    <list-item>
+      <p>Analysis of how cluster definitions should be configured for
+      graphs with different characteristics.</p>
+    </list-item>
+    <list-item>
+      <p>Result comparison with global clustering algorithms on
+      well-known and -analyzed graphs such as the Zachary karate club
+      (<xref alt="Zachary, 1977" rid="ref-ZacharyU003A1977" ref-type="bibr">Zachary,
+      1977</xref>).</p>
+    </list-item>
+  </list>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-BlondelU003A2008">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Blondel</surname><given-names>Guillaume</given-names><suffix>V.</suffix></name>
+        </person-group>
+        <article-title>Fast unfolding of communities in large networks</article-title>
+        <source>Journal of Statistical Mechanics: Theory and Experiment</source>
+        <year iso-8601-date="2008">2008</year>
+        <volume>2008</volume>
+        <pub-id pub-id-type="doi">10.1088/1742-5468/2008/10/P10008</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-DongenU003A2000">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Dongen</surname><given-names>S. van</given-names></name>
+        </person-group>
+        <article-title>A cluster algorithm for graphs</article-title>
+        <publisher-name>National Research Institute for Mathematics; Computer Science in the Netherlands, Amsterdam</publisher-name>
+        <year iso-8601-date="2000">2000</year>
+        <uri>https://micans.org/mcl/index.html</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-NewmanU003A2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Newman</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>Finding community structure in networks using the eigenvectors of matrices</article-title>
+        <source>Physical Review E</source>
+        <year iso-8601-date="2006">2006</year>
+        <volume>74</volume>
+        <pub-id pub-id-type="doi">10.1103/PhysRevE.74.036104</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-NewmanU003A2004">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Newman</surname><given-names>Girvan</given-names><suffix>M.</suffix></name>
+        </person-group>
+        <article-title>Finding and evaluating community structure in networks</article-title>
+        <source>Physical Review E</source>
+        <year iso-8601-date="2004">2004</year>
+        <volume>69</volume>
+        <pub-id pub-id-type="doi">10.1103/PhysRevE.69.026113</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-PonsU003A2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pons</surname><given-names>Latapy</given-names><suffix>P.</suffix></name>
+        </person-group>
+        <article-title>Computing communities in large networks using random walks</article-title>
+        <source>Journal of Graph Algorithms and Applications</source>
+        <year iso-8601-date="2006">2006</year>
+        <volume>10</volume>
+        <pub-id pub-id-type="doi">10.1007/11569596_31</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-RaghavanU003A2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Raghavan</surname><given-names>Albert</given-names><suffix>U. N.</suffix></name>
+        </person-group>
+        <article-title>Near linear time algorithm to detect community structures in large-scale networks</article-title>
+        <source>Physical Review E</source>
+        <year iso-8601-date="2007">2007</year>
+        <volume>76</volume>
+        <pub-id pub-id-type="doi">10.1103/PhysRevE.76.036106</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SchaefferU003A2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Schaeffer</surname><given-names>S. E.</given-names></name>
+        </person-group>
+        <article-title>Graph clustering</article-title>
+        <source>Computer Science Review</source>
+        <year iso-8601-date="2007">2007</year>
+        <volume>1</volume>
+        <pub-id pub-id-type="doi">10.1016/j.cosrev.2007.05.001</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ZacharyU003A1977">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zachary</surname><given-names>W.</given-names></name>
+        </person-group>
+        <article-title>An information flow model for conflict and fission in small groups</article-title>
+        <source>Journal of Anthropological Research</source>
+        <year iso-8601-date="1977">1977</year>
+        <volume>33</volume>
+        <pub-id pub-id-type="doi">10.1086/jar.33.4.3629752</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2119</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02119</article-id>
+<title-group>
+<article-title>covtobed: a simple and fast tool to extract coverage
+tracks from BAM files</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<string-name>Giovanni Birolo</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-7619-281X</contrib-id>
+<string-name>Andrea Telatin</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Dept. Medical Sciences, University of Turin,
+ITALY</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Gut Microbes and Health Programme, Quadram Institute
+Bioscience, Norwich, UK</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-12-10">
+<day>10</day>
+<month>12</month>
+<year>2019</year>
+</pub-date>
+<volume>5</volume>
+<issue>47</issue>
+<fpage>2119</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>bedtools</kwd>
+<kwd>bamtools</kwd>
+<kwd>genomics</kwd>
+<kwd>bioinformatics</kwd>
+<kwd>target enrichment</kwd>
+<kwd>sequence coverage</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>A common task in bioinformatics is the mapping of DNA sequencing
+  reads (produced by “next generation sequencing” experiments) against a
+  reference genome. The output of the alignment is commonly encoded in a
+  BAM file
+  (<xref alt="Li et al., 2009" rid="ref-samformat" ref-type="bibr">Li et
+  al., 2009</xref>). For several applications of DNA sequencing it is
+  useful to extract the <italic>depth of coverage</italic>
+  (<xref alt="Sims et al., 2014" rid="ref-coverage" ref-type="bibr">Sims
+  et al., 2014</xref>) at specific positions in the BAM file, encoding
+  the output in the standard BED format
+  (<xref alt="Quinlan &amp; Hall, 2010" rid="ref-bedtools" ref-type="bibr">Quinlan
+  &amp; Hall, 2010</xref>).</p>
+  <p>Here we describe <italic>covtobed</italic>, a C++ program designed
+  to extract the depth of coverage per position from a sorted BAM file,
+  optionally specifying a range of coverage of interest and a minimum
+  length for the features to be printed in the output BED file. Parsing
+  of BAM files is performed using <monospace>libbamtools</monospace>
+  (<xref alt="Barnett et al., 2011" rid="ref-bamtools" ref-type="bibr">Barnett
+  et al., 2011</xref>).</p>
+  <p>The design has been inspired by the UNIX programming philosophy
+  (<xref alt="Wikipedia contributors, 2019" rid="ref-phylosophy" ref-type="bibr">Wikipedia
+  contributors, 2019</xref>), and thus <italic>covtobed</italic>
+  performs a single task and supports input and output streams.</p>
+</sec>
+<sec id="availability-and-installation">
+  <title>Availability and Installation</title>
+  <p><italic>covtobed</italic> is distributed with MIT licence and
+  available from the
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/telatin/covtobed">GitHub
+  repository</ext-link>, and can be easily installed via Miniconda from
+  the “bioconda” channel (<italic>i. e.</italic>
+  <monospace>conda install -c bioconda covtobed</monospace>).</p>
+  <p>The tool is also available as a Docker image downloadable from
+  <ext-link ext-link-type="uri" xlink:href="https://hub.docker.com/r/andreatelatin/covtobed">Docker
+  Hub</ext-link> (<italic>i. e.</italic>
+  <monospace>docker pull andreatelatin/covtobed</monospace>) or as a
+  Singularity image.</p>
+</sec>
+<sec id="code-structure-and-dependencies">
+  <title>Code (structure and dependencies)</title>
+  <p>The code is object oriented, including an <italic>Input</italic>
+  class handling reading, parsing and filtering of alignments and an
+  <italic>Output</italic> class handling coverage filtering and writing
+  in different formats. The main algorithm is based on a
+  <italic>priority_queue</italic> from the standard library and is both
+  fast and memory efficient.</p>
+  <p><italic>covtobed</italic> relies on
+  <monospace>libbamtools</monospace>
+  (<xref alt="Barnett et al., 2011" rid="ref-bamtools" ref-type="bibr">Barnett
+  et al., 2011</xref>) for BAM file parsing, and
+  <monospace>cpp-optparse</monospace>
+  (<xref alt="Weißl, 2017" rid="ref-opt" ref-type="bibr">Weißl,
+  2017</xref>) for command line option parsing.</p>
+</sec>
+<sec id="documentation">
+  <title>Documentation</title>
+  <p>The package documentation is maintained in the
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/telatin/covtobed/wiki">GitHub
+  wiki</ext-link>. The documentation contains examples of usage, example
+  of produced output and details about the package.</p>
+</sec>
+<sec id="example-applications">
+  <title>Example applications</title>
+  <p>When performing target enrichment experiments (where the aim is to
+  sequence a set of selected regions of a genome), it’s important to
+  detect a lack of coverage or insufficient coverage
+  (<italic>i.e.</italic> the coverage on target is lower than
+  <monospace>THRESHOLD</monospace>). This information can be obtained by
+  intersecting (using <italic>bedtools</italic>,
+  (<xref alt="Quinlan &amp; Hall, 2010" rid="ref-bedtools" ref-type="bibr">Quinlan
+  &amp; Hall, 2010</xref>)) the BED file describing the captured target
+  regions (usually supplied by the company producing the kit) with the
+  output of <italic>covtobed</italic>.</p>
+  <p>The tool has been used, for example, in the setup of a
+  <italic>target enrichment</italic> panel targeting 71 human genes
+  (<xref alt="Poloni et al., 2019" rid="ref-poloni" ref-type="bibr">Poloni
+  et al., 2019</xref>), in order to detect uncovered regions.</p>
+  <p>While a tool exists – called <italic>mosdepth</italic>
+  (<xref alt="Pedersen &amp; Quinlan, 2018" rid="ref-mosdepth" ref-type="bibr">Pedersen
+  &amp; Quinlan, 2018</xref>) – to perform a coverage analysis,
+  <italic>covtobed</italic> was designed with the ability to quickly
+  extract regions between user-defined coverage intervals and, more
+  importantly, with streaming from standard input and to standard
+  output, that Mosdepth doesn’t support. <italic>covtobed</italic> is
+  available both for Linux and macOS, while <italic>mosdepth</italic> is
+  only available for Linux, and this makes <italic>covtobed</italic> a
+  suitable building block for diverse pipelines (<italic>e. g.</italic>
+  microbial genomics requires lesser resources and it is not uncommon to
+  perform complete analyses on a laptop).</p>
+</sec>
+<sec id="performance">
+  <title>Performance</title>
+  <p><italic>covtobed</italic> is a fast tool, constantly outperforming
+  the popular <italic>bedtools</italic> and providing comparable speed
+  with <italic>mosdepth</italic>. With some datasets, like “gene
+  panels”, <italic>covtobed</italic> is more than ten times faster than
+  <italic>mosdepth</italic>.</p>
+  <p>The scripts to perform the benchmark are available in the
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/telatin/covtobed/tree/master/benchmark">github
+  repository</ext-link>.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>The authors gratefully acknowledge the support of the Biotechnology
+  and Biological Sciences Research Council (BBSRC); this research was
+  partly supported by the BBSRC Institute Strategic Programme Gut
+  Microbes and Health BB/R012490/1 and its constituent project
+  BBS/E/F/000PR10353. Analyses and benchmark performed using the MRC
+  CLIMB cloud computing environment supported by grant MR/L015080/1.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-bedtools">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Quinlan</surname><given-names>Aaron R</given-names></name>
+          <name><surname>Hall</surname><given-names>Ira M</given-names></name>
+        </person-group>
+        <article-title>BEDTools: A flexible suite of utilities for comparing genomic features</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2010-03">2010</year><month>03</month>
+        <volume>26</volume>
+        <issue>6</issue>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btq033</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mosdepth">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pedersen</surname><given-names>Brent S</given-names></name>
+          <name><surname>Quinlan</surname><given-names>Aaron R</given-names></name>
+        </person-group>
+        <article-title>Mosdepth: Quick coverage calculation for genomes and exomes</article-title>
+        <source>Bioinformatics (Oxford, England)</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>34</volume>
+        <issue>5</issue>
+        <issn>1367-4803</issn>
+        <uri>http://europepmc.org/articles/PMC6030888</uri>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btx699</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-coverage">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sims</surname><given-names>David</given-names></name>
+          <name><surname>Sudbery</surname><given-names>Ian</given-names></name>
+          <name><surname>Ilott</surname><given-names>Nicholas E</given-names></name>
+          <name><surname>Heger</surname><given-names>Andreas</given-names></name>
+          <name><surname>Ponting</surname><given-names>Chris P</given-names></name>
+        </person-group>
+        <article-title>Sequencing depth and coverage: Key considerations in genomic analyses</article-title>
+        <source>Nature reviews. Genetics</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>15</volume>
+        <issue>2</issue>
+        <issn>1471-0056</issn>
+        <uri>https://doi.org/10.1038/nrg3642</uri>
+        <pub-id pub-id-type="doi">10.1038/nrg3642</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-samformat">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Li</surname><given-names>Heng</given-names></name>
+          <name><surname>Handsaker</surname><given-names>Bob</given-names></name>
+          <name><surname>Wysoker</surname><given-names>Alec</given-names></name>
+          <name><surname>Fennell</surname><given-names>Tim</given-names></name>
+          <name><surname>Ruan</surname><given-names>Jue</given-names></name>
+          <name><surname>Homer</surname><given-names>Nils</given-names></name>
+          <name><surname>Marth</surname><given-names>Gabor</given-names></name>
+          <name><surname>Abecasis</surname><given-names>Goncalo</given-names></name>
+          <name><surname>Durbin</surname><given-names>Richard</given-names></name>
+          <string-name>1000 Genome Project Data Processing Subgroup</string-name>
+        </person-group>
+        <article-title>The sequence alignment/map format and SAMtools</article-title>
+        <source>Bioinformatics (Oxford, England)</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume>25</volume>
+        <issue>16</issue>
+        <issn>1367-4803</issn>
+        <uri>http://europepmc.org/articles/PMC2723002</uri>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btp352</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bamtools">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Barnett</surname><given-names>Derek W</given-names></name>
+          <name><surname>Garrison</surname><given-names>Erik K</given-names></name>
+          <name><surname>Quinlan</surname><given-names>Aaron R</given-names></name>
+          <name><surname>Strömberg</surname><given-names>Michael P</given-names></name>
+          <name><surname>Marth</surname><given-names>Gabor T</given-names></name>
+        </person-group>
+        <article-title>BamTools: A c++ API and toolkit for analyzing and managing BAM files</article-title>
+        <source>Bioinformatics (Oxford, England)</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>27</volume>
+        <issue>12</issue>
+        <issn>1367-4803</issn>
+        <uri>http://europepmc.org/articles/PMC3106182</uri>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btr174</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-poloni">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Poloni</surname><given-names>Giulia</given-names></name>
+          <name><surname>Calore</surname><given-names>Martina</given-names></name>
+          <name><surname>Rigato</surname><given-names>Ilaria</given-names></name>
+          <name><surname>Marras</surname><given-names>Elena</given-names></name>
+          <name><surname>Minervini</surname><given-names>Giovanni</given-names></name>
+          <name><surname>Mazzotti</surname><given-names>Elisa</given-names></name>
+          <name><surname>Lorenzon</surname><given-names>Alessandra</given-names></name>
+          <name><surname>Li Mura</surname><given-names>Ilena Egle Astrid</given-names></name>
+          <name><surname>Telatin</surname><given-names>Andrea</given-names></name>
+          <name><surname>Zara</surname><given-names>Ivano</given-names></name>
+          <name><surname>Simionati</surname><given-names>Barbara</given-names></name>
+          <name><surname>Perazzolo Marra</surname><given-names>Martina</given-names></name>
+          <name><surname>Ponti</surname><given-names>Jessica</given-names></name>
+          <name><surname>Occhi</surname><given-names>Gianluca</given-names></name>
+          <name><surname>Vitiello</surname><given-names>Libero</given-names></name>
+          <name><surname>Daliento</surname><given-names>Luciano</given-names></name>
+          <name><surname>Thiene</surname><given-names>Gaetano</given-names></name>
+          <name><surname>Basso</surname><given-names>Cristina</given-names></name>
+          <name><surname>Corrado</surname><given-names>Domenico</given-names></name>
+          <name><surname>Tosatto</surname><given-names>Silvio</given-names></name>
+          <name><surname>Bauce</surname><given-names>Barbara</given-names></name>
+          <name><surname>Rampazzo</surname><given-names>Alessandra</given-names></name>
+          <name><surname>De Bortoli</surname><given-names>Marzia</given-names></name>
+        </person-group>
+        <article-title>A targeted next-generation gene panel reveals a novel heterozygous nonsense variant in the TP63 gene in patients with arrhythmogenic cardiomyopathy</article-title>
+        <source>Heart rhythm</source>
+        <year iso-8601-date="2019-05">2019</year><month>05</month>
+        <volume>16</volume>
+        <issue>5</issue>
+        <issn>1547-5271</issn>
+        <uri>https://doi.org/10.1016/j.hrthm.2018.11.015</uri>
+        <pub-id pub-id-type="doi">10.1016/j.hrthm.2018.11.015</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-phylosophy">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>Wikipedia contributors</string-name>
+        </person-group>
+        <article-title>Unix philosophy — Wikipedia, the free encyclopedia</article-title>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://en.wikipedia.org/w/index.php?title=Unix_philosophy&amp;oldid=919880773</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-opt">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Weißl</surname><given-names>Johannes</given-names></name>
+        </person-group>
+        <article-title>Cpp-optparse</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>https://github.com/weisslj/cpp-optparse; GitHub</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

@@ -1,0 +1,748 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3419</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03419</article-id>
+<title-group>
+<article-title>mpi4jax: Zero-copy MPI communication of JAX
+arrays</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-4465-7317</contrib-id>
+<string-name>Dion Häfner</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Filippo Vicentini</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Niels Bohr Institute, University of Copenhagen, Copenhagen,
+Denmark</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Institute of Physics, École Polytechnique Fédérale de
+Lausanne (EPFL), CH-1015 Lausanne, Switzerland</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-06-10">
+<day>10</day>
+<month>6</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>65</issue>
+<fpage>3419</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Python</kwd>
+<kwd>JAX</kwd>
+<kwd>MPI</kwd>
+<kwd>high performance computing</kwd>
+<kwd>parallel computing</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The tensor framework JAX
+  (<xref alt="Bradbury et al., 2018" rid="ref-jax" ref-type="bibr">Bradbury
+  et al., 2018</xref>) combines expressivity and performance while
+  retaining an accessible pure Python interface. Expressivity is
+  achieved by treating functions as first-class objects, while
+  efficiency is obtained by compiling to machine code
+  just-ahead-of-time.</p>
+  <p>However, machine learning and (high-performance) scientific
+  computing are often conducted on different hardware stacks: Machine
+  learning is typically done on few highly parallel units (GPUs or TPUs)
+  connected to a single host CPU, while scientific models tend to run on
+  clusters of dozens to thousands of CPUs. Unfortunately, support from
+  JAX and the underlying compiler XLA is more mature in the former case.
+  Notably, there is so far no built-in solution to communicate data
+  between different nodes that is as sophisticated as the widely used
+  MPI (Message Passing Interface) libraries
+  (<xref alt="Forum, 1994" rid="ref-mpistandard" ref-type="bibr">Forum,
+  1994</xref>).</p>
+  <p>We attempt to fill this gap and introduce
+  <monospace>mpi4jax</monospace>, a Python library bringing first-class
+  support for the most important MPI operations to JAX. We achieve this
+  by defining a set of primitive functions matching MPI’s operations,
+  instructing JAX how to transform them and providing a native
+  implementation to execute them. This has the result that users can
+  communicate arbitrary JAX data without performance or usability
+  penalties. In particular, <monospace>mpi4jax</monospace> is able to
+  communicate data without copying from CPU and GPU memory (if built
+  against a CUDA-aware MPI library) between one or multiple hosts
+  (e.g. via an Infiniband network on a cluster).</p>
+  <p>This also means that existing applications using NumPy and
+  <monospace>mpi4py</monospace> can be ported seamlessly to the JAX
+  ecosystem for potentially significant performance gains.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>For decades, high-performance computing has been done primarily in
+  low-level programming languages like Fortran or C. But the ubiquity of
+  Python is starting to spill into this domain as well, thanks to its
+  strong library ecosystem and wide adoption throughout the
+  sciences.</p>
+  <p>With a combination of NumPy
+  (<xref alt="Harris et al., 2020" rid="ref-numpy" ref-type="bibr">Harris
+  et al., 2020</xref>) and <monospace>mpi4py</monospace>
+  (<xref alt="Dalcín et al., 2005" rid="ref-mpi4py" ref-type="bibr">Dalcín
+  et al., 2005</xref>), Python users can already build massively
+  parallel applications without delving into low-level programming
+  languages, which is often advantageous when human time is more
+  valuable than computing time. However, such high-level frameworks are
+  not always able to achieve peak performance, especially in more
+  <italic>niche</italic> workloads.</p>
+  <p>Google’s JAX library leverages the XLA compiler and supports
+  just-in-time compilation (JIT) of (a subset of) Python code to XLA
+  primitives.
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/dionhaefner/pyhpc-benchmarks">The
+  result is highly competitive performance on both CPU and
+  GPU</ext-link>
+  (<xref alt="Häfner, 2020" rid="ref-pyhpc-benchmarks" ref-type="bibr">Häfner,
+  2020</xref>). This approach, conceptually similar to Julia’s deferred
+  compilation model
+  (<xref alt="Bezanson et al., 2017" rid="ref-Bezanson2017" ref-type="bibr">Bezanson
+  et al., 2017</xref>), achieves low-level performance in a high-level
+  language. With a strong performance baseline on single devices, the
+  only thing missing is easy scalability to massively parallel hardware
+  stacks, which we supply here.</p>
+  <p>Two real-world use cases for <monospace>mpi4jax</monospace> are the
+  ocean model Veros
+  (<xref alt="Häfner et al., 2018" rid="ref-hafner_veros_2018" ref-type="bibr">Häfner
+  et al., 2018</xref>) and the machine learning toolkit for many-body
+  quantum systems NetKet
+  (<xref alt="Carleo et al., 2019" rid="ref-carleo_netket_2019" ref-type="bibr">Carleo
+  et al., 2019</xref>):</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>In the case of Veros, MPI primitives are needed to communicate
+      overlapping grid cells between processes. Communication primitives
+      are buried deep into the physical subroutines. Therefore,
+      refactoring the codebase to leave <monospace>jax.jit</monospace>
+      every time data needs to be communicated would severely break the
+      control flow of the model and incur a hefty performance loss (in
+      addition to the cost of copying data from and to JAX). Through
+      <monospace>mpi4jax</monospace>, it is possible to apply the JIT
+      compiler to whole subroutines to avoid this entirely.</p>
+    </list-item>
+    <list-item>
+      <p>In the case of NetKet, a high efficiency algorithm for natural
+      gradient optimization requires finding the solution of a large
+      linear system <inline-formula><alternatives>
+      <tex-math><![CDATA[A x= y]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>A</mml:mi><mml:mi>x</mml:mi><mml:mo>=</mml:mo><mml:mi>y</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.
+      The matrix <inline-formula><alternatives>
+      <tex-math><![CDATA[A]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>A</mml:mi></mml:math></alternatives></inline-formula>
+      is determined by running automatic differentiation on a neural
+      network model whose inputs might be distributed across several
+      computing nodes and GPUs. Therefore, the need to differentiate
+      through distributed reduction operations inside of a linear solver
+      arises.</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="implementation">
+  <title>Implementation</title>
+  <p><monospace>mpi4jax</monospace> combines JAX’s custom call mechanism
+  with <monospace>mpi4py.libmpi</monospace> (which exposes MPI C
+  primitives as Cython callables).</p>
+  <p>The implementation of a primitive in <monospace>mpi4jax</monospace>
+  consists of two parts:</p>
+  <list list-type="order">
+    <list-item>
+      <p>A Python module, registering a new primitive with JAX. JAX
+      primitives consist of an <italic>abstract evaluation</italic> rule
+      and several <italic>translation rules</italic>. Abstract
+      evaluation rules are used by the compiler to infer the output
+      shapes and data types without running the actual computation,
+      while <italic>translation rules</italic> determine the specific
+      computational kernel and prepare the input buffers.</p>
+      <p>In particular, we need to ensure that all numerical input data
+      is of the expected type (e.g., by converting Python integers to
+      the C type <monospace>uintptr_t</monospace>) before passing it on
+      to XLA. A different translation rule is necessary for every type
+      of backend, such as CPUs, GPUs and TPUs.</p>
+      <p>On specific primitives we also define a transposition and JVP
+      (Jacobian-vector product) rule to support forward and reverse mode
+      automatic differentiation.</p>
+    </list-item>
+    <list-item>
+      <p>A Cython
+      (<xref alt="Behnel et al., 2011" rid="ref-cython" ref-type="bibr">Behnel
+      et al., 2011</xref>) function that casts raw input arguments
+      passed by XLA to their true C type, so they can be passed on to
+      MPI. On CPU, arguments are given in the form of arrays of void
+      pointers, <monospace>void**</monospace>, so we use static casts
+      for conversion. On GPU, input data is given as a raw char array,
+      <monospace>char*</monospace>, which we deserialize to a custom
+      Cython <monospace>struct</monospace> whose fields represent the
+      input data.</p>
+      <p>On GPU, our Cython bridge also supports copying the data from
+      device to host and back before and after calling MPI (by linking
+      <monospace>mpi4jax</monospace> to the CUDA runtime library). This
+      way, we support the communication of GPU data via main memory if
+      the underlying MPI library is not built with CUDA support (at a
+      minor performance penalty).</p>
+    </list-item>
+  </list>
+  <p>This is sufficient for our primitives to be callable from compiled
+  JAX code. However, there is one additional complication: we need to
+  take special care to ensure that MPI statements are not re-ordered.
+  Consider the following example:</p>
+  <code language="python">@jax.jit
+def exchange_data(arr):
+   if rank == 0:
+      # rank 0 sends, then receives
+      mpi4jax.send(arr, dest=1)
+      newarr = mpi4jax.recv(arr, source=1)
+   else:
+      # rank 1 receives, then sends
+      newarr = mpi4jax.recv(arr, source=0)
+      mpi4jax.send(arr, dest=0)
+   return newarr</code>
+  <p>As JAX and XLA operate on the assumption that all primitives are
+  pure functions without side effects, the compiler is in principle free
+  to re-order the <monospace>send</monospace> and
+  <monospace>recv</monospace> statements above. This would typically
+  lead to a deadlock or crash, as both processes might wait for each
+  others’ input at the same time.</p>
+  <p>The solution to this in JAX is a token mechanism that involves
+  threading a dummy token value as input and output through each
+  primitive. This introduces a fake data dependency between subsequent
+  calls using the token, which prevents XLA from re-ordering them
+  relative to each other.</p>
+  <p>The example above, using proper token management, reads:</p>
+  <code language="python">@jax.jit
+def exchange_data(arr):
+   if rank == 0:
+      token = mpi4jax.send(arr, dest=1)
+      newarr, token = mpi4jax.recv(arr, source=1, token=token)
+   else:
+      newarr, token = mpi4jax.recv(arr, source=0)
+      token = mpi4jax.send(arr, dest=0, token=token)
+   return newarr</code>
+  <p>As a result, we are successfully able to execute MPI primitives
+  just as if they were JAX primitives. This incurs minimal overhead, as
+  no data is copied between JAX and MPI. All
+  <monospace>mpi4jax</monospace> primitives operate directly on device
+  memory addresses (this is what we refer to as
+  <italic>zero-copy</italic>).</p>
+  <p>We can quantify this overhead by comparing the runtime of a JAX
+  function with and without using an <monospace>mpi4jax</monospace>
+  call. We also exclude the time spent inside the MPI library by using
+  <monospace>mpi4jax</monospace>’s debug logging mechanism
+  (<ext-link ext-link-type="uri" xlink:href="https://gist.github.com/dionhaefner/b071b8fa581f12874a98963a19752e7a">benchmark
+  script available online</ext-link>). This reveals an overhead of about
+  1µs, which is negligible in virtually any real-world application.</p>
+  <p>As of yet, <monospace>mpi4jax</monospace> supports the MPI
+  operations <monospace>allgather</monospace>,
+  <monospace>allreduce</monospace>, <monospace>alltoall</monospace>,
+  <monospace>bcast</monospace>, <monospace>gather</monospace>,
+  <monospace>recv</monospace>, <monospace>reduce</monospace>,
+  <monospace>scan</monospace>, <monospace>scatter</monospace>,
+  <monospace>send</monospace>, and <monospace>sendrecv</monospace>
+  (<xref alt="Forum, 1994" rid="ref-mpistandard" ref-type="bibr">Forum,
+  1994</xref>). Most still unsupported operations such as
+  <monospace>gatherv</monospace> could be implemented with little
+  additional work if needed by an application.</p>
+</sec>
+<sec id="example-benchmark-non-linear-shallow-water-solver">
+  <title>Example &amp; Benchmark: Non-linear Shallow Water
+  Solver</title>
+  <p>As a demo application, and to use as a benchmark, we have ported a
+  non-linear shallow water solver to JAX and parallelized it with
+  <monospace>mpi4jax</monospace>
+  (<xref alt="Figure 1" rid="figU003Ashallow-water">Figure 1</xref>).</p>
+  <p>In this simple example, all workers operate on a rectangular region
+  of the 2D domain (split evenly into
+  <monospace>[nproc / 2, 2]</monospace> chunks). All communication is
+  handled via halo exchanges, i.e., each chunk contains 1 extra cell
+  around the perimeter of the domain and exchanges it with its neighbors
+  when needed. As this is a simple problem on a regular grid, the mesh
+  partitioning is done manually.</p>
+  <fig>
+    <caption><p>Output snapshot of the non-linear shallow water model.
+    Shading indicates surface height, quivers show the current’s
+    velocity field.
+    <styled-content id="figU003Ashallow-water"></styled-content></p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="shallow-water.pdf" xlink:title="" />
+  </fig>
+  <p>The full example is available
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/PhilipVinc/mpi4jax/blob/aeba13202a9f55c6e0f905f7436059a3f4cd3e9d/examples/shallow_water.py">in
+  the <monospace>mpi4jax</monospace> repository</ext-link>. It defines a
+  function <monospace>enforce_boundaries</monospace> where we use
+  <monospace>mpi4jax</monospace> to handle halo exchanges between all
+  MPI processes. The core of it reads similar to this (plus some special
+  cases to take care of processes at the edges of the domain):</p>
+  <code language="python">@jax.jit
+def enforce_boundaries(arr, grid, token):
+   # start sending west / receiving east, go clockwise
+   send_order = (&quot;west&quot;, &quot;north&quot;, &quot;east&quot;, &quot;south&quot;)
+   recv_order = (&quot;east&quot;, &quot;south&quot;, &quot;west&quot;, &quot;north&quot;)
+
+   # loop over neighbors
+   for send_dir, recv_dir in zip(send_order, recv_order):
+      # determine neighboring processes
+      send_proc = proc_neighbors[send_dir]
+      recv_proc = proc_neighbors[recv_dir]
+
+      # determine data to send
+      send_idx = overlap_slices_send[send_dir]
+      send_arr = arr[send_idx]
+
+      # determine where to place received data
+      recv_idx = overlap_slices_recv[recv_dir]
+      recv_arr = jnp.empty_like(arr[recv_idx])
+
+      # execute send-receive operation
+      recv_arr, token = mpi4jax.sendrecv(
+          send_arr,
+          recv_arr,
+          source=recv_proc,
+          dest=send_proc,
+          comm=mpi_comm,
+          token=token,
+      )
+
+      # update array with received data
+      arr = arr.at[recv_idx].set(recv_arr)
+
+  return arr</code>
+  <p>Then, it can be used in the physical simulation like this:</p>
+  <code language="python">@jax.jit
+def shallow_water_step(state):
+   token = jax.lax.create_token()
+   # ...
+   fe = fe.at[1:-1, 1:-1].set(
+     0.5 * (hc[1:-1, 1:-1] + hc[1:-1, 2:]) * u[1:-1, 1:-1]
+   )
+   fn = fn.at[1:-1, 1:-1].set(
+     0.5 * (hc[1:-1, 1:-1] + hc[2:, 1:-1]) * v[1:-1, 1:-1]
+   )
+   fe, token = enforce_boundaries(fe, &quot;u&quot;, token)
+   fn, token = enforce_boundaries(fn, &quot;v&quot;, token)
+   # ...</code>
+  <p>Note how we are able to mix boundary communication with numerical
+  computation in the same <monospace>jax.jit</monospace> block. This
+  would not be possible without <monospace>mpi4jax</monospace>.</p>
+  <p>To verify the performance scaling of the solver with additional
+  processes, we performed a rudimentary benchmark by running a bigger
+  version of this example (shape 3600 <inline-formula><alternatives>
+  <tex-math><![CDATA[\times]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>×</mml:mo></mml:math></alternatives></inline-formula>
+  1800) on several combinations of platform (CPU / GPU) and number of
+  processes.</p>
+  <table-wrap>
+    <table>
+      <thead>
+        <tr>
+          <th>Platform</th>
+          <th># processes</th>
+          <th align="right">Elem. per worker</th>
+          <th align="right">Time (s)</th>
+          <th align="right">Rel. speedup</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>CPU</td>
+          <td>1 (NumPy)</td>
+          <td align="right">6.5M</td>
+          <td align="right">770</td>
+          <td align="right">1</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td align="right"></td>
+          <td align="right"></td>
+          <td align="right"></td>
+        </tr>
+        <tr>
+          <td>CPU</td>
+          <td>1</td>
+          <td align="right">6.5M</td>
+          <td align="right">112</td>
+          <td align="right">6.9</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>2</td>
+          <td align="right">3.2M</td>
+          <td align="right">90</td>
+          <td align="right">8.6</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>4</td>
+          <td align="right">1.6M</td>
+          <td align="right">39</td>
+          <td align="right">19</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>6</td>
+          <td align="right">0.8M</td>
+          <td align="right">29</td>
+          <td align="right">27</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>8</td>
+          <td align="right">0.4M</td>
+          <td align="right">21</td>
+          <td align="right">37</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>16</td>
+          <td align="right">0.2M</td>
+          <td align="right">16</td>
+          <td align="right">48</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td align="right"></td>
+          <td align="right"></td>
+          <td align="right"></td>
+        </tr>
+        <tr>
+          <td>GPU</td>
+          <td>1</td>
+          <td align="right">6.5M</td>
+          <td align="right">6.3</td>
+          <td align="right">122</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>2</td>
+          <td align="right">3.2M</td>
+          <td align="right">3.9</td>
+          <td align="right">197</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>(The test hardware consists of 2x Intel Xeon E5-2650 v4 CPUs and 2x
+  NVIDIA Tesla P100 GPUs.)</p>
+  <p>As we can see, switching from NumPy to JAX already yields a
+  substantial speedup, which we can then amplify by scaling to
+  additional CPUs or GPUs.</p>
+  <p>More in-depth benchmarks on larger architectures
+  <ext-link ext-link-type="uri" xlink:href="https://veros.readthedocs.io/en/latest/more/benchmarks.html">are
+  available for the Veros ocean model</ext-link>, which uses
+  <monospace>mpi4jax</monospace> to parallelize its JAX backend.</p>
+</sec>
+<sec id="outlook">
+  <title>Outlook</title>
+  <p>In this paper, we introduced <monospace>mpi4jax</monospace>, which
+  allows zero-copy communication of JAX-owned data.
+  <monospace>mpi4jax</monospace> provides an implementation of the most
+  important MPI operations in a way that is usable from JAX compiled
+  code.</p>
+  <p>However, JAX is much more than just a JIT compiler. It is also a
+  full-fledged differentiable programming framework by providing tools
+  for automatic differentiation (e.g. via
+  <monospace>jax.grad</monospace>, <monospace>jax.vjp</monospace>, and
+  <monospace>jax.jvp</monospace>). Differentiable programming is a
+  promising new paradigm to combine advances in machine learning and
+  physical modelling
+  (<xref alt="Degrave et al., 2019" rid="ref-diffprog2" ref-type="bibr">Degrave
+  et al., 2019</xref>;
+  <xref alt="Li et al., 2021" rid="ref-diffprog1" ref-type="bibr">Li et
+  al., 2021</xref>), and being able to freely distribute those models
+  among different nodes will allow for even more powerful
+  applications.</p>
+  <p>Combining automatic-differentiation with the multi-process nature
+  of <monospace>MPI</monospace> workloads is not trivial, and right now
+  <monospace>mpi4jax</monospace> allows to differentiate only few
+  communication primitives. An interesting future development for the
+  library will be to properly support the whole set of operations,
+  enabling fully differentiable, distributed physical simulations
+  without additional user code.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We thank all JAX developers, in particular Matthew Johnson and
+  Peter Hawkins, for their outstanding support on the many issues we
+  opened. We also thank Himanshu Sharma and Ellert van der Velden for
+  their insightful review comments.</p>
+  <p>DH acknowledges funding from the Danish Hydrocarbon Research and
+  Technology Centre (DHRTC).</p>
+  <p>FV acknowledges support from G. Carleo and funding from the Simons
+  Foundation and Ecole Polytechnique Federale de Lausanne.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-hafner_veros_2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Häfner</surname><given-names>Dion</given-names></name>
+          <name><surname>Jacobsen</surname><given-names>René Løwe</given-names></name>
+          <name><surname>Eden</surname><given-names>Carsten</given-names></name>
+          <name><surname>Kristensen</surname><given-names>Mads R. B.</given-names></name>
+          <name><surname>Jochum</surname><given-names>Markus</given-names></name>
+          <name><surname>Nuterman</surname><given-names>Roman</given-names></name>
+          <name><surname>Vinter</surname><given-names>Brian</given-names></name>
+        </person-group>
+        <article-title>Veros v0.1 – a fast and versatile ocean simulator in pure Python</article-title>
+        <source>Geoscientific Model Development</source>
+        <year iso-8601-date="2018-08">2018</year><month>08</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-03-19">2021</year><month>03</month><day>19</day></date-in-citation>
+        <volume>11</volume>
+        <issue>8</issue>
+        <issn>1991-959X</issn>
+        <uri>https://gmd.copernicus.org/articles/11/3299/2018/</uri>
+        <pub-id pub-id-type="doi">10.5194/gmd-11-3299-2018</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-carleo_netket_2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Carleo</surname><given-names>Giuseppe</given-names></name>
+          <name><surname>Choo</surname><given-names>Kenny</given-names></name>
+          <name><surname>Hofmann</surname><given-names>Damian</given-names></name>
+          <name><surname>Smith</surname><given-names>James E. T.</given-names></name>
+          <name><surname>Westerhout</surname><given-names>Tom</given-names></name>
+          <name><surname>Alet</surname><given-names>Fabien</given-names></name>
+          <name><surname>Davis</surname><given-names>Emily J.</given-names></name>
+          <name><surname>Efthymiou</surname><given-names>Stavros</given-names></name>
+          <name><surname>Glasser</surname><given-names>Ivan</given-names></name>
+          <name><surname>Lin</surname><given-names>Sheng-Hsuan</given-names></name>
+          <name><surname>Mauri</surname><given-names>Marta</given-names></name>
+          <name><surname>Mazzola</surname><given-names>Guglielmo</given-names></name>
+          <name><surname>Mendl</surname><given-names>Christian B.</given-names></name>
+          <name><surname>Nieuwenburg</surname><given-names>Evert van</given-names></name>
+          <name><surname>O’Reilly</surname><given-names>Ossian</given-names></name>
+          <name><surname>Théveniaut</surname><given-names>Hugo</given-names></name>
+          <name><surname>Torlai</surname><given-names>Giacomo</given-names></name>
+          <name><surname>Vicentini</surname><given-names>Filippo</given-names></name>
+          <name><surname>Wietek</surname><given-names>Alexander</given-names></name>
+        </person-group>
+        <article-title>NetKet: A machine learning toolkit for many-body quantum systems</article-title>
+        <source>SoftwareX</source>
+        <year iso-8601-date="2019-07">2019</year><month>07</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-03-19">2021</year><month>03</month><day>19</day></date-in-citation>
+        <volume>10</volume>
+        <issn>2352-7110</issn>
+        <uri>https://www.sciencedirect.com/science/article/pii/S2352711019300974</uri>
+        <pub-id pub-id-type="doi">10.1016/j.softx.2019.100311</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mpistandard">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Forum</surname><given-names>Message P</given-names></name>
+        </person-group>
+        <article-title>MPI: A message-passing interface standard</article-title>
+        <publisher-name>University of Tennessee</publisher-name>
+        <publisher-loc>USA</publisher-loc>
+        <year iso-8601-date="1994">1994</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-mpi4py">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dalcín</surname><given-names>Lisandro</given-names></name>
+          <name><surname>Paz</surname><given-names>Rodrigo</given-names></name>
+          <name><surname>Storti</surname><given-names>Mario</given-names></name>
+        </person-group>
+        <article-title>MPI for python</article-title>
+        <source>Journal of Parallel and Distributed Computing</source>
+        <year iso-8601-date="2005">2005</year>
+        <volume>65</volume>
+        <issue>9</issue>
+        <issn>0743-7315</issn>
+        <uri>https://www.sciencedirect.com/science/article/pii/S0743731505000560</uri>
+        <pub-id pub-id-type="doi">10.1016/j.jpdc.2005.03.010</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-jax">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Bradbury</surname><given-names>James</given-names></name>
+          <name><surname>Frostig</surname><given-names>Roy</given-names></name>
+          <name><surname>Hawkins</surname><given-names>Peter</given-names></name>
+          <name><surname>Johnson</surname><given-names>Matthew James</given-names></name>
+          <name><surname>Leary</surname><given-names>Chris</given-names></name>
+          <name><surname>Maclaurin</surname><given-names>Dougal</given-names></name>
+          <name><surname>Necula</surname><given-names>George</given-names></name>
+          <name><surname>Paszke</surname><given-names>Adam</given-names></name>
+          <name><surname>VanderPlas</surname><given-names>Jake</given-names></name>
+          <name><surname>Wanderman-Milne</surname><given-names>Skye</given-names></name>
+          <name><surname>Zhang</surname><given-names>Qiao</given-names></name>
+        </person-group>
+        <source>JAX: Composable transformations of Python+NumPy programs</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>http://github.com/google/jax</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-numpy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Harris</surname><given-names>Charles R.</given-names></name>
+          <name><surname>Millman</surname><given-names>K. Jarrod</given-names></name>
+          <name><surname>Walt</surname><given-names>St’efan J. van der</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Wieser</surname><given-names>Eric</given-names></name>
+          <name><surname>Taylor</surname><given-names>Julian</given-names></name>
+          <name><surname>Berg</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Smith</surname><given-names>Nathaniel J.</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Picus</surname><given-names>Matti</given-names></name>
+          <name><surname>Hoyer</surname><given-names>Stephan</given-names></name>
+          <name><surname>Kerkwijk</surname><given-names>Marten H. van</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Haldane</surname><given-names>Allan</given-names></name>
+          <name><surname>R’ıo</surname><given-names>Jaime Fern’andez del</given-names></name>
+          <name><surname>Wiebe</surname><given-names>Mark</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>G’erard-Marchant</surname><given-names>Pierre</given-names></name>
+          <name><surname>Sheppard</surname><given-names>Kevin</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Abbasi</surname><given-names>Hameer</given-names></name>
+          <name><surname>Gohlke</surname><given-names>Christoph</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+        </person-group>
+        <article-title>Array programming with NumPy</article-title>
+        <source>Nature</source>
+        <publisher-name>Springer Science; Business Media LLC</publisher-name>
+        <year iso-8601-date="2020-09">2020</year><month>09</month>
+        <volume>585</volume>
+        <issue>7825</issue>
+        <uri>https://doi.org/10.1038/s41586-020-2649-2</uri>
+        <pub-id pub-id-type="doi">10.1038/s41586-020-2649-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-cython">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Behnel</surname><given-names>Stefan</given-names></name>
+          <name><surname>Bradshaw</surname><given-names>Robert</given-names></name>
+          <name><surname>Citro</surname><given-names>Craig</given-names></name>
+          <name><surname>Dalcin</surname><given-names>Lisandro</given-names></name>
+          <name><surname>Seljebotn</surname><given-names>Dag Sverre</given-names></name>
+          <name><surname>Smith</surname><given-names>Kurt</given-names></name>
+        </person-group>
+        <article-title>Cython: The best of both worlds</article-title>
+        <source>Computing in Science and Engg.</source>
+        <publisher-name>IEEE Educational Activities Department</publisher-name>
+        <publisher-loc>USA</publisher-loc>
+        <year iso-8601-date="2011-03">2011</year><month>03</month>
+        <volume>13</volume>
+        <issue>2</issue>
+        <issn>1521-9615</issn>
+        <uri>https://doi.org/10.1109/MCSE.2010.118</uri>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2010.118</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pyhpc-benchmarks">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Häfner</surname><given-names>Dion</given-names></name>
+        </person-group>
+        <article-title>PyHPC benchmarks</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>GitHub</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://github.com/dionhaefner/pyhpc-benchmarks</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-diffprog1">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Li</surname><given-names>Li</given-names></name>
+          <name><surname>Hoyer</surname><given-names>Stephan</given-names></name>
+          <name><surname>Pederson</surname><given-names>Ryan</given-names></name>
+          <name><surname>Sun</surname><given-names>Ruoxi</given-names></name>
+          <name><surname>Cubuk</surname><given-names>Ekin D.</given-names></name>
+          <name><surname>Riley</surname><given-names>Patrick</given-names></name>
+          <name><surname>Burke</surname><given-names>Kieron</given-names></name>
+        </person-group>
+        <article-title>Kohn-sham equations as regularizer: Building prior knowledge into machine-learned physics</article-title>
+        <source>Phys. Rev. Lett.</source>
+        <publisher-name>American Physical Society</publisher-name>
+        <year iso-8601-date="2021-01">2021</year><month>01</month>
+        <volume>126</volume>
+        <uri>https://link.aps.org/doi/10.1103/PhysRevLett.126.036401</uri>
+        <pub-id pub-id-type="doi">10.1103/PhysRevLett.126.036401</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-diffprog2">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Degrave</surname><given-names>Jonas</given-names></name>
+          <name><surname>Hermans</surname><given-names>Michiel</given-names></name>
+          <name><surname>Dambre</surname><given-names>Joni</given-names></name>
+          <name><surname>wyffels</surname><given-names>Francis</given-names></name>
+        </person-group>
+        <article-title>A differentiable physics engine for deep learning in robotics</article-title>
+        <source>Frontiers in Neurorobotics</source>
+        <year iso-8601-date="2019-03">2019</year><month>03</month>
+        <volume>13</volume>
+        <pub-id pub-id-type="doi">10.3389/fnbot.2019.00006</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Bezanson2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bezanson</surname><given-names>Jeff</given-names></name>
+          <name><surname>Edelman</surname><given-names>Alan</given-names></name>
+          <name><surname>Karpinski</surname><given-names>Stefan</given-names></name>
+          <name><surname>Shah</surname><given-names>Viral B.</given-names></name>
+        </person-group>
+        <article-title>Julia: A fresh approach to numerical computing</article-title>
+        <source>SIAM Review</source>
+        <publisher-name>Society for Industrial &amp; Applied Mathematics (SIAM)</publisher-name>
+        <year iso-8601-date="2017-01">2017</year><month>01</month>
+        <volume>59</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1137/141000671</uri>
+        <pub-id pub-id-type="doi">10.1137/141000671</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

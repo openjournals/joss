@@ -1,0 +1,773 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">558</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00558</article-id>
+<title-group>
+<article-title>PetIBM: toolbox and applications of the immersed-boundary
+method on distributed-memory architectures</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-6330-2709</contrib-id>
+<string-name>Pi-Yueh Chuang</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-5335-7853</contrib-id>
+<string-name>Olivier Mesnard</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-6409-7022</contrib-id>
+<string-name>Anush Krishnan</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-5812-2711</contrib-id>
+<string-name>Lorena A. Barba</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Mechanical and Aerospace Engineering, The
+George Washington University, Washington, DC, USA</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>nuTonomy Inc., Cambridge, MA, USA (previously at Boston
+University)</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2018-01-25">
+<day>25</day>
+<month>1</month>
+<year>2018</year>
+</pub-date>
+<volume>3</volume>
+<issue>25</issue>
+<fpage>558</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Computational Fluid Dynamics</kwd>
+<kwd>Immersed-Boundary Method</kwd>
+<kwd>PETSc</kwd>
+<kwd>GPU</kwd>
+<kwd>NVIDIA AmgX</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>PetIBM is a C++ library with ready-to-use application codes to
+  solve the two- and three-dimensional incompressible Navier-Stokes
+  equations on fixed structured Cartesian grids with an
+  immersed-boundary method (IBM). PetIBM runs on distributed-memory
+  architectures and can be used to compute the flow around multiple
+  moving rigid immersed boundaries (with prescribed kinematics).</p>
+  <p>In the IBM framework, a collection of Lagrangian markers defines
+  the immersed boundary (where boundary conditions are enforced) and the
+  fluid equations are solved over the extended domain (including the
+  body domain). The Eulerian mesh remains unmodified when computing the
+  flow around multiple moving immersed bodies, which removes the need
+  for remeshing at every time step. PetIBM discretizes the fluid
+  equations using a second-order finite-difference scheme, various
+  optional time-integrators, and a fully discrete projection method
+  (Perot
+  (<xref alt="1993" rid="ref-perot_1993" ref-type="bibr">1993</xref>)).
+  It implements two immersed-boundary algorithms: the immersed-boundary
+  projection method (Taira &amp; Colonius
+  (<xref alt="2007" rid="ref-taira_colonius_2007" ref-type="bibr">2007</xref>))
+  and its decoupled version (Li et al.
+  (<xref alt="2016" rid="ref-li_et_al_2016" ref-type="bibr">2016</xref>)).</p>
+  <p>Other open-source software packages offer immersed-boundary
+  solvers: for example, IBAMR (Griffith et al.
+  (<xref alt="2007" rid="ref-griffith_et_al_2007" ref-type="bibr">2007</xref>),
+  Bhalla et al.
+  (<xref alt="2013" rid="ref-bhalla_et_al_2013" ref-type="bibr">2013</xref>))
+  is a long-standing C++ library with MPI parallelization that also
+  provides adaptive mesh refinement. It can handle deforming immersed
+  bodies and has been used in a variety of scenarios, including cardiac
+  fluid dynamics, swimming, insect flight, and others. PetIBM and IBAMR
+  use different immersed-boundary schemes, however. We developed PetIBM
+  to work with the immersed-boundary projection method, which is based
+  on the fully discrete formulation of Perot on staggered grids and thus
+  eliminates the need for pressure boundary conditions, which have
+  caused many headaches for CFD practitioners (Gresho &amp; Sani
+  (<xref alt="1987" rid="ref-gresho_sani_1987" ref-type="bibr">1987</xref>),
+  Sani &amp; Gresho
+  (<xref alt="1994" rid="ref-sani_gresho_1994" ref-type="bibr">1994</xref>)).
+  PetIBM features an operator-based design, providing routines to create
+  and manipulate discrete operators (e.g., gradient, divergence,
+  Laplacian, convection, diffusion, etc.), so it can be used as a
+  toolbox for researching new solution methods. It is also capable of
+  using graphics processing unit (GPU) architectures, a feature missing
+  from other software, as far as we know. A previous project
+  implementing immersed-boundary methods on GPU architecture is cuIBM
+  (Krishnan et al.
+  (<xref alt="2017" rid="ref-krishnan_et_al_2017" ref-type="bibr">2017</xref>)),
+  but it is limited to two-dimensional problems that fit on a single GPU
+  device.</p>
+  <p>PetIBM is written in C++ and relies on the PETSc library (Balay et
+  al.
+  (<xref alt="1997" rid="ref-petsc_1997" ref-type="bibr">1997</xref>),
+  Balay et al.
+  (<xref alt="2017" rid="ref-petsc_user_ref_2017" ref-type="bibr">2017</xref>))
+  for data structures and parallel routines to run on memory-distributed
+  architectures. PetIBM can solve one or several linear systems on
+  multiple distributed CUDA-capable GPU devices with the NVIDIA AmgX
+  library and AmgXWrapper (Chuang &amp; Barba
+  (<xref alt="2017" rid="ref-chuang_barba_2017" ref-type="bibr">2017</xref>)).
+  The software package includes extended documentation as well as many
+  examples to guide users.</p>
+  <p>PetIBM has already been used to generate results published in
+  Mesnard &amp; Barba
+  (<xref alt="2017" rid="ref-mesnard_barba_2017" ref-type="bibr">2017</xref>),
+  a full replication of a study on the aerodynamics of a gliding snake
+  species (Krishnan et al.
+  (<xref alt="2014" rid="ref-krishnan_et_al_2014" ref-type="bibr">2014</xref>)).
+  PetIBM is currently used to compute the three-dimensional flow of a
+  gliding-snake model on the cloud platform Microsoft Azure.</p>
+  <sec id="appendix-mathematical-formulation">
+    <title>Appendix: mathematical formulation</title>
+    <p>PetIBM solves the Navier-Stokes equations on an extended
+    discretization grid that includes the interior of the immersed
+    boundary. To model the presence of the boundary, a forcing term is
+    added to the momentum equation and an additional equation for the
+    no-slip condition completes the system. Variants of the
+    immersed-boundary method (IBM) depend on how one models the forcing.
+    In PetIBM, we use regularized-delta functions to transfer data
+    between the Eulerian grid and the Lagrangian boundary points. The
+    system of equations is:</p>
+    <p><disp-formula><alternatives>
+    <tex-math><![CDATA[\begin{cases}
+    \frac{\partial \mathbf{u}}{\partial t} + \mathbf{u} \cdot \nabla \mathbf{u} = -\nabla p + \frac{1}{Re} \nabla^2 \mathbf{u} + \int_{s}{\mathbf{f} \left( \mathbf{\xi} \left( \mathit{s}, \mathit{t} \right) \right) \delta \left( \mathbf{\xi} - \mathbf{x} \right)} d\mathit{s} \\
+    \nabla \cdot \mathbf{u} = 0 \\
+    \mathbf{u} \left( \mathbf{\xi} \left( \mathit{s}, t \right) \right) = \int_{\mathbf{x}}{\mathbf{u} \left( \mathbf{x} \right)} \delta \left( \mathbf{x} - \mathbf{\xi} \right) d\mathbf{x}
+    \end{cases}]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">{</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="left"><mml:mfrac><mml:mrow><mml:mi>∂</mml:mi><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle></mml:mrow><mml:mrow><mml:mi>∂</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:mfrac><mml:mo>+</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mo>⋅</mml:mo><mml:mi>∇</mml:mi><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mo>=</mml:mo><mml:mo>−</mml:mo><mml:mi>∇</mml:mi><mml:mi>p</mml:mi><mml:mo>+</mml:mo><mml:mfrac><mml:mn>1</mml:mn><mml:mrow><mml:mi>R</mml:mi><mml:mi>e</mml:mi></mml:mrow></mml:mfrac><mml:msup><mml:mi>∇</mml:mi><mml:mn>2</mml:mn></mml:msup><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mo>+</mml:mo><mml:msub><mml:mo>∫</mml:mo><mml:mi>s</mml:mi></mml:msub><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐟</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛏</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="italic"><mml:mi>𝑠</mml:mi></mml:mstyle><mml:mo>,</mml:mo><mml:mstyle mathvariant="italic"><mml:mi>𝑡</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>δ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛏</mml:mi></mml:mstyle><mml:mo>−</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow><mml:mi>d</mml:mi><mml:mstyle mathvariant="italic"><mml:mi>𝑠</mml:mi></mml:mstyle></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="left"><mml:mi>∇</mml:mi><mml:mo>⋅</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mo>=</mml:mo><mml:mn>0</mml:mn></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="left"><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛏</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="italic"><mml:mi>𝑠</mml:mi></mml:mstyle><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msub><mml:mo>∫</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle></mml:msub><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow><mml:mi>δ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo>−</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛏</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>d</mml:mi><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle></mml:mtd></mml:mtr></mml:mtable></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>where <inline-formula><alternatives>
+    <tex-math><![CDATA[\mathbf{u}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+    is the velocity field, <inline-formula><alternatives>
+    <tex-math><![CDATA[p]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+    is the fluid pressure, and <inline-formula><alternatives>
+    <tex-math><![CDATA[Re]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>R</mml:mi><mml:mi>e</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    is the Reynolds number.</p>
+    <p>Currently, PetIBM provides two application codes implementing
+    different versions of the IBM: (1) an immersed-boundary projection
+    method (IBPM) based on the work of Taira &amp; Colonius
+    (<xref alt="2007" rid="ref-taira_colonius_2007" ref-type="bibr">2007</xref>)
+    and (2) a decoupled version of the IBPM proposed by Li et al.
+    (<xref alt="2016" rid="ref-li_et_al_2016" ref-type="bibr">2016</xref>).
+    Those two methods fit into the framework of the projection approach
+    of Perot
+    (<xref alt="1993" rid="ref-perot_1993" ref-type="bibr">1993</xref>).
+    The equations are fully discretized (space and time) to form an
+    algebraic system to be solved for the velocity
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[u^{n+1}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>u</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:math></alternatives></inline-formula>,
+    the pressure field <inline-formula><alternatives>
+    <tex-math><![CDATA[\phi]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϕ</mml:mi></mml:math></alternatives></inline-formula>,
+    and the Lagrangian forces <inline-formula><alternatives>
+    <tex-math><![CDATA[\tilde{f}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>f</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover></mml:math></alternatives></inline-formula>.
+    The discretized system is:</p>
+    <p><disp-formula><alternatives>
+    <tex-math><![CDATA[\left[
+    \begin{matrix}
+    A & G & H \\
+    D & 0 & 0 \\
+    E & 0 & 0
+    \end{matrix}
+    \right]
+    \left(
+    \begin{matrix}
+    u^{n+1} \\
+    \phi \\
+    \tilde{f}
+    \end{matrix}
+    \right)
+    =
+    \left(
+    \begin{matrix}
+    r^n \\
+    0 \\
+    u_B^{n+1}
+    \end{matrix}
+    \right)
+    +
+    \left(
+    \begin{matrix}
+    bc_1 \\
+    bc_2 \\
+    0
+    \end{matrix}
+    \right)]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mi>A</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:mi>G</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:mi>H</mml:mi></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mi>D</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mi>E</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:msup><mml:mi>u</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mi>ϕ</mml:mi></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mover><mml:mi>f</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:msup><mml:mi>r</mml:mi><mml:mi>n</mml:mi></mml:msup></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:msubsup><mml:mi>u</mml:mi><mml:mi>B</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mi>b</mml:mi><mml:msub><mml:mi>c</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mi>b</mml:mi><mml:msub><mml:mi>c</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>where <inline-formula><alternatives>
+    <tex-math><![CDATA[D]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>D</mml:mi></mml:math></alternatives></inline-formula>,
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[G]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>G</mml:mi></mml:math></alternatives></inline-formula>,
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[A]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>A</mml:mi></mml:math></alternatives></inline-formula>
+    are the divergence, gradient, and implicit operators, respectively.
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[E]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>E</mml:mi></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[H]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>H</mml:mi></mml:math></alternatives></inline-formula>
+    are the interpolation and spreading operators, respectively, used to
+    transfer the data between the Eulerian grid and the Lagrangian
+    boundary points. On the right-hand side,
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[r^n]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>r</mml:mi><mml:mi>n</mml:mi></mml:msup></mml:math></alternatives></inline-formula>
+    gathers all the explicit terms and <inline-formula><alternatives>
+    <tex-math><![CDATA[u_B^{n+1}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mi>u</mml:mi><mml:mi>B</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup></mml:math></alternatives></inline-formula>
+    is the known (prescribed) boundary velocity;
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[bc_1]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>b</mml:mi><mml:msub><mml:mi>c</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[bc_2]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>b</mml:mi><mml:msub><mml:mi>c</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+    contain the boundary terms that arise from the discretization of
+    momentum and continuity equations, respectively.</p>
+    <p>In the IBPM, we solve a modified Poisson system for the pressure
+    field and Lagrangian forces, coupled together. This way, the
+    divergence-free condition and no-slip constraint are simultaneously
+    enforced on the velocity field at the end of the time step. The
+    fully discretized system can be cast into the following:</p>
+    <p><disp-formula><alternatives>
+    <tex-math><![CDATA[\left[
+    \begin{matrix}
+    A & Q_2 \\
+    Q_1 & 0
+    \end{matrix}
+    \right]
+    \left(
+    \begin{matrix}
+    u^{n+1} \\
+    \lambda
+    \end{matrix}
+    \right)
+    =
+    \left(
+    \begin{matrix}
+    r_1 \\
+    r_2
+    \end{matrix}
+    \right)]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mi>A</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:msub><mml:mi>Q</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:msub><mml:mi>Q</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:mtd><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:msup><mml:mi>u</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mi>λ</mml:mi></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:msub><mml:mi>r</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:msub><mml:mi>r</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>with</p>
+    <p>t[ G, H ] ;
+    (</p>
+    <p>) ;
+    r_1 r^n + bc_1 ;
+    r_2 (</p>
+    <p>) \end{equation*}</p>
+    <p>In practice, we never form the full system. Instead, we apply a
+    block-LU decomposition as follows:</p>
+    <p><disp-formula><alternatives>
+    <tex-math><![CDATA[\left[
+    \begin{matrix}
+    A & 0 \\
+    Q_1 & -Q_1A^{-1}Q_2
+    \end{matrix}
+    \right]
+    \left[
+    \begin{matrix}
+    I & A^{-1}Q_2 \\
+    0 & I
+    \end{matrix}
+    \right]
+    \left(
+    \begin{matrix}
+    u^{n+1} \\
+    \lambda
+    \end{matrix}
+    \right)
+    =
+    \left[
+    \begin{matrix}
+    A & 0 \\
+    Q_1 & -Q_1A^{-1}Q_2
+    \end{matrix}
+    \right]
+    \left(
+    \begin{matrix}
+    u^* \\
+    \lambda
+    \end{matrix}
+    \right)
+    =
+    \left(
+    \begin{matrix}
+    r_1 \\
+    r_2
+    \end{matrix}
+    \right)]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mi>A</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:msub><mml:mi>Q</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:mtd><mml:mtd columnalign="center"><mml:mo>−</mml:mo><mml:msub><mml:mi>Q</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:msup><mml:mi>A</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup><mml:msub><mml:mi>Q</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mi>I</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:msup><mml:mi>A</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup><mml:msub><mml:mi>Q</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd><mml:mtd columnalign="center"><mml:mi>I</mml:mi></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:msup><mml:mi>u</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mi>λ</mml:mi></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mi>A</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:msub><mml:mi>Q</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:mtd><mml:mtd columnalign="center"><mml:mo>−</mml:mo><mml:msub><mml:mi>Q</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:msup><mml:mi>A</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup><mml:msub><mml:mi>Q</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:msup><mml:mi>u</mml:mi><mml:mo>*</mml:mo></mml:msup></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mi>λ</mml:mi></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:msub><mml:mi>r</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:msub><mml:mi>r</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>Thus, we retrieve the sequence of operations of the traditional
+    projection method. We solve a system for an intermediate velocity
+    field that is corrected, after solving a modified Poisson system for
+    the variable <inline-formula><alternatives>
+    <tex-math><![CDATA[\lambda]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>λ</mml:mi></mml:math></alternatives></inline-formula>,
+    to enforce the divergence-free condition and the no-slip constraint
+    at the location of the immersed boundary. The sequence is:</p>
+    <p></p>
+    <p>The IBPM implemented in PetIBM solves, at every time step,
+    Equations (5) to (6). (Note: the inverse of the implicit operator
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[A^{-1}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>A</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:math></alternatives></inline-formula>
+    is approximated by a finite Taylor series expansion.)</p>
+    <p>The IBPM requires solving, at each time step, an expensive
+    modified Poisson system, <inline-formula><alternatives>
+    <tex-math><![CDATA[Q_1A^{-1}Q_2]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>Q</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:msup><mml:mi>A</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup><mml:msub><mml:mi>Q</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+    whose non-zero structure changes when the location of the immersed
+    boundary is moving. In the PetIBM implementation of the decoupled
+    IBPM, we apply a second block-LU decomposition to decouple the
+    pressure field from the Lagrangian forces and recover a classical
+    Poisson system. The fully discretized algebraic system can be cast
+    into:</p>
+    <p><disp-formula><alternatives>
+    <tex-math><![CDATA[\left[
+    \begin{matrix}
+    A & H & G \\
+    E & 0 & 0 \\
+    D & 0 & 0
+    \end{matrix}
+    \right]
+    \left(
+    \begin{matrix}
+    u^{n+1} \\
+    \tilde{f} \\
+    \phi
+    \end{matrix}
+    \right)
+    =
+    \left(
+    \begin{matrix}
+    r^n \\
+    u_B^{n+1} \\
+    0
+    \end{matrix}
+    \right)
+    +
+    \left(
+    \begin{matrix}
+    bc_1 \\
+    0 \\
+    bc_2
+    \end{matrix}
+    \right)]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mi>A</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:mi>H</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:mi>G</mml:mi></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mi>E</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mi>D</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:msup><mml:mi>u</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mover><mml:mi>f</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mi>ϕ</mml:mi></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:msup><mml:mi>r</mml:mi><mml:mi>n</mml:mi></mml:msup></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:msubsup><mml:mi>u</mml:mi><mml:mi>B</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mi>b</mml:mi><mml:msub><mml:mi>c</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mi>b</mml:mi><mml:msub><mml:mi>c</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>The velocity <inline-formula><alternatives>
+    <tex-math><![CDATA[u^{n+1}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>u</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:math></alternatives></inline-formula>
+    and the Lagrangian forces <inline-formula><alternatives>
+    <tex-math><![CDATA[\tilde{f}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>f</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+    are coupled together to form a new unknown
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\gamma^{n+1}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>γ</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:math></alternatives></inline-formula>,
+    as follows:</p>
+    <p><disp-formula><alternatives>
+    <tex-math><![CDATA[\left[
+    \begin{matrix}
+    \bar{A} & \bar{G} \\
+    \bar{D} & 0
+    \end{matrix}
+    \right]
+    \left(
+    \begin{matrix}
+    \gamma^{n+1} \\
+    \phi
+    \end{matrix}
+    \right)
+    =
+    \left(
+    \begin{matrix}
+    \bar{r_1} \\
+    \bar{r_2}
+    \end{matrix}
+    \right)]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mover><mml:mi>A</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover></mml:mtd><mml:mtd columnalign="center"><mml:mover><mml:mi>G</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mover><mml:mi>D</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover></mml:mtd><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:msup><mml:mi>γ</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mi>ϕ</mml:mi></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mover><mml:msub><mml:mi>r</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo accent="true">‾</mml:mo></mml:mover></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mover><mml:msub><mml:mi>r</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo accent="true">‾</mml:mo></mml:mover></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>where</p>
+    <p>;
+    {D} \end{equation*}</p>
+    <p>and</p>
+    <p>v (</p>
+    <p>) ;
+    {r_2} bc_2 \end{equation*}</p>
+    <p>Two successive block-LU decompositions are applied to decouple
+    the Lagrangian forces <inline-formula><alternatives>
+    <tex-math><![CDATA[\tilde{f}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>f</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+    from <inline-formula><alternatives>
+    <tex-math><![CDATA[\gamma^{n+1}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>γ</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:math></alternatives></inline-formula>
+    and to decouple the velocity from the pressure field.</p>
+    <p>The first block-LU decomposition decouples the pressure field
+    from the new unknown <inline-formula><alternatives>
+    <tex-math><![CDATA[\gamma^{n+1}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>γ</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:math></alternatives></inline-formula>:</p>
+    <p><disp-formula><alternatives>
+    <tex-math><![CDATA[\left[
+    \begin{matrix}
+    \bar{A} & 0 \\
+    \bar{D} & -\bar{D}\bar{A}^{-1}\bar{G}
+    \end{matrix}
+    \right]
+    \left[
+    \begin{matrix}
+    I & \bar{A}^{-1}\bar{G} \\
+    0 & I
+    \end{matrix}
+    \right]
+    \left(
+    \begin{matrix}
+    \gamma^{n+1} \\
+    \phi
+    \end{matrix}
+    \right)
+    =
+    \left[
+    \begin{matrix}
+    \bar{A} & 0 \\
+    \bar{D} & -\bar{D}\bar{A}^{-1}\bar{G}
+    \end{matrix}
+    \right]
+    \left(
+    \begin{matrix}
+    \gamma^* \\
+    \phi
+    \end{matrix}
+    \right)
+    =
+    \left(
+    \begin{matrix}
+    \bar{r_1} \\
+    \bar{r_2}
+    \end{matrix}
+    \right)]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mover><mml:mi>A</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover></mml:mtd><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mover><mml:mi>D</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover></mml:mtd><mml:mtd columnalign="center"><mml:mo>−</mml:mo><mml:mover><mml:mi>D</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:msup><mml:mover><mml:mi>A</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup><mml:mover><mml:mi>G</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mi>I</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:msup><mml:mover><mml:mi>A</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup><mml:mover><mml:mi>G</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd><mml:mtd columnalign="center"><mml:mi>I</mml:mi></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:msup><mml:mi>γ</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mi>ϕ</mml:mi></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mover><mml:mi>A</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover></mml:mtd><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mover><mml:mi>D</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover></mml:mtd><mml:mtd columnalign="center"><mml:mo>−</mml:mo><mml:mover><mml:mi>D</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:msup><mml:mover><mml:mi>A</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup><mml:mover><mml:mi>G</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:msup><mml:mi>γ</mml:mi><mml:mo>*</mml:mo></mml:msup></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mi>ϕ</mml:mi></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mover><mml:msub><mml:mi>r</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo accent="true">‾</mml:mo></mml:mover></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mover><mml:msub><mml:mi>r</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo accent="true">‾</mml:mo></mml:mover></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>which leads to the following sequence of operations:</p>
+    <p></p>
+    <p>A second block-LU decomposition is applied to the first equation
+    above:</p>
+    <p><disp-formula><alternatives>
+    <tex-math><![CDATA[\left[
+    \begin{matrix}
+    A & 0 \\
+    E & -EA^{-1}H
+    \end{matrix}
+    \right]
+    \left[
+    \begin{matrix}
+    I & A^{-1}H \\
+    0 & I
+    \end{matrix}
+    \right]
+    \left(
+    \begin{matrix}
+    u^* \\
+    \tilde{f}
+    \end{matrix}
+    \right)
+    =
+    \left[
+    \begin{matrix}
+    A & 0 \\
+    E & -EA^{-1}H
+    \end{matrix}
+    \right]
+    \left(
+    \begin{matrix}
+    u^{* *} \\
+    \tilde{f}
+    \end{matrix}
+    \right)
+    =
+    \left(
+    \begin{matrix}
+    r^n + bc_1 \\
+    u_B^{n+1}
+    \end{matrix}
+    \right)]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mi>A</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mi>E</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:mo>−</mml:mo><mml:mi>E</mml:mi><mml:msup><mml:mi>A</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup><mml:mi>H</mml:mi></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mi>I</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:msup><mml:mi>A</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup><mml:mi>H</mml:mi></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd><mml:mtd columnalign="center"><mml:mi>I</mml:mi></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:msup><mml:mi>u</mml:mi><mml:mo>*</mml:mo></mml:msup></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mover><mml:mi>f</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mi>A</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mi>E</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:mo>−</mml:mo><mml:mi>E</mml:mi><mml:msup><mml:mi>A</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup><mml:mi>H</mml:mi></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:msup><mml:mi>u</mml:mi><mml:mrow><mml:mo>*</mml:mo><mml:mo>*</mml:mo></mml:mrow></mml:msup></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mover><mml:mi>f</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:msup><mml:mi>r</mml:mi><mml:mi>n</mml:mi></mml:msup><mml:mo>+</mml:mo><mml:mi>b</mml:mi><mml:msub><mml:mi>c</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:msubsup><mml:mi>u</mml:mi><mml:mi>B</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup></mml:mtd></mml:mtr></mml:mtable><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>and we end up with the following sequence:</p>
+    <p></p>
+    <p>The decoupled version of the IBPM implemented in PetIBM solves,
+    at every time step, Equations (15) to (17) followed by Equations
+    (12) and (13).</p>
+  </sec>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-bhalla_et_al_2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bhalla</surname><given-names>Amneet Pal Singh</given-names></name>
+          <name><surname>Bale</surname><given-names>Rahul</given-names></name>
+          <name><surname>Griffith</surname><given-names>Boyce E</given-names></name>
+          <name><surname>Patankar</surname><given-names>Neelesh A</given-names></name>
+        </person-group>
+        <article-title>A unified mathematical framework and an adaptive numerical method for fluid–structure interaction with rigid, deforming, and elastic bodies</article-title>
+        <source>Journal of Computational Physics</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <volume>250</volume>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2013.04.033</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-chuang_barba_2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Chuang</surname><given-names>Pi-Yueh</given-names></name>
+          <name><surname>Barba</surname><given-names>Lorena A.</given-names></name>
+        </person-group>
+        <article-title>AmgXWrapper: An interface between PETSc and the NVIDIA AmgX library</article-title>
+        <source>The Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2017-08">2017</year><month>08</month>
+        <volume>2</volume>
+        <issue>16</issue>
+        <uri>https://doi.org/10.21105/joss.00280</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.00280</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gresho_sani_1987">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gresho</surname><given-names>Philip M</given-names></name>
+          <name><surname>Sani</surname><given-names>Robert L</given-names></name>
+        </person-group>
+        <article-title>On pressure boundary conditions for the incompressible navier-stokes equations</article-title>
+        <source>International Journal for Numerical Methods in Fluids</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="1987">1987</year>
+        <volume>7</volume>
+        <issue>10</issue>
+        <pub-id pub-id-type="doi">10.1002/fld.1650071008</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-griffith_et_al_2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Griffith</surname><given-names>Boyce E</given-names></name>
+          <name><surname>Hornung</surname><given-names>Richard D</given-names></name>
+          <name><surname>McQueen</surname><given-names>David M</given-names></name>
+          <name><surname>Peskin</surname><given-names>Charles S</given-names></name>
+        </person-group>
+        <article-title>An adaptive, formally second order accurate version of the immersed boundary method</article-title>
+        <source>Journal of Computational Physics</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>223</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2006.08.019</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-krishnan_et_al_2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Krishnan</surname><given-names>Anush</given-names></name>
+          <name><surname>Socha</surname><given-names>John J</given-names></name>
+          <name><surname>Vlachos</surname><given-names>Pavlos P</given-names></name>
+          <name><surname>Barba</surname><given-names>LA</given-names></name>
+        </person-group>
+        <article-title>Lift and wakes of flying snakes</article-title>
+        <source>Physics of Fluids</source>
+        <publisher-name>AIP</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>26</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1063/1.4866444</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-krishnan_et_al_2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Krishnan</surname><given-names>Anush</given-names></name>
+          <name><surname>Mesnard</surname><given-names>Olivier</given-names></name>
+          <name><surname>Barba</surname><given-names>Lorena A.</given-names></name>
+        </person-group>
+        <article-title>cuIBM: A GPU-based immersed boundary method code</article-title>
+        <source>The Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2017-07">2017</year><month>07</month>
+        <volume>2</volume>
+        <issue>15</issue>
+        <uri>https://doi.org/10.21105/joss.00301</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.00301</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-li_et_al_2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Li</surname><given-names>Ru-Yang</given-names></name>
+          <name><surname>Xie</surname><given-names>Chun-Mei</given-names></name>
+          <name><surname>Huang</surname><given-names>Wei-Xi</given-names></name>
+          <name><surname>Xu</surname><given-names>Chun-Xiao</given-names></name>
+        </person-group>
+        <article-title>An efficient immersed boundary projection method for flow over complex/moving boundaries</article-title>
+        <source>Computers &amp; Fluids</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>140</volume>
+        <pub-id pub-id-type="doi">10.1016/j.compfluid.2016.09.017</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mesnard_barba_2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mesnard</surname><given-names>Olivier</given-names></name>
+          <name><surname>Barba</surname><given-names>Lorena A</given-names></name>
+        </person-group>
+        <article-title>Reproducible and replicable computational fluid dynamics: It’s harder than you think</article-title>
+        <source>Computing in Science &amp; Engineering</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>19</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2017.3151254</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-perot_1993">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Perot</surname><given-names>J Blair</given-names></name>
+        </person-group>
+        <article-title>An analysis of the fractional step method</article-title>
+        <source>Journal of Computational Physics</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="1993">1993</year>
+        <volume>108</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1006/jcph.1993.1162</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-petsc_user_ref_2017">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Balay</surname><given-names>Satish</given-names></name>
+          <name><surname>Abhyankar</surname><given-names>Shrirang</given-names></name>
+          <name><surname>Adams</surname><given-names>Mark F.</given-names></name>
+          <name><surname>Brown</surname><given-names>Jed</given-names></name>
+          <name><surname>Brune</surname><given-names>Peter</given-names></name>
+          <name><surname>Buschelman</surname><given-names>Kris</given-names></name>
+          <name><surname>Dalcin</surname><given-names>Lisandro</given-names></name>
+          <name><surname>Eijkhout</surname><given-names>Victor</given-names></name>
+          <name><surname>Gropp</surname><given-names>William D.</given-names></name>
+          <name><surname>Kaushik</surname><given-names>Dinesh</given-names></name>
+          <name><surname>Knepley</surname><given-names>Matthew G.</given-names></name>
+          <name><surname>McInnes</surname><given-names>Lois Curfman</given-names></name>
+          <name><surname>Rupp</surname><given-names>Karl</given-names></name>
+          <name><surname>Smith</surname><given-names>Barry F.</given-names></name>
+          <name><surname>Zampini</surname><given-names>Stefano</given-names></name>
+          <name><surname>Zhang</surname><given-names>Hong</given-names></name>
+          <name><surname>Zhang</surname><given-names>Hong</given-names></name>
+        </person-group>
+        <article-title>PETSc users manual</article-title>
+        <publisher-name>Argonne National Laboratory</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-petsc_1997">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Balay</surname><given-names>Satish</given-names></name>
+          <name><surname>Gropp</surname><given-names>William D.</given-names></name>
+          <name><surname>McInnes</surname><given-names>Lois Curfman</given-names></name>
+          <name><surname>Smith</surname><given-names>Barry F.</given-names></name>
+        </person-group>
+        <article-title>Efficient management of parallelism in object oriented numerical software libraries</article-title>
+        <source>Modern software tools in scientific computing</source>
+        <person-group person-group-type="editor">
+          <name><surname>Arge</surname><given-names>E.</given-names></name>
+          <name><surname>Bruaset</surname><given-names>A. M.</given-names></name>
+          <name><surname>Langtangen</surname><given-names>H. P.</given-names></name>
+        </person-group>
+        <publisher-name>Birkhäuser Press</publisher-name>
+        <year iso-8601-date="1997">1997</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-sani_gresho_1994">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sani</surname><given-names>Robert L</given-names></name>
+          <name><surname>Gresho</surname><given-names>Philip M</given-names></name>
+        </person-group>
+        <article-title>Résumé and remarks on the open boundary condition minisymposium</article-title>
+        <source>International Journal for Numerical Methods in Fluids</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="1994">1994</year>
+        <volume>18</volume>
+        <issue>10</issue>
+        <pub-id pub-id-type="doi">10.1002/fld.1650181006</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-taira_colonius_2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Taira</surname><given-names>Kunihiko</given-names></name>
+          <name><surname>Colonius</surname><given-names>Tim</given-names></name>
+        </person-group>
+        <article-title>The immersed boundary method: A projection approach</article-title>
+        <source>Journal of Computational Physics</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>225</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2007.03.005</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

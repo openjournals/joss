@@ -1,0 +1,543 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1830</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01830</article-id>
+<title-group>
+<article-title>MatSurv: Survival analysis and visualization in
+MATLAB</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<string-name>Jordan H Creed</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Travis A Gerke</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Anders E Berglund</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Moffitt Cancer Center, Tampa, Florida, United
+States</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-10-14">
+<day>14</day>
+<month>10</month>
+<year>2019</year>
+</pub-date>
+<volume>5</volume>
+<issue>46</issue>
+<fpage>1830</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>MATLAB</kwd>
+<kwd>survival analysis</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Survival analysis is a set of methods for evaluating time-to-event
+  data that is widely applied across research disciplines. For example,
+  it is commonly used in clinical trials to compare the effect of
+  treatments. In cancer biology, it can be used to understand how low-
+  or high-expression of genes affect the aggressiveness of the tumor.
+  Time-to-event data frequently include censored data points, samples
+  where no event was observed. An event is, for example, death, relapse
+  of disease, or a new metastatic tumor. If none of these events occur
+  during the study period, the time to-to-event is unknown, we only know
+  that no events were observed during the study time. The methods
+  described below were developed for this kind of data. For an in-depth
+  introduction to survival analysis, we can recommend the book by
+  Kleinbaum and David
+  (<xref alt="Kleinbaum, 1998" rid="ref-Kleinbaum1998" ref-type="bibr">Kleinbaum,
+  1998</xref>). In fact, much of the code used in MatSurv is based on
+  the equations given in the book. Commonly reported elements of
+  survival analysis include log-rank tests, hazard ratios (HR) and
+  Kaplan-Meier (KM) curves. KM-curves are used to compare survival
+  durations between two or more groups and give users a particular
+  estimate of survival probability at a given time; log-rank tests are
+  used to conduct statistical inference on survival durations between
+  groups; and HRs provide a ratio of the hazard rates between groups. To
+  further improve the KM-plot, it has been suggested that the KM-plot
+  should always be accomplished by a table that describes the number of
+  patients that are still “at-risk” at a specific timepoint
+  (<xref alt="Morris et al., 2019" rid="ref-morris2019" ref-type="bibr">Morris
+  et al., 2019</xref>). MATLAB
+  (<xref alt="MATLAB, 2019" rid="ref-MATLABU003A2019" ref-type="bibr">MATLAB,
+  2019</xref>) currently lacks functions to easily create KM-plots with
+  accompanying risk tables. Furthermore, MATLAB does not have a built-in
+  log-rank test, nor is one available in any of the existing toolboxes,
+  including the Statistics and Machine Learning Toolbox. The Statistics
+  and Machine Learning Toolbox support Cox proportional hazards
+  regression using the <italic>coxphfit</italic> function and KM-plots
+  can be created using the <italic>plot</italic> or
+  <italic>stairs</italic> functions. Our goal for MatSurv is to provide
+  an easy-to-use tool that creates publication quality KM-plots with
+  corresponding risk tables. The statistical procedures built into
+  MatSurv can be used to compare two or multiple groups. In addition,
+  MatSurv allows the user to easily modify the appearance of the created
+  figure. The graphics were inspired by the
+  <monospace>survminer</monospace> R-package
+  (<xref alt="Kassambara, 2018" rid="ref-survminer" ref-type="bibr">Kassambara,
+  2018</xref>).</p>
+</sec>
+<sec id="matsurv-use-and-features">
+  <title>MatSurv Use and Features</title>
+  <p>MatSurv creates three different items, a KM-plot, a risk table and
+  statistical results. The KM-plot shows the events and also censoring
+  for the different groups and it is customizable using different input
+  parameters. The risk table shows the number of patients “at-risk” for
+  different time points and it is linked to the KM-plot. The statistical
+  results are reported as a structure and the different values are
+  described below. MatSurv uses the log-rank (Mantel-Cox) test to
+  calculate the Chi- squared test statistic and corresponding p-value
+  describing evidence against the null hypothesis that the curves are
+  identical. Users have two options for calculating HRs: the log-rank or
+  Mantel-Haenszel approach. HR can only be calculated when there are two
+  groups being compared. In the log-rank approach, HR = (Oa/Ea)/(Ob/Eb),
+  where Oa &amp; Ob are the observed events in each group and Ea &amp;
+  Eb are the number of expected events. In the Mantel-Haenszel approach,
+  HR = exp((O1-E1)/V), where O1 is the number of observed events in a
+  group, E1 is the expected number of events in the same group and V is
+  the total variance. The two methods give similar results but the
+  log-rank results will not work of there is no events in one of the
+  groups. The 95% confidence interval for the HR’s are also reported
+  together with the inverse of all the values.</p>
+  <p>In order to use MatSurv, simply put MatSurv.m in any directory of
+  your choice and make sure it is added to your path. At a minimum, the
+  user should provide <monospace>TimeVar</monospace>, a vector with
+  numeric time to event, either observed or censored,
+  <monospace>EventVar</monospace>, a vector or cell array defining
+  events or censoring, and <monospace>GroupVar</monospace>, a vector or
+  cell array defining the comparison groups (see example code
+  below).</p>
+  <preformat>[p,fh,stats]=MatSurv([], [], [], 'Xstep', 4, 'Title', 'MatSurv KM-Plot');
+  </preformat>
+  <p>The function returns three pieces <monospace>p</monospace>, the
+  log-rank p-value, <monospace>fh</monospace>, the KM-plot figure
+  handle, and <monospace>stats</monospace>, which are additional
+  statistics from the log-rank test. The user can further customize the
+  style of their KM-plot (line colors, labels, ticks, etc.) by making
+  changes to the figure handle.</p>
+  <p>When MatSurv is creating the groups based on the median value, the
+  default option uses values less than the median compared to all other
+  values, however this is a parameter that can be changed by the
+  user.</p>
+  <p>The MatSurv software has no dependencies on toolboxes and runs
+  completely on base MATLAB functions.</p>
+</sec>
+<sec id="comparison">
+  <title>Comparison</title>
+  <p>The MatSurv output is comparable to that from
+  <monospace>proc lifetest</monospace> in SAS and
+  <monospace>ggsurvplot</monospace> in R. Code for reproducing similar
+  output in R and SAS are shown below as well as the output from all 3
+  statistical programs (R, SAS and MatSurv). The data used is from a
+  classic and frequently used example by Freireich
+  (<xref alt="Freireich et al., 1963" rid="ref-freireich" ref-type="bibr">Freireich
+  et al., 1963</xref>). In addition, we have also used the Acute Myeloid
+  Leukemia (LAML) dataset
+  (<xref alt="Ley et al., 2013" rid="ref-laml" ref-type="bibr">Ley et
+  al., 2013</xref>) from The Cancer Genome Atlas (TCGA). The following
+  examples, use three different risk groups as well as the effect of HGF
+  gene expression has on survival.</p>
+  <sec id="r">
+    <title>R</title>
+    <preformat>fit &lt;- survfit(survobj ~ RISK_CYTO, data=dat)
+
+ggsurvplot(fit,
+     risk.table=TRUE,
+     pval=TRUE,
+     risk.table.y.text.col=TRUE,
+     risk.table.y.text=FALSE,
+     palette = c(&quot;#445694&quot;, &quot;#A23A2E&quot;, &quot;#01665E&quot;),
+     break.time.by=24)</preformat>
+  </sec>
+  <sec id="sas">
+    <title>SAS</title>
+    <preformat>proc lifetest data=lamlv2(where=(RISK_CYTO ^= 'N.D.')) 
+intervals=(0 to 120 by 24) timelist = (0 to 120 by 24)  
+plots=survival(atrisk=0 to 120 by 24 test);
+time OS_MONTHS*Surv(0);
+strata RISK_CYTO/test=logrank;
+run;</preformat>
+  </sec>
+  <sec id="matsurv">
+    <title>MatSurv</title>
+    <preformat>load laml_RC_data.mat
+
+[p,fh,stats]=MatSurv(laml_RC_TimeVar, laml_RC_EventVar,
+  laml_RC_GroupVar,... 'GroupsToUse',
+   {'Good', 'Intermediate', 'Poor'}, 'Xstep', 24,…
+'LineColor',[0.2667,0.3373,0.5804;0.6353,0.2275,0.1804;0.0039,0.4000,0.3686]);</preformat>
+    <fig>
+      <caption><p>Output for Survminer (A), SAS (B) and MatSurv (C). All
+      three produce the same log-rank p-value of 4.02E-6</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="figure_20191226.png" xlink:title="" />
+    </fig>
+    <p>The results from MatSurv have been compared against both SAS and
+    R and found to return similar estimates. The Chi-Sq values and
+    p-values for a log-rank test in MatSurv, SAS, and R are provided
+    below (Table 1).</p>
+    <table-wrap>
+      <table>
+        <thead>
+          <tr>
+            <th align="center">Data</th>
+            <th align="center">Groups</th>
+            <th align="center">MatSurv</th>
+            <th align="center">MatSurv</th>
+            <th align="center">SAS</th>
+            <th align="center">SAS</th>
+            <th align="center">Survminer</th>
+            <th align="center">Survminer</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center">chi-sq</td>
+            <td align="center">p</td>
+            <td align="center">chi-sq</td>
+            <td align="center">p</td>
+            <td align="center">chi-sq</td>
+            <td align="center">p</td>
+          </tr>
+          <tr>
+            <td align="center">Freireich</td>
+            <td align="center">Groups</td>
+            <td align="center">16.79</td>
+            <td align="center">4.17E-5</td>
+            <td align="center">16.79</td>
+            <td align="center">4.17E-5</td>
+            <td align="center">16.8</td>
+            <td align="center">4.17E-5</td>
+          </tr>
+          <tr>
+            <td align="center">LAML</td>
+            <td align="center">RISK_CYTO</td>
+            <td align="center">24.85</td>
+            <td align="center">4.02E-6</td>
+            <td align="center">24.85</td>
+            <td align="center">&lt; 0.001</td>
+            <td align="center">24.8</td>
+            <td align="center">4.02E-6</td>
+          </tr>
+          <tr>
+            <td align="center">LAML</td>
+            <td align="center">HGF Median</td>
+            <td align="center">6.63</td>
+            <td align="center">0.01</td>
+            <td align="center">6.63</td>
+            <td align="center">0.01</td>
+            <td align="center">6.6</td>
+            <td align="center">0.01</td>
+          </tr>
+          <tr>
+            <td align="center">LAML</td>
+            <td align="center">HGF Quartiles</td>
+            <td align="center">13.01</td>
+            <td align="center">3.09E-4</td>
+            <td align="center">13.01</td>
+            <td align="center">3.09E-4</td>
+            <td align="center">13.0</td>
+            <td align="center">3.09E-4</td>
+          </tr>
+          <tr>
+            <td align="center">LAML</td>
+            <td align="center">HGF [6,12]</td>
+            <td align="center">16.78</td>
+            <td align="center">2.27E-4</td>
+            <td align="center">16.78</td>
+            <td align="center">2.27E-4</td>
+            <td align="center">16.8</td>
+            <td align="center">2.24E-4</td>
+          </tr>
+        </tbody>
+      </table>
+    </table-wrap>
+  </sec>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This work was supported in part by NCI Cancer Center Support Grant
+  (P30-CA076292). Patrick Leo, CCIPD, for contributing to this
+  project.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Kleinbaum1998">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kleinbaum</surname><given-names>David G</given-names></name>
+        </person-group>
+        <article-title>Survival analysis, a self‐learning text.</article-title>
+        <source>Biometrical Journal: Journal of Mathematical Methods in Biosciences</source>
+        <year iso-8601-date="1998">1998</year>
+        <pub-id pub-id-type="doi">10.1007/978-1-4419-6646-9</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-survminer">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Kassambara</surname><given-names>A.</given-names></name>
+        </person-group>
+        <article-title>Survminer</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>GitHub</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://github.com/kassambara/survminer</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-morris2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Morris</surname><given-names>T. P.</given-names></name>
+          <name><surname>Jarvis</surname><given-names>C. I.</given-names></name>
+          <name><surname>Cragg</surname><given-names>W.</given-names></name>
+          <name><surname>Phillips</surname><given-names>P. P. J.</given-names></name>
+          <name><surname>Choodari-Oskooei</surname><given-names>B.</given-names></name>
+          <name><surname>Sydes</surname><given-names>M. R.</given-names></name>
+        </person-group>
+        <article-title>Proposals on Kaplan-Meier plots in medical research and a survey of stakeholder views: KMunicate</article-title>
+        <source>BMJ Open</source>
+        <year iso-8601-date="2019-09">2019</year><month>09</month>
+        <volume>9</volume>
+        <issue>9</issue>
+        <pub-id pub-id-type="doi">10.1136/bmjopen-2019-030215</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-laml">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ley</surname><given-names>T. J.</given-names></name>
+          <name><surname>Miller</surname><given-names>C.</given-names></name>
+          <name><surname>Ding</surname><given-names>L.</given-names></name>
+          <name><surname>Raphael</surname><given-names>B. J.</given-names></name>
+          <name><surname>Mungall</surname><given-names>A. J.</given-names></name>
+          <name><surname>Robertson</surname><given-names>A.</given-names></name>
+          <name><surname>Hoadley</surname><given-names>K.</given-names></name>
+          <name><surname>Triche</surname><given-names>T. J.</given-names></name>
+          <name><surname>Laird</surname><given-names>P. W.</given-names></name>
+          <name><surname>Baty</surname><given-names>J. D.</given-names></name>
+          <name><surname>Fulton</surname><given-names>L. L.</given-names></name>
+          <name><surname>Fulton</surname><given-names>R.</given-names></name>
+          <name><surname>Heath</surname><given-names>S. E.</given-names></name>
+          <name><surname>Kalicki-Veizer</surname><given-names>J.</given-names></name>
+          <name><surname>Kandoth</surname><given-names>C.</given-names></name>
+          <name><surname>Klco</surname><given-names>J. M.</given-names></name>
+          <name><surname>Koboldt</surname><given-names>D. C.</given-names></name>
+          <name><surname>Kanchi</surname><given-names>K. L.</given-names></name>
+          <name><surname>Kulkarni</surname><given-names>S.</given-names></name>
+          <name><surname>Lamprecht</surname><given-names>T. L.</given-names></name>
+          <name><surname>Larson</surname><given-names>D. E.</given-names></name>
+          <name><surname>Lin</surname><given-names>L.</given-names></name>
+          <name><surname>Lu</surname><given-names>C.</given-names></name>
+          <name><surname>McLellan</surname><given-names>M. D.</given-names></name>
+          <name><surname>McMichael</surname><given-names>J. F.</given-names></name>
+          <name><surname>Payton</surname><given-names>J.</given-names></name>
+          <name><surname>Schmidt</surname><given-names>H.</given-names></name>
+          <name><surname>Spencer</surname><given-names>D. H.</given-names></name>
+          <name><surname>Tomasson</surname><given-names>M. H.</given-names></name>
+          <name><surname>Wallis</surname><given-names>J. W.</given-names></name>
+          <name><surname>Wartman</surname><given-names>L. D.</given-names></name>
+          <name><surname>Watson</surname><given-names>M. A.</given-names></name>
+          <name><surname>Welch</surname><given-names>J.</given-names></name>
+          <name><surname>Wendl</surname><given-names>M. C.</given-names></name>
+          <name><surname>Ally</surname><given-names>A.</given-names></name>
+          <name><surname>Balasundaram</surname><given-names>M.</given-names></name>
+          <name><surname>Birol</surname><given-names>I.</given-names></name>
+          <name><surname>Butterfield</surname><given-names>Y.</given-names></name>
+          <name><surname>Chiu</surname><given-names>R.</given-names></name>
+          <name><surname>Chu</surname><given-names>A.</given-names></name>
+          <name><surname>Chuah</surname><given-names>E.</given-names></name>
+          <name><surname>Chun</surname><given-names>H. J.</given-names></name>
+          <name><surname>Corbett</surname><given-names>R.</given-names></name>
+          <name><surname>Dhalla</surname><given-names>N.</given-names></name>
+          <name><surname>Guin</surname><given-names>R.</given-names></name>
+          <name><surname>He</surname><given-names>A.</given-names></name>
+          <name><surname>Hirst</surname><given-names>C.</given-names></name>
+          <name><surname>Hirst</surname><given-names>M.</given-names></name>
+          <name><surname>Holt</surname><given-names>R. A.</given-names></name>
+          <name><surname>Jones</surname><given-names>S.</given-names></name>
+          <name><surname>Karsan</surname><given-names>A.</given-names></name>
+          <name><surname>Lee</surname><given-names>D.</given-names></name>
+          <name><surname>Li</surname><given-names>H. I.</given-names></name>
+          <name><surname>Marra</surname><given-names>M. A.</given-names></name>
+          <name><surname>Mayo</surname><given-names>M.</given-names></name>
+          <name><surname>Moore</surname><given-names>R. A.</given-names></name>
+          <name><surname>Mungall</surname><given-names>K.</given-names></name>
+          <name><surname>Parker</surname><given-names>J.</given-names></name>
+          <name><surname>Pleasance</surname><given-names>E.</given-names></name>
+          <name><surname>Plettner</surname><given-names>P.</given-names></name>
+          <name><surname>Schein</surname><given-names>J.</given-names></name>
+          <name><surname>Stoll</surname><given-names>D.</given-names></name>
+          <name><surname>Swanson</surname><given-names>L.</given-names></name>
+          <name><surname>Tam</surname><given-names>A.</given-names></name>
+          <name><surname>Thiessen</surname><given-names>N.</given-names></name>
+          <name><surname>Varhol</surname><given-names>R.</given-names></name>
+          <name><surname>Wye</surname><given-names>N.</given-names></name>
+          <name><surname>Zhao</surname><given-names>Y.</given-names></name>
+          <name><surname>Gabriel</surname><given-names>S.</given-names></name>
+          <name><surname>Getz</surname><given-names>G.</given-names></name>
+          <name><surname>Sougnez</surname><given-names>C.</given-names></name>
+          <name><surname>Zou</surname><given-names>L.</given-names></name>
+          <name><surname>Leiserson</surname><given-names>M. D.</given-names></name>
+          <name><surname>Vandin</surname><given-names>F.</given-names></name>
+          <name><surname>Wu</surname><given-names>H. T.</given-names></name>
+          <name><surname>Applebaum</surname><given-names>F.</given-names></name>
+          <name><surname>Baylin</surname><given-names>S. B.</given-names></name>
+          <name><surname>Akbani</surname><given-names>R.</given-names></name>
+          <name><surname>Broom</surname><given-names>B. M.</given-names></name>
+          <name><surname>Chen</surname><given-names>K.</given-names></name>
+          <name><surname>Motter</surname><given-names>T. C.</given-names></name>
+          <name><surname>Nguyen</surname><given-names>K.</given-names></name>
+          <name><surname>Weinstein</surname><given-names>J. N.</given-names></name>
+          <name><surname>Zhang</surname><given-names>N.</given-names></name>
+          <name><surname>Ferguson</surname><given-names>M. L.</given-names></name>
+          <name><surname>Adams</surname><given-names>C.</given-names></name>
+          <name><surname>Black</surname><given-names>A.</given-names></name>
+          <name><surname>Bowen</surname><given-names>J.</given-names></name>
+          <name><surname>Gastier-Foster</surname><given-names>J.</given-names></name>
+          <name><surname>Grossman</surname><given-names>T.</given-names></name>
+          <name><surname>Lichtenberg</surname><given-names>T.</given-names></name>
+          <name><surname>Wise</surname><given-names>L.</given-names></name>
+          <name><surname>Davidsen</surname><given-names>T.</given-names></name>
+          <name><surname>Demchok</surname><given-names>J. A.</given-names></name>
+          <name><surname>Shaw</surname><given-names>K. R.</given-names></name>
+          <name><surname>Sheth</surname><given-names>M.</given-names></name>
+          <name><surname>Sofia</surname><given-names>H. J.</given-names></name>
+          <name><surname>Yang</surname><given-names>L.</given-names></name>
+          <name><surname>Downing</surname><given-names>J. R.</given-names></name>
+          <name><surname>Eley</surname><given-names>G.</given-names></name>
+          <name><surname>Alonso</surname><given-names>S.</given-names></name>
+          <name><surname>Ayala</surname><given-names>B.</given-names></name>
+          <name><surname>Baboud</surname><given-names>J.</given-names></name>
+          <name><surname>Backus</surname><given-names>M.</given-names></name>
+          <name><surname>Barletta</surname><given-names>S. P.</given-names></name>
+          <name><surname>Berton</surname><given-names>D. L.</given-names></name>
+          <name><surname>Chu</surname><given-names>A. L.</given-names></name>
+          <name><surname>Girshik</surname><given-names>S.</given-names></name>
+          <name><surname>Jensen</surname><given-names>M. A.</given-names></name>
+          <name><surname>Kahn</surname><given-names>A.</given-names></name>
+          <name><surname>Kothiyal</surname><given-names>P.</given-names></name>
+          <name><surname>Nicholls</surname><given-names>M. C.</given-names></name>
+          <name><surname>Pihl</surname><given-names>T. D.</given-names></name>
+          <name><surname>Pot</surname><given-names>D. A.</given-names></name>
+          <name><surname>Raman</surname><given-names>R.</given-names></name>
+          <name><surname>Sanbhadti</surname><given-names>R. N.</given-names></name>
+          <name><surname>Snyder</surname><given-names>E. E.</given-names></name>
+          <name><surname>Srinivasan</surname><given-names>D.</given-names></name>
+          <name><surname>Walton</surname><given-names>J.</given-names></name>
+          <name><surname>Wan</surname><given-names>Y.</given-names></name>
+          <name><surname>Wang</surname><given-names>Z.</given-names></name>
+          <name><surname>Issa</surname><given-names>J. P.</given-names></name>
+          <name><surname>Le Beau</surname><given-names>M.</given-names></name>
+          <name><surname>Carroll</surname><given-names>M.</given-names></name>
+          <name><surname>Kantarjian</surname><given-names>H.</given-names></name>
+          <name><surname>Kornblau</surname><given-names>S.</given-names></name>
+          <name><surname>Bootwalla</surname><given-names>M. S.</given-names></name>
+          <name><surname>Lai</surname><given-names>P. H.</given-names></name>
+          <name><surname>Shen</surname><given-names>H.</given-names></name>
+          <name><surname>Van Den Berg</surname><given-names>D. J.</given-names></name>
+          <name><surname>Weisenberger</surname><given-names>D. J.</given-names></name>
+          <name><surname>Link</surname><given-names>D. C.</given-names></name>
+          <name><surname>Walter</surname><given-names>M. J.</given-names></name>
+          <name><surname>Ozenberger</surname><given-names>B. A.</given-names></name>
+          <name><surname>Mardis</surname><given-names>E. R.</given-names></name>
+          <name><surname>Westervelt</surname><given-names>P.</given-names></name>
+          <name><surname>Graubert</surname><given-names>T. A.</given-names></name>
+          <name><surname>DiPersio</surname><given-names>J. F.</given-names></name>
+          <name><surname>Wilson</surname><given-names>R. K.</given-names></name>
+        </person-group>
+        <article-title>Genomic and epigenomic landscapes of adult de novo acute myeloid leukemia</article-title>
+        <source>N. Engl. J. Med.</source>
+        <year iso-8601-date="2013-05">2013</year><month>05</month>
+        <volume>368</volume>
+        <issue>22</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-freireich">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Freireich</surname><given-names>Emil J</given-names></name>
+          <name><surname>Gehan</surname><given-names>Edmund</given-names></name>
+          <name><surname>Frei</surname><given-names>III</given-names><suffix>Emil</suffix></name>
+          <name><surname>Schroeder</surname><given-names>Leslie R.</given-names></name>
+          <name><surname>Wolman</surname><given-names>Irving J.</given-names></name>
+          <name><surname>Anbari</surname><given-names>Rachad</given-names></name>
+          <name><surname>Burgert</surname><given-names>E. Omar</given-names></name>
+          <name><surname>Mills</surname><given-names>Stephen D.</given-names></name>
+          <name><surname>Pinkel</surname><given-names>Donald</given-names></name>
+          <name><surname>Selawry</surname><given-names>Oleg S.</given-names></name>
+          <name><surname>Moon</surname><given-names>John H.</given-names></name>
+          <name><surname>Gendel</surname><given-names>B. R.</given-names></name>
+          <name><surname>Spurr</surname><given-names>Charles L.</given-names></name>
+          <name><surname>Storrs</surname><given-names>Robert</given-names></name>
+          <name><surname>Haurani</surname><given-names>Farid</given-names></name>
+          <name><surname>Hoogstraten</surname><given-names>Barth</given-names></name>
+          <name><surname>Lee</surname><given-names>Stanley</given-names></name>
+          <name><surname>B</surname><given-names>Acute Leukemia Group</given-names></name>
+        </person-group>
+        <article-title>The Effect of 6-Mercaptopurine on the Duration of Steroid-induced Remissions in Acute Leukemia: A Model for Evaluation of Other Potentially Useful Therapy</article-title>
+        <source>Blood</source>
+        <year iso-8601-date="1963-06">1963</year><month>06</month>
+        <volume>21</volume>
+        <issue>6</issue>
+        <issn>0006-4971</issn>
+        <uri>https://doi.org/10.1182/blood.V21.6.699.699</uri>
+        <pub-id pub-id-type="doi">10.1182/blood.V21.6.699.699</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MATLABU003A2019">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>MATLAB</surname></name>
+        </person-group>
+        <source>Version 9.7.0.1296695 (R2019b)</source>
+        <publisher-name>The MathWorks Inc.</publisher-name>
+        <publisher-loc>Natick, Massachusetts</publisher-loc>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

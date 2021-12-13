@@ -1,0 +1,784 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3143</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03143</article-id>
+<title-group>
+<article-title>Synch: A framework for concurrent data-structures and
+benchmarks</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-0331-1475</contrib-id>
+<string-name>Nikolaos D. Kallimanis</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Institute of Computer Science - Foundation for Research and
+Technology-Hellas (FORTH-ICS)</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-03-08">
+<day>8</day>
+<month>3</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>64</issue>
+<fpage>3143</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Concurrent data-structures</kwd>
+<kwd>benchmarks</kwd>
+<kwd>queues</kwd>
+<kwd>stacks</kwd>
+<kwd>combining-objects</kwd>
+<kwd>hash-tables</kwd>
+<kwd>locks</kwd>
+<kwd>wait-free</kwd>
+<kwd>lock-free</kwd>
+<kwd>performance evaluation</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The recent advancements in multicore machines highlight the need to
+  simplify concurrent programming in order to leverage their
+  computational power. One way to achieve this is by designing efficient
+  concurrent data structures (e.g., stacks, queues, hash-tables) and
+  synchronization techniques (e.g., locks, combining techniques) that
+  perform well in machines with large numbers of cores. In contrast to
+  ordinary, sequential data-structures, concurrent data-structures can
+  be accessed and/or modifed by multiple threads simultaneously.</p>
+  <p>Synch is an open-source framework that not only provides some
+  common high-performant concurrent data-structures, but it also
+  provides researchers with the tools for designing and benchmarking
+  high performant concurrent data-structures. The Synch framework
+  contains a substantial set of concurrent data-structures such as
+  queues, stacks, combining-objects, hash-tables, and locks, and it
+  provides a user-friendly runtime for developing and benchmarking
+  concurrent data-structures. Among other features, the runtime provides
+  functionality for creating threads (both POSIX and user-level) easily,
+  tools for measuring performance, etc. The Synch environment provides
+  extensive and comprehensive documentation for all the implemented
+  concurrent data-structures and developers will find a comprehensive
+  set of tests to ensure quality and reproducibility of the results.
+  Moreover, the provided concurrent data-structures and the runtime are
+  highly optimized for contemporary NUMA multiprocessors, such as AMD
+  Epyc and Intel Xeon.</p>
+  <sec id="statement-of-need">
+    <title>Statement of need</title>
+    <p>The Synch framework aims to provide researchers with the
+    appropriate tools for implementing and evaluating state-of-the-art
+    concurrent objects and synchronization mechanisms. Moreover, the
+    Synch framework provides a substantial set of concurrent
+    data-structures giving researchers/developers the ability not only
+    to implement their own concurrent data-structures, but to compare
+    with some state-of-the-art data-structures. Synch provides many
+    state-of-the-art concurrent objects that are thoroughly tested
+    targeting x86_64 POSIX systems.</p>
+    <p>The Synch framework has been extensively used for implementing
+    and evaluating concurrent data-structures and synchronization
+    techniques in papers, such as Fatourou &amp; Kallimanis
+    (<xref alt="2011" rid="ref-FK2011" ref-type="bibr">2011</xref>),
+    Fatourou &amp; Kallimanis
+    (<xref alt="2012" rid="ref-FK2012" ref-type="bibr">2012</xref>),
+    Agathos et al.
+    (<xref alt="2012" rid="ref-AKD12" ref-type="bibr">2012</xref>),
+    Fatourou &amp; Kallimanis
+    (<xref alt="2014" rid="ref-FK2014" ref-type="bibr">2014</xref>),
+    Fatourou &amp; Kallimanis
+    (<xref alt="2018" rid="ref-FK2017" ref-type="bibr">2018</xref>), and
+    Fatourou et al.
+    (<xref alt="2018" rid="ref-FKR2018" ref-type="bibr">2018</xref>).</p>
+  </sec>
+  <sec id="provided-concurrent-data-structures">
+    <title>Provided concurrent data-structures</title>
+    <p>The current version of the Synch framework provides a large set
+    of high-performant concurrent data-structures, such as
+    combining-objects, concurrent queues and stacks, concurrent
+    hash-tables and locks. The cornerstone of the Synch framework are
+    the combining objects. A combining object is a concurrent
+    object/data-structure that is able to simulate any other concurrent
+    object, e.g. stacks, queues, atomic counters, barriers. The Synch
+    framework provides the PSim wait-free combining object
+    (<xref alt="Fatourou &amp; Kallimanis, 2011" rid="ref-FK2011" ref-type="bibr">Fatourou
+    &amp; Kallimanis, 2011</xref>;
+    <xref alt="Fatourou &amp; Kallimanis, 2014" rid="ref-FK2014" ref-type="bibr">Fatourou
+    &amp; Kallimanis, 2014</xref>), the blocking combining objects
+    CC-Synch, DSM-Synch and H-Synch
+    (<xref alt="Fatourou &amp; Kallimanis, 2012" rid="ref-FK2012" ref-type="bibr">Fatourou
+    &amp; Kallimanis, 2012</xref>), and the blocking combining object
+    based on the technique presented in
+    (<xref alt="Oyama et al., 1999" rid="ref-Oyama99" ref-type="bibr">Oyama
+    et al., 1999</xref>). Moreover, the Synch framework provides the
+    Osci blocking, combining technique
+    (<xref alt="Fatourou &amp; Kallimanis, 2018" rid="ref-FK2017" ref-type="bibr">Fatourou
+    &amp; Kallimanis, 2018</xref>) that achieves good performance using
+    user-level threads.</p>
+    <p>In terms of concurrent queues, the Synch framework provides the
+    SimQueue
+    (<xref alt="Fatourou &amp; Kallimanis, 2011" rid="ref-FK2011" ref-type="bibr">Fatourou
+    &amp; Kallimanis, 2011</xref>;
+    <xref alt="Fatourou &amp; Kallimanis, 2014" rid="ref-FK2014" ref-type="bibr">Fatourou
+    &amp; Kallimanis, 2014</xref>) wait-free queue implementation that
+    is based on the PSim combining object, and the CC-Queue, DSM-Queue
+    and H-Queue
+    (<xref alt="Fatourou &amp; Kallimanis, 2012" rid="ref-FK2012" ref-type="bibr">Fatourou
+    &amp; Kallimanis, 2012</xref>) blocking queue implementations based
+    on the CC-Synch, DSM-Synch and H-Synch combining objects. A blocking
+    queue implementation based on the CLH locks
+    (<xref alt="Craig, 1993" rid="ref-C93" ref-type="bibr">Craig,
+    1993</xref>;
+    <xref alt="Magnusson et al., 1994" rid="ref-MLH94" ref-type="bibr">Magnusson
+    et al., 1994</xref>) and the lock-free implementation presented in
+    Michael &amp; Scott
+    (<xref alt="1996" rid="ref-MS96" ref-type="bibr">1996</xref>) are
+    also provided. In terms of concurrent stacks, the Synch framework
+    provides the SimStack
+    (<xref alt="Fatourou &amp; Kallimanis, 2011" rid="ref-FK2011" ref-type="bibr">Fatourou
+    &amp; Kallimanis, 2011</xref>;
+    <xref alt="Fatourou &amp; Kallimanis, 2014" rid="ref-FK2014" ref-type="bibr">Fatourou
+    &amp; Kallimanis, 2014</xref>) wait-free stack implementation that
+    is based on the PSim combining object, and the CC-Stack, DSM-Stack
+    and H-Stack
+    (<xref alt="Fatourou &amp; Kallimanis, 2012" rid="ref-FK2012" ref-type="bibr">Fatourou
+    &amp; Kallimanis, 2012</xref>) blocking stack implementations based
+    on the CC-Synch, DSM-Synch and H-Synch combining objects. Moreover,
+    the lock-free stack implementation of Treiber
+    (<xref alt="1986" rid="ref-T86" ref-type="bibr">1986</xref>) and the
+    blocking implementation based on the CLH locks
+    (<xref alt="Craig, 1993" rid="ref-C93" ref-type="bibr">Craig,
+    1993</xref>;
+    <xref alt="Magnusson et al., 1994" rid="ref-MLH94" ref-type="bibr">Magnusson
+    et al., 1994</xref>) are provided. The Synch framework also provides
+    concurrent queue and stacks implementations (OsciQueue and OsciStack
+    implementations) that achieve very high performance using user-level
+    threads
+    (<xref alt="Fatourou &amp; Kallimanis, 2018" rid="ref-FK2017" ref-type="bibr">Fatourou
+    &amp; Kallimanis, 2018</xref>).</p>
+    <p>Furthermore, the Synch framework provides a few scalable lock
+    implementations: the MCS queue-lock presented in Mellor-Crummey
+    &amp; Scott
+    (<xref alt="1991" rid="ref-MCS91" ref-type="bibr">1991</xref>) and
+    the CLH queue-lock presented in Craig
+    (<xref alt="1993" rid="ref-C93" ref-type="bibr">1993</xref>) and
+    Magnusson et al.
+    (<xref alt="1994" rid="ref-MLH94" ref-type="bibr">1994</xref>).
+    Finally, the Synch framework provides two example-implementations of
+    concurrent hash-tables. More specifically, it provides a simple
+    implementation based on CLH queue-locks
+    (<xref alt="Craig, 1993" rid="ref-C93" ref-type="bibr">Craig,
+    1993</xref>;
+    <xref alt="Magnusson et al., 1994" rid="ref-MLH94" ref-type="bibr">Magnusson
+    et al., 1994</xref>) and an implementation based on the DSM-Synch
+    (<xref alt="Fatourou &amp; Kallimanis, 2012" rid="ref-FK2012" ref-type="bibr">Fatourou
+    &amp; Kallimanis, 2012</xref>) combining technique.</p>
+    <p>The following table presents a summary of the concurrent
+    data-structures offered by the Synch framework.</p>
+    <table-wrap>
+      <table>
+        <thead>
+          <tr>
+            <th>Concurrent Object</th>
+            <th>Provided Implementations</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Combining Objects</td>
+            <td>CC-Synch, DSM-Synch and H-Synch
+            (<xref alt="Fatourou &amp; Kallimanis, 2012" rid="ref-FK2012" ref-type="bibr">Fatourou
+            &amp; Kallimanis, 2012</xref>)</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>PSim
+            (<xref alt="Fatourou &amp; Kallimanis, 2011" rid="ref-FK2011" ref-type="bibr">Fatourou
+            &amp; Kallimanis, 2011</xref>;
+            <xref alt="Fatourou &amp; Kallimanis, 2014" rid="ref-FK2014" ref-type="bibr">Fatourou
+            &amp; Kallimanis, 2014</xref>)</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>Osci
+            (<xref alt="Fatourou &amp; Kallimanis, 2018" rid="ref-FK2017" ref-type="bibr">Fatourou
+            &amp; Kallimanis, 2018</xref>)</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>Oyama
+            (<xref alt="Oyama et al., 1999" rid="ref-Oyama99" ref-type="bibr">Oyama
+            et al., 1999</xref>)</td>
+          </tr>
+          <tr>
+            <td>Concurrent Queues</td>
+            <td>CC-Queue, DSM-Queue and H-Queue
+            (<xref alt="Fatourou &amp; Kallimanis, 2012" rid="ref-FK2012" ref-type="bibr">Fatourou
+            &amp; Kallimanis, 2012</xref>)</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>SimQueue
+            (<xref alt="Fatourou &amp; Kallimanis, 2011" rid="ref-FK2011" ref-type="bibr">Fatourou
+            &amp; Kallimanis, 2011</xref>;
+            <xref alt="Fatourou &amp; Kallimanis, 2014" rid="ref-FK2014" ref-type="bibr">Fatourou
+            &amp; Kallimanis, 2014</xref>)</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>OsciQueue
+            (<xref alt="Fatourou &amp; Kallimanis, 2018" rid="ref-FK2017" ref-type="bibr">Fatourou
+            &amp; Kallimanis, 2018</xref>)</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>CLH-Queue
+            (<xref alt="Craig, 1993" rid="ref-C93" ref-type="bibr">Craig,
+            1993</xref>;
+            <xref alt="Magnusson et al., 1994" rid="ref-MLH94" ref-type="bibr">Magnusson
+            et al., 1994</xref>)</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>MS-Queue
+            (<xref alt="Michael &amp; Scott, 1996" rid="ref-MS96" ref-type="bibr">Michael
+            &amp; Scott, 1996</xref>)</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>LCRQ
+            (<xref alt="Morrison &amp; Afek, n.d." rid="ref-LCRQurl" ref-type="bibr">Morrison
+            &amp; Afek, n.d.</xref>,
+            <xref alt="2013" rid="ref-LCRQ" ref-type="bibr">2013</xref>)</td>
+          </tr>
+          <tr>
+            <td>Concurrent Stacks</td>
+            <td>CC-Stack, DSM-Stack and H-Stack
+            (<xref alt="Fatourou &amp; Kallimanis, 2012" rid="ref-FK2012" ref-type="bibr">Fatourou
+            &amp; Kallimanis, 2012</xref>)</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>SimStack
+            (<xref alt="Fatourou &amp; Kallimanis, 2011" rid="ref-FK2011" ref-type="bibr">Fatourou
+            &amp; Kallimanis, 2011</xref>;
+            <xref alt="Fatourou &amp; Kallimanis, 2014" rid="ref-FK2014" ref-type="bibr">Fatourou
+            &amp; Kallimanis, 2014</xref>)</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>OsciStack
+            (<xref alt="Fatourou &amp; Kallimanis, 2018" rid="ref-FK2017" ref-type="bibr">Fatourou
+            &amp; Kallimanis, 2018</xref>)</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>CLH-Stack
+            (<xref alt="Craig, 1993" rid="ref-C93" ref-type="bibr">Craig,
+            1993</xref>;
+            <xref alt="Magnusson et al., 1994" rid="ref-MLH94" ref-type="bibr">Magnusson
+            et al., 1994</xref>)</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>LF-Stack
+            (<xref alt="Treiber, 1986" rid="ref-T86" ref-type="bibr">Treiber,
+            1986</xref>)</td>
+          </tr>
+          <tr>
+            <td>Locks</td>
+            <td>CLH
+            (<xref alt="Craig, 1993" rid="ref-C93" ref-type="bibr">Craig,
+            1993</xref>;
+            <xref alt="Magnusson et al., 1994" rid="ref-MLH94" ref-type="bibr">Magnusson
+            et al., 1994</xref>)</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>MCS
+            (<xref alt="Mellor-Crummey &amp; Scott, 1991" rid="ref-MCS91" ref-type="bibr">Mellor-Crummey
+            &amp; Scott, 1991</xref>)</td>
+          </tr>
+          <tr>
+            <td>Hash Tables</td>
+            <td>CLH-Hash
+            (<xref alt="Craig, 1993" rid="ref-C93" ref-type="bibr">Craig,
+            1993</xref>;
+            <xref alt="Magnusson et al., 1994" rid="ref-MLH94" ref-type="bibr">Magnusson
+            et al., 1994</xref>)</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>A hash-table based on DSM-Synch
+            (<xref alt="Fatourou &amp; Kallimanis, 2012" rid="ref-FK2012" ref-type="bibr">Fatourou
+            &amp; Kallimanis, 2012</xref>)</td>
+          </tr>
+        </tbody>
+      </table>
+    </table-wrap>
+  </sec>
+  <sec id="benchmarks-and-performance-optimizations">
+    <title>Benchmarks and performance optimizations</title>
+    <p>For almost every concurrent data-structure, Synch provides at
+    least one benchmark for evaluating its performance. The provided
+    benchmarks allow users to assess the performance of concurrent
+    data-structures, as well as to perform some basic correctness tests
+    on them. All the provided benchmarks offer a great variety of
+    command-line options for controlling the duration of the benchmark,
+    the amount of processing cores and/or threads to be used, the
+    contention, the type of threads (user-level or POSIX), etc.</p>
+  </sec>
+  <sec id="source-code-structure">
+    <title>Source code structure</title>
+    <p>The Synch framework
+    (<xref alt="Figure 1" rid="figU003Acode_structure">Figure 1</xref>)
+    consists of three main parts: the Runtime/Primitives, the Concurrent
+    library, and the Benchmarks. The Runtime/Primitives part provides
+    some basic functionality for creating and managing threads,
+    functionality for basic atomic primitives (e.g., Compare&amp;Swap,
+    Fetch&amp;Add, fences, simple synchronization barriers), mechanisms
+    for memory allocation/management (e.g., memory pools), functionality
+    for measuring time, reporting CPU counters, etc. Furthermore, the
+    Runtime/Primitives provides a simple and lightweight library of user
+    level-threads
+    (<xref alt="Fatourou &amp; Kallimanis, 2018" rid="ref-FK2017" ref-type="bibr">Fatourou
+    &amp; Kallimanis, 2018</xref>) that can be used to evaluate the
+    provided data-structures and algorithms. The Concurrent library
+    utilizes the building blocks of the Runtime/Primitives layer in
+    order to provide all the concurrent data-structures (e.g., combining
+    objects, queues, stacks). For almost every concurrent data-structure
+    or synchronization mechanism, Synch provides at least one benchmark
+    for evaluating its performance.</p>
+    <fig>
+      <caption><p>Code-structure of the Synch
+      framework.<styled-content id="figU003Acode_structure"></styled-content></p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="code_structure.png" xlink:title="" />
+    </fig>
+  </sec>
+  <sec id="requirements">
+    <title>Requirements</title>
+    <list list-type="bullet">
+      <list-item>
+        <p>A modern 64-bit multi-core machine. Currently, 32-bit
+        architectures are not supported. The current version of this
+        code is optimized for the x86_64 machine architecture, but the
+        code has also been successfully tested on other machine
+        architectures, such as ARM-V8 and RISC-V. Some of the benchmarks
+        perform much better on architectures that natively support
+        Fetch&amp;Add instructions (e.g., x86_64). For the case of
+        x86_64 architecture, the code has been evaluated on numerous
+        Intel and AMD multicore machines. For the case of ARM-V8
+        architecture, the code has been successfully evaluated on a
+        Trenz Zynq UltraScale+ board (4 A53 Cortex cores) and on a
+        Raspberry Pi 3 board (4 Cortex A53 cores). For the RISC-V
+        architecture, the code has been evaluated on a SiFive HiFive
+        Unleashed (4 U54 RISC‑V cores).</p>
+      </list-item>
+      <list-item>
+        <p>A recent Linux distribution.</p>
+      </list-item>
+      <list-item>
+        <p>As a compiler, gcc version 4.8 or greater is recommended, but
+        users may also try icx or clang.</p>
+      </list-item>
+      <list-item>
+        <p>Building the environment requires the following development
+        packages:</p>
+        <list list-type="bullet">
+          <list-item>
+            <p><monospace>libatomic</monospace></p>
+          </list-item>
+          <list-item>
+            <p><monospace>libnuma</monospace></p>
+          </list-item>
+          <list-item>
+            <p><monospace>libpapi</monospace> in case that the user
+            wants to get some performance statistics for the provided
+            benchmarks.</p>
+          </list-item>
+        </list>
+      </list-item>
+      <list-item>
+        <p>For building the documentation (i.e., man-pages),
+        <monospace>doxygen</monospace> is required.</p>
+      </list-item>
+    </list>
+  </sec>
+  <sec id="related-work">
+    <title>Related work</title>
+    <p>Scal
+    (<xref alt="Haas et al., 2015" rid="ref-scal" ref-type="bibr">Haas
+    et al., 2015</xref>) is another open-source framework that
+    implements a set of concurrent data-structures. Scal also provides
+    workloads for benchmarking the implemented data-structures and the
+    appropriate infrastructure for developing concurrent
+    data-structures. The provided data-structures types are limited to
+    stacks, queues, dequeues, and pools. The Scal framework does not
+    provide any contemporary combining object, or more sophisticated
+    data-structures, e.g., hash-tables.</p>
+    <p>In
+    (<xref alt="Hendler et al., n.d." rid="ref-FCurl" ref-type="bibr">Hendler
+    et al., n.d.</xref>), a few concurrent implementations for stacks
+    and queues are provided. Moreover, a concurrent pairing-heap
+    implementation is provided by
+    (<xref alt="Hendler et al., n.d." rid="ref-FCurl" ref-type="bibr">Hendler
+    et al., n.d.</xref>). The
+    (<xref alt="Hendler et al., n.d." rid="ref-FCurl" ref-type="bibr">Hendler
+    et al., n.d.</xref>) provides a stack, a queue, and a pairing-heap
+    implementations based on the flat-combining synchronization
+    technique
+    (<xref alt="Hendler et al., 2010" rid="ref-FC" ref-type="bibr">Hendler
+    et al., 2010</xref>).</p>
+    <p>The Concurrent Data Structures (CDS) library
+    (<xref alt="The Concurrent Data Structures (CDS) Library, n.d." rid="ref-CDSurl" ref-type="bibr"><italic>The
+    Concurrent Data Structures (CDS) Library</italic>, n.d.</xref>)
+    provides several implementations for stacks, queues, hash-tables,
+    and locks. Moreover, the CDS library provides an implementation of
+    flat-combining
+    (<xref alt="Hendler et al., 2010" rid="ref-FC" ref-type="bibr">Hendler
+    et al., 2010</xref>), an implementation of a skip-list, and an AVL
+    tree implementation. Although the CDS library provides a rich set of
+    concurrent data-structures, it does not provide any functionality
+    for benchmarking.</p>
+    <p>The Boost libraries
+    (<xref alt="BOOST c++ Libraries, n.d." rid="ref-Boost" ref-type="bibr"><italic>BOOST
+    c++ Libraries</italic>, n.d.</xref>) provide a limited set of
+    concurrent data-structures. More specifically, the Boost.Lockfree
+    library provides simple lock-free implementations for a queue, a
+    stack, and a wait-free single-producer/single-consumer queue.</p>
+  </sec>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>This work was partially supported by the European Commission under
+  the Horizon 2020 Framework Programme for Research and Innovation
+  through the “European Processor Initiative: Specific Grant Agreement
+  1” (Grant Agreement Nr 826647).</p>
+  <p>Many thanks to Panagiota Fatourou for all the fruitful discussions
+  and her significant contribution on the concurrent data-structures
+  implementations presented in
+  (<xref alt="Fatourou &amp; Kallimanis, 2011" rid="ref-FK2011" ref-type="bibr">Fatourou
+  &amp; Kallimanis, 2011</xref>,
+  <xref alt="2012" rid="ref-FK2012" ref-type="bibr">2012</xref>,
+  <xref alt="2018" rid="ref-FK2017" ref-type="bibr">2018</xref>;
+  <xref alt="Fatourou &amp; Kallimanis, 2014" rid="ref-FK2014" ref-type="bibr">Fatourou
+  &amp; Kallimanis, 2014</xref>).</p>
+  <p>Thanks also to Spiros Agathos for his feedback on the paper and
+  committing some valuable patches to the repository. Many thanks also
+  to Eftychia Datsika for her feedback on the paper.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-FK2012">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Fatourou</surname><given-names>Panagiota</given-names></name>
+          <name><surname>Kallimanis</surname><given-names>Nikolaos D.</given-names></name>
+        </person-group>
+        <article-title>Revisiting the combining synchronization technique</article-title>
+        <source>Proceedings of the 17th ACM SIGPLAN symposium on principles and practice of parallel programming</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="2012">2012</year>
+        <isbn>9781450311601</isbn>
+        <uri>https://doi.org/10.1145/2145816.2145849</uri>
+        <pub-id pub-id-type="doi">10.1145/2145816.2145849</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-FK2011">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Fatourou</surname><given-names>Panagiota</given-names></name>
+          <name><surname>Kallimanis</surname><given-names>Nikolaos D.</given-names></name>
+        </person-group>
+        <article-title>A highly-efficient wait-free universal construction</article-title>
+        <source>Proceedings of the twenty-third annual ACM symposium on parallelism in algorithms and architectures</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="2011">2011</year>
+        <isbn>9781450307437</isbn>
+        <uri>https://doi.org/10.1145/1989493.1989549</uri>
+        <pub-id pub-id-type="doi">10.1145/1989493.1989549</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-FK2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fatourou</surname><given-names>Panagiota</given-names></name>
+          <name><surname>Kallimanis</surname><given-names>Nikolaos D</given-names></name>
+        </person-group>
+        <article-title>Highly-efficient wait-free synchronization</article-title>
+        <source>Theory of Computing Systems</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>55</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1007/s00224-013-9491-y</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-FK2017">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Fatourou</surname><given-names>Panagiota</given-names></name>
+          <name><surname>Kallimanis</surname><given-names>Nikolaos D.</given-names></name>
+        </person-group>
+        <article-title>Lock Oscillation: Boosting the Performance of Concurrent Data Structures</article-title>
+        <source>21st international conference on principles of distributed systems (OPODIS 2017)</source>
+        <person-group person-group-type="editor">
+          <name><surname>Aspnes</surname><given-names>James</given-names></name>
+          <name><surname>Bessani</surname><given-names>Alysson</given-names></name>
+          <name><surname>Felber</surname><given-names>Pascal</given-names></name>
+          <name><surname>Leitão</surname><given-names>João</given-names></name>
+        </person-group>
+        <publisher-name>Schloss Dagstuhl–Leibniz-Zentrum fuer Informatik</publisher-name>
+        <publisher-loc>Dagstuhl, Germany</publisher-loc>
+        <year iso-8601-date="2018">2018</year>
+        <volume>95</volume>
+        <isbn>978-3-95977-061-3</isbn>
+        <issn>1868-8969</issn>
+        <uri>http://drops.dagstuhl.de/opus/volltexte/2018/8628</uri>
+        <pub-id pub-id-type="doi">10.4230/LIPIcs.OPODIS.2017.8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-FKR2018">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Fatourou</surname><given-names>Panagiota</given-names></name>
+          <name><surname>Kallimanis</surname><given-names>Nikolaos D.</given-names></name>
+          <name><surname>Ropars</surname><given-names>Thomas</given-names></name>
+        </person-group>
+        <article-title>An efficient wait-free resizable hash table</article-title>
+        <source>Proceedings of the 30th on symposium on parallelism in algorithms and architectures</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="2018">2018</year>
+        <isbn>9781450357999</isbn>
+        <uri>https://doi.org/10.1145/3210377.3210408</uri>
+        <pub-id pub-id-type="doi">10.1145/3210377.3210408</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Oyama99">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Oyama</surname><given-names>Yoshihiro</given-names></name>
+          <name><surname>Taura</surname><given-names>Kenjiro</given-names></name>
+          <name><surname>Yonezawa</surname><given-names>Akinori</given-names></name>
+        </person-group>
+        <article-title>Executing parallel programs with synchronization bottlenecks efficiently</article-title>
+        <source>Proceedings of the international workshop on parallel and distributed computing for symbolic and irregular applications</source>
+        <publisher-name>Citeseer</publisher-name>
+        <year iso-8601-date="1999">1999</year>
+        <volume>16</volume>
+        <pub-id pub-id-type="doi">10.1142/4278</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-C93">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Craig</surname><given-names>Travis S.</given-names></name>
+        </person-group>
+        <article-title>Building FIFO and priority queuing spin locks from atomic swap</article-title>
+        <publisher-name>Computer Science Department, University of Washington</publisher-name>
+        <year iso-8601-date="1993">1993</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-MLH94">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Magnusson</surname><given-names>P.</given-names></name>
+          <name><surname>Landin</surname><given-names>A.</given-names></name>
+          <name><surname>Hagersten</surname><given-names>E.</given-names></name>
+        </person-group>
+        <article-title>Queue locks on cache coherent multiprocessors</article-title>
+        <source>Proceedings of 8th international parallel processing symposium</source>
+        <year iso-8601-date="1994">1994</year>
+        <volume></volume>
+        <pub-id pub-id-type="doi">10.1109/IPPS.1994.288305</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MCS91">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mellor-Crummey</surname><given-names>John M.</given-names></name>
+          <name><surname>Scott</surname><given-names>Michael L.</given-names></name>
+        </person-group>
+        <article-title>Algorithms for scalable synchronization on shared-memory multiprocessors</article-title>
+        <source>ACM Trans. Comput. Syst.</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="1991-02">1991</year><month>02</month>
+        <volume>9</volume>
+        <issue>1</issue>
+        <issn>0734-2071</issn>
+        <uri>https://doi.org/10.1145/103727.103729</uri>
+        <pub-id pub-id-type="doi">10.1145/103727.103729</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-AKD12">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Agathos</surname><given-names>Spiros N.</given-names></name>
+          <name><surname>Kallimanis</surname><given-names>Nikolaos D.</given-names></name>
+          <name><surname>Dimakopoulos</surname><given-names>Vassilios V.</given-names></name>
+        </person-group>
+        <article-title>Speeding up OpenMP tasking</article-title>
+        <source>Euro-par 2012 parallel processing</source>
+        <publisher-name>Springer Berlin Heidelberg</publisher-name>
+        <publisher-loc>Berlin, Heidelberg</publisher-loc>
+        <year iso-8601-date="2012">2012</year>
+        <isbn>978-3-642-32820-6</isbn>
+        <pub-id pub-id-type="doi">10.1007/978-3-642-32820-6_64</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MS96">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Michael</surname><given-names>Maged M.</given-names></name>
+          <name><surname>Scott</surname><given-names>Michael L.</given-names></name>
+        </person-group>
+        <article-title>Simple, fast, and practical non-blocking and blocking concurrent queue algorithms</article-title>
+        <source>Proceedings of the fifteenth annual ACM symposium on principles of distributed computing</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="1996">1996</year>
+        <isbn>0897918002</isbn>
+        <uri>https://doi.org/10.1145/248052.248106</uri>
+        <pub-id pub-id-type="doi">10.1145/248052.248106</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-T86">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Treiber</surname><given-names>R Kent</given-names></name>
+        </person-group>
+        <article-title>Systems programming: Coping with parallelism.</article-title>
+        <publisher-name>International Business Machines Incorporated, Thomas J. Watson Research</publisher-name>
+        <year iso-8601-date="1986">1986</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-LCRQ">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Morrison</surname><given-names>Adam</given-names></name>
+          <name><surname>Afek</surname><given-names>Yehuda</given-names></name>
+        </person-group>
+        <article-title>Fast concurrent queues for X86 processors</article-title>
+        <source>Proceedings of the 18th ACM SIGPLAN symposium on principles and practice of parallel programming</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="2013">2013</year>
+        <isbn>9781450319225</isbn>
+        <uri>https://doi.org/10.1145/2442516.2442527</uri>
+        <pub-id pub-id-type="doi">10.1145/2442516.2442527</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LCRQurl">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <name><surname>Morrison</surname><given-names>Adam</given-names></name>
+          <name><surname>Afek</surname><given-names>Yehuda</given-names></name>
+        </person-group>
+        <article-title>Code for LCRQ</article-title>
+        <uri>http://mcg.cs.tau.ac.il/projects/lcrq</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-scal">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Haas</surname><given-names>Andreas</given-names></name>
+          <name><surname>Hütter</surname><given-names>Thomas</given-names></name>
+          <name><surname>Kirsch</surname><given-names>Christoph M.</given-names></name>
+          <name><surname>Lippautz</surname><given-names>Michael</given-names></name>
+          <name><surname>Preishuber</surname><given-names>Mario</given-names></name>
+          <name><surname>Sokolova</surname><given-names>Ana</given-names></name>
+        </person-group>
+        <article-title>Scal: A benchmarking suite for concurrent data structures</article-title>
+        <source>Networked systems</source>
+        <person-group person-group-type="editor">
+          <name><surname>Bouajjani</surname><given-names>Ahmed</given-names></name>
+          <name><surname>Fauconnier</surname><given-names>Hugues</given-names></name>
+        </person-group>
+        <publisher-name>Springer International Publishing</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <isbn>978-3-319-26850-7</isbn>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-26850-7_1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-FC">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Hendler</surname><given-names>Danny</given-names></name>
+          <name><surname>Incze</surname><given-names>Itai</given-names></name>
+          <name><surname>Shavit</surname><given-names>Nir</given-names></name>
+          <name><surname>Tzafrir</surname><given-names>Moran</given-names></name>
+        </person-group>
+        <article-title>Flat combining and the synchronization-parallelism tradeoff</article-title>
+        <source>Proceedings of the twenty-second annual ACM symposium on parallelism in algorithms and architectures</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="2010">2010</year>
+        <isbn>9781450300797</isbn>
+        <uri>https://doi.org/10.1145/1810479.1810540</uri>
+        <pub-id pub-id-type="doi">10.1145/1810479.1810540</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-FCurl">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <name><surname>Hendler</surname><given-names>Danny</given-names></name>
+          <name><surname>Incze</surname><given-names>Itai</given-names></name>
+          <name><surname>Shavit</surname><given-names>Nir</given-names></name>
+          <name><surname>Tzafrir</surname><given-names>Moran</given-names></name>
+        </person-group>
+        <article-title>Code for flat-combining</article-title>
+        <uri>https://github.com/mit-carbon/Flat-Combining</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-CDSurl">
+      <element-citation publication-type="webpage">
+        <article-title>The concurrent data structures (CDS) library</article-title>
+        <uri>https://github.com/khizmax/libcds</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Boost">
+      <element-citation publication-type="webpage">
+        <article-title>BOOST c++ libraries</article-title>
+        <uri>www.boost.org</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1444</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01444</article-id>
+<title-group>
+<article-title>modelDown: automated website generator with interpretable
+documentation for predictive machine learning models</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<string-name>Kamil Romaszko</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Magda Tatarynowicz</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Mateusz Urbański</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-8423-1823</contrib-id>
+<string-name>Przemysław Biecek</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Faculty of Mathematics and Information Science, Warsaw
+University of Technology</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-08-14">
+<day>14</day>
+<month>8</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>38</issue>
+<fpage>1444</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>explainable artificial intelligence</kwd>
+<kwd>interpretable machine learning</kwd>
+<kwd>predictive models</kwd>
+<kwd>model visualization</kwd>
+<kwd>automated data analysis</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>We live in times where machine learning is used almost everywhere.
+  With the large number of accessible tools available, generation of
+  predictive model for your own benefit is fairly straightforward.</p>
+  <p>The models may be simple to create and use, but most of the time
+  they are not simple to understand. Larger models may contain thousands
+  or millions of parameters. It can be challenging to see how the model
+  works and how the inputs impact the obtained results. Numerous tools
+  for explainable Artificial Intelligence can help, but it may be
+  cumbersome and repetitive to use different tools every time you test
+  the model.</p>
+  <p>In this paper, we introduce a package modelDown for the R language
+  (<xref alt="R Core Team, 2018" rid="ref-R" ref-type="bibr">R Core
+  Team, 2018</xref>) that can help to eliminate these issues. modelDown
+  automatically creates an easy to understand HTML website with model
+  interpretations. You can automatically analyze, explore, and debug
+  your predictive models in many ways with just a single command.</p>
+  <p>The modelDown package is designed in a similar way to the pkgdown
+  (<xref alt="Wickham &amp; Hesselberth, 2018" rid="ref-pkgdown" ref-type="bibr">Wickham
+  &amp; Hesselberth, 2018</xref>) library. Both packages use templates
+  to generate a static HTML website with detailed information. In the
+  case of pkgdown, the information is about a selected package, while in
+  the case of modelDown, it is about predictive models.</p>
+  <p>The modelDown package builds on the set of tools for model
+  exploration implemented in the DALEX
+  (<xref alt="Biecek, 2018" rid="ref-DALEX" ref-type="bibr">Biecek,
+  2018</xref>) package. By creating explainer objects, DALEX provides a
+  uniform interface for model agnostic exploration of models. Other R
+  packages compatible with DALEX are also used to provide data, tables,
+  and charts available on the website.</p>
+</sec>
+<sec id="example-code">
+  <title>Example code</title>
+  <p>A basic example of using the package is as straightforward as
+  below.</p>
+  <preformat>require(&quot;ranger&quot;)
+require(&quot;breakDown&quot;)
+require(&quot;DALEX&quot;)
+
+devtools::install_github(&quot;MI2DataLab/modelDown&quot;)
+
+# ranger
+HR_ranger_model &lt;- ranger(as.factor(left) ~ .,
+                          data = HR_data, num.trees = 500,
+                          classification = TRUE, probability = TRUE)
+
+# glm
+HR_data1 &lt;- HR_data[1:4000,]
+HR_data2 &lt;- HR_data[4000:nrow(HR_data),]
+HR_glm_model1 &lt;- glm(left~., HR_data1, family = &quot;binomial&quot;)
+HR_glm_model2 &lt;- glm(left~., HR_data2, family = &quot;binomial&quot;)
+
+# generating explainers
+explainer_ranger &lt;- explain(HR_ranger_model,
+                            data = HR_data, y = HR_data$left,
+                            function(model, data) {
+                              return(predict(model, data)$prediction[,2])
+                            }, na.rm=TRUE)
+explainer_glm1 &lt;- explain(HR_glm_model1, data=HR_data1, y = HR_data1$left)
+explainer_glm2 &lt;- explain(HR_glm_model2, data=HR_data2, y = HR_data2$left)
+
+modelDown::modelDown(explainer_ranger, list(explainer_glm1, explainer_glm2))</preformat>
+</sec>
+<sec id="available-features">
+  <title>Available features</title>
+  <p>The modelDown package is highly modular. The primary outcome is a
+  website with a set of tabs. Each tab explains a particular aspect of
+  the model. Features are available across the tabs. By default, all the
+  tabs are generated, and each of them can be parameterized.</p>
+  <p>The ‘Auditor’ tab presents different ways of validating predictive
+  models by analysis of residuals. All plots are generated by the
+  auditor package
+  (<xref alt="Gosiewska &amp; Biecek, 2018" rid="ref-Auditor" ref-type="bibr">Gosiewska
+  &amp; Biecek, 2018</xref>). The plots may seem a bit complicated at
+  first sight, so each plot has links with helpful explanations.</p>
+  <p>The ‘Model performance’ tab uses functions from DALEX package
+  (<xref alt="Biecek, 2018" rid="ref-DALEX" ref-type="bibr">Biecek,
+  2018</xref>). It shows contrastive comparisons of model predictive
+  power by analyzing residuals. Read more about this type of model
+  diagnostic in
+  (<xref alt="Biecek &amp; Burzykowski, 2019" rid="ref-PM_VEE" ref-type="bibr">Biecek
+  &amp; Burzykowski, 2019</xref>).</p>
+  <p>The ‘Model performance’ tab lets you compare different models. This
+  applies for all tabs created with modelDown. This allows users not
+  only to validate one model, but to pick the best model among many.
+  Below we can see different distributions of residuals for the
+  models.</p>
+  <p>-<inline-graphic mimetype="image" mime-subtype="png" xlink:href="paper_images/model_performance.png" /></p>
+  <p>The ‘Feature importance’ tab also uses functions from DALEX
+  package. It shows how much impact each variable has when it comes to
+  generating predictions. You can compare these model agnostic feature
+  importance scores against domain knowledge in order to see if the
+  model works in the expected way.</p>
+  <p>-<inline-graphic mimetype="image" mime-subtype="png" xlink:href="paper_images/variable_importance.png" /></p>
+  <p>All examples presented in this paper are based on models generated
+  with the Titanic dataset. In this example, three models that are
+  considered picked gender as the most important variable. Only the
+  k-Nearest Neighbors algorithm picked different features. This may
+  suggest that this model does not give the best results for this
+  data.</p>
+  <p>The ‘Feature response’ tab also uses functions from DALEX package.
+  The main goal of this table is to present the link between average
+  model response and the feature of interest. With the use of Partial
+  Dependency Plots or Factor Merger Plots one can read how model
+  predictions change with changing values of a selected single
+  variable.</p>
+  <p>The last tab, ‘drifter’, uses functions from an R package with the
+  same name
+  (<xref alt="Biecek, 2019" rid="ref-Drifter" ref-type="bibr">Biecek,
+  2019</xref>). You can test if there is concept drift or data drift in
+  the data. You can also see how changes in the data distribution impact
+  the model of interest.</p>
+  <p>All of this can be generated using one simple command, which is
+  highly customizable. You can select different plot formats - either a
+  raster png or vectorized
+  (<xref alt="Wickham et al., 2017" rid="ref-svg" ref-type="bibr">Wickham
+  et al., 2017</xref>), change each tab’s individual settings and
+  control visual aspects.</p>
+  <p>To boost reproducibility of models, all results from model
+  exploration and explanation are saved in binary form with the
+  archivist
+  (<xref alt="Biecek &amp; Kosinski, 2017" rid="ref-Archivist" ref-type="bibr">Biecek
+  &amp; Kosinski, 2017</xref>) package. You can always look at them
+  later, share models or explainers with collaborators, validate session
+  info recorded when explainers were created, or reproduce selected
+  explainers.</p>
+</sec>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The package uses whisker html templates
+  (<xref alt="de Jonge, 2013" rid="ref-whisker" ref-type="bibr">de
+  Jonge, 2013</xref>). Also, DALEX itself uses the extensible grammar of
+  data visualization implemented in the ggplot2 package
+  (<xref alt="Wickham, 2016" rid="ref-ggplot2" ref-type="bibr">Wickham,
+  2016</xref>). Because of that, as new packages compatible with DALEX
+  explainers are developed, modelDown can be extended to use them.
+  modelDown, with its simple usage and wide variety of information on
+  the models, may be a powerful tool that helps you improve your model
+  predictive power.</p>
+  <p>An example website generated with the modelDown package is at
+  https://github.com/MI2DataLab/modelDown_example. It also contains a
+  reproducible R code for model training, wrapping and transforming into
+  an HTML website.</p>
+  <p>The modelDown is a part of DrWhy.AI
+  (<xref alt="Warsaw University of Technology, 2018" rid="ref-DrWhy" ref-type="bibr">Warsaw
+  University of Technology, 2018</xref>) collection of tools for
+  automated training, exploration and maintenance for predictive
+  models.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>Work on this package was financially supported by the NCN Opus
+  grant
+  2017/27/B/ST6/01307 at Warsaw University of Technology, Faculty of
+  Mathematics and Information Science.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-DALEX">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Biecek</surname><given-names>Przemyslaw</given-names></name>
+        </person-group>
+        <article-title>DALEX: Explainers for complex predictive models in R</article-title>
+        <source>Journal of Machine Learning Research</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>19</volume>
+        <issue>84</issue>
+        <uri>http://jmlr.org/papers/v19/18-416.html</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-PM_VEE">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Biecek</surname><given-names>Przemyslaw</given-names></name>
+          <name><surname>Burzykowski</surname><given-names>Tomasz</given-names></name>
+        </person-group>
+        <source>Predictive models: Visual exploration, explanation and debugging</source>
+        <year iso-8601-date="2019">2019</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-04-14">2019</year><month>04</month><day>14</day></date-in-citation>
+        <uri>https://pbiecek.github.io/PM_VEE/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Archivist">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Biecek</surname><given-names>Przemyslaw</given-names></name>
+          <name><surname>Kosinski</surname><given-names>Marcin</given-names></name>
+        </person-group>
+        <article-title>archivist: An R package for managing, recording and restoring data analysis results</article-title>
+        <source>Journal of Statistical Software</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>82</volume>
+        <issue>11</issue>
+        <pub-id pub-id-type="doi">10.18637/jss.v082.i11</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Drifter">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Biecek</surname><given-names>Przemyslaw</given-names></name>
+        </person-group>
+        <source>drifter: Concept drift and concept shift detection for predictive models</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://ModelOriented.github.io/drifter/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Auditor">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Gosiewska</surname><given-names>Alicja</given-names></name>
+          <name><surname>Biecek</surname><given-names>Przemyslaw</given-names></name>
+        </person-group>
+        <source>auditor: Model audit - verification, validation, and error analysis</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://CRAN.R-project.org/package=auditor</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-R">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>R Core Team</string-name>
+        </person-group>
+        <source>R: A language and environment for statistical computing</source>
+        <publisher-name>R Foundation for Statistical Computing</publisher-name>
+        <publisher-loc>Vienna, Austria</publisher-loc>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://www.R-project.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-DrWhy">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <name><surname>Warsaw University of Technology</surname><given-names>MI2DataLab @</given-names></name>
+        </person-group>
+        <article-title>DrWhy: Collection of tools for explainable AI (XAI)</article-title>
+        <year iso-8601-date="2018">2018</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-04-14">2019</year><month>04</month><day>14</day></date-in-citation>
+        <uri>http://www.drwhy.ai/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-pkgdown">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Wickham</surname><given-names>Hadley</given-names></name>
+          <name><surname>Hesselberth</surname><given-names>Jay</given-names></name>
+        </person-group>
+        <source>pkgdown: Make static HTML documentation for a package</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://CRAN.R-project.org/package=pkgdown</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-whisker">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>de Jonge</surname><given-names>Edwin</given-names></name>
+        </person-group>
+        <source>whisker: Mustache for R, logicless templating</source>
+        <year iso-8601-date="2013">2013</year>
+        <uri>https://CRAN.R-project.org/package=whisker</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-ggplot2">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Wickham</surname><given-names>Hadley</given-names></name>
+        </person-group>
+        <source>ggplot2: Elegant graphics for data analysis</source>
+        <publisher-name>Springer-Verlag New York</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <isbn>978-3-319-24277-4</isbn>
+        <uri>http://ggplot2.org</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-svg">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Wickham</surname><given-names>Hadley</given-names></name>
+          <name><surname>Henry</surname><given-names>Lionel</given-names></name>
+          <name><surname>Luciani</surname><given-names>T Jake</given-names></name>
+          <name><surname>Decorde</surname><given-names>Matthieu</given-names></name>
+          <name><surname>Lise</surname><given-names>Vaudor</given-names></name>
+        </person-group>
+        <source>svglite: An ’SVG’ graphics device</source>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://CRAN.R-project.org/package=svglite</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

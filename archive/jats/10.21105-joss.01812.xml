@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1812</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01812</article-id>
+<title-group>
+<article-title>OwlDE: making ODEs first-class Owl
+citizens</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-8563-5894</contrib-id>
+<string-name>Marcello Seri</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Ta-Chu Kao</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Bernoulli Institute for Mathematics, Computer Science and
+Artificial Intelligence, University of Groningen</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Computational and Biological Learning Lab, Department of
+Engineering, University of Cambridge</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-10-04">
+<day>4</day>
+<month>10</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>44</issue>
+<fpage>1812</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Ordinary differential equations</kwd>
+<kwd>Geometric integration</kwd>
+<kwd>Numerical integration</kwd>
+<kwd>Neural ODE</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>After only three years of intensive development and continuous
+  optimisation, <monospace>Owl</monospace> has emerged in the
+  <monospace>OCaml</monospace> ecosystem as a versatile and powerful
+  scientific programming library, competitive with mainstream libraries
+  such as <monospace>SciPy</monospace> and <monospace>NumPy</monospace>.
+  What sets <monospace>Owl</monospace> apart is that it brings under one
+  umbrella the flexibility of a dynamical language and the power and
+  safety of the <monospace>OCaml</monospace> type system
+  (<xref alt="Wang, 2017" rid="ref-WangU003A2017" ref-type="bibr">Wang,
+  2017</xref>).</p>
+  <p>Today, <monospace>Owl</monospace> can be used to solve a wide range
+  of scientific problems: it provides efficient types for handling
+  multidimensional arrays and linear algebra operations built on top of
+  <monospace>BLAS</monospace> and <monospace>LAPACK</monospace>; it
+  supports machine learning applications with a powerful computational
+  graph engine and automatic differentiation pipeline. To improve
+  efficiency, <monospace>Owl</monospace> allows offloading computations
+  to distributed systems and GPUs. With the recent addition of
+  <monospace>dataframes</monospace> and integration with Jupyter
+  Notebooks provided by <monospace>ocaml-jupyter</monospace>,
+  <monospace>Owl</monospace> has the chance to become an excellent
+  framework for exploratory mathematical analysis.</p>
+  <p>A notable omission in <monospace>Owl</monospace>’s ecosystem, when
+  compared to similar solutions in <monospace>python</monospace> and
+  <monospace>Julia</monospace>, was a package for solving ordinary
+  differential equations. To fill this need, we designed
+  <monospace>OwlDE</monospace>, a flexible and efficient ODE engine for
+  <monospace>Owl</monospace>.</p>
+  <sec id="design-of-the-core-module">
+    <title>Design of the core module</title>
+    <p>The lack of automation around type classes and dynamic typing in
+    <monospace>OCaml</monospace> may seem at first a huge impediment to
+    designing a flexible and ergonomic ODE integrator library. Indeed,
+    such a library should ideally allow the users to seamlessly use
+    different algorithms that require different kinds of inputs and
+    options, and return varying kinds of outputs. Such constraints on
+    input/output types pose a major problem for the strong static type
+    system of <monospace>OCaml</monospace>, even if they are in
+    principle implementable exploiting advanced language features, and
+    were one of the central issues in designing
+    <monospace>OwlDE</monospace>.</p>
+    <p>We iterated various options and settled on the use of first-class
+    modules. These have been introduced in OCaml since version 3.12, and
+    further improved in subsequent releases. With first-class modules
+    the user can parametrise functions over modules, allowing us to find
+    a middle ground between the verbosity of functorial code and the
+    composability of OCaml functions. The flexibility of this API
+    allowed us to provide integration and bindings to external
+    frameworks like <monospace>SUNDIALS</monospace> or
+    <monospace>ODEPACK</monospace> in a completely seamless way. Such an
+    API allowed us to compare native implementations with industry-grade
+    solvers, both for mathematical exploration, testing and benchmark
+    purposes.</p>
+    <p>To give an idea of the interface, the following code allows to
+    integrate the initial value problem</p>
+    <p><disp-formula><alternatives>
+    <tex-math><![CDATA[
+    \dot{x} = f(x,t) = A x, \qquad x(t_0) = x_0
+    ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>x</mml:mi><mml:mo accent="true">̇</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>A</mml:mi><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mspace width="2.0em"></mml:mspace><mml:mi>x</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>t</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>0</mml:mn></mml:msub></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>where <inline-formula><alternatives>
+    <tex-math><![CDATA[A]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>A</mml:mi></mml:math></alternatives></inline-formula>
+    is the 2x2 matrix <inline-formula><alternatives>
+    <tex-math><![CDATA[(1, -1; 2, -3)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mo>−</mml:mo><mml:mn>1</mml:mn><mml:mo>;</mml:mo><mml:mn>2</mml:mn><mml:mo>,</mml:mo><mml:mo>−</mml:mo><mml:mn>3</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>,
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[x_0 = (-1; 1)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>x</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mo>−</mml:mo><mml:mn>1</mml:mn><mml:mo>;</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[t_0=0]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>t</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mo>=</mml:mo><mml:mn>0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+    <preformat>open Owl
+open Owl_ode
+open Owl_ode.Types
+
+(* f(x,t) *)
+let f x t =
+   let a = [|[|1.; -1.|];
+             [|2.; -3.|]|]
+           |&gt; Mat.of_arrays in
+   Mat.(a *@ x)
+
+(* temporal specification:
+   construct a record using the constructor T1 and
+   includes information of start time, duration,
+   and step size.*)
+let tspec = T1 {t0 = 0.; duration = 2.; dt=1E-3}
+
+(* initial state of the system *)
+let x0 = Mat.of_array [|-1.; 1.|] 2 1
+
+(* ts and xs will contain the integrated times and the values of the state
+   x at each of those times *)
+let ts, xs = Ode.odeint Native.D.rk4 f x0 tspec ()</preformat>
+    <p>The tight integration with the <monospace>OCaml</monospace> and
+    <monospace>Owl</monospace> ecosystem allows us also to benefit from
+    some of their strengths. The strong static type system made
+    refactoring and code analysis an immediate task, and greatly reduced
+    the necessary test surface. The powerful functorised
+    <monospace>ndarray</monospace> subsystem exposed by
+    <monospace>Owl</monospace> made the library trivially extensible
+    also in somewhat unexpected directions. Indeed, it is possible to
+    take the integrators exposed by <monospace>OwlDE</monospace> and use
+    them to reproduce the work of
+    (<xref alt="Chen et al., 2018" rid="ref-NODEU003A2018" ref-type="bibr">Chen
+    et al., 2018</xref>) without the need to rewrite any of the core
+    functions, as done in
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/tachukao/adjoint_ode"><monospace>adjoint_ode</monospace></ext-link>.
+    Similarly, it is possible to extend the range of integrators and
+    introduce new ones rather seamlessly, as done in
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/mseri/ocaml-cviode"><monospace>cviode</monospace></ext-link>,
+    an implementation of the integrators introduced in
+    (<xref alt="Vermeeren et al., 2019" rid="ref-VBSU003A2019" ref-type="bibr">Vermeeren
+    et al., 2019</xref>).</p>
+    <p>One further strength of this library, comes from its native
+    <monospace>OCaml</monospace> component, which can be compiled to
+    <monospace>JavaScript</monospace> and used for interactive
+    simulations in the browser, as demoed during the
+    <monospace>OCaml</monospace> Workshop at ICFP 2019 in Berlin. The
+    demo and the usage instructions are freely available at
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/mseri/owlde-demo-icfp2019"><monospace>owlde-demo-icfp2019</monospace></ext-link>.</p>
+  </sec>
+  <sec id="conclusion">
+    <title>Conclusion</title>
+    <p>When it comes to scientific programming, fast prototyping and
+    ease of use have long been considered the province of
+    dynamically-typed languages like <monospace>python</monospace>.
+    However, our experience developing <monospace>Owl</monospace> and
+    <monospace>OwlDE</monospace>, and the feedback from users who
+    primarily use these tools for research, suggests otherwise. In fact,
+    the OCaml type system often ensures correctness and speeds up
+    computations without increasing verbosity, or hindering usability
+    and readability. In many cases, we discovered that porting
+    <monospace>python</monospace> code to <monospace>OCaml</monospace>
+    code via <monospace>Owl</monospace> was nearly trivial and the
+    resulting <monospace>OCaml</monospace> code was often comparable in
+    length, but with the added benefits of fewer runtime errors and
+    improved performance. We look forward to developing
+    <monospace>OwlDE</monospace> and <monospace>Owl</monospace> further
+    with inputs from the <monospace>OCaml</monospace> community.</p>
+  </sec>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>The authors would like to thank Liang Wang, Guillaume Hennequin,
+  the Cambridge OCaml Labs and all the contributors to
+  <monospace>Owl</monospace> and <monospace>Owl_ode</monospace> for
+  their support and help throughout the development of the project.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-WangU003A2017">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Wang</surname><given-names>Liang</given-names></name>
+        </person-group>
+        <article-title>Owl: A general-purpose numerical library in OCaml</article-title>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://arxiv.org/abs/1707.09616</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-NODEU003A2018">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Chen</surname><given-names>Tian Qi</given-names></name>
+          <name><surname>Rubanova</surname><given-names>Yulia</given-names></name>
+          <name><surname>Bettencourt</surname><given-names>Jesse</given-names></name>
+          <name><surname>Duvenaud</surname><given-names>David K</given-names></name>
+        </person-group>
+        <article-title>Neural ordinary differential equations</article-title>
+        <source>Advances in neural information processing systems 31</source>
+        <person-group person-group-type="editor">
+          <name><surname>Bengio</surname><given-names>S.</given-names></name>
+          <name><surname>Wallach</surname><given-names>H.</given-names></name>
+          <name><surname>Larochelle</surname><given-names>H.</given-names></name>
+          <name><surname>Grauman</surname><given-names>K.</given-names></name>
+          <name><surname>Cesa-Bianchi</surname><given-names>N.</given-names></name>
+          <name><surname>Garnett</surname><given-names>R.</given-names></name>
+        </person-group>
+        <publisher-name>Curran Associates, Inc.</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <uri>http://papers.nips.cc/paper/7892-neural-ordinary-differential-equations.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-VBSU003A2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Vermeeren</surname><given-names>Mats</given-names></name>
+          <name><surname>Bravetti</surname><given-names>Alessandro</given-names></name>
+          <name><surname>Seri</surname><given-names>Marcello</given-names></name>
+        </person-group>
+        <article-title>Contact variational integrators</article-title>
+        <source>Journal of Physics A: Mathematical and Theoretical</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>http://iopscience.iop.org/10.1088/1751-8121/ab4767</uri>
+        <pub-id pub-id-type="doi">10.1088/1751-8121/ab4767</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

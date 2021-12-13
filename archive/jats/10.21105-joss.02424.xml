@@ -1,0 +1,725 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2424</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02424</article-id>
+<title-group>
+<article-title>CRBHits: From Conditional Reciprocal Best Hits to Codon
+Alignments and Ka/Ks in R</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-4308-9626</contrib-id>
+<string-name>Kristian K Ullrich</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Max Planck Institute for Evolutionary Biology, Scientific
+IT group, August Thienemann Str. 2, 24306 Plön</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-10-29">
+<day>29</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>55</issue>
+<fpage>2424</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>reciprocal best hit</kwd>
+<kwd>conditional reciprocal best hit</kwd>
+<kwd>codon alignment</kwd>
+<kwd>Ka/Ks</kwd>
+<kwd>dN/dS</kwd>
+<kwd>tandem duplicated genes</kwd>
+<kwd>synteny</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><ext-link ext-link-type="uri" xlink:href="https://gitlab.gwdg.de/mpievolbio-it/crbhits">CRBHits</ext-link>
+  is a coding sequence (CDS) analysis pipeline in
+  <ext-link ext-link-type="uri" xlink:href="https://cran.r-project.org/">R</ext-link>
+  (<xref alt="R Core Team, 2019" rid="ref-team2013r" ref-type="bibr">R
+  Core Team, 2019</xref>). It reimplements the Conditional Reciprocal
+  Best Hit (CRBH) algorithm
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/cboursnell/crb-blast">crb-blast</ext-link>
+  and covers all necessary steps from sequence similarity searches,
+  codon alignments to Ka/Ks calculations and synteny. The new R package
+  targets ecology, population and evolutionary biologists working in the
+  field of comparative genomics.</p>
+  <p>The Reciprocal Best Hit (RBH) approach is commonly used in
+  bioinformatics to show that two sequences evolved from a common
+  ancestral gene. In other words, RBH tries to find orthologous protein
+  sequences within and between species. These orthologous sequences can
+  be further analysed to evaluate protein family evolution, infer
+  phylogenetic trees and to annotate protein function
+  (<xref alt="Altenhoff et al., 2019" rid="ref-altenhoff2019inferring" ref-type="bibr">Altenhoff
+  et al., 2019</xref>). The initial sequence search step is classically
+  performed with the Basic Local Alignment Search Tool (blast)
+  (<xref alt="Altschul et al., 1990" rid="ref-altschul1990basic" ref-type="bibr">Altschul
+  et al., 1990</xref>) and due to evolutionary constraints, in most
+  cases protein coding sequences are compared between two species.
+  Downstream analysis use the resulting RBH to cluster sequence pairs
+  and build so-called orthologous groups like
+  e.g. <ext-link ext-link-type="uri" xlink:href="https://github.com/davidemms/OrthoFinder">OrthoFinder</ext-link>
+  (<xref alt="Emms &amp; Kelly, 2015" rid="ref-emms2015orthofinder" ref-type="bibr">Emms
+  &amp; Kelly, 2015</xref>) and other tools.</p>
+  <p>The CRBH algorithm was introduced by Aubry et al.
+  (<xref alt="2014" rid="ref-aubry2014deep" ref-type="bibr">2014</xref>)
+  and builds upon the traditional RBH approach to find additional
+  orthologous sequences between two sets of sequences. As described
+  earlier
+  (<xref alt="Aubry et al., 2014" rid="ref-aubry2014deep" ref-type="bibr">Aubry
+  et al., 2014</xref>;
+  <xref alt="Scott, 2017" rid="ref-scott2017shmlast" ref-type="bibr">Scott,
+  2017</xref>), CRBH uses the sequence search results to fit an expect
+  value (E-value) cutoff given each RBH to subsequently add sequence
+  pairs to the list of bona-fide orthologs given their alignment
+  length.</p>
+  <p>Unfortunately, as mentioned by Scott
+  (<xref alt="2017" rid="ref-scott2017shmlast" ref-type="bibr">2017</xref>),
+  the original implementation of CRBH
+  (<ext-link ext-link-type="uri" xlink:href="https://github.com/cboursnell/crb-blast">crb-blast</ext-link>)
+  lag improved blast-like search algorithm to speed up the analysis. As
+  a consequence, Scott
+  (<xref alt="2017" rid="ref-scott2017shmlast" ref-type="bibr">2017</xref>)
+  ported CRBH to python
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/camillescott/shmlast">shmlast</ext-link>,
+  while
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/camillescott/shmlast">shmlast</ext-link>
+  cannot deal with IUPAC nucleotide code so far.</p>
+  <p><ext-link ext-link-type="uri" xlink:href="https://gitlab.gwdg.de/mpievolbio-it/crbhits">CRBHits</ext-link>
+  constitutes a new R package, which build upon previous implementations
+  and ports CRBH into the
+  <ext-link ext-link-type="uri" xlink:href="https://cran.r-project.org/">R</ext-link>
+  environment, which is popular among biologists.
+  <ext-link ext-link-type="uri" xlink:href="https://gitlab.gwdg.de/mpievolbio-it/crbhits">CRBHits</ext-link>
+  improve CRBH by additional implemented filter steps
+  (<xref alt="Rost, 1999" rid="ref-rost1999twilight" ref-type="bibr">Rost,
+  1999</xref>) and the possibility to apply custom filters prior E-value
+  fitting. Further, the resulting CRBH pairs can be evaluated for the
+  presence of tandem duplicated genes, gene order based syntenic groups
+  and evolutionary rates.</p>
+  <fig>
+    <caption><p>Overview of the two main pipeline function and its
+    subtasks. cds2rbh(): from CDS to CRBHit pairs; rbh2kaks(): from
+    CRBHit pairs to Ka/Ks
+    values.<styled-content id="figU003Afunctions"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="figure1.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="coding-sequence-analysis-and-synteny">
+  <title>Coding sequence analysis and synteny</title>
+  <p>Calculating synonymous (Ks) and nonsynonymous substitutions (Ka)
+  per orthologous sequence pair is a common task for evolutionary
+  biologists, since its ratio Ka/Ks can be used as an indicator of
+  selective pressure acting on a protein
+  (<xref alt="Kryazhimskiy &amp; Plotkin, 2008" rid="ref-kryazhimskiy2008population" ref-type="bibr">Kryazhimskiy
+  &amp; Plotkin, 2008</xref>). However, this task is computational more
+  demanding and consist of at least two steps, namely codon sequence
+  alignment creation and Ka/Ks calculation. Further, the codon sequence
+  alignment step consist of three subtasks, namely coding nucleotide to
+  protein sequence translation, pairwise protein sequence alignment
+  calculation and converting the protein sequence alignment back into a
+  codon based alignment.</p>
+  <p>Downstream of CRBH creation,
+  <ext-link ext-link-type="uri" xlink:href="https://gitlab.gwdg.de/mpievolbio-it/crbhits">CRBHits</ext-link>
+  features all above mentioned steps and subtasks.
+  <ext-link ext-link-type="uri" xlink:href="https://gitlab.gwdg.de/mpievolbio-it/crbhits">CRBHits</ext-link>
+  has the ability to directly create codon alignments within R with the
+  help of the widely used R package
+  <ext-link ext-link-type="uri" xlink:href="https://bioconductor.org/packages/release/bioc/html/Biostrings.html">Biostrings</ext-link>
+  (<xref alt="Pagès et al., 2017" rid="ref-pages2017biostrings" ref-type="bibr">Pagès
+  et al., 2017</xref>) (more than 200k downloads per year since 2014).
+  These codon alignments can be subsequently used to calculate
+  synonymous and nonsynonymous substitutions per sequence pair and is
+  implemented in a multithreaded fashion either via the R package
+  <ext-link ext-link-type="uri" xlink:href="https://cran.r-project.org/web/packages/seqinr/index.html">seqinr</ext-link>
+  (<xref alt="Charif &amp; Lobry, 2007" rid="ref-charif2007seqinr" ref-type="bibr">Charif
+  &amp; Lobry, 2007</xref>) or the use of an R external tool
+  <ext-link ext-link-type="uri" xlink:href="https://sourceforge.net/projects/kakscalculator2/files/KaKs_Calculator2.0.tar.gz/download">KaKs_Calculator2.0</ext-link>
+  (<xref alt="Wang et al., 2010" rid="ref-wang2010kaks_calculator" ref-type="bibr">Wang
+  et al., 2010</xref>).</p>
+  <p>As gene duplication is one driving force in evolution
+  (<xref alt="Ohno, 1970" rid="ref-ohno1970evolution" ref-type="bibr">Ohno,
+  1970</xref>), the classification of genes as duplicates is one
+  important step to provide us with insights into the molecular events
+  responsible for the current genome architecture of species
+  (<xref alt="Haas et al., 2004" rid="ref-haas2004" ref-type="bibr">Haas
+  et al., 2004</xref>). New long-read sequencing technology make more
+  and more chromosome scale assemblies for model and non-model species
+  available. The resulting chromosomal gene order information can be
+  used with sequence similarity scores to classify genes into different
+  types of duplication events, like tandem duplicates or chromosomal
+  segments (syntenic regions) derived from e.g. whole-genome
+  duplication.
+  <ext-link ext-link-type="uri" xlink:href="https://gitlab.gwdg.de/mpievolbio-it/crbhits">CRBHits</ext-link>
+  features this classification step via the integration of the R
+  external tool
+  <ext-link ext-link-type="uri" xlink:href="http://dagchainer.sourceforge.net/">DAGchainer</ext-link>
+  (<xref alt="Haas et al., 2004" rid="ref-haas2004" ref-type="bibr">Haas
+  et al., 2004</xref>) and offers the possibility to directly link it
+  with evolutionary rate estimations (see
+  <xref alt="Figure 3" rid="figU003Asynteny">Figure 3</xref>).</p>
+</sec>
+<sec id="implementation">
+  <title>Implementation</title>
+  <p>Like
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/camillescott/shmlast">shmlast</ext-link>,
+  <ext-link ext-link-type="uri" xlink:href="https://gitlab.gwdg.de/mpievolbio-it/crbhits">CRBHits</ext-link>
+  benefits from the blast-like sequence search software
+  <ext-link ext-link-type="uri" xlink:href="http://last.cbrc.jp/">LAST</ext-link>(<xref alt="Kiełbasa et al., 2011" rid="ref-kielbasa2011adaptive" ref-type="bibr">Kiełbasa
+  et al., 2011</xref>) and plots the fitted model of the CRBH E-value
+  based algorithm. In addition, users can filter the hit pairs prior to
+  CRBH fitting for other criteria like query coverage, protein identity
+  and/or the twilight zone of protein sequence alignments according to
+  Rost
+  (<xref alt="1999" rid="ref-rost1999twilight" ref-type="bibr">1999</xref>).
+  The implemented filter uses equation 2 (see
+  <xref alt="Rost, 1999" rid="ref-rost1999twilight" ref-type="bibr">Rost,
+  1999</xref>):</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[f(x_{\text{hit pair}}) = \begin{cases}
+  100 \text{ , for } L_{\text{hit pair}} < 11 \\
+  480 * L^{-0.32 * (1 + e^{\frac{-L}{1000}})} \text{ , for } L_{\text{hit pair}} \leq 450 \\
+  19.5 \text{ , for } L_{\text{hit pair}} > 450
+  \end{cases}]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mtext mathvariant="normal">hit pair</mml:mtext></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">{</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="left"><mml:mn>100</mml:mn><mml:mrow><mml:mspace width="0.333em"></mml:mspace><mml:mtext mathvariant="normal"> , for </mml:mtext><mml:mspace width="0.333em"></mml:mspace></mml:mrow><mml:msub><mml:mi>L</mml:mi><mml:mtext mathvariant="normal">hit pair</mml:mtext></mml:msub><mml:mo>&lt;</mml:mo><mml:mn>11</mml:mn></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="left"><mml:mn>480</mml:mn><mml:mo>*</mml:mo><mml:msup><mml:mi>L</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>0.32</mml:mn><mml:mo>*</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo>+</mml:mo><mml:msup><mml:mi>e</mml:mi><mml:mfrac><mml:mrow><mml:mo>−</mml:mo><mml:mi>L</mml:mi></mml:mrow><mml:mn>1000</mml:mn></mml:mfrac></mml:msup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:msup><mml:mrow><mml:mspace width="0.333em"></mml:mspace><mml:mtext mathvariant="normal"> , for </mml:mtext><mml:mspace width="0.333em"></mml:mspace></mml:mrow><mml:msub><mml:mi>L</mml:mi><mml:mtext mathvariant="normal">hit pair</mml:mtext></mml:msub><mml:mo>≤</mml:mo><mml:mn>450</mml:mn></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="left"><mml:mn>19.5</mml:mn><mml:mrow><mml:mspace width="0.333em"></mml:mspace><mml:mtext mathvariant="normal"> , for </mml:mtext><mml:mspace width="0.333em"></mml:mspace></mml:mrow><mml:msub><mml:mi>L</mml:mi><mml:mtext mathvariant="normal">hit pair</mml:mtext></mml:msub><mml:mo>&gt;</mml:mo><mml:mn>450</mml:mn></mml:mtd></mml:mtr></mml:mtable></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>where <inline-formula><alternatives>
+  <tex-math><![CDATA[x_{\text{hit pair}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>x</mml:mi><mml:mtext mathvariant="normal">hit pair</mml:mtext></mml:msub></mml:math></alternatives></inline-formula>
+  is the expected protein identity given the alignment length
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[L_{\text{hit pair}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>L</mml:mi><mml:mtext mathvariant="normal">hit pair</mml:mtext></mml:msub></mml:math></alternatives></inline-formula>.
+  If the actual protein identity of a hit pair exceeds the expected
+  protein identity (<inline-formula><alternatives>
+  <tex-math><![CDATA[pident_{\text{hit pair}} \geq f(x_{\text{hit pair}})]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mi>i</mml:mi><mml:mi>d</mml:mi><mml:mi>e</mml:mi><mml:mi>n</mml:mi><mml:msub><mml:mi>t</mml:mi><mml:mtext mathvariant="normal">hit pair</mml:mtext></mml:msub><mml:mo>≥</mml:mo><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mtext mathvariant="normal">hit pair</mml:mtext></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>),
+  it is retained for subsequent CRBH calculation.</p>
+  <p>In contrast to previous implementations,
+  <ext-link ext-link-type="uri" xlink:href="https://gitlab.gwdg.de/mpievolbio-it/crbhits">CRBHits</ext-link>
+  only take coding nucleotide sequences (CDS) as the query and target
+  inputs. This is due to the downstream functionality of
+  <ext-link ext-link-type="uri" xlink:href="https://gitlab.gwdg.de/mpievolbio-it/crbhits">CRBHits</ext-link>
+  to directly calculate codon alignments within R, which rely on CDS.
+  The inputs are translated into protein sequences, aligned globally
+  (<xref alt="Smith &amp; Waterman, 1981" rid="ref-smith1981identification" ref-type="bibr">Smith
+  &amp; Waterman, 1981</xref>) and converted into codon alignments.</p>
+  <p>Functions are completely coded in R and only the external
+  prerequisites
+  (<ext-link ext-link-type="uri" xlink:href="http://last.cbrc.jp/">LAST</ext-link>,
+  <ext-link ext-link-type="uri" xlink:href="https://sourceforge.net/projects/kakscalculator2/files/KaKs_Calculator2.0.tar.gz/download">KaKs_Calculator2.0</ext-link>
+  and
+  <ext-link ext-link-type="uri" xlink:href="http://dagchainer.sourceforge.net/">DAGchainer</ext-link>)
+  need to be compiled. However, all of them are forked within
+  <ext-link ext-link-type="uri" xlink:href="https://gitlab.gwdg.de/mpievolbio-it/crbhits">CRBHits</ext-link>
+  and can be easily build with the dedicated R functions
+  <monospace>make_last()</monospace>,
+  <monospace>make_KaKs_Calculator2()</monospace> and
+  <monospace>make_dagchainer()</monospace>. Further, users can create
+  their own RBH filters before CRBH calculation.</p>
+</sec>
+<sec id="functions-and-examples">
+  <title>Functions and Examples</title>
+  <p>The following example shows how to obtain CRBHit pairs between the
+  coding sequences of <italic>Schizosaccharomyces pombe</italic>
+  (fission yeast)
+  (<xref alt="Wood et al., 2012" rid="ref-wood2012pombase" ref-type="bibr">Wood
+  et al., 2012</xref>) and <italic>Nematostella vectensis</italic>
+  (starlet sea anemone)
+  (<xref alt="Apweiler et al., 2004" rid="ref-apweiler2004protein" ref-type="bibr">Apweiler
+  et al., 2004</xref>) by using two URLs as input strings and multiple
+  threads for calculation.</p>
+  <code language="r script">library(CRBHits)
+#set URLs for Schizosaccharomyces pombe (fission yeast)
+#and Nematostella vectensis (starlet sea anemone) from NCBI Genomes
+cds1.url &lt;- paste0(&quot;https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/002/945/&quot;,
+               &quot;GCF_000002945.1_ASM294v2/&quot;,
+               &quot;GCF_000002945.1_ASM294v2_cds_from_genomic.fna.gz&quot;)
+cds2.url &lt;- paste0(&quot;https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/209/225/&quot;,
+               &quot;GCF_000209225.1_ASM20922v1/&quot;,
+               &quot;GCF_000209225.1_ASM20922v1_cds_from_genomic.fna.gz&quot;)
+#calculate CBRBhit pairs
+cds1.cds2.crbh &lt;- cdsfile2rbh(cds1.url, cds2.url, longest.isoform = TRUE,
+                              isoform.source = &quot;NCBI&quot;, plotCurve = TRUE,
+                              threads = 8)
+#get help ?cdsfile2rbh</code>
+  <fig>
+    <caption><p>Accepted condition reciprocal best hits based on RBH
+    fitting.<styled-content id="figU003Acrbh"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="figure2.png" xlink:title="" />
+  </fig>
+  <p>The obtained CRBHit pairs can also be used to calculate synonymous
+  (Ks) and nonsynonymous (Ka) substitutions per hit pair using either
+  the model from Li
+  (<xref alt="1993" rid="ref-li1993unbiased" ref-type="bibr">1993</xref>)
+  or from Yang &amp; Nielsen
+  (<xref alt="2000" rid="ref-yang2000estimating" ref-type="bibr">2000</xref>).</p>
+  <code language="r script">#download and simultaneously get longest isoform for
+#Schizosaccharomyces pombe (fission yeast) and
+#Nematostella vectensis (starlet sea anemone)
+cds1 &lt;- isoform2longest(Biostrings::readDNAStringSet(cds1.url))
+cds2 &lt;- isoform2longest(Biostrings::readDNAStringSet(cds2.url))
+#calculate Ka/Ks values for each CRBHit pair
+cds1.cds2.kaks.Li &lt;- rbh2kaks(cds1.cds2.crbh, cds1, cds2,
+                              model = &quot;Li&quot;, threads = 8)
+cds1.cds2.kaks.YN &lt;- rbh2kaks(cds1.cds2.crbh, cds1, cds2,
+                              model = &quot;YN&quot;, threads = 8)
+                              
+#get help ?rbh2kaks</code>
+  <p>Given the annotated chromosomal gene positions it is also possible
+  to assign tandem duplicated genes per chromosome and directly compute
+  chains of syntenic genes via the use of the R external tool
+  <ext-link ext-link-type="uri" xlink:href="http://dagchainer.sourceforge.net/">DAGchainer</ext-link>(<xref alt="Haas et al., 2004" rid="ref-haas2004" ref-type="bibr">Haas
+  et al., 2004</xref>). Here, <italic>Arabidopsis thaliana</italic> is
+  compared to itself (so called selfblast) and syntenic groups
+  vsiualized by their Ks values.</p>
+  <code language="r script">#download and simultaneously get longest isoform for
+#Arabidopsis thaliana
+cds3.url &lt;- paste0(&quot;ftp://ftp.ensemblgenomes.org/pub/plants/release-48/fasta/&quot;,
+               &quot;arabidopsis_thaliana/cds/&quot;,
+               &quot;Arabidopsis_thaliana.TAIR10.cds.all.fa.gz&quot;)
+cds3 &lt;- isoform2longest(Biostrings::readDNAStringSet(cds3.url), &quot;ENSEMBL&quot;)
+#extract gene position and chromosomal gene order
+cds3.genepos &lt;- cds2genepos(cds3, source = &quot;ENSEMBL&quot;)
+#calculate CBRBhit pairs
+cds3.selfblast.crbh &lt;- cds2rbh(cds3, cds3, longest.isoform = TRUE,
+                               qcov = 0.5, rost1999 = TRUE,
+                               isoform.source = &quot;ENSEMBL&quot;, plotCurve = TRUE,
+                               threads = 8)
+#compute chains of syntenic genes and plot chr1, chr2, chr3, chr4, chr5
+cds3.selfblast.synteny &lt;- rbh2dagchainer(cds3.selfblast.crbh,
+                                         cds3.genepos, cds3.genepos,
+                                         plotDotPlot = TRUE,
+                                         select.chr = c(&quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;))
+#calculate Ka/Ks values for each CRBHit pair
+cds3.selfblast.kaks.Li &lt;- rbh2kaks(cds3.selfblast.crbh, cds3, cds3,
+                                   model = &quot;Li&quot;, threads = 8)
+
+#get help ?rbh2dagchainer
+#get help ?plot.dagchainer
+#get help ?plot.kaks</code>
+  <fig>
+    <caption><p>Selfblast CRBHit pair results for <italic>Arabidopsis
+    thaliana</italic>. (A) DAGchainer dotplot per chromosome colored by
+    syntenic group and (B) colored by Ks. (C) Histogram of Ks values
+    colored by syntenic
+    group.<styled-content id="figU003Asynteny"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="figure3.png" xlink:title="" />
+  </fig>
+  <table-wrap>
+    <caption>
+      <p>Performance comparison for CRBHit pair
+      (<italic>Schizosaccharomyces pombe</italic>
+      vs. <italic>Nematostella vectensis</italic>) and Ka/Ks
+      calculations (Intel Xeon CPU E5-2620 v3 @ 2.40GHz; 3411 hit pairs;
+      2 x
+      Threads).<styled-content id="tabU003Aperformance"></styled-content></p>
+    </caption>
+    <table>
+      <thead>
+        <tr>
+          <th>Number of Threads</th>
+          <th>1</th>
+          <th>2</th>
+          <th>4</th>
+          <th>8</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Runtime of CRBH(shmlast v1.6) in sec</td>
+          <td>36 (s)</td>
+          <td>24 (s)</td>
+          <td>18 (s)</td>
+          <td>16 (s)</td>
+        </tr>
+        <tr>
+          <td>Runtime of CRBH(CRBHits) in sec</td>
+          <td>18 (s)</td>
+          <td>10 (s)</td>
+          <td>7 (s)</td>
+          <td>6 (s)</td>
+        </tr>
+        <tr>
+          <td>Runtime of kaks.Li in sec</td>
+          <td>586 (s)</td>
+          <td>327 (s)</td>
+          <td>190 (s)</td>
+          <td>128 (s)</td>
+        </tr>
+        <tr>
+          <td>Runtime of kaks.YN in sec</td>
+          <td>667 (s)</td>
+          <td>361 (s)</td>
+          <td>202 (s)</td>
+          <td>133 (s)</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+</sec>
+<sec id="conclusions">
+  <title>Conclusions</title>
+  <p><ext-link ext-link-type="uri" xlink:href="https://gitlab.gwdg.de/mpievolbio-it/crbhits">CRBHits</ext-link>
+  implements CRBH in
+  <ext-link ext-link-type="uri" xlink:href="https://cran.r-project.org/">R</ext-link>
+  (see <xref alt="Figure 2" rid="figU003Acrbh">Figure 2</xref>), can be
+  used to calculate codon alignment based nucleotide diversities (Ka/Ks)
+  and synteny, in a multithreaded fashion (see
+  <xref alt="Table 1" rid="tabU003Aperformance">Table 1</xref>).</p>
+</sec>
+<sec id="availability">
+  <title>Availability</title>
+  <p><ext-link ext-link-type="uri" xlink:href="https://gitlab.gwdg.de/mpievolbio-it/crbhits">CRBHits</ext-link>
+  is an open source software made available under the MIT license. It
+  can be installed from its gitlab repository using the
+  <ext-link ext-link-type="uri" xlink:href="https://devtools.r-lib.org">devtools</ext-link>
+  package.</p>
+  <code language="r script">devtools::install_gitlab(&quot;mpievolbio-it/crbhits&quot;, 
+ host = &quot;https://gitlab.gwdg.de&quot;)&quot;, build_vignettes = TRUE)</code>
+  <p>The R package website, which contain a detailed HOWTO to install
+  the prerequisites (mentioned above) and package vignettes are
+  availbale at
+  <ext-link ext-link-type="uri" xlink:href="https://mpievolbio-it.pages.gwdg.de/crbhits">https://mpievolbio-it.pages.gwdg.de/crbhits</ext-link>.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-aubry2014deep">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Aubry</surname><given-names>Sylvain</given-names></name>
+          <name><surname>Kelly</surname><given-names>Steven</given-names></name>
+          <name><surname>Kümpers</surname><given-names>Britta MC</given-names></name>
+          <name><surname>Smith-Unna</surname><given-names>Richard D</given-names></name>
+          <name><surname>Hibberd</surname><given-names>Julian M</given-names></name>
+        </person-group>
+        <article-title>Deep Evolutionary Comparison of Gene Expression Identifies Parallel Recruitment of Trans-Factors in Two Independent Origins of C4 Photosynthesis</article-title>
+        <source>PLoS genetics</source>
+        <publisher-name>Public Library of Science</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>10</volume>
+        <issue>6</issue>
+        <pub-id pub-id-type="doi">10.1371/journal.pgen.1004365</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-scott2017shmlast">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Scott</surname><given-names>Camille</given-names></name>
+        </person-group>
+        <article-title>shmlast: An improved implementation of Conditional Reciprocal Best Hits with LAST and Python</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>2</volume>
+        <issue>9</issue>
+        <pub-id pub-id-type="doi">doi:10.21105/joss.00142</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kielbasa2011adaptive">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kiełbasa</surname><given-names>Szymon M</given-names></name>
+          <name><surname>Wan</surname><given-names>Raymond</given-names></name>
+          <name><surname>Sato</surname><given-names>Kengo</given-names></name>
+          <name><surname>Horton</surname><given-names>Paul</given-names></name>
+          <name><surname>Frith</surname><given-names>Martin C</given-names></name>
+        </person-group>
+        <article-title>Adaptive seeds tame genomic sequence comparison</article-title>
+        <source>Genome Research</source>
+        <publisher-name>Cold Spring Harbor Lab</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <volume>21</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1101/gr.113985.110</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-emms2015orthofinder">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Emms</surname><given-names>David M</given-names></name>
+          <name><surname>Kelly</surname><given-names>Steven</given-names></name>
+        </person-group>
+        <article-title>OrthoFinder: solving fundamental biases in whole genome comparisons dramatically improves orthogroup inference accuracy</article-title>
+        <source>Genome Biology</source>
+        <publisher-name>BioMed Central</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <volume>16</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1186/s13059-015-0721-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-rost1999twilight">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rost</surname><given-names>Burkhard</given-names></name>
+        </person-group>
+        <article-title>Twilight zone of protein sequence alignments</article-title>
+        <source>Protein Engineering</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="1999">1999</year>
+        <volume>12</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1093/protein/12.2.85</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-charif2007seqinr">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Charif</surname><given-names>Delphine</given-names></name>
+          <name><surname>Lobry</surname><given-names>Jean R</given-names></name>
+        </person-group>
+        <article-title>SeqinR 1.0-2: A Contributed Package to the R Project for Statistical Computing Devoted to Biological Sequences Retrieval and Analysis</article-title>
+        <source>Structural approaches to sequence evolution</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-540-35306-5_10</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-wang2010kaks_calculator">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wang</surname><given-names>Dapeng</given-names></name>
+          <name><surname>Zhang</surname><given-names>Yubin</given-names></name>
+          <name><surname>Zhang</surname><given-names>Zhang</given-names></name>
+          <name><surname>Zhu</surname><given-names>Jiang</given-names></name>
+          <name><surname>Yu</surname><given-names>Jun</given-names></name>
+        </person-group>
+        <article-title>KaKs_Calculator 2.0: A Toolkit Incorporating Gamma-Series Methods and Sliding Window Strategies</article-title>
+        <source>Genomics, Proteomics &amp; Bioinformatics</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <volume>8</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1016/S1672-0229(10)60008-3</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-li1993unbiased">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Li</surname><given-names>Wen-Hsiung</given-names></name>
+        </person-group>
+        <article-title>Unbiased estimation of the rates of synonymous and nonsynonymous substitution</article-title>
+        <source>Journal of Molecular Evolution</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="1993">1993</year>
+        <volume>36</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1007/BF02407308</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pages2017biostrings">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pagès</surname><given-names>H</given-names></name>
+          <name><surname>Aboyoun</surname><given-names>P</given-names></name>
+          <name><surname>Gentleman</surname><given-names>R</given-names></name>
+          <name><surname>DebRoy</surname><given-names>S</given-names></name>
+        </person-group>
+        <article-title>Biostrings: Efficient manipulation of biological strings</article-title>
+        <source>R package version</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>2</volume>
+        <issue>0</issue>
+        <pub-id pub-id-type="doi">10.18129/B9.bioc.Biostrings</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-yang2000estimating">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yang</surname><given-names>Ziheng</given-names></name>
+          <name><surname>Nielsen</surname><given-names>Rasmus</given-names></name>
+        </person-group>
+        <article-title>Estimating Synonymous and Nonsynonymous Substitution Rates Under Realistic Evolutionary Models</article-title>
+        <source>Molecular Biology and Evolution</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2000">2000</year>
+        <volume>17</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1093/oxfordjournals.molbev.a026236</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-team2013r">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>R Core Team</string-name>
+        </person-group>
+        <article-title>R: A language and environment for statistical computing</article-title>
+        <publisher-name>R Foundation for Statistical Computing</publisher-name>
+        <publisher-loc>Vienna, Austria</publisher-loc>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://www.r-project.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-apweiler2004protein">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Apweiler</surname><given-names>Rolf</given-names></name>
+          <name><surname>Bairoch</surname><given-names>Amos</given-names></name>
+          <name><surname>Wu</surname><given-names>Cathy H</given-names></name>
+        </person-group>
+        <article-title>Protein sequence databases</article-title>
+        <source>Current Opinion in Chemical Biology</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2004">2004</year>
+        <volume>8</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1016/j.cbpa.2003.12.004</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-wood2012pombase">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wood</surname><given-names>Valerie</given-names></name>
+          <name><surname>Harris</surname><given-names>Midori A</given-names></name>
+          <name><surname>McDowall</surname><given-names>Mark D</given-names></name>
+          <name><surname>Rutherford</surname><given-names>Kim</given-names></name>
+          <name><surname>Vaughan</surname><given-names>Brendan W</given-names></name>
+          <name><surname>Staines</surname><given-names>Daniel M</given-names></name>
+          <name><surname>Aslett</surname><given-names>Martin</given-names></name>
+          <name><surname>Lock</surname><given-names>Antonia</given-names></name>
+          <name><surname>Bähler</surname><given-names>Jürg</given-names></name>
+          <name><surname>Kersey</surname><given-names>Paul J</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>PomBase: A comprehensive online resource for fission yeast</article-title>
+        <source>Nucleic Acids Research</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>40</volume>
+        <issue>D1</issue>
+        <pub-id pub-id-type="doi">10.1093/nar/gkr853</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-altenhoff2019inferring">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Altenhoff</surname><given-names>Adrian M</given-names></name>
+          <name><surname>Glover</surname><given-names>Natasha M</given-names></name>
+          <name><surname>Dessimoz</surname><given-names>Christophe</given-names></name>
+        </person-group>
+        <article-title>Inferring Orthology and Paralogy</article-title>
+        <source>Evolutionary genomics</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <pub-id pub-id-type="doi">10.1007/978-1-4939-9074-0_5</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-altschul1990basic">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Altschul</surname><given-names>Stephen F</given-names></name>
+          <name><surname>Gish</surname><given-names>Warren</given-names></name>
+          <name><surname>Miller</surname><given-names>Webb</given-names></name>
+          <name><surname>Myers</surname><given-names>Eugene W</given-names></name>
+          <name><surname>Lipman</surname><given-names>David J</given-names></name>
+        </person-group>
+        <article-title>Basic local alignment search tool</article-title>
+        <source>Journal of Molecular Biology</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="1990">1990</year>
+        <volume>215</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1016/S0022-2836(05)80360-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kryazhimskiy2008population">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kryazhimskiy</surname><given-names>Sergey</given-names></name>
+          <name><surname>Plotkin</surname><given-names>Joshua B</given-names></name>
+        </person-group>
+        <article-title>The Population Genetics of dN/dS</article-title>
+        <source>PLoS Genetics</source>
+        <publisher-name>Public Library of Science</publisher-name>
+        <year iso-8601-date="2008">2008</year>
+        <volume>4</volume>
+        <issue>12</issue>
+        <pub-id pub-id-type="doi">10.1371/journal.pgen.1000304</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-smith1981identification">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Smith</surname><given-names>Temple F</given-names></name>
+          <name><surname>Waterman</surname><given-names>Michael S</given-names></name>
+        </person-group>
+        <article-title>Identification of common molecular subsequences</article-title>
+        <source>Journal of Molecular Biology</source>
+        <publisher-name>Elsevier Science</publisher-name>
+        <year iso-8601-date="1981">1981</year>
+        <volume>147</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1016/0022-2836(81)90087-5</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-haas2004">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Haas</surname><given-names>Brian J</given-names></name>
+          <name><surname>Delcher</surname><given-names>Arthur L</given-names></name>
+          <name><surname>Wortman</surname><given-names>Jennifer R</given-names></name>
+          <name><surname>Salzberg</surname><given-names>Steven L</given-names></name>
+        </person-group>
+        <article-title>DAGchainer: a tool for mining segmental genome duplications and synteny</article-title>
+        <source>Bioinformatics</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2004-07">2004</year><month>07</month>
+        <volume>20</volume>
+        <issue>18</issue>
+        <issn>1367-4803</issn>
+        <uri>https://doi.org/10.1093/bioinformatics/bth397</uri>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/bth397</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ohno1970evolution">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Ohno</surname><given-names>Susumu</given-names></name>
+        </person-group>
+        <source>Evolution by Gene Duplication</source>
+        <publisher-name>Springer Science &amp; Business Media</publisher-name>
+        <year iso-8601-date="1970">1970</year>
+        <uri>https://link.springer.com/book/10.1007/978-3-642-86659-3</uri>
+        <pub-id pub-id-type="doi">10.1007/978-3-642-86659-3</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

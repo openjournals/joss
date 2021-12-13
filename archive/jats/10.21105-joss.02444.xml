@@ -1,0 +1,943 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2444</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02444</article-id>
+<title-group>
+<article-title>TBFMM: A C++ generic and parallel fast multipole method
+library</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-0281-9709</contrib-id>
+<string-name>Berenger Bramas</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>CAMUS Team, Inria Nancy</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Strasbourg University</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>ICPS Team, ICube</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-03-26">
+<day>26</day>
+<month>3</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>56</issue>
+<fpage>2444</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>FMM</kwd>
+<kwd>OpenMP</kwd>
+<kwd>task-based</kwd>
+<kwd>HPC</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>TBFMM</monospace>, for task-based FMM, is a
+  high-performance package that implements the parallel fast multipole
+  method (FMM) in modern <monospace>C++17</monospace>. It implements
+  parallel strategies for multicore architectures, i.e. to run on a
+  single computing node. <monospace>TBFMM</monospace> was designed to be
+  easily customized thanks to <monospace>C++</monospace> templates and
+  fine control of the <monospace>C++</monospace> classes’
+  inter-dependencies. Users can implement new FMM kernels, new types of
+  interacting elements or even new parallelization strategies. As such,
+  it can be used as a simulation toolbox for scientists in physics or
+  applied mathematics. It enables users to perform simulations while
+  delegating the data structure, the algorithm and the parallelization
+  to the library. Besides, <monospace>TBFMM</monospace> can also provide
+  an interesting use case for the HPC research community regarding
+  parallelization, optimization and scheduling of applications handling
+  irregular data structures.</p>
+</sec>
+<sec id="background">
+  <title>Background</title>
+  <p>The fast multipole method
+  (<xref alt="Greengard &amp; Rokhlin, 1987" rid="ref-GREENGARD1987325" ref-type="bibr">Greengard
+  &amp; Rokhlin, 1987</xref>) has been classified as one of the most
+  important algorithms of the 20th century
+  (<xref alt="Cipra, 2000" rid="ref-cipra2000best" ref-type="bibr">Cipra,
+  2000</xref>). The FMM algorithm was designed to compute pair-wise
+  interactions between <monospace>N</monospace> particles, which belong
+  to the class of n-body problems. It reduces the complexity from a
+  quadratic (<monospace>N</monospace> elements interact with
+  <monospace>N</monospace> elements) to a quasi-linear complexity. The
+  central idea of the FMM is to avoid computing the interactions between
+  all the elements by approximating the interactions between elements
+  that are far enough. To make this possible, the algorithm requires the
+  potential of the interactions to decrease as the distance between
+  interacting elements increases. The algorithm also requires that the
+  kernel to approximate far interactions exists; providing an
+  approximation kernel for a physical equation can be challenging.
+  Internally, the FMM is usually implemented with a tree that is mapped
+  over the simulation box. A cell, i.e. a node of the tree, represents a
+  part of the simulation box and is used by the algorithm to factorize
+  the interactions between elements. The FMM was later extended for
+  different types of physical simulations and different approximation
+  kernels
+  (<xref alt="Barba &amp; Yokota, 2011" rid="ref-barba2011exafmm" ref-type="bibr">Barba
+  &amp; Yokota, 2011</xref>;
+  <xref alt="Blanchard et al., 2016" rid="ref-blanchard2016efficient" ref-type="bibr">Blanchard
+  et al., 2016</xref>;
+  <xref alt="Blanchard, Coulaud, &amp; Darve, 2015" rid="ref-blanchard2015fast" ref-type="bibr">Blanchard,
+  Coulaud, &amp; Darve, 2015</xref>;
+  <xref alt="Darve et al., 2013" rid="ref-darve2013optimizing" ref-type="bibr">Darve
+  et al., 2013</xref>;
+  <xref alt="Darve &amp; Havé, 2004" rid="ref-darve2004fast" ref-type="bibr">Darve
+  &amp; Havé, 2004</xref>;
+  <xref alt="Frangi et al., 2003" rid="ref-frangi2003coupled" ref-type="bibr">Frangi
+  et al., 2003</xref>;
+  <xref alt="Malhotra &amp; Biros, 2015" rid="ref-malhotra2015pvfmm" ref-type="bibr">Malhotra
+  &amp; Biros, 2015</xref>;
+  <xref alt="Pham et al., 2012" rid="ref-pham2012fast" ref-type="bibr">Pham
+  et al., 2012</xref>;
+  <xref alt="Sabariego et al., 2004" rid="ref-SABARIEGO2004403" ref-type="bibr">Sabariego
+  et al., 2004</xref>;
+  <xref alt="Vazquez Sabariego, 2004" rid="ref-sabariego2004fast" ref-type="bibr">Vazquez
+  Sabariego, 2004</xref>).</p>
+  <p>The FMM algorithm is based on six operators with names that respect
+  the format <monospace>X2Y</monospace>, where <monospace>X</monospace>
+  represents the source of the operator and <monospace>Y</monospace> the
+  destination. The operators are <monospace>P2M</monospace>,
+  <monospace>M2M</monospace>, <monospace>M2L</monospace>,
+  <monospace>L2L</monospace>, <monospace>L2P</monospace> and
+  <monospace>P2P</monospace>, where <monospace>P</monospace> means
+  particle, <monospace>M</monospace> multipole and
+  <monospace>L</monospace> local. The term particle is used for a legacy
+  reason, but it represents the basic interaction elements that interact
+  and for which we want to approximate the interactions. The multipole
+  part represents the aggregation of potential, i.e. it represents what
+  is emitted by a sub-part of the simulation box, whereas the local part
+  represents the outside that is emitted onto a sub-part of the
+  simulation box. The different operators are schematized in
+  <xref alt="Figure 1" rid="figU003Afmm">Figure 1</xref>.</p>
+  <fig>
+    <caption><p>Illustration of the FMM algorithm. (a,b,c) The building
+    of the octree. (d,e,f,g) The FMM algorithm and its operators.
+    <styled-content id="figU003Afmm"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="FMM.png" xlink:title="" />
+  </fig>
+  <p>Because the FMM is a fundamental building block for many types of
+  simulation, its parallelization has already been investigated. Some
+  strategies for parallelizing over multiple distributed memory nodes
+  have been developed using classical HPC technologies like
+  <monospace>MPI</monospace>
+  (<xref alt="Forum, 1994" rid="ref-10.5555U002F898758" ref-type="bibr">Forum,
+  1994</xref>) and fork-join threaded libraries
+  (<xref alt="Bérenger Bramas, 2016" rid="ref-bramas2016optimization" ref-type="bibr">Bérenger
+  Bramas, 2016</xref>). Using these technologies, different projects
+  have created FMM implementations that scale on thousands of computing
+  nodes
+  (<xref alt="Abduljabbar et al., 2019" rid="ref-doiU003A10.1137U002F18M1173599" ref-type="bibr">Abduljabbar
+  et al., 2019</xref>;
+  <xref alt="Lashuk et al., 2009" rid="ref-6375552" ref-type="bibr">Lashuk
+  et al., 2009</xref>;
+  <xref alt="Malhotra &amp; Biros, 2015" rid="ref-malhotra2015pvfmm" ref-type="bibr">Malhotra
+  &amp; Biros, 2015</xref>). However, when using a single node, it has
+  been demonstrated that fork-join schemes are less efficient than
+  task-based parallelization on multicore CPUs
+  (<xref alt="Emmanuel Agullo et al., 2014" rid="ref-doiU003A10.1137U002F130915662" ref-type="bibr">Emmanuel
+  Agullo et al., 2014</xref>). This is because some stages of the FMM
+  have a small degree of parallelism (for instance at the top of the
+  tree), while others have a high degree of parallelism. For instance,
+  the <monospace>P2P</monospace> in the direct pass has a significant
+  workload available from the early beginning of each iteration. The
+  task-based method can interleave the different operators, hence to
+  balance the workload across the processing units and to spread the
+  critical parts over time. Moreover, the task-based method is well
+  designed for handling heterogeneous architecture
+  (<xref alt="Emmanuel Agullo et al., 2016" rid="ref-doiU003A10.1002U002Fcpe.3723" ref-type="bibr">Emmanuel
+  Agullo et al., 2016</xref>) and has demonstrated a promising
+  performance on distributed memory platforms too
+  (<xref alt="Emmanuel Agullo et al., 2017" rid="ref-agulloU003Ahal-01387482" ref-type="bibr">Emmanuel
+  Agullo et al., 2017</xref>).</p>
+  <p>In a previous project called <monospace>ScalFMM</monospace>, we
+  have provided a new hierarchical data structure called group-tree (or
+  block-tree), which is an octree designed for the task-based method
+  (<xref alt="Bérenger Bramas, 2016" rid="ref-bramas2016optimization" ref-type="bibr">Bérenger
+  Bramas, 2016</xref>). The two main ideas behind this container are (1)
+  to allocate and manage several cells of the same level together to
+  control the granularity of the tasks, and (2) to store the symbolic
+  data, the multipole data, and the local data in a different memory
+  blocks. This allows us to move each block anywhere on the memory nodes
+  and to declare the dependencies on each sub-part.</p>
+  <p>A schematic view of the group-tree is given in
+  <xref alt="Figure 2" rid="figU003Ablocktree">Figure 2</xref>.</p>
+  <fig>
+    <caption><p>Group-tree schematic view. Several cells/leaves are
+    managed together inside a block. Also, the symbolic, multipole and
+    local data are allocated separately to allow declaring the data
+    accesses on each
+    sub-part.<styled-content id="figU003Ablocktree"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="grouptree.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>The FMM is a major algorithm but it remains rare to have it
+  included in HPC benchmarks when studying runtime systems, schedulers
+  or optimizers. The principal reason is that it is tedious to implement
+  and requires a significant programming effort when using the
+  task-based method together with the group-tree. However, it is an
+  interesting, if not unique, algorithm to study irregular/hierarchical
+  scientific method. For the same reason, it is difficult for
+  researchers in physics or applied mathematics to implement a complete
+  FMM library and to optimize it for modern hardware, especially if
+  their aim is to focus on approximation kernels. Therefore,
+  <monospace>TBFMM</monospace> can be useful for both communities.</p>
+  <p>Among the few existing FMM libraries,
+  <monospace>ScalFMM</monospace> is the closer package to
+  <monospace>TBFMM</monospace>. <monospace>ScalFMM</monospace> supports
+  lots of different parallel strategies, including fork-join
+  implementations, and it contains several experimental methods.
+  Consequently, <monospace>ScalFMM</monospace> has around 170K lines of
+  code, for only 50K for <monospace>TBFMM</monospace>. Moreover, it
+  needs several external dependencies and does not benefit from the new
+  standard <monospace>C++</monospace> features that could improve code
+  readability. Besides, it only works for 3D problems, whereas
+  <monospace>TBFMM</monospace>’s tree and algorithms supports any number
+  of dimensions. These have been the main motivations to re-implement a
+  lightweight FMM library from scratch that only supports task-based
+  parallelization.</p>
+  <p>However, the interface of the kernels is very similar in both
+  libraries, such that creating a kernel for
+  <monospace>ScalFMM</monospace> or <monospace>TBFMM</monospace> and
+  porting it to the other library is straightforward.</p>
+  <p><monospace>FMMTL</monospace>
+  (<xref alt="Cecka &amp; Layton, 2015" rid="ref-10.1007U002F978-3-319-10705-9_60" ref-type="bibr">Cecka
+  &amp; Layton, 2015</xref>) is another existing FMM library with a
+  generic <monospace>C++</monospace> design. Similar to
+  <monospace>TBFMM</monospace>, <monospace>FMMTL</monospace> works with
+  various types of kernels. However, it relies on a fork-join
+  parallelization strategy on top of <monospace>OpenMP</monospace> and
+  on the <monospace>Thrust</monospace> library to support GPUs. While
+  this approach is elegant and makes the code clean, it is also more
+  complex to fine tune the scheduling, the load balancing, and the data
+  movement.</p>
+</sec>
+<sec id="features">
+  <title>Features</title>
+  <sec id="genericity">
+    <title>Genericity</title>
+    <p><monospace>TBFMM</monospace> has a generic design thanks to the
+    heavy use of <monospace>C++</monospace> templates. Users must
+    provide arguments for the various template parameters of the main
+    classes. The tree and the kernel classes are independent of each
+    other and from the algorithm. The algorithm class needs the type of
+    the kernel as a template argument, and its core
+    <monospace>execute</monospace> method has to be templatized with the
+    type of the tree. The algorithm takes the elements from the tree and
+    passes them to the kernel, such that a kernel itself never accesses
+    the tree. This is illustrated by
+    <xref alt="Figure 3" rid="figU003Adesign">Figure 3</xref>.</p>
+    <fig>
+      <caption><p><monospace>TBFMM</monospace> design overview. Template
+      arguments must be used to ensure that the algorithm knows the
+      types of the tree and the kernel, and that the tree knows the
+      types of the cells/particles. The algorithm has to be selected
+      among different variants (sequential, parallel OpenMP, or parallel
+      SPETABARU).
+      <styled-content id="figU003Adesign"></styled-content></p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="./design.png" xlink:title="" />
+    </fig>
+  </sec>
+  <sec id="tree">
+    <title>Tree</title>
+    <p><monospace>TBFMM</monospace> uses the group-tree where several
+    cells of the same level are managed together. Users can select the
+    size of the groups, which impacts the size of the tasks, however,
+    <monospace>TBFMM</monospace> also provides a simple heuristic to
+    automatically find a size that should provide efficient executions.
+    Also, the tree class provides different methods to iterate on the
+    cells/leaves as any container, such that it is possible to work on
+    the elements of the tree with an abstraction mechanism and without
+    knowing how it is implemented internally.</p>
+  </sec>
+  <sec id="kernel">
+    <title>Kernel</title>
+    <p>As stated in the objectives, <monospace>TBFMM</monospace> is a
+    tool for scientists from physics and applied mathematics to create
+    new kernels. <monospace>TBFMM</monospace> offers a convenient way to
+    customize the kernel and to benefit from the underlying
+    parallelization engine automatically. With this aim, a user has to
+    create a new kernel that respects an interface, as described by the
+    package documentation. The current package contains two FMM kernels,
+    the <monospace>rotation</monospace> kernel based on the
+    rotation-based operators and the spherical harmonics
+    (<xref alt="Dachsel, 2006" rid="ref-doiU003A10.1063U002F1.2194548" ref-type="bibr">Dachsel,
+    2006</xref>;
+    <xref alt="Haigh, 2011" rid="ref-haigh2011implementation" ref-type="bibr">Haigh,
+    2011</xref>;
+    <xref alt="White &amp; Head‐Gordon, 1994" rid="ref-doiU003A10.1063U002F1.468354" ref-type="bibr">White
+    &amp; Head‐Gordon, 1994</xref>,
+    <xref alt="1996" rid="ref-doiU003A10.1063U002F1.472369" ref-type="bibr">1996</xref>),
+    and the <monospace>uniform</monospace> kernel based on Lagrange
+    interpolation
+    (<xref alt="Blanchard et al., 2016" rid="ref-blanchard2016efficient" ref-type="bibr">Blanchard
+    et al., 2016</xref>;
+    <xref alt="Blanchard, Coulaud, Darve, &amp; Bramas, 2015" rid="ref-blanchard2015hierarchical" ref-type="bibr">Blanchard,
+    Coulaud, Darve, &amp; Bramas, 2015</xref>;
+    <xref alt="Blanchard, Coulaud, &amp; Darve, 2015" rid="ref-blanchard2015fast" ref-type="bibr">Blanchard,
+    Coulaud, &amp; Darve, 2015</xref>).</p>
+  </sec>
+  <sec id="parallelization">
+    <title>Parallelization</title>
+    <p><monospace>TBFMM</monospace> has two task-based parallel
+    algorithms based on two runtime systems:
+    <monospace>OpenMP</monospace> version 4
+    (<xref alt="OpenMP Architecture Review Board, 2013" rid="ref-openmp4" ref-type="bibr">OpenMP
+    Architecture Review Board, 2013</xref>) and
+    <monospace>SPETABARU</monospace>
+    (<xref alt="Bérenger Bramas, 2019" rid="ref-10.7717U002Fpeerj-cs.183" ref-type="bibr">Bérenger
+    Bramas, 2019</xref>). Both are optional, such that the library can
+    be compiled even if the compiler does not support
+    <monospace>OpenMP</monospace> or if the <monospace>Git</monospace>
+    sub-module for <monospace>SPETABARU</monospace> has not been
+    activated. <monospace>OpenMP</monospace> is an API that evolves
+    slowly, which maintains backward compatibility and which is
+    implemented by different libraries that respect the standard. On the
+    other hand, <monospace>SPETABARU</monospace> is our task-based
+    runtime system that we use for research, and which continuously
+    evolves. The data accesses of the FMM operators in
+    <monospace>write</monospace> are usually commutative
+    (<xref alt="E. Agullo et al., 2017" rid="ref-7912335" ref-type="bibr">E.
+    Agullo et al., 2017</xref>). While <monospace>SPETABARU</monospace>
+    supports commutative <monospace>write</monospace> access,
+    <monospace>OpenMP</monospace> only supports it from version 5 with
+    the <monospace>mutexinout</monospace> data access.
+    <monospace>OpenMP</monospace> version 5 is currently not fully
+    supported by the compilers, however, when a compiler that supports
+    this access will be used with <monospace>TBFMM</monospace>, the
+    <monospace>mutexinout</monospace> will be activated
+    automatically.</p>
+  </sec>
+  <sec id="periodicity">
+    <title>Periodicity</title>
+    <p>The periodicity consists of considering that the simulation box
+    is repeated in all directions, as shown by
+    <xref alt="Figure 4" rid="figU003Aperiodicillu">Figure 4</xref>.
+    Computing the FMM algorithm with periodicity is usually done in two
+    steps. In the first one, the regular algorithm and tree are used.
+    When the algorithm needs cells outside of the boundaries, it selects
+    cells at the opposite side of the simulation box. While in the
+    second step, a numerical model is used to compute a potential that
+    represents the world outside the simulation box. Such a model could
+    be the Ewald summation
+    (<xref alt="Rokhlin &amp; Wandzura, 1994" rid="ref-407723" ref-type="bibr">Rokhlin
+    &amp; Wandzura, 1994</xref>).</p>
+    <fig>
+      <caption><p>In the periodic FMM, the simulation box is considered
+      to be in the middle of an infinite volume of the same kind.
+      <styled-content id="figU003Aperiodicillu"></styled-content></p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="periodicillu.png" xlink:title="" />
+    </fig>
+    <p>In <monospace>TBFMM</monospace>, we have implemented a different
+    approach, which is a pure algorithmic strategy
+    (<xref alt="Bérenger Bramas, 2016" rid="ref-bramas2016optimization" ref-type="bibr">Bérenger
+    Bramas, 2016</xref>). The idea is to consider that the real
+    simulation box is a sub-part of a larger simulation box, i.e. that
+    the real tree is a branch of a larger tree. Then, instead of
+    stopping the FMM algorithm at level 2, we continue up until the root
+    where the multipole part of the root represents the complete
+    simulation box. We use it by continuing the FMM algorithm partially
+    above the root, by aggregating the cells together multiple times. By
+    doing so, we have several advantages. This method needs nothing more
+    than an FMM kernel, which is expected to be the same as the one used
+    without periodicity. Therefore, the method is generic and can work
+    with any FMM kernel. Moreover, the accuracy of the method relies
+    fully on the FMM kernel.
+    <xref alt="Figure 5" rid="figU003Aperiodicmerge">Figure 5</xref>
+    shows how the simulation box is repeated with this method.</p>
+    <fig>
+      <caption><p>How the simulation box is repeated when using a
+      periodic FMM algorithm.
+      <styled-content id="figU003Aperiodicmerge"></styled-content></p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="periodicmerge.png" xlink:title="" />
+    </fig>
+  </sec>
+  <sec id="vectorization-inastemp">
+    <title>Vectorization (Inastemp)</title>
+    <p>When implementing a kernel, some parts can rely on well-optimized
+    numerical libraries, such as BLAS or FFTW, however, others might be
+    implemented directly in <monospace>C/C++</monospace>. In this case,
+    it usually provides a significant improvement in performance to
+    vectorize the code, which allows benefiting from the SIMD capability
+    of modern CPUs. With this aim, <monospace>TBFMM</monospace> can
+    include a vectorization library called
+    <monospace>Inastemp</monospace>
+    (<xref alt="Berenger Bramas, 2017" rid="ref-bramas2017inastemp" ref-type="bibr">Berenger
+    Bramas, 2017</xref>) by simply cloning the corresponding
+    <monospace>Git</monospace> sub-module. Using
+    <monospace>Inastemp</monospace>, it is possible to write a single
+    code with an abstract vector data type and to select at compile time
+    the desired instruction set depending on the CPU
+    (<monospace>SSE</monospace>, <monospace>AVX</monospace>,
+    <monospace>SVE</monospace>, etc.). In the current version of
+    <monospace>TBFMM</monospace>, the <monospace>P2P</monospace>
+    operator of the two kernels that are provided for demonstration is
+    vectorized with <monospace>Inastemp</monospace>.</p>
+  </sec>
+</sec>
+<sec id="performance">
+  <title>Performance</title>
+  <p>In <xref alt="Figure 6" rid="figU003Aperformance">Figure 6</xref>,
+  we provide the parallel efficiency of <monospace>TBFMM</monospace> for
+  a set of particles that are randomly distributed in a square
+  simulation box. The given results have been computed using the
+  <monospace>uniform</monospace> kernel and the two runtime systems
+  OpenMP (GNU libomp) and SPETABARU. Both implementation are similar;
+  they use the same input data, the same tasks, the same priorities. The
+  only differences are coming from the implementation of the runtime
+  systems, which impact the overhead, and the type of data access they
+  support. We recall that OpenMP 4.5 does not support
+  <monospace>mutexinout</monospace> for commutative data access. In our
+  case, the resulting degree of parallelism is then too limited to feed
+  all the available cores. This is already a problem with 2 threads, and
+  there is even no reduction in the execution time with more than 8
+  threads, which appears as a significant drop in the parallel
+  efficiency. Even so, we believe that it would be possible to improve
+  our OpenMP-based implementation by inserting the tasks differently.
+  Instead, we will wait that the OpenMP library implementations support
+  <monospace>mutexinout</monospace>.</p>
+  <fig>
+    <caption><p>Parallel efficiency for <monospace>TBFMM</monospace>
+    using the OpenMP and SPETABARU runtime systems, and the uniform
+    kernel (order = 8). Test cases: two simulations, of one and ten
+    million particles, randomly distributed in a cube. Hardware: 2 ×
+    Intel Xeon Gold 6240 CPU at 2.60GHz with 16 cores each and cache of
+    sizes L1/32K, L2/1024K, L3/25344K.
+    <styled-content id="figU003Aperformance"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="results_csv.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="conclusion-perspective">
+  <title>Conclusion &amp; Perspective</title>
+  <p><monospace>TBFMM</monospace> is a lightweight FMM library that
+  could be used for research in HPC and applied mathematics. We will
+  include it in our benchmarks to evaluate scheduling strategies, but
+  also to validate new approaches to develop numerical applications on
+  heterogeneous computing nodes. Indeed, we would like to offer an
+  elegant way for users to add GPU kernels while delegating most of the
+  complexity to <monospace>TBFMM</monospace> and
+  <monospace>SPETABARU</monospace>. We also plan to provide an
+  <monospace>MPI</monospace> version to support distributed memory
+  parallelization shortly.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>Acknowledgment: Experiments presented in this paper were carried
+  out using the PlaFRIM experimental testbed, supported by Inria, CNRS
+  (LABRI and IMB), Université de Bordeaux, Bordeaux INP and Conseil
+  Régional d’Aquitaine.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-GREENGARD1987325">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Greengard</surname><given-names>L</given-names></name>
+          <name><surname>Rokhlin</surname><given-names>V</given-names></name>
+        </person-group>
+        <article-title>A fast algorithm for particle simulations</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="1987">1987</year>
+        <volume>73</volume>
+        <issue>2</issue>
+        <issn>0021-9991</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/0021999187901409</uri>
+        <pub-id pub-id-type="doi">10.1016/0021-9991(87)90140-9</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-407723">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Rokhlin</surname><given-names>V.</given-names></name>
+          <name><surname>Wandzura</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>The fast multipole method for periodic structures</article-title>
+        <source>Proceedings of IEEE Antennas and Propagation Society International Symposium and URSI National Radio Science Meeting</source>
+        <year iso-8601-date="1994">1994</year>
+        <volume>1</volume>
+        <pub-id pub-id-type="doi">10.1109/aps.1994.407723</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-7912335">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Agullo</surname><given-names>E.</given-names></name>
+          <name><surname>Aumage</surname><given-names>O.</given-names></name>
+          <name><surname>Bramas</surname><given-names>B.</given-names></name>
+          <name><surname>Coulaud</surname><given-names>O.</given-names></name>
+          <name><surname>Pitoiset</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>Bridging the Gap Between OpenMP and Task-Based Runtime Systems for the Fast Multipole Method</article-title>
+        <source>IEEE Transactions on Parallel and Distributed Systems</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>28</volume>
+        <issue>10</issue>
+        <pub-id pub-id-type="doi">10.1109/tpds.2017.2697857</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-openmp4">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>OpenMP Architecture Review Board</string-name>
+        </person-group>
+        <article-title>OpenMP Application Program Interface</article-title>
+        <year iso-8601-date="2013-07">2013</year><month>07</month>
+        <uri>https://www.openmp.org/wp-content/uploads/OpenMP4.0.0.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-10.5555U002F898758">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Forum</surname><given-names>Message P</given-names></name>
+        </person-group>
+        <article-title>MPI: A Message-Passing Interface Standard</article-title>
+        <publisher-name>University of Tennessee</publisher-name>
+        <publisher-loc>USA</publisher-loc>
+        <year iso-8601-date="1994">1994</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-10.7717U002Fpeerj-cs.183">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bramas</surname><given-names>Bérenger</given-names></name>
+        </person-group>
+        <article-title>Increasing the degree of parallelism using speculative execution in task-based runtime systems</article-title>
+        <source>PeerJ Computer Science</source>
+        <year iso-8601-date="2019-03">2019</year><month>03</month>
+        <volume>5</volume>
+        <issn>2376-5992</issn>
+        <uri>https://doi.org/10.7717/peerj-cs.183</uri>
+        <pub-id pub-id-type="doi">10.7717/peerj-cs.183</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bramas2017inastemp">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bramas</surname><given-names>Berenger</given-names></name>
+        </person-group>
+        <article-title>Inastemp: A novel intrinsics-as-template library for portable SIMD-vectorization</article-title>
+        <source>Scientific Programming</source>
+        <publisher-name>Hindawi</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>2017</volume>
+        <pub-id pub-id-type="doi">10.1155/2017/5482468</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-agulloU003Ahal-01387482">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Agullo</surname><given-names>Emmanuel</given-names></name>
+          <name><surname>Bramas</surname><given-names>Bérenger</given-names></name>
+          <name><surname>Coulaud</surname><given-names>Olivier</given-names></name>
+          <name><surname>Khannouz</surname><given-names>Martin</given-names></name>
+          <name><surname>Stanisic</surname><given-names>Luka</given-names></name>
+        </person-group>
+        <article-title>Task-based fast multipole method for clusters of multicore processors</article-title>
+        <publisher-name>Inria Bordeaux Sud-Ouest</publisher-name>
+        <year iso-8601-date="2017-03">2017</year><month>03</month>
+        <uri>https://hal.inria.fr/hal-01387482</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-doiU003A10.1002U002Fcpe.3723">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Agullo</surname><given-names>Emmanuel</given-names></name>
+          <name><surname>Bramas</surname><given-names>Berenger</given-names></name>
+          <name><surname>Coulaud</surname><given-names>Olivier</given-names></name>
+          <name><surname>Darve</surname><given-names>Eric</given-names></name>
+          <name><surname>Messner</surname><given-names>Matthias</given-names></name>
+          <name><surname>Takahashi</surname><given-names>Toru</given-names></name>
+        </person-group>
+        <article-title>Task-based FMM for heterogeneous architectures</article-title>
+        <source>Concurrency and Computation: Practice and Experience</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>28</volume>
+        <issue>9</issue>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1002/cpe.3723</uri>
+        <pub-id pub-id-type="doi">10.1002/cpe.3723</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-doiU003A10.1137U002F130915662">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Agullo</surname><given-names>Emmanuel</given-names></name>
+          <name><surname>Bramas</surname><given-names>Bérenger</given-names></name>
+          <name><surname>Coulaud</surname><given-names>Olivier</given-names></name>
+          <name><surname>Darve</surname><given-names>Eric</given-names></name>
+          <name><surname>Messner</surname><given-names>Matthias</given-names></name>
+          <name><surname>Takahashi</surname><given-names>Toru</given-names></name>
+        </person-group>
+        <article-title>Task-Based FMM for Multicore Architectures</article-title>
+        <source>SIAM Journal on Scientific Computing</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>36</volume>
+        <issue>1</issue>
+        <uri> 
+                https://doi.org/10.1137/130915662
+            
+        </uri>
+        <pub-id pub-id-type="doi">10.1137/130915662</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bramas2016optimization">
+      <element-citation publication-type="thesis">
+        <person-group person-group-type="author">
+          <name><surname>Bramas</surname><given-names>Bérenger</given-names></name>
+        </person-group>
+        <article-title>Optimization and parallelization of the boundary element method for the wave equation in time domain</article-title>
+        <publisher-name>Bordeaux</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-cipra2000best">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cipra</surname><given-names>Barry A</given-names></name>
+        </person-group>
+        <article-title>The best of the 20th century: Editors name top 10 algorithms</article-title>
+        <source>SIAM news</source>
+        <year iso-8601-date="2000">2000</year>
+        <volume>33</volume>
+        <issue>4</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-blanchard2015fast">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Blanchard</surname><given-names>Pierre</given-names></name>
+          <name><surname>Coulaud</surname><given-names>Olivier</given-names></name>
+          <name><surname>Darve</surname><given-names>Eric</given-names></name>
+        </person-group>
+        <article-title>Fast hierarchical algorithms for generating Gaussian random fields</article-title>
+        <publisher-name>Inria Bordeaux Sud-Ouest</publisher-name>
+        <year iso-8601-date="2015-11">2015</year><month>11</month>
+        <uri>https://hal.inria.fr/hal-01228519</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-blanchard2016efficient">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Blanchard</surname><given-names>Pierre</given-names></name>
+          <name><surname>Coulaud</surname><given-names>Olivier</given-names></name>
+          <name><surname>Etcheverry</surname><given-names>Arnaud</given-names></name>
+          <name><surname>Dupuy</surname><given-names>Laurent</given-names></name>
+          <name><surname>Darve</surname><given-names>Eric</given-names></name>
+        </person-group>
+        <article-title>An Efficient Interpolation Based FMM for Dislocation Dynamics Simulations</article-title>
+        <source>Platform for Advanced Scientific Computing</source>
+        <publisher-name>USI and CSCS and EPFL</publisher-name>
+        <publisher-loc>Lausanne, Switzerland</publisher-loc>
+        <year iso-8601-date="2016-06">2016</year><month>06</month>
+        <uri>https://hal.archives-ouvertes.fr/hal-01334842</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-darve2013optimizing">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Darve</surname><given-names>Eric</given-names></name>
+          <name><surname>Messner</surname><given-names>Matthias</given-names></name>
+          <name><surname>Schanz</surname><given-names>Martin</given-names></name>
+          <name><surname>Coulaud</surname><given-names>Olivier</given-names></name>
+        </person-group>
+        <article-title>Optimizing the Black-box FMM for Smooth and Oscillatory Kernels</article-title>
+        <source>SIAM Conference on Computational Science and Engineering (SIAM CSE 2013)</source>
+        <publisher-loc>Boston, United States</publisher-loc>
+        <year iso-8601-date="2013-02">2013</year><month>02</month>
+        <uri>https://hal.inria.fr/hal-00799885</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-darve2004fast">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Darve</surname><given-names>Eric</given-names></name>
+          <name><surname>Havé</surname><given-names>Pascal</given-names></name>
+        </person-group>
+        <article-title>A fast multipole method for Maxwell equations stable at all frequencies</article-title>
+        <source>Philosophical Transactions of the Royal Society of London. Series A: Mathematical, Physical and Engineering Sciences</source>
+        <publisher-name>The Royal Society</publisher-name>
+        <year iso-8601-date="2004">2004</year>
+        <volume>362</volume>
+        <issue>1816</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-malhotra2015pvfmm">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Malhotra</surname><given-names>Dhairya</given-names></name>
+          <name><surname>Biros</surname><given-names>George</given-names></name>
+        </person-group>
+        <article-title>PVFMM: A parallel kernel independent FMM for particle and volume potentials</article-title>
+        <source>Communications in Computational Physics</source>
+        <publisher-name>Cambridge University Press</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <volume>18</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.4208/cicp.020215.150515sw</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-barba2011exafmm">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Barba</surname><given-names>L</given-names></name>
+          <name><surname>Yokota</surname><given-names>Rio</given-names></name>
+        </person-group>
+        <article-title>ExaFMM: An open source library for fast multipole methods aimed towards exascale systems</article-title>
+        <source>Boston: Boston University. Retrieved from barbagroup: http://barbagroup. bu. edu</source>
+        <year iso-8601-date="2011">2011</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-frangi2003coupled">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Frangi</surname><given-names>Attilio</given-names></name>
+          <name><surname>Faure-Ragani</surname><given-names>Paolo</given-names></name>
+          <name><surname>Ghezzi</surname><given-names>Luca</given-names></name>
+        </person-group>
+        <article-title>Coupled fast multipole method-finite element method for the analysis of magneto-mechanical problems</article-title>
+        <source>Proceedings of the sixth french national congress&quot; calcul des structures</source>
+        <year iso-8601-date="2003">2003</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-sabariego2004fast">
+      <element-citation publication-type="thesis">
+        <person-group person-group-type="author">
+          <name><surname>Vazquez Sabariego</surname><given-names>Ruth</given-names></name>
+        </person-group>
+        <article-title>The fast multipole method for electromagnetic field computation in numerical and physical hybrid systems</article-title>
+        <publisher-name>Université de Liège</publisher-name>
+        <year iso-8601-date="2004">2004</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-pham2012fast">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pham</surname><given-names>Anh Duc</given-names></name>
+          <name><surname>Mouhoubi</surname><given-names>Saida</given-names></name>
+          <name><surname>Bonnet</surname><given-names>Marc</given-names></name>
+          <name><surname>Chazallon</surname><given-names>Cyrille</given-names></name>
+        </person-group>
+        <article-title>Fast multipole method applied to Symmetric Galerkin boundary element method for 3D elasticity and fracture problems</article-title>
+        <source>Engineering analysis with boundary elements</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>36</volume>
+        <issue>12</issue>
+        <pub-id pub-id-type="doi">10.1016/j.enganabound.2012.07.004</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-blanchard2015hierarchical">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Blanchard</surname><given-names>Pierre</given-names></name>
+          <name><surname>Coulaud</surname><given-names>Olivier</given-names></name>
+          <name><surname>Darve</surname><given-names>E</given-names></name>
+          <name><surname>Bramas</surname><given-names>B</given-names></name>
+        </person-group>
+        <article-title>Hierarchical Randomized Low-Rank Approximations</article-title>
+        <source>SIAM Conference on Applied Linear Algebra (SIAM LA)</source>
+        <publisher-name>SIAM</publisher-name>
+        <publisher-loc>Atlanta, United States</publisher-loc>
+        <year iso-8601-date="2015-10">2015</year><month>10</month>
+        <uri>https://hal.archives-ouvertes.fr/hal-01255724</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-haigh2011implementation">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Haigh</surname><given-names>Andrew</given-names></name>
+        </person-group>
+        <article-title>Implementation of rotation-based operators for fast multipole method in X10</article-title>
+        <publisher-name>Austrailian National University</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-doiU003A10.1063U002F1.472369">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>White</surname><given-names>Christopher A.</given-names></name>
+          <name><surname>Head‐Gordon</surname><given-names>Martin</given-names></name>
+        </person-group>
+        <article-title>Rotating around the quartic angular momentum barrier in fast multipole method calculations</article-title>
+        <source>The Journal of Chemical Physics</source>
+        <year iso-8601-date="1996">1996</year>
+        <volume>105</volume>
+        <issue>12</issue>
+        <uri> 
+                https://doi.org/10.1063/1.472369
+            
+        </uri>
+        <pub-id pub-id-type="doi">10.1063/1.472369</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-doiU003A10.1063U002F1.468354">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>White</surname><given-names>Christopher A.</given-names></name>
+          <name><surname>Head‐Gordon</surname><given-names>Martin</given-names></name>
+        </person-group>
+        <article-title>Derivation and efficient implementation of the fast multipole method</article-title>
+        <source>The Journal of Chemical Physics</source>
+        <year iso-8601-date="1994">1994</year>
+        <volume>101</volume>
+        <issue>8</issue>
+        <uri> 
+                https://doi.org/10.1063/1.468354
+            
+        </uri>
+        <pub-id pub-id-type="doi">10.1063/1.468354</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-doiU003A10.1063U002F1.2194548">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dachsel</surname><given-names>Holger</given-names></name>
+        </person-group>
+        <article-title>Fast and accurate determination of the Wigner rotation matrices in the fast multipole method</article-title>
+        <source>The Journal of Chemical Physics</source>
+        <year iso-8601-date="2006">2006</year>
+        <volume>124</volume>
+        <issue>14</issue>
+        <uri> 
+                https://doi.org/10.1063/1.2194548
+            
+        </uri>
+        <pub-id pub-id-type="doi">10.1063/1.2194548</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SABARIEGO2004403">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sabariego</surname><given-names>R. V.</given-names></name>
+          <name><surname>Gyselinck</surname><given-names>J.</given-names></name>
+          <name><surname>Geuzaine</surname><given-names>C.</given-names></name>
+          <name><surname>Dular</surname><given-names>P.</given-names></name>
+          <name><surname>Legros</surname><given-names>W.</given-names></name>
+        </person-group>
+        <article-title>Application of the fast multipole method to hybrid finite element–boundary element models</article-title>
+        <source>Journal of Computational and Applied Mathematics</source>
+        <year iso-8601-date="2004">2004</year>
+        <volume>168</volume>
+        <issue>1</issue>
+        <issn>0377-0427</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S0377042703009841</uri>
+        <pub-id pub-id-type="doi">10.1016/j.cam.2003.12.011</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-6375552">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Lashuk</surname><given-names>I.</given-names></name>
+          <name><surname>Chandramowlishwaran</surname><given-names>A.</given-names></name>
+          <name><surname>Langston</surname><given-names>H.</given-names></name>
+          <name><surname>Nguyen</surname><given-names>T.</given-names></name>
+          <name><surname>Sampath</surname><given-names>R.</given-names></name>
+          <name><surname>Shringarpure</surname><given-names>A.</given-names></name>
+          <name><surname>Vuduc</surname><given-names>R.</given-names></name>
+          <name><surname>Ying</surname><given-names>L.</given-names></name>
+          <name><surname>Zorin</surname><given-names>D.</given-names></name>
+          <name><surname>Biros</surname><given-names>G.</given-names></name>
+        </person-group>
+        <article-title>A massively parallel adaptive fast-multipole method on heterogeneous architectures</article-title>
+        <source>Proceedings of the conference on high performance computing networking, storage and analysis</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume></volume>
+        <pub-id pub-id-type="doi">10.1145/1654059.1654118</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-doiU003A10.1137U002F18M1173599">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Abduljabbar</surname><given-names>Mustafa</given-names></name>
+          <name><surname>Farhan</surname><given-names>Mohammed Al</given-names></name>
+          <name><surname>Al-Harthi</surname><given-names>Noha</given-names></name>
+          <name><surname>Chen</surname><given-names>Rui</given-names></name>
+          <name><surname>Yokota</surname><given-names>Rio</given-names></name>
+          <name><surname>Bagci</surname><given-names>Hakan</given-names></name>
+          <name><surname>Keyes</surname><given-names>David</given-names></name>
+        </person-group>
+        <article-title>Extreme Scale FMM-Accelerated Boundary Integral Equation Solver for Wave Scattering</article-title>
+        <source>SIAM Journal on Scientific Computing</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>41</volume>
+        <issue>3</issue>
+        <uri> 
+                https://doi.org/10.1137/18M1173599
+            
+        </uri>
+        <pub-id pub-id-type="doi">10.1137/18M1173599</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-10.1007U002F978-3-319-10705-9_60">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Cecka</surname><given-names>Cris</given-names></name>
+          <name><surname>Layton</surname><given-names>Simon</given-names></name>
+        </person-group>
+        <article-title>FMMTL: FMM Template Library A Generalized Framework for Kernel Matrices</article-title>
+        <source>Numerical mathematics and advanced applications - ENUMATH 2013</source>
+        <person-group person-group-type="editor">
+          <name><surname>Abdulle</surname><given-names>Assyr</given-names></name>
+          <name><surname>Deparis</surname><given-names>Simone</given-names></name>
+          <name><surname>Kressner</surname><given-names>Daniel</given-names></name>
+          <name><surname>Nobile</surname><given-names>Fabio</given-names></name>
+          <name><surname>Picasso</surname><given-names>Marco</given-names></name>
+        </person-group>
+        <publisher-name>Springer International Publishing</publisher-name>
+        <publisher-loc>Cham</publisher-loc>
+        <year iso-8601-date="2015">2015</year>
+        <isbn>978-3-319-10705-9</isbn>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-10705-9_60</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

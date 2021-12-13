@@ -1,0 +1,777 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1603</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01603</article-id>
+<title-group>
+<article-title>containerit: Generating Dockerfiles for reproducible
+research with R</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-0024-5046</contrib-id>
+<string-name>Daniel Nüst</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-6837-9406</contrib-id>
+<string-name>Matthias Hinz</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Institute for Geoinformatics, University of Münster,
+Germany</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Professorship for Geoinformatics and Geodesy, Faculty of
+Agricultural and Environmental Sciences, University of Rostock,
+Germany</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-07-22">
+<day>22</day>
+<month>7</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>40</issue>
+<fpage>1603</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>containerisation</kwd>
+<kwd>Docker</kwd>
+<kwd>sandbox</kwd>
+<kwd>reproducibility</kwd>
+<kwd>reproducible research</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p><ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/Operating-system-level_virtualization">Linux
+  containers</ext-link> have become a promising tool to increase
+  transparency, portability, and reproducibility of research in several
+  domains and use cases: data science
+  (<xref alt="Boettiger, 2015" rid="ref-boettiger_introduction_2015" ref-type="bibr">Boettiger,
+  2015</xref>), software engineering research
+  (<xref alt="Cito &amp; Gall, 2016" rid="ref-cito_using_2016" ref-type="bibr">Cito
+  &amp; Gall, 2016</xref>), multi-step bioinformatics pipelines
+  (<xref alt="Kim et al., 2017" rid="ref-kim_bio-docklets_2017" ref-type="bibr">Kim
+  et al., 2017</xref>), standardised environments for exchangeable
+  software
+  (<xref alt="Belmann et al., 2015" rid="ref-belmann_bioboxes_2015" ref-type="bibr">Belmann
+  et al., 2015</xref>), computational archaeology
+  (<xref alt="Marwick, 2017" rid="ref-marwick_computational_2017" ref-type="bibr">Marwick,
+  2017</xref>), packaging algorithms
+  (<xref alt="Hosny et al., 2016" rid="ref-hosny_algorun_2016" ref-type="bibr">Hosny
+  et al., 2016</xref>), or geographic object-based image analysis
+  (<xref alt="Knoth &amp; Nüst, 2017" rid="ref-knoth_reproducibility_2017" ref-type="bibr">Knoth
+  &amp; Nüst, 2017</xref>). Running an analysis in a container increases
+  reliability of a workflow, as it can execute packaged code
+  independently of the author’s computer and its available
+  configurations and dependencies. However, capturing a computational
+  environment in containers can be complex, making container use
+  difficult for domain scientists with limited programming experience.
+  <monospace>containerit</monospace> opens up the advantages of
+  containerisation to a much larger user base by assisting researchers,
+  who are unfamiliar with Linux, command lines or containerisation, in
+  packaging workflows based on R
+  (<xref alt="R Core Team, 2018" rid="ref-r_2018" ref-type="bibr">R Core
+  Team, 2018</xref>) in container images by using only user-friendly R
+  commands.</p>
+  <p>Recently containerisation took off as a technology for packaging
+  applications and their dependencies for fast, scalable, and secure
+  <ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/Sandbox_%28computer_security%29">sandboxed</ext-link>
+  deployments in cloud-based infrastructures (cf.
+  <xref alt="Osnat, 2018" rid="ref-osnat_brief_2018" ref-type="bibr">Osnat,
+  2018</xref>). The most widely used containerisation software is
+  <ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/Docker_%28software%29">Docker</ext-link>
+  with the following core building blocks
+  (cf. <ext-link ext-link-type="uri" xlink:href="https://docs.docker.com/get-started/">Docker:
+  Get Started</ext-link>): The <italic>image</italic> is built from the
+  instructions in a recipe called <monospace>Dockerfile</monospace>. The
+  image is executed as a <italic>container</italic> using a
+  <italic>container runtime</italic>. An image can be moved between
+  systems as a file (image tarball) or based on an <italic>image
+  registry</italic>. A <monospace>Dockerfile</monospace> may use the
+  image created by another <monospace>Dockerfile</monospace> as the
+  starting point, a so-called <italic>base image</italic>. While
+  containers can be manually altered, the common practice is to conduct
+  all configurations with the scripts and instructions originating in
+  the <monospace>Dockerfile</monospace>.</p>
+  <p>An important advantage of containers over
+  <ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/Virtual_machine">virtual
+  machines</ext-link> is that their duality between recipe and image
+  provides and additional layer of transparency and safeguarding. The
+  <monospace>Dockerfile</monospace> and image can be published alongside
+  a scientific paper to support peer review and, to some extent,
+  preserve the original results
+  (<xref alt="Nüst et al., 2017" rid="ref-nust_opening_2017" ref-type="bibr">Nüst
+  et al., 2017</xref>). Even if an image cannot be executed or a
+  <monospace>Dockerfile</monospace> can no longer be built, the
+  instructions in the <monospace>Dockerfile</monospace> are
+  human-readable, and files in the image can be extracted to recreate an
+  environment that closely resembles the original. Further useful
+  features are (a) portability, thanks to a single runtime dependency,
+  which allows readers to explore an author’s virtual laboratory,
+  including complex dependencies or custom-made code, either on their
+  machines or in cloud-based infrastructures (e.g., by using Binder, see
+  <xref alt="Project Jupyter et al., 2018" rid="ref-jupyter_binder_2018" ref-type="bibr">Project
+  Jupyter et al., 2018</xref>), and (b) transparency, because an image’s
+  filesystem can be easily inspected. This way, containers can enable
+  verification of reproducibility and auditing without requiring
+  reviewers to manually download, install, and re-run analyses
+  (<xref alt="Beaulieu-Jones &amp; Greene, 2017" rid="ref-beaulieu-jones_reproducibility_2017" ref-type="bibr">Beaulieu-Jones
+  &amp; Greene, 2017</xref>).</p>
+  <p>Container preservation is an active field of research
+  (<xref alt="Emsley &amp; De Roure, 2018" rid="ref-emsley_framework_2018" ref-type="bibr">Emsley
+  &amp; De Roure, 2018</xref>;
+  <xref alt="Rechert et al., 2017" rid="ref-rechert_preserving_2017" ref-type="bibr">Rechert
+  et al., 2017</xref>). It is reasonable to assume that key stakeholders
+  interested in workflow preservation, such as universities or
+  scientific publishers, should be able to operate container runtimes on
+  a time scale comparable to data storage requirements by funding
+  agencies, e.g., 10 years in case of the
+  <ext-link ext-link-type="uri" xlink:href="http://www.dfg.de/en/research_funding/proposal_review_decision/applicants/research_data/index.html">German
+  DFG</ext-link> or
+  <ext-link ext-link-type="uri" xlink:href="https://epsrc.ukri.org/about/standards/researchdata/expectations/">British
+  EPSRC</ext-link>. To enable and leverage the stakeholders’
+  infrastructure, container creation must become easier and more
+  widespread.</p>
+</sec>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The package <monospace>containerit</monospace> automates the
+  generation of <monospace>Dockerfile</monospace>s for workflows in R,
+  based on images by the
+  <ext-link ext-link-type="uri" xlink:href="https://www.rocker-project.org/">Rocker
+  project</ext-link>
+  (<xref alt="Boettiger &amp; Eddelbuettel, 2017" rid="ref-RJ-2017-065" ref-type="bibr">Boettiger
+  &amp; Eddelbuettel, 2017</xref>). The core feature of
+  <monospace>containerit</monospace> is that it transforms the local
+  session information into a set of instructions which can be serialised
+  as a <monospace>Dockerfile</monospace>, as shown in the code snippet
+  below:</p>
+  <code language="r script">&gt; suppressPackageStartupMessages(library(&quot;containerit&quot;))
+&gt; my_dockerfile &lt;- containerit::dockerfile(from = utils::sessionInfo())
+&gt; print(my_dockerfile)
+FROM rocker/r-ver:3.5.2
+LABEL maintainer=&quot;daniel&quot;
+RUN export DEBIAN_FRONTEND=noninteractive; apt-get -y update \
+  &amp;&amp; apt-get install -y git-core \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    pandoc \
+    pandoc-citeproc
+RUN [&quot;install2.r&quot;, &quot;curl&quot;, &quot;digest&quot;, &quot;evaluate&quot;, &quot;formatR&quot;, \
+  &quot;futile.logger&quot;, &quot;futile.options&quot;, &quot;htmltools&quot;, &quot;jsonlite&quot;, \
+  &quot;knitr&quot;, &quot;lambda.r&quot;, &quot;magrittr&quot;, &quot;Rcpp&quot;, &quot;rjson&quot;, \
+  &quot;rmarkdown&quot;, &quot;rsconnect&quot;, &quot;semver&quot;, &quot;stevedore&quot;, &quot;stringi&quot;, \
+  &quot;stringr&quot;, &quot;xfun&quot;, &quot;yaml&quot;]
+WORKDIR /payload/
+CMD [&quot;R&quot;]</code>
+  <p>The created <monospace>Dockerfile</monospace> has installation
+  instructions for the loaded packages and their system dependencies. It
+  uses the <monospace>r-ver</monospace> stack of Rocker images, matching
+  the R version to the environment encountered locally by
+  <monospace>containerit</monospace>. These images use
+  <ext-link ext-link-type="uri" xlink:href="https://mran.microsoft.com/">MRAN</ext-link>
+  snapshots to control installed R package versions in a reproducible
+  way. The system dependencies required by these packages are identified
+  using the <monospace>sysreqs</monospace> package
+  (<xref alt="Csardi, 2019" rid="ref-csardi_sysreqs_2019" ref-type="bibr">Csardi,
+  2019</xref>) and the corresponding
+  <ext-link ext-link-type="uri" xlink:href="http://sysreqs.r-hub.io/">database
+  and API</ext-link>.</p>
+  <p><monospace>dockerfile(..)</monospace> is the package’s main user
+  function and accepts session information objects, session information
+  saved in a file, a set of R commands, an R script file, a
+  <ext-link ext-link-type="uri" xlink:href="https://cran.r-project.org/doc/manuals/r-release/R-exts.html#The-DESCRIPTION-file"><monospace>DESCRIPTION</monospace></ext-link>
+  file, or an R Markdown document
+  (<xref alt="Allaire et al., 2018" rid="ref-allaire_rmarkdown_2018" ref-type="bibr">Allaire
+  et al., 2018</xref>).
+  <ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/Static_program_analysis">Static
+  program analysis</ext-link> using the package
+  <monospace>automagic</monospace>
+  (<xref alt="Brokamp, 2017" rid="ref-brokamp_automagic_2017" ref-type="bibr">Brokamp,
+  2017</xref>) is used to increase the chances that the capturing
+  environment has all required packages available, such as when creating
+  Dockerfiles for R Markdown documents as a service
+  (<xref alt="Nüst, 2018" rid="ref-nust_reproducibility_2018" ref-type="bibr">Nüst,
+  2018</xref>). To capture the workflow environment,
+  <monospace>containerit</monospace> executes the whole workflow in a
+  new R session using the package <monospace>callr</monospace>
+  (<xref alt="Csárdi &amp; Chang, 2018" rid="ref-csardi_callr_2018" ref-type="bibr">Csárdi
+  &amp; Chang, 2018</xref>), because static program analysis can be
+  broken by using helper functions, such as
+  <monospace>xfun::pkg_attach()</monospace>
+  (<xref alt="Xie, 2018" rid="ref-xie_xfun_2018" ref-type="bibr">Xie,
+  2018</xref>), by unintended side effects, or by seemingly clever or
+  user-friendly yet customised ways of loeading packages (cf. first
+  lines in R script file <monospace>tgis_a_1579333_sm7524.r</monospace>
+  in
+  <ext-link ext-link-type="uri" xlink:href="https://doi.org/10.6084/m9.figshare.7757069.v1">https://doi.org/10.6084/m9.figshare.7757069.v1</ext-link>).
+  Further parameters for the function comprise, for example, image
+  metadata, base image, versioned installations, and filtering of R
+  packages already installed in the base image.</p>
+  <p>The package <monospace>containerit</monospace>‘s main contribution
+  is that it allows for automated capturing of runtime environments as
+  <monospace>Dockerfile</monospace>s based on literate programming
+  workflows
+  (<xref alt="Gentleman &amp; Lang, 2007" rid="ref-gentleman_statistical_2007" ref-type="bibr">Gentleman
+  &amp; Lang, 2007</xref>) to support reproducible research. Together
+  with <monospace>stevedore</monospace>
+  (<xref alt="FitzJohn, 2019" rid="ref-fitzjohn_stevedore_2019" ref-type="bibr">FitzJohn,
+  2019</xref>), <monospace>containerit</monospace> enables a completely
+  R-based creation and manipulation of Docker containers. Using
+  <monospace>containerit</monospace> only minimally affects researchers’
+  workflows because it can be applied after completing a workflow, while
+  at the same time the captured snapshots can enhance the scholarly
+  publication process (in particular review, interaction, and
+  preservation) and may form a basis for more reusable and transparent
+  publications. In the future, <monospace>containerit</monospace> may
+  support alternative container software such as Singularity
+  (<xref alt="Kurtzer et al., 2017" rid="ref-kurtzer_singularity_2017" ref-type="bibr">Kurtzer
+  et al., 2017</xref>), enable parametrisation of container executions
+  and pipelines as demonstrated by Kliko
+  (<xref alt="Molenaar et al., 2018" rid="ref-molenaar_klikoscientific_2018" ref-type="bibr">Molenaar
+  et al., 2018</xref>), or support proper accreditation of software
+  (<xref alt="Jones et al., 2017" rid="ref-codemeta" ref-type="bibr">Jones
+  et al., 2017</xref>;
+  <xref alt="Katz &amp; Chue Hong, 2018" rid="ref-katz_software_2018" ref-type="bibr">Katz
+  &amp; Chue Hong, 2018</xref>).</p>
+  <p><bold>Related Work</bold></p>
+  <p><ext-link ext-link-type="uri" xlink:href="https://github.com/rstudio/renv/"><monospace>renv</monospace></ext-link>
+  is an R package for managing reproducible environments for R providing
+  isolation, portability, and pinned versions of R packages, but it does
+  not handle system dependencies.
+  <ext-link ext-link-type="uri" xlink:href="https://expfactory.github.io/">The
+  Experiment Factory</ext-link> similarly focuses on ease of use for
+  creating <monospace>Dockerfile</monospace>s for behavioural
+  experiments, yet it uses a CLI-based interaction and generates extra
+  shell scripts to be included in the images.
+  <ext-link ext-link-type="uri" xlink:href="https://www.reprozip.org/">ReproZip</ext-link>
+  (<xref alt="Chirigati et al., 2016" rid="ref-ChirigatiRSF16" ref-type="bibr">Chirigati
+  et al., 2016</xref>) packages files identified by
+  <ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/Tracing_(software)">tracing</ext-link>
+  in a self-contained bundle, which can be unpacked to a Docker
+  container/<monospace>Dockerfile</monospace>. In the R domain, the
+  package <monospace>dockerfiler</monospace>
+  (<xref alt="Fay, 2018" rid="ref-fay_dockerfiler_2018" ref-type="bibr">Fay,
+  2018</xref>) provides an object-oriented API for manual Dockerfile
+  creation, and <monospace>liftr</monospace>
+  (<xref alt="Xiao, 2018" rid="ref-xiao_liftr_2018" ref-type="bibr">Xiao,
+  2018</xref>) creates a <monospace>Dockerfile</monospace> based on
+  fields added to the metadata header of an R Markdown document.
+  <monospace>automagic</monospace>
+  (<xref alt="Brokamp, 2017" rid="ref-brokamp_automagic_2017" ref-type="bibr">Brokamp,
+  2017</xref>),
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/Gueils/whales">Whales</ext-link>,
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/stencila/dockter/"><monospace>dockter</monospace></ext-link>,
+  and
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/jupyter/repo2docker"><monospace>repo2docker</monospace></ext-link>
+  use static program analysis to create environment descriptions from
+  common project configuration files for multiple programming languages.
+  Namely, <monospace>automagic</monospace> analyses R code and can store
+  dependencies in a bespoke
+  <ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/YAML">YAML</ext-link>
+  format. Whales and <monospace>dockter</monospace> provide different
+  formats, including <monospace>Dockerfile</monospace>. Finally,
+  <monospace>repo2docker</monospace> primarily creates containers for
+  interactive notebooks to run as a Binder
+  (<xref alt="Project Jupyter et al., 2018" rid="ref-jupyter_binder_2018" ref-type="bibr">Project
+  Jupyter et al., 2018</xref>) but does not actively expose a
+  <monospace>Dockerfile</monospace>. None of them apply the strict code
+  execution approach as <monospace>containerit</monospace> does.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This work is supported by the project
+  <ext-link ext-link-type="uri" xlink:href="https://o2r.info">Opening
+  Reproducible Research</ext-link>
+  (<ext-link ext-link-type="uri" xlink:href="https://www.uni-muenster.de/forschungaz/project/9520">Offene
+  Reproduzierbare Forschung</ext-link>) funded by the German Research
+  Foundation
+  (<ext-link ext-link-type="uri" xlink:href="http://dfg.de/">DFG</ext-link>)
+  under project numbers <monospace>PE 1632/10-1</monospace> and
+  <monospace>1632/17-1</monospace>.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-allaire_rmarkdown_2018">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Allaire</surname><given-names>JJ</given-names></name>
+          <name><surname>Xie</surname><given-names>Yihui</given-names></name>
+          <name><surname>McPherson</surname><given-names>Jonathan</given-names></name>
+          <name><surname>Luraschi</surname><given-names>Javier</given-names></name>
+          <name><surname>Ushey</surname><given-names>Kevin</given-names></name>
+          <name><surname>Atkins</surname><given-names>Aron</given-names></name>
+          <name><surname>Wickham</surname><given-names>Hadley</given-names></name>
+          <name><surname>Cheng</surname><given-names>Joe</given-names></name>
+          <name><surname>Chang</surname><given-names>Winston</given-names></name>
+          <name><surname>Iannone</surname><given-names>Richard</given-names></name>
+        </person-group>
+        <source>rmarkdown: Dynamic documents for R</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://rmarkdown.rstudio.com</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-beaulieu-jones_reproducibility_2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Beaulieu-Jones</surname><given-names>Brett K.</given-names></name>
+          <name><surname>Greene</surname><given-names>Casey S.</given-names></name>
+        </person-group>
+        <article-title>Reproducibility of computational workflows is automated using continuous analysis</article-title>
+        <source>Nature Biotechnology</source>
+        <year iso-8601-date="2017-03">2017</year><month>03</month>
+        <volume>advance online publication</volume>
+        <issn>1087-0156</issn>
+        <pub-id pub-id-type="doi">10.1038/nbt.3780</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-belmann_bioboxes_2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Belmann</surname><given-names>Peter</given-names></name>
+          <name><surname>Dröge</surname><given-names>Johannes</given-names></name>
+          <name><surname>Bremges</surname><given-names>Andreas</given-names></name>
+          <name><surname>McHardy</surname><given-names>Alice C.</given-names></name>
+          <name><surname>Sczyrba</surname><given-names>Alexander</given-names></name>
+          <name><surname>Barton</surname><given-names>Michael D.</given-names></name>
+        </person-group>
+        <article-title>Bioboxes: Standardised containers for interchangeable bioinformatics software</article-title>
+        <source>GigaScience</source>
+        <year iso-8601-date="2015-10">2015</year><month>10</month>
+        <volume>4</volume>
+        <issue>1</issue>
+        <issn>2047-217X</issn>
+        <pub-id pub-id-type="doi">10.1186/s13742-015-0087-0</pub-id>
+        <pub-id pub-id-type="pmid">26473029</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-boettiger_introduction_2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Boettiger</surname><given-names>Carl</given-names></name>
+        </person-group>
+        <article-title>An introduction to Docker for reproducible research, with examples from the R environment</article-title>
+        <source>ACM SIGOPS Operating Systems Review</source>
+        <year iso-8601-date="2015-01">2015</year><month>01</month>
+        <volume>49</volume>
+        <issue>1</issue>
+        <issn>01635980</issn>
+        <pub-id pub-id-type="doi">10.1145/2723872.2723882</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-RJ-2017-065">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Boettiger</surname><given-names>Carl</given-names></name>
+          <name><surname>Eddelbuettel</surname><given-names>Dirk</given-names></name>
+        </person-group>
+        <article-title>An Introduction to Rocker: Docker Containers for R</article-title>
+        <source>The R Journal</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>9</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.32614/RJ-2017-065</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-brokamp_automagic_2017">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Brokamp</surname><given-names>Cole</given-names></name>
+        </person-group>
+        <source>Automagic: Automagically document and install packages necessary to run R code</source>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://CRAN.R-project.org/package=automagic</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-ChirigatiRSF16">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Chirigati</surname><given-names>Fernando</given-names></name>
+          <name><surname>Rampin</surname><given-names>Rémi</given-names></name>
+          <name><surname>Shasha</surname><given-names>Dennis</given-names></name>
+          <name><surname>Freire</surname><given-names>Juliana</given-names></name>
+        </person-group>
+        <article-title>ReproZip: Computational reproducibility with ease</article-title>
+        <source>Proceedings of the 2016 international conference on management of data</source>
+        <publisher-name>ACM</publisher-name>
+        <publisher-loc>San Francisco, California, USA</publisher-loc>
+        <year iso-8601-date="2016">2016</year>
+        <isbn>978-1-4503-3531-7</isbn>
+        <pub-id pub-id-type="doi">10.1145/2882903.2899401</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-cito_using_2016">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Cito</surname><given-names>Jürgen</given-names></name>
+          <name><surname>Gall</surname><given-names>Harald C.</given-names></name>
+        </person-group>
+        <article-title>Using Docker Containers to Improve Reproducibility in Software Engineering Research</article-title>
+        <source>Proceedings of the 38th International Conference on Software Engineering Companion</source>
+        <publisher-name>ACM</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <isbn>978-1-4503-4205-6</isbn>
+        <pub-id pub-id-type="doi">10.1145/2889160.2891057</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-csardi_sysreqs_2019">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Csardi</surname><given-names>Gabor</given-names></name>
+        </person-group>
+        <source>Sysreqs: Install SystemRequirements of packages</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://github.com/r-hub/sysreqs</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-csardi_callr_2018">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Csárdi</surname><given-names>Gábor</given-names></name>
+          <name><surname>Chang</surname><given-names>Winston</given-names></name>
+        </person-group>
+        <source>Callr: Call R from R</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://CRAN.R-project.org/package=callr</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-emsley_framework_2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Emsley</surname><given-names>Iain</given-names></name>
+          <name><surname>De Roure</surname><given-names>David</given-names></name>
+        </person-group>
+        <article-title>A Framework for the Preservation of a Docker Container  International Journal of Digital Curation</article-title>
+        <source>International Journal of Digital Curation</source>
+        <year iso-8601-date="2018-04">2018</year><month>04</month>
+        <volume>12</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.2218/ijdc.v12i2.509</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-fay_dockerfiler_2018">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Fay</surname><given-names>Colin</given-names></name>
+        </person-group>
+        <source>Dockerfiler: Easy Dockerfile creation from R</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://CRAN.R-project.org/package=dockerfiler</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-fitzjohn_stevedore_2019">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>FitzJohn</surname><given-names>Rich</given-names></name>
+        </person-group>
+        <source>Stevedore: Docker client</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://CRAN.R-project.org/package=stevedore</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-gentleman_statistical_2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gentleman</surname><given-names>Robert</given-names></name>
+          <name><surname>Lang</surname><given-names>Duncan Temple</given-names></name>
+        </person-group>
+        <article-title>Statistical Analyses and Reproducible Research</article-title>
+        <source>Journal of Computational and Graphical Statistics</source>
+        <year iso-8601-date="2007-03">2007</year><month>03</month>
+        <volume>16</volume>
+        <issue>1</issue>
+        <issn>1061-8600</issn>
+        <uri>https://doi.org/10.1198/106186007X178663</uri>
+        <pub-id pub-id-type="doi">10.1198/106186007X178663</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hosny_algorun_2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hosny</surname><given-names>Abdelrahman</given-names></name>
+          <name><surname>Vera-Licona</surname><given-names>Paola</given-names></name>
+          <name><surname>Laubenbacher</surname><given-names>Reinhard</given-names></name>
+          <name><surname>Favre</surname><given-names>Thibauld</given-names></name>
+        </person-group>
+        <article-title>AlgoRun: A Docker-based packaging system for platform-agnostic implemented algorithms</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2016-08">2016</year><month>08</month>
+        <volume>32</volume>
+        <issue>15</issue>
+        <issn>1367-4803</issn>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btw120</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-codemeta">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Jones</surname><given-names>Matthew B</given-names></name>
+          <name><surname>Boettiger</surname><given-names>Carl</given-names></name>
+          <name><surname>Mayes</surname><given-names>Abby Cabunoc</given-names></name>
+          <string-name>Arfon Smith</string-name>
+          <name><surname>Slaughter</surname><given-names>Peter</given-names></name>
+          <name><surname>Niemeyer</surname><given-names>Kyle</given-names></name>
+          <name><surname>Gil</surname><given-names>Yolanda</given-names></name>
+          <name><surname>Fenner</surname><given-names>Martin</given-names></name>
+          <name><surname>Nowak</surname><given-names>Krzysztof</given-names></name>
+          <name><surname>Hahnel</surname><given-names>Mark</given-names></name>
+          <name><surname>Coy</surname><given-names>Luke</given-names></name>
+          <name><surname>Allen</surname><given-names>Alice</given-names></name>
+          <name><surname>Crosas</surname><given-names>Mercè</given-names></name>
+          <name><surname>Sands</surname><given-names>Ashley</given-names></name>
+          <name><surname>Hong</surname><given-names>Neil Chue</given-names></name>
+          <name><surname>Cruse</surname><given-names>Patricia</given-names></name>
+          <name><surname>Katz</surname><given-names>Dan</given-names></name>
+          <name><surname>Goble</surname><given-names>Carole</given-names></name>
+        </person-group>
+        <article-title>CodeMeta: An exchange schema for software metadata</article-title>
+        <publisher-name>KNB Data Repository</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://raw.githubusercontent.com/codemeta/codemeta/2.0/codemeta.jsonld</uri>
+        <pub-id pub-id-type="doi">10.5063/schema/codemeta-2.0</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-katz_software_2018">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Katz</surname><given-names>Daniel S.</given-names></name>
+          <name><surname>Chue Hong</surname><given-names>Neil P.</given-names></name>
+        </person-group>
+        <article-title>Software Citation in Theory and Practice</article-title>
+        <source>Mathematical Software – ICMS 2018</source>
+        <person-group person-group-type="editor">
+          <name><surname>Davenport</surname><given-names>James H.</given-names></name>
+          <name><surname>Kauers</surname><given-names>Manuel</given-names></name>
+          <name><surname>Labahn</surname><given-names>George</given-names></name>
+          <name><surname>Urban</surname><given-names>Josef</given-names></name>
+        </person-group>
+        <publisher-name>Springer International Publishing</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <isbn>978-3-319-96418-8</isbn>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-96418-8_34</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kim_bio-docklets_2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kim</surname><given-names>Baekdoo</given-names></name>
+          <name><surname>Ali</surname><given-names>Thahmina A.</given-names></name>
+          <name><surname>Lijeron</surname><given-names>Carlos</given-names></name>
+          <name><surname>Afgan</surname><given-names>Enis</given-names></name>
+          <name><surname>Krampis</surname><given-names>Konstantinos</given-names></name>
+        </person-group>
+        <article-title>Bio-Docklets: Virtualization Containers for Single-Step Execution of NGS Pipelines.</article-title>
+        <source>bioRxiv</source>
+        <year iso-8601-date="2017-03">2017</year><month>03</month>
+        <pub-id pub-id-type="doi">10.1101/116962</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-knoth_reproducibility_2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Knoth</surname><given-names>Christian</given-names></name>
+          <name><surname>Nüst</surname><given-names>Daniel</given-names></name>
+        </person-group>
+        <article-title>Reproducibility and Practical Adoption of GEOBIA with Open-Source Software in Docker Containers</article-title>
+        <source>Remote Sensing</source>
+        <year iso-8601-date="2017-03">2017</year><month>03</month>
+        <volume>9</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.3390/rs9030290</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kurtzer_singularity_2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kurtzer</surname><given-names>Gregory M.</given-names></name>
+          <name><surname>Sochat</surname><given-names>Vanessa</given-names></name>
+          <name><surname>Bauer</surname><given-names>Michael W.</given-names></name>
+        </person-group>
+        <article-title>Singularity: Scientific containers for mobility of compute</article-title>
+        <source>PLOS ONE</source>
+        <year iso-8601-date="2017-05">2017</year><month>05</month>
+        <volume>12</volume>
+        <issue>5</issue>
+        <issn>1932-6203</issn>
+        <pub-id pub-id-type="doi">10.1371/journal.pone.0177459</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-marwick_computational_2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Marwick</surname><given-names>Ben</given-names></name>
+        </person-group>
+        <article-title>Computational Reproducibility in Archaeological Research: Basic Principles and a Case Study of Their Implementation</article-title>
+        <source>Journal of Archaeological Method and Theory</source>
+        <year iso-8601-date="2017-06">2017</year><month>06</month>
+        <volume>24</volume>
+        <issue>2</issue>
+        <issn>1573-7764</issn>
+        <pub-id pub-id-type="doi">10.1007/s10816-015-9272-9</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-molenaar_klikoscientific_2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Molenaar</surname><given-names>G.</given-names></name>
+          <name><surname>Makhathini</surname><given-names>S.</given-names></name>
+          <name><surname>Girard</surname><given-names>J. N.</given-names></name>
+          <name><surname>Smirnov</surname><given-names>O.</given-names></name>
+        </person-group>
+        <article-title>Kliko—The scientific compute container format</article-title>
+        <source>Astronomy and Computing</source>
+        <year iso-8601-date="2018-10">2018</year><month>10</month>
+        <volume>25</volume>
+        <issn>2213-1337</issn>
+        <pub-id pub-id-type="doi">10.1016/j.ascom.2018.08.003</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-nust_reproducibility_2018">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Nüst</surname><given-names>Daniel</given-names></name>
+        </person-group>
+        <article-title>Reproducibility Service for Executable Research Compendia: Technical Specifications and Reference Implementation</article-title>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2018-12">2018</year><month>12</month>
+        <pub-id pub-id-type="doi">10.5281/zenodo.2203844</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-nust_opening_2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Nüst</surname><given-names>Daniel</given-names></name>
+          <name><surname>Konkol</surname><given-names>Markus</given-names></name>
+          <name><surname>Pebesma</surname><given-names>Edzer</given-names></name>
+          <name><surname>Kray</surname><given-names>Christian</given-names></name>
+          <name><surname>Schutzeichel</surname><given-names>Marc</given-names></name>
+          <name><surname>Przibytzin</surname><given-names>Holger</given-names></name>
+          <name><surname>Lorenz</surname><given-names>Jörg</given-names></name>
+        </person-group>
+        <article-title>Opening the Publication Process with Executable Research Compendia</article-title>
+        <source>D-Lib Magazine</source>
+        <year iso-8601-date="2017-01">2017</year><month>01</month>
+        <volume>23</volume>
+        <issue>1/2</issue>
+        <issn>1082-9873</issn>
+        <pub-id pub-id-type="doi">10.1045/january2017-nuest</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-osnat_brief_2018">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Osnat</surname><given-names>Rani</given-names></name>
+        </person-group>
+        <article-title>A Brief History of Containers: From the 1970s to 2017</article-title>
+        <year iso-8601-date="2018-03">2018</year><month>03</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-02-05">2019</year><month>02</month><day>05</day></date-in-citation>
+        <uri>https://blog.aquasec.com/a-brief-history-of-containers-from-1970s-chroot-to-docker-2016</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-jupyter_binder_2018">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <string-name>Project Jupyter et al.</string-name>
+        </person-group>
+        <article-title>Binder 2.0 - reproducible, interactive, sharable environments for science at scale</article-title>
+        <source>Proceedings of the 17th python in science conference</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://conference.scipy.org/proceedings/scipy2018/pdfs/project_jupyter.pdf</uri>
+        <pub-id pub-id-type="doi">10.25080/Majora-4af1f417-011</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-r_2018">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>R Core Team</string-name>
+        </person-group>
+        <source>R: A language and environment for statistical computing</source>
+        <publisher-name>R Foundation for Statistical Computing</publisher-name>
+        <publisher-loc>Vienna, Austria</publisher-loc>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://www.R-project.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-rechert_preserving_2017">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Rechert</surname><given-names>Klaus</given-names></name>
+          <name><surname>Liebetraut</surname><given-names>Thomas</given-names></name>
+          <name><surname>Kombrink</surname><given-names>Stefan</given-names></name>
+          <name><surname>Wehrle</surname><given-names>Dennis</given-names></name>
+          <name><surname>Mocken</surname><given-names>Susanne</given-names></name>
+          <name><surname>Rohland</surname><given-names>Maximilian</given-names></name>
+        </person-group>
+        <article-title>Preserving Containers</article-title>
+        <source>Forschungsdaten managen</source>
+        <person-group person-group-type="editor">
+          <name><surname>Kratzke</surname><given-names>Jonas</given-names></name>
+          <name><surname>Heuveline</surname><given-names>Vincent</given-names></name>
+        </person-group>
+        <year iso-8601-date="2017">2017</year>
+        <isbn>978-3-946531-75-3</isbn>
+        <pub-id pub-id-type="doi">10.11588/heibooks.285.377</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-xiao_liftr_2018">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Xiao</surname><given-names>Nan</given-names></name>
+        </person-group>
+        <source>Liftr: Containerize R Markdown documents for continuous reproducibility</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://CRAN.R-project.org/package=liftr</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-xie_xfun_2018">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Xie</surname><given-names>Yihui</given-names></name>
+        </person-group>
+        <source>Xfun: Miscellaneous functions by ’Yihui Xie’</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://CRAN.R-project.org/package=xfun</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

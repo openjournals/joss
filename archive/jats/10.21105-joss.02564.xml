@@ -1,0 +1,622 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2564</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02564</article-id>
+<title-group>
+<article-title>pyOptSparse: A Python framework for large-scale
+constrained nonlinear optimization of sparse systems</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-8856-9661</contrib-id>
+<string-name>Neil Wu</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Gaetan Kenway</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Charles A. Mader</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>John Jasa</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Joaquim R. R. A. Martins</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Aerospace Engineering, University of
+Michigan</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-07-08">
+<day>8</day>
+<month>7</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>54</issue>
+<fpage>2564</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>optimization</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>pyOptSparse is an optimization framework designed for constrained
+  nonlinear optimization of large sparse problems and provides a unified
+  interface for various gradient-free and gradient-based optimizers. By
+  using an object-oriented approach, the software maintains independence
+  between the optimization problem formulation and the implementation of
+  the specific optimizers. The code is MPI-wrapped to enable execution
+  of expensive parallel analyses and gradient evaluations, such as when
+  using computational fluid dynamics (CFD) simulations, which can
+  require hundreds of processors. The optimization history can be stored
+  in a database file, which can then be used both for post-processing
+  and restarting another optimization. A graphical user interface
+  application is provided to visualize the optimization history
+  interactively.</p>
+  <p>pyOptSparse considers optimization problems of the form where
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>
+  is the vector of design variables and <inline-formula><alternatives>
+  <tex-math><![CDATA[f(x)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  is a nonlinear objective function. <inline-formula><alternatives>
+  <tex-math><![CDATA[A]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>A</mml:mi></mml:math></alternatives></inline-formula>
+  is the linear constraint Jacobian, and <inline-formula><alternatives>
+  <tex-math><![CDATA[g(x)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>g</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  is the set of nonlinear constraint functions. At time of writing, the
+  latest released version of pyOptSparse is v2.2.0.</p>
+</sec>
+<sec id="features">
+  <title>Features</title>
+  <sec id="support-for-multiple-optimizers">
+    <title>Support for multiple optimizers</title>
+    <p>pyOptSparse provides built-in support for several popular
+    proprietary and open-source optimizers. Each optimizer usually has
+    its own way to specify the problem: It might require different
+    constraint ordering, have different ways of specifying equality
+    constraints, or use a sparse matrix format to represent the
+    constraint Jacobian. pyOptSparse provides a common Python interface
+    for the various optimizers that hides these differences from the
+    user. By isolating the optimization problem definition from the
+    optimizer, the user can easily switch between different optimizers
+    applied to the same optimization problem. The optimizer can be
+    switched by editing a single line of code.</p>
+    <p>Although pyOptSparse focuses primarily on large-scale
+    gradient-based optimization, it provides support for gradient-free
+    optimizers as well. Also, discrete variables, multi-objective, and
+    population-based optimizers are all supported. Because of the
+    object-oriented programming approach, it is also straightforward to
+    extend pyOptSparse to support any additional optimizers that are not
+    currently available. All of the features within pyOptSparse,
+    including problem scaling and optimization hot-start, are
+    automatically inherited when new optimizers are added.</p>
+  </sec>
+  <sec id="string-based-indexing">
+    <title>String-based indexing</title>
+    <p>Unlike many other publicly available optimization frameworks,
+    pyOptSparse is designed to handle large-scale optimizations, with a
+    focus on engineering applications. With thousands of design
+    variables and constraints, it is crucial to keep track of all values
+    during optimization correctly. pyOptSparse employs string-based
+    indexing to accomplish this. Instead of using a single flattened
+    array, the related design variables and constraints can be grouped
+    into separate arrays. These arrays are combined using an ordered
+    dictionary, where each group is identified by a unique key.
+    Similarly, the constraint Jacobian is represented by a nested
+    dictionary approach. This representation has several advantages:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p>The design variable and constraint values can be accessed
+        without knowing their global indices, which reduces possible
+        user error.</p>
+      </list-item>
+      <list-item>
+        <p>The global indices are also often optimizer-dependent and
+        this extra level of wrapping abstracts away
+        potentially-confusing differences between optimizers.</p>
+      </list-item>
+      <list-item>
+        <p>The constraint Jacobian can be computed and provided at the
+        sub-block level, leaving pyOptSparse to assemble the whole
+        Jacobian. This mimics the engineering workflow where different
+        tools often compute different sub-blocks of the Jacobian. The
+        user only has to ensure that the indices within each sub-block
+        are correct, and the rest is handled automatically.</p>
+      </list-item>
+    </list>
+  </sec>
+  <sec id="support-for-sparse-linear-and-nonlinear-constraints">
+    <title>Support for sparse linear and nonlinear constraints</title>
+    <p>One prominent feature of pyOptSparse is the support for sparse
+    constraints. When defining constraints, it is possible to provide
+    the sparsity pattern of the Jacobian. This can be done at the global
+    level by specifying which constraint groups are independent of which
+    design variable groups, thereby letting pyOptSparse know that the
+    corresponding sub-blocks of the Jacobian are always zero. For
+    nonzero sub-blocks, it is also possible to supply the sparsity
+    pattern of that sub-block, again using local indexing, such that the
+    actual derivative computation can use sparse matrices as well.</p>
+    <p>pyOptSparse also provides explicit support for linear constraints
+    since some optimizers provide special handling for these
+    constraints. In these cases, only the Jacobian and the bounds of the
+    constraint need to be supplied. The values and gradients of these
+    constraints do not need to be evaluated every iteration, since the
+    optimizer satisfies them internally.</p>
+  </sec>
+  <sec id="automatic-computation-of-derivatives">
+    <title>Automatic computation of derivatives</title>
+    <p>If analytic derivatives for the objective and constraint
+    functions are not available, pyOptSparse can automatically compute
+    them internally using finite differences or the complex-step method
+    (<xref alt="Martins et al., 2003" rid="ref-Martins2003" ref-type="bibr">Martins
+    et al., 2003</xref>). For finite differences, the user can use
+    forward or central differences, with either an absolute or relative
+    step size. Computing derivatives using finite differences can be
+    expensive, requiring <inline-formula><alternatives>
+    <tex-math><![CDATA[n]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>
+    extra evaluations for forward differences and
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[2n]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>2</mml:mn><mml:mi>n</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    for centered differences. Finite differences are also inaccurate due
+    to subtractive cancellation errors under finite precision
+    arithmetic. The complex-step method, on the other hand, avoids
+    subtractive cancellation errors. By using small enough steps, the
+    complex-step derivatives can be accurate to machine precision
+    (<xref alt="Martins et al., 2003" rid="ref-Martins2003" ref-type="bibr">Martins
+    et al., 2003</xref>). The user must make sure that the objective and
+    constraint functions can be evaluated correctly with complex design
+    variable values when using this feature.</p>
+  </sec>
+  <sec id="optimizer-independent-problem-scaling">
+    <title>Optimizer-independent problem scaling</title>
+    <p>pyOptSparse offers optimizer-independent scaling for individual
+    design variables, objective, and constraints. By separating the
+    optimization problem definition from the particular optimizer,
+    pyOptSparse can apply the scaling automatically and consistently
+    with any supported optimizer. Since the optimization problem is
+    always defined in the physical, user-defined space, the bounds on
+    the design variables and constraints do not need to be modified when
+    applying a different scaling. Furthermore, for gradient-based
+    optimizers, all the derivatives are scaled automatically and
+    consistently without any effort from the user. The user only needs
+    to pass in a <monospace>scale</monospace> option when defining
+    design variables, objective, and constraints. This is particularly
+    useful in engineering applications, where the physical quantities
+    can sometimes cause undesirable problem scaling, which leads to poor
+    optimization convergence. pyOptSparse allows the user to adjust
+    problem scaling for each design variable, constraint, and objective
+    separately, without needing to change the bound specification or
+    derivative computation.</p>
+  </sec>
+  <sec id="parallel-execution">
+    <title>Parallel execution</title>
+    <p>pyOptSparse can use MPI to execute function evaluations in
+    parallel, in three distinct ways. Firstly and most commonly, it can
+    perform parallel function evaluations when the functions themselves
+    require multiple processors. This is usually the case when
+    performing large-scale optimizations, where the objective and
+    constraint functions are the result of a complex analysis, such as
+    computational fluid dynamic simulations. In this scenario,
+    pyOptSparse can be executed with multiple processors, where all
+    processors perform the function evaluation, but only the root
+    processor runs the optimizer itself. That way, we avoid the scenario
+    where each processor runs an independent copy of the optimizer,
+    potentially causing inconsistencies or processor locking.</p>
+    <p>Secondly, it is possible to perform parallel gradient evaluation
+    when automatic finite-difference or complex-step derivatives are
+    computed. If the function evaluation only requires a single
+    processor, it is possible to call pyOptSparse with multiple
+    processors so that each point in the finite-difference stencil is
+    evaluated in parallel, reducing the wall time for derivative
+    computations.</p>
+    <p>Lastly, some population-based optimizers may support parallel
+    function evaluation for each optimizer iteration. In the case of a
+    genetic algorithm or particle swarm optimization, multiple function
+    evaluations are required at each optimizer iteration. These
+    evaluations can be done in parallel if multiple processors are
+    available and the functions only require a single processor to
+    execute. However, the support and implementation of this mechanism
+    is optimizer-dependent.</p>
+  </sec>
+  <sec id="leveraging-the-history-file-visualization-and-restart">
+    <title>Leveraging the history file: visualization and
+    restart</title>
+    <p>pyOptSparse can store an optimization history file using its own
+    format based on SQLite. The history file contains the design
+    variables and function values for each optimizer iteration, along
+    with some metadata such as optimizer options. This file can then be
+    visualized using OptView, a graphical user interface application
+    provided by pyOptSparse. Alternatively, users can manually
+    post-process results by using an API designed to query the history
+    file and access the optimization history to generate plots.</p>
+    <p>The history file also enables two types of optimization restarts.
+    A <italic>cold start</italic> merely sets the initial design
+    variables to the previous optimization’s final design variables. A
+    <italic>hot start</italic>, on the other hand, initializes the
+    optimizer with the full state by replaying the previous optimization
+    history. For a deterministic optimizer, the hot start generates the
+    same sequence of iterates as long as the functions and gradients
+    remain the same. For each iteration, pyOptSparse retrieves the
+    previously-evaluated quantities and provides them to the optimizer
+    without actually calling the objective and constraint functions,
+    allowing us to exactly retrace the previous optimization and
+    generate the same state within the optimizer in a non-intrusive
+    fashion. This feature is particularly useful if the objective
+    function is expensive to evaluate and the previous optimization was
+    terminated due to problems such as reaching the maximum iteration
+    limit. In this case, the full state within the optimizer can be
+    regenerated through the hot start process so that the optimization
+    can continue without performance penalties.</p>
+  </sec>
+</sec>
+<sec id="simple-optimization-script">
+  <title>Simple optimization script</title>
+  <p>To highlight some of the features discussed above, we present the
+  pyOptSparse script to solve a toy problem involving six design
+  variables split into two groups, <inline-formula><alternatives>
+  <tex-math><![CDATA[x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[y]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>y</mml:mi></mml:math></alternatives></inline-formula>.
+  We also add two nonlinear constraints, one linear constraint, and
+  design variable bounds. The optimization problem is as follows: </p>
+  <p>The sparsity structure of the constraint Jacobian is shown
+  below:</p>
+  <preformat>                 x (2)   y (4)
+               +---------------+
+       con (2) |   X   |       |
+               -----------------
+lin_con(L) (1) |       |   X   |
+               +---------------+</preformat>
+  <p>This allows us to only specify derivatives for the two nonzero
+  sub-blocks. For simplicity, we supply the linear Jacobian explicitly
+  and use the complex-step method to compute the derivatives for the
+  nonlinear constraints automatically.</p>
+  <p>We first define the imports and the objective function.</p>
+  <code language="python">import numpy as np
+from pyoptsparse import Optimization, OPT
+
+def objfunc(xdict):
+    x = xdict[&quot;x&quot;]
+    y = xdict[&quot;y&quot;]
+    funcs = {}
+    funcs[&quot;obj&quot;] = x[0] + x[1] ** 3 + np.sum(np.power(y, 2))
+    funcs[&quot;con&quot;] = np.zeros(2, np.complex)
+    funcs[&quot;con&quot;][0] = x[0] * x[1]
+    funcs[&quot;con&quot;][1] = 3 * x[0] - np.sin(x[1])
+    fail = False
+    return funcs, fail</code>
+  <p>Only the nonlinear constraints need to be evaluated here. Next, we
+  set up the optimization problem, including design variables,
+  objective, and constraints.</p>
+  <code language="python"># Optimization Object
+optProb = Optimization(&quot;Example Optimization&quot;, objfunc)
+
+# Design Variables
+nx = 2
+lower = [-10, -10]
+upper = [10, 100]
+value = [-5, 6]
+optProb.addVarGroup(&quot;x&quot;, nx, lower=lower, upper=upper, value=value)
+ny = 4
+optProb.addVarGroup(&quot;y&quot;, ny, lower=-10, upper=None, value=0)
+
+# Nonlinear constraints
+ncons = 2
+lower = [-10, -10]
+upper = [None, 10]
+optProb.addConGroup(&quot;con&quot;, ncons, wrt=&quot;x&quot;, lower=lower, upper=upper)
+# Linear constraint
+jac = np.zeros((1, ny))
+jac[0, 0] = 1
+jac[0, 1] = -2
+optProb.addConGroup(
+    &quot;lin_con&quot;, 1, lower=5, upper=5, wrt=&quot;y&quot;, jac={&quot;y&quot;: jac}, linear=True
+)
+# Objective
+optProb.addObj(&quot;obj&quot;)</code>
+  <p>By using the <monospace>wrt</monospace> argument when adding
+  constraints, we tell pyOptSparse that only the specified sub-blocks of
+  the Jacobian are nonzero.</p>
+  <p>The linear Jacobian for this problem is which we construct as
+  <monospace>jac</monospace> and pass to pyOptSparse. For large
+  optimization problems, the Jacobian can be constructed using sparse
+  matrices.</p>
+  <p>Finally, we set up SLSQP
+  (<xref alt="Kraft, 1988" rid="ref-Kraft1988a" ref-type="bibr">Kraft,
+  1988</xref>) as the optimizer and solve the optimization problem.</p>
+  <code language="python"># Optimizer
+opt = OPT(&quot;SLSQP&quot;, options={})
+
+# Optimize
+sol = opt(optProb, sens=&quot;CS&quot;)
+print(sol)</code>
+  <p>For more extensive examples and API documentation, please refer to
+  the documentation site for pyOptSparse</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>pyOptSparse is a fork of pyOpt
+  (<xref alt="Perez et al., 2012" rid="ref-Perez2012" ref-type="bibr">Perez
+  et al., 2012</xref>). As the name suggests, its primary motivation is
+  to support sparse linear and nonlinear constraints in gradient-based
+  optimization. This sets pyOptSparse apart from other optimization
+  frameworks, such as SciPy
+  (<xref alt="Virtanen et al., 2020" rid="ref-SciPy" ref-type="bibr">Virtanen
+  et al., 2020</xref>) and NLopt
+  (<xref alt="Johnson, 2020" rid="ref-NLopt" ref-type="bibr">Johnson,
+  2020</xref>), which do not provide the same level of support for
+  sparse constraints. By using string-based indexing, different
+  sub-blocks of the constraint Jacobian can be computed by separate
+  engineering tools, and assembled automatically by pyOptSparse in a
+  sparse fashion. In addition, other frameworks do not offer convenience
+  features, such as user-supplied optimization problem scaling,
+  optimization hot-start, or post-processing utilities. Although
+  pyOptSparse is a general optimization framework, it is tailored to
+  gradient-based optimizations of large-scale problems with sparse
+  constraints.</p>
+  <p>pyOptSparse has been used extensively in engineering applications,
+  particularly in multidisciplinary design optimization. Researchers
+  have used it to perform aerodynamic shape optimization of aircraft
+  wings
+  (<xref alt="Secco &amp; Martins, 2019" rid="ref-Secco2019" ref-type="bibr">Secco
+  &amp; Martins, 2019</xref>), wind turbines
+  (<xref alt="Madsen et al., 2019" rid="ref-Madsen2019" ref-type="bibr">Madsen
+  et al., 2019</xref>), and aerostructural optimization of an entire
+  aircraft
+  (<xref alt="Brooks et al., 2018" rid="ref-Brooks2018" ref-type="bibr">Brooks
+  et al., 2018</xref>). pyOptSparse is also supported by OpenMDAO
+  (<xref alt="Gray et al., 2019" rid="ref-Gray2019" ref-type="bibr">Gray
+  et al., 2019</xref>), a popular Python framework for multidisciplinary
+  analysis and optimization. Through OpenMDAO, pyOptSparse has been
+  applied to problems such as low-fidelity aerostructural wing design
+  (<xref alt="Chauhan &amp; Martins, 2018" rid="ref-Chauhan2018" ref-type="bibr">Chauhan
+  &amp; Martins, 2018</xref>) and aeropropulsive optimization of a
+  boundary-layer ingestion propulsor
+  (<xref alt="Gray &amp; Martins, 2018" rid="ref-Gray2018" ref-type="bibr">Gray
+  &amp; Martins, 2018</xref>).</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We acknowledge the original pyOpt developers’ efforts, notably
+  Ruben E. Perez and Peter W. Jansen, who helped lay the code’s
+  foundation. We also acknowledge the numerous pyOptSparse users who
+  have contributed to the code over the years.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Perez2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Perez</surname><given-names>Ruben E.</given-names></name>
+          <name><surname>Jansen</surname><given-names>Peter W.</given-names></name>
+          <name><surname>Martins</surname><given-names>Joaquim R. R. A.</given-names></name>
+        </person-group>
+        <article-title>pyOpt: A Python-based object-oriented framework for nonlinear constrained optimization</article-title>
+        <source>Structural and Multidisciplinary Optimization</source>
+        <year iso-8601-date="2012">2012</year>
+        <volume>45</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1007/s00158-011-0666-3</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Brooks2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Brooks</surname><given-names>Timothy R.</given-names></name>
+          <name><surname>Kenway</surname><given-names>Gaetan K. W.</given-names></name>
+          <name><surname>Martins</surname><given-names>Joaquim R. R. A.</given-names></name>
+        </person-group>
+        <article-title>Benchmark aerostructural models for the study of transonic aircraft wings</article-title>
+        <source>AIAA Journal</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>56</volume>
+        <issue>7</issue>
+        <pub-id pub-id-type="doi">10.2514/1.J056603</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Secco2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Secco</surname><given-names>Ney R.</given-names></name>
+          <name><surname>Martins</surname><given-names>Joaquim R. R. A.</given-names></name>
+        </person-group>
+        <article-title>RANS-based aerodynamic shape optimization of a strut-braced wing with overset meshes</article-title>
+        <source>Journal of Aircraft</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>56</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.2514/1.C034934</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Madsen2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Madsen</surname><given-names>Mads H. Aa.</given-names></name>
+          <name><surname>Zahle</surname><given-names>Frederik</given-names></name>
+          <name><surname>Sørensen</surname><given-names>Niels N.</given-names></name>
+          <name><surname>Martins</surname><given-names>Joaquim R. R. A.</given-names></name>
+        </person-group>
+        <article-title>Multipoint high-fidelity CFD-based aerodynamic shape optimization of a 10 MW wind turbine</article-title>
+        <source>Wind Energy Science</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>4</volume>
+        <pub-id pub-id-type="doi">10.5194/wes-4-163-2019</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Gray2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gray</surname><given-names>Justin S.</given-names></name>
+          <name><surname>Hwang</surname><given-names>John T.</given-names></name>
+          <name><surname>Martins</surname><given-names>Joaquim R. R. A.</given-names></name>
+          <name><surname>Moore</surname><given-names>Kenneth T.</given-names></name>
+          <name><surname>Naylor</surname><given-names>Bret A.</given-names></name>
+        </person-group>
+        <article-title>OpenMDAO: An open-source framework for multidisciplinary design, analysis, and optimization</article-title>
+        <source>Structural and Multidisciplinary Optimization</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>59</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1007/s00158-019-02211-z</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Chauhan2018">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Chauhan</surname><given-names>Shamsheer S.</given-names></name>
+          <name><surname>Martins</surname><given-names>Joaquim R. R. A.</given-names></name>
+        </person-group>
+        <article-title>Low-fidelity aerostructural optimization of aircraft wings with a simplified wingbox model using OpenAeroStruct</article-title>
+        <source>Proceedings of the 6th International Conference on Engineering Optimization, EngOpt 2018</source>
+        <publisher-name>Springer</publisher-name>
+        <publisher-loc>Lisbon, Portugal</publisher-loc>
+        <year iso-8601-date="2018">2018</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-97773-7_38</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Gray2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gray</surname><given-names>Justin S.</given-names></name>
+          <name><surname>Martins</surname><given-names>Joaquim R. R. A.</given-names></name>
+        </person-group>
+        <article-title>Coupled aeropropulsive design optimization of a boundary-layer ingestion propulsor</article-title>
+        <source>The Aeronautical Journal</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>123</volume>
+        <issue>1259</issue>
+        <pub-id pub-id-type="doi">10.1017/aer.2018.120</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SciPy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+          <name><surname>Haberland</surname><given-names>Matt</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Burovski</surname><given-names>Evgeni</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Bright</surname><given-names>Jonathan</given-names></name>
+          <name><surname>van der Walt</surname><given-names>Stéfan J.</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Wilson</surname><given-names>Joshua</given-names></name>
+          <name><surname>Jarrod Millman</surname><given-names>K.</given-names></name>
+          <name><surname>Mayorov</surname><given-names>Nikolay</given-names></name>
+          <name><surname>Nelson</surname><given-names>Andrew R. J.</given-names></name>
+          <name><surname>Jones</surname><given-names>Eric</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Larson</surname><given-names>Eric</given-names></name>
+          <name><surname>Carey</surname><given-names>CJ</given-names></name>
+          <name><surname>Polat</surname><given-names>İlhan</given-names></name>
+          <name><surname>Feng</surname><given-names>Yu</given-names></name>
+          <name><surname>Moore</surname><given-names>Eric W.</given-names></name>
+          <name><surname>Vand erPlas</surname><given-names>Jake</given-names></name>
+          <name><surname>Laxalde</surname><given-names>Denis</given-names></name>
+          <name><surname>Perktold</surname><given-names>Josef</given-names></name>
+          <name><surname>Cimrman</surname><given-names>Robert</given-names></name>
+          <name><surname>Henriksen</surname><given-names>Ian</given-names></name>
+          <name><surname>Quintero</surname><given-names>E. A.</given-names></name>
+          <name><surname>Harris</surname><given-names>Charles R</given-names></name>
+          <name><surname>Archibald</surname><given-names>Anne M.</given-names></name>
+          <name><surname>Ribeiro</surname><given-names>Antônio H.</given-names></name>
+          <name><surname>Pedregosa</surname><given-names>Fabian</given-names></name>
+          <name><surname>van Mulbregt</surname><given-names>Paul</given-names></name>
+          <name><surname>Contributors</surname><given-names>SciPy 1. 0</given-names></name>
+        </person-group>
+        <article-title>SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python</article-title>
+        <source>Nature Methods</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>17</volume>
+        <pub-id pub-id-type="doi">10.1038/s41592-019-0686-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-NLopt">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Johnson</surname><given-names>Steven G.</given-names></name>
+        </person-group>
+        <article-title>The NLopt nonlinear-optimization package</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>http://github.com/stevengj/nlopt</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Martins2003">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Martins</surname><given-names>Joaquim R. R. A.</given-names></name>
+          <name><surname>Sturdza</surname><given-names>Peter</given-names></name>
+          <name><surname>Alonso</surname><given-names>Juan J.</given-names></name>
+        </person-group>
+        <article-title>The complex-step derivative approximation</article-title>
+        <source>ACM Transactions on Mathematical Software</source>
+        <year iso-8601-date="2003">2003</year>
+        <volume>29</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1145/838250.838251</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Kraft1988a">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Kraft</surname><given-names>D</given-names></name>
+        </person-group>
+        <article-title>A software package for sequential quadratic programming</article-title>
+        <publisher-name>Tech. Rep. DFVLR-FB 88-28, DLR German Aerospace Center</publisher-name>
+        <year iso-8601-date="1988">1988</year>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

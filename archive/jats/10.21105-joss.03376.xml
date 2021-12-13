@@ -1,0 +1,822 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3376</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03376</article-id>
+<title-group>
+<article-title>samplics: a Python Package for selecting, weighting and
+analyzing data from complex sampling designs.</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-0376-3631</contrib-id>
+<string-name>Mamadou S. Diallo</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="corresp" rid="cor-1"><sup>*</sup></xref>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>UNICEF, The United Nations Children’s Fund</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<author-notes>
+<corresp id="cor-1">* E-mail: <email></email></corresp>
+</author-notes>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-12-06">
+<day>6</day>
+<month>12</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>68</issue>
+<fpage>3376</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Survey sampling</kwd>
+<kwd>small area estimation</kwd>
+<kwd>Official statistics</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Survey sampling techniques are used in various fields to obtain
+  information about a large population by studying a fraction of its
+  elements. As a result, it helps produce a significant portion of the
+  official statistics by national governments and international
+  organizations. For example, the
+  <ext-link ext-link-type="uri" xlink:href="https://dhsprogram.com">Demographic
+  and Health Survey (DHS)</ext-link> and the
+  <ext-link ext-link-type="uri" xlink:href="https:://mics.unicef.org">Multiple
+  Cluster Indicator Survey (MICS)</ext-link> have been collecting
+  demographic and health indicators for more than 35 years and 25 years
+  respectively in over 100 countries. DHS and MICS are two of the
+  primary sources of data for tracking the progress towards achieving
+  the
+  <ext-link ext-link-type="uri" xlink:href="https://sdgs.un.org/">Sustainable
+  Development Goals (SDGs)</ext-link>. Similarly, numerous political and
+  socio-economic branches of society rely on survey sampling to estimate
+  the characteristics of populations of interest.</p>
+  <p>Until the initiation of <monospace>samplics</monospace>, Python did
+  not have a library for analyzing complex survey samples similar to the
+  <ext-link ext-link-type="uri" xlink:href="https://CRAN.R-project.org/package=survey">R
+  survey package</ext-link>
+  (<xref alt="Lumley, 2004" rid="ref-lumley04" ref-type="bibr">Lumley,
+  2004</xref>) and several commercial software such as SAS, SPSS, and
+  Stata. <monospace>samplics</monospace> is a Python package developed
+  to provide a comprehensive set of APIs to select random samples,
+  adjust sample weights, produce design-based survey estimates, and
+  predict small area parameters.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p><monospace>samplics</monospace> aims at providing a comprehensive
+  statistical package for analyzing survey sample data. The primary
+  target audiences are survey statisticians and other data analysts
+  working with sample data obtained from complex survey designs. Data
+  specialists can use this package to produce, analyze, and use official
+  statistics. It also can help teach statistical concepts given the wide
+  use of Python in Education and the simplicity of the
+  <monospace>samplics</monospace> APIs.</p>
+  <p>When designing a survey, <monospace>samplics</monospace> can
+  calculate sample sizes by stratum based on expected proportions and
+  level of precision for the indicator of interest as well as measures
+  of the complexity of the design such as survey design effects. After
+  sample sizes are determined, <monospace>samplics</monospace> can
+  calculate selection probabilities according to the sample selection
+  strategy. To ensure the representativeness of the random sample,
+  <monospace>samplics</monospace> will compute design weights and adjust
+  them for non-response, post-stratification, and calibration.
+  <monospace>samplics</monospace> provides Taylor-based and
+  replication-based techniques for calculating population parameter
+  estimates and associated measures of uncertainty. Finally,
+  <monospace>samplics</monospace> has a small area estimation subpackage
+  that can predict small area parameters. Note that
+  <monospace>samplics</monospace> can be used independently for any of
+  the steps described in the paragraph.</p>
+  <p>The sections below provide more details on the survey sampling
+  techniques implemented in <monospace>samplics</monospace>.</p>
+</sec>
+<sec id="survey-sampling-techniques">
+  <title>Survey Sampling Techniques</title>
+  <p>In large-scale surveys, often complex random mechanisms are used to
+  select samples. Estimations obtained from such samples must reflect
+  the complexity of the random mechanism to ensure correct
+  approximations of the population parameters by sample estimates
+  (<xref alt="Cochran, 1977" rid="ref-cochran77" ref-type="bibr">Cochran,
+  1977</xref>),
+  (<xref alt="Kish, 1965" rid="ref-kish65" ref-type="bibr">Kish,
+  1965</xref>), and
+  (<xref alt="Lohr, 2010" rid="ref-lohr10" ref-type="bibr">Lohr,
+  2010</xref>). For Python users, <monospace>samplics</monospace>
+  provides a comprehensive ecosystem of survey sampling techniques.</p>
+  <sec id="sample-selection">
+    <title>Sample Selection</title>
+    <p>The sample selection mechanism, a fundamental aspect of survey
+    sampling, guides the statistical techniques employed to ensure the
+    representativeness of the sample. In
+    <monospace>samplics</monospace>, the focus is on random sampling
+    techniques where units in the target population have a known
+    probability of inclusion in the sample. let us assume that the
+    target population has <inline-formula><alternatives>
+    <tex-math><![CDATA[N]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
+    units, and let us note <inline-formula><alternatives>
+    <tex-math><![CDATA[\pi_i]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>π</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+    the probability of unit <inline-formula><alternatives>
+    <tex-math><![CDATA[i]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>
+    to be included in the sample. That is <inline-formula><alternatives>
+    <tex-math><![CDATA[P(I_i=1) = \pi_i]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>P</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>I</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msub><mml:mi>π</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+    where <inline-formula><alternatives>
+    <tex-math><![CDATA[I_i]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>I</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    indicates whether unit <inline-formula><alternatives>
+    <tex-math><![CDATA[i]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>
+    was included or not in the sample. The sample selection techniques
+    implemented in <monospace>samplics</monospace> can be viewed as the
+    combination of three key concepts: selection probability,
+    stratification, and clustering. SRS results in an equal probability
+    of selection for all sampling units, <inline-formula><alternatives>
+    <tex-math><![CDATA[P(I_i=1)=\pi]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>P</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>I</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>π</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.
+    Stratification is a technique that consists of dividing the target
+    population into <inline-formula><alternatives>
+    <tex-math><![CDATA[m]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>m</mml:mi></mml:math></alternatives></inline-formula>
+    partitions, and sample selection is performed independently in each
+    partition called stratum. Stratification is commonly used to divide
+    the population, hence the sample, into homogeneous groups, e.g.,
+    income class, gender, ethnic group, etc. But it can also be used to
+    control sample sizes by stratum; for example, governments often use
+    stratification to ensure proper coverage of geographical
+    administrative entities in the sample. Clustering is useful when a
+    sample frame is unavailable for the units of interest or the
+    operational cost of directly selecting the units and collecting the
+    data is too high. In cluster sampling design, units of interest are
+    grouped into clusters, and a sample of clusters is selected first
+    (one-stage cluster sampling). Clustering can be done at multiple
+    levels resulting in two-stage (or more) cluster sampling designs.
+    Probability proportional to size (PPS) methods, e.g., Systematic,
+    Brewer’s method, Hanurav-Vijayan method, Murphy’s method, and
+    Rao-Sampford’s method, are commonly used to select the clusters
+    (<xref alt="Brewer &amp; Hanif, 1983" rid="ref-brewer83" ref-type="bibr">Brewer
+    &amp; Hanif, 1983</xref>). Generally, cluster sampling leads to
+    unequal probabilities of inclusion of sample units.</p>
+  </sec>
+  <sec id="sample-weighting">
+    <title>Sample Weighting</title>
+    <p>Sample weighting is the main mechanism used in surveys to
+    formalize the representativeness of the sample. In complex surveys,
+    sample weighting is composed of two main steps. First, the design
+    (or base) weights are calculated as the inverse of the selection
+    probabilities. Let us us assume that <inline-formula><alternatives>
+    <tex-math><![CDATA[\pi_i]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>π</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    is the final selection probability for unit
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[i]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>
+    in the sample. Hence, <inline-formula><alternatives>
+    <tex-math><![CDATA[d_i = \frac{1}{\pi_i}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>d</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mfrac><mml:mn>1</mml:mn><mml:msub><mml:mi>π</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:mfrac></mml:mrow></mml:math></alternatives></inline-formula>,
+    where <inline-formula><alternatives>
+    <tex-math><![CDATA[d_i]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>d</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    is the design weight associated with unit
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[i]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>
+    and can be interpreted as the average number of units in the target
+    population represented by <inline-formula><alternatives>
+    <tex-math><![CDATA[i]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>
+    including itself. Second, the design weights are adjusted to
+    compensate for distortions due to shortcomings of the sample design
+    implementation. Often, the initial weight adjustment corrects for
+    nonresponse. This adjustment consists of defining response classes,
+    then inflating the sample weights within response classes to
+    compensate for the loss of sampled units due to nonresponse. In
+    complex surveys, it is common to perform multiple sample weight
+    adjustments. Hence, within a response class, the adjusted sample
+    weights can be obtained as follows: <disp-formula><alternatives>
+    <tex-math><![CDATA[w_i = d_i*\prod_{k=1}^{K} a_k,]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>w</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:msub><mml:mi>d</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>*</mml:mo><mml:munderover><mml:mo>∏</mml:mo><mml:mrow><mml:mi>k</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>K</mml:mi></mml:munderover><mml:msub><mml:mi>a</mml:mi><mml:mi>k</mml:mi></mml:msub><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+    where <inline-formula><alternatives>
+    <tex-math><![CDATA[a_k]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>a</mml:mi><mml:mi>k</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    is the adjustment factor for step <inline-formula><alternatives>
+    <tex-math><![CDATA[k]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>k</mml:mi></mml:math></alternatives></inline-formula>.
+    When reliable auxiliary information is available at the population
+    level, poststratification and calibration can be used to adjust the
+    sample weights. <monospace>samplics</monospace> also computes
+    replicate weights, i.e., balanced repeated replication (BRR),
+    bootstrap, and jackknife, often used to estimate complex parameters
+    such as quantiles.
+    (<xref alt="Valliant &amp; Dever, 2018" rid="ref-valliant18" ref-type="bibr">Valliant
+    &amp; Dever, 2018</xref>) provides a step-by-step guide for
+    calculating sample weights for complex sampling designs.</p>
+  </sec>
+  <sec id="sample-estimation">
+    <title>Sample Estimation</title>
+    <p>As mentioned above, estimation of population parameters e.g.,
+    total, mean, median, coefficient of correlation, regression
+    coefficients, etc., is one of the main objectives of surveys
+    sampling. The sample weight is the primary mechanism for
+    generalizing the sample estimate to approximate the equivalent
+    population parameter. let us us us us consider the population
+    parameter, total, defined as <inline-formula><alternatives>
+    <tex-math><![CDATA[Y = \sum_{h=1}^{H}\sum_{i=1}^{N_h}\sum_{j=1}^{M_{hi}} w_{hij} y_{hij}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>Y</mml:mi><mml:mo>=</mml:mo><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>h</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>H</mml:mi></mml:msubsup><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>N</mml:mi><mml:mi>h</mml:mi></mml:msub></mml:msubsup><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>M</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub></mml:msubsup><mml:msub><mml:mi>w</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:msub><mml:mi>y</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+    where <inline-formula><alternatives>
+    <tex-math><![CDATA[H]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>H</mml:mi></mml:math></alternatives></inline-formula>
+    is the number of strata, <inline-formula><alternatives>
+    <tex-math><![CDATA[N_h]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>N</mml:mi><mml:mi>h</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    is the number of primary sampling units (PSUs) in the population
+    from stratum <inline-formula><alternatives>
+    <tex-math><![CDATA[h]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>h</mml:mi></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[M_{hj}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>M</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+    is the number of units from PSU <inline-formula><alternatives>
+    <tex-math><![CDATA[i]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>
+    in stratum <inline-formula><alternatives>
+    <tex-math><![CDATA[h]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>h</mml:mi></mml:math></alternatives></inline-formula>.
+    It follows that the sample estimate of the total is defined as
+    <disp-formula><alternatives>
+    <tex-math><![CDATA[\hat{Y} = \sum_{h=1}^{H}\sum_{i=1}^{n_h}\sum_{j=1}^{m_{hi}} w_{hij} y_{hij} I_{hij},]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>Y</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>h</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>H</mml:mi></mml:munderover><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>n</mml:mi><mml:mi>h</mml:mi></mml:msub></mml:munderover><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>m</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub></mml:munderover><mml:msub><mml:mi>w</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:msub><mml:mi>y</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:msub><mml:mi>I</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+    where <inline-formula><alternatives>
+    <tex-math><![CDATA[n_h]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>n</mml:mi><mml:mi>h</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    is the number of PSUs in the sample from stratum
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[h]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>h</mml:mi></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[m_{hj}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>m</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+    is the number of units in the sample from PSU
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[i]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>
+    in stratum <inline-formula><alternatives>
+    <tex-math><![CDATA[h]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>h</mml:mi></mml:math></alternatives></inline-formula>.
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[I_{hij}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>I</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+    denotes the inclusion status of unit <inline-formula><alternatives>
+    <tex-math><![CDATA[hij]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    to the sample i.e., <inline-formula><alternatives>
+    <tex-math><![CDATA[I_{hij}=1]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>I</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+    if unit <inline-formula><alternatives>
+    <tex-math><![CDATA[hij]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    is included in the sample otherwise <inline-formula><alternatives>
+    <tex-math><![CDATA[I_{hij}=0]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>I</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:mn>0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>.
+    The uncertainty estimation of the sample estimate must reflect the
+    sampling mechanism and the weight adjustments.
+    <monospace>samplics</monospace> provides two main frameworks for
+    computing uncertainties, linearization (Taylor series) and
+    replication.</p>
+    <p>Using the Taylor series method, the variance of the total is
+    estimated as <disp-formula><alternatives>
+    <tex-math><![CDATA[\hat{V}(\hat{Y})=\sum_{h=1}^{H} \frac{n_h(1-f_h)}{n_h-1} \sum_{i=1}^{n_h} (y_{hi.}-\bar{y}_{h..})^2,]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>V</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mover><mml:mi>Y</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>h</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>H</mml:mi></mml:munderover><mml:mfrac><mml:mrow><mml:msub><mml:mi>n</mml:mi><mml:mi>h</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mi>h</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow><mml:mrow><mml:msub><mml:mi>n</mml:mi><mml:mi>h</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:mfrac><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>n</mml:mi><mml:mi>h</mml:mi></mml:msub></mml:munderover><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>.</mml:mi></mml:mrow></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mover><mml:mi>y</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mrow><mml:mi>h</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi></mml:mrow></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+    where <inline-formula><alternatives>
+    <tex-math><![CDATA[y_{hi.}=\sum_{j=1}^{m_{hi}}w_{hij} y_{hij}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>y</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>.</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>m</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub></mml:msubsup><mml:msub><mml:mi>w</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:msub><mml:mi>y</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\bar{y}_{h..}=\sum_{i=1}^{n_h} y_{hi.}/n_h]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mover><mml:mi>y</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mrow><mml:mi>h</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>n</mml:mi><mml:mi>h</mml:mi></mml:msub></mml:msubsup><mml:msub><mml:mi>y</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>.</mml:mi></mml:mrow></mml:msub><mml:mi>/</mml:mi><mml:msub><mml:mi>n</mml:mi><mml:mi>h</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[f_h]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mi>h</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    is the sampling rate for the first stage from stratum
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[h]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>h</mml:mi></mml:math></alternatives></inline-formula>.
+    The formula can be extended to the two-stage sampling design where
+    second stage clusters or secondary sampling units (SSUs) are
+    randomly selected from the PSUs prior to the selection of final
+    sample units within selected SSUs. Under the two-stage sampling
+    design, the Taylor series variance estimate of the total is</p>
+    <p><disp-formula><alternatives>
+    <tex-math><![CDATA[
+    \hat{V}(\hat{Y})=\sum_{h=1}^{H} \frac{n_h(1-f_h)}{n_h-1} \sum_{i=1}^{n_h} (y_{hi.}-\bar{y}_{h..})^2 + \sum_{h=1}^{H} f_h \sum_{i=1}^{n_h} (1-f_{hi})\frac{m_{hi}}{m_{hi}-1}\sum_{j=1}^{m_{hi}} (y_{hij.}-\bar{y}_{hi..})^2,
+    ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>V</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mover><mml:mi>Y</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>h</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>H</mml:mi></mml:munderover><mml:mfrac><mml:mrow><mml:msub><mml:mi>n</mml:mi><mml:mi>h</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mi>h</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow><mml:mrow><mml:msub><mml:mi>n</mml:mi><mml:mi>h</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:mfrac><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>n</mml:mi><mml:mi>h</mml:mi></mml:msub></mml:munderover><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>.</mml:mi></mml:mrow></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mover><mml:mi>y</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mrow><mml:mi>h</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi></mml:mrow></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup><mml:mo>+</mml:mo><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>h</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>H</mml:mi></mml:munderover><mml:msub><mml:mi>f</mml:mi><mml:mi>h</mml:mi></mml:msub><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>n</mml:mi><mml:mi>h</mml:mi></mml:msub></mml:munderover><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mfrac><mml:msub><mml:mi>m</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub><mml:mrow><mml:msub><mml:mi>m</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:mfrac><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>m</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub></mml:munderover><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi><mml:mi>.</mml:mi></mml:mrow></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mover><mml:mi>y</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi></mml:mrow></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>where <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{Y} = \sum_{h=1}^{H}\sum_{i=1}^{N_h}\sum_{j=1}^{M_{hi}} \sum_{k=1}^{} w_{hijk} y_{hij} I_{hijk}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>Y</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>h</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>H</mml:mi></mml:msubsup><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>N</mml:mi><mml:mi>h</mml:mi></mml:msub></mml:msubsup><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>M</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub></mml:msubsup><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>k</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mrow></mml:mrow></mml:msubsup><mml:msub><mml:mi>w</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msub><mml:msub><mml:mi>y</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:msub><mml:mi>I</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[y_{hij.}=\sum_{k=1}^{m_{hij}}w_{hijk} y_{hijk}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>y</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi><mml:mi>.</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>k</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>m</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub></mml:msubsup><mml:msub><mml:mi>w</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msub><mml:msub><mml:mi>y</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\bar{y}_{hi..}=\sum_{j=1}^{m_{hi}} y_{hij.}/m_{hi}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mover><mml:mi>y</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>m</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub></mml:msubsup><mml:msub><mml:mi>y</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi><mml:mi>.</mml:mi></mml:mrow></mml:msub><mml:mi>/</mml:mi><mml:msub><mml:mi>m</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[f_{hi}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+    is the sampling rate for the second stage of sampling from PSU
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[i]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>
+    in stratum <inline-formula><alternatives>
+    <tex-math><![CDATA[h]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>h</mml:mi></mml:math></alternatives></inline-formula>.
+    The variance estimation of the total can be extended to other
+    population parameters that are functions of the sample weight. For
+    example, the variance estimates of the mean and ratio are obtained
+    by replacing <inline-formula><alternatives>
+    <tex-math><![CDATA[y_{hijk}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>y</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+    by <inline-formula><alternatives>
+    <tex-math><![CDATA[(y_{hijk} - \hat{\bar{Y}})/\hat{W}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msub><mml:mo>−</mml:mo><mml:mover><mml:mover><mml:mi>Y</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>/</mml:mi><mml:mover><mml:mi>W</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:mrow></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[(y_{hijk} - \hat{R}x_{hijk})/\hat{X}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msub><mml:mo>−</mml:mo><mml:mover><mml:mi>R</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:msub><mml:mi>x</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>/</mml:mi><mml:mover><mml:mi>X</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:mrow></mml:math></alternatives></inline-formula>,
+    respectively, where <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{\bar{Y}} = \hat{Y} / \hat{W}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mover><mml:mi>Y</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:mover><mml:mi>Y</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>/</mml:mi><mml:mover><mml:mi>W</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:mrow></mml:math></alternatives></inline-formula>,
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{W} = \sum_{h=1}^{H}\sum_{i=1}^{N_h}\sum_{j=1}^{M_{hi}} \sum_{k=1}^{} w_{hijk}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>W</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>h</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>H</mml:mi></mml:msubsup><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>N</mml:mi><mml:mi>h</mml:mi></mml:msub></mml:msubsup><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>M</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub></mml:msubsup><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>k</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mrow></mml:mrow></mml:msubsup><mml:msub><mml:mi>w</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{X} = \sum_{h=1}^{H}\sum_{i=1}^{N_h}\sum_{j=1}^{M_{hi}} \sum_{k=1}^{} x_{hijk}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>X</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>h</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>H</mml:mi></mml:msubsup><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>N</mml:mi><mml:mi>h</mml:mi></mml:msub></mml:msubsup><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>M</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub></mml:msubsup><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>k</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mrow></mml:mrow></mml:msubsup><mml:msub><mml:mi>x</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>j</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{R} = \hat{Y} / \hat{X}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>R</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:mover><mml:mi>Y</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>/</mml:mi><mml:mover><mml:mi>X</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:mrow></mml:math></alternatives></inline-formula>.
+    Furthermore, the variance estimators in this section are extensible
+    to domain analysis.</p>
+    <p>Suppose that <inline-formula><alternatives>
+    <tex-math><![CDATA[\theta]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>
+    is the population parameter of interest. Under the replication
+    framework, multiple replicates, say R, of the sample are drawn
+    following a given selection scheme
+    (<xref alt="Efron &amp; Tibshirani, 1994" rid="ref-efron94" ref-type="bibr">Efron
+    &amp; Tibshirani, 1994</xref>) and
+    (<xref alt="Wolter, 2007" rid="ref-wolter07" ref-type="bibr">Wolter,
+    2007</xref>). For each replicate, a set of replicate weights is
+    constructed by multiplying the sample weights by an adjustement
+    factor <inline-formula><alternatives>
+    <tex-math><![CDATA[a_{hi}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>a</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>.
+    The resulting weights, called the replicate weights, are then used
+    to obtain the R replicate estimates of the population parameter
+    i.e. <inline-formula><alternatives>
+    <tex-math><![CDATA[{\hat{\theta}_{(r)}, r=1,...,R}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>r</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msub><mml:mo>,</mml:mo><mml:mi>r</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:mi>R</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.
+    The estimate of the variance of <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{\theta}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+    is then given by <disp-formula><alternatives>
+    <tex-math><![CDATA[\hat{V}(\hat{\theta})=\sum_{r=1}^{R}c_r(\hat{\theta}_{(r)}-\bar{\theta}_{(.)})^2,]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>V</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>r</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>R</mml:mi></mml:munderover><mml:msub><mml:mi>c</mml:mi><mml:mi>r</mml:mi></mml:msub><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>r</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>.</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+    where <inline-formula><alternatives>
+    <tex-math><![CDATA[\bar{\theta}_{(.)}=\frac{1}{R}\sum_{r=1}^{R}\hat{\theta}_{(r)}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>.</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:mfrac><mml:mn>1</mml:mn><mml:mi>R</mml:mi></mml:mfrac><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>r</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>R</mml:mi></mml:msubsup><mml:msub><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>r</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>.
+    Both <inline-formula><alternatives>
+    <tex-math><![CDATA[c_r]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>c</mml:mi><mml:mi>r</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[a_{hi}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>a</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+    are specific to the replication method.</p>
+    <p>For <bold>Bootstrap</bold>, we have
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[c_r=1/R]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>c</mml:mi><mml:mi>r</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mi>/</mml:mi><mml:mi>R</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[a_{hi}=\frac{n_h}{n_h-1}m_{hi}^{*}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>a</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:mfrac><mml:msub><mml:mi>n</mml:mi><mml:mi>h</mml:mi></mml:msub><mml:mrow><mml:msub><mml:mi>n</mml:mi><mml:mi>h</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:mfrac><mml:msubsup><mml:mi>m</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow><mml:mo>*</mml:mo></mml:msubsup></mml:mrow></mml:math></alternatives></inline-formula>,
+    where <inline-formula><alternatives>
+    <tex-math><![CDATA[m_{hi}^{*}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mi>m</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow><mml:mo>*</mml:mo></mml:msubsup></mml:math></alternatives></inline-formula>
+    is the number of times PSU <inline-formula><alternatives>
+    <tex-math><![CDATA[hi]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    was resampled. The replication factor <inline-formula><alternatives>
+    <tex-math><![CDATA[c_r]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>c</mml:mi><mml:mi>r</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    is the same across the strata, however the weight adjustment factors
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[a_{hi}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>a</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+    are stratum specific.</p>
+    <p>For <bold>balanced repeated replication (BRR)</bold> with Fay, we
+    have</p>
+    <p><inline-formula><alternatives>
+    <tex-math><![CDATA[c_r=\frac{1}{R(1-f^2)}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>c</mml:mi><mml:mi>r</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mfrac><mml:mn>1</mml:mn><mml:mrow><mml:mi>R</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:msup><mml:mi>f</mml:mi><mml:mn>2</mml:mn></mml:msup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:mfrac></mml:mrow></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[a_{hi} =  \begin{cases}  f & \text{if } Hd(hi)=-1\\  2-f & \text{if } Hd(hi)=1  \end{cases}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>a</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">{</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="left"><mml:mi>f</mml:mi></mml:mtd><mml:mtd columnalign="left"><mml:mrow><mml:mtext mathvariant="normal">if </mml:mtext><mml:mspace width="0.333em"></mml:mspace></mml:mrow><mml:mi>H</mml:mi><mml:mi>d</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="left"><mml:mn>2</mml:mn><mml:mo>−</mml:mo><mml:mi>f</mml:mi></mml:mtd><mml:mtd columnalign="left"><mml:mrow><mml:mtext mathvariant="normal">if </mml:mtext><mml:mspace width="0.333em"></mml:mspace></mml:mrow><mml:mi>H</mml:mi><mml:mi>d</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mtd></mml:mtr></mml:mtable></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>,</p>
+    <p>where <inline-formula><alternatives>
+    <tex-math><![CDATA[Hd]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>H</mml:mi><mml:mi>d</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    is the Hadarmard matrix. <inline-formula><alternatives>
+    <tex-math><![CDATA[f=0]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mo>=</mml:mo><mml:mn>0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+    corresponds to the default BRR method without the Fay adjustment. A
+    Hadamard matrix is a square matrix whose entries are either +1 or −1
+    and whose rows are mutually orthogonal. In the case of BRR-Fay, both
+    the replication factor <inline-formula><alternatives>
+    <tex-math><![CDATA[c_r]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>c</mml:mi><mml:mi>r</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    and the weight adjustment factor <inline-formula><alternatives>
+    <tex-math><![CDATA[a_{hi}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>a</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+    are constant across the strata.</p>
+    <p>For <bold>Jackknife (delete-one)</bold>, we have</p>
+    <p><inline-formula><alternatives>
+    <tex-math><![CDATA[c_r=\frac{n_{h'}-1}{n_{h'}}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>c</mml:mi><mml:mi>r</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mfrac><mml:mrow><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>′</mml:mi></mml:mrow></mml:msub><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>′</mml:mi></mml:mrow></mml:msub></mml:mfrac></mml:mrow></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[a_{hi}=  \begin{cases}  \frac{n_{h'}}{n_{h'}-1} & \text{if } h'=h \text{ and } i \text{ not dropped}\\  0 & \text{if } h'=h \text{ and } i \text{ dropped}\\  1 & \text{if } h'\neq h  \end{cases}.]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>a</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">{</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="left"><mml:mfrac><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>′</mml:mi></mml:mrow></mml:msub><mml:mrow><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>′</mml:mi></mml:mrow></mml:msub><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:mfrac></mml:mtd><mml:mtd columnalign="left"><mml:mrow><mml:mtext mathvariant="normal">if </mml:mtext><mml:mspace width="0.333em"></mml:mspace></mml:mrow><mml:mi>h</mml:mi><mml:mi>′</mml:mi><mml:mo>=</mml:mo><mml:mi>h</mml:mi><mml:mrow><mml:mspace width="0.333em"></mml:mspace><mml:mtext mathvariant="normal"> and </mml:mtext><mml:mspace width="0.333em"></mml:mspace></mml:mrow><mml:mi>i</mml:mi><mml:mrow><mml:mspace width="0.333em"></mml:mspace><mml:mtext mathvariant="normal"> not dropped</mml:mtext></mml:mrow></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="left"><mml:mn>0</mml:mn></mml:mtd><mml:mtd columnalign="left"><mml:mrow><mml:mtext mathvariant="normal">if </mml:mtext><mml:mspace width="0.333em"></mml:mspace></mml:mrow><mml:mi>h</mml:mi><mml:mi>′</mml:mi><mml:mo>=</mml:mo><mml:mi>h</mml:mi><mml:mrow><mml:mspace width="0.333em"></mml:mspace><mml:mtext mathvariant="normal"> and </mml:mtext><mml:mspace width="0.333em"></mml:mspace></mml:mrow><mml:mi>i</mml:mi><mml:mrow><mml:mspace width="0.333em"></mml:mspace><mml:mtext mathvariant="normal"> dropped</mml:mtext></mml:mrow></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="left"><mml:mn>1</mml:mn></mml:mtd><mml:mtd columnalign="left"><mml:mrow><mml:mtext mathvariant="normal">if </mml:mtext><mml:mspace width="0.333em"></mml:mspace></mml:mrow><mml:mi>h</mml:mi><mml:mi>′</mml:mi><mml:mo>≠</mml:mo><mml:mi>h</mml:mi></mml:mtd></mml:mtr></mml:mtable></mml:mrow><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></inline-formula></p>
+    <p>This formula is easily generalizable to the non stratified design
+    (<inline-formula><alternatives>
+    <tex-math><![CDATA[H=1]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>H</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>)
+    by replacing <inline-formula><alternatives>
+    <tex-math><![CDATA[n_{h'}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>h</mml:mi><mml:mi>′</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+    by <inline-formula><alternatives>
+    <tex-math><![CDATA[n]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>
+    and dropping the case <inline-formula><alternatives>
+    <tex-math><![CDATA[h' \neq h]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>h</mml:mi><mml:mi>′</mml:mi><mml:mo>≠</mml:mo><mml:mi>h</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.
+    The replication factor <inline-formula><alternatives>
+    <tex-math><![CDATA[c_r]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>c</mml:mi><mml:mi>r</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    is stratum specific in the case of Jackknife, which allows a
+    finite-population correction by stratum.</p>
+  </sec>
+</sec>
+<sec id="small-area-estimation-sae">
+  <title>Small Area Estimation (SAE)</title>
+  <p>When the sample size is insufficient to produce reliable/stable
+  domain level estimates, SAE techniques model the output variable of
+  interest and produce domain level estimates. These domains are
+  referred to as small areas. For the most part, the SAE models are
+  applications of mixed models, see
+  (<xref alt="McCulloch et al., 2008" rid="ref-mcculloch08" ref-type="bibr">McCulloch
+  et al., 2008</xref>) and
+  (<xref alt="Rao &amp; Molina, 2015" rid="ref-rao15" ref-type="bibr">Rao
+  &amp; Molina, 2015</xref>) for more details on mixed models. Mixed
+  models allow accounting for the between-area variations by using
+  random area-specific effects and the auxiliary variables contribution
+  through the fixed effects. Small Area Estimation models are generally
+  classified into two classes: the Area-level and the Unit-level models
+  (<xref alt="Rao &amp; Molina, 2015" rid="ref-rao15" ref-type="bibr">Rao
+  &amp; Molina, 2015</xref>).</p>
+  <sec id="area-level-model">
+    <title>Area-level Model</title>
+    <p>As mentioned above, the Areal-level approach models the variables
+    of interest using known auxiliary information at some aggregated
+    level(s). A common representation of the basic Area-level model is
+    <disp-formula><alternatives>
+    <tex-math><![CDATA[ \hat{\theta}\_d =\textbf{x}^T_d u_d + e_d, \quad d=1,...,m, ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>_</mml:mi><mml:mi>d</mml:mi><mml:mo>=</mml:mo><mml:msubsup><mml:mtext mathvariant="bold">𝐱</mml:mtext><mml:mi>d</mml:mi><mml:mi>T</mml:mi></mml:msubsup><mml:msub><mml:mi>u</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:mo>+</mml:mo><mml:msub><mml:mi>e</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:mspace width="1.0em"></mml:mspace><mml:mi>d</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:mi>m</mml:mi><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+    where <inline-formula><alternatives>
+    <tex-math><![CDATA[u_d \overset{iid}\sim N(0, \sigma^2_u)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>u</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:mover><mml:mo>∼</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mi>i</mml:mi><mml:mi>d</mml:mi></mml:mrow></mml:mover><mml:mi>N</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:msubsup><mml:mi>σ</mml:mi><mml:mi>u</mml:mi><mml:mn>2</mml:mn></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[e_d \overset{iid}\sim N(0, \psi_d)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>e</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:mover><mml:mo>∼</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mi>i</mml:mi><mml:mi>d</mml:mi></mml:mrow></mml:mover><mml:mi>N</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:msub><mml:mi>ψ</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    are independent. The sampling variance
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\psi_d]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>ψ</mml:mi><mml:mi>d</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    is assumed to be known; in a real survey this quantity is unknown
+    and must be estimated, then treated as known for the purpose of
+    deriving the estimates. Under the basic Area-level model, the best
+    predictor (best in the sense of minimizing the mean squared error))
+    of <inline-formula><alternatives>
+    <tex-math><![CDATA[\theta]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>
+    is <disp-formula><alternatives>
+    <tex-math><![CDATA[ \hat{\theta}^B_d = (1-B_d)\hat{\theta}\_d + B_d\textbf{x}^T_d \tilde{\beta} \quad d=1,...,m,]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>d</mml:mi><mml:mi>B</mml:mi></mml:msubsup><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:msub><mml:mi>B</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>_</mml:mi><mml:mi>d</mml:mi><mml:mo>+</mml:mo><mml:msub><mml:mi>B</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:msubsup><mml:mtext mathvariant="bold">𝐱</mml:mtext><mml:mi>d</mml:mi><mml:mi>T</mml:mi></mml:msubsup><mml:mover><mml:mi>β</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover><mml:mspace width="1.0em"></mml:mspace><mml:mi>d</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:mi>m</mml:mi><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+    where <inline-formula><alternatives>
+    <tex-math><![CDATA[B_d=\psi_d/(\sigma^2_u+\psi_d)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>B</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:msub><mml:mi>ψ</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:mi>/</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mi>σ</mml:mi><mml:mi>u</mml:mi><mml:mn>2</mml:mn></mml:msubsup><mml:mo>+</mml:mo><mml:msub><mml:mi>ψ</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[\tilde{\beta}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>β</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+    is the best linear unbiased estimator of
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\beta]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>β</mml:mi></mml:math></alternatives></inline-formula>.
+    The empirical best (EB), or empirical Bayes, predictor
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{\theta}^{EB}_d]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>d</mml:mi><mml:mrow><mml:mi>E</mml:mi><mml:mi>B</mml:mi></mml:mrow></mml:msubsup></mml:math></alternatives></inline-formula>
+    is obtained by replacing the unknown parameter in the expression of
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{\theta}^B_d]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>d</mml:mi><mml:mi>B</mml:mi></mml:msubsup></mml:math></alternatives></inline-formula>
+    by their estimators. The parameters of the model,
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\beta]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>β</mml:mi></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[\sigma^2_u]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mi>σ</mml:mi><mml:mi>u</mml:mi><mml:mn>2</mml:mn></mml:msubsup></mml:math></alternatives></inline-formula>
+    are estimated using method of moment (MOM), maximum likelihood (ML),
+    restricted maximum likelihood (REML), or other suitable techniques.
+    The EB estimator is a weighted average of the survey (direct)
+    estimator <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{\theta}_d]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>d</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    and the regression predictor <inline-formula><alternatives>
+    <tex-math><![CDATA[\textbf{x}^T_d \tilde{\beta}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mtext mathvariant="bold">𝐱</mml:mtext><mml:mi>d</mml:mi><mml:mi>T</mml:mi></mml:msubsup><mml:mover><mml:mi>β</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover></mml:mrow></mml:math></alternatives></inline-formula>
+    where the weight is <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{B}_d=\psi_d/(\hat{\sigma}^2_u+\psi_d)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mover><mml:mi>B</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>d</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:msub><mml:mi>ψ</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:mi>/</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mover><mml:mi>σ</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>u</mml:mi><mml:mn>2</mml:mn></mml:msubsup><mml:mo>+</mml:mo><mml:msub><mml:mi>ψ</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+  </sec>
+  <sec id="unit-level-model">
+    <title>Unit-level model</title>
+    <p>The Unit-level models fit the data at the atomic individual unit
+    level. The basic Unit-level model can be formally defined as
+    follows:</p>
+    <p><disp-formula><alternatives>
+    <tex-math><![CDATA[
+    \textbf{Y}_{dj} = \textbf{x}^T_{dj}\mathbf{\beta}+u_d+e_{dj}, \quad j=1,...,N_d, \quad d=1,...,m,
+    ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mtext mathvariant="bold">𝐘</mml:mtext><mml:mrow><mml:mi>d</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:msubsup><mml:mtext mathvariant="bold">𝐱</mml:mtext><mml:mrow><mml:mi>d</mml:mi><mml:mi>j</mml:mi></mml:mrow><mml:mi>T</mml:mi></mml:msubsup><mml:mstyle mathvariant="bold"><mml:mi>𝛃</mml:mi></mml:mstyle><mml:mo>+</mml:mo><mml:msub><mml:mi>u</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:mo>+</mml:mo><mml:msub><mml:mi>e</mml:mi><mml:mrow><mml:mi>d</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:mo>,</mml:mo><mml:mspace width="1.0em"></mml:mspace><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>N</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:mspace width="1.0em"></mml:mspace><mml:mi>d</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:mi>m</mml:mi><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>where <inline-formula><alternatives>
+    <tex-math><![CDATA[u_d \overset{iid}\sim N(0, \sigma^2_u)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>u</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:mover><mml:mo>∼</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mi>i</mml:mi><mml:mi>d</mml:mi></mml:mrow></mml:mover><mml:mi>N</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:msubsup><mml:mi>σ</mml:mi><mml:mi>u</mml:mi><mml:mn>2</mml:mn></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[e_{dj} \overset{iid}\sim N(0, \sigma^2_e)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>e</mml:mi><mml:mrow><mml:mi>d</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:mover><mml:mo>∼</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mi>i</mml:mi><mml:mi>d</mml:mi></mml:mrow></mml:mover><mml:mi>N</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:msubsup><mml:mi>σ</mml:mi><mml:mi>e</mml:mi><mml:mn>2</mml:mn></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    are independent random normal variables,
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\textbf{x}_{dj}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mtext mathvariant="bold">𝐱</mml:mtext><mml:mrow><mml:mi>d</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+    is the vector of auxiliary variables, <inline-formula><alternatives>
+    <tex-math><![CDATA[d]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>d</mml:mi></mml:math></alternatives></inline-formula>
+    designates the small area and <inline-formula><alternatives>
+    <tex-math><![CDATA[j]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>j</mml:mi></mml:math></alternatives></inline-formula>
+    designates the the unit within the small-area
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[d]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>d</mml:mi></mml:math></alternatives></inline-formula>.
+    The best linear unbiased predictor (BLUP) estimator of the small
+    area mean <inline-formula><alternatives>
+    <tex-math><![CDATA[\theta_d = \hat{\textbf{X}}^T_d\beta+u_d]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>θ</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:msubsup><mml:mover><mml:mtext mathvariant="bold">𝐗</mml:mtext><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>d</mml:mi><mml:mi>T</mml:mi></mml:msubsup><mml:mi>β</mml:mi><mml:mo>+</mml:mo><mml:msub><mml:mi>u</mml:mi><mml:mi>d</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+    is</p>
+    <p><disp-formula><alternatives>
+    <tex-math><![CDATA[\hat{\theta}^B_d=\bar{\textbf{X}}^T_d \tilde{\beta}+\gamma_d(\bar{y}_d-\bar{\textbf{x}}^T_d \tilde{\beta})]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>d</mml:mi><mml:mi>B</mml:mi></mml:msubsup><mml:mo>=</mml:mo><mml:msubsup><mml:mover><mml:mtext mathvariant="bold">𝐗</mml:mtext><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mi>d</mml:mi><mml:mi>T</mml:mi></mml:msubsup><mml:mover><mml:mi>β</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover><mml:mo>+</mml:mo><mml:msub><mml:mi>γ</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mover><mml:mi>y</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mi>d</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:msubsup><mml:mover><mml:mtext mathvariant="bold">𝐱</mml:mtext><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mi>d</mml:mi><mml:mi>T</mml:mi></mml:msubsup><mml:mover><mml:mi>β</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula></p>
+    <p>where <inline-formula><alternatives>
+    <tex-math><![CDATA[\gamma_d=\frac{\sigma^2_u}{\sigma^2_e+n_d \sigma^2_u}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>γ</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mfrac><mml:msubsup><mml:mi>σ</mml:mi><mml:mi>u</mml:mi><mml:mn>2</mml:mn></mml:msubsup><mml:mrow><mml:msubsup><mml:mi>σ</mml:mi><mml:mi>e</mml:mi><mml:mn>2</mml:mn></mml:msubsup><mml:mo>+</mml:mo><mml:msub><mml:mi>n</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:msubsup><mml:mi>σ</mml:mi><mml:mi>u</mml:mi><mml:mn>2</mml:mn></mml:msubsup></mml:mrow></mml:mfrac></mml:mrow></mml:math></alternatives></inline-formula>,
+    the estimator <inline-formula><alternatives>
+    <tex-math><![CDATA[\tilde{\beta}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>β</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+    is the best linear unbiased estimator of
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\beta]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>β</mml:mi></mml:math></alternatives></inline-formula>,
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[n_d]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>n</mml:mi><mml:mi>d</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    is the sample size for small area <inline-formula><alternatives>
+    <tex-math><![CDATA[d]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>d</mml:mi></mml:math></alternatives></inline-formula>.
+    The empirical best linear predictor, <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{\theta}^{EB}_d]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>d</mml:mi><mml:mrow><mml:mi>E</mml:mi><mml:mi>B</mml:mi></mml:mrow></mml:msubsup></mml:math></alternatives></inline-formula>,
+    is obtained by replacing the model parameters by their estimators in
+    the expression of <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{\theta}^B_d]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>d</mml:mi><mml:mi>B</mml:mi></mml:msubsup></mml:math></alternatives></inline-formula>.
+    (<xref alt="Elbers et al., 2003" rid="ref-elbers03" ref-type="bibr">Elbers
+    et al., 2003</xref>) extends the basic Unit-level model by relaxing
+    the normal distribution of the errors with an empirical
+    semi-parametric model. This model has been used by the World Bank to
+    estimate small area poverty indices. Furthermore,
+    (<xref alt="Molina &amp; Rao, 2010" rid="ref-molina10" ref-type="bibr">Molina
+    &amp; Rao, 2010</xref>) provide a parametric approach for estimating
+    complex small area parameters such as poverty indices.</p>
+  </sec>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>I would like to acknowledge Dr. Kathleen Wannemuehler, Mr. John
+  Wagai, and Mr. Chibwe Lwamba for their comments on an earlier version
+  of the package that significantly improved
+  <monospace>samplics</monospace> and its documentation. My
+  Ph.D. research advisor and mentor, Professor Emeritus J.N.K. Rao has
+  continuously kept me engaged in the research community well after I
+  obtained my Ph.D. and moved to the corporation, which allowed me to
+  dig deep into many of the topics implemented into this Python survey
+  library, <monospace>samplics</monospace>.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-brewer83">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Brewer</surname><given-names>K. R. W.</given-names></name>
+          <name><surname>Hanif</surname><given-names>M.</given-names></name>
+        </person-group>
+        <source>Sampling with unequal probabilities</source>
+        <publisher-name>Springer-Verlag New York, Inc</publisher-name>
+        <year iso-8601-date="1983">1983</year>
+        <isbn>978-1-4684-9407-5</isbn>
+        <pub-id pub-id-type="doi">10.1007/978-1-4684-9407-5</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-cochran77">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Cochran</surname><given-names>William G.</given-names></name>
+        </person-group>
+        <source>Sampling techniques, 3rd edn</source>
+        <publisher-name>John Wiley &amp; Sons, Inc</publisher-name>
+        <year iso-8601-date="1977">1977</year>
+        <isbn>978-0-471-16240-7</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-efron94">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Efron</surname><given-names>Brandley</given-names></name>
+          <name><surname>Tibshirani</surname><given-names>R. J.</given-names></name>
+        </person-group>
+        <source>An Introduction to the Boostrap</source>
+        <publisher-name>Chapman &amp; Hall/CRC</publisher-name>
+        <year iso-8601-date="1994">1994</year>
+        <isbn>978-0-412-04231-7</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-elbers03">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Elbers</surname><given-names>C.</given-names></name>
+          <name><surname>Lanjouw</surname><given-names>J. O.</given-names></name>
+          <name><surname>Lanjouw</surname><given-names>P</given-names></name>
+        </person-group>
+        <article-title>Micro-level estimation of poverty and inequality</article-title>
+        <source>Econometrica</source>
+        <year iso-8601-date="2003">2003</year>
+        <volume>71</volume>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1111/1468-0262.00399</uri>
+        <pub-id pub-id-type="doi">10.1111/1468-0262.00399</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kish65">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Kish</surname><given-names>Leslie</given-names></name>
+        </person-group>
+        <source>Survey sampling</source>
+        <publisher-name>John Wiley &amp; Sons, Inc</publisher-name>
+        <year iso-8601-date="1965">1965</year>
+        <isbn>978-0-471-10949-5</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-lohr10">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Lohr</surname><given-names>Sharon L.</given-names></name>
+        </person-group>
+        <source>Sampling: Design and analysis, 2nd edn</source>
+        <publisher-name>Cengage Learning, Inc</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <isbn>978-0-367-27341-5</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-lumley04">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lumley</surname><given-names>Thomas</given-names></name>
+        </person-group>
+        <article-title>Analysis of complex survey samples</article-title>
+        <source>Journal of Statistical Software</source>
+        <year iso-8601-date="2004">2004</year>
+        <volume>9</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.18637/jss.v009.i08</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mcculloch08">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>McCulloch</surname><given-names>C. E.</given-names></name>
+          <name><surname>Searle</surname><given-names>S. R.</given-names></name>
+          <name><surname>Neuhaus</surname><given-names>J. M.</given-names></name>
+        </person-group>
+        <source>Generalized, linear, and mixed models</source>
+        <publisher-name>John Wiley; Sons</publisher-name>
+        <publisher-loc>New York</publisher-loc>
+        <year iso-8601-date="2008">2008</year>
+        <isbn>978-0-470-07371-1</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-molina10">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Molina</surname><given-names>I</given-names></name>
+          <name><surname>Rao</surname><given-names>J. N. K.</given-names></name>
+        </person-group>
+        <article-title>Small area estimation of poverty indicators</article-title>
+        <source>Canad. J. Statist.</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>38</volume>
+        <pub-id pub-id-type="doi">10.1002/cjs.10051</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-rao15">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Rao</surname><given-names>J. N. K.</given-names></name>
+          <name><surname>Molina</surname><given-names>I.</given-names></name>
+        </person-group>
+        <source>Small area estimation, 2nd edn</source>
+        <publisher-name>John Wiley &amp; Sons, Hoboken, New Jersey</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <isbn>978-1-118-73578-7</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-valliant18">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Valliant</surname><given-names>R.</given-names></name>
+          <name><surname>Dever</surname><given-names>J. A.</given-names></name>
+        </person-group>
+        <source>Survey weights: A step-by-step guide to calculation</source>
+        <publisher-name>Stata Press</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <isbn>978-1-59718-260-7</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-wolter07">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Wolter</surname><given-names>Kirk M.</given-names></name>
+        </person-group>
+        <source>Introduction to variance estimation, 2nd edn</source>
+        <publisher-name>Springer-Verlag New York, Inc</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <isbn>978-0-387-35099-8</isbn>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

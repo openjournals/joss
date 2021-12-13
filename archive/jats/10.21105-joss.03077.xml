@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3077</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03077</article-id>
+<title-group>
+<article-title>HOODESolver.jl: A Julia package for highly oscillatory
+problems</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<string-name>Yves Mocquard</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="corresp" rid="cor-1"><sup>*</sup></xref>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Pierre Navaro</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Nicolas Crouseilles</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Univ Rennes, Inria, IRMAR - UMR 6625, France.</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Univ Rennes, CNRS, IRMAR - UMR 6625, France.</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<author-notes>
+<corresp id="cor-1">* E-mail: <email></email></corresp>
+</author-notes>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-01-10">
+<day>10</day>
+<month>1</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>61</issue>
+<fpage>3077</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Python</kwd>
+<kwd>astronomy</kwd>
+<kwd>dynamics</kwd>
+<kwd>galactic dynamics</kwd>
+<kwd>milky way</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Highly oscillatory ordinary differential equations (ODEs) have a
+  long history since they are ubiquitous to describe dynamical
+  multi-scale physical phenomena in physics or chemistry. They can be
+  obtained by an appropriate spatial discretization of partial
+  differential equations or can directly describe the behavior of
+  dynamical quantities. In addition to the standard difficulties
+  relating to their numerical resolution, highly oscillatory ODEs
+  involve a stiffness (characterized by a parameter
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\varepsilon\in \, ]0, 1]]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>ε</mml:mi><mml:mo>∈</mml:mo><mml:mspace width="0.167em"></mml:mspace><mml:mo stretchy="false" form="postfix">]</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="false" form="postfix">]</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>)
+  which gives rise to high oscillations in the solution. Hence, to
+  capture these small scales (or high oscillations), conventional
+  methods have to consider a time step smaller than
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\varepsilon]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ε</mml:mi></mml:math></alternatives></inline-formula>
+  leading to unacceptable computational cost.</p>
+  <p>We present here
+  <monospace>HOODESolver.jl</monospace><xref ref-type="fn" rid="fn1">1</xref>,
+  a general-purpose library written in Julia dedicated to the efficient
+  resolution of highly oscillatory ODEs. In the documentation
+  <xref ref-type="fn" rid="fn2">2</xref> details are given to explain
+  how to simulate highly oscillatory ODEs using a Uniformly Accurate
+  (UA) method <italic>ie</italic> a method which is able to capture the
+  solution while keeping the time step (and then the computational cost)
+  independent of the degree of stiffness <inline-formula><alternatives>
+  <tex-math><![CDATA[\varepsilon]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ε</mml:mi></mml:math></alternatives></inline-formula>.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>The Julia package <monospace>DifferentialEquations.jl</monospace>
+  (<xref alt="Rackauckas &amp; Nie, 2017" rid="ref-rackauckas2017differentialequations" ref-type="bibr">Rackauckas
+  &amp; Nie, 2017</xref>) efficiently solves many ODE problems using
+  recent and advanced numerical techniques. However the available
+  algorithms do not easily solve the stiff problems discussed above,
+  because they do not take into account the highly oscillatory character
+  of the solutions. Indeed, the solution presents oscillations whose
+  period is proportional to <inline-formula><alternatives>
+  <tex-math><![CDATA[\varepsilon]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ε</mml:mi></mml:math></alternatives></inline-formula>.
+  If <inline-formula><alternatives>
+  <tex-math><![CDATA[\varepsilon]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ε</mml:mi></mml:math></alternatives></inline-formula>
+  is small, conventional methods struggle to solve such multi-scale
+  phenomena since they require to use tiny time steps to capture high
+  oscillations and become computationally very costly. On the one side,
+  specific methods inspired by the averaging theory have been designed
+  to deal with the regime <inline-formula><alternatives>
+  <tex-math><![CDATA[\varepsilon \ll 1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>ε</mml:mi><mml:mo>≪</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>.
+  On the other side, when <inline-formula><alternatives>
+  <tex-math><![CDATA[\varepsilon \sim 1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>ε</mml:mi><mml:mo>∼</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  the problem ceases to be stiff and a classical integrator gives
+  accurate result in reasonable time. The true difficulty emerges for
+  intermediate values of <inline-formula><alternatives>
+  <tex-math><![CDATA[\varepsilon]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ε</mml:mi></mml:math></alternatives></inline-formula>,
+  for which averaging techniques are not accurate enough and, due to
+  computational cost, standard methods are inefficient. Thus, a new
+  paradigm has been recently introduced, the so-called uniformly
+  accurate (UA) methods which are indeed able to solve the original
+  highly oscillatory problem with a precision and a computational cost
+  that are independent of the value <inline-formula><alternatives>
+  <tex-math><![CDATA[\varepsilon]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ε</mml:mi></mml:math></alternatives></inline-formula>.
+  In particular, these methods allows skipping several oscillations per
+  time step, reducing the number of iterations (and then the cost of the
+  simulation) drastically.</p>
+  <p><monospace>HOODESolver.jl</monospace> intends to gather and unify
+  recent research around highly oscillatory problems
+  (<xref alt="Bao &amp; Zhao, 2019" rid="ref-bao_zhao" ref-type="bibr">Bao
+  &amp; Zhao, 2019</xref>;
+  <xref alt="Chartier et al., 2015" rid="ref-numer_math" ref-type="bibr">Chartier
+  et al., 2015</xref>;
+  <xref alt="Chartier, Crouseilles, et al., 2020" rid="ref-vlasov_pic2" ref-type="bibr">Chartier,
+  Crouseilles, et al., 2020</xref>;
+  <xref alt="Crouseilles et al., 2017" rid="ref-vlasov_pic1" ref-type="bibr">Crouseilles
+  et al., 2017</xref>); its development has been motivated by these
+  research needs and it has already been used in some papers
+  (<xref alt="Chartier, Lemou, et al., 2020" rid="ref-derivative_free" ref-type="bibr">Chartier,
+  Lemou, et al., 2020</xref>). <monospace>HOODESolver.jl</monospace>
+  provides software implementations of several theoretical ideas
+  contained in the recent literature around the so-called
+  <italic>two-scale</italic> method. In particular, a very recent
+  extension proposed in
+  (<xref alt="Chartier, Lemou, et al., 2020" rid="ref-derivative_free" ref-type="bibr">Chartier,
+  Lemou, et al., 2020</xref>) enables to reach high order accuracy. The
+  implementation focuses on a multistep method (namely Adams-Bashforth
+  method) coupled with a spectral method for the discretization of the
+  additional variable representing the fast scale. Hence,
+  <monospace>HOODESolver.jl</monospace> provides an efficient way for
+  researchers to solve a highly oscillatory ODE system, and as such it
+  can be used by the scientific community:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>researchers interested in solving highly oscillatory problems
+      arising in their research field (electromagnetic waves, quantum
+      mechanics, plasma physics, molecular dynamics,
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[\dots]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>…</mml:mi></mml:math></alternatives></inline-formula>),</p>
+    </list-item>
+    <list-item>
+      <p>it can guide some future potential numerical or theoretical
+      developments,</p>
+    </list-item>
+    <list-item>
+      <p>it will serve as a reference to benchmark a new method designed
+      by researchers.</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="features">
+  <title>Features</title>
+  <p><monospace>HOODESolver.jl</monospace> is designed to solve the
+  following highly oscillatory ordinary differential system</p>
+  <p><named-content id="orig" content-type="equation"><disp-formula><alternatives>
+  <tex-math><![CDATA[\label{orig}
+  \dot{u}(t) = \frac{1}{\varepsilon} A u(t) + f(t, u), \qquad t\in [t_{start}, t_{end}],
+  \qquad u(t=t_{start}) = u_{in}, \tag{1}
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>u</mml:mi><mml:mo accent="true">̇</mml:mo></mml:mover><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mfrac><mml:mn>1</mml:mn><mml:mi>ε</mml:mi></mml:mfrac><mml:mi>A</mml:mi><mml:mi>u</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>,</mml:mo><mml:mi>u</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mspace width="2.0em"></mml:mspace><mml:mi>t</mml:mi><mml:mo>∈</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:msub><mml:mi>t</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mi>t</mml:mi><mml:mi>a</mml:mi><mml:mi>r</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>t</mml:mi><mml:mrow><mml:mi>e</mml:mi><mml:mi>n</mml:mi><mml:mi>d</mml:mi></mml:mrow></mml:msub><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mspace width="2.0em"></mml:mspace><mml:mi>u</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>=</mml:mo><mml:msub><mml:mi>t</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mi>t</mml:mi><mml:mi>a</mml:mi><mml:mi>r</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msub><mml:mi>u</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></named-content></p>
+  <p>where</p>
+  <list list-type="bullet">
+    <list-item>
+      <p><inline-formula><alternatives>
+      <tex-math><![CDATA[u \colon t \in [t_{start}, t_{end}] \mapsto u(t) \in \mathbb{R}^n, \qquad t_{start}, t_{end}\in \mathbb{R}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>u</mml:mi><mml:mo>:</mml:mo><mml:mi>t</mml:mi><mml:mo>∈</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:msub><mml:mi>t</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mi>t</mml:mi><mml:mi>a</mml:mi><mml:mi>r</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>t</mml:mi><mml:mrow><mml:mi>e</mml:mi><mml:mi>n</mml:mi><mml:mi>d</mml:mi></mml:mrow></mml:msub><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mo>↦</mml:mo><mml:mi>u</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>∈</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:mi>n</mml:mi></mml:msup><mml:mo>,</mml:mo><mml:mspace width="2.0em"></mml:mspace><mml:msub><mml:mi>t</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mi>t</mml:mi><mml:mi>a</mml:mi><mml:mi>r</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>t</mml:mi><mml:mrow><mml:mi>e</mml:mi><mml:mi>n</mml:mi><mml:mi>d</mml:mi></mml:mrow></mml:msub><mml:mo>∈</mml:mo><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+    </list-item>
+    <list-item>
+      <p><inline-formula><alternatives>
+      <tex-math><![CDATA[u_{in}\in \mathbb{R}^n]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>u</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub><mml:mo>∈</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:mi>n</mml:mi></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>,</p>
+    </list-item>
+    <list-item>
+      <p><inline-formula><alternatives>
+      <tex-math><![CDATA[A\in {\mathcal{M}_{}n,n}(\mathbb{R})]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>A</mml:mi><mml:mo>∈</mml:mo><mml:mrow><mml:msub><mml:mstyle mathvariant="script"><mml:mi>ℳ</mml:mi></mml:mstyle><mml:mrow></mml:mrow></mml:msub><mml:mi>n</mml:mi><mml:mo>,</mml:mo><mml:mi>n</mml:mi></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+      such that <inline-formula><alternatives>
+      <tex-math><![CDATA[\tau \mapsto \exp(\tau A)]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>τ</mml:mi><mml:mo>↦</mml:mo><mml:mo>exp</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>τ</mml:mi><mml:mi>A</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+      is <inline-formula><alternatives>
+      <tex-math><![CDATA[2\pi]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>2</mml:mn><mml:mi>π</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>-periodic,</p>
+    </list-item>
+    <list-item>
+      <p><inline-formula><alternatives>
+      <tex-math><![CDATA[f \colon (t,u) \in \mathbb{R} \times \mathbb{R}^n \mapsto f(t,u) \in \mathbb{R}^n]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mo>:</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>,</mml:mo><mml:mi>u</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>∈</mml:mo><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:mo>×</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:mi>n</mml:mi></mml:msup><mml:mo>↦</mml:mo><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>,</mml:mo><mml:mi>u</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>∈</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:mi>n</mml:mi></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+    </list-item>
+  </list>
+  <p>The numerical solution of
+  <xref alt="Equation 1" rid="orig">Equation 1</xref> is computed by
+  simply entering the different components of the equation
+  (<inline-formula><alternatives>
+  <tex-math><![CDATA[A]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>A</mml:mi></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[f]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\varepsilon]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ε</mml:mi></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[t_{start}, t_{end}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>t</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mi>t</mml:mi><mml:mi>a</mml:mi><mml:mi>r</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>t</mml:mi><mml:mrow><mml:mi>e</mml:mi><mml:mi>n</mml:mi><mml:mi>d</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[u_{in}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>u</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>)
+  following the required format. The user simply chooses an order
+  <monospace>order</monospace> of the Adams-Bashforth time integrator
+  and the time step <monospace>h</monospace>
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[= (t_{start}-t_{end})/]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>t</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mi>t</mml:mi><mml:mi>a</mml:mi><mml:mi>r</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mi>t</mml:mi><mml:mrow><mml:mi>e</mml:mi><mml:mi>n</mml:mi><mml:mi>d</mml:mi></mml:mrow></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>/</mml:mi></mml:mrow></mml:math></alternatives></inline-formula><monospace>nb_t</monospace>.
+  The result is given as a function object which can be evaluated in an
+  arbitrary time <inline-formula><alternatives>
+  <tex-math><![CDATA[t]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>t</mml:mi></mml:math></alternatives></inline-formula>,
+  not just at the discrete times. In addition to the methodology
+  introduced in <monospace>HOODESolver.jl</monospace>, the package
+  includes:</p>
+  <list list-type="order">
+    <list-item>
+      <p>Arbitrary precision arithmetic via BigFloats,</p>
+    </list-item>
+    <list-item>
+      <p>New technique to compute the first iterations required for the
+      initialization of the Adams-Bashforth method, this requires that
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[f]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>
+      has to be <monospace>order</monospace> times differentiable on
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[[t_{start}-]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">[</mml:mo><mml:msub><mml:mi>t</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mi>t</mml:mi><mml:mi>a</mml:mi><mml:mi>r</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msub><mml:mo>−</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+      <monospace>order</monospace> <inline-formula><alternatives>
+      <tex-math><![CDATA[h, t_{end}]]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>h</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>t</mml:mi><mml:mrow><mml:mi>e</mml:mi><mml:mi>n</mml:mi><mml:mi>d</mml:mi></mml:mrow></mml:msub><mml:mo stretchy="false" form="postfix">]</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>,
+      </p>
+    </list-item>
+    <list-item>
+      <p>Extension of the two-scale method to non-homogeneous
+      problems.</p>
+    </list-item>
+  </list>
+  <p>The package has been thought to be in close connection to
+  <monospace>DifferentialEquation.jl</monospace>. We offer a common
+  interface with it by extending the <monospace>SplitODE</monospace>
+  problem type<xref ref-type="fn" rid="fn3">3</xref>. Users can use our
+  package more easily and it facilitates the cross comparisons with
+  other methods.</p>
+  <p>The function <monospace>LinearHOODEOperator</monospace> has been
+  written following the interface
+  <monospace>AbstractDiffEqLinearOperator</monospace><xref ref-type="fn" rid="fn4">4</xref>
+  in order to solve a <monospace>SplitODEProblem</monospace> using the
+  <monospace>HOODEAB</monospace> algorithm. It defines the stiff
+  operator <inline-formula><alternatives>
+  <tex-math><![CDATA[\frac{1}{\varepsilon} A]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mfrac><mml:mn>1</mml:mn><mml:mi>ε</mml:mi></mml:mfrac><mml:mi>A</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  with both <inline-formula><alternatives>
+  <tex-math><![CDATA[\varepsilon]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ε</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[A]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>A</mml:mi></mml:math></alternatives></inline-formula>
+  from the studied
+  <xref alt="Equation 1" rid="orig">Equation 1</xref>.</p>
+</sec>
+<sec id="example">
+  <title>Example</title>
+  <p>The following is an example with the system of
+  Hénon-Heiles<xref ref-type="fn" rid="fn5">5</xref>:</p>
+  <code language="julia">using HOODESolver, Plots
+
+epsilon = 0.0001
+
+A = [ 0 0 1 0 ; 
+      0 0 0 0 ; 
+     -1 0 0 0 ; 
+      0 0 0 0 ]
+
+f1 = LinearHOODEOperator( epsilon, A)
+
+f2 = (u,p,t) -&gt;  [ 0, u[4], 2*u[1]*u[2], -u[2] - u[1]^2 + u[2]^2 ] 
+
+tspan = (0.0, 3.0)
+u0 = [0.55, 0.12, 0.03, 0.89]
+prob = SplitODEProblem(f1, f2, u0, tspan); 
+
+sol = solve(prob, HOODEAB()) 
+plot(sol) </code>
+  <fig>
+    <caption><p>Hénon-Heiles solution.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="paper.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="related-research-and-software">
+  <title>Related research and software</title>
+  <p>The development of the <monospace>HOODESolver.jl</monospace>
+  package was initially motivated by the need of efficient multiscale
+  solvers for the charged particles dynamics in an external strong
+  magnetic field. Indeed, due to the Lorentz force, charged particles
+  undergo rapid circular motion around the magnetic field lines. This
+  constitutes the basis of the magnetic confinement of a plasma in a
+  chamber. Obviously, computing a highly oscillatory dynamics is a
+  long-standing problem occurring in many relevant applications
+  (<xref alt="Engquist et al., 2009" rid="ref-engquist" ref-type="bibr">Engquist
+  et al., 2009</xref>;
+  <xref alt="Hairer et al., 2006" rid="ref-hairer_lubich_wanner" ref-type="bibr">Hairer
+  et al., 2006</xref>). However, we are not aware of other software
+  packages with similar purpose, excepting the very recent (py)oscode
+  package
+  (<xref alt="Agocs, 2020" rid="ref-joss_ode" ref-type="bibr">Agocs,
+  2020</xref>) which combines WKB techniques and standard integration
+  methods to ensure a user-specified tolerance.</p>
+</sec>
+<sec id="aknowledgements">
+  <title>Aknowledgements</title>
+  <p>Much of <monospace>HOODESolver.jl</monospace> was implemented by Y.
+  Mocquard while he was supported by Inria through the AdT (Aide au
+  développement technologique) J-Plaff of the center Rennes-Bretagne
+  Atlantique.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-derivative_free">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Chartier</surname><given-names>P.</given-names></name>
+          <name><surname>Lemou</surname><given-names>M.</given-names></name>
+          <name><surname>Méhats</surname><given-names>F.</given-names></name>
+          <name><surname>Zhao</surname><given-names>X.</given-names></name>
+        </person-group>
+        <article-title>Derivative-free high order uniformly accurate schemes for highly-oscillatory systems</article-title>
+        <source>ArXiv e-prints</source>
+        <year iso-8601-date="2020-03">2020</year><month>03</month>
+        <pub-id pub-id-type="doi">10.1093/imanum/drab014</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-vlasov_pic1">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Crouseilles</surname><given-names>N.</given-names></name>
+          <name><surname>Lemou</surname><given-names>M.</given-names></name>
+          <name><surname>Méhats</surname><given-names>F.</given-names></name>
+          <name><surname>Zhao</surname><given-names>X.</given-names></name>
+        </person-group>
+        <article-title> Uniformly accurate Particle-In-Cell method for the long time solution of the two-dimensional Vlasov-Poisson equation with uniform strong magnetic field</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>346</volume>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2017.06.011</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-vlasov_pic2">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Chartier</surname><given-names>P.</given-names></name>
+          <name><surname>Crouseilles</surname><given-names>N.</given-names></name>
+          <name><surname>Lemou</surname><given-names>M.</given-names></name>
+          <name><surname>Méhats</surname><given-names>F.</given-names></name>
+          <name><surname>Zhao</surname><given-names>X.</given-names></name>
+        </person-group>
+        <article-title>Uniformly accurate methods for three dimensional vlasov equations under strong magnetic field with varying direction</article-title>
+        <source>SIAM Journal of Scientific Computing</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>42</volume>
+        <pub-id pub-id-type="doi">10.1137/19M127402X</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-joss_ode">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Agocs</surname><given-names>F. J.</given-names></name>
+        </person-group>
+        <article-title>Fast solutions of oscillatory ODEs</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>5(56)</volume>
+        <pub-id pub-id-type="doi">10.21105/joss.02830</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-numer_math">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Chartier</surname><given-names>P.</given-names></name>
+          <name><surname>Crouseilles</surname><given-names>N.</given-names></name>
+          <name><surname>Lemou</surname><given-names>M.</given-names></name>
+          <name><surname>Méhats</surname><given-names>F.</given-names></name>
+        </person-group>
+        <article-title>Uniformly accurate numerical schemes for highly oscillatory klein-gordon and nonlinear schrödinger equations</article-title>
+        <source>Numerische Mathematik</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>129</volume>
+        <pub-id pub-id-type="doi">10.1007/s00211-014-0638-9</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bao_zhao">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bao</surname><given-names>W.</given-names></name>
+          <name><surname>Zhao</surname><given-names>X.</given-names></name>
+        </person-group>
+        <article-title>Comparison of numerical methods for the nonlinear Klein-Gordon equation in the non relativistic limit regime</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="2019-12">2019</year><month>12</month>
+        <volume>398</volume>
+        <uri>https://www.sciencedirect.com/science/article/pii/S0021999119305844</uri>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2019.108886</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hairer_lubich_wanner">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Hairer</surname><given-names>E.</given-names></name>
+          <name><surname>Lubich</surname><given-names>C.</given-names></name>
+          <name><surname>Wanner</surname><given-names>G.</given-names></name>
+        </person-group>
+        <source>Geometric numerical integration</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2006">2006</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-rackauckas2017differentialequations">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rackauckas</surname><given-names>Christopher</given-names></name>
+          <name><surname>Nie</surname><given-names>Qing</given-names></name>
+        </person-group>
+        <article-title>Differentialequations.jl–a performant and feature-rich ecosystem for solving differential equations in julia</article-title>
+        <source>Journal of Open Research Software</source>
+        <publisher-name>Ubiquity Press</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>5</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.5334/jors.151</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-engquist">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Engquist</surname><given-names>B.</given-names></name>
+          <name><surname>Fokas</surname><given-names>A.</given-names></name>
+          <name><surname>Hairer</surname><given-names>E.</given-names></name>
+          <name><surname>Iserles</surname><given-names>A.</given-names></name>
+        </person-group>
+        <source>Highly oscillatory problems</source>
+        <publisher-name>Cambridge University Press</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+<fn-group>
+  <fn id="fn1">
+    <label>1</label><p>https://github.com/ymocquar/HOODESolver.jl</p>
+  </fn>
+  <fn id="fn2">
+    <label>2</label><p>https://ymocquar.github.io/HOODESolver.jl/stable/</p>
+  </fn>
+  <fn id="fn3">
+    <label>3</label><p>https://diffeq.sciml.ai/stable/types/split_ode_types/</p>
+  </fn>
+  <fn id="fn4">
+    <label>4</label><p>https://diffeq.sciml.ai/stable/features/diffeq_operator/#DiffEqOperators</p>
+  </fn>
+  <fn id="fn5">
+    <label>5</label><p>https://ymocquar.github.io/HOODESolver.jl/stable/quickstart/</p>
+  </fn>
+</fn-group>
+</back>
+</article>

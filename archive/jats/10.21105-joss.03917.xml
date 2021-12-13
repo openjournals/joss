@@ -1,0 +1,1142 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3917</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03917</article-id>
+<title-group>
+<article-title>CR-Sparse: Hardware accelerated functional algorithms for
+sparse signal processing in Python using JAX</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-2217-4768</contrib-id>
+<string-name>Shailesh Kumar</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Indian Institute of Technology, Delhi</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-11-29">
+<day>29</day>
+<month>11</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>68</issue>
+<fpage>3917</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>sparse and redundant representations</kwd>
+<kwd>compressive sensing</kwd>
+<kwd>wavelets</kwd>
+<kwd>linear operators</kwd>
+<kwd>sparse subspace clustering</kwd>
+<kwd>functional programming</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>We introduce
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/carnotresearch/cr-sparse"><monospace>CR-Sparse</monospace></ext-link>,
+  a Python library that enables to efficiently solve a wide variety of
+  sparse representation based signal processing problems. It is a
+  cohesive collection of sub-libraries working together. Individual
+  sub-libraries provide functionalities for: wavelets, linear operators,
+  greedy and convex optimization based sparse recovery algorithms,
+  subspace clustering, standard signal processing transforms, and linear
+  algebra subroutines for solving sparse linear systems. It has been
+  built using Google JAX
+  (<xref alt="Bradbury et al., 2018" rid="ref-jax2018github" ref-type="bibr">Bradbury
+  et al., 2018</xref>), which enables the same high level Python code to
+  get efficiently compiled on CPU, GPU and TPU architectures using XLA
+  (<xref alt="Abadi et al., 2017" rid="ref-abadi2017computational" ref-type="bibr">Abadi
+  et al., 2017</xref>).</p>
+  <fig>
+    <caption><p>Sparse signal representations and compressive
+    sensing</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="./srr_cs.png" xlink:title="" />
+  </fig>
+  <p>Traditional signal processing exploits the underlying structure in
+  signals by representing them using Fourier or wavelet orthonormal
+  bases. In these representations, most of the signal energy is
+  concentrated in few coefficients allowing greater flexibility in
+  analysis and processing of signals. More flexibility can be achieved
+  by using overcomplete dictionaries
+  (<xref alt="Mallat, 2009" rid="ref-mallat2008wavelet" ref-type="bibr">Mallat,
+  2009</xref>) (e.g. unions of orthonormal bases). However, the
+  construction of sparse representations of signals in these
+  overcomplete dictionaries is no longer straightforward and requires
+  use of specialized sparse coding algorithms like orthogonal matching
+  pursuit
+  (<xref alt="Pati et al., 1993" rid="ref-pati1993orthogonal" ref-type="bibr">Pati
+  et al., 1993</xref>) or basis pursuit
+  (<xref alt="Chen et al., 2001" rid="ref-chen2001atomic" ref-type="bibr">Chen
+  et al., 2001</xref>). The key idea behind these algorithms is the fact
+  that under-determined systems <inline-formula><alternatives>
+  <tex-math><![CDATA[A x = b]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>A</mml:mi><mml:mi>x</mml:mi><mml:mo>=</mml:mo><mml:mi>b</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  can be solved efficiently to provide sparse solutions
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>
+  if the matrix <inline-formula><alternatives>
+  <tex-math><![CDATA[A]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>A</mml:mi></mml:math></alternatives></inline-formula>
+  satisfies specific conditions on its properties like coherence.
+  Compressive sensing takes the same idea in the other direction and
+  contends that signals having sparse representations in suitable bases
+  can be acquired by very few data-independent random measurements
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[y = \Phi x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>y</mml:mi><mml:mo>=</mml:mo><mml:mi>Φ</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  if the sensing or measurement system <inline-formula><alternatives>
+  <tex-math><![CDATA[\Phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>Φ</mml:mi></mml:math></alternatives></inline-formula>
+  satisfies certain conditions like restricted isometry property
+  (<xref alt="Candes, 2008" rid="ref-candes2008restricted" ref-type="bibr">Candes,
+  2008</xref>). The same sparse coding algorithms can be tailored for
+  sparse signal recovery from compressed measurements.</p>
+  <p>A short mathematical introduction to compressive sensing and sparse
+  representation problems is provided in
+  <ext-link ext-link-type="uri" xlink:href="https://cr-sparse.readthedocs.io/en/latest/intro.html">docs</ext-link>.
+  For comprehensive introduction to sparse representations and
+  compressive sensing, please refer to excellent books
+  (<xref alt="Elad, 2010" rid="ref-elad2010sparse" ref-type="bibr">Elad,
+  2010</xref>;
+  <xref alt="Foucart &amp; Rauhut, 2013" rid="ref-foucart2013mathintro" ref-type="bibr">Foucart
+  &amp; Rauhut, 2013</xref>;
+  <xref alt="Mallat, 2009" rid="ref-mallat2008wavelet" ref-type="bibr">Mallat,
+  2009</xref>), papers
+  (<xref alt="Donoho, 2006" rid="ref-donoho2006compressed" ref-type="bibr">Donoho,
+  2006</xref>;
+  <xref alt="Marques et al., 2018" rid="ref-marques2018review" ref-type="bibr">Marques
+  et al., 2018</xref>;
+  <xref alt="Qaisar et al., 2013" rid="ref-qaisar2013compressive" ref-type="bibr">Qaisar
+  et al., 2013</xref>),
+  <ext-link ext-link-type="uri" xlink:href="https://dsp.rice.edu/cs/">Rice
+  Compressive Sensing Resources</ext-link> and references therein.</p>
+</sec>
+<sec id="package-overview">
+  <title>Package Overview</title>
+  <p>The <monospace>cr.sparse.pursuit</monospace> package includes
+  greedy and thresholding based solvers for sparse recovery. It
+  includes: <monospace>OMP</monospace>, <monospace>CoSaMP</monospace>,
+  <monospace>HTP</monospace>, <monospace>IHT</monospace>,
+  <monospace>SP</monospace> algorithms. (provided in
+  <monospace>cr.sparse.lop</monospace> package). The
+  <monospace>cr.sparse.cvx</monospace> package includes efficient
+  solvers for l1-minimization problems using convex optimization
+  methods. The <monospace>cr.sparse.sls</monospace> package provides JAX
+  versions of <monospace>LSQR</monospace>, <monospace>ISTA</monospace>,
+  <monospace>FISTA</monospace> algorithms for solving sparse linear
+  systems. These algorithms can work with unstructured random and dense
+  sensing matrices as well as structured sensing matrices represented as
+  linear operators The <monospace>cr.sparse.lop</monospace> package
+  includes a collection of linear operators influenced by
+  <monospace>PyLops</monospace>
+  (<xref alt="Ravasi &amp; Vasconcelos, 2019" rid="ref-ravasi2019pylops" ref-type="bibr">Ravasi
+  &amp; Vasconcelos, 2019</xref>). <monospace>cr.sparse.wt</monospace>
+  package includes a JAX version of major functionality from
+  <monospace>PyWavelets</monospace>
+  (<xref alt="Lee et al., 2019" rid="ref-lee2019pywavelets" ref-type="bibr">Lee
+  et al., 2019</xref>) making it a first major pure Python wavelets
+  implementation which can work across CPUs, GPUs and TPUs.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Currently, there is no single Package which provides a
+  comprehensive set of tools for solving sparse recovery problems in one
+  place. Individual researchers provide their codes along with their
+  research paper only for the algorithms they have developed. Most of
+  this work is available in the form of MATLAB
+  (<xref alt="MATLAB, 2018" rid="ref-MATLABU003A2018" ref-type="bibr">MATLAB,
+  2018</xref>) libraries. E.g.:
+  <ext-link ext-link-type="uri" xlink:href="http://yall1.blogs.rice.edu"><monospace>YALL1</monospace></ext-link>
+  is the original MATLAB implementation of the ADMM based sparse
+  recovery algorithms.
+  <ext-link ext-link-type="uri" xlink:href="https://web.stanford.edu/~boyd/l1_ls/"><monospace>L1-LS</monospace></ext-link>
+  is the original MATLAB implementation of the Truncated Newton Interior
+  Points Method for solving the l1-minimization problem.
+  <ext-link ext-link-type="uri" xlink:href="https://www.southampton.ac.uk/engineering/about/staff/tb1m08.page#software"><monospace>Sparsify</monospace></ext-link>
+  provides the MATLAB implementations of IHT, NIHT, AIHT algorithms.
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/aaren/wavelets"><monospace>aaren/wavelets</monospace></ext-link>
+  is a CWT implementation following
+  (<xref alt="Torrence &amp; Compo, 1998" rid="ref-torrence1998practical" ref-type="bibr">Torrence
+  &amp; Compo, 1998</xref>).
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/foucart/HTP"><monospace>HTP</monospace></ext-link>
+  provides implementation of Hard Thresholding Pursuit in MATLAB.
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/gregfreeman/wavelab850"><monospace>WaveLab</monospace></ext-link>
+  is the reference open source wavelet implementation in MATLAB.
+  However, its API has largely been superseded by later libraries.
+  <ext-link ext-link-type="uri" xlink:href="https://elad.cs.technion.ac.il/wp-content/uploads/2018/02/Matlab-Package-Book-1.zip"><monospace>Sparse and Redundant Representations book code</monospace></ext-link>
+  (<xref alt="Elad, 2010" rid="ref-elad2010sparse" ref-type="bibr">Elad,
+  2010</xref>) provides basic implementations of a number of sparse
+  recovery and related algorithms. Several of these libraries contain
+  key performance critical sub-routines in the form of C/C++ extensions
+  making portability to GPUs harder.</p>
+  <p>There are some Python libraries which focus on specific areas
+  however they are generally CPU based. E.g.,
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/nikcleju/pyCSalgos"><monospace>pyCSalgos</monospace></ext-link>
+  is a Python implementation of various Compressed Sensing algorithms.
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/drrelyea/spgl1"><monospace>spgl1</monospace></ext-link>
+  is a <monospace>NumPy</monospace> based implementation of spectral
+  projected gradient for L1 minimization. <monospace>c-lasso</monospace>
+  (<xref alt="Simpson et al., 2021" rid="ref-simpson2021classo" ref-type="bibr">Simpson
+  et al., 2021</xref>) is a Python package for constrained sparse
+  regression and classification. This is also CPU only.
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/PyWavelets/pywt"><monospace>PyWavelets</monospace></ext-link>
+  is an excellent CPU only wavelets implementation in Python closely
+  following the API of Wavelet toolbox in MATLAB. The performance
+  critical parts have been written entirely in C. There are several
+  attempts to port it on GPU using <monospace>PyTorch</monospace>
+  (<ext-link ext-link-type="uri" xlink:href="https://github.com/v0lta/PyTorch-Wavelet-Toolbox">PyTorch-Wavelet-Toolbox</ext-link>)
+  or <monospace>Tensorflow</monospace>
+  (<ext-link ext-link-type="uri" xlink:href="https://github.com/UiO-CS/tf-wavelets">tf-wavelets</ext-link>)
+  backends.
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/PyLops/pylops"><monospace>PyLops</monospace></ext-link>
+  includes GPU support. They have built a
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/PyLops/pylops/blob/master/pylops/utils/backend.py"><monospace>backend.py</monospace></ext-link>
+  layer to switch explicitly between <monospace>NumPy</monospace> and
+  <ext-link ext-link-type="uri" xlink:href="https://cupy.dev/"><monospace>CuPy</monospace></ext-link>
+  for GPU support. In contrast, our use of JAX enables us to perform jit
+  compilation with abstracted out end-to-end XLA optimization to
+  multiple backend.</p>
+  <p>The algorithms in this package have a wide variety of applications.
+  We list a few: image denoising, deblurring, compression, inpainting,
+  impulse noise removal, super-resolution, subspace clustering,
+  dictionary learning, compressive imaging, medical imaging, compressive
+  radar, wireless sensor networks, astrophysical signals, cognitive
+  radio, sparse channel estimation, analog to information conversion,
+  speech recognition, seismology, direction of arrival.</p>
+</sec>
+<sec id="sparse-signal-processing-problems-and-available-solvers">
+  <title>Sparse signal processing problems and available solvers</title>
+  <p>We provide JAX based implementations for the following
+  algorithms:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p><monospace>cr.sparse.pursuit.omp</monospace>: Orthogonal
+      Matching Pursuit (OMP)
+      (<xref alt="Davenport &amp; Wakin, 2010" rid="ref-davenport2010analysis" ref-type="bibr">Davenport
+      &amp; Wakin, 2010</xref>;
+      <xref alt="Pati et al., 1993" rid="ref-pati1993orthogonal" ref-type="bibr">Pati
+      et al., 1993</xref>;
+      <xref alt="Tropp, 2004" rid="ref-tropp2004greed" ref-type="bibr">Tropp,
+      2004</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>cr.sparse.pursuit.cosamp</monospace>: Compressive
+      Sampling Matching Pursuit (CoSaMP)
+      (<xref alt="Needell &amp; Tropp, 2009" rid="ref-needell2009cosamp" ref-type="bibr">Needell
+      &amp; Tropp, 2009</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>cr.sparse.pursuit.sp</monospace>: Subspace Pursuit
+      (SP)
+      (<xref alt="Dai &amp; Milenkovic, 2009" rid="ref-dai2009subspace" ref-type="bibr">Dai
+      &amp; Milenkovic, 2009</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>cr.sparse.pursuit.iht</monospace>: Iterative Hard
+      Thresholding and its normalized version (IHT, NIHT)
+      (<xref alt="Blumensath &amp; Davies, 2009" rid="ref-blumensath2009iterative" ref-type="bibr">Blumensath
+      &amp; Davies, 2009</xref>;
+      <xref alt="Blumensath &amp; Davies, 2010" rid="ref-blumensath2010normalized" ref-type="bibr">Blumensath
+      &amp; Davies, 2010</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>cr.sparse.pursuit.htp</monospace>: Hard Thresholding
+      Pursuit and its normalized version (HTP, NHTP)
+      (<xref alt="Foucart, 2011" rid="ref-foucart2011recovering" ref-type="bibr">Foucart,
+      2011</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>cr.sparse.cvx.l1ls</monospace>: <italic>Truncated
+      Newton Interior Points Method</italic> for solving the
+      l1-minimization problem
+      (<xref alt="Kim et al., 2007" rid="ref-kim2007interior" ref-type="bibr">Kim
+      et al., 2007</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>cr.sparse.cvx.admm</monospace>: Solvers for basis
+      pursuit (BP), basis pursuit denoising (BPDN), basis pursuit with
+      inequality constraints (BPIC), and their nonnegative variants
+      based on ADMM
+      (<xref alt="Yang &amp; Zhang, 2011" rid="ref-yang2011alternating" ref-type="bibr">Yang
+      &amp; Zhang, 2011</xref>;
+      <xref alt="Zhang et al., 2010" rid="ref-zhang2009user" ref-type="bibr">Zhang
+      et al., 2010</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>cr.sparse.sls.lsqr</monospace>: LSQR algorithm for
+      sparse linear equations
+      (<xref alt="Paige &amp; Saunders, 1982" rid="ref-paige1982lsqr" ref-type="bibr">Paige
+      &amp; Saunders, 1982</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>cr.sparse.sls.ista</monospace>: Iterative Shrinkage
+      and Thresholding Algorithm (ISTA)
+      (<xref alt="Daubechies et al., 2004" rid="ref-daubechies2004iterative" ref-type="bibr">Daubechies
+      et al., 2004</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>cr.sparse.sls.fista</monospace>: Fast Iterative
+      Shrinkage Thresholding Algorithm (FISTA)
+      (<xref alt="Beck &amp; Teboulle, 2009" rid="ref-beck2009fast" ref-type="bibr">Beck
+      &amp; Teboulle, 2009</xref>)</p>
+    </list-item>
+  </list>
+  <p>The dictionaries and sensing matrices can be efficiently
+  implemented using a pair of functions for the forward
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[A x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>A</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  and adjoint <inline-formula><alternatives>
+  <tex-math><![CDATA[A^H x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mi>A</mml:mi><mml:mi>H</mml:mi></mml:msup><mml:mi>x</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  operations. <monospace>cr.sparse.lop</monospace> provides a collection
+  of linear operators (similar to <monospace>PyLops</monospace>
+  (<xref alt="Ravasi &amp; Vasconcelos, 2019" rid="ref-ravasi2019pylops" ref-type="bibr">Ravasi
+  &amp; Vasconcelos, 2019</xref>)) which provide the forward and adjoint
+  operation functions. These operators can be JIT compiled and used
+  efficiently with the algorithms above. Our 2D and ND operators accept
+  2D/ND arrays as input and return 2D/ND arrays as output. The operators
+  <monospace>+</monospace>, <monospace>-</monospace>,
+  <monospace>@</monospace>, <monospace>**</monospace> etc. are
+  overridden to provide operator calculus, i.e. ways to combine
+  operators to generate new operators.</p>
+  <p>As an application area, the library includes an implementation of
+  sparse subspace clustering (SSC) by orthogonal matching pursuit
+  (<xref alt="You et al., 2016" rid="ref-you2016scalable" ref-type="bibr">You
+  et al., 2016</xref>) in the
+  <monospace>cr.sparse.cluster.ssc</monospace> package. The
+  <monospace>cr.sparse.cluster.spectral</monospace> package provides a
+  custom implementation of spectral clustering step of SSC.</p>
+</sec>
+<sec id="experimental-results">
+  <title>Experimental Results</title>
+  <p>We conducted a number of experiments to benchmark the runtime of
+  <monospace>CR-Sparse</monospace> implementations viz. existing
+  reference software in Python or MATLAB. Jupyter notebooks to reproduce
+  these micro-benchmarks are available on the
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/carnotresearch/cr-sparse-companion"><monospace>cr-sparse-companion</monospace></ext-link>
+  (<xref alt="Kumar, 2021" rid="ref-shailesh2021companion" ref-type="bibr">Kumar,
+  2021</xref>) repository.</p>
+  <p>All Python based benchmarks have been run on the machine
+  configuration: Intel(R) Xeon(R) Gold 6130 CPU @ 2.10GHz, 16 Cores, 64
+  GB RAM, NVIDIA GeForce GTX 1060 6GB GPU, Ubuntu 18.04 64-Bit, Python
+  3.8.8, NVidia driver version 495.29.05, CUDA version 11.5.</p>
+  <p>MATLAB based benchmarks were run on the machine configuration:
+  Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz 2.30 GHz, 32 GB RAM, Windows
+  10 Pro, MATLAB R2020b.</p>
+  <p>The following table provides comparison of
+  <monospace>CR-Sparse</monospace> against reference implementations on
+  a set of representative problems:</p>
+  <table-wrap>
+    <table>
+      <colgroup>
+        <col width="25%" />
+        <col width="21%" />
+        <col width="17%" />
+        <col width="12%" />
+        <col width="12%" />
+        <col width="12%" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th align="center">Problem</th>
+          <th align="center">Size</th>
+          <th align="center">Ref tool</th>
+          <th align="center">Ref time</th>
+          <th align="center">Our time</th>
+          <th align="center">Gain</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="center">Hard Thresholding Pursuit</td>
+          <td align="center">M=2560, N=10240, K=200</td>
+          <td align="center">HTP (MATLAB)</td>
+          <td align="center">3.5687 s</td>
+          <td align="center">160 ms</td>
+          <td align="center">22x</td>
+        </tr>
+        <tr>
+          <td align="center">Orthogonal Matching Pursuit</td>
+          <td align="center">M=2000, N=10000, K=100</td>
+          <td align="center">sckit-learn</td>
+          <td align="center">379 ms</td>
+          <td align="center">120 ms</td>
+          <td align="center">3.15x</td>
+        </tr>
+        <tr>
+          <td align="center">ADMM, BP</td>
+          <td align="center">M=2000, N=20000, K=200</td>
+          <td align="center">YALL1 (MATLAB)</td>
+          <td align="center">1.542 sec</td>
+          <td align="center">445 ms</td>
+          <td align="center">3.46x</td>
+        </tr>
+        <tr>
+          <td align="center">ADMM, BPDN</td>
+          <td align="center">M=2000, N=20000, K=200</td>
+          <td align="center">YALL1 (MATLAB)</td>
+          <td align="center">1.572.81 sec</td>
+          <td align="center">273 ms</td>
+          <td align="center">5.75x</td>
+        </tr>
+        <tr>
+          <td align="center">Image blurring</td>
+          <td align="center">Image: 500x480, Kernel: 15x25</td>
+          <td align="center">Pylops</td>
+          <td align="center">6.63 ms</td>
+          <td align="center">1.64 ms</td>
+          <td align="center">4x</td>
+        </tr>
+        <tr>
+          <td align="center">Image deblurring using LSQR</td>
+          <td align="center">Image: 500x480, Kernel: 15x25</td>
+          <td align="center">Pylops</td>
+          <td align="center">237 ms</td>
+          <td align="center">39.3 ms</td>
+          <td align="center">6x</td>
+        </tr>
+        <tr>
+          <td align="center">Image DWT2</td>
+          <td align="center">Image: 512x512</td>
+          <td align="center">PyWavelets</td>
+          <td align="center">4.48 ms</td>
+          <td align="center">656 µs</td>
+          <td align="center">6.83x</td>
+        </tr>
+        <tr>
+          <td align="center">Image IDWT2</td>
+          <td align="center">Image: 512x512</td>
+          <td align="center">PyWavelets</td>
+          <td align="center">3.4 ms</td>
+          <td align="center">614 µs</td>
+          <td align="center">5.54x</td>
+        </tr>
+        <tr>
+          <td align="center">OMP for SSC</td>
+          <td align="center">5 subspaces 50K points</td>
+          <td align="center">SSCOMP_Code (MATLAB)</td>
+          <td align="center">52.5 s</td>
+          <td align="center">10.2 s</td>
+          <td align="center">4.6x</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>We see significant though variable gains achieved by
+  <monospace>CR-Sparse</monospace> on GPU. We have observed that gain
+  tends to increase for larger problem sizes. GPUs tend to perform
+  better when problem size increases as the matrix/vector products
+  become bigger. <monospace>vmap</monospace> and
+  <monospace>pmap</monospace> tools provided by JAX can be used to
+  easily parallelize the <monospace>CR-Sparse</monospace> algorithms
+  over multiple data and processors.</p>
+  <p>Following table compares the runtime of linear operators in
+  <monospace>CR-Sparse</monospace> on GPU vs
+  <monospace>PyLops</monospace> on CPU for large size problems. Timings
+  are measured for both forward and adjoint operati`ons.</p>
+  <table-wrap>
+    <table>
+      <colgroup>
+        <col width="29%" />
+        <col width="18%" />
+        <col width="9%" />
+        <col width="9%" />
+        <col width="9%" />
+        <col width="9%" />
+        <col width="9%" />
+        <col width="9%" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th align="center">Operator</th>
+          <th align="center">Size</th>
+          <th align="center">Fwd ref</th>
+          <th align="center">Fwd our</th>
+          <th align="center">Gain</th>
+          <th align="center">Adj ref</th>
+          <th align="center">Adj our</th>
+          <th align="center">Gain</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="center">Diagonal matrix mult</td>
+          <td align="center">n=1M</td>
+          <td align="center">966 µs</td>
+          <td align="center">95.7 µs</td>
+          <td align="center">10x</td>
+          <td align="center">992 µs</td>
+          <td align="center">96.3 µs</td>
+          <td align="center">10x</td>
+        </tr>
+        <tr>
+          <td align="center">Matrix mult</td>
+          <td align="center">(m,n)=(10K,10K)</td>
+          <td align="center">11 ms</td>
+          <td align="center">2.51 ms</td>
+          <td align="center">4.37x</td>
+          <td align="center">11.6 ms</td>
+          <td align="center">2.51 ms</td>
+          <td align="center">4.63x</td>
+        </tr>
+        <tr>
+          <td align="center">First derivative</td>
+          <td align="center">n=1M</td>
+          <td align="center">2.15 ms</td>
+          <td align="center">71.1 µs</td>
+          <td align="center">30.2x</td>
+          <td align="center">2.97 ms</td>
+          <td align="center">186 µs</td>
+          <td align="center">15.97x</td>
+        </tr>
+        <tr>
+          <td align="center">HAAR DWT2, level=8</td>
+          <td align="center">in=(4K,4K)</td>
+          <td align="center">981 ms</td>
+          <td align="center">34.4 ms</td>
+          <td align="center">28.5x</td>
+          <td align="center">713 ms</td>
+          <td align="center">60.8 ms</td>
+          <td align="center">11.7x</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+</sec>
+<sec id="limitations">
+  <title>Limitations</title>
+  <p>Some of the limitations in the library come from the underlying JAX
+  library. JAX is relatively new and still hasn’t reached
+  <monospace>1.0</monospace> level maturity. The programming model
+  chosen by JAX places several restrictions on expressing the program
+  logic. For example, JAX does not have support for dynamic or data
+  dependent shapes in their
+  <ext-link ext-link-type="uri" xlink:href="https://jax.readthedocs.io/en/latest/notebooks/thinking_in_jax.html#to-jit-or-not-to-jit">JIT
+  compiler</ext-link>. Thus, any algorithm parameter which determines
+  the size/shape of individual arrays in an algorithm must be statically
+  provided. E.g. for the greedy algorithms like OMP, the sparsity level
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[K]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>K</mml:mi></mml:math></alternatives></inline-formula>
+  must be known in advance and provided as a static parameter to the API
+  as the size of output array depends on <inline-formula><alternatives>
+  <tex-math><![CDATA[K]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>K</mml:mi></mml:math></alternatives></inline-formula>.</p>
+  <p>The control flow primitives like
+  <monospace>lax.while_loop</monospace>,
+  <monospace>lax.fori_loop</monospace> etc. in JAX require that the
+  algorithm state flowing between iterations must not change shape and
+  size. This makes coding of algorithms like OMP or SVT (singular value
+  thresholding) very difficult. An incremental QR or Cholesky
+  decomposition based implementation of OMP requires growing algorithm
+  state. We ended up using a standard Python <monospace>for</monospace>
+  loop for now but the JIT compiler simply unrolls it and doesn’t allow
+  for tolerance based early termination in them.</p>
+  <p>1D convolutions are slow in JAX on CPU
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/google/jax/discussions/7961">#7961</ext-link>.
+  This affects the performance of DWT/IDWT in
+  <monospace>cr.sparse.dwt</monospace>. We are working on exploring ways
+  of making it more efficient while keeping the API intact.</p>
+  <p>These restrictions necessitate good amount of creativity and a very
+  disciplined coding style so that efficient JIT friendly solvers can be
+  developed.</p>
+</sec>
+<sec id="future-work">
+  <title>Future Work</title>
+  <p>Currently, work is underway to provide a JAX based implementation
+  of
+  <ext-link ext-link-type="uri" xlink:href="http://cvxr.com/tfocs/"><monospace>TFOCS</monospace></ext-link>
+  (<xref alt="Becker et al., 2011" rid="ref-becker2011templates" ref-type="bibr">Becker
+  et al., 2011</xref>) in the dev branch. This will help us increase the
+  coverage to a wider set of problems (like total variation
+  minimization, Dantzig selector, l1-analysis, nuclear norm
+  minimization, etc.). As part of this effort, we are expanding our
+  collection of linear operators and building a set of indicator and
+  projector functions on to convex sets and proximal operators
+  (<xref alt="Parikh &amp; Boyd, 2014" rid="ref-parikh2014proximal" ref-type="bibr">Parikh
+  &amp; Boyd, 2014</xref>). This will enable us to cover other
+  applications such as SSC-L1
+  (<xref alt="Pourkamali-Anaraki et al., 2020" rid="ref-pourkamali2020efficient" ref-type="bibr">Pourkamali-Anaraki
+  et al., 2020</xref>). In future, we intend to increase the coverage in
+  following areas: More recovery algorithms (OLS, Split Bergmann, SPGL1,
+  etc.) and specialized cases (partial known support, ); Bayesian
+  Compressive Sensing; Dictionary learning (K-SVD, MOD, etc.); Subspace
+  clustering; Image denoising, compression, etc. problems using sparse
+  representation principles; Matrix completion problems; Matrix
+  factorization problems; Model based / Structured compressive sensing
+  problems; Joint recovery problems from multiple measurement
+  vectors.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>Shailesh would like to thank his Ph.D. supervisors Prof. Surendra
+  Prasad and Prof. Brejesh Lall to inculcate his interest in this area
+  and support him over the years in his exploration. He would also like
+  to thank his employers, Interra Systems Inc., for allowing him to
+  pursue his research interests along with his day job.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-abadi2017computational">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Abadi</surname><given-names>Martı́n</given-names></name>
+          <name><surname>Isard</surname><given-names>Michael</given-names></name>
+          <name><surname>Murray</surname><given-names>Derek G</given-names></name>
+        </person-group>
+        <article-title>A computational model for TensorFlow: An introduction</article-title>
+        <source>Proceedings of the 1st ACM SIGPLAN international workshop on machine learning and programming languages</source>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://doi.org/10.1145/3088525.3088527</uri>
+        <pub-id pub-id-type="doi">10.1145/3088525.3088527</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-beck2009fast">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Beck</surname><given-names>Amir</given-names></name>
+          <name><surname>Teboulle</surname><given-names>Marc</given-names></name>
+        </person-group>
+        <article-title>A fast iterative shrinkage-thresholding algorithm for linear inverse problems</article-title>
+        <source>SIAM journal on imaging sciences</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <volume>2</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1137/080716542</uri>
+        <pub-id pub-id-type="doi">10.1137/080716542</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-becker2011templates">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Becker</surname><given-names>Stephen R</given-names></name>
+          <name><surname>Candès</surname><given-names>Emmanuel J</given-names></name>
+          <name><surname>Grant</surname><given-names>Michael C</given-names></name>
+        </person-group>
+        <article-title>Templates for convex cone problems with applications to sparse signal recovery</article-title>
+        <source>Mathematical programming computation</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <volume>3</volume>
+        <issue>3</issue>
+        <uri>https://doi.org/10.1007/s12532-011-0029-5</uri>
+        <pub-id pub-id-type="doi">10.1007/s12532-011-0029-5</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-blumensath2009iterative">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Blumensath</surname><given-names>Thomas</given-names></name>
+          <name><surname>Davies</surname><given-names>Mike E</given-names></name>
+        </person-group>
+        <article-title>Iterative hard thresholding for compressed sensing</article-title>
+        <source>Applied and Computational Harmonic Analysis</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <volume>27</volume>
+        <issue>3</issue>
+        <uri>https://doi.org/10.1016/j.acha.2009.04.002</uri>
+        <pub-id pub-id-type="doi">10.1016/j.acha.2009.04.002</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-blumensath2010normalized">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Blumensath</surname><given-names>Thomas</given-names></name>
+          <name><surname>Davies</surname><given-names>Michael E</given-names></name>
+        </person-group>
+        <article-title>Normalized iterative hard thresholding: Guaranteed stability and performance</article-title>
+        <source>Selected Topics in Signal Processing, IEEE Journal of</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <volume>4</volume>
+        <issue>2</issue>
+        <uri>https://doi.org/10.1109/jstsp.2010.2042411</uri>
+        <pub-id pub-id-type="doi">10.1109/jstsp.2010.2042411</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-candes2008restricted">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Candes</surname><given-names>Emmanuel J</given-names></name>
+        </person-group>
+        <article-title>The restricted isometry property and its implications for compressed sensing</article-title>
+        <source>Comptes rendus mathematique</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2008">2008</year>
+        <volume>346</volume>
+        <issue>9-10</issue>
+        <uri>https://doi.org/10.1016/j.crma.2008.03.014</uri>
+        <pub-id pub-id-type="doi">10.1016/j.crma.2008.03.014</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-chen2001atomic">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Chen</surname><given-names>Scott Shaobing</given-names></name>
+          <name><surname>Donoho</surname><given-names>David L</given-names></name>
+          <name><surname>Saunders</surname><given-names>Michael A</given-names></name>
+        </person-group>
+        <article-title>Atomic decomposition by basis pursuit</article-title>
+        <source>SIAM review</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2001">2001</year>
+        <volume>43</volume>
+        <issue>1</issue>
+        <uri>https://epubs.siam.org/doi/10.1137/S003614450037906X</uri>
+        <pub-id pub-id-type="doi">10.1137/S003614450037906X</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-dai2009subspace">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dai</surname><given-names>Wei</given-names></name>
+          <name><surname>Milenkovic</surname><given-names>Olgica</given-names></name>
+        </person-group>
+        <article-title>Subspace pursuit for compressive sensing signal reconstruction</article-title>
+        <source>Information Theory, IEEE Transactions on</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <volume>55</volume>
+        <issue>5</issue>
+        <uri>https://doi.org/10.1109/tit.2009.2016006</uri>
+        <pub-id pub-id-type="doi">10.1109/tit.2009.2016006</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-daubechies2004iterative">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Daubechies</surname><given-names>Ingrid</given-names></name>
+          <name><surname>Defrise</surname><given-names>Michel</given-names></name>
+          <name><surname>De Mol</surname><given-names>Christine</given-names></name>
+        </person-group>
+        <article-title>An iterative thresholding algorithm for linear inverse problems with a sparsity constraint</article-title>
+        <source>Communications on Pure and Applied Mathematics: A Journal Issued by the Courant Institute of Mathematical Sciences</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2004">2004</year>
+        <volume>57</volume>
+        <issue>11</issue>
+        <uri>https://doi.org/10.1002/cpa.20042</uri>
+        <pub-id pub-id-type="doi">10.1002/cpa.20042</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-davenport2010analysis">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Davenport</surname><given-names>Mark A</given-names></name>
+          <name><surname>Wakin</surname><given-names>Michael B</given-names></name>
+        </person-group>
+        <article-title>Analysis of orthogonal matching pursuit using the restricted isometry property</article-title>
+        <source>Information Theory, IEEE Transactions on</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <volume>56</volume>
+        <issue>9</issue>
+        <uri>https://doi.org/10.1109/tit.2010.2054653</uri>
+        <pub-id pub-id-type="doi">10.1109/tit.2010.2054653</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-donoho2006compressed">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Donoho</surname><given-names>D. L.</given-names></name>
+        </person-group>
+        <article-title>Compressed sensing</article-title>
+        <source>IEEE Transactions on Information Theory</source>
+        <publisher-name>Institute of Electrical; Electronics Engineers (IEEE)</publisher-name>
+        <year iso-8601-date="2006-04">2006</year><month>04</month>
+        <volume>52</volume>
+        <issue>4</issue>
+        <uri>https://doi.org/10.1109%2Ftit.2006.871582</uri>
+        <pub-id pub-id-type="doi">10.1109/tit.2006.871582</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-elad2010sparse">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Elad</surname><given-names>Michael</given-names></name>
+        </person-group>
+        <source>Sparse and redundant representations</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <uri>https://doi.org/10.1007/978-1-4419-7011-4</uri>
+        <pub-id pub-id-type="doi">10.1007/978-1-4419-7011-4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-foucart2011recovering">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Foucart</surname><given-names>Simon</given-names></name>
+        </person-group>
+        <article-title>Recovering jointly sparse vectors via hard thresholding pursuit</article-title>
+        <source>Proc. Sampling Theory and Applications (SampTA)],(May 2-6 2011)</source>
+        <year iso-8601-date="2011">2011</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-foucart2013mathintro">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Foucart</surname><given-names>Simon</given-names></name>
+          <name><surname>Rauhut</surname><given-names>Holger</given-names></name>
+        </person-group>
+        <source>A mathematical introduction to compressive sensing</source>
+        <publisher-name>Springer New York</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <uri>https://doi.org/10.1007%2F978-0-8176-4948-7</uri>
+        <pub-id pub-id-type="doi">10.1007/978-0-8176-4948-7</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-jax2018github">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Bradbury</surname><given-names>James</given-names></name>
+          <name><surname>Frostig</surname><given-names>Roy</given-names></name>
+          <name><surname>Hawkins</surname><given-names>Peter</given-names></name>
+          <name><surname>Johnson</surname><given-names>Matthew James</given-names></name>
+          <name><surname>Leary</surname><given-names>Chris</given-names></name>
+          <name><surname>Maclaurin</surname><given-names>Dougal</given-names></name>
+          <name><surname>Necula</surname><given-names>George</given-names></name>
+          <name><surname>Paszke</surname><given-names>Adam</given-names></name>
+          <name><surname>VanderPlas</surname><given-names>Jake</given-names></name>
+          <name><surname>Wanderman-Milne</surname><given-names>Skye</given-names></name>
+          <name><surname>Zhang</surname><given-names>Qiao</given-names></name>
+        </person-group>
+        <source>JAX: Composable transformations of Python+NumPy programs</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>http://github.com/google/jax</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-kim2007interior">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kim</surname><given-names>Seung-Jean</given-names></name>
+          <name><surname>Koh</surname><given-names>Kwangmoo</given-names></name>
+          <name><surname>Lustig</surname><given-names>Michael</given-names></name>
+          <name><surname>Boyd</surname><given-names>Stephen</given-names></name>
+          <name><surname>Gorinevsky</surname><given-names>Dimitry</given-names></name>
+        </person-group>
+        <article-title>An interior-point method for large-scale l1-regularized least squares</article-title>
+        <source>IEEE journal of selected topics in signal processing</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>1</volume>
+        <issue>4</issue>
+        <uri>https://doi.org/10.1109/JSTSP.2007.910971</uri>
+        <pub-id pub-id-type="doi">10.1109/JSTSP.2007.910971</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lee2019pywavelets">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lee</surname><given-names>Gregory</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Waselewski</surname><given-names>Filip</given-names></name>
+          <name><surname>Wohlfahrt</surname><given-names>Kai</given-names></name>
+          <name><surname>O’Leary</surname><given-names>Aaron</given-names></name>
+        </person-group>
+        <article-title>PyWavelets: A python package for wavelet analysis</article-title>
+        <source>Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>4</volume>
+        <issue>36</issue>
+        <uri>https://doi.org/10.21105/joss.01237</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.01237</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mallat2008wavelet">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Mallat</surname><given-names>Stephane</given-names></name>
+        </person-group>
+        <source>A wavelet tour of signal processing: The sparse way</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <uri>https://doi.org/10.1016/b978-0-12-374370-1.x0001-8</uri>
+        <pub-id pub-id-type="doi">10.1016/b978-0-12-374370-1.x0001-8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-marques2018review">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Marques</surname><given-names>Elaine Crespo</given-names></name>
+          <name><surname>Maciel</surname><given-names>Nilson</given-names></name>
+          <name><surname>Naviner</surname><given-names>Lirida</given-names></name>
+          <name><surname>Cai</surname><given-names>Hao</given-names></name>
+          <name><surname>Yang</surname><given-names>Jun</given-names></name>
+        </person-group>
+        <article-title>A review of sparse recovery algorithms</article-title>
+        <source>IEEE access</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>7</volume>
+        <uri>https://doi.org/10.1109/ACCESS.2018.2886471</uri>
+        <pub-id pub-id-type="doi">10.1109/ACCESS.2018.2886471</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MATLABU003A2018">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>MATLAB</surname></name>
+        </person-group>
+        <source>9.7.0.1190202 (R2019b)</source>
+        <publisher-name>The MathWorks Inc.</publisher-name>
+        <publisher-loc>Natick, Massachusetts</publisher-loc>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-needell2009cosamp">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Needell</surname><given-names>Deanna</given-names></name>
+          <name><surname>Tropp</surname><given-names>Joel A</given-names></name>
+        </person-group>
+        <article-title>CoSaMP: Iterative signal recovery from incomplete and inaccurate samples</article-title>
+        <source>Applied and Computational Harmonic Analysis</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <volume>26</volume>
+        <issue>3</issue>
+        <uri>https://www.sciencedirect.com/science/article/pii/S1063520308000638</uri>
+        <pub-id pub-id-type="doi">10.1016/j.acha.2008.07.002</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-paige1982lsqr">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Paige</surname><given-names>Christopher C</given-names></name>
+          <name><surname>Saunders</surname><given-names>Michael A</given-names></name>
+        </person-group>
+        <article-title>LSQR: An algorithm for sparse linear equations and sparse least squares</article-title>
+        <source>ACM Transactions on Mathematical Software (TOMS)</source>
+        <publisher-name>ACM New York, NY, USA</publisher-name>
+        <year iso-8601-date="1982">1982</year>
+        <volume>8</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1145/355984.355989</uri>
+        <pub-id pub-id-type="doi">10.1145/355984.355989</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-parikh2014proximal">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Parikh</surname><given-names>Neal</given-names></name>
+          <name><surname>Boyd</surname><given-names>Stephen</given-names></name>
+        </person-group>
+        <article-title>Proximal algorithms</article-title>
+        <source>Foundations and Trends in optimization</source>
+        <publisher-name>Now Publishers Inc. Hanover, MA, USA</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>1</volume>
+        <issue>3</issue>
+        <uri>https://doi.org/10.1561/2400000003</uri>
+        <pub-id pub-id-type="doi">10.1561/2400000003</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pati1993orthogonal">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Pati</surname><given-names>Yagyensh Chandra</given-names></name>
+          <name><surname>Rezaiifar</surname><given-names>Ramin</given-names></name>
+          <name><surname>Krishnaprasad</surname><given-names>PS</given-names></name>
+        </person-group>
+        <article-title>Orthogonal matching pursuit: Recursive function approximation with applications to wavelet decomposition</article-title>
+        <source>Signals, systems and computers, 1993. 1993 conference record of the twenty-seventh asilomar conference on</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="1993">1993</year>
+        <uri>https://doi.org/10.1109/acssc.1993.342465</uri>
+        <pub-id pub-id-type="doi">10.1109/acssc.1993.342465</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pourkamali2020efficient">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pourkamali-Anaraki</surname><given-names>Farhad</given-names></name>
+          <name><surname>Folberth</surname><given-names>James</given-names></name>
+          <name><surname>Becker</surname><given-names>Stephen</given-names></name>
+        </person-group>
+        <article-title>Efficient solvers for sparse subspace clustering</article-title>
+        <source>Signal Processing</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>172</volume>
+        <uri>https://doi.org/10.1016/j.sigpro.2020.107548</uri>
+        <pub-id pub-id-type="doi">10.1016/j.sigpro.2020.107548</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-qaisar2013compressive">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Qaisar</surname><given-names>Saad</given-names></name>
+          <name><surname>Bilal</surname><given-names>Rana Muhammad</given-names></name>
+          <name><surname>Iqbal</surname><given-names>Wafa</given-names></name>
+          <name><surname>Naureen</surname><given-names>Muqaddas</given-names></name>
+          <name><surname>Lee</surname><given-names>Sungyoung</given-names></name>
+        </person-group>
+        <article-title>Compressive sensing: From theory to applications, a survey</article-title>
+        <source>Journal of Communications and networks</source>
+        <publisher-name>KICS</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <volume>15</volume>
+        <issue>5</issue>
+        <uri>https://ieeexplore.ieee.org/abstract/document/6674179</uri>
+        <pub-id pub-id-type="doi">10.1109/JCN.2013.000083</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ravasi2019pylops">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ravasi</surname><given-names>Matteo</given-names></name>
+          <name><surname>Vasconcelos</surname><given-names>Ivan</given-names></name>
+        </person-group>
+        <article-title>PyLops–a linear-operator python library for large scale optimization</article-title>
+        <source>arXiv preprint arXiv:1907.12349</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://arxiv.org/abs/1907.12349</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-shailesh2021companion">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Kumar</surname><given-names>Shailesh</given-names></name>
+        </person-group>
+        <source>CR-sparse companion</source>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://doi.org/10.5281/zenodo.5749656</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.5749656</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-simpson2021classo">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Simpson</surname><given-names>Léo</given-names></name>
+          <name><surname>Combettes</surname><given-names>Patrick L.</given-names></name>
+          <name><surname>Müller</surname><given-names>Christian L.</given-names></name>
+        </person-group>
+        <article-title>C-lasso - a python package for constrained sparse and robust regression and classification</article-title>
+        <source>Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <volume>6</volume>
+        <issue>57</issue>
+        <uri>https://doi.org/10.21105/joss.02844</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.02844</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-torrence1998practical">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Torrence</surname><given-names>Christopher</given-names></name>
+          <name><surname>Compo</surname><given-names>Gilbert P</given-names></name>
+        </person-group>
+        <article-title>A practical guide to wavelet analysis</article-title>
+        <source>Bulletin of the American Meteorological society</source>
+        <publisher-name>American Meteorological Society</publisher-name>
+        <year iso-8601-date="1998">1998</year>
+        <volume>79</volume>
+        <issue>1</issue>
+        <uri>https://journals.ametsoc.org/view/journals/bams/79/1/1520-0477_1998_079_0061_apgtwa_2_0_co_2.xml</uri>
+        <pub-id pub-id-type="doi">10.1175/1520-0477(1998)079&lt;0061:APGTWA&gt;2.0.CO;2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-tropp2004greed">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tropp</surname><given-names>Joel A</given-names></name>
+        </person-group>
+        <article-title>Greed is good: Algorithmic results for sparse approximation</article-title>
+        <source>Information Theory, IEEE Transactions on</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2004">2004</year>
+        <volume>50</volume>
+        <issue>10</issue>
+        <uri>http://dx.doi.org/10.1109/TIT.2004.834793</uri>
+        <pub-id pub-id-type="doi">10.1109/TIT.2004.834793</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-yang2011alternating">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yang</surname><given-names>Junfeng</given-names></name>
+          <name><surname>Zhang</surname><given-names>Yin</given-names></name>
+        </person-group>
+        <article-title>Alternating direction algorithms for l1-problems in compressive sensing</article-title>
+        <source>SIAM journal on scientific computing</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <volume>33</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1137/090777761</uri>
+        <pub-id pub-id-type="doi">10.1137/090777761</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-you2016scalable">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>You</surname><given-names>Chong</given-names></name>
+          <name><surname>Robinson</surname><given-names>D</given-names></name>
+          <name><surname>Vidal</surname><given-names>René</given-names></name>
+        </person-group>
+        <article-title>Scalable sparse subspace clustering by orthogonal matching pursuit</article-title>
+        <source>IEEE conference on computer vision and pattern recognition</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>1</volume>
+        <uri>http://dx.doi.org/10.1109/CVPR.2016.425</uri>
+        <pub-id pub-id-type="doi">10.1109/CVPR.2016.425</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-zhang2009user">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Zhang</surname><given-names>Yin</given-names></name>
+          <name><surname>Yang</surname><given-names>Junfeng</given-names></name>
+          <name><surname>Yin</surname><given-names>Wotao</given-names></name>
+        </person-group>
+        <article-title>User’s guide for YALL1: Your algorithms for L1 optimization</article-title>
+        <year iso-8601-date="2010">2010</year>
+        <uri>https://www.caam.rice.edu/~optimization/L1/YALL1/User_Guide/YALL1v1.0_User_Guide.pdf</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

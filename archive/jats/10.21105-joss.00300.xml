@@ -1,0 +1,683 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">300</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00300</article-id>
+<title-group>
+<article-title>opty: Software for trajectory optimization and parameter
+identification using direct collocation</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-8698-6143</contrib-id>
+<string-name>Jason K. Moore</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-3791-3749</contrib-id>
+<string-name>Antonie van den Bogert</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>University of California, Davis</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Cleveland State University</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2017-06-04">
+<day>4</day>
+<month>6</month>
+<year>2017</year>
+</pub-date>
+<volume>3</volume>
+<issue>21</issue>
+<fpage>300</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>optimal control</kwd>
+<kwd>trajectory optimization</kwd>
+<kwd>parameter identification</kwd>
+<kwd>direct collocation</kwd>
+<kwd>nonlinear programming</kwd>
+<kwd>symbolic computation</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>opty is a tool for describing and solving trajectory optimization
+  and parameter identification problems based on symbolic descriptions
+  of ordinary differential equations and differential algebriac
+  equations that describe a dynamical system. The motivation for its
+  development resides in the need to solve optimal control problems of
+  biomechanical systems. The target audience is engineers and scientists
+  interested in solving nonlinear optimal control and parameter
+  identification problems with minimal computational overhead.</p>
+  <p>A user of opty is responsible for specifying the system’s dynamics
+  (the ODE/DAEs), the cost or fitness function, bounds on the solution,
+  and the initial guess for the solution. opty uses this problem
+  specification to derive the constraints needed to solve the
+  optimization problem using the direct collocation method
+  (<xref alt="Betts, 2010" rid="ref-Betts2010" ref-type="bibr">Betts,
+  2010</xref>). This method maps the problem to a non-linear programming
+  problem and the result is then solved numerically with an interior
+  point optimizer IPOPT
+  (<xref alt="Wächter &amp; Biegler, 2006" rid="ref-Wachter2006" ref-type="bibr">Wächter
+  &amp; Biegler, 2006</xref>) which is wrapped by cyipopt
+  (<xref alt="cyipopt Developers, 2017" rid="ref-Cyipopt2017" ref-type="bibr">cyipopt
+  Developers, 2017</xref>) for use in Python. The software allows the
+  user to describe the dynamical system of interest at a high level in
+  symbolic form without needing to concern themselves with the numerical
+  computation details. This is made possible by utilizing SymPy
+  (<xref alt="Meurer et al., 2017" rid="ref-Meurer2017" ref-type="bibr">Meurer
+  et al., 2017</xref>) and Cython
+  (<xref alt="Behnel et al., 2011" rid="ref-Behnel2011" ref-type="bibr">Behnel
+  et al., 2011</xref>) for code generation and just-in-time compilation
+  to obtain wrap optimized C functions that are accessible in
+  Python.</p>
+  <p>Direct collocation methods have been especially successful in the
+  field of human movement Bogert et al.
+  (<xref alt="2012" rid="ref-vandenBogert2012" ref-type="bibr">2012</xref>)
+  because those systems are highly nonlinear, dynamically stiff, and
+  unstable with open loop control. Typically, closed-source tools were
+  used for multibody dynamics (e.g. SD/Fast, Autolev), for optimization
+  (SNOPT), and for the programming environment (Matlab). Recently,
+  promising work has been done with the Opensim/Simbody dynamics engine
+  Lin &amp; Pandy
+  (<xref alt="2017" rid="ref-LinPandy2017" ref-type="bibr">2017</xref>),
+  but this requires that Jacobian matrices are approximated by finite
+  differences. In contrast, opty provides symbolic differentiation which
+  makes the code faster and prevents poor convergence when the severe
+  nonlinearity causes finite differences to be inaccurate. Furthermore,
+  opty allows the system to be formulated using an implicit differential
+  equation, which often results in far simpler equations and better
+  numerical conditioning. The first application of opty was in the
+  identification of feedback control parameters for human standing
+  (<xref alt="Moore &amp; Bogert, 2015" rid="ref-MooreTGCS2015" ref-type="bibr">Moore
+  &amp; Bogert, 2015</xref>). It should be noted that opty can use any
+  dynamic system model and is not limited to human movement.</p>
+  <p>Presently, opty only implements first order (backward Euler) and
+  second order (midpoint Euler) approximations of the dynamics. Higher
+  accuracy and/or larger time steps can be achieved with higher order
+  polynomials
+  (<xref alt="Patterson &amp; Rao, 2014" rid="ref-PattersonRao2014" ref-type="bibr">Patterson
+  &amp; Rao, 2014</xref>), and opty could be extended towards such
+  capabilities. In our experience, however, the low order
+  discretizations provide more robust convergence to the globally
+  optimal trajectory in a nonlinear system when a good initial guess is
+  not available
+  (<xref alt="Zarei, 2016" rid="ref-Zarei2016" ref-type="bibr">Zarei,
+  2016</xref>).</p>
+  <p>There are existing software packages that can solve optimal control
+  problems and have have similarities to opty. Below, is a feature
+  comparison of those we are aware of:</p>
+  <table-wrap>
+    <table>
+      <colgroup>
+        <col width="8%" />
+        <col width="12%" />
+        <col width="8%" />
+        <col width="9%" />
+        <col width="16%" />
+        <col width="14%" />
+        <col width="11%" />
+        <col width="10%" />
+        <col width="14%" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Citation</th>
+          <th>Language</th>
+          <th>License</th>
+          <th>Derivatives</th>
+          <th>Discretization</th>
+          <th>Implicit Dynamics</th>
+          <th>Solvers</th>
+          <th>Project Website</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Casadi <xref ref-type="fn" rid="fn1">1</xref></td>
+          <td>(<xref alt="Andersson, 2013" rid="ref-Andersson2013" ref-type="bibr">Andersson,
+          2013</xref>)</td>
+          <td>C++, Python, Octave,</td>
+          <td>LGPL</td>
+          <td>Automatic differentiation</td>
+          <td>None</td>
+          <td>Yes</td>
+          <td>IPOPT, WORHP, SNOPT, KNITRO</td>
+          <td><ext-link ext-link-type="uri" xlink:href="https://github.com/casadi/casadi/wiki">Casadi
+          Website</ext-link></td>
+        </tr>
+        <tr>
+          <td>DIDO</td>
+          <td>(<xref alt="Ross &amp; Fahroo, 2002" rid="ref-Ross2002" ref-type="bibr">Ross
+          &amp; Fahroo, 2002</xref>)</td>
+          <td>Matlab</td>
+          <td>Commercial</td>
+          <td>Analytic</td>
+          <td>Pseudospectral</td>
+          <td>Yes</td>
+          <td>built-in</td>
+          <td><ext-link ext-link-type="uri" xlink:href="http://www.elissarglobal.com/industry/products/software-3">DIDO
+          Website</ext-link></td>
+        </tr>
+        <tr>
+          <td>DIRCOL</td>
+          <td>(<xref alt="Stryk &amp; Bulirsch, 1992" rid="ref-vonStryk1992" ref-type="bibr">Stryk
+          &amp; Bulirsch, 1992</xref>)</td>
+          <td>Fortran</td>
+          <td>Non-commercial</td>
+          <td>Finite differences</td>
+          <td>Piecewise linear/cubic</td>
+          <td>Yes</td>
+          <td>NPSOL, SNOPT</td>
+          <td><ext-link ext-link-type="uri" xlink:href="http://www.sim.informatik.tu-darmstadt.de/en/res/sw/dircol">DIRCOL
+          Website</ext-link></td>
+        </tr>
+        <tr>
+          <td>DYNOPT</td>
+          <td>(<xref alt="“DYNOPT - Dynamic Optimisation Code for MATLAB,” 2005" rid="ref-Cizniar2005" ref-type="bibr">“DYNOPT
+          - Dynamic Optimisation Code for MATLAB,” 2005</xref>)</td>
+          <td>Matlab</td>
+          <td>Custom Open Source, Non-commercial</td>
+          <td>Must be supplied by user</td>
+          <td>Pseudospectral</td>
+          <td>Mass matrix</td>
+          <td>fmincon</td>
+          <td><ext-link ext-link-type="uri" xlink:href="https://bitbucket.org/dynopt">DYNOPT
+          Code</ext-link></td>
+        </tr>
+        <tr>
+          <td>FROST</td>
+          <td>(<xref alt="Hereid &amp; Ames, 2017" rid="ref-Hereid2017" ref-type="bibr">Hereid
+          &amp; Ames, 2017</xref>)</td>
+          <td>Matlab, Mathematica</td>
+          <td>BSD 3-Clause</td>
+          <td>Analytic</td>
+          <td>?</td>
+          <td>?</td>
+          <td>IPOPT, fmincon</td>
+          <td><ext-link ext-link-type="uri" xlink:href="http://ayonga.github.io/frost-dev">FROST
+          Documentation</ext-link></td>
+        </tr>
+        <tr>
+          <td>GESOP</td>
+          <td>(<xref alt="Gath &amp; Well, 2001" rid="ref-Gath2001" ref-type="bibr">Gath
+          &amp; Well, 2001</xref>)</td>
+          <td>Matlab, C, Fortan, Ada</td>
+          <td>Commercial</td>
+          <td>?</td>
+          <td>Pseudospectral</td>
+          <td>No</td>
+          <td>SLLSQP, SNOPT, SOCS</td>
+          <td><ext-link ext-link-type="uri" xlink:href="https://www.astos.de/products/gesop">Astos
+          Solutions Gmbh</ext-link></td>
+        </tr>
+        <tr>
+          <td>GPOPS</td>
+          <td>(<xref alt="Patterson &amp; Rao, 2014" rid="ref-PattersonRao2014" ref-type="bibr">Patterson
+          &amp; Rao, 2014</xref>)</td>
+          <td>Matlab</td>
+          <td>Commercial</td>
+          <td>Automatic differentiation</td>
+          <td>Pseudospectral</td>
+          <td>No</td>
+          <td>SNOPT, IPOPT</td>
+          <td><ext-link ext-link-type="uri" xlink:href="http://www.gpops2.com">GPOPS
+          Website</ext-link></td>
+        </tr>
+        <tr>
+          <td>opty</td>
+          <td>NA</td>
+          <td>Python</td>
+          <td>BSD 2-Clause</td>
+          <td>Analytic</td>
+          <td>Euler, Midpoint</td>
+          <td>Yes</td>
+          <td>IPOPT</td>
+          <td><ext-link ext-link-type="uri" xlink:href="http://opty.readthedocs.io">opty
+          Documentation</ext-link></td>
+        </tr>
+        <tr>
+          <td>OTIS</td>
+          <td>(<xref alt="Hargraves &amp; Paris, 1987" rid="ref-Hargraves1987" ref-type="bibr">Hargraves
+          &amp; Paris, 1987</xref>)</td>
+          <td>Fortran</td>
+          <td>US Export Controlled</td>
+          <td>?</td>
+          <td>Gauss-Labatto, Pseudospectral</td>
+          <td>Yes</td>
+          <td>SNOPT</td>
+          <td><ext-link ext-link-type="uri" xlink:href="https://otis.grc.nasa.gov">OTIS
+          Website</ext-link></td>
+        </tr>
+        <tr>
+          <td>PROPT</td>
+          <td>(<xref alt="Rutquist &amp; Edvall, 2010" rid="ref-Rutquist2010" ref-type="bibr">Rutquist
+          &amp; Edvall, 2010</xref>)</td>
+          <td>Matlab</td>
+          <td>Commercial</td>
+          <td>Analytic</td>
+          <td>Pseudospectral</td>
+          <td>Yes</td>
+          <td>SNOPT, KNITRO</td>
+          <td><ext-link ext-link-type="uri" xlink:href="http://tomdyn.com/index.html">TOMDYN
+          Website</ext-link></td>
+        </tr>
+        <tr>
+          <td>PSOPT</td>
+          <td>(<xref alt="Solving Complex Optimal Control Problems at No Cost with PSOPT, 2010" rid="ref-Becerra2010" ref-type="bibr"><italic>Solving
+          Complex Optimal Control Problems at No Cost with
+          PSOPT</italic>, 2010</xref>)</td>
+          <td>C++</td>
+          <td>GPL</td>
+          <td>Automatic differentiation, Sparse finite differences</td>
+          <td>Pseudospectral, RK</td>
+          <td>Yes</td>
+          <td>IPOPT, SNOPT</td>
+          <td><ext-link ext-link-type="uri" xlink:href="http://www.psopt.org">PSOPT
+          Website</ext-link></td>
+        </tr>
+        <tr>
+          <td>SOCS</td>
+          <td>(<xref alt="Betts, 2010" rid="ref-Betts2010" ref-type="bibr">Betts,
+          2010</xref>)</td>
+          <td>Fortran</td>
+          <td>Commercial</td>
+          <td>Finite differences</td>
+          <td>Euler, RK, &amp; others</td>
+          <td>Yes</td>
+          <td>built-in</td>
+          <td><ext-link ext-link-type="uri" xlink:href="http://www.boeing.com/assets/pdf/phantom/socs/docs/SOCS_Users_Guide.pdf">SOCS
+          Documentation</ext-link></td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>Each of these software packages offer a different combination of
+  attributes and features that make it useful for different problems.
+  opty is the only package that has a liberal open source license for
+  itself and its dependencies, following precedent set by other core
+  scientific Python packages. This allows anyone to use and modify the
+  code without having to share the source of their application. opty
+  also is the only package, open source or not, that allows (in fact
+  forces) the user to describe their problem via a high level symbolic
+  mathematical description using the API of a widely used computer
+  algebra system instead of a domain specific language. This relieves
+  the user from having to translate the much simpler continuous problem
+  definition into a discretize NLP problem. opty leverages the popular
+  Scientific Python core tools like NumPy, SymPy, Cython, and matplotlib
+  allowing users to include opty code into Python programs. Lastly, the
+  numeric code generated by opty to evaluate the NLP constraints is
+  optimized providing extremely efficient parallel evaluation of the
+  contraints. This becomes very valuable for high dimensional dynamics.
+  opty currently does not offer a wide range of discretization methods
+  nor support for solvers other than IPOPT, but those could relatively
+  easily be added based on user need.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Wachter2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wächter</surname><given-names>Andreas</given-names></name>
+          <name><surname>Biegler</surname><given-names>Lorenz T.</given-names></name>
+        </person-group>
+        <article-title>On the implementation of an interior-point filter line-search algorithm for large-scale nonlinear programming</article-title>
+        <source>Mathematical Programming</source>
+        <year iso-8601-date="2006-03">2006</year><month>03</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-06-04">2017</year><month>06</month><day>04</day></date-in-citation>
+        <volume>106</volume>
+        <issue>1</issue>
+        <issn>0025-5610, 1436-4646</issn>
+        <uri>https://link.springer.com/article/10.1007/s10107-004-0559-y</uri>
+        <pub-id pub-id-type="doi">10.1007/s10107-004-0559-y</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Ross2002">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ross</surname><given-names>I. Michael</given-names></name>
+          <name><surname>Fahroo</surname><given-names>Fariba</given-names></name>
+        </person-group>
+        <article-title>A DIRECT METHOD FOR SOLVING NONSMOOTH OPTIMAL CONTROL PROBLEMS</article-title>
+        <source>IFAC Proceedings Volumes</source>
+        <year iso-8601-date="2002">2002</year>
+        <volume>35</volume>
+        <issue>1</issue>
+        <issn>1474-6670</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S1474667015387504</uri>
+        <pub-id pub-id-type="doi">https://doi.org/10.3182/20020721-6-ES-1901.00329</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-vonStryk1992">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Stryk</surname><given-names>O. von</given-names></name>
+          <name><surname>Bulirsch</surname><given-names>R.</given-names></name>
+        </person-group>
+        <article-title>Direct and indirect methods for trajectory optimization</article-title>
+        <source>Annals of Operations Research</source>
+        <year iso-8601-date="1992-12-01">1992</year><month>12</month><day>01</day>
+        <volume>37</volume>
+        <issue>1</issue>
+        <issn>1572-9338</issn>
+        <uri>https://doi.org/10.1007/BF02071065</uri>
+        <pub-id pub-id-type="doi">10.1007/BF02071065</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-vandenBogert2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bogert</surname><given-names>Antonie J van den</given-names></name>
+          <name><surname>Hupperets</surname><given-names>Maarten</given-names></name>
+          <name><surname>Schlarb</surname><given-names>Heiko</given-names></name>
+          <name><surname>Krabbe</surname><given-names>Berthold</given-names></name>
+        </person-group>
+        <article-title>Predictive musculoskeletal simulation using optimal control: Effects of added limb mass on energy cost and kinematics of walking and running</article-title>
+        <source>Proceedings of the Institution of Mechanical Engineers, Part P: Journal of Sports Engineering and Technology</source>
+        <year iso-8601-date="2012">2012</year>
+        <volume>226</volume>
+        <issue>2</issue>
+        <uri> https://doi.org/10.1177/1754337112440644</uri>
+        <pub-id pub-id-type="doi">10.1177/1754337112440644</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Ackermann2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ackermann</surname><given-names>Marko</given-names></name>
+          <name><surname>Bogert</surname><given-names>Antonie J. van den</given-names></name>
+        </person-group>
+        <article-title>Optimality principles for model-based prediction of human gait</article-title>
+        <source>Journal of Biomechanics</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>43</volume>
+        <issue>6</issue>
+        <issn>0021-9290</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S0021929009007210</uri>
+        <pub-id pub-id-type="doi">https://doi.org/10.1016/j.jbiomech.2009.12.012</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LeeUmberger2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lee</surname><given-names>Leng-Feng</given-names></name>
+          <name><surname>Umberger</surname><given-names>Brian R.</given-names></name>
+        </person-group>
+        <article-title>Generating optimal control simulations of musculoskeletal movement using OpenSim and MATLAB</article-title>
+        <source>PeerJ</source>
+        <year iso-8601-date="2016-01">2016</year><month>01</month>
+        <volume>4</volume>
+        <issn>2167-8359</issn>
+        <uri>https://doi.org/10.7717/peerj.1638</uri>
+        <pub-id pub-id-type="doi">10.7717/peerj.1638</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LinPandy2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lin</surname><given-names>Yi-Chung</given-names></name>
+          <name><surname>Pandy</surname><given-names>Marcus G.</given-names></name>
+        </person-group>
+        <article-title>Three-dimensional data-tracking dynamic optimization simulations of human locomotion generated by direct collocation</article-title>
+        <source>Journal of Biomechanics</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>59</volume>
+        <issue>Supplement C</issue>
+        <issn>0021-9290</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S0021929017302567</uri>
+        <pub-id pub-id-type="doi">https://doi.org/10.1016/j.jbiomech.2017.04.038</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MooreTGCS2015">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Moore</surname><given-names>Jason K.</given-names></name>
+          <name><surname>Bogert</surname><given-names>Antonie J. van den</given-names></name>
+        </person-group>
+        <article-title>Quiet standing control parameter identification with direct collocation</article-title>
+        <source>15th international symposium on computer simulation in biomechanics</source>
+        <publisher-loc>Glasgow, U.K.</publisher-loc>
+        <year iso-8601-date="2015">2015</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Zarei2016">
+      <element-citation publication-type="thesis">
+        <person-group person-group-type="author">
+          <name><surname>Zarei</surname><given-names>Milad</given-names></name>
+        </person-group>
+        <article-title>Predictive simulation of rowing exercise</article-title>
+        <publisher-name>Cleveland State University; Cleveland State University</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <uri>http://rave.ohiolink.edu/etdc/view?acc_num=csu1472557492</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-PattersonRao2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Patterson</surname><given-names>Michael A.</given-names></name>
+          <name><surname>Rao</surname><given-names>Anil V.</given-names></name>
+        </person-group>
+        <article-title>GPOPS-II: A MATLAB software for solving multiple-phase optimal control problems using hp-adaptive gaussian quadrature collocation methods and sparse nonlinear programming</article-title>
+        <source>ACM Trans. Math. Softw.</source>
+        <publisher-name>ACM</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="2014-10">2014</year><month>10</month>
+        <volume>41</volume>
+        <issue>1</issue>
+        <issn>0098-3500</issn>
+        <uri>http://doi.acm.org/10.1145/2558904</uri>
+        <pub-id pub-id-type="doi">10.1145/2558904</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Betts2010">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Betts</surname><given-names>J.</given-names></name>
+        </person-group>
+        <source>Practical Methods for Optimal Control and Estimation Using Nonlinear Programming</source>
+        <publisher-name>Society for Industrial; Applied Mathematics</publisher-name>
+        <year iso-8601-date="2010-01">2010</year><month>01</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-06-04">2017</year><month>06</month><day>04</day></date-in-citation>
+        <isbn>978-0-89871-688-7</isbn>
+        <uri>http://epubs.siam.org/doi/book/10.1137/1.9780898718577</uri>
+        <pub-id pub-id-type="doi">10.1137/1.9780898718577</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Meurer2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Meurer</surname><given-names>Aaron</given-names></name>
+          <name><surname>Smith</surname><given-names>Christopher P.</given-names></name>
+          <name><surname>Paprocki</surname><given-names>Mateusz</given-names></name>
+          <name><surname>Čertík</surname><given-names>Ondřej</given-names></name>
+          <name><surname>Kirpichev</surname><given-names>Sergey B.</given-names></name>
+          <name><surname>Rocklin</surname><given-names>Matthew</given-names></name>
+          <name><surname>Kumar</surname><given-names>AMiT</given-names></name>
+          <name><surname>Ivanov</surname><given-names>Sergiu</given-names></name>
+          <name><surname>Moore</surname><given-names>Jason K.</given-names></name>
+          <name><surname>Singh</surname><given-names>Sartaj</given-names></name>
+          <name><surname>Rathnayake</surname><given-names>Thilina</given-names></name>
+          <name><surname>Vig</surname><given-names>Sean</given-names></name>
+          <name><surname>Granger</surname><given-names>Brian E.</given-names></name>
+          <name><surname>Muller</surname><given-names>Richard P.</given-names></name>
+          <name><surname>Bonazzi</surname><given-names>Francesco</given-names></name>
+          <name><surname>Gupta</surname><given-names>Harsh</given-names></name>
+          <name><surname>Vats</surname><given-names>Shivam</given-names></name>
+          <name><surname>Johansson</surname><given-names>Fredrik</given-names></name>
+          <name><surname>Pedregosa</surname><given-names>Fabian</given-names></name>
+          <name><surname>Curry</surname><given-names>Matthew J.</given-names></name>
+          <name><surname>Terrel</surname><given-names>Andy R.</given-names></name>
+          <name><surname>Roučka</surname><given-names>Štěpán</given-names></name>
+          <name><surname>Saboo</surname><given-names>Ashutosh</given-names></name>
+          <name><surname>Fernando</surname><given-names>Isuru</given-names></name>
+          <name><surname>Kulal</surname><given-names>Sumith</given-names></name>
+          <name><surname>Cimrman</surname><given-names>Robert</given-names></name>
+          <name><surname>Scopatz</surname><given-names>Anthony</given-names></name>
+        </person-group>
+        <article-title>SymPy: symbolic computing in Python</article-title>
+        <source>PeerJ Computer Science</source>
+        <year iso-8601-date="2017-01">2017</year><month>01</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-06-04">2017</year><month>06</month><day>04</day></date-in-citation>
+        <volume>3</volume>
+        <issn>2376-5992</issn>
+        <uri>https://peerj.com/articles/cs-103</uri>
+        <pub-id pub-id-type="doi">10.7717/peerj-cs.103</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hargraves1987">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hargraves</surname><given-names>C. R.</given-names></name>
+          <name><surname>Paris</surname><given-names>S. W.</given-names></name>
+        </person-group>
+        <article-title>Direct trajectory optimization using nonlinear programming and collocation</article-title>
+        <source>AIAA Journal of Guidance, Control, and Dynamics</source>
+        <year iso-8601-date="1987">1987</year>
+        <volume>10</volume>
+        <issue>4</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-Behnel2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Behnel</surname><given-names>S.</given-names></name>
+          <name><surname>Bradshaw</surname><given-names>R.</given-names></name>
+          <name><surname>Citro</surname><given-names>C.</given-names></name>
+          <name><surname>Dalcin</surname><given-names>L.</given-names></name>
+          <name><surname>Seljebotn</surname><given-names>D. S.</given-names></name>
+          <name><surname>Smith</surname><given-names>K.</given-names></name>
+        </person-group>
+        <article-title>Cython: The Best of Both Worlds</article-title>
+        <source>Computing in Science Engineering</source>
+        <year iso-8601-date="2011-04">2011</year><month>04</month>
+        <volume>13</volume>
+        <issue>2</issue>
+        <issn>1521-9615</issn>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2010.118</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Cyipopt2017">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>cyipopt Developers</string-name>
+        </person-group>
+        <article-title>Cyipopt: Cython interface for the interior point optimzer IPOPT</article-title>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Andersson2013">
+      <element-citation publication-type="thesis">
+        <person-group person-group-type="author">
+          <name><surname>Andersson</surname><given-names>Joel</given-names></name>
+        </person-group>
+        <article-title>A General-Purpose Software Framework for Dynamic Optimization</article-title>
+        <publisher-name>Arenberg Doctoral School, KU Leuven</publisher-name>
+        <publisher-loc>Department of Electrical Engineering (ESAT/SCD); Optimization in Engineering Center, Kasteelpark Arenberg 10, 3001-Heverlee, Belgium</publisher-loc>
+        <year iso-8601-date="2013">2013</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Becerra2010">
+      <element-citation publication-type="paper-conference">
+        <article-title>Solving complex optimal control problems at no cost with PSOPT</article-title>
+        <year iso-8601-date="2010-09">2010</year><month>09</month>
+        <pub-id pub-id-type="doi">10.1109/CACSD.2010.5612676</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Rutquist2010">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Rutquist</surname><given-names>Per E</given-names></name>
+          <name><surname>Edvall</surname><given-names>Marcus M</given-names></name>
+        </person-group>
+        <article-title>Propt-matlab optimal control software</article-title>
+        <publisher-name>Tomlab Optimization Inc</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <volume>260</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hereid2017">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Hereid</surname><given-names>Ayonga</given-names></name>
+          <name><surname>Ames</surname><given-names>Aaron D.</given-names></name>
+        </person-group>
+        <article-title>FROST: Fast robot optimization and simulation toolkit</article-title>
+        <source>IEEE/RSJ international conference on intelligent robots and systems (IROS)</source>
+        <publisher-name>IEEE/RSJ</publisher-name>
+        <publisher-loc>Vancouver, BC, Canada</publisher-loc>
+        <year iso-8601-date="2017-09">2017</year><month>09</month>
+      </element-citation>
+    </ref>
+    <ref id="ref-Cizniar2005">
+      <element-citation publication-type="paper-conference">
+        <article-title>DYNOPT - dynamic optimisation code for MATLAB</article-title>
+        <source>13th annual conference proceedings of technical computing prague 2005</source>
+        <publisher-name>Humusoft</publisher-name>
+        <publisher-loc>Praha</publisher-loc>
+        <year iso-8601-date="2005">2005</year>
+        <uri>http://www.kirp.chtf.stuba.sk/publication_info.php?id_pub=255</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Gath2001">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Gath</surname><given-names>Peter</given-names></name>
+          <name><surname>Well</surname><given-names>Klaus</given-names></name>
+        </person-group>
+        <article-title>Trajectory optimization using a combination of direct multiple shooting and collocation</article-title>
+        <source>AIAA guidance, navigation, and control conference and exhibit</source>
+        <publisher-name>American Institute of Aeronautics; Astronautics</publisher-name>
+        <year iso-8601-date="2001">2001</year>
+        <uri>https://doi.org/10.2514/6.2001-4047</uri>
+        <pub-id pub-id-type="doi">10.2514/6.2001-4047</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+<fn-group>
+  <fn id="fn1">
+    <label>1</label><p>Casadi does not have a built in direct
+    collocation transcription but includes examples which show how to do
+    so for specific problems.</p>
+  </fn>
+</fn-group>
+</back>
+</article>

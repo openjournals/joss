@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3060</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03060</article-id>
+<title-group>
+<article-title>Kinetic.jl: A portable finite volume toolbox for
+scientific and neural computing</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-9127-9497</contrib-id>
+<string-name>Tianbai Xiao</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Karlsruhe Institute of Technology, 76131 Karlsruhe,
+Germany</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-01-06">
+<day>6</day>
+<month>1</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>62</issue>
+<fpage>3060</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>kinetic theory</kwd>
+<kwd>computational fluid dynamics</kwd>
+<kwd>scientific machine learning</kwd>
+<kwd>julia</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Kinetic.jl is a lightweight finite volume toolbox written in the
+  Julia programming language for the study of computational physics and
+  scientific machine learning. It is an open-source project hosted on
+  GitHub and distributed under the MIT license. The main module consists
+  of KitBase.jl for basic physics and KitML.jl for neural dynamics. The
+  function library provides a rich set of numerical fluxes and source
+  terms for differential and integral equations. Any advection-diffusion
+  type mechanical or neural equation can be set up and solved within the
+  framework. Machine learning methods can be seamlessly integrated to
+  build data-driven closure models and accelerate the calculation of
+  nonlinear terms. The package is designed to balance programming
+  flexibility for scientific research, algorithmic efficiency for
+  applications, the simplicity for educational usage.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>A physical system can perform a wonderfully diverse set of acts on
+  different characteristic scales. It is challenging to propose a
+  universal theory that can be applied to describing multi-scale
+  physical evolutions quantitatively. For example, particle transport
+  can be depicted statistically by fluid mechanics at a macroscopic
+  level
+  (<xref alt="Batchelor, 2000" rid="ref-batchelor2000" ref-type="bibr">Batchelor,
+  2000</xref>), but needs to be followed in more detail by the kinetic
+  theory of gases at the molecular mean free path scale
+  (<xref alt="Chapman et al., 1990" rid="ref-chapman1990" ref-type="bibr">Chapman
+  et al., 1990</xref>). With rapidly advancing computing power, the
+  finite volume method (FVM) provides a prevalent method to conduct
+  direct numerical simulations based on first physical principles.</p>
+  <p>Most existing FVM libraries, e.g., OpenFOAM
+  (<xref alt="Jasak et al., 2007" rid="ref-jasak2007" ref-type="bibr">Jasak
+  et al., 2007</xref>), are dedicated to solving the Euler and the
+  Navier-Stokes equations. Very limited work has been done for
+  phase-field models
+  (<xref alt="Krause et al., 2021" rid="ref-krause2021" ref-type="bibr">Krause
+  et al., 2021</xref>;
+  <xref alt="Zhu et al., 2017" rid="ref-zhu2017" ref-type="bibr">Zhu et
+  al., 2017</xref>). Since classical fluid dynamics basically requires
+  an one-shot simulation process from initial to final solution fields,
+  these libraries are mostly written in compiled languages (C/C++ and
+  Fortran). Such approaches enjoy good execution efficiency but
+  sacrifice the flexibility of secondary development. This makes it
+  cumbersome to integrate existing numerical solvers with scientific
+  machine learning (SciML) packages, as interactive programming is
+  becoming a mainstream practice in data science. This also causes
+  considerable difficulties to general or educational users who are not
+  familiar with the package in configuring environments and compiling
+  binaries.</p>
+  <p>One compromise can be made by using a combination of static and
+  dynamic languages
+  (<xref alt="Clawpack Development Team, 2020" rid="ref-clawpack2020" ref-type="bibr">Clawpack
+  Development Team, 2020</xref>), where the high-level front-ends and
+  the low-level computational back-ends are split. This methodology
+  benefits general users, while researchers still need to work on the
+  back-end if a new feature is required. The so-called two-language
+  problem introduces additional tradeoffs in both development and
+  execution. For example, a two-tiered system brings unavoidable
+  challenges for type domain transition and memory management. Special
+  attention needs to be paid on optimizing the high-level codes, e.g.,
+  the vectorization of massive computation part, which can be unnatural
+  in a physical simulation and might generate additional temporary
+  objects. In addition, interfacing between layers may add significant
+  overhead and makes whole-program optimization much more difficult
+  (<xref alt="Bezanson et al., 2012" rid="ref-bezanson2012" ref-type="bibr">Bezanson
+  et al., 2012</xref>). Unlike these packages, Kinetic.jl is built upon
+  the Julia programming language
+  (<xref alt="Bezanson et al., 2017" rid="ref-bezanson2017" ref-type="bibr">Bezanson
+  et al., 2017</xref>), which is dynamically typed and designed for high
+  performance computing for a broad range of devices. Based on type
+  inference and multiple dispatch, it is a promising choice to solve the
+  two-language problem.</p>
+  <p>Kinetic.jl focuses on the theoretical and numerical studies of
+  many-particle systems of gases, photons, plasmas, neutrons, etc.
+  (<xref alt="Xiao et al., 2017" rid="ref-xiao2017" ref-type="bibr">Xiao
+  et al., 2017</xref>,
+  <xref alt="2020" rid="ref-xiao2020a" ref-type="bibr">2020</xref>) A
+  hierarchy of abstractions is implemented in the library. At the
+  highest level, it is feasible to model and simulate a fluid dynamic
+  problem within ten lines of code. At the lowest level, we designed
+  methods for general numbers and arrays so that it is possible to
+  cooperate with existing packages in Julia ecosystem. For example,
+  Flux.jl
+  (<xref alt="Innes et al., 2018" rid="ref-Flux2018" ref-type="bibr">Innes
+  et al., 2018</xref>) can be used to create and train scientific
+  machine learning models. Innovations of the package are:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>100% Julia stack that encounters no two-language problem</p>
+    </list-item>
+    <list-item>
+      <p>Comprehensive support for kinetic theory and phase-space
+      equations</p>
+    </list-item>
+    <list-item>
+      <p>Lightweight design to ensure the flexibility for secondary
+      development</p>
+    </list-item>
+    <list-item>
+      <p>Close coupling with scientific machine learning</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="kitbase.jl">
+  <title>KitBase.jl</title>
+  <p>The main module of Kinetic.jl is split into two pieces to reduce
+  the just-in-time (JIT) compilation time for domain specific
+  applications. The basic physical laws and finite volume method are
+  implemented in KitBase.jl. It provides a variety of solvers for the
+  Boltzmann equation, Maxwell’s equations, advection-diffusion equation,
+  Burgers’ equation, Euler and Navier-Stokes equations, etc. Different
+  parallel computing techniques are provided, e.g., multi-threading,
+  distributed computing, and CUDA programming.</p>
+  <p>In the following, we present an illustrative example of solving a
+  lid-driven cavity problem with the Boltzmann equation. Two
+  initialization methods, i.e., configuration text and Julia script, are
+  available for setting up the solver. With the configuration file
+  <monospace>config.toml</monospace> set as below,</p>
+  <code language="toml"># setup
+matter = gas # material
+case = cavity # case
+space = 2d2f2v # phase
+flux = kfvs # flux function
+collision = bgk # intermolecular collision
+nSpecies = 1 # number of species
+interpOrder = 2 # interpolation order of accuracy
+limiter = vanleer # limiter function
+boundary = maxwell # boundary condition
+cfl = 0.8 # CFL number
+maxTime = 5.0 # maximal simulation time
+
+# physical space
+x0 = 0.0 # starting point in x
+x1 = 1.0 # ending point in x
+nx = 45 # number of cells in x
+y0 = 0.0 # starting point in y
+y1 = 1.0 # ending point in y
+ny = 45 # number of cells in y
+pMeshType = uniform # mesh type
+nxg = 0 # number of ghost cell in x
+nyg = 0 # number of ghost cell in y
+
+# velocity space
+umin = -5.0 # starting point in u
+umax = 5.0 # ending point in u
+nu = 28 # number of cells in u
+vmin = -5.0 # starting point in v
+vmax = 5.0 # ending point in v
+nv = 28 # number of cells in v
+vMeshType = rectangle # mesh type
+nug = 0 # number of ghost cell in u
+nvg = 0 # number of ghost cell in v
+
+# gas property
+knudsen = 0.075 # Knudsen number
+mach = 0.0 # Mach number
+prandtl = 1.0 # Prandtl number
+inK = 1.0 # molecular inner degree of freedom
+omega = 0.72 # viscosity index of hard-sphere gas
+alphaRef = 1.0 # viscosity index of hard-sphere gas in reference state
+omegaRef = 0.5 # viscosity index of hard-sphere gas ub reference state
+
+# boundary condition
+uLid = 0.15 # U-velocity of moving wall
+vLid = 0.0 # V-velocity of moving wall
+tLid = 1.0 # temperature of wall</code>
+  <p>we can execute the following codes</p>
+  <code language="julia">using Kinetic
+set, ctr, xface, yface, t = initialize(&quot;config.toml&quot;)
+t = solve!(set, ctr, xface, yface, t)
+plot_contour(set, ctr)</code>
+  <p>In the above codes, the computational setup is stored in
+  <monospace>set</monospace>. The solutions over control volumes are
+  represented in an array <monospace>ctr</monospace>, while
+  <monospace>xface</monospace> and <monospace>yface</monospace> record
+  the interface fluxes along x and y directions. In this example, the
+  structured mesh is generated automatically by Kinetic.jl, while a
+  non-structured mesh file can also be imported and used for
+  computation. The result is visualized with built-in function
+  <monospace>plot_contour</monospace>, which presents the distributions
+  of gas density, velocity, and temperature inside the cavity.</p>
+  <p><inline-graphic mimetype="image" mime-subtype="png" xlink:href="cavity.png" />
+  Fig. 1: macroscopic variables in the lid-driven cavity (top left:
+  density, top right: U-velocity, bottom left: V-velocity, bottom right:
+  temperature).</p>
+</sec>
+<sec id="kitml.jl">
+  <title>KitML.jl</title>
+  <p>Machine learning has increasing momentum in scientific computing.
+  Given the nonlinear structure of differential and integral equations,
+  it is promising to incorporate the universal function approximators
+  from machine learning surrogate models into the governing equations
+  and achieve a better balance between efficiency and accuracy. In
+  KitML.jl, we implement strategies to construct hybrid
+  mechanical-neural differential operators and form structure-preserving
+  data-driven closure models. The detailed background can be found in
+  Xiao &amp; Frank
+  (<xref alt="2020" rid="ref-xiao2020b" ref-type="bibr">2020</xref>).</p>
+</sec>
+<sec id="extension">
+  <title>Extension</title>
+  <p>Numerical simulations of nonlinear models and differential
+  equations are essentially connected with supercomputers and
+  high-performance computing (HPC). Considering that some existing
+  hardware architecture, e.g., Sunway TaihuLight with Chinese-designed
+  SW26010 processors, only provides optimization for specific languages,
+  we have developed an accompanying package KitFort.jl. This is not a
+  default component of Kinetic.jl but can be manually imported. In
+  addition, a wrapper, kineticpy, has been built to locate structures
+  and methods from the Python ecosystem.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>The current work is funded by the Alexander von Humboldt Foundation
+  (Ref3.5-CHN-1210132-HFST-P).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-chapman1990">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Chapman</surname><given-names>Sydney</given-names></name>
+          <name><surname>Cowling</surname><given-names>Thomas George</given-names></name>
+          <name><surname>Burnett</surname><given-names>David</given-names></name>
+        </person-group>
+        <source>The mathematical theory of non-uniform gases: An account of the kinetic theory of viscosity, thermal conduction and diffusion in gases</source>
+        <publisher-name>Cambridge University Press</publisher-name>
+        <year iso-8601-date="1990">1990</year>
+        <pub-id pub-id-type="doi">10.2307/3609795</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-batchelor2000">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Batchelor</surname><given-names>George K.</given-names></name>
+        </person-group>
+        <source>An introduction to fluid dynamics</source>
+        <publisher-name>Cambridge University Press</publisher-name>
+        <year iso-8601-date="2000">2000</year>
+        <pub-id pub-id-type="doi">10.1017/CBO9780511800955</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-zhu2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zhu</surname><given-names>Lianhua</given-names></name>
+          <name><surname>Chen</surname><given-names>Songze</given-names></name>
+          <name><surname>Guo</surname><given-names>Zhaoli</given-names></name>
+        </person-group>
+        <article-title>dugksFoam: An open source OpenFOAM solver for the Boltzmann model equation</article-title>
+        <source>Computer Physics Communications</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>213</volume>
+        <pub-id pub-id-type="doi">10.1016/j.cpc.2016.11.010</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bezanson2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bezanson</surname><given-names>Jeff</given-names></name>
+          <name><surname>Edelman</surname><given-names>Alan</given-names></name>
+          <name><surname>Karpinski</surname><given-names>Stefan</given-names></name>
+          <name><surname>Shah</surname><given-names>Viral B</given-names></name>
+        </person-group>
+        <article-title>Julia: A fresh approach to numerical computing</article-title>
+        <source>SIAM review</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>59</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1137/141000671</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-jasak2007">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Jasak</surname><given-names>Hrvoje</given-names></name>
+          <name><surname>Jemcov</surname><given-names>Aleksandar</given-names></name>
+          <name><surname>Tukovic</surname><given-names>Zeljko</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>OpenFOAM: A C++ library for complex physics simulations</article-title>
+        <source>International workshop on coupled methods in numerical dynamics</source>
+        <publisher-name>IUC Dubrovnik Croatia</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>1000</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-clawpack2020">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>Clawpack Development Team</string-name>
+        </person-group>
+        <article-title>Clawpack software</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>http://www.clawpack.org</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.4025432</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Flux2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Innes</surname><given-names>Michael</given-names></name>
+          <name><surname>Saba</surname><given-names>Elliot</given-names></name>
+          <name><surname>Fischer</surname><given-names>Keno</given-names></name>
+          <name><surname>Gandhi</surname><given-names>Dhairya</given-names></name>
+          <name><surname>Rudilosso</surname><given-names>Marco Concetto</given-names></name>
+          <name><surname>Joy</surname><given-names>Neethu Mariya</given-names></name>
+          <name><surname>Karmali</surname><given-names>Tejan</given-names></name>
+          <name><surname>Pal</surname><given-names>Avik</given-names></name>
+          <name><surname>Shah</surname><given-names>Viral</given-names></name>
+        </person-group>
+        <article-title>Fashionable modelling with Flux</article-title>
+        <source>CoRR</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>abs/1811.01457</volume>
+        <uri>https://arxiv.org/abs/1811.01457</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-xiao2020b">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Xiao</surname><given-names>Tianbai</given-names></name>
+          <name><surname>Frank</surname><given-names>Martin</given-names></name>
+        </person-group>
+        <article-title>Using neural networks to accelerate the solution of the Boltzmann equation</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://arxiv.org/abs/2010.13649</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-xiao2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Xiao</surname><given-names>Tianbai</given-names></name>
+          <name><surname>Cai</surname><given-names>Qingdong</given-names></name>
+          <name><surname>Xu</surname><given-names>Kun</given-names></name>
+        </person-group>
+        <article-title>A well-balanced unified gas-kinetic scheme for multiscale flow transport under gravitational field</article-title>
+        <source>Journal of Computational Physics</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>332</volume>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2016.12.022</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-xiao2020a">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Xiao</surname><given-names>Tianbai</given-names></name>
+          <name><surname>Liu</surname><given-names>Chang</given-names></name>
+          <name><surname>Xu</surname><given-names>Kun</given-names></name>
+          <name><surname>Cai</surname><given-names>Qingdong</given-names></name>
+        </person-group>
+        <article-title>A velocity-space adaptive unified gas kinetic scheme for continuum and rarefied flows</article-title>
+        <source>Journal of Computational Physics</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>415</volume>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2020.109535</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-krause2021">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Krause</surname><given-names>Mathias J</given-names></name>
+          <name><surname>Kummerländer</surname><given-names>Adrian</given-names></name>
+          <name><surname>Avis</surname><given-names>Samuel J</given-names></name>
+          <name><surname>Kusumaatmaja</surname><given-names>Halim</given-names></name>
+          <name><surname>Dapelo</surname><given-names>Davide</given-names></name>
+          <name><surname>Klemens</surname><given-names>Fabian</given-names></name>
+          <name><surname>Gaedtke</surname><given-names>Maximilian</given-names></name>
+          <name><surname>Hafen</surname><given-names>Nicolas</given-names></name>
+          <name><surname>Mink</surname><given-names>Albert</given-names></name>
+          <name><surname>Trunk</surname><given-names>Robin</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>OpenLB—open source lattice Boltzmann code</article-title>
+        <source>Computers &amp; Mathematics with Applications</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <volume>81</volume>
+        <pub-id pub-id-type="doi">10.1016/j.camwa.2020.04.033</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bezanson2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bezanson</surname><given-names>Jeff</given-names></name>
+          <name><surname>Karpinski</surname><given-names>Stefan</given-names></name>
+          <name><surname>Shah</surname><given-names>Viral B</given-names></name>
+          <name><surname>Edelman</surname><given-names>Alan</given-names></name>
+        </person-group>
+        <article-title>Julia: A fast dynamic language for technical computing</article-title>
+        <source>arXiv preprint arXiv:1209.5145</source>
+        <year iso-8601-date="2012">2012</year>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

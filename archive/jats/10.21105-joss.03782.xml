@@ -1,0 +1,541 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3782</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03782</article-id>
+<title-group>
+<article-title>sbp-env: A Python Package for Sampling-based Motion
+Planner and Samplers</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-0641-5250</contrib-id>
+<string-name>Tin Lai</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>School of Computer Science, The University of Sydney,
+Australia</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<volume>6</volume>
+<issue>66</issue>
+<fpage>3782</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>motion planning</kwd>
+<kwd>sampling-based planner</kwd>
+<kwd>robotics</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="background">
+  <title>Background</title>
+  <p>Sampling-based motion planning is one of the fundamental methods by
+  which robots navigate and integrate with the real world
+  (<xref alt="Elbanhawi &amp; Simic, 2014" rid="ref-elbanhawi2014_SampRobo" ref-type="bibr">Elbanhawi
+  &amp; Simic, 2014</xref>). Motion planning involves planning the
+  trajectories of the actuated part of the robot, under various
+  constraints, while avoiding collisions with surrounding obstacles.
+  Sampling-based motion planners (SBPs) are robust methods that avoid
+  explicitly constructing the often intractable high-dimensional
+  configuration space (C-Space). Instead, SBPs randomly sample the
+  C-Space for valid connections and iteratively build a roadmap of
+  connectivity. Most SBPs are guaranteed to find a solution if one
+  exists
+  (<xref alt="Kavraki et al., 1996" rid="ref-kavraki1996_AnalProb" ref-type="bibr">Kavraki
+  et al., 1996</xref>), and such a planner is said to be
+  <italic>probabilistic complete</italic>. A further development for
+  SBPs is <italic>asymptotic
+  optimality</italic>(<xref alt="Elbanhawi &amp; Simic, 2014" rid="ref-elbanhawi2014_SampRobo" ref-type="bibr">Elbanhawi
+  &amp; Simic, 2014</xref>): a guarantee that the method will converge,
+  in the limit, to the optimal solution.</p>
+  <p>SBPs are applicable to a wide range of applications. Example
+  include planning with arbitrary cost maps
+  (<xref alt="Iehl et al., 2012" rid="ref-iehlCostmapPlanningHigh2012" ref-type="bibr">Iehl
+  et al., 2012</xref>), cooperative multi-agent planning
+  (<xref alt="Jiang &amp; Wu, 2020" rid="ref-jinmingwuCooperativePathfindingBased2019" ref-type="bibr">Jiang
+  &amp; Wu, 2020</xref>), and planning in dynamic environments
+  (<xref alt="Yershova et al., 2005" rid="ref-yershova2005_DynaRRTs" ref-type="bibr">Yershova
+  et al., 2005</xref>). On the one hand, researchers have focused on the
+  algorithmic side of improving the graph or tree building
+  (<xref alt="Elbanhawi &amp; Simic, 2014" rid="ref-elbanhawi2014_SampRobo" ref-type="bibr">Elbanhawi
+  &amp; Simic, 2014</xref>;
+  <xref alt="Klemm et al., 2015" rid="ref-klemmRRTConnectFaster2015" ref-type="bibr">Klemm
+  et al., 2015</xref>;
+  <xref alt="Lai et al., 2019" rid="ref-lai2018_BalaGlob" ref-type="bibr">Lai
+  et al., 2019</xref>;
+  <xref alt="Lai, 2021" rid="ref-lai2021rapidlyexploring" ref-type="bibr">Lai,
+  2021</xref>;
+  <xref alt="Lai &amp; Ramos, 2021b" rid="ref-lai2021lazyExperienceGraph" ref-type="bibr">Lai
+  &amp; Ramos, 2021b</xref>;
+  <xref alt="Zhong &amp; Su, 2012" rid="ref-zhongTripleRrtsRobotPath2012" ref-type="bibr">Zhong
+  &amp; Su, 2012</xref>). On the other hand, the advancement of neural
+  networks allows an abundance of learning approaches to be applied in
+  SBPs
+  (<xref alt="Bagnell, 2014" rid="ref-bagnell2014_ReinLear" ref-type="bibr">Bagnell,
+  2014</xref>;
+  <xref alt="Strub &amp; Gammell, 2020" rid="ref-strubAdaptivelyInformedTrees2020" ref-type="bibr">Strub
+  &amp; Gammell, 2020</xref>) and on improving the sampling distribution
+  (<xref alt="Alcin et al., 2016" rid="ref-alcin2016_ExtrLear" ref-type="bibr">Alcin
+  et al., 2016</xref>;
+  <xref alt="Lai et al., 2020" rid="ref-lai2020_BayeLoca" ref-type="bibr">Lai
+  et al., 2020</xref>,
+  <xref alt="2021" rid="ref-lai2021diffSamp" ref-type="bibr">2021</xref>;
+  <xref alt="Lai &amp; Ramos, 2020" rid="ref-laiLearningPlanOptimally2020" ref-type="bibr">Lai
+  &amp; Ramos, 2020</xref>,
+  <xref alt="2021a" rid="ref-lai2021plannerFlows" ref-type="bibr">2021a</xref>).</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>The focus of motion planning research has been mainly on (i) the
+  algorithmic aspect of the planner using different routines to build a
+  connected graph and (ii) improving the sampling efficiency (with
+  methods such as heuristic or learned distribution). Traditionally,
+  robotic research focuses on algorithmic development, which has
+  inspired several motion planning libraries written in C++, such as
+  Move3D
+  (<xref alt="Simeon et al., 2001" rid="ref-simeon2001move3d" ref-type="bibr">Simeon
+  et al., 2001</xref>) and OMPL
+  (<xref alt="Sucan et al., 2012" rid="ref-sucan2012open" ref-type="bibr">Sucan
+  et al., 2012</xref>). In particular, OMPL has been one of the most
+  well-known motion planning libraries due to its versatility, and it
+  has been a core part of the planning algorithm used in the MoveIt
+  framework
+  (<xref alt="Chitta et al., 2012" rid="ref-chitta2012moveit" ref-type="bibr">Chitta
+  et al., 2012</xref>). However, swapping the sampler within each
+  planner is very restrictive, as planners are typically hard-coded to
+  use a specific sampler. In addition, it is cumbersome to integrate any
+  learning-based approach into a framework as there is only a limited
+  number of choices of deep-learning libraries in C++.</p>
+  <p>Python has been a popular language to use in Machine Learning due
+  to its rapid scripting nature. For example, PyTorch
+  (<xref alt="Paszke et al., 2019" rid="ref-paszke2019pytorch" ref-type="bibr">Paszke
+  et al., 2019</xref>) and Tensorflow
+  (<xref alt="Abadi et al., 2016" rid="ref-abadi2016tensorflow" ref-type="bibr">Abadi
+  et al., 2016</xref>) are two popular choices for neural network
+  frameworks in Python. A large number of learning approaches are
+  available as Python packages. It shall be noted that the
+  aforementioned OMPL has Python bindings available; however, OMPL uses
+  an outdated Py++ code generator, and every modification to the source
+  code will require hours to updates bindings plus recompilation. Some
+  Python repositories are available that are dedicated to robotics
+  motion planning
+  (<xref alt="Sakai et al., 2018" rid="ref-sakai2018pythonrobotics" ref-type="bibr">Sakai
+  et al., 2018</xref>); however, most only showcase various planning
+  algorithms, without an integrated environment and simulators.</p>
+  <fig>
+    <caption><p>Implementation details on the class hierarchy structure
+    of
+    <monospace>sbp-env</monospace>.<styled-content id="figU003Aclass-diagram"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="class_diagram.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="overview">
+  <title>Overview</title>
+  <p>We introduce <monospace>sbp-env</monospace>, a
+  <italic>sampling-based motion planners’ testing environment</italic>,
+  as a complete feature framework to allow rapid testing of different
+  sampling-based algorithms for motion planning.
+  <monospace>sbp-env</monospace> focuses on the flexibility of tinkering
+  with different aspects of the framework, and it divides the main
+  planning components into two main categories: (i) samplers and (ii)
+  planners. The division of the two components allows users to decouple
+  them and focus only on the component that serves as the main focus of
+  the research. <monospace>sbp-env</monospace> has implemented the
+  entire robot planning framework with multiple degrees-of-freedom,
+  which allows benchmarking motion planning algorithms with the same
+  planner under different backend simulators. Separating the two
+  components allows users to quickly swap out different components in
+  order to test novel ideas.</p>
+  <p>Building the framework enables researchers to rapidly implement
+  their novel ideas and validate their hypotheses. In particular, users
+  can define the environment using something as simple as an
+  <italic>image</italic>, or as complicated as an <italic>xml
+  file</italic>. All samplers and planners can be added as a plugin
+  system, and <monospace>sbp-env</monospace> will auto-discover newly
+  implemented planners or samplers that have been added to the dedicated
+  folders.</p>
+  <p>Figure <xref alt="1" rid="figU003Aclass-diagram">1</xref>
+  illustrates the hierarical structure of our package. Our
+  implementation of <monospace>sbp-env</monospace> define abstract
+  interfaces for <bold>sampler</bold> and <bold>planners</bold>, from
+  which all corresponding concrete classes must inherit. In addition,
+  there are classes that represent the full-body simulations of the
+  environments and the corresponding visualisation methods. Note that
+  all visualisation can be turned off on-demand, which is beneficial
+  when users benchmark their algorithms. The docunmentation of
+  <monospace>sbp-env</monospace> is available at
+  <ext-link ext-link-type="uri" xlink:href="https://cs.tinyiu.com/sbp-env">https://cs.tinyiu.com/sbp-env</ext-link>.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-elbanhawi2014_SampRobo">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Elbanhawi</surname><given-names>Mohamed</given-names></name>
+          <name><surname>Simic</surname><given-names>Milan</given-names></name>
+        </person-group>
+        <article-title>Sampling-based robot motion planning: A review</article-title>
+        <source>IEEE Access</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>2</volume>
+        <pub-id pub-id-type="doi">10.1109/access.2014.2302442</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-jinmingwuCooperativePathfindingBased2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jiang</surname><given-names>Jinmingwu</given-names></name>
+          <name><surname>Wu</surname><given-names>Kaigui</given-names></name>
+        </person-group>
+        <article-title>Cooperative pathfinding based on memory-efficient multi-agent RRT</article-title>
+        <source>IEEE Access</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>8</volume>
+        <pub-id pub-id-type="doi">10.1109/access.2020.3023200</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-klemmRRTConnectFaster2015">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Klemm</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Oberländer</surname><given-names>Jan</given-names></name>
+          <name><surname>Hermann</surname><given-names>Andreas</given-names></name>
+          <name><surname>Roennau</surname><given-names>Arne</given-names></name>
+          <name><surname>Schamm</surname><given-names>Thomas</given-names></name>
+          <name><surname>Zollner</surname><given-names>J. Marius</given-names></name>
+          <name><surname>Dillmann</surname><given-names>Rüdiger</given-names></name>
+        </person-group>
+        <article-title>RRT∗-Connect: Faster, asymptotically optimal motion planning</article-title>
+        <source>2015 IEEE International Conference on Robotics and Biomimetics (ROBIO)</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <pub-id pub-id-type="doi">10.1109/robio.2015.7419012</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-zhongTripleRrtsRobotPath2012">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Zhong</surname><given-names>J.</given-names></name>
+          <name><surname>Su</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>Triple-Rrts for robot path planning based on narrow passage identification</article-title>
+        <source>2012 International Conference on Computer Science and Information Processing (CSIP)</source>
+        <year iso-8601-date="2012-08">2012</year><month>08</month>
+        <pub-id pub-id-type="doi">10.1109/csip.2012.6308826</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-yershova2005_DynaRRTs">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Yershova</surname><given-names>Anna</given-names></name>
+          <name><surname>Jaillet</surname><given-names>Léonard</given-names></name>
+          <name><surname>Siméon</surname><given-names>Thierry</given-names></name>
+          <name><surname>LaValle</surname><given-names>Steven M.</given-names></name>
+        </person-group>
+        <article-title>Dynamic-domain RRTs: Efficient exploration by controlling the sampling domain</article-title>
+        <source>Proceedings of IEEE International Conference on Robotics and Automation</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2005">2005</year>
+        <pub-id pub-id-type="doi">10.1109/robot.2005.1570709</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-iehlCostmapPlanningHigh2012">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Iehl</surname><given-names>Romain</given-names></name>
+          <name><surname>Cortés</surname><given-names>Juan</given-names></name>
+          <name><surname>Siméon</surname><given-names>Thierry</given-names></name>
+        </person-group>
+        <article-title>Costmap planning in high dimensional configuration spaces</article-title>
+        <source>2012 IEEE/ASME International Conference on Advanced Intelligent Mechatronics (AIM)</source>
+        <year iso-8601-date="2012-07">2012</year><month>07</month>
+        <issn>2159-6255</issn>
+        <pub-id pub-id-type="doi">10.1109/aim.2012.6265953</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kavraki1996_AnalProb">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Kavraki</surname><given-names>Lydia E.</given-names></name>
+          <name><surname>Kolountzakis</surname><given-names>Mihail N.</given-names></name>
+          <name><surname>Latombe</surname><given-names>J.-C.</given-names></name>
+        </person-group>
+        <article-title>Analysis of probabilistic roadmaps for path planning</article-title>
+        <source>Proceedings of IEEE International Conference on Robotics and Automation</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="1996">1996</year>
+        <volume>4</volume>
+        <pub-id pub-id-type="doi">10.1109/robot.1996.509171</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lai2021lazyExperienceGraph">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lai</surname><given-names>Tin</given-names></name>
+          <name><surname>Ramos</surname><given-names>Fabio</given-names></name>
+        </person-group>
+        <article-title>Rapid Replanning in Consecutive Pick-and-Place Tasks with Lazy Experience Graph</article-title>
+        <source>arXiv:2109.10209 [cs.RO]</source>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://arxiv.org/abs/2109.10209</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-laiLearningPlanOptimally2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lai</surname><given-names>Tin</given-names></name>
+          <name><surname>Ramos</surname><given-names>Fabio</given-names></name>
+        </person-group>
+        <article-title>Learning to Plan Optimally with Flow-based Motion Planner</article-title>
+        <source>arXiv:2010.11323 [cs.RO]</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://arxiv.org/abs/2010.11323</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-lai2021diffSamp">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Lai</surname><given-names>Tin</given-names></name>
+          <name><surname>Zhi</surname><given-names>Weiming</given-names></name>
+          <name><surname>Hermans</surname><given-names>Tucker</given-names></name>
+          <name><surname>Ramos</surname><given-names>Fabio</given-names></name>
+        </person-group>
+        <article-title>Parallelised Diffeomorphic Sampling-based Motion Planning</article-title>
+        <source>Conference on robot learning (CoRL)</source>
+        <publisher-name>Proceedings of Machine Learning Research</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-lai2018_BalaGlob">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Lai</surname><given-names>Tin</given-names></name>
+          <name><surname>Ramos</surname><given-names>Fabio</given-names></name>
+          <name><surname>Francis</surname><given-names>Gilad</given-names></name>
+        </person-group>
+        <article-title>Balancing Global Exploration and Local-connectivity Exploitation with Rapidly-exploring Random disjointed-Trees</article-title>
+        <source>Proceedings of The International Conference on Robotics and Automation</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <pub-id pub-id-type="doi">10.1109/icra.2019.8793618</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-strubAdaptivelyInformedTrees2020">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Strub</surname><given-names>Marlin P.</given-names></name>
+          <name><surname>Gammell</surname><given-names>Jonathan D.</given-names></name>
+        </person-group>
+        <article-title>Adaptively Informed Trees (AIT*): Fast Asymptotically Optimal Path Planning through Adaptive Heuristics</article-title>
+        <source>2020 IEEE International Conference on Robotics and Automation (ICRA)</source>
+        <year iso-8601-date="2020-05">2020</year><month>05</month>
+        <issn>2577-087X</issn>
+        <pub-id pub-id-type="doi">10.1109/icra40945.2020.9197338</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bagnell2014_ReinLear">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bagnell</surname><given-names>J. Andrew</given-names></name>
+        </person-group>
+        <article-title>Reinforcement Learning in Robotics: A Survey</article-title>
+        <source>Springer Tracts in Advanced Robotics</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>97</volume>
+        <issn>9783642276446</issn>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-03194-1_2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-alcin2016_ExtrLear">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Alcin</surname><given-names>O. F.</given-names></name>
+          <name><surname>Ucar</surname><given-names>F.</given-names></name>
+          <name><surname>Korkmaz</surname><given-names>D.</given-names></name>
+        </person-group>
+        <article-title>Extreme learning machine based robotic arm modeling</article-title>
+        <source>2016 21st International Conference on Methods and Models in Automation and Robotics, MMAR 2016</source>
+        <year iso-8601-date="2016">2016</year>
+        <issue>1</issue>
+        <issn>9781509018666</issn>
+        <pub-id pub-id-type="doi">10.1109/mmar.2016.7575302</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lai2020_BayeLoca">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lai</surname><given-names>Tin</given-names></name>
+          <name><surname>Morere</surname><given-names>Philippe</given-names></name>
+          <name><surname>Ramos</surname><given-names>Fabio</given-names></name>
+          <name><surname>Francis</surname><given-names>Gilad</given-names></name>
+        </person-group>
+        <article-title>Bayesian Local Sampling-Based Planning</article-title>
+        <source>IEEE Robotics and Automation Letters (RA-L)</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>5</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1109/lra.2020.2969145</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lai2021rapidlyexploring">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lai</surname><given-names>Tin</given-names></name>
+        </person-group>
+        <article-title>Rapidly-exploring Random Forest: Adaptively Exploits Local Structure with Generalised Multi-Trees Motion Planning</article-title>
+        <source>arXiv:2103.04487 [cs.RO]</source>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://arxiv.org/abs/2103.04487</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-paszke2019pytorch">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Paszke</surname><given-names>Adam</given-names></name>
+          <name><surname>Gross</surname><given-names>Sam</given-names></name>
+          <name><surname>Massa</surname><given-names>Francisco</given-names></name>
+          <name><surname>Lerer</surname><given-names>Adam</given-names></name>
+          <name><surname>Bradbury</surname><given-names>James</given-names></name>
+          <name><surname>Chanan</surname><given-names>Gregory</given-names></name>
+          <name><surname>Killeen</surname><given-names>Trevor</given-names></name>
+          <name><surname>Lin</surname><given-names>Zeming</given-names></name>
+          <name><surname>Gimelshein</surname><given-names>Natalia</given-names></name>
+          <name><surname>Antiga</surname><given-names>Luca</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Pytorch: An imperative style, high-performance deep learning library</article-title>
+        <source>Advances in neural information processing systems</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>32</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-abadi2016tensorflow">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Abadi</surname><given-names>Martı́n</given-names></name>
+          <name><surname>Barham</surname><given-names>Paul</given-names></name>
+          <name><surname>Chen</surname><given-names>Jianmin</given-names></name>
+          <name><surname>Chen</surname><given-names>Zhifeng</given-names></name>
+          <name><surname>Davis</surname><given-names>Andy</given-names></name>
+          <name><surname>Dean</surname><given-names>Jeffrey</given-names></name>
+          <name><surname>Devin</surname><given-names>Matthieu</given-names></name>
+          <name><surname>Ghemawat</surname><given-names>Sanjay</given-names></name>
+          <name><surname>Irving</surname><given-names>Geoffrey</given-names></name>
+          <name><surname>Isard</surname><given-names>Michael</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Tensorflow: A system for large-scale machine learning</article-title>
+        <source>12th USENIX symposium on operating systems design and implementation (OSDI 16)</source>
+        <year iso-8601-date="2016">2016</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-lai2021plannerFlows">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Lai</surname><given-names>Tin</given-names></name>
+          <name><surname>Ramos</surname><given-names>Fabio</given-names></name>
+        </person-group>
+        <article-title>PlannerFlows: Learning Motion Samplers with Normalising Flows</article-title>
+        <source>IEEE/RSJ proceedings of the international conference on intelligent robots and systems (IROS)</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-simeon2001move3d">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Simeon</surname><given-names>Thierry</given-names></name>
+          <name><surname>Laumond</surname><given-names>J-P</given-names></name>
+          <name><surname>Lamiraux</surname><given-names>Florent</given-names></name>
+        </person-group>
+        <article-title>Move3D: A generic platform for path planning</article-title>
+        <source>Proceedings of the 2001 IEEE international symposium on assembly and task planning (ISATP2001). Assembly and disassembly in the twenty-first century.(cat. No. 01TH8560)</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2001">2001</year>
+        <pub-id pub-id-type="doi">10.1109/isatp.2001.928961</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sucan2012open">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sucan</surname><given-names>Ioan A</given-names></name>
+          <name><surname>Moll</surname><given-names>Mark</given-names></name>
+          <name><surname>Kavraki</surname><given-names>Lydia E</given-names></name>
+        </person-group>
+        <article-title>The open motion planning library</article-title>
+        <source>IEEE Robotics &amp; Automation Magazine</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>19</volume>
+        <issue>4</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-sakai2018pythonrobotics">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Sakai</surname><given-names>Atsushi</given-names></name>
+          <name><surname>Ingram</surname><given-names>Daniel</given-names></name>
+          <name><surname>Dinius</surname><given-names>Joseph</given-names></name>
+          <name><surname>Chawla</surname><given-names>Karan</given-names></name>
+          <name><surname>Raffin</surname><given-names>Antonin</given-names></name>
+          <name><surname>Paques</surname><given-names>Alexis</given-names></name>
+        </person-group>
+        <article-title>PythonRobotics: A Python code collection of robotics algorithms</article-title>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://arxiv.org/abs/1808.10703</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-chitta2012moveit">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Chitta</surname><given-names>Sachin</given-names></name>
+          <name><surname>Sucan</surname><given-names>Ioan</given-names></name>
+          <name><surname>Cousins</surname><given-names>Steve</given-names></name>
+        </person-group>
+        <article-title>Moveit! [Ros topics]</article-title>
+        <source>IEEE Robotics &amp; Automation Magazine</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>19</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1109/mra.2011.2181749</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

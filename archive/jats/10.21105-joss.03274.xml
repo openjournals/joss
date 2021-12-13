@@ -1,0 +1,845 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3274</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03274</article-id>
+<title-group>
+<article-title>funsies: A minimalist, distributed and dynamic workflow
+engine</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-2778-1866</contrib-id>
+<string-name>Cyrille Lavigne</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="corresp" rid="cor-1"><sup>*</sup></xref>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-8277-4434</contrib-id>
+<string-name>Alán Aspuru-Guzik</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-3"/>
+<xref ref-type="aff" rid="aff-4"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Computer Science, University of Toronto, 40
+St. George St, Toronto, Ontario M5S 2E4, Canada</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Chemical Physics Theory Group, Department of Chemistry,
+University of Toronto, 80 St. George St, Toronto, Ontario M5S 3H6,
+Canada</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Vector Institute for Artificial Intelligence, 661
+University Ave Suite 710, Toronto, Ontario M5G 1M1, Canada</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-4">
+<institution-wrap>
+<institution>Lebovic Fellow, Canadian Institute for Advanced Research
+(CIFAR), 661 University Ave, Toronto, Ontario M5G, Canada</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<author-notes>
+<corresp id="cor-1">* E-mail: <email></email></corresp>
+</author-notes>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-04-27">
+<day>27</day>
+<month>4</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>66</issue>
+<fpage>3274</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>workflow</kwd>
+<kwd>redis</kwd>
+<kwd>decentralized</kwd>
+<kwd>computational chemistry</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Large-scale, high-throughput computational investigations are
+  increasingly common in chemistry and physics. Until recently,
+  computational chemistry was primarily performed using all-in-one
+  monolithic software packages
+  (<xref alt="Aprà et al., 2020" rid="ref-apraU003A2020" ref-type="bibr">Aprà
+  et al., 2020</xref>;
+  <xref alt="Aquilante et al., 2020" rid="ref-aquilanteU003A2020" ref-type="bibr">Aquilante
+  et al., 2020</xref>;
+  <xref alt="Barca et al., 2020" rid="ref-barcaU003A2020" ref-type="bibr">Barca
+  et al., 2020</xref>;
+  <xref alt="Kühne et al., 2020" rid="ref-kuhneU003A2020" ref-type="bibr">Kühne
+  et al., 2020</xref>;
+  <xref alt="Romero et al., 2020" rid="ref-romeroU003A2020" ref-type="bibr">Romero
+  et al., 2020</xref>;
+  <xref alt="Smith et al., 2020" rid="ref-smithU003A2020" ref-type="bibr">Smith
+  et al., 2020</xref>). However, the limits of individual programs
+  become evident when tackling complex multifaceted problems. As such,
+  it is increasingly common to use multiple disparate software packages
+  in a single computational pipeline, often stitched together using
+  shell scripts in languages such as Bash, or using Python and other
+  interpreted languages.</p>
+  <p>These complex computational pipelines are difficult to scale and
+  automate, as they often include manual steps and significant
+  “human-in-the-loop” tuning. Shell scripting errors are often
+  undetected, which can compromise scientific results. Conversely,
+  exception-based error handling, the standard approach in Python, can
+  readily bring a computational workflow to a halt when exceptions are
+  not properly caught
+  (<xref alt="Weimer &amp; Necula, 2008" rid="ref-weimerU003A2008" ref-type="bibr">Weimer
+  &amp; Necula, 2008</xref>).</p>
+  <p><monospace>funsies</monospace> is a set of Python programs and
+  modules to describe, execute and analyze computational workflows, with
+  first-class support for shell scripting. It includes a lightweight,
+  decentralized workflow engine backed by a NoSQL store. Using
+  <monospace>funsies</monospace>, external programs and Python-based
+  computations are easily mixed together. Errors are detected and
+  propagated throughout computations. Automatic, transparent incremental
+  computing (based on a hash tree data structure) provides a convenient
+  environment for iterative prototyping of computationally expensive
+  workflows.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Modern workflow management programs used in the private sector,
+  such as Apache Airflow and Uber’s Cadence, are robust and extremely
+  scalable, but are difficult to deploy. Scientific workflow management
+  systems, many of which are compiled in
+  (<xref alt="Tommaso, 2021" rid="ref-awesome_pipeline" ref-type="bibr">Tommaso,
+  2021</xref>) and systematically reviewed in
+  (<xref alt="Mölder et al., 2021" rid="ref-molder_sustainable_2021" ref-type="bibr">Mölder
+  et al., 2021</xref>), are easier to set up on high-performance
+  computing clusters, but are tuned to the needs of specific
+  disciplines, such as bioinformatics or machine learning. This
+  includes, for example, the use of configuration file formats (YAML,
+  JSON, etc.), packaging tools (for example, conda or Docker), locked-in
+  compute providers (Amazon Web Services, Google Cloud) and storage
+  formats that may be common in specific scientific fields but not
+  throughout the greater community.</p>
+  <p>For our own group’s research program, we wanted to have available a
+  lightweight workflow management system that could be readily deployed
+  to new and varied computational facilities and local workstations with
+  minimal effort. This system had to support our existing shell-based
+  and Python-based scripts, and be flexible enough for rapid prototyping
+  all the way to large-scale computational campaigns, and provide an
+  embeddable solution that can be bundled within other software
+  (<xref alt="Lavigne et al., 2020" rid="ref-lavigne_automatic_2020" ref-type="bibr">Lavigne
+  et al., 2020</xref>). Finally, we were looking for a tool that could
+  integrate data generation and storage, to avoid the common practice of
+  transforming the filesystem into what is effectively a schema-less
+  database. We developed <monospace>funsies</monospace> to address those
+  needs.</p>
+</sec>
+<sec id="features-and-implementation">
+  <title>Features and Implementation</title>
+  <p><monospace>funsies</monospace> is a Python library and a set of
+  associated command-line tools. Using the
+  <monospace>funsies</monospace> library, general computational
+  workflows are described in lazily evaluated Python code. Operations in
+  <monospace>funsies</monospace> are taken to be pure, that is, all
+  operation outputs are entirely and solely determined by their inputs.
+  Workflows are orchestrated using Python by manipulating pointers to
+  yet-to-be-calculated data. Workflow instructions are transparently
+  translated and saved as graph elements in a Redis database.</p>
+  <p>Computational evaluation is initiated by the user asking for
+  specific output value. The task graph from these final outputs is
+  walked back all the way to those operations with no dependencies.
+  These initial operations are then queued for execution. Lightweight
+  worker processes, instantiated from the command line on local or
+  remote machines, connect to the Redis database and start executing the
+  workflow. For each operation, the worker checks if outputs are already
+  cached, and if not, executes the associated function and saves its
+  outputs. It then enqueues any dependents for execution, by itself or
+  by other workers. In this way, the entire computational graph is
+  evaluated in a distributed, decentralized fashion without any
+  scheduler or manager program. Errors in workflows are handled using a
+  functional approach inspired by Rust
+  (<xref alt="Klabnik &amp; Nichols, 2019" rid="ref-klabnik_rust_2019" ref-type="bibr">Klabnik
+  &amp; Nichols, 2019</xref>). Specifically, exceptions are propagated
+  through workflow steps, canceling dependent tasks, without
+  interrupting valid workflow branches. This provides both easy error
+  tracing and a high degree of fault tolerance.</p>
+  <p>The main distinguishing feature of <monospace>funsies</monospace>
+  is the hash tree structure that is used to encode all operations and
+  their inputs. The causal hashing approach used in
+  <monospace>funsies</monospace> can also be found in Snakemake
+  (<xref alt="Mölder et al., 2021" rid="ref-molder_sustainable_2021" ref-type="bibr">Mölder
+  et al., 2021</xref>) as an optional component and the (now defunct)
+  Koji workflow system
+  (<xref alt="Maymounkov, 2018" rid="ref-maymounkov_koji_2018" ref-type="bibr">Maymounkov,
+  2018</xref>), as part of the Nix package manager
+  (<xref alt="Dolstra et al., 2004" rid="ref-dolstra_nix_2004" ref-type="bibr">Dolstra
+  et al., 2004</xref>) and in the Git version control system
+  (<xref alt="Chacon &amp; Straub, 2014" rid="ref-chacon_pro_2014" ref-type="bibr">Chacon
+  &amp; Straub, 2014</xref>). In <monospace>funsies</monospace>, we
+  replace all filesystem operations with hash addressed operations; that
+  is all I/O operations and dependencies are tracked.</p>
+  <p>Every operation has a hash address that is computed from the hash
+  values of its dependencies and a hashed identifier for the associated
+  operation on data. In this way, the consistency of data dependencies
+  is strongly enforced. Changes to data and operations are automatically
+  and transparently propagated, as changing a single dependency will
+  cause a rehash of all its dependents, effectively producing a new
+  workflow with no associated data that needs to be recomputed.
+  Alternatively, if data already exists at a specific hash address, then
+  it was generated from the same operations that produced that hash. In
+  this way, the hash tree structure enables transparent and automatic
+  incremental recomputing.</p>
+  <p>Using hash addresses also enables decentralization, as we can rely
+  on the unlikeliness of hash collisions
+  (<xref alt="Stevens et al., 2017" rid="ref-stevens_first_2017" ref-type="bibr">Stevens
+  et al., 2017</xref>) to eliminate centralized locks. An important
+  advantage of this approach is that it allows worker processes to
+  generate their own workflows of tasks dynamically. Results from these
+  dynamic workflows can be collected and used further in the workflow
+  description, provided they can be reduced to a number of outputs known
+  at compile time, a technique similar to MapReduce
+  (<xref alt="Dean &amp; Ghemawat, 2004" rid="ref-dean_mapreduce_2004" ref-type="bibr">Dean
+  &amp; Ghemawat, 2004</xref>).</p>
+  <p>As of now, we have published one project
+  (<xref alt="Pollice et al., 2021" rid="ref-polliceU003A2021" ref-type="bibr">Pollice
+  et al., 2021</xref>) that used an earlier iteration of
+  <monospace>funsies</monospace>, and are using it in multiple ongoing
+  inquiries. We provide several sample workflows on GitHub, with a focus
+  on computational chemistry, quantum computing, and high-performance
+  computing infrastructure.</p>
+  <p>We intend to maintain <monospace>funsies</monospace> and of course
+  welcome
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/aspuru-guzik-group/funsies/blob/master/CONTRIBUTING.md">collaborations
+  from contributors around the world.</ext-link></p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We acknowledge testing by early users Cher-Tian Ser, Kjell Jorner
+  and Gabriel dos Passos Gomes. CL also thanks Chris Crebolder for help
+  setting up documentation pages. We acknowledge the Defense Advanced
+  Research Projects Agency (DARPA) under the Accelerated Molecular
+  Discovery Program under Cooperative Agreement No. HR00111920027 dated
+  August 1, 2019. The content of the information presented in this work
+  does not necessarily reflect the position or the policy of the
+  Government. A. A.-G. thanks Dr. Anders G. Frøseth for his generous
+  support. A. A.-G. also acknowledges the generous support of Natural
+  Resources Canada and the Canada 150 Research Chairs program. We thank
+  Compute Canada for providing computational resources.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-awesome_pipeline">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Tommaso</surname><given-names>Paolo Di</given-names></name>
+        </person-group>
+        <article-title>A curated list of awesome pipeline toolkits inspired by awesome sysadmin</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>GitHub</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://github.com/pditommaso/awesome-pipeline</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-lavigne_automatic_2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lavigne</surname><given-names>Cyrille</given-names></name>
+          <name><surname>Passos Gomes</surname><given-names>Gabriel dos</given-names></name>
+          <name><surname>Pollice</surname><given-names>Robert</given-names></name>
+          <name><surname>Aspuru-Guzik</surname><given-names>Alan</given-names></name>
+        </person-group>
+        <article-title>Automatic discovery of chemical reactions using imposed activation</article-title>
+        <year iso-8601-date="2020-09-29">2020</year><month>09</month><day>29</day>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-09-30">2020</year><month>09</month><day>30</day></date-in-citation>
+        <uri>/articles/preprint/Automatic_discovery_of_chemical_reactions_using_imposed_activation/13008500/1</uri>
+        <pub-id pub-id-type="doi">10.26434/chemrxiv.13008500.v2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-smithU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Smith</surname><given-names>Daniel G. A.</given-names></name>
+          <name><surname>Burns</surname><given-names>Lori A.</given-names></name>
+          <name><surname>Simmonett</surname><given-names>Andrew C.</given-names></name>
+          <name><surname>Parrish</surname><given-names>Robert M.</given-names></name>
+          <name><surname>Schieber</surname><given-names>Matthew C.</given-names></name>
+          <name><surname>Galvelis</surname><given-names>Raimondas</given-names></name>
+          <name><surname>Kraus</surname><given-names>Peter</given-names></name>
+          <name><surname>Kruse</surname><given-names>Holger</given-names></name>
+          <name><surname>Di Remigio</surname><given-names>Roberto</given-names></name>
+          <name><surname>Alenaizan</surname><given-names>Asem</given-names></name>
+          <name><surname>James</surname><given-names>Andrew M.</given-names></name>
+          <name><surname>Lehtola</surname><given-names>Susi</given-names></name>
+          <name><surname>Misiewicz</surname><given-names>Jonathon P.</given-names></name>
+          <name><surname>Scheurer</surname><given-names>Maximilian</given-names></name>
+          <name><surname>Shaw</surname><given-names>Robert A.</given-names></name>
+          <name><surname>Schriber</surname><given-names>Jeffrey B.</given-names></name>
+          <name><surname>Xie</surname><given-names>Yi</given-names></name>
+          <name><surname>Glick</surname><given-names>Zachary L.</given-names></name>
+          <name><surname>Sirianni</surname><given-names>Dominic A.</given-names></name>
+          <name><surname>O’Brien</surname><given-names>Joseph Senan</given-names></name>
+          <name><surname>Waldrop</surname><given-names>Jonathan M.</given-names></name>
+          <name><surname>Kumar</surname><given-names>Ashutosh</given-names></name>
+          <name><surname>Hohenstein</surname><given-names>Edward G.</given-names></name>
+          <name><surname>Pritchard</surname><given-names>Benjamin P.</given-names></name>
+          <name><surname>Brooks</surname><given-names>Bernard R.</given-names></name>
+          <name><surname>Schaefer</surname><given-names>Henry F.</given-names></name>
+          <name><surname>Sokolov</surname><given-names>Alexander Yu.</given-names></name>
+          <name><surname>Patkowski</surname><given-names>Konrad</given-names></name>
+          <name><surname>DePrince</surname><given-names>A. Eugene</given-names></name>
+          <name><surname>Bozkaya</surname><given-names>Uğur</given-names></name>
+          <name><surname>King</surname><given-names>Rollin A.</given-names></name>
+          <name><surname>Evangelista</surname><given-names>Francesco A.</given-names></name>
+          <name><surname>Turney</surname><given-names>Justin M.</given-names></name>
+          <name><surname>Crawford</surname><given-names>T. Daniel</given-names></name>
+          <name><surname>Sherrill</surname><given-names>C. David</given-names></name>
+        </person-group>
+        <article-title>PSI4 1.4: Open-source software for high-throughput quantum chemistry</article-title>
+        <source>Journal of Chemical Physics</source>
+        <year iso-8601-date="2020-05-13">2020</year><month>05</month><day>13</day>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-04-20">2021</year><month>04</month><day>20</day></date-in-citation>
+        <volume>152</volume>
+        <issue>18</issue>
+        <issn>0021-9606</issn>
+        <uri>https://aip.scitation.org/doi/full/10.1063/5.0006002</uri>
+        <pub-id pub-id-type="doi">10.1063/5.0006002</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-aquilanteU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Aquilante</surname><given-names>Francesco</given-names></name>
+          <name><surname>Autschbach</surname><given-names>Jochen</given-names></name>
+          <name><surname>Baiardi</surname><given-names>Alberto</given-names></name>
+          <name><surname>Battaglia</surname><given-names>Stefano</given-names></name>
+          <name><surname>Borin</surname><given-names>Veniamin A.</given-names></name>
+          <name><surname>Chibotaru</surname><given-names>Liviu F.</given-names></name>
+          <name><surname>Conti</surname><given-names>Irene</given-names></name>
+          <name><surname>De Vico</surname><given-names>Luca</given-names></name>
+          <name><surname>Delcey</surname><given-names>Mickaël</given-names></name>
+          <name><surname>Fdez. Galván</surname><given-names>Ignacio</given-names></name>
+          <name><surname>Ferré</surname><given-names>Nicolas</given-names></name>
+          <name><surname>Freitag</surname><given-names>Leon</given-names></name>
+          <name><surname>Garavelli</surname><given-names>Marco</given-names></name>
+          <name><surname>Gong</surname><given-names>Xuejun</given-names></name>
+          <name><surname>Knecht</surname><given-names>Stefan</given-names></name>
+          <name><surname>Larsson</surname><given-names>Ernst D.</given-names></name>
+          <name><surname>Lindh</surname><given-names>Roland</given-names></name>
+          <name><surname>Lundberg</surname><given-names>Marcus</given-names></name>
+          <name><surname>Malmqvist</surname><given-names>Per Åke</given-names></name>
+          <name><surname>Nenov</surname><given-names>Artur</given-names></name>
+          <name><surname>Norell</surname><given-names>Jesper</given-names></name>
+          <name><surname>Odelius</surname><given-names>Michael</given-names></name>
+          <name><surname>Olivucci</surname><given-names>Massimo</given-names></name>
+          <name><surname>Pedersen</surname><given-names>Thomas B.</given-names></name>
+          <name><surname>Pedraza-González</surname><given-names>Laura</given-names></name>
+          <name><surname>Phung</surname><given-names>Quan M.</given-names></name>
+          <name><surname>Pierloot</surname><given-names>Kristine</given-names></name>
+          <name><surname>Reiher</surname><given-names>Markus</given-names></name>
+          <name><surname>Schapiro</surname><given-names>Igor</given-names></name>
+          <name><surname>Segarra-Martí</surname><given-names>Javier</given-names></name>
+          <name><surname>Segatta</surname><given-names>Francesco</given-names></name>
+          <name><surname>Seijo</surname><given-names>Luis</given-names></name>
+          <name><surname>Sen</surname><given-names>Saumik</given-names></name>
+          <name><surname>Sergentu</surname><given-names>Dumitru-Claudiu</given-names></name>
+          <name><surname>Stein</surname><given-names>Christopher J.</given-names></name>
+          <name><surname>Ungur</surname><given-names>Liviu</given-names></name>
+          <name><surname>Vacher</surname><given-names>Morgane</given-names></name>
+          <name><surname>Valentini</surname><given-names>Alessio</given-names></name>
+          <name><surname>Veryazov</surname><given-names>Valera</given-names></name>
+        </person-group>
+        <article-title>Modern quantum chemistry with [Open]Molcas</article-title>
+        <source>Journal of Chemical Physics</source>
+        <year iso-8601-date="2020-06-05">2020</year><month>06</month><day>05</day>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-04-20">2021</year><month>04</month><day>20</day></date-in-citation>
+        <volume>152</volume>
+        <issue>21</issue>
+        <issn>0021-9606</issn>
+        <uri>https://aip.scitation.org/doi/full/10.1063/5.0004835</uri>
+        <pub-id pub-id-type="doi">10.1063/5.0004835</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kuhneU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kühne</surname><given-names>Thomas D.</given-names></name>
+          <name><surname>Iannuzzi</surname><given-names>Marcella</given-names></name>
+          <name><surname>Del Ben</surname><given-names>Mauro</given-names></name>
+          <name><surname>Rybkin</surname><given-names>Vladimir V.</given-names></name>
+          <name><surname>Seewald</surname><given-names>Patrick</given-names></name>
+          <name><surname>Stein</surname><given-names>Frederick</given-names></name>
+          <name><surname>Laino</surname><given-names>Teodoro</given-names></name>
+          <name><surname>Khaliullin</surname><given-names>Rustam Z.</given-names></name>
+          <name><surname>Schütt</surname><given-names>Ole</given-names></name>
+          <name><surname>Schiffmann</surname><given-names>Florian</given-names></name>
+          <name><surname>Golze</surname><given-names>Dorothea</given-names></name>
+          <name><surname>Wilhelm</surname><given-names>Jan</given-names></name>
+          <name><surname>Chulkov</surname><given-names>Sergey</given-names></name>
+          <name><surname>Bani-Hashemian</surname><given-names>Mohammad Hossein</given-names></name>
+          <name><surname>Weber</surname><given-names>Valéry</given-names></name>
+          <name><surname>Borštnik</surname><given-names>Urban</given-names></name>
+          <name><surname>Taillefumier</surname><given-names>Mathieu</given-names></name>
+          <name><surname>Jakobovits</surname><given-names>Alice Shoshana</given-names></name>
+          <name><surname>Lazzaro</surname><given-names>Alfio</given-names></name>
+          <name><surname>Pabst</surname><given-names>Hans</given-names></name>
+          <name><surname>Müller</surname><given-names>Tiziano</given-names></name>
+          <name><surname>Schade</surname><given-names>Robert</given-names></name>
+          <name><surname>Guidon</surname><given-names>Manuel</given-names></name>
+          <name><surname>Andermatt</surname><given-names>Samuel</given-names></name>
+          <name><surname>Holmberg</surname><given-names>Nico</given-names></name>
+          <name><surname>Schenter</surname><given-names>Gregory K.</given-names></name>
+          <name><surname>Hehn</surname><given-names>Anna</given-names></name>
+          <name><surname>Bussy</surname><given-names>Augustin</given-names></name>
+          <name><surname>Belleflamme</surname><given-names>Fabian</given-names></name>
+          <name><surname>Tabacchi</surname><given-names>Gloria</given-names></name>
+          <name><surname>Glöß</surname><given-names>Andreas</given-names></name>
+          <name><surname>Lass</surname><given-names>Michael</given-names></name>
+          <name><surname>Bethune</surname><given-names>Iain</given-names></name>
+          <name><surname>Mundy</surname><given-names>Christopher J.</given-names></name>
+          <name><surname>Plessl</surname><given-names>Christian</given-names></name>
+          <name><surname>Watkins</surname><given-names>Matt</given-names></name>
+          <name><surname>VandeVondele</surname><given-names>Joost</given-names></name>
+          <name><surname>Krack</surname><given-names>Matthias</given-names></name>
+          <name><surname>Hutter</surname><given-names>Jürg</given-names></name>
+        </person-group>
+        <article-title>CP2K: An electronic structure and molecular dynamics software package - quickstep: Efficient and accurate electronic structure calculations</article-title>
+        <source>Journal of Chemical Physics</source>
+        <year iso-8601-date="2020-05-19">2020</year><month>05</month><day>19</day>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-04-20">2021</year><month>04</month><day>20</day></date-in-citation>
+        <volume>152</volume>
+        <issue>19</issue>
+        <issn>0021-9606</issn>
+        <uri>https://aip.scitation.org/doi/full/10.1063/5.0007045</uri>
+        <pub-id pub-id-type="doi">10.1063/5.0007045</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-apraU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Aprà</surname><given-names>E.</given-names></name>
+          <name><surname>Bylaska</surname><given-names>E. J.</given-names></name>
+          <name><surname>Jong</surname><given-names>W. A. de</given-names></name>
+          <name><surname>Govind</surname><given-names>N.</given-names></name>
+          <name><surname>Kowalski</surname><given-names>K.</given-names></name>
+          <name><surname>Straatsma</surname><given-names>T. P.</given-names></name>
+          <name><surname>Valiev</surname><given-names>M.</given-names></name>
+          <name><surname>Dam</surname><given-names>H. J. J. van</given-names></name>
+          <name><surname>Alexeev</surname><given-names>Y.</given-names></name>
+          <name><surname>Anchell</surname><given-names>J.</given-names></name>
+          <name><surname>Anisimov</surname><given-names>V.</given-names></name>
+          <name><surname>Aquino</surname><given-names>F. W.</given-names></name>
+          <name><surname>Atta-Fynn</surname><given-names>R.</given-names></name>
+          <name><surname>Autschbach</surname><given-names>J.</given-names></name>
+          <name><surname>Bauman</surname><given-names>N. P.</given-names></name>
+          <name><surname>Becca</surname><given-names>J. C.</given-names></name>
+          <name><surname>Bernholdt</surname><given-names>D. E.</given-names></name>
+          <name><surname>Bhaskaran-Nair</surname><given-names>K.</given-names></name>
+          <name><surname>Bogatko</surname><given-names>S.</given-names></name>
+          <name><surname>Borowski</surname><given-names>P.</given-names></name>
+          <name><surname>Boschen</surname><given-names>J.</given-names></name>
+          <name><surname>Brabec</surname><given-names>J.</given-names></name>
+          <name><surname>Bruner</surname><given-names>A.</given-names></name>
+          <name><surname>Cauët</surname><given-names>E.</given-names></name>
+          <name><surname>Chen</surname><given-names>Y.</given-names></name>
+          <name><surname>Chuev</surname><given-names>G. N.</given-names></name>
+          <name><surname>Cramer</surname><given-names>C. J.</given-names></name>
+          <name><surname>Daily</surname><given-names>J.</given-names></name>
+          <name><surname>Deegan</surname><given-names>M. J. O.</given-names></name>
+          <name><surname>Dunning</surname><given-names>T. H.</given-names></name>
+          <name><surname>Dupuis</surname><given-names>M.</given-names></name>
+          <name><surname>Dyall</surname><given-names>K. G.</given-names></name>
+          <name><surname>Fann</surname><given-names>G. I.</given-names></name>
+          <name><surname>Fischer</surname><given-names>S. A.</given-names></name>
+          <name><surname>Fonari</surname><given-names>A.</given-names></name>
+          <name><surname>Früchtl</surname><given-names>H.</given-names></name>
+          <name><surname>Gagliardi</surname><given-names>L.</given-names></name>
+          <name><surname>Garza</surname><given-names>J.</given-names></name>
+          <name><surname>Gawande</surname><given-names>N.</given-names></name>
+          <name><surname>Ghosh</surname><given-names>S.</given-names></name>
+          <name><surname>Glaesemann</surname><given-names>K.</given-names></name>
+          <name><surname>Götz</surname><given-names>A. W.</given-names></name>
+          <name><surname>Hammond</surname><given-names>J.</given-names></name>
+          <name><surname>Helms</surname><given-names>V.</given-names></name>
+          <name><surname>Hermes</surname><given-names>E. D.</given-names></name>
+          <name><surname>Hirao</surname><given-names>K.</given-names></name>
+          <name><surname>Hirata</surname><given-names>S.</given-names></name>
+          <name><surname>Jacquelin</surname><given-names>M.</given-names></name>
+          <name><surname>Jensen</surname><given-names>L.</given-names></name>
+          <name><surname>Johnson</surname><given-names>B. G.</given-names></name>
+          <name><surname>Jónsson</surname><given-names>H.</given-names></name>
+          <name><surname>Kendall</surname><given-names>R. A.</given-names></name>
+          <name><surname>Klemm</surname><given-names>M.</given-names></name>
+          <name><surname>Kobayashi</surname><given-names>R.</given-names></name>
+          <name><surname>Konkov</surname><given-names>V.</given-names></name>
+          <name><surname>Krishnamoorthy</surname><given-names>S.</given-names></name>
+          <name><surname>Krishnan</surname><given-names>M.</given-names></name>
+          <name><surname>Lin</surname><given-names>Z.</given-names></name>
+          <name><surname>Lins</surname><given-names>R. D.</given-names></name>
+          <name><surname>Littlefield</surname><given-names>R. J.</given-names></name>
+          <name><surname>Logsdail</surname><given-names>A. J.</given-names></name>
+          <name><surname>Lopata</surname><given-names>K.</given-names></name>
+          <name><surname>Ma</surname><given-names>W.</given-names></name>
+          <name><surname>Marenich</surname><given-names>A. V.</given-names></name>
+          <name><surname>Martin del Campo</surname><given-names>J.</given-names></name>
+          <name><surname>Mejia-Rodriguez</surname><given-names>D.</given-names></name>
+          <name><surname>Moore</surname><given-names>J. E.</given-names></name>
+          <name><surname>Mullin</surname><given-names>J. M.</given-names></name>
+          <name><surname>Nakajima</surname><given-names>T.</given-names></name>
+          <name><surname>Nascimento</surname><given-names>D. R.</given-names></name>
+          <name><surname>Nichols</surname><given-names>J. A.</given-names></name>
+          <name><surname>Nichols</surname><given-names>P. J.</given-names></name>
+          <name><surname>Nieplocha</surname><given-names>J.</given-names></name>
+          <name><surname>Otero-de-la-Roza</surname><given-names>A.</given-names></name>
+          <name><surname>Palmer</surname><given-names>B.</given-names></name>
+          <name><surname>Panyala</surname><given-names>A.</given-names></name>
+          <name><surname>Pirojsirikul</surname><given-names>T.</given-names></name>
+          <name><surname>Peng</surname><given-names>B.</given-names></name>
+          <name><surname>Peverati</surname><given-names>R.</given-names></name>
+          <name><surname>Pittner</surname><given-names>J.</given-names></name>
+          <name><surname>Pollack</surname><given-names>L.</given-names></name>
+          <name><surname>Richard</surname><given-names>R. M.</given-names></name>
+          <name><surname>Sadayappan</surname><given-names>P.</given-names></name>
+          <name><surname>Schatz</surname><given-names>G. C.</given-names></name>
+          <name><surname>Shelton</surname><given-names>W. A.</given-names></name>
+          <name><surname>Silverstein</surname><given-names>D. W.</given-names></name>
+          <name><surname>Smith</surname><given-names>D. M. A.</given-names></name>
+          <name><surname>Soares</surname><given-names>T. A.</given-names></name>
+          <name><surname>Song</surname><given-names>D.</given-names></name>
+          <name><surname>Swart</surname><given-names>M.</given-names></name>
+          <name><surname>Taylor</surname><given-names>H. L.</given-names></name>
+          <name><surname>Thomas</surname><given-names>G. S.</given-names></name>
+          <name><surname>Tipparaju</surname><given-names>V.</given-names></name>
+          <name><surname>Truhlar</surname><given-names>D. G.</given-names></name>
+          <name><surname>Tsemekhman</surname><given-names>K.</given-names></name>
+          <name><surname>Van Voorhis</surname><given-names>T.</given-names></name>
+          <name><surname>Vázquez-Mayagoitia</surname><given-names>Á.</given-names></name>
+          <name><surname>Verma</surname><given-names>P.</given-names></name>
+          <name><surname>Villa</surname><given-names>O.</given-names></name>
+          <name><surname>Vishnu</surname><given-names>A.</given-names></name>
+          <name><surname>Vogiatzis</surname><given-names>K. D.</given-names></name>
+          <name><surname>Wang</surname><given-names>D.</given-names></name>
+          <name><surname>Weare</surname><given-names>J. H.</given-names></name>
+          <name><surname>Williamson</surname><given-names>M. J.</given-names></name>
+          <name><surname>Windus</surname><given-names>T. L.</given-names></name>
+          <name><surname>Woliński</surname><given-names>K.</given-names></name>
+          <name><surname>Wong</surname><given-names>A. T.</given-names></name>
+          <name><surname>Wu</surname><given-names>Q.</given-names></name>
+          <name><surname>Yang</surname><given-names>C.</given-names></name>
+          <name><surname>Yu</surname><given-names>Q.</given-names></name>
+          <name><surname>Zacharias</surname><given-names>M.</given-names></name>
+          <name><surname>Zhang</surname><given-names>Z.</given-names></name>
+          <name><surname>Zhao</surname><given-names>Y.</given-names></name>
+          <name><surname>Harrison</surname><given-names>R. J.</given-names></name>
+        </person-group>
+        <article-title>NWChem: Past, present, and future</article-title>
+        <source>Journal of Chemical Physics</source>
+        <year iso-8601-date="2020-05-11">2020</year><month>05</month><day>11</day>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-04-20">2021</year><month>04</month><day>20</day></date-in-citation>
+        <volume>152</volume>
+        <issue>18</issue>
+        <issn>0021-9606</issn>
+        <uri>https://aip.scitation.org/doi/full/10.1063/5.0004997</uri>
+        <pub-id pub-id-type="doi">10.1063/5.0004997</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-barcaU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Barca</surname><given-names>Giuseppe M. J.</given-names></name>
+          <name><surname>Bertoni</surname><given-names>Colleen</given-names></name>
+          <name><surname>Carrington</surname><given-names>Laura</given-names></name>
+          <name><surname>Datta</surname><given-names>Dipayan</given-names></name>
+          <name><surname>De Silva</surname><given-names>Nuwan</given-names></name>
+          <name><surname>Deustua</surname><given-names>J. Emiliano</given-names></name>
+          <name><surname>Fedorov</surname><given-names>Dmitri G.</given-names></name>
+          <name><surname>Gour</surname><given-names>Jeffrey R.</given-names></name>
+          <name><surname>Gunina</surname><given-names>Anastasia O.</given-names></name>
+          <name><surname>Guidez</surname><given-names>Emilie</given-names></name>
+          <name><surname>Harville</surname><given-names>Taylor</given-names></name>
+          <name><surname>Irle</surname><given-names>Stephan</given-names></name>
+          <name><surname>Ivanic</surname><given-names>Joe</given-names></name>
+          <name><surname>Kowalski</surname><given-names>Karol</given-names></name>
+          <name><surname>Leang</surname><given-names>Sarom S.</given-names></name>
+          <name><surname>Li</surname><given-names>Hui</given-names></name>
+          <name><surname>Li</surname><given-names>Wei</given-names></name>
+          <name><surname>Lutz</surname><given-names>Jesse J.</given-names></name>
+          <name><surname>Magoulas</surname><given-names>Ilias</given-names></name>
+          <name><surname>Mato</surname><given-names>Joani</given-names></name>
+          <name><surname>Mironov</surname><given-names>Vladimir</given-names></name>
+          <name><surname>Nakata</surname><given-names>Hiroya</given-names></name>
+          <name><surname>Pham</surname><given-names>Buu Q.</given-names></name>
+          <name><surname>Piecuch</surname><given-names>Piotr</given-names></name>
+          <name><surname>Poole</surname><given-names>David</given-names></name>
+          <name><surname>Pruitt</surname><given-names>Spencer R.</given-names></name>
+          <name><surname>Rendell</surname><given-names>Alistair P.</given-names></name>
+          <name><surname>Roskop</surname><given-names>Luke B.</given-names></name>
+          <name><surname>Ruedenberg</surname><given-names>Klaus</given-names></name>
+          <name><surname>Sattasathuchana</surname><given-names>Tosaporn</given-names></name>
+          <name><surname>Schmidt</surname><given-names>Michael W.</given-names></name>
+          <name><surname>Shen</surname><given-names>Jun</given-names></name>
+          <name><surname>Slipchenko</surname><given-names>Lyudmila</given-names></name>
+          <name><surname>Sosonkina</surname><given-names>Masha</given-names></name>
+          <name><surname>Sundriyal</surname><given-names>Vaibhav</given-names></name>
+          <name><surname>Tiwari</surname><given-names>Ananta</given-names></name>
+          <name><surname>Galvez Vallejo</surname><given-names>Jorge L.</given-names></name>
+          <name><surname>Westheimer</surname><given-names>Bryce</given-names></name>
+          <name><surname>Włoch</surname><given-names>Marta</given-names></name>
+          <name><surname>Xu</surname><given-names>Peng</given-names></name>
+          <name><surname>Zahariev</surname><given-names>Federico</given-names></name>
+          <name><surname>Gordon</surname><given-names>Mark S.</given-names></name>
+        </person-group>
+        <article-title>Recent developments in the general atomic and molecular electronic structure system</article-title>
+        <source>Journal of Chemical Physics</source>
+        <year iso-8601-date="2020-04-16">2020</year><month>04</month><day>16</day>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-04-20">2021</year><month>04</month><day>20</day></date-in-citation>
+        <volume>152</volume>
+        <issue>15</issue>
+        <issn>0021-9606</issn>
+        <uri>https://aip.scitation.org/doi/full/10.1063/5.0005188</uri>
+        <pub-id pub-id-type="doi">10.1063/5.0005188</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-romeroU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Romero</surname><given-names>Aldo H.</given-names></name>
+          <name><surname>Allan</surname><given-names>Douglas C.</given-names></name>
+          <name><surname>Amadon</surname><given-names>Bernard</given-names></name>
+          <name><surname>Antonius</surname><given-names>Gabriel</given-names></name>
+          <name><surname>Applencourt</surname><given-names>Thomas</given-names></name>
+          <name><surname>Baguet</surname><given-names>Lucas</given-names></name>
+          <name><surname>Bieder</surname><given-names>Jordan</given-names></name>
+          <name><surname>Bottin</surname><given-names>François</given-names></name>
+          <name><surname>Bouchet</surname><given-names>Johann</given-names></name>
+          <name><surname>Bousquet</surname><given-names>Eric</given-names></name>
+          <name><surname>Bruneval</surname><given-names>Fabien</given-names></name>
+          <name><surname>Brunin</surname><given-names>Guillaume</given-names></name>
+          <name><surname>Caliste</surname><given-names>Damien</given-names></name>
+          <name><surname>Côté</surname><given-names>Michel</given-names></name>
+          <name><surname>Denier</surname><given-names>Jules</given-names></name>
+          <name><surname>Dreyer</surname><given-names>Cyrus</given-names></name>
+          <name><surname>Ghosez</surname><given-names>Philippe</given-names></name>
+          <name><surname>Giantomassi</surname><given-names>Matteo</given-names></name>
+          <name><surname>Gillet</surname><given-names>Yannick</given-names></name>
+          <name><surname>Gingras</surname><given-names>Olivier</given-names></name>
+          <name><surname>Hamann</surname><given-names>Donald R.</given-names></name>
+          <name><surname>Hautier</surname><given-names>Geoffroy</given-names></name>
+          <name><surname>Jollet</surname><given-names>François</given-names></name>
+          <name><surname>Jomard</surname><given-names>Gérald</given-names></name>
+          <name><surname>Martin</surname><given-names>Alexandre</given-names></name>
+          <name><surname>Miranda</surname><given-names>Henrique P. C.</given-names></name>
+          <name><surname>Naccarato</surname><given-names>Francesco</given-names></name>
+          <name><surname>Petretto</surname><given-names>Guido</given-names></name>
+          <name><surname>Pike</surname><given-names>Nicholas A.</given-names></name>
+          <name><surname>Planes</surname><given-names>Valentin</given-names></name>
+          <name><surname>Prokhorenko</surname><given-names>Sergei</given-names></name>
+          <name><surname>Rangel</surname><given-names>Tonatiuh</given-names></name>
+          <name><surname>Ricci</surname><given-names>Fabio</given-names></name>
+          <name><surname>Rignanese</surname><given-names>Gian-Marco</given-names></name>
+          <name><surname>Royo</surname><given-names>Miquel</given-names></name>
+          <name><surname>Stengel</surname><given-names>Massimiliano</given-names></name>
+          <name><surname>Torrent</surname><given-names>Marc</given-names></name>
+          <name><surname>Setten</surname><given-names>Michiel J. van</given-names></name>
+          <name><surname>Van Troeye</surname><given-names>Benoit</given-names></name>
+          <name><surname>Verstraete</surname><given-names>Matthieu J.</given-names></name>
+          <name><surname>Wiktor</surname><given-names>Julia</given-names></name>
+          <name><surname>Zwanziger</surname><given-names>Josef W.</given-names></name>
+          <name><surname>Gonze</surname><given-names>Xavier</given-names></name>
+        </person-group>
+        <article-title>ABINIT: Overview and focus on selected capabilities</article-title>
+        <source>Journal of Chemical Physics</source>
+        <year iso-8601-date="2020-03-24">2020</year><month>03</month><day>24</day>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-04-20">2021</year><month>04</month><day>20</day></date-in-citation>
+        <volume>152</volume>
+        <issue>12</issue>
+        <issn>0021-9606</issn>
+        <uri>https://aip.scitation.org/doi/full/10.1063/1.5144261</uri>
+        <pub-id pub-id-type="doi">10.1063/1.5144261</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-polliceU003A2021">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pollice</surname><given-names>Robert</given-names></name>
+          <name><surname>Friederich</surname><given-names>Pascal</given-names></name>
+          <name><surname>Lavigne</surname><given-names>Cyrille</given-names></name>
+          <name><surname>Gomes</surname><given-names>Gabriel dos Passos</given-names></name>
+          <name><surname>Aspuru-Guzik</surname><given-names>Alán</given-names></name>
+        </person-group>
+        <article-title>Organic molecules with inverted gaps between first excited singlet and triplet states and appreciable fluorescence rates</article-title>
+        <source>Matter</source>
+        <year iso-8601-date="2021-03-17">2021</year><month>03</month><day>17</day>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-04-20">2021</year><month>04</month><day>20</day></date-in-citation>
+        <issn>2590-2393, 2590-2385</issn>
+        <uri>https://www.cell.com/matter/abstract/S2590-2385(21)00072-2</uri>
+        <pub-id pub-id-type="doi">10.1016/j.matt.2021.02.017</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-weimerU003A2008">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Weimer</surname><given-names>Westley</given-names></name>
+          <name><surname>Necula</surname><given-names>George C.</given-names></name>
+        </person-group>
+        <article-title>Exceptional situations and program reliability</article-title>
+        <source>ACM Transactions on Programming Languages and Systems</source>
+        <year iso-8601-date="2008-03-14">2008</year><month>03</month><day>14</day>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-04-20">2021</year><month>04</month><day>20</day></date-in-citation>
+        <volume>30</volume>
+        <issue>2</issue>
+        <issn>0164-0925</issn>
+        <uri>https://doi.org/10.1145/1330017.1330019</uri>
+        <pub-id pub-id-type="doi">10.1145/1330017.1330019</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-maymounkov_koji_2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Maymounkov</surname><given-names>Petar</given-names></name>
+        </person-group>
+        <article-title>Koji: Automating pipelines with mixed-semantics data sources</article-title>
+        <source>arXiv:1901.01908 [cs]</source>
+        <year iso-8601-date="2018-12-02">2018</year><month>12</month><day>02</day>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-04-20">2021</year><month>04</month><day>20</day></date-in-citation>
+        <uri>http://arxiv.org/abs/1901.01908</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-molder_sustainable_2021">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mölder</surname><given-names>F</given-names></name>
+          <name><surname>Jablonski</surname><given-names>KP</given-names></name>
+          <name><surname>Letcher</surname><given-names>B</given-names></name>
+          <name><surname>Hall</surname><given-names>MB</given-names></name>
+          <name><surname>Tomkins-Tinch</surname><given-names>CH</given-names></name>
+          <name><surname>Sochat</surname><given-names>V</given-names></name>
+          <name><surname>Forster</surname><given-names>J</given-names></name>
+          <name><surname>Lee</surname><given-names>S</given-names></name>
+          <name><surname>Twardziok</surname><given-names>SO</given-names></name>
+          <name><surname>Kanitz</surname><given-names>A</given-names></name>
+          <name><surname>Wilm</surname><given-names>A</given-names></name>
+          <name><surname>Holtgrewe</surname><given-names>M</given-names></name>
+          <name><surname>Rahmann</surname><given-names>S</given-names></name>
+          <name><surname>Nahnsen</surname><given-names>S</given-names></name>
+          <name><surname>K�ster</surname><given-names>J</given-names></name>
+        </person-group>
+        <article-title>Sustainable data analysis with snakemake [version 2; peer review: 1 approved, 1 approved with reservations]</article-title>
+        <source>F1000Research</source>
+        <year iso-8601-date="2021">2021</year>
+        <volume>10</volume>
+        <issue>33</issue>
+        <pub-id pub-id-type="doi">10.12688/f1000research.29032.2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-dolstra_nix_2004">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dolstra</surname><given-names>Eelco</given-names></name>
+          <name><surname>Jonge</surname><given-names>Merijn de</given-names></name>
+          <name><surname>Visser</surname><given-names>Eelco</given-names></name>
+        </person-group>
+        <article-title>Nix: A safe and policy-free system for software deployment</article-title>
+        <publisher-name>USENIX Association</publisher-name>
+        <year iso-8601-date="2004">2004</year>
+        <uri>https://edolstra.github.io/pubs/nspfssd-lisa2004-final.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-klabnik_rust_2019">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Klabnik</surname><given-names>Steve</given-names></name>
+          <name><surname>Nichols</surname><given-names>Carol</given-names></name>
+        </person-group>
+        <source>The Rust programming language (covers Rust 2018)</source>
+        <publisher-name>No Starch Press</publisher-name>
+        <year iso-8601-date="2019-08-06">2019</year><month>08</month><day>06</day>
+        <isbn>978-1-71850-044-0</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-chacon_pro_2014">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Chacon</surname><given-names>Scott</given-names></name>
+          <name><surname>Straub</surname><given-names>Ben</given-names></name>
+        </person-group>
+        <source>Pro git</source>
+        <publisher-name>Apress</publisher-name>
+        <year iso-8601-date="2014-11-18">2014</year><month>11</month><day>18</day>
+        <isbn>978-1-4842-0076-6</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-stevens_first_2017">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Stevens</surname><given-names>Marc</given-names></name>
+          <name><surname>Bursztein</surname><given-names>Elie</given-names></name>
+          <name><surname>Karpman</surname><given-names>Pierre</given-names></name>
+          <name><surname>Albertini</surname><given-names>Ange</given-names></name>
+          <name><surname>Markov</surname><given-names>Yarik</given-names></name>
+        </person-group>
+        <article-title>The first collision for full SHA-1</article-title>
+        <source>Advances in cryptology – CRYPTO 2017</source>
+        <person-group person-group-type="editor">
+          <name><surname>Katz</surname><given-names>Jonathan</given-names></name>
+          <name><surname>Shacham</surname><given-names>Hovav</given-names></name>
+        </person-group>
+        <publisher-name>Springer International Publishing</publisher-name>
+        <publisher-loc>Cham</publisher-loc>
+        <year iso-8601-date="2017">2017</year>
+        <isbn>978-3-319-63688-7</isbn>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-63688-7_19</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-dean_mapreduce_2004">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Dean</surname><given-names>Jeffrey</given-names></name>
+          <name><surname>Ghemawat</surname><given-names>Sanjay</given-names></name>
+        </person-group>
+        <article-title>MapReduce: Simplified data processing on large clusters</article-title>
+        <source>OSDI’04: Sixth symposium on operating system design and implementation</source>
+        <publisher-loc>San Francisco, CA</publisher-loc>
+        <year iso-8601-date="2004">2004</year>
+        <pub-id pub-id-type="doi"></pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

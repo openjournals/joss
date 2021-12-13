@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1773</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01773</article-id>
+<title-group>
+<article-title>PYCV: a PLUMED 2 Module Enabling the Rapid Prototyping of
+Collective Variables in Python</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-6449-0596</contrib-id>
+<string-name>Toni Giorgino</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Institute of Biophysics (IBF-CNR), National Research
+Council of Italy</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-08-15">
+<day>15</day>
+<month>8</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>42</issue>
+<fpage>1773</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>PLUMED</kwd>
+<kwd>molecular dynamics</kwd>
+<kwd>collective variables</kwd>
+<kwd>biased sampling</kwd>
+<kwd>gradient</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Collective variables (CVs) are functions of the coordinates of
+  particles in a molecular system. The choice of CV is crucial to
+  capture relevant degrees of freedom of the model being simulated
+  (<xref alt="Barducci et al., 2011" rid="ref-barducci_metadynamics_2011" ref-type="bibr">Barducci
+  et al., 2011</xref>). This is especially important when employing
+  <italic>biased sampling</italic> techniques such as umbrella sampling
+  or metadynamics
+  (<xref alt="Laio &amp; Parrinello, 2002" rid="ref-laio_escaping_2002" ref-type="bibr">Laio
+  &amp; Parrinello, 2002</xref>;
+  <xref alt="Torrie &amp; Valleau, 1977" rid="ref-torrie_nonphysical_1977" ref-type="bibr">Torrie
+  &amp; Valleau, 1977</xref>), which apply generalized forces to CVs to
+  enhance the sampling of events otherwise not observable by direct
+  simulation. CVs may be simple geometrical observables (distances,
+  angles, torsions, etc.), but often they are more complex functions
+  designed to capture structural determinants, such as tertiary and
+  quaternary structure of proteins, experimental observables, crystal
+  symmetries, etc.
+  (<xref alt="Bonomi &amp; Camilloni, 2017" rid="ref-bonomi_integrative_2017" ref-type="bibr">Bonomi
+  &amp; Camilloni, 2017</xref>;
+  <xref alt="Branduardi et al., 2007" rid="ref-branduardi_b_2007" ref-type="bibr">Branduardi
+  et al., 2007</xref>;
+  <xref alt="Pipolo et al., 2017" rid="ref-pipolo_navigating_2017" ref-type="bibr">Pipolo
+  et al., 2017</xref>).</p>
+  <p>Iterative development of CVs therefore accounts for most of the
+  efforts associated with the exploration of molecular systems, and
+  software packages implementing high-level directives to express
+  biasing potentials and CVs markedly simplify the task. In this regard,
+  the PLUMED library
+  (<xref alt="Tribello et al., 2014" rid="ref-tribello_plumed_2014" ref-type="bibr">Tribello
+  et al., 2014</xref>) is especially relevant because it provides
+  numerous pre-defined functions, a <italic>lingua franca</italic> to
+  express CV combinations, atom groups and biasing schemes, and an
+  active community
+  (<xref alt="The PLUMED consortium, 2019" rid="ref-the_plumed_consortium_promoting_2019" ref-type="bibr">The
+  PLUMED consortium, 2019</xref>). Users willing to explore CVs beyond
+  the pre-defined ones have to implement them in C++, together with the
+  corresponding (often cumbersome) derivatives
+  (<xref alt="Giorgino, 2018" rid="ref-giorgino_how_2018" ref-type="bibr">Giorgino,
+  2018</xref>). Compiled code is however unwieldy for iterative
+  analysis, because it is relatively low-level, error-prone, and
+  inconvenient in exploratory stages.</p>
+  <p>This paper introduces <bold>PYCV</bold>, a module for the PLUMED 2
+  library which enables users to define CVs and arbitrary functions in
+  the Python language. CV implementations may thus be modified and
+  tested independently of the main code, with essentially no “test
+  latency”. Of note, coordinates are processed as
+  <monospace>numpy</monospace> arrays, making it convenient to leverage
+  the vast set of linear algebra and numerical algorithms provided by
+  <monospace>numpy</monospace>, <monospace>scipy</monospace>, and many
+  other open-source modules. Furthermore, just-in-time compilation and
+  reverse-mode automatic differentiation are easily accessible using
+  Google’s JAX library.</p>
+</sec>
+<sec id="usage">
+  <title>Usage</title>
+  <p>The <bold>PYCV</bold> module registers itself with PLUMED to
+  provide the following actions:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p><monospace>PYTHONCV</monospace>, to implement single- and
+      multi-component CVs;</p>
+    </list-item>
+    <list-item>
+      <p><monospace>PYTHONFUNCTION</monospace>, to implement arbitrary
+      functions.</p>
+    </list-item>
+  </list>
+  <p>The actions are documented in the respective inline manuals (e.g.,
+  <monospace>plumed manual --action PYTHONCV</monospace>). In both
+  cases, an interpreter is first started; the Python module indicated in
+  the <monospace>IMPORT=</monospace> keyword is then loaded; from it, an
+  user-chosen function (<monospace>FUNCTION=</monospace>) is called to
+  perform the computations at each timestep. Modules can contain
+  multiple functions and one-time initialization.</p>
+</sec>
+<sec id="example">
+  <title>Example</title>
+  <p>A self-explanatory example is provided for illustration below. It
+  is equivalent to the <italic>radius of curvature</italic> example
+  shown in
+  (<xref alt="Giorgino, 2018" rid="ref-giorgino_how_2018" ref-type="bibr">Giorgino,
+  2018</xref>). Further examples are available in the manual and in
+  <monospace>regtest/pycv</monospace>.</p>
+  <sec id="plumed-input-script">
+    <title>Plumed input script</title>
+    <p>The actions are declared in the PLUMED input file (say,
+    <monospace>plumed.dat</monospace>). Here, one declares a CV labelled
+    <monospace>rc</monospace>, to be computed by the Python function
+    <monospace>curvature.r()</monospace>. It will receive a 3-by-3 array
+    with the coordinates of atoms 1, 4 and 3 (orderly, as rows). The CV
+    value will be <monospace>PRINT</monospace>ed, and the atoms subject
+    to a constant generalized force pushing to increase the
+    curvature.</p>
+    <preformat># Start plumed.dat -----------------------------------------
+rc: PYTHONCV ATOMS=1,4,3 IMPORT=curvature FUNCTION=r
+    PRINT ARG=rc FILE=colvar.out
+    RESTRAINT ARG=rc AT=0 KAPPA=0 SLOPE=1
+# End plumed.dat -------------------------------------------</preformat>
+  </sec>
+  <sec id="function-definition">
+    <title>Function definition</title>
+    <p>The actual function <monospace>r</monospace> is defined in the
+    <monospace>curvature.py</monospace> file. It computes the radius of
+    the circle passing through three given atom coordinates (the three
+    rows of the input argument, with 0-based indexing). Note how matrix
+    operations enable a readable translation of the sine formula.</p>
+    <p>The function is expected to return two objects, i.e. the value of
+    the CV at the given coordinates (a scalar), and its gradient with
+    respect to each of the 9 coordinates (a 3-by-3 array); here the
+    gradient function is obtained automatically. Although not directly
+    comparable, the equivalent C++ implementation required approximately
+    160 lines of non-trivial code.</p>
+    <code language="python"># Start curvature.py ----------------------------------------
+# Same calculation (and results) as doi:10.1016/j.cpc.2018.02.017
+
+# Import the JAX library
+import jax.numpy as np
+from jax import grad, jit
+
+# Implementation of the angle function. @jit really improves speed
+@jit
+def r_f(x):
+    r21 = x[0,:]-x[1,:]
+    r23 = x[2,:]-x[1,:]
+    r13 = x[2,:]-x[0,:]
+
+    cos2theta = np.dot(r21,r23)**2 / (np.dot(r21,r21) * np.dot(r23,r23))
+    sin2theta = 1-cos2theta
+    
+    R2= np.dot(r13,r13)/sin2theta/4.0
+    return np.sqrt(R2)
+
+# Use JAX to auto-gradient it
+r_g = grad(r_f)
+
+# PLUMED will call the following function
+def r(x):
+    return r_f(x), r_g(x)
+
+# End curvature.py ---------------------------------------------</code>
+  </sec>
+</sec>
+<sec id="conclusions">
+  <title>Conclusions</title>
+  <p><bold>PYCV</bold> enables Python-based prototyping of CVs in PLUMED
+  2. This programming model may be an advantage over standard C++-based
+  development in that</p>
+  <list list-type="order">
+    <list-item>
+      <p>functions may be prototyped in high-level language, using
+      extensive mathematical libraries, without boilerplate;</p>
+    </list-item>
+    <list-item>
+      <p>just-in-time compilation occurs transparently: code changes
+      incur in no compilation and link delays; and</p>
+    </list-item>
+    <list-item>
+      <p>CV code may be automatically differentiated in common
+      cases.</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>I would like to thank PLUMED’s lead authors (Prof. Giovanni Bussi,
+  Prof. Carlo Camilloni, Prof. Gareth Tribello and Prof. Massimiliano
+  Bonomi) for inputs and discussions.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-tribello_plumed_2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tribello</surname><given-names>Gareth A.</given-names></name>
+          <name><surname>Bonomi</surname><given-names>Massimiliano</given-names></name>
+          <name><surname>Branduardi</surname><given-names>Davide</given-names></name>
+          <name><surname>Camilloni</surname><given-names>Carlo</given-names></name>
+          <name><surname>Bussi</surname><given-names>Giovanni</given-names></name>
+        </person-group>
+        <article-title>PLUMED 2: New feathers for an old bird</article-title>
+        <source>Computer Physics Communications</source>
+        <year iso-8601-date="2014-02">2014</year><month>02</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2013-12-06">2013</year><month>12</month><day>06</day></date-in-citation>
+        <volume>185</volume>
+        <issue>2</issue>
+        <issn>0010-4655</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S0010465513003196</uri>
+        <pub-id pub-id-type="doi">10.1016/j.cpc.2013.09.018</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-the_plumed_consortium_promoting_2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>The PLUMED consortium</string-name>
+        </person-group>
+        <article-title>Promoting transparency and reproducibility in enhanced molecular simulations</article-title>
+        <source>Nature Methods</source>
+        <year iso-8601-date="2019-08">2019</year><month>08</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-07-31">2019</year><month>07</month><day>31</day></date-in-citation>
+        <volume>16</volume>
+        <issue>8</issue>
+        <issn>1548-7105</issn>
+        <uri>https://www.nature.com/articles/s41592-019-0506-8</uri>
+        <pub-id pub-id-type="doi">10.1038/s41592-019-0506-8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-giorgino_how_2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Giorgino</surname><given-names>Toni</given-names></name>
+        </person-group>
+        <article-title>How to differentiate collective variables in free energy codes: Computer-algebra code generation and automatic differentiation</article-title>
+        <source>Computer Physics Communications</source>
+        <year iso-8601-date="2018-07">2018</year><month>07</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2018-04-27">2018</year><month>04</month><day>27</day></date-in-citation>
+        <volume>228</volume>
+        <issn>0010-4655</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S0010465518300468</uri>
+        <pub-id pub-id-type="doi">10.1016/j.cpc.2018.02.017</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-laio_escaping_2002">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Laio</surname><given-names>Alessandro</given-names></name>
+          <name><surname>Parrinello</surname><given-names>Michele</given-names></name>
+        </person-group>
+        <article-title>Escaping free-energy minima</article-title>
+        <source>Proceedings of the National Academy of Sciences of the United States of America</source>
+        <year iso-8601-date="2002-10">2002</year><month>10</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2009-09-26">2009</year><month>09</month><day>26</day></date-in-citation>
+        <volume>99</volume>
+        <issue>20</issue>
+        <issn>0027-8424</issn>
+        <uri>http://www.ncbi.nlm.nih.gov/pubmed/12271136</uri>
+        <pub-id pub-id-type="doi">10.1073/pnas.202427399</pub-id>
+        <pub-id pub-id-type="pmid">12271136</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-barducci_metadynamics_2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Barducci</surname><given-names>Alessandro</given-names></name>
+          <name><surname>Bonomi</surname><given-names>Massimiliano</given-names></name>
+          <name><surname>Parrinello</surname><given-names>Michele</given-names></name>
+        </person-group>
+        <article-title>Metadynamics</article-title>
+        <source>Wiley Interdisciplinary Reviews: Computational Molecular Science</source>
+        <year iso-8601-date="2011-09">2011</year><month>09</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-09-04">2017</year><month>09</month><day>04</day></date-in-citation>
+        <volume>1</volume>
+        <issue>5</issue>
+        <issn>1759-0884</issn>
+        <uri>http://onlinelibrary.wiley.com/doi/10.1002/wcms.31/abstract</uri>
+        <pub-id pub-id-type="doi">10.1002/wcms.31</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-branduardi_b_2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Branduardi</surname><given-names>Davide</given-names></name>
+          <name><surname>Gervasio</surname><given-names>Francesco Luigi</given-names></name>
+          <name><surname>Parrinello</surname><given-names>Michele</given-names></name>
+        </person-group>
+        <article-title>From A to B in free energy space</article-title>
+        <source>The Journal of Chemical Physics</source>
+        <year iso-8601-date="2007-02">2007</year><month>02</month>
+        <volume>126</volume>
+        <issue>5</issue>
+        <issn>0021-9606</issn>
+        <pub-id pub-id-type="doi">10.1063/1.2432340</pub-id>
+        <pub-id pub-id-type="pmid">17302470</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bonomi_integrative_2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bonomi</surname><given-names>Massimiliano</given-names></name>
+          <name><surname>Camilloni</surname><given-names>Carlo</given-names></name>
+        </person-group>
+        <article-title>Integrative structural and dynamical biology with PLUMED-ISDB</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2017-12">2017</year><month>12</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2018-02-04">2018</year><month>02</month><day>04</day></date-in-citation>
+        <volume>33</volume>
+        <issue>24</issue>
+        <issn>1367-4803</issn>
+        <uri>https://academic.oup.com/bioinformatics/article/33/24/3999/4085774</uri>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btx529</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pipolo_navigating_2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pipolo</surname><given-names>S.</given-names></name>
+          <name><surname>Salanne</surname><given-names>M.</given-names></name>
+          <name><surname>Ferlat</surname><given-names>G.</given-names></name>
+          <name><surname>Klotz</surname><given-names>S.</given-names></name>
+          <name><surname>Saitta</surname><given-names>A. M.</given-names></name>
+          <name><surname>Pietrucci</surname><given-names>F.</given-names></name>
+        </person-group>
+        <article-title>Navigating at Will on the Water Phase Diagram</article-title>
+        <source>Physical Review Letters</source>
+        <year iso-8601-date="2017-12">2017</year><month>12</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-08-14">2019</year><month>08</month><day>14</day></date-in-citation>
+        <volume>119</volume>
+        <issue>24</issue>
+        <uri>https://link.aps.org/doi/10.1103/PhysRevLett.119.245701</uri>
+        <pub-id pub-id-type="doi">10.1103/PhysRevLett.119.245701</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-torrie_nonphysical_1977">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Torrie</surname><given-names>G. M.</given-names></name>
+          <name><surname>Valleau</surname><given-names>J. P.</given-names></name>
+        </person-group>
+        <article-title>Nonphysical sampling distributions in Monte Carlo free-energy estimation: Umbrella sampling</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="1977">1977</year>
+        <volume>23</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1016/0021-9991(77)90121-8</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2044</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02044</article-id>
+<title-group>
+<article-title>NEEP: null empirically estimated p-values for
+high-throughput molecular survival analysis</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1394-1999</contrib-id>
+<string-name>Sean West</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Hesham Ali</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-0630-0843</contrib-id>
+<string-name>Dario Ghersi</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>School of Interdisciplinary Informatics, University of
+Nebraska at Omaha</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-12-17">
+<day>17</day>
+<month>12</month>
+<year>2019</year>
+</pub-date>
+<volume>5</volume>
+<issue>52</issue>
+<fpage>2044</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Python</kwd>
+<kwd>bioinformatics</kwd>
+<kwd>survival analysis</kwd>
+<kwd>RNA-seq</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>When conducting survival analysis for molecular expression, a
+  researcher has two main options: a regression test using the
+  continuous expression as the independent variable with Cox
+  Proportional Hazards (CPH) or a logrank test after separating patients
+  into two groups such as low- vs high-expression with the Kaplan-Meier
+  (KM) method. Both methods depend on the proportional hazards
+  assumption. When this assumption is violated, using a binary variable
+  performs better. However, KM survival analysis requires that the
+  patients are split into two groups by a molecular expression
+  threshold. In many cases, such as molecular survival analysis, a
+  single threshold choice cannot be justified based on experimental
+  design. The choice of a threshold when splitting up a continuous
+  variable has been shown to be sensitive to patient group re-sampling
+  (<xref alt="Sehgal et al., 2015" rid="ref-sehgal2015" ref-type="bibr">Sehgal
+  et al., 2015</xref>). And in practice, small changes in the chosen
+  threshold produce proportionally larger differences in the set of
+  significant logrank tests
+  (<xref alt="West et al., 2019" rid="ref-west2019" ref-type="bibr">West
+  et al., 2019</xref>).</p>
+  <p>To circumvent the need for an ad hoc molecular expression
+  threshold, the logrank test can be calculated across a range of
+  thresholds, producing a range of p-values. Choosing the minimum
+  p-value from this range identifies the optimal split of patients into
+  two groups, given a single molecular expression vector. However,
+  taking the lowest p-value from a range will produce a
+  non-Uniform(0,1), right-skewed distribution of p-values. Since
+  p-values should be uniform under the null distribution, the skewed
+  distribution cannot be used for valid statistical analysis. An
+  equation was developed that could predict the correct p-values
+  (<xref alt="Lausen &amp; Schumacher, 1992" rid="ref-lausen1992" ref-type="bibr">Lausen
+  &amp; Schumacher, 1992</xref>); however, the precision given by the
+  original authors is not precise enough for p-value correction
+  procedures which are sensitive to very small p-value changes, as in
+  the case of molecular analyses having many tens of thousands of
+  observations. Thus, we developed NEEP, which overcomes this issue by
+  sampling the null distribution using a bootstrapping procedure, which
+  is parallelized to improve execution time performance.
+  (<xref alt="West et al., 2019" rid="ref-west2019" ref-type="bibr">West
+  et al., 2019</xref>).</p>
+  <p>The null distribution is constructed by repeatedly permuting the
+  patient order. For each permutation, the minimum p-value is calculated
+  and added to the null distribution. Separately, the minimum p-value is
+  obtained for each molecular expression vector. This null distribution
+  is used to empirically determine the true p-values for this list of
+  molecular expression vector p-values. In this way, the precision of
+  the procedure is dependent on the number of samples (permutations)
+  used to generate the null distribution. Since the null distribution is
+  generated from the same set of patients, the corrected p-values are
+  guaranteed to be Uniform(0,1) under the null if random. In other
+  words, the minimum p-values for a set of random molecular expression
+  vectors is the same as the null distribution. Because of this, the
+  type 1 error and the FDR are guaranteed to be controlled. Finally,
+  NEEP conducts False Discovery Rate (FDR) p-value correction
+  (<xref alt="Benjamini &amp; Hochberg, 1995" rid="ref-benjamini1995" ref-type="bibr">Benjamini
+  &amp; Hochberg, 1995</xref>) and calculates effect sizes, the hazard
+  ratio and the 1, 2, and 5 year mortality ratios.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p><bold>Research purpose</bold>: <monospace>NEEP</monospace> offers
+  non-parametric, high-throughput, and statistically valid survival
+  analysis of molecular expression vectors.</p>
+  <p><bold>Problem solved</bold>: In molecular expression, the choice of
+  a single threshold to separate patients into low- and high-expression
+  cannot be justified and produces variable results.
+  <monospace>NEEP</monospace> chooses the threshold which maximizes the
+  test statistic relating molecular expression and patient survival for
+  each molecular expression vector. Then <monospace>NEEP</monospace>
+  corrects the resulting biased p-value distribution using a empirically
+  determined null distribution. To generate the null,
+  <monospace>NEEP</monospace> permutes different orders of patients and
+  calculates their p-values across a range in order to produce a
+  <monospace>Null Empirically Estimated P-value</monospace> for each
+  molecular expression vector. <monospace>NEEP</monospace> produces
+  p-values which are uniform under their null distribution so that their
+  precision is dependent on the size of the null generated. By doing so,
+  <monospace>NEEP</monospace> circumvents the issue of choosing a single
+  threshold while addressing the issue of asymmetric p-value when
+  optimizing the relationship between molecular expression and patient
+  survival.</p>
+  <p><bold>Target audience</bold>: The target audience is anyone
+  conducting molecular, high-throughput survival analysis that does not
+  have confounding clinical variables and whose expression vectors may
+  violate CPH assumptions. Full documentation is available in the
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/thecodingdoc/neep">project
+  repository</ext-link>.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This project was partly funded by a University of Nebraska
+  Collaboration Initiative/ System Science Seed Grant to Sushil Kumar,
+  Hesham Ali, and Dario Ghersi and by the NIH AA026428 R21 grant to
+  Sushil Kumar. The funder website is
+  https://nebraska.edu/collaboration-initiative. The funders had no role
+  in project design, data collection and analysis, decision to publish,
+  or preparation of the manuscript.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-west2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>West</surname><given-names>Sean</given-names></name>
+          <name><surname>Kumar</surname><given-names>Sushil</given-names></name>
+          <name><surname>Batra</surname><given-names>Surinder K.</given-names></name>
+          <name><surname>Ali</surname><given-names>Hesham</given-names></name>
+          <name><surname>Ghersi</surname><given-names>Dario</given-names></name>
+        </person-group>
+        <article-title>Uncovering and characterizing splice variants associated with survival in lung cancer patients</article-title>
+        <source>PLoS Comput Biol</source>
+        <year iso-8601-date="2019">2019</year>
+        <pub-id pub-id-type="doi">10.1371/journal.pcbi.1007469</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sehgal2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sehgal</surname><given-names>Vasudha</given-names></name>
+          <name><surname>Seviour</surname><given-names>Elena G.</given-names></name>
+          <name><surname>Moss</surname><given-names>Tyler J.</given-names></name>
+          <name><surname>Mills</surname><given-names>Gordon B.</given-names></name>
+          <name><surname>Azencott</surname><given-names>Robert</given-names></name>
+          <name><surname>Ram</surname><given-names>Prahlad T.</given-names></name>
+        </person-group>
+        <article-title>Robust selection algorithm (RSA) for multi-omic biomarker discovery; integration with functional network analysis to identify miRNA regulated pathways in multiple cancers</article-title>
+        <source>PloS one</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>10</volume>
+        <issue>10</issue>
+        <pub-id pub-id-type="doi">10.1371/journal.pone.0140072</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lausen1992">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lausen</surname><given-names>Berthold</given-names></name>
+          <name><surname>Schumacher</surname><given-names>Martin</given-names></name>
+        </person-group>
+        <article-title>Maximally selected rank statistics</article-title>
+        <source>Biometrics</source>
+        <year iso-8601-date="1992">1992</year>
+        <pub-id pub-id-type="doi">10.2307/2532740</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-benjamini1995">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Benjamini</surname><given-names>Yoav</given-names></name>
+          <name><surname>Hochberg</surname><given-names>Yosef</given-names></name>
+        </person-group>
+        <article-title>Controlling the false discovery rate: A practical and powerful approach to multiple testing</article-title>
+        <source>Journal of the Royal statistical society: series B (Methodological)</source>
+        <year iso-8601-date="1995">1995</year>
+        <volume>57</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1111/j.2517-6161.1995.tb02031.x</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

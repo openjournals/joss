@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">909</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00909</article-id>
+<title-group>
+<article-title>bor: An R Package for Transforming Behavioral Observation
+Records into Data Matrices</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-7277-6447</contrib-id>
+<string-name>David N. Sousa</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-6609-2014</contrib-id>
+<string-name>João R. Daniel</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>William James Center for Research, ISPA - Instituto
+Universitário</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2018-07-19">
+<day>19</day>
+<month>7</month>
+<year>2018</year>
+</pub-date>
+<volume>3</volume>
+<issue>28</issue>
+<fpage>909</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>focal sample</kwd>
+<kwd>social behavior</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>bor</monospace> is an R
+  (<xref alt="R Core Team, 2016" rid="ref-R" ref-type="bibr">R Core
+  Team, 2016</xref>) package developed to transform raw focal sampling
+  data of social interaction events into asymmetric data matrices (one
+  for each type of social interaction recorded). For example, the number
+  of times (events) a chimpanzee observes other group members. Focal
+  sampling is a widely used sampling method in observational studies
+  (<xref alt="Altmann, 1974" rid="ref-altmann1974observational" ref-type="bibr">Altmann,
+  1974</xref>;
+  <xref alt="Lehner, 1998" rid="ref-lehner1998handbook" ref-type="bibr">Lehner,
+  1998</xref>;
+  <xref alt="Martin et al., 1993" rid="ref-martin1993measuring" ref-type="bibr">Martin
+  et al., 1993</xref>). When referring to social interactions, focal
+  samples detail with whom the focal subject interacted with, the type
+  of social interactions that took place, and who was responsible for
+  initiating these interactions.</p>
+  <p>Converting hundreds of social behavior records, of who does what to
+  whom, to data structures more appropriate for data analysis is a
+  cumbersome process. Here, we present how <monospace>bor</monospace>
+  can be used for wrangling social interactions’ events into data
+  matrices. In these matrices, cells provide counts on the number of
+  times a specific type of social interaction was initiated by the row
+  subject and directed to the column subject. Transforming focal
+  sampling data into matrices allows users to easily use R base
+  functions and other packages’ functionalities to further analyze their
+  data.</p>
+</sec>
+<sec id="example">
+  <title>Example</title>
+  <p>The following installs and loads <monospace>bor</monospace>
+  package:</p>
+  <preformat>  # install bor from CRAN
+  install.packages(&quot;bor&quot;)
+
+  # load bor
+  library(bor)</preformat>
+  <p>The package includes three objects:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p><monospace>dtable</monospace> a function that tidies raw focal
+      observations’ data into a data frame more suitable for data
+      processing.</p>
+    </list-item>
+    <list-item>
+      <p><monospace>countb</monospace> a function that computes
+      asymmetric data matrices, separately for each observer and type of
+      social interaction recorded, from a data frame with a structure
+      similar to that of the output of <monospace>dtable</monospace>
+      function.</p>
+    </list-item>
+    <list-item>
+      <p><monospace>ex_field_data</monospace> a data frame containing an
+      example of raw focal observations’ data (data frames passed to
+      <monospace>dtable</monospace> function should have this
+      structure).</p>
+    </list-item>
+  </list>
+  <sec id="coding-scheme-and-raw-data-structure">
+    <title>Coding scheme and raw data structure</title>
+    <p><monospace>ex_field_data</monospace> is an hypothetical data set
+    that illustrates the required coding scheme and the structure of raw
+    focal observations’ data to be passed to the
+    <monospace>dtable</monospace> function. This example contains 100
+    focal samples, recorded in a group of 9 subjects (coded s1 to
+    s9).</p>
+    <preformat>  head(ex_field_data)
+
+  #&gt;   id1       act obs
+  #&gt; 1  s2         x   1
+  #&gt; 2  s3         0   1
+  #&gt; 3  s5         x   1
+  #&gt; 4  s1      +.s4   1
+  #&gt; 5  s1         x   1
+  #&gt; 6  s5 s4.-;s2.+   1</preformat>
+    <p>Here, <bold>id1</bold> refers to the focal subject’s
+    identification code, <bold>act</bold> refers to the recorded social
+    interactions in each focal sample, and <bold>obs</bold> refers to
+    the observer’s identification code. In this example two different
+    social interactions were recorded (coded “+” and “-”; social
+    interactions’ codes, subjects’ id codes, and separation characters
+    should not overlap). The “.” character in <bold>act</bold> is used
+    to separate a subject’s id code from the social interaction code,
+    and the “;” character is used to separate different social
+    interactions occurring within the same focal sample (other
+    characters can be used; please see the example below detailing the
+    use of <monospace>dtable</monospace> function). Whenever a subject’s
+    id appears before a social interaction code it means that, that
+    subject initiated a social interaction with the focal subject (see
+    row 6) and whenever a subject’s id appears after the social
+    interaction code it means that the focal subject (id1 column)
+    initiated a social interaction with that subject (see row 4).</p>
+    <p>For example, the 4th row indicates that the focal subject
+    <bold>s1</bold> initiated a “+” social interaction with subject
+    <bold>s4</bold>, while the 6th row indicates that the focal subject
+    <bold>s5</bold> was involved in two social interactions- the first
+    initiated by <bold>s4</bold> (“-”), the second (“+”) initiated by
+    <bold>s2</bold>. A “0” in this column refers to a focal sample where
+    no social interactions were recorded, and an “x” refers to focal
+    sample where the focal subject was unavailable for observation.</p>
+    <p><monospace>dtable</monospace> function does not require that the
+    input data frame has matching column names to that of
+    <monospace>ex_field_data</monospace>. Nevertheless, the input data
+    frame should include three columns, in the same order as above,
+    containing the same information, and with the same type of coding
+    scheme for social interactions (i.e., the subject id that interacted
+    with the focal should appear before/after the social interaction
+    code, if he was the initiator/target of the social interaction;
+    focal subject’s id is omitted in <bold>act</bold> column).</p>
+  </sec>
+  <sec id="tyding-raw-data">
+    <title>Tyding raw data</title>
+    <p>The following code uses <monospace>dtable</monospace> function to
+    tidy <monospace>ex_field_data</monospace> data frame (see details
+    above) in a new data frame (here, named data) that can be passed to
+    <monospace>countb</monospace> function.
+    <monospace>dtable</monospace> function requires that recorded social
+    interactions’ codes are provided (<bold>bset</bold> argument). In
+    <monospace>ex_field_data</monospace> these codes are “+” and
+    “-”.</p>
+    <preformat>  ## specify the set of behaviors recorded 
+  ## and that will be used in bset argument
+  b &lt;- c(&quot;+&quot;,&quot;-&quot;)</preformat>
+    <p>We leave all <monospace>dtable</monospace> remaining arguments:
+    <bold>bsep</bold>, <bold>asep</bold>, <bold>missing</bold> and
+    <bold>noc</bold> at their default values (“.”, “;”, “x”, “0”
+    respectively). <bold>bsep</bold> and <bold>asep</bold> arguments
+    refer to separation characters used in the coding scheme of social
+    interactions. The first refers to the character (default is “.”)
+    used to separate a subject’s id code from the social interaction
+    code, and the second, to the character (default is “;”) used to
+    separate different social interactions occurring within the same
+    focal sample (see <monospace>ex_field_data</monospace> above). The
+    <bold>missing</bold> argument (default is “x” character) refers to
+    the character used to indicate that the focal subject was
+    unavailable for observation, while the <bold>noc</bold> argument
+    (default is “0” character) refers to the character used to indicate
+    that no social interaction was recorded in the focal sample.</p>
+    <preformat>  ##  convert raw focal observations' data in ex_field_data
+  data &lt;- dtable(ex_field_data, bset = b)
+  head(data)
+
+     id1  id2 sender_id1 behavior no_occurrence missing observer
+   1  s2 &lt;NA&gt;         NA     &lt;NA&gt;            NA       1        1
+   2  s3 &lt;NA&gt;         NA     &lt;NA&gt;             1      NA        1
+   3  s5 &lt;NA&gt;         NA     &lt;NA&gt;            NA       1        1
+   4  s1   s4          1        +            NA      NA        1
+   5  s1 &lt;NA&gt;         NA     &lt;NA&gt;            NA       1        1
+   6  s5   s4          0        -            NA      NA        1</preformat>
+    <p><monospace>data</monospace> object has 7 columns:
+    <bold>id1</bold> is the focal subject’s identification code;
+    <bold>id2</bold> is the identification code of the social
+    interaction partner; <bold>sender_id1</bold> indicates whether the
+    focal subject was the initiator/sender (coded “1”) or the target of
+    the social interaction (coded “0”); <bold>behavior</bold> indicates
+    the code of the social interaction recorded;
+    <bold>no_occurrence</bold> indicates whether no social interactions
+    were recorded (coded “1”; “NA” otherwise); <bold>missing</bold>
+    indicates whether the focal subject was unavailable for observation
+    (coded “1”}; “NA” otherwise); and <bold>observer</bold> is the
+    observer’s identification code.</p>
+  </sec>
+  <sec id="computing-matrices">
+    <title>Computing matrices</title>
+    <p><monospace>countb</monospace> function can now be used on
+    <monospace>data</monospace> to compute asymmetric data matrices
+    (stored inside a list object), containing the number of times a
+    specific type of social interaction was initiated by the row subject
+    and directed to the column subject (target), separately for each
+    social interaction and for each observer.</p>
+    <preformat>  data2 &lt;- countb(data)
+  data2
+
+ $`1`
+ $`1`$`-`
+    s1 s2 s3 s4 s5
+ s1  0  1  0  0  2
+ s2  0  0  0  0  1
+ s3  0  0  0  1  0
+ s4  0  0  1  0  1
+ s5  0  1  1  1  0
+
+ $`1`$`+`
+    s1 s2 s3 s4 s5
+ s1  0  1  1  1  0
+ s2  0  0  2  0  2
+ s3  2  0  0  0  0
+ s4  0  1  0  0  0
+ s5  0  0  0  1  0
+
+ $`2`
+ $`2`$`-`
+    s1 s2 s3 s4 s5
+ s1  0  0  1  2  0
+ s2  0  0  0  3  0
+ s3  0  1  0  1  0
+ s4  0  2  1  0  1
+ s5  1  1  1  0  0
+
+ $`2`$`+`
+    s1 s2 s3 s4 s5
+ s1  0  0  1  0  0
+ s2  0  0  0  2  0
+ s3  0  1  0  2  1
+ s4  0  0  1  0  0
+ s5  1  0  1  0  0</preformat>
+    <p><monospace>data2</monospace> is a list of lists: one for each
+    observer (in this example <monospace>data2\$`1`</monospace> and
+    <monospace>data2\$`2`</monospace>). Inside each list there is one
+    asymmetric interaction matrix per social interaction recorded (e.g.,
+    <monospace>data2\$`1`\$`-`</monospace>,
+    <monospace>data2\$`1`\$`+`</monospace>).</p>
+  </sec>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>The authors acknowledge the support of Fundação para a Ciência e
+  Tecnologia (UID/PSI/04810/2013)</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-R">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>R Core Team</string-name>
+        </person-group>
+        <source>R: A language and environment for statistical computing</source>
+        <publisher-name>R Foundation for Statistical Computing</publisher-name>
+        <publisher-loc>Vienna, Austria</publisher-loc>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://www.R-project.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-martin1993measuring">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Martin</surname><given-names>Paul</given-names></name>
+          <name><surname>Bateson</surname><given-names>Paul Patrick Gordon</given-names></name>
+          <name><surname>Bateson</surname><given-names>Patrick</given-names></name>
+        </person-group>
+        <source>Measuring behaviour: An introductory guide</source>
+        <publisher-name>Cambridge University Press</publisher-name>
+        <year iso-8601-date="1993">1993</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-lehner1998handbook">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Lehner</surname><given-names>Philip N</given-names></name>
+        </person-group>
+        <source>Handbook of ethological methods</source>
+        <publisher-name>Cambridge University Press</publisher-name>
+        <year iso-8601-date="1998">1998</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-altmann1974observational">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Altmann</surname><given-names>Jeanne</given-names></name>
+        </person-group>
+        <article-title>Observational study of behavior: Sampling methods</article-title>
+        <source>Behaviour</source>
+        <publisher-name>Brill</publisher-name>
+        <year iso-8601-date="1974">1974</year>
+        <volume>49</volume>
+        <issue>3</issue>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

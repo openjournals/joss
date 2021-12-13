@@ -1,0 +1,634 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2585</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02585</article-id>
+<title-group>
+<article-title>dorado: A Python package for simulating passive particle
+transport in shallow-water flows</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1343-193X</contrib-id>
+<string-name>Jayaram Hariharan</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-5142-1786</contrib-id>
+<string-name>Kyle Wright</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-4763-7231</contrib-id>
+<string-name>Paola Passalacqua</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Civil, Architectural and Environmental
+Engineering, The University of Texas at Austin</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-08-08">
+<day>8</day>
+<month>8</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>54</issue>
+<fpage>2585</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Lagrangian transport</kwd>
+<kwd>random walk</kwd>
+<kwd>hydrodynamics</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Hydrodynamic simulations of flow through landscapes allow
+  scientists to answer questions related to the transport of water,
+  nutrients, pollutants, biota, and sediment through waterways
+  (<xref alt="Czuba et al., 2019" rid="ref-Czuba2019" ref-type="bibr">Czuba
+  et al., 2019</xref>;
+  <xref alt="Duan &amp; Nanda, 2006" rid="ref-Duan2006" ref-type="bibr">Duan
+  &amp; Nanda, 2006</xref>;
+  <xref alt="Lauzon &amp; Murray, 2018" rid="ref-Lauzon2018" ref-type="bibr">Lauzon
+  &amp; Murray, 2018</xref>;
+  <xref alt="Rynne et al., 2016" rid="ref-Rynne2016" ref-type="bibr">Rynne
+  et al., 2016</xref>;
+  <xref alt="Wild-Allen &amp; Andrewartha, 2016" rid="ref-Wild-Allen2016" ref-type="bibr">Wild-Allen
+  &amp; Andrewartha, 2016</xref>). In geophysical systems, such as
+  rivers, estuaries, and deltas, hydrodynamic models typically solve the
+  depth-integrated “shallow water” equations in an Eulerian reference
+  frame, which is concerned with fluxes through a given region of space
+  – examples of these solvers include ANUGA
+  (<xref alt="ANUGA, 2019" rid="ref-anuga" ref-type="bibr"><italic>ANUGA</italic>,
+  2019</xref>), Delft3D
+  (<xref alt="Delft3D, 2020" rid="ref-delft3d" ref-type="bibr"><italic>Delft3D</italic>,
+  2020</xref>), Frehd
+  (<xref alt="Hodges, 2014" rid="ref-Hodges2014" ref-type="bibr">Hodges,
+  2014</xref>) and others. However, the spatial and temporal
+  characteristics of the movement of material through a landscape are
+  often better understood using a Lagrangian reference frame
+  (<xref alt="Doyle &amp; Ensign, 2009" rid="ref-Doyle2009" ref-type="bibr">Doyle
+  &amp; Ensign, 2009</xref>), which follows the movement of individual
+  objects or parcels. In this paper, we present an open-source Python
+  package, <italic>dorado</italic>, which provides a transparent and
+  accessible method for researchers to simulate passive Lagrangian
+  particle transport on top of Eulerian hydrodynamic solutions. This
+  mixed Eulerian-Lagrangian methodology adapts the routing functionality
+  from the popular numerical model DeltaRCM
+  (<xref alt="Liang, Voller, et al., 2015" rid="ref-Liang2015a" ref-type="bibr">Liang,
+  Voller, et al., 2015</xref>;
+  <xref alt="Liang, Geleynse, et al., 2015" rid="ref-Liang2015b" ref-type="bibr">Liang,
+  Geleynse, et al., 2015</xref>) for use with the outputs of any
+  shallow-water hydrodynamic solver.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>Existing software for tracking water parcels or particles in a
+  Lagrangian framework typically contains complicated code structures
+  (<xref alt="Delft3D, 2020" rid="ref-delft3d" ref-type="bibr"><italic>Delft3D</italic>,
+  2020</xref>;
+  <xref alt="Froger &amp; Souille, 2017" rid="ref-freshkiss3d" ref-type="bibr">Froger
+  &amp; Souille, 2017</xref>) with steep learning-curves, are
+  proprietary
+  (<xref alt="ANSYS Fluent Software: CFD Simulation, 2020" rid="ref-fluent" ref-type="bibr"><italic>ANSYS
+  Fluent Software: CFD Simulation</italic>, 2020</xref>), or were
+  developed to solve problems at very different spatial scales
+  (<xref alt="Dagestad et al., 2018" rid="ref-Dagestad2018" ref-type="bibr">Dagestad
+  et al., 2018</xref>;
+  <xref alt="Yeung &amp; Pope, 1989" rid="ref-Yeung1989" ref-type="bibr">Yeung
+  &amp; Pope, 1989</xref>) than typical riverine applications. This
+  package fills a gap in the available methods for Lagrangian particle
+  simulation by providing a flexible, open, and transparent framework
+  meant for rapid application in conjunction with any landscape-scale 2D
+  hydrodynamic model. In addition, <italic>dorado</italic> comes with
+  built-in pre-processing, analysis, and plotting functionality,
+  including methods to compute the exposure time distribution of
+  particles to specific sub-regions of the domain, which is often of
+  interest in ecological applications
+  (<xref alt="Kadlec &amp; Wallace, 2008" rid="ref-Kadlec2008" ref-type="bibr">Kadlec
+  &amp; Wallace, 2008</xref>).</p>
+</sec>
+<sec id="background">
+  <title>Background</title>
+  <p><italic>dorado</italic> makes use of the weighted random walk
+  framework
+  (<xref alt="Pearson, 1905" rid="ref-Pearson1905" ref-type="bibr">Pearson,
+  1905</xref>) to model particle transport as a stochastic Markovian
+  process, using a grid-centric approach that takes into account local
+  water inertial components and surface slopes, in a manner modeled
+  after the numerical model DeltaRCM
+  (<xref alt="Liang, Voller, et al., 2015" rid="ref-Liang2015a" ref-type="bibr">Liang,
+  Voller, et al., 2015</xref>;
+  <xref alt="Liang, Geleynse, et al., 2015" rid="ref-Liang2015b" ref-type="bibr">Liang,
+  Geleynse, et al., 2015</xref>). The random walk routing weights are
+  sensitive to two user-specified parameters,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\gamma]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>γ</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>.
+  The <inline-formula><alternatives>
+  <tex-math><![CDATA[\gamma]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>γ</mml:mi></mml:math></alternatives></inline-formula>
+  parameter controls the proportional importance of water surface
+  gradient and water velocity in determining the downstream routing
+  direction <inline-formula><alternatives>
+  <tex-math><![CDATA[F^{*}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>F</mml:mi><mml:mo>*</mml:mo></mml:msup></mml:math></alternatives></inline-formula>,
+  according to: <disp-formula><alternatives>
+  <tex-math><![CDATA[F^{*} = \gamma F_{sfc} + (1-\gamma) F_{int}]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mi>F</mml:mi><mml:mo>*</mml:mo></mml:msup><mml:mo>=</mml:mo><mml:mi>γ</mml:mi><mml:msub><mml:mi>F</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mi>f</mml:mi><mml:mi>c</mml:mi></mml:mrow></mml:msub><mml:mo>+</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:mi>γ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:msub><mml:mi>F</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></disp-formula>
+  in which <inline-formula><alternatives>
+  <tex-math><![CDATA[F_{sfc}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>F</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mi>f</mml:mi><mml:mi>c</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[F_{int}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>F</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+  represent the surface gradient and inertial components, respectively.
+  Modifying <inline-formula><alternatives>
+  <tex-math><![CDATA[\gamma]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>γ</mml:mi></mml:math></alternatives></inline-formula>
+  indirectly controls the diffusivity of the travel path. The second
+  weighting parameter, <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>,
+  modifies the routing weights, <inline-formula><alternatives>
+  <tex-math><![CDATA[w_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>w</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+  for the random walk based on the local water depth value,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[h_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>h</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>.
+  The routing weights for each neighboring cell are calculated per
+  Liang, Voller, et al.
+  (<xref alt="2015" rid="ref-Liang2015a" ref-type="bibr">2015</xref>):</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[w_i = \frac{h_i^\theta \max \left(0, F \cdot d_i \right)}{\Delta_i}]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>w</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mfrac><mml:mrow><mml:msubsup><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mi>θ</mml:mi></mml:msubsup><mml:mo>max</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:mi>F</mml:mi><mml:mo>⋅</mml:mo><mml:msub><mml:mi>d</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow><mml:msub><mml:mi>Δ</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:mfrac></mml:mrow></mml:math></alternatives></disp-formula>
+  wherein <inline-formula><alternatives>
+  <tex-math><![CDATA[F]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>F</mml:mi></mml:math></alternatives></inline-formula>
+  are the routing directions, <inline-formula><alternatives>
+  <tex-math><![CDATA[d_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>d</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  represents the unit vector from the current cell to its neighbor, and
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\Delta_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>Δ</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  is the D8 cellular distance. Here, the local flow depth acts as a
+  resistance term – as <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>
+  gets larger, the local routing weights have an increasingly large
+  dependence on the water depth of the neighboring cells. By altering
+  the two parameters <inline-formula><alternatives>
+  <tex-math><![CDATA[\gamma]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>γ</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>,
+  the user has control over the randomness with which the particles are
+  routed. For a full description of this methodology, see Liang et al.
+  (<xref alt="2015" rid="ref-Liang2015a" ref-type="bibr">2015</xref>;
+  <xref alt="2015" rid="ref-Liang2015b" ref-type="bibr">2015</xref>) and
+  the <italic>dorado</italic> documentation.</p>
+  <p>Particle travel times are back-calculated from their locations
+  after routing by accounting for the flow velocity, flow direction, and
+  grid size. The time elapsed during each particle step is assumed to be
+  proportional to the distance traveled in the direction of the mean
+  flow, <inline-formula><alternatives>
+  <tex-math><![CDATA[d_{eq}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>d</mml:mi><mml:mrow><mml:mi>e</mml:mi><mml:mi>q</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>,
+  which is equal to the step distance <inline-formula><alternatives>
+  <tex-math><![CDATA[\Delta_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>Δ</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  projected onto a unit vector oriented in the direction of the velocity
+  field, <inline-formula><alternatives>
+  <tex-math><![CDATA[\phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϕ</mml:mi></mml:math></alternatives></inline-formula>,
+  according to <inline-formula><alternatives>
+  <tex-math><![CDATA[d_{eq} = \Delta_i \cdot \cos(\phi)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>d</mml:mi><mml:mrow><mml:mi>e</mml:mi><mml:mi>q</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:msub><mml:mi>Δ</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>⋅</mml:mo><mml:mo>cos</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>ϕ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.
+  During a model iteration, each particle is allowed to progress a
+  different length of time, depending on the velocity of the flow in the
+  vicinity of each particle and the orientation of each step in relation
+  to the mean flow direction. The travel time of each step is then
+  modified according to a user-specified parameter,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[D_c]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>D</mml:mi><mml:mi>c</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+  which acts as a dispersion coefficient.</p>
+  <p><italic>dorado</italic> provides functions with which users can
+  choose to sync up the particle evolution by either number of step
+  iterations or by individual particle travel times. In addition,
+  <italic>dorado</italic> includes several post-processing functions for
+  computing and plotting the fraction of time particles spend “exposed”
+  to a region of interest, otherwise known as the exposure time
+  distribution
+  (<xref alt="Benjamin &amp; Lawler, 2013" rid="ref-Benjamin2013" ref-type="bibr">Benjamin
+  &amp; Lawler, 2013</xref>;
+  <xref alt="Hiatt et al., 2018" rid="ref-Hiatt2018" ref-type="bibr">Hiatt
+  et al., 2018</xref>; or residence time distribution, in steady flows,
+  <xref alt="Kadlec &amp; Wallace, 2008" rid="ref-Kadlec2008" ref-type="bibr">Kadlec
+  &amp; Wallace, 2008</xref>). This travel time methodology has been
+  tested against analytical solutions for a plug-flow reactor with
+  dispersion
+  (<xref alt="Benjamin &amp; Lawler, 2013" rid="ref-Benjamin2013" ref-type="bibr">Benjamin
+  &amp; Lawler, 2013</xref>), as well as against exposure time
+  distributions from prior models of real systems
+  (<xref alt="Hiatt et al., 2018" rid="ref-Hiatt2018" ref-type="bibr">Hiatt
+  et al., 2018</xref>), and performed well at reproducing the observed
+  travel times in both systems. As with all Lagrangian methods involving
+  finite samples of particles, we expect the travel time computations to
+  struggle to reproduce the heavy-tailed behavior observed in some
+  systems
+  (<xref alt="Zhang et al., 2012" rid="ref-Zhang2012" ref-type="bibr">Zhang
+  et al., 2012</xref>), and expect that <italic>dorado</italic> will
+  perform most accurately in advection-dominated flows.</p>
+</sec>
+<sec id="functionality-and-ease-of-use">
+  <title>Functionality and Ease of Use</title>
+  <p><italic>dorado</italic> is capable of handling both steady and
+  unsteady hydrodynamic simulations. While the core functionality of
+  <italic>dorado</italic> assumes that flow variables lie on a Cartesian
+  grid of uniform grid size, the package can still be applied to
+  unstructured hydrodynamic models through the use of built-in
+  interpolation functions for gridding data. Due to the nature of the
+  weighting scheme, model flow-fields must represent depth-averaged
+  solutions (as vertical movement of particles is not considered).
+  <italic>dorado</italic> supports current Python 3.x versions as well
+  as the older 2.7 version, can be run on all major operating systems,
+  and is dependent upon only a select few common scientific packages. To
+  help new users, over a dozen examples are provided, illustrating uses
+  of the package with DeltaRCM and ANUGA model simulations conducted on
+  real and synthetic datasets. The package is organized into four
+  modules to help users and future contributors easily access and
+  interact with the source code:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p><monospace>lagrangian_walker</monospace>: Contains internal
+      functions and methods associated with the weighted random
+      walk.</p>
+    </list-item>
+    <list-item>
+      <p><monospace>particle_track</monospace>: Lower-level
+      functionality in which the <monospace>modelParams</monospace> and
+      <monospace>Particles</monospace> classes are defined, and
+      parameters for the domain and particle evolution are set.</p>
+    </list-item>
+    <list-item>
+      <p><monospace>routines</monospace>: Higher-level functions for
+      common applications, designed to simplify use of the package.</p>
+    </list-item>
+    <list-item>
+      <p><monospace>parallel_routing</monospace>: Parallel functionality
+      which enables the user to distribute their particle routing
+      commands across multiple CPU cores using Python’s built-in
+      multiprocessing library.</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We thank Nelson Tull for testing and providing feedback on the
+  package. Thanks also to David Mohrig, Kathleen Wilson, Hima
+  Hassenruck-Gudipati, Teresa Jarriel, Eric Prokocki, John Swartz,
+  Shazzadur Rahman, and Andrew Moodie for their input and feedback
+  during development. We also thank Mickey Lanning for suggesting the
+  package name.</p>
+  <p>This work was supported in part by NSF EAR-1719670, the NSF GRFP
+  under grant DGE-1610403, and the NASA Delta-X project, which is funded
+  by the Science Mission Directorate’s Earth Science Division through
+  the Earth Venture Suborbital-3 Program NNH17ZDA001N-EVS3.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Dagestad2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dagestad</surname><given-names>Knut Frode</given-names></name>
+          <name><surname>Röhrs</surname><given-names>Johannes</given-names></name>
+          <name><surname>Breivik</surname><given-names>Oyvind</given-names></name>
+          <name><surname>Ådlandsvik</surname><given-names>Bjørn</given-names></name>
+        </person-group>
+        <article-title>OpenDrift v1.0: A generic framework for trajectory modelling</article-title>
+        <source>Geoscientific Model Development</source>
+        <publisher-name>Copernicus GmbH</publisher-name>
+        <year iso-8601-date="2018-04">2018</year><month>04</month>
+        <volume>11</volume>
+        <issue>4</issue>
+        <issn>19919603</issn>
+        <uri>https://www.geosci-model-dev.net/11/1405/2018/</uri>
+        <pub-id pub-id-type="doi">10.5194/gmd-11-1405-2018</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-freshkiss3d">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Froger</surname><given-names>D.</given-names></name>
+          <name><surname>Souille</surname><given-names>F.</given-names></name>
+        </person-group>
+        <article-title>Freshkiss3D</article-title>
+        <publisher-name>ANGE Team</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://freshkiss3d.gforge.inria.fr/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-anuga">
+      <element-citation>
+        <article-title>ANUGA</article-title>
+        <publisher-name>Australian National University; Geoscience Australia</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://anuga.anu.edu.au/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-delft3d">
+      <element-citation>
+        <article-title>Delft3D</article-title>
+        <publisher-name>Deltares</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://oss.deltares.nl/web/delft3d/home</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Pearson1905">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pearson</surname><given-names>Karl</given-names></name>
+        </person-group>
+        <article-title>The problem of the random walk</article-title>
+        <source>Nature</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="1905">1905</year>
+        <volume>72</volume>
+        <issue>1867</issue>
+        <issn>00280836</issn>
+        <pub-id pub-id-type="doi">10.1038/072342a0</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Liang2015a">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Liang</surname><given-names>M</given-names></name>
+          <name><surname>Voller</surname><given-names>V R</given-names></name>
+          <name><surname>Paola</surname><given-names>C</given-names></name>
+        </person-group>
+        <article-title>A reduced-complexity model for river delta formation - Part 1: Modeling deltas with channel dynamics</article-title>
+        <source>Earth Surface Dynamics</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>3</volume>
+        <issue>1</issue>
+        <issn>2196632X</issn>
+        <uri>www.earth-surf-dynam.net/3/67/2015/</uri>
+        <pub-id pub-id-type="doi">10.5194/esurf-3-67-2015</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Liang2015b">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Liang</surname><given-names>M</given-names></name>
+          <name><surname>Geleynse</surname><given-names>N</given-names></name>
+          <name><surname>Edmonds</surname><given-names>D A</given-names></name>
+          <name><surname>Passalacqua</surname><given-names>P</given-names></name>
+        </person-group>
+        <article-title>A reduced-complexity model for river delta formation - Part 2: Assessment of the flow routing scheme</article-title>
+        <source>Earth Surface Dynamics</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>3</volume>
+        <issue>1</issue>
+        <issn>2196632X</issn>
+        <uri>www.earth-surf-dynam.net/3/87/2015/</uri>
+        <pub-id pub-id-type="doi">10.5194/esurf-3-87-2015</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-fluent">
+      <element-citation>
+        <article-title>ANSYS Fluent Software: CFD Simulation</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://www.ansys.com/products/fluids/ansys-fluent</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hodges2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hodges</surname><given-names>Ben R.</given-names></name>
+        </person-group>
+        <article-title>A new approach to the local time stepping problem for scalar transport</article-title>
+        <source>Ocean Modelling</source>
+        <publisher-name>Elsevier BV</publisher-name>
+        <year iso-8601-date="2014-05">2014</year><month>05</month>
+        <volume>77</volume>
+        <issn>14635003</issn>
+        <pub-id pub-id-type="doi">10.1016/j.ocemod.2014.02.007</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Doyle2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Doyle</surname><given-names>Martin W</given-names></name>
+          <name><surname>Ensign</surname><given-names>Scott H</given-names></name>
+        </person-group>
+        <article-title>Alternative reference frames in river system science</article-title>
+        <source>BioScience</source>
+        <publisher-name>American Institute of Biological Sciences Circulation, AIBS, 1313 Dolley …</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <volume>59</volume>
+        <issue>6</issue>
+        <pub-id pub-id-type="doi">10.1525/bio.2009.59.6.8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Yeung1989">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yeung</surname><given-names>Pui-Kuen</given-names></name>
+          <name><surname>Pope</surname><given-names>Stephen B</given-names></name>
+        </person-group>
+        <article-title>Lagrangian statistics from direct numerical simulations of isotropic turbulence</article-title>
+        <source>Journal of Fluid Mechanics</source>
+        <publisher-name>Cambridge University Press</publisher-name>
+        <year iso-8601-date="1989">1989</year>
+        <volume>207</volume>
+        <pub-id pub-id-type="doi">10.1017/S0022112089002697</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Kadlec2008">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Kadlec</surname><given-names>Robert H</given-names></name>
+          <name><surname>Wallace</surname><given-names>Scott</given-names></name>
+        </person-group>
+        <source>Treatment wetlands</source>
+        <publisher-name>CRC press</publisher-name>
+        <publisher-loc>Boca Raton, FL</publisher-loc>
+        <year iso-8601-date="2008">2008</year>
+        <isbn>9781420012514 </isbn>
+        <pub-id pub-id-type="doi">10.1201/9781420012514</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Benjamin2013">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Benjamin</surname><given-names>Mark M</given-names></name>
+          <name><surname>Lawler</surname><given-names>Desmond F</given-names></name>
+        </person-group>
+        <source>Water quality engineering: Physical/chemical treatment processes</source>
+        <publisher-name>John Wiley &amp; Sons</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hiatt2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hiatt</surname><given-names>Matthew</given-names></name>
+          <name><surname>Castañeda-Moya</surname><given-names>Edward</given-names></name>
+          <name><surname>Twilley</surname><given-names>Robert</given-names></name>
+          <name><surname>Hodges</surname><given-names>Ben R</given-names></name>
+          <name><surname>Passalacqua</surname><given-names>Paola</given-names></name>
+        </person-group>
+        <article-title>Channel-island connectivity affects water exposure time distributions in a coastal river delta</article-title>
+        <source>Water Resources Research</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>54</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1002/2017WR021289</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Lauzon2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lauzon</surname><given-names>Rebecca</given-names></name>
+          <name><surname>Murray</surname><given-names>A. Brad</given-names></name>
+        </person-group>
+        <article-title>Comparing the cohesive effects of mud and vegetation on delta evolution</article-title>
+        <source>Geophysical Research Letters</source>
+        <publisher-name>John Wiley &amp; Sons, Ltd</publisher-name>
+        <year iso-8601-date="2018-10">2018</year><month>10</month>
+        <volume>45</volume>
+        <issue>19</issue>
+        <issn>19448007</issn>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1029/2018GL079405</uri>
+        <pub-id pub-id-type="doi">10.1029/2018GL079405</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Wild-Allen2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wild-Allen</surname><given-names>Karen</given-names></name>
+          <name><surname>Andrewartha</surname><given-names>John</given-names></name>
+        </person-group>
+        <article-title>Connectivity between estuaries influences nutrient transport, cycling and water quality</article-title>
+        <source>Marine Chemistry</source>
+        <publisher-name>Elsevier B.V.</publisher-name>
+        <year iso-8601-date="2016-10">2016</year><month>10</month>
+        <volume>185</volume>
+        <issn>03044203</issn>
+        <pub-id pub-id-type="doi">10.1016/j.marchem.2016.05.011</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Rynne2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rynne</surname><given-names>Patrick</given-names></name>
+          <name><surname>Reniers</surname><given-names>Ad</given-names></name>
+          <name><surname>Kreeke</surname><given-names>Jacobus van de</given-names></name>
+          <name><surname>MacMahan</surname><given-names>Jamie</given-names></name>
+        </person-group>
+        <article-title>The effect of tidal exchange on residence time in a coastal embayment</article-title>
+        <source>Estuarine, Coastal and Shelf Science</source>
+        <publisher-name>Academic Press</publisher-name>
+        <year iso-8601-date="2016-04">2016</year><month>04</month>
+        <volume>172</volume>
+        <issn>02727714</issn>
+        <pub-id pub-id-type="doi">10.1016/j.ecss.2016.02.001</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Duan2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Duan</surname><given-names>Jennifer G.</given-names></name>
+          <name><surname>Nanda</surname><given-names>S. K.</given-names></name>
+        </person-group>
+        <article-title>Two-dimensional depth-averaged model simulation of suspended sediment concentration distribution in a groyne field</article-title>
+        <source>Journal of Hydrology</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2006-08">2006</year><month>08</month>
+        <volume>327</volume>
+        <issue>3-4</issue>
+        <issn>00221694</issn>
+        <pub-id pub-id-type="doi">10.1016/j.jhydrol.2005.11.055</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Czuba2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Czuba</surname><given-names>Jonathan A.</given-names></name>
+          <name><surname>David</surname><given-names>Scott R.</given-names></name>
+          <name><surname>Edmonds</surname><given-names>Douglas A.</given-names></name>
+          <name><surname>Ward</surname><given-names>Adam S.</given-names></name>
+        </person-group>
+        <article-title>Dynamics of surface-water connectivity in a low-gradient meandering river floodplain</article-title>
+        <source>Water Resources Research</source>
+        <publisher-name>Blackwell Publishing Ltd</publisher-name>
+        <year iso-8601-date="2019-03">2019</year><month>03</month>
+        <volume>55</volume>
+        <issue>3</issue>
+        <issn>19447973</issn>
+        <uri>https://doi.org/10.1029/</uri>
+        <pub-id pub-id-type="doi">10.1029/2018WR023527</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Zhang2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zhang</surname><given-names>Yong</given-names></name>
+          <name><surname>Meerschaert</surname><given-names>Mark M</given-names></name>
+          <name><surname>Packman</surname><given-names>Aaron I</given-names></name>
+        </person-group>
+        <article-title>Linking fluvial bed sediment transport across scales</article-title>
+        <source>Geophysical Research Letters</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>39</volume>
+        <issue>20</issue>
+        <pub-id pub-id-type="doi">10.1029/2012GL053476</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

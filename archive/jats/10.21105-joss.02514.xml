@@ -1,0 +1,754 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2514</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02514</article-id>
+<title-group>
+<article-title>RK-Opt: A package for the design of numerical ODE
+solvers</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1212-126X</contrib-id>
+<string-name>David I. Ketcheson</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="corresp" rid="cor-1"><sup>*</sup></xref>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-7300-1280</contrib-id>
+<string-name>Matteo Parsani</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1293-4770</contrib-id>
+<string-name>Zachary J. Grant</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-2573-2481</contrib-id>
+<string-name>Aron J. Ahmadia</string-name>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-3456-2277</contrib-id>
+<string-name>Hendrik Ranocha</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>King Abdullah University of Science and Technology, Saudi
+Arabia</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Oak Ridge National Laboratory, USA</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Capital One, USA</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<author-notes>
+<corresp id="cor-1">* E-mail: <email></email></corresp>
+</author-notes>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-07-09">
+<day>9</day>
+<month>7</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>54</issue>
+<fpage>2514</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>numerical analysis</kwd>
+<kwd>differential equations</kwd>
+<kwd>Runge-Kutta method</kwd>
+<kwd>linear multistep method</kwd>
+<kwd>strong stability preservation</kwd>
+<kwd>absolute stability</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Ordinary and partial differential equations (ODEs and PDEs) are
+  used to model many important phenomena. In most cases, solutions of
+  these models must be approximated by numerical methods. Most of the
+  relevant algorithms fall within a few classes of methods, with the
+  properties of individual methods determined by their coefficients. The
+  choice of appropriate coefficients in the design of methods for
+  specific applications is an important area of research.
+  <monospace>RK-Opt</monospace> is a software package for designing
+  numerical ODE solvers with coefficients optimally chosen to provide
+  desired properties. It is available from
+  https://github.com/ketch/RK-Opt, with documentation at
+  http://numerics.kaust.edu.sa/RK-Opt/. The primary focus of the package
+  is on the design of Runge-Kutta methods, but some routines for
+  designing other classes of methods such as multistep Runge-Kutta and
+  general linear methods are also included.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Over the last several decades, a great deal of work has gone into
+  the design of numerical ODE solvers. Initially this work was aimed at
+  developing general purpose solvers, but over time the emphasis shifted
+  increasingly toward development of optimized methods for specific
+  applications. Different accuracy, stability, performance, and other
+  properties may be relevant or essential depending on the nature of the
+  equations to be solved.</p>
+  <p>An s-stage Runge-Kutta method has roughly s^2 coefficients (roughly
+  s^2/2 for explicit methods), which can be chosen so as to provide high
+  accuracy, stability, or other properties. Historically, most interest
+  in Runge-Kutta methods has focused on methods using the minimum number
+  of stages for a given order of accuracy. However, in the past few
+  decades there has been increasing recognition that using extra stages
+  can be worthwhile in order to improve other method properties. Some
+  areas where this is particularly useful are in the enhancement of
+  linear and nonlinear stability properties, the reduction of storage
+  requirements, and the design of embedded pairs. Methods with dozens or
+  even hundreds of stages are not unheard of.</p>
+  <p>At the same time, most existing Runge-Kutta methods have been
+  designed by hand, by researchers laboriously solving the order
+  conditions. When using extra stages, the number of available
+  parameters makes the selection of a near-optimal choice by hand
+  impossible, and one resorts to computational optimization. This leads
+  to a different paradigm of numerical method design, in which we use
+  sophisticated numerical (optimization) algorithms to design
+  sophisticated numerical (integration) algorithms. It can be expected
+  that this trend will accelerate in the future, and perhaps one day
+  simple manually-constructed algorithms will be the exception.</p>
+  <p>RK-Opt contains a set of tools for designing Runge-Kutta methods in
+  this paradigm. It provides code that can enforce desired properties
+  and/or objective functions. The constraints and objective are then
+  used within an optimization framework, to determine coefficients of
+  methods that best achieve the desired goal. Thus,
+  <monospace>RK-Opt</monospace> is a sort of meta-software, consisting
+  of algorithms whose purpose is to create other algorithms.</p>
+  <p>Typically, the most obvious formulation of the corresponding
+  optimization problem is intractable. Therefore, these problems are
+  reformulated in ways that make them amenable to available techniques.
+  These reformulations include, for instance, turning a nonconvex
+  problem into a sequence of convex problems or even linear programs.
+  The resulting algorithms can often guarantee optimality of their
+  output. However, for the general problem of determining Runge-Kutta
+  coefficients, the nonconvex problem must be attacked directly and
+  optimality cannot be guaranteed.</p>
+  <p><monospace>RK-Opt</monospace> is written entirely in MATLAB, and
+  leverages the MATLAB Optimization Toolbox as well as the Global
+  Optimization Toolbox. Its development has been motivated largely by
+  research needs and it has been used in a number of papers (see
+  below).</p>
+</sec>
+<sec id="features">
+  <title>Features</title>
+  <p><monospace>RK-Opt</monospace> includes the following
+  subpackages.</p>
+  <sec id="polyopt">
+    <title><monospace>polyopt</monospace></title>
+    <p>This package computes optimal stability functions for Runge-Kutta
+    methods. Here <italic>optimal</italic> means that the stable step
+    size is maximized for a given ODE spectrum. The corresponding
+    optimization problem is intractable under a direct implementation.
+    The package uses the algorithm developed in
+    (<xref alt="Ketcheson &amp; Ahmadia, 2012" rid="ref-2012_optimal_stability_polynomials" ref-type="bibr">Ketcheson
+    &amp; Ahmadia, 2012</xref>), which relaxes the global optimization
+    problem by solving a sequence of convex subproblems. Under certain
+    technical assumptions, the result is guaranteed to be the optimal
+    solution of the original problem. <monospace>polyopt</monospace>
+    relies on CVX
+    (<xref alt="M. Grant &amp; Boyd, 2014" rid="ref-cvx" ref-type="bibr">M.
+    Grant &amp; Boyd, 2014</xref>,
+    <xref alt="2008" rid="ref-gb08" ref-type="bibr">2008</xref>) to
+    solve the convex subproblems. This package is usually used as the
+    first step in designing a Runge-Kutta method.</p>
+  </sec>
+  <sec id="rk-coeff-opt">
+    <title><monospace>RK-Coeff-Opt</monospace></title>
+    <p>This package computes optimal Runge-Kutta coefficients based on a
+    desired set of constraints and an objective. Available constraints
+    include:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p>The number of stages and order of accuracy</p>
+      </list-item>
+      <list-item>
+        <p>The class of method (explicit, implicit, diagonally implicit,
+        low-storage)</p>
+      </list-item>
+      <list-item>
+        <p>The coefficients of the stability polynomial (usually
+        determined using <monospace>polyopt</monospace>)</p>
+      </list-item>
+    </list>
+    <p>Two objective functions are provided; methods can be optimized
+    for the strong stability preserving (SSP) coefficient or the
+    principal error norm (a measure of the leading-order truncation
+    error coefficients). In addition to standard Runge-Kutta methods,
+    various classes of multistep Runge-Kutta methods can also be
+    optimized.</p>
+    <p>The optimization problem in question is highly nonconvex and the
+    available solvers may fail to find a solution, or may converge to a
+    non-optimal solution. For this reason, the implementation is based
+    on solving many local optimization problems in parallel from
+    different random initial points, using MATLAB’s Global Optimization
+    Toolbox.</p>
+    <p>The packages <monospace>dwrk-opt</monospace> and
+    <monospace>low-storage</monospace> are specialized but less
+    full-featured versions of <monospace>RK-Coeff-Opt</monospace> that
+    were developed for specific research projects involving downwind
+    Runge-Kutta methods and low-storage Runge-Kutta methods,
+    respectively.</p>
+  </sec>
+  <sec id="am_radius-opt">
+    <title><monospace>am_radius-opt</monospace></title>
+    <p>Whereas the previous two subpackages are fairly general-purpose
+    tools, this package solves a very specific and discrete set of
+    problems described in
+    (<xref alt="Ketcheson, 2009" rid="ref-2009_monotonicity" ref-type="bibr">Ketcheson,
+    2009</xref>). Specifically, the provided routines determine the
+    coefficients of multistep methods (including classes of general
+    linear methods) with the largest possible SSP coefficient (also
+    known as radius of absolute monotonicity). The corresponding
+    optimization problem had previously been attacked using brute force
+    search, but this limited its solvability to methods with very few
+    steps. In this package the problem is reformulated as a sequence of
+    linear programming problems, enabling its efficient solution for
+    methods with many steps.</p>
+  </sec>
+</sec>
+<sec id="related-research-and-software">
+  <title>Related research and software</title>
+  <p><monospace>RK-Opt</monospace> development has proceeded in close
+  connection to the <monospace>NodePy</monospace> package
+  (https://github.com/ketch/NodePy). Whereas
+  <monospace>RK-Opt</monospace> is focused on the design of numerical
+  methods, <monospace>NodePy</monospace> is focused more on their
+  analysis. A common workflow involves generating new methods with
+  <monospace>RK-Opt</monospace> and then studying their properties in
+  more detail using <monospace>NodePy</monospace>.</p>
+  <p>Some of the research projects that have made use of
+  <monospace>RK-Opt</monospace> include development of:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>SSP Runge-Kutta methods
+      (<xref alt="Gottlieb et al., 2015" rid="ref-gottlieb2015optimal" ref-type="bibr">Gottlieb
+      et al., 2015</xref>;
+      <xref alt="I. Higueras &amp; Roldán, 2019b" rid="ref-higueras2019strong" ref-type="bibr">I.
+      Higueras &amp; Roldán, 2019b</xref>;
+      <xref alt="Ketcheson et al., 2009" rid="ref-2009_implicit_ssp" ref-type="bibr">Ketcheson
+      et al., 2009</xref>;
+      <xref alt="Ketcheson, 2008" rid="ref-2008_explicit_ssp" ref-type="bibr">Ketcheson,
+      2008</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>SSP linear multistep methods
+      (<xref alt="Ketcheson, 2009" rid="ref-2009_monotonicity" ref-type="bibr">Ketcheson,
+      2009</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>SSP general linear methods
+      (<xref alt="Bresten et al., 2017" rid="ref-2017_msrk" ref-type="bibr">Bresten
+      et al., 2017</xref>;
+      <xref alt="Ketcheson et al., 2011" rid="ref-2011_tsrk" ref-type="bibr">Ketcheson
+      et al., 2011</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>SSP IMEX Runge-Kutta methods
+      (<xref alt="Conde et al., 2017" rid="ref-conde2017implicit" ref-type="bibr">Conde
+      et al., 2017</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>Low-storage Runge-Kutta methods
+      (<xref alt="I. Higueras &amp; Roldán, 2019a" rid="ref-higueras2019new" ref-type="bibr">I.
+      Higueras &amp; Roldán, 2019a</xref>;
+      <xref alt="Ketcheson, 2010" rid="ref-2010_LSRK" ref-type="bibr">Ketcheson,
+      2010</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>Optimal Runge-Kutta stability polynomials
+      (<xref alt="Ketcheson &amp; Ahmadia, 2012" rid="ref-2012_optimal_stability_polynomials" ref-type="bibr">Ketcheson
+      &amp; Ahmadia, 2012</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>Additive and downwind SSP Runge-Kutta methods
+      (<xref alt="Inmaculada Higueras et al., 2018" rid="ref-2018_perturbations" ref-type="bibr">Inmaculada
+      Higueras et al., 2018</xref>;
+      <xref alt="Ketcheson, 2011" rid="ref-2011_dwssp" ref-type="bibr">Ketcheson,
+      2011</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>Optimal Runge-Kutta methods for specific PDE
+      semi-discretizations
+      (<xref alt="Kubatko et al., 2014" rid="ref-2014_ssp_rkdg" ref-type="bibr">Kubatko
+      et al., 2014</xref>;
+      <xref alt="Parsani et al., 2013" rid="ref-2013_sd_erk" ref-type="bibr">Parsani
+      et al., 2013</xref>,
+      <xref alt="2012" rid="ref-parsani-eccomas" ref-type="bibr">2012</xref>;
+      <xref alt="Parsani &amp; Ketcheson, 2012" rid="ref-Parsani_finnish" ref-type="bibr">Parsani
+      &amp; Ketcheson, 2012</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>Optimal Runge-Kutta methods for pseudo-time stepping
+      (<xref alt="Vermeire et al., 2019" rid="ref-vermeire2019optimal" ref-type="bibr">Vermeire
+      et al., 2019</xref>,
+      <xref alt="2020" rid="ref-vermeire2020optimal" ref-type="bibr">2020</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>Embedded pairs for Runge-Kutta methods
+      (<xref alt="Conde et al., 2018" rid="ref-conde2018embedded" ref-type="bibr">Conde
+      et al., 2018</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>Runge-Kutta methods with high weak stage order
+      (<xref alt="Ketcheson et al., 2018" rid="ref-2018_wso" ref-type="bibr">Ketcheson
+      et al., 2018</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>SSP multistage, multiderivative methods
+      (<xref alt="Christlieb et al., 2016" rid="ref-christlieb2016explicit" ref-type="bibr">Christlieb
+      et al., 2016</xref>;
+      <xref alt="Z. Grant et al., 2019" rid="ref-grant2019strong" ref-type="bibr">Z.
+      Grant et al., 2019</xref>;
+      <xref alt="Reynoso et al., 2017" rid="ref-reynoso2017strong" ref-type="bibr">Reynoso
+      et al., 2017</xref>)</p>
+    </list-item>
+  </list>
+  <p>As can be seen from this list, applications have mostly stemmed
+  from the work of the main developer’s research group, but have since
+  expanded beyond that.</p>
+  <p>Because of the nature of <monospace>RK-Opt</monospace>,
+  applications often involve writing some additional code to impose
+  special constraints, or simply using the existing code as a template.
+  A number of related optimization routines written for similar purposes
+  in this vein can be found at https://github.com/SSPmethods.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>Much of the initial <monospace>RK-Opt</monospace> development was
+  performed by D. Ketcheson while he was supported by a DOE
+  Computational Science Graduate Fellowship and by AFOSR grant number
+  FA9550-06-1-0255. Development has also been supported by funding from
+  King Abdullah University of Science and Technology.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-2012_optimal_stability_polynomials">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ketcheson</surname><given-names>David I.</given-names></name>
+          <name><surname>Ahmadia</surname><given-names>Aron J.</given-names></name>
+        </person-group>
+        <article-title>Optimal stability polynomials for numerical integration of initial value problems</article-title>
+        <source>Communications in Applied Mathematics and Computational Science</source>
+        <year iso-8601-date="2012">2012</year>
+        <volume>7</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.2140/camcos.2012.7.247</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-2009_monotonicity">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ketcheson</surname><given-names>David I.</given-names></name>
+        </person-group>
+        <article-title>Computation of optimal monotonicity preserving general linear methods</article-title>
+        <source>Mathematics of Computation</source>
+        <year iso-8601-date="2009-09">2009</year><month>09</month>
+        <volume>78</volume>
+        <issue>267</issue>
+        <pub-id pub-id-type="doi">10.1090/S0025-5718-09-02209-1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-parsani-eccomas">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Parsani</surname><given-names>Matteo</given-names></name>
+          <name><surname>Ketcheson</surname><given-names>David I.</given-names></name>
+          <name><surname>Deconinck</surname><given-names>W.</given-names></name>
+        </person-group>
+        <article-title>Explicit Runge-Kutta schemes for the spectral difference method applied to wave propagation problems</article-title>
+        <source>Proceedings of the European Congress on Computational Methods in Applied Sciences and Engineering</source>
+        <year iso-8601-date="2012">2012</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Parsani_finnish">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Parsani</surname><given-names>Matteo</given-names></name>
+          <name><surname>Ketcheson</surname><given-names>David I.</given-names></name>
+        </person-group>
+        <article-title>Optimized low-order explicit Runge-Kutta schemes for high-order spectral difference method</article-title>
+        <source>Proceedings of the 11th Finnish Mechanics Days</source>
+        <year iso-8601-date="2012">2012</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-2013_sd_erk">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Parsani</surname><given-names>Matteo</given-names></name>
+          <name><surname>Ketcheson</surname><given-names>David I.</given-names></name>
+          <name><surname>Deconinck</surname><given-names>W.</given-names></name>
+        </person-group>
+        <article-title>Optimized explicit Runge-Kutta schemes for the spectral difference method applied to wave propagation problems</article-title>
+        <source>SIAM Journal on Scientific Computing</source>
+        <year iso-8601-date="2013-07">2013</year><month>07</month>
+        <volume>35</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1137/120885899</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-2014_ssp_rkdg">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kubatko</surname><given-names>Ethan J.</given-names></name>
+          <name><surname>Yeager</surname><given-names>Benjamin A.</given-names></name>
+          <name><surname>Ketcheson</surname><given-names>David I.</given-names></name>
+        </person-group>
+        <article-title>Optimal strong-stability-preserving Runge–Kutta time discretizations for discontinuous Galerkin methods</article-title>
+        <source>Journal of Scientific Computing</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>60</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1007/s10915-013-9796-7</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-conde2017implicit">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Conde</surname><given-names>Sidafa</given-names></name>
+          <name><surname>Gottlieb</surname><given-names>Sigal</given-names></name>
+          <name><surname>Grant</surname><given-names>Zachary J</given-names></name>
+          <name><surname>Shadid</surname><given-names>John N</given-names></name>
+        </person-group>
+        <article-title>Implicit and implicit–explicit strong stability preserving Runge–Kutta methods with high linear order</article-title>
+        <source>Journal of Scientific Computing</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>73</volume>
+        <issue>2-3</issue>
+        <pub-id pub-id-type="doi">10.1007/s10915-017-0560-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-2018_wso">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Ketcheson</surname><given-names>David I.</given-names></name>
+          <name><surname>Seibold</surname><given-names>Benjamin</given-names></name>
+          <name><surname>Shirokoff</surname><given-names>David</given-names></name>
+          <name><surname>Zhou</surname><given-names>Dong</given-names></name>
+        </person-group>
+        <article-title>DIRK schemes with high weak stage order</article-title>
+        <source>Spectral and High Order Methods for Partial Differential Equations (ICOSAHOM) 2018</source>
+        <person-group person-group-type="editor">
+          <name><surname>Sherwin</surname><given-names>Spencer J</given-names></name>
+          <name><surname>Moxey</surname><given-names>David</given-names></name>
+          <name><surname>Peiró</surname><given-names>Joaquim</given-names></name>
+          <name><surname>Vincent</surname><given-names>Peter E</given-names></name>
+          <name><surname>Schwab</surname><given-names>Christoph</given-names></name>
+        </person-group>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-christlieb2016explicit">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Christlieb</surname><given-names>Andrew J</given-names></name>
+          <name><surname>Gottlieb</surname><given-names>Sigal</given-names></name>
+          <name><surname>Grant</surname><given-names>Zachary</given-names></name>
+          <name><surname>Seal</surname><given-names>David C.</given-names></name>
+        </person-group>
+        <article-title>Explicit strong stability preserving multistage two-derivative time-stepping schemes</article-title>
+        <source>Journal of Scientific Computing</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>68</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1007/s10915-016-0195-8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gottlieb2015optimal">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gottlieb</surname><given-names>Sigal</given-names></name>
+          <name><surname>Grant</surname><given-names>Zachary</given-names></name>
+          <name><surname>Higgs</surname><given-names>Daniel</given-names></name>
+        </person-group>
+        <article-title>Optimal explicit strong stability preserving Runge–Kutta methods with high linear order and optimal nonlinear order</article-title>
+        <source>Mathematics of Computation</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>84</volume>
+        <issue>296</issue>
+        <pub-id pub-id-type="doi">10.1007/s10915-016-0195-8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-grant2019strong">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Grant</surname><given-names>Zachary</given-names></name>
+          <name><surname>Gottlieb</surname><given-names>Sigal</given-names></name>
+          <name><surname>Seal</surname><given-names>David C.</given-names></name>
+        </person-group>
+        <article-title>A strong stability preserving analysis for explicit multistage two-derivative time-stepping schemes based on taylor series conditions</article-title>
+        <source>Communications on Applied Mathematics and Computation</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>1</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1007/s10915-016-0195-8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-reynoso2017strong">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Reynoso</surname><given-names>Gustavo Franco</given-names></name>
+          <name><surname>Gottlieb</surname><given-names>Sigal</given-names></name>
+          <name><surname>Grant</surname><given-names>Zachary J</given-names></name>
+        </person-group>
+        <article-title>Strong stability preserving sixth order two-derivative Runge–Kutta methods</article-title>
+        <source>AIP Conference Proceedings</source>
+        <publisher-name>AIP Publishing LLC</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>1863</volume>
+        <pub-id pub-id-type="doi">10.1063/1.4992751</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-2008_explicit_ssp">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ketcheson</surname><given-names>David I.</given-names></name>
+        </person-group>
+        <article-title>Highly efficient strong stability preserving Runge-Kutta methods with low-storage implementations</article-title>
+        <source>SIAM Journal on Scientific Computing</source>
+        <year iso-8601-date="2008">2008</year>
+        <volume>30</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1137/07070485X</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-2009_implicit_ssp">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ketcheson</surname><given-names>David I.</given-names></name>
+          <name><surname>Macdonald</surname><given-names>Colin B.</given-names></name>
+          <name><surname>Gottlieb</surname><given-names>Sigal</given-names></name>
+        </person-group>
+        <article-title>Optimal implicit strong stability preserving Runge–Kutta methods</article-title>
+        <source>Applied Numerical Mathematics</source>
+        <year iso-8601-date="2009-02">2009</year><month>02</month>
+        <volume>59</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1016/j.apnum.2008.03.034</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-2010_LSRK">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ketcheson</surname><given-names>David I.</given-names></name>
+        </person-group>
+        <article-title>Runge–Kutta methods with minimum storage implementations</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="2010-03">2010</year><month>03</month>
+        <volume>229</volume>
+        <issue>5</issue>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2009.11.006</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-2011_dwssp">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ketcheson</surname><given-names>David I.</given-names></name>
+        </person-group>
+        <article-title>Step sizes for strong stability preservation with downwind-biased operators</article-title>
+        <source>SIAM Journal on Numerical Analysis</source>
+        <year iso-8601-date="2011-05">2011</year><month>05</month>
+        <volume>49</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1137/100818674</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-2011_tsrk">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ketcheson</surname><given-names>David I.</given-names></name>
+          <name><surname>Gottlieb</surname><given-names>Sigal</given-names></name>
+          <name><surname>Macdonald</surname><given-names>Colin B.</given-names></name>
+        </person-group>
+        <article-title>Strong stability preserving two-step Runge–Kutta methods</article-title>
+        <source>SIAM Journal on Numerical Analysis</source>
+        <year iso-8601-date="2011-06">2011</year><month>06</month>
+        <volume>49</volume>
+        <issue>6</issue>
+        <pub-id pub-id-type="doi">10.1137/10080960X</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-2017_msrk">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bresten</surname><given-names>Christopher</given-names></name>
+          <name><surname>Gottlieb</surname><given-names>Sigal</given-names></name>
+          <name><surname>Grant</surname><given-names>Zachary</given-names></name>
+          <name><surname>Higgs</surname><given-names>Daniel</given-names></name>
+          <name><surname>Ketcheson</surname><given-names>David I.</given-names></name>
+          <name><surname>Németh</surname><given-names>Adrian</given-names></name>
+        </person-group>
+        <article-title>Strong stability preserving multistep Runge-Kutta methods</article-title>
+        <source>Mathematics of Computation</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>86</volume>
+        <pub-id pub-id-type="doi">10.1090/mcom/3115</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-2018_perturbations">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Higueras</surname><given-names>Inmaculada</given-names></name>
+          <name><surname>Ketcheson</surname><given-names>David I.</given-names></name>
+          <name><surname>Kocsis</surname><given-names>Tihamér A</given-names></name>
+        </person-group>
+        <article-title>Optimal monotonicity-preserving perturbations of a given Runge–Kutta method</article-title>
+        <source>Journal of Scientific Computing</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>76</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1007/s10915-018-0664-3</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-conde2018embedded">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Conde</surname><given-names>Sidafa</given-names></name>
+          <name><surname>Fekete</surname><given-names>Imre</given-names></name>
+          <name><surname>Shadid</surname><given-names>John N</given-names></name>
+        </person-group>
+        <article-title>Embedded error estimation and adaptive step-size control for optimal explicit strong stability preserving Runge–Kutta methods</article-title>
+        <source>arXiv preprint arXiv:1806.08693</source>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-vermeire2019optimal">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Vermeire</surname><given-names>Brian C</given-names></name>
+          <name><surname>Loppi</surname><given-names>Niki A</given-names></name>
+          <name><surname>Vincent</surname><given-names>Peter E</given-names></name>
+        </person-group>
+        <article-title>Optimal Runge–Kutta schemes for pseudo time-stepping with high-order unstructured methods</article-title>
+        <source>Journal of Computational Physics</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>383</volume>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2019.01.003</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-vermeire2020optimal">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Vermeire</surname><given-names>Brian C</given-names></name>
+          <name><surname>Loppi</surname><given-names>Niki A</given-names></name>
+          <name><surname>Vincent</surname><given-names>Peter E</given-names></name>
+        </person-group>
+        <article-title>Optimal embedded pair Runge–Kutta schemes for pseudo-time stepping</article-title>
+        <source>Journal of Computational Physics</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2020.109499</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-cvx">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Grant</surname><given-names>Michael</given-names></name>
+          <name><surname>Boyd</surname><given-names>Stephen</given-names></name>
+        </person-group>
+        <article-title>CVX: Matlab software for disciplined convex programming, version 2.1</article-title>
+        <publisher-name>http://cvxr.com/cvx</publisher-name>
+        <year iso-8601-date="2014-03">2014</year><month>03</month>
+      </element-citation>
+    </ref>
+    <ref id="ref-gb08">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Grant</surname><given-names>Michael</given-names></name>
+          <name><surname>Boyd</surname><given-names>Stephen</given-names></name>
+        </person-group>
+        <article-title>Graph implementations for nonsmooth convex programs</article-title>
+        <source>Recent advances in learning and control</source>
+        <person-group person-group-type="editor">
+          <name><surname>Blondel</surname><given-names>V.</given-names></name>
+          <name><surname>Boyd</surname><given-names>S.</given-names></name>
+          <name><surname>Kimura</surname><given-names>H.</given-names></name>
+        </person-group>
+        <publisher-name>Springer-Verlag Limited</publisher-name>
+        <year iso-8601-date="2008">2008</year>
+        <uri>http://stanford.edu/~boyd/graph_dcp.html</uri>
+        <pub-id pub-id-type="doi">10.1007/978-1-84800-155-8_7</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-higueras2019new">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Higueras</surname><given-names>I.</given-names></name>
+          <name><surname>Roldán</surname><given-names>T.</given-names></name>
+        </person-group>
+        <article-title>New third order low-storage SSP explicit Runge-Kutta methods</article-title>
+        <source>Journal of Scientific Computing</source>
+        <publisher-name>Springer US, New York, NY</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>79</volume>
+        <issue>3</issue>
+        <issn>0885-7474; 1573-7691/e</issn>
+      </element-citation>
+    </ref>
+    <ref id="ref-higueras2019strong">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Higueras</surname><given-names>I.</given-names></name>
+          <name><surname>Roldán</surname><given-names>T.</given-names></name>
+        </person-group>
+        <article-title>Strong stability preserving properties of composition Runge-Kutta schemes</article-title>
+        <source>J. Sci. Comput.</source>
+        <publisher-name>Springer US, New York, NY</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>80</volume>
+        <issue>2</issue>
+        <issn>0885-7474; 1573-7691/e</issn>
+        <pub-id pub-id-type="doi">10.1007/s10915-019-00916-3</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

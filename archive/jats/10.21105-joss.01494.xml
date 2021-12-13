@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1494</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01494</article-id>
+<title-group>
+<article-title>mTower: Trusted Execution Environment for MCU-based
+devices</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-4651-1696</contrib-id>
+<string-name>Taras A. Drozdovskyi</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-3167-983X</contrib-id>
+<string-name>Oleksandr S. Moliavko</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Samsung R&amp;D Institute Ukraine, Kiev,
+Ukraine</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-05-06">
+<day>6</day>
+<month>5</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>40</issue>
+<fpage>1494</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>ARM</kwd>
+<kwd>TrustZone</kwd>
+<kwd>Trusted Execution Environment</kwd>
+<kwd>embedded systems</kwd>
+<kwd>microcontrollers</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="background">
+  <title>Background</title>
+  <p>Embedded computing systems have already become ubiquitous in daily
+  life. In many cases these systems deal with confidential data and
+  control access to valuable resources. Significant efforts are put into
+  securing these systems against malicious access. However, the software
+  and data are often protected by outdated mechanisms that contain
+  well-known vulnerabilities, thus do not pose any real obstacles for
+  technically savvy adversary. Consequences of deliberate attack against
+  embedded systems can be severe, e.g.:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>poor data protection in network-connected medical device can
+      pose life risk
+      (<xref alt="Basu, 2013" rid="ref-Forbes" ref-type="bibr">Basu,
+      2013</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>hardcoded cryptographic keys and application vulnerable to
+      reverse engineering in automotive platform
+      (<xref alt="Valasek &amp; Miller, 2014" rid="ref-IOactive" ref-type="bibr">Valasek
+      &amp; Miller, 2014</xref>)</p>
+    </list-item>
+  </list>
+  <p>Yet developing safe and efficient data protection mechanism from
+  scratch is time-consuming and costly endeavor. Without an independent
+  assessment there is always a risk of some undiscovered vulnerability
+  persist. However, current generations of ARM-based microcontrollers
+  offer a solid hardware foundation for building security mechanisms:
+  ARM TrustZone technology. Initially developed for ARM family of CPUs,
+  TrustZone technology was later adapted for microcontroller (MCU)
+  implementations of ARM architecture. Software libraries that implement
+  security-related operations based on ARM TrustZone are readily
+  available for Linux family of OSes including the one used in
+  Android-based smartphones. However, these libraries are too cumbersome
+  and resource-consuming to be directly adopted to embedded systems and
+  MCU-based devices where clock speeds are orders of magnitude lower and
+  RAM available for use is severely limited. There are several attempts
+  to develop a TrustZone-based security solution for MCU-based systems:
+  Kinibi-M
+  (<xref alt="Trustonic, 2017" rid="ref-Kinibi-M" ref-type="bibr">Trustonic,
+  2017</xref>), ProvenCore-M
+  (<xref alt="Prove &amp; Run, 2018" rid="ref-ProvenCore-M" ref-type="bibr">Prove
+  &amp; Run, 2018</xref>), CoreLockr-TZ
+  (<xref alt="Sequitur Labs Inc., 2018" rid="ref-CoreLockr-TZ" ref-type="bibr">Sequitur
+  Labs Inc., 2018</xref>). However, these solutions are either
+  proprietary and not available as a source code for independent review,
+  or have technical limitations that make them not fully standard
+  compliant. mTower is an experimental industrial standard-compliant
+  implementation of GlobalPlatform Trusted Execution Environment (GP
+  TEE) APIs based on ARM TrustZone. From the very beginning mTower was
+  designed to have minimal RAM footprint and to avoid the use of
+  time-consuming operations. As of May 2019 mTower contains a partial
+  implementation of GP TEE API, with remaining part of API to be
+  implemented soon. Source code and compatibility table are available at
+  https://github.com/Samsung/mTower.</p>
+</sec>
+<sec id="implementation-overview">
+  <title>Implementation overview</title>
+  <p>Secure applications that utilize TrustZone protection live in two
+  interacting environments: Normal World (NW) and Secure World (SW).
+  Normal World part is typically a standard Linux executable that uses
+  TEE library containing API functions to interact with Secure World
+  part. The corresponding Secure World part is essentially a set of
+  event handlers that are executed in hardware-protected area of RAM
+  under control of a specially designed operating system. Secure World
+  part processes calls received from Normal World and deals with
+  sensitive data that must be protected from unauthorized access such as
+  cryptographic keys, passwords, user identification data, etc. Common
+  operations performed by Secure World part of the application include
+  data encryption/decryption, user authentication, key generation,
+  digital signing and signature verification.</p>
+  <p>Secure application architecture should comply with TEE System
+  Architecture v1.0 document
+  (<xref alt="GlobalPlatform, 2018c" rid="ref-TEESystemArch" ref-type="bibr">GlobalPlatform,
+  2018c</xref>). mTower follows the layout described in this
+  specification. Also it provides the implementation of APIs described
+  in GP TEE specification documents. The two most important GP
+  specifications are:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>TEE Client API Specification v1.0
+      (<xref alt="GlobalPlatform, 2010" rid="ref-ClientAPISpec" ref-type="bibr">GlobalPlatform,
+      2010</xref>) describes the communication between NW applications
+      and Trusted Applications residing in the SW</p>
+    </list-item>
+    <list-item>
+      <p>TEE Internal Core API Specification v1.0
+      (<xref alt="GlobalPlatform, 2018b" rid="ref-CoreAPISpec" ref-type="bibr">GlobalPlatform,
+      2018b</xref>) describes the internal operations of Trusted
+      Applications</p>
+    </list-item>
+  </list>
+  <p>Most up-to-date versions of these specifications are available at
+  Global Platform web site
+  (<xref alt="GlobalPlatform, 2018a" rid="ref-GPSpecLibrary" ref-type="bibr">GlobalPlatform,
+  2018a</xref>) after registration.</p>
+  <p>mTower’s modular architecture allows for build-time configuration
+  of the required features to optimize memory footprint and performance.
+  Originally resource management for mTower is based on FreeRTOS
+  real-time operating system. It can be replaced by other operating
+  systems if needed. As of May 2019, mTower runs on Nuvoton M2351 board
+  based on ARM Cortex-M23 MCU. There are plans to include support for
+  other platforms based on ARM Cortex-M23/33/33p family MCUs.</p>
+</sec>
+<sec id="potential-future-development">
+  <title>Potential future development</title>
+  <p>After completing the implementation of relevant APIs, we plan to
+  provide support for dynamic loading, remote updating of secure
+  applications including the essential security mechanisms of OS. Also
+  we plan the extension of Resource Manager that provides secure access
+  to H/W. Another planned component is the set of instrumentation hooks
+  in mTower code that will simplify specification compliance evaluation,
+  performance measurements, assessment and debugging of secure
+  applications.</p>
+</sec>
+<sec id="expected-audience-for-mtower-project">
+  <title>Expected audience for mTower project</title>
+  <p>mTower project is expected to be used for proof-of-concepts and
+  evaluation models for ARM TrustZone-based secure applications in
+  MCU-based systems. It can be of interest for:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Internet-of-Things and Smart Home appliance developers</p>
+    </list-item>
+    <list-item>
+      <p>embedded system developers in general</p>
+    </list-item>
+    <list-item>
+      <p>computer security specialists</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="research-applications">
+  <title>Research applications</title>
+  <p>mTower is being developed as a part of search for efficient
+  hardware/software security solution for low-cost IoT devices. It is
+  expected to demonstrate the feasibility of porting GP TEE-compliant
+  Trusted Applications from full-feature CPU-based to MCU-based systems.
+  Another mTower targeted application is using it as a platform for
+  developing and evaluating secure applications for EDGE devices. Also
+  only a limited information is available about resource consumption
+  penalty incurred by adding security mechanisms into IoT applications.
+  The prevailing opinion seems to be that security through obscurity is
+  sufficient for embedded systems, and any attempt to introduce
+  sophisticated security features incurs an unacceptable overhead. Thus
+  another objective of mTower development is to provide a reference
+  platform that allows the researchers to actually measure this overhead
+  by comparing system performance with mTower security mechanisms and
+  without them. We hope that mTower will contribute to TrustZone-based
+  security adoption for low-cost IoT.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Forbes">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Basu</surname><given-names>Eric</given-names></name>
+        </person-group>
+        <article-title>Hacking insulin pumps and other medical devices from Black Hat</article-title>
+        <source>Forbes</source>
+        <year iso-8601-date="2013-08">2013</year><month>08</month>
+        <uri>https://www.forbes.com/sites/ericbasu/2013/08/03/hacking-insulin-pumps-and-other-medical-devices-reality-not-fiction</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-IOactive">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Valasek</surname><given-names>Chris</given-names></name>
+          <name><surname>Miller</surname><given-names>Charlie</given-names></name>
+        </person-group>
+        <article-title>Adventures in automotive networks and control units</article-title>
+        <publisher-name>IOActive, Inc.</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <uri>http://www.ioactive.com/pdfs/IOActive_Adventures_in_Automotive_Networks_and_Control_Units.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Kinibi-M">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>Trustonic</string-name>
+        </person-group>
+        <article-title>Not just droning on! The rise of Kinibi-M</article-title>
+        <year iso-8601-date="2017-10">2017</year><month>10</month>
+        <uri>https://www.trustonic.com/news/blog/not-just-droning-rise-kinibi-m/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-ProvenCore-M">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>Prove &amp; Run</string-name>
+        </person-group>
+        <article-title>ProvenCore-M</article-title>
+        <year iso-8601-date="2018">2018</year>
+        <uri>http://www.provenrun.com/products/provencore-m/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-CoreLockr-TZ">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>Sequitur Labs Inc.</string-name>
+        </person-group>
+        <article-title>CoreLockr-TZ</article-title>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://www.sequiturlabs.com/corelockrtz/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-TEESystemArch">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>GlobalPlatform</string-name>
+        </person-group>
+        <article-title>TEE System Architecture v1.2</article-title>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://globalplatform.org/specs-library/tee-system-architecture-v1-2/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-ClientAPISpec">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>GlobalPlatform</string-name>
+        </person-group>
+        <article-title>TEE Client API Specification v1.0</article-title>
+        <year iso-8601-date="2010">2010</year>
+        <uri>https://globalplatform.org/specs-library/tee-client-api-specification/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-CoreAPISpec">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>GlobalPlatform</string-name>
+        </person-group>
+        <article-title>TEE Internal Core API Specification v1.2.1</article-title>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://globalplatform.org/specs-library/tee-internal-core-api-specification-v1-2/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-GPSpecLibrary">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>GlobalPlatform</string-name>
+        </person-group>
+        <article-title>GlobalPlatform Specification Library</article-title>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://globalplatform.org/specs-library/</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

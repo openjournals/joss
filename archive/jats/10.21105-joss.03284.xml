@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3284</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03284</article-id>
+<title-group>
+<article-title>s(ound)lab: An easy to learn Python package for designing
+and running psychoacoustic experiments.</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-2023-1207</contrib-id>
+<string-name>Marc Schönwiesner</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="corresp" rid="cor-1"><sup>*</sup></xref>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Ole Bialas</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Institute of Biology, Faculty of Life sciences, Leipzig
+University, Germany</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Institute of Psychology, Faculty of Arts and Sciences,
+University of Montreal, Canada</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<author-notes>
+<corresp id="cor-1">* E-mail: <email></email></corresp>
+</author-notes>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-09-30">
+<day>30</day>
+<month>9</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>62</issue>
+<fpage>3284</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>psychoacoustics</kwd>
+<kwd>audio</kwd>
+<kwd>signal processing</kwd>
+<kwd>teaching</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Slab enables researchers and students to prototype and implement
+  psychoacoustic experiments quickly. Slab implements many of the
+  procedures for psychoacoustic research and experiment control and is
+  easily combined with other Python software. A secondary aim of slab is
+  to enable researchers and students without prior training in computer
+  programming and digital signal processing to implement and conduct
+  these experiments. Slab provides building blocks rather than
+  ready-made solutions, so that experimenters still need to carefully
+  consider stimulation, sequencing and data management. This also makes
+  slab very flexible and easy to customise. In the documentation (see
+  slab.readthedocs.io), we provide tutorials suitable for beginners. We
+  also provide experiments conducted in our lab as worked examples.</p>
+  <p>Slab can:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>generate and manipulate single- and multi-channel sounds</p>
+    </list-item>
+    <list-item>
+      <p>analyse sound by extracting basic sound features</p>
+    </list-item>
+    <list-item>
+      <p>aid experimental design through stimulus sequence management
+      and response simulation</p>
+    </list-item>
+    <list-item>
+      <p>calibrate the experimental setup (loudness calibration and
+      frequency equalisation)</p>
+    </list-item>
+    <list-item>
+      <p>display and manipulate head-related transfer functions</p>
+    </list-item>
+  </list>
+  <p>Below is an example script that estimates the detection threshold
+  for a small change in the location of a sound source (minimum audible
+  angle) with an amplitude-modulated pink noise and a staircase
+  procedure. It illustrates the use of the
+  <monospace>Binaural</monospace> and <monospace>Staircase</monospace>
+  classes. The method <monospace>present_afc_trial</monospace> is a
+  higher-level convenience function to present several sounds and
+  acquire a response from the participant, but each of these steps can
+  be performed separately in one or two lines when implementing
+  non-standard paradigms.</p>
+  <preformat># 1up-2down staircase, starting at 20˚ separation:
+stairs = slab.Staircase(start_val=20, min_val=0, n_reversals=18)
+for angle in stairs:
+  # generate fresh noise in each trial:
+  midline = slab.Binaural.pinknoise(duration=0.25)
+  midline =  midline.am()  # apply amplitude modulation
+  midline = midline.ramp()
+  # get ITD equivalent to current angle:
+  itd = slab.Binaural.azimuth_to_itd(angle, head_radius=10)
+  stimulus_left = midline.itd(itd)  # apply the itd
+  # apply smoothed head-related transfer function to
+  # evoke externalized percept:
+  midline = midline.externalize()
+  stimulus_left = stimulus_left.externalize()
+  # 3 alternatives (target and 2 distractors):
+  stairs.present_afc_trial(target=stimulus_left, distractors=[midline]*2)
+print(stairs.threshold(n=14))</preformat>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Slab was written to address our own need for a Python package that
+  allows incoming students and new researchers to implement their own
+  experiments with clean and maintainable code. Experimenters should be
+  able to write and understand the code that they are using. Many
+  students in our lab have very quickly progressed from programming
+  novices to completing psychoacoustic research theses using slab, and
+  we think the package may be useful to others in the same situation.
+  Our approach differs from existing software packages for running
+  behavioural experiments, which provide a high level graphical user
+  interface to customise the parameters of pre-made experiments
+  (<xref alt="Carcagno, 2012" rid="ref-pychoacoustics" ref-type="bibr">Carcagno,
+  2012</xref>;
+  <xref alt="Peirce et al., 2019" rid="ref-psychopy2" ref-type="bibr">Peirce
+  et al., 2019</xref>). In our experience, this leads to very little
+  generalisable learning of Python and experimental control. Slab
+  facilitates this learning by providing basic building blocks,
+  implemented concisely in pure Python, that can be used to construct
+  experiments of various levels of complexity. There is some overlap
+  with librosa
+  (<xref alt="McFee et al., 2015" rid="ref-mcfee2015librosa" ref-type="bibr">McFee
+  et al., 2015</xref>), a Python package for music analysis, but that
+  package focuses on feature extraction and does not support
+  psychoacoustic experimentation. Slab is also one of very few packages
+  that features manipulation of head-related transfer functions and a
+  simple API for reading a standard file format (SOFA) for such data.
+  There is overlap with more recent implementations of the complete SOFA
+  API
+  (<xref alt="Lossner, 2019" rid="ref-python-sofa" ref-type="bibr">Lossner,
+  2019</xref>;
+  <xref alt="Perez-Lopez, 2019" rid="ref-pysofaconventions" ref-type="bibr">Perez-Lopez,
+  2019</xref>), but these packages provide no methods for typical
+  experimental manipulations of head-related transfer functions. We will
+  likely use <monospace>pysofaconventions</monospace> internally for
+  handling SOFA files within <monospace>slab</monospace> in the near
+  future. The architecture of the <monospace>Signal</monospace> class
+  and some of the sound generation methods in the
+  <monospace>Sound</monospace> class are inspired on the 1.4 version of
+  Brian.hears
+  (<xref alt="Stimberg &amp; Goodman, 2019" rid="ref-brian2hears" ref-type="bibr">Stimberg
+  &amp; Goodman, 2019</xref>), but we made several simplifications based
+  on learning reports from students. For instance, signal objects do not
+  implement buffering and do not inherit from Numpy arrays
+  (<xref alt="Harris et al., 2020" rid="ref-harris2020array" ref-type="bibr">Harris
+  et al., 2020</xref>) directly, because these features significantly
+  hindered students’ understanding of the code.</p>
+</sec>
+<sec id="audience">
+  <title>Audience</title>
+  <p>Slab is directed towards students and researchers of all levels
+  studying the perception of sound. Researchers and incoming students at
+  our lab use it routinely in behavioural and neuroimaging experiments,
+  and the package and has been used in several graduate courses
+  psychophysics and auditory neuroscience.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-psychopy2">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Peirce</surname><given-names>Jonathan</given-names></name>
+          <name><surname>Gray</surname><given-names>Jeremy R.</given-names></name>
+          <name><surname>Simpson</surname><given-names>Sol</given-names></name>
+          <name><surname>MacAskill</surname><given-names>Michael</given-names></name>
+          <name><surname>Höchenberger</surname><given-names>Richard</given-names></name>
+          <name><surname>Sogo</surname><given-names>Hiroyuki</given-names></name>
+          <name><surname>Kastman</surname><given-names>Erik</given-names></name>
+          <name><surname>Lindeløv</surname><given-names>Jonas Kristoffer</given-names></name>
+        </person-group>
+        <article-title>PsychoPy2: Experiments in behavior made easy</article-title>
+        <source>Behavior Research Methods</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>51</volume>
+        <issue>1</issue>
+        <issn>1554-3528</issn>
+        <pub-id pub-id-type="doi">10.3758/s13428-018-01193-y</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mcfee2015librosa">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>McFee</surname><given-names>Brian</given-names></name>
+          <name><surname>Raffel</surname><given-names>Colin</given-names></name>
+          <name><surname>Liang</surname><given-names>Dawen</given-names></name>
+          <name><surname>Ellis</surname><given-names>Daniel PW</given-names></name>
+          <name><surname>McVicar</surname><given-names>Matt</given-names></name>
+          <name><surname>Battenberg</surname><given-names>Eric</given-names></name>
+          <name><surname>Nieto</surname><given-names>Oriol</given-names></name>
+        </person-group>
+        <article-title>Librosa: Audio and music signal analysis in python</article-title>
+        <source>Proceedings of the 14th python in science conference</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>8</volume>
+        <pub-id pub-id-type="doi">10.25080/majora-7b98e3ed-003</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-brian2hears">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Stimberg</surname><given-names>Marel</given-names></name>
+          <name><surname>Goodman</surname><given-names>Dan</given-names></name>
+        </person-group>
+        <article-title>Brian hears</article-title>
+        <source>​GitHub repository</source>
+        <publisher-name>​https://github.com/brian-team/brian2hears; ​GitHub</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-python-sofa">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Lossner</surname><given-names>Jannika</given-names></name>
+        </person-group>
+        <article-title>Spatially oriented format for acoustics (SOFA) API for python</article-title>
+        <source>​GitHub repository</source>
+        <publisher-name>​https://github.com/spatialaudio/python-sofa; ​GitHub</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-pysofaconventions">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Perez-Lopez</surname><given-names>Andres</given-names></name>
+        </person-group>
+        <article-title>Python implementation of the SOFA specification</article-title>
+        <source>​GitHub repository</source>
+        <publisher-name>​https://github.com/andresperezlopez/pysofaconventions; ​GitHub</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-pychoacoustics">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Carcagno</surname><given-names>Samuele</given-names></name>
+        </person-group>
+        <article-title>Pychoacoustics</article-title>
+        <source>​GitHub repository</source>
+        <publisher-name>​https://github.com/sam81/ pychoacoustics; ​GitHub</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-harris2020array">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Harris</surname><given-names>Charles R.</given-names></name>
+          <name><surname>Millman</surname><given-names>K. Jarrod</given-names></name>
+          <name><surname>Walt</surname><given-names>Stefan J. van der</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Wieser</surname><given-names>Eric</given-names></name>
+          <name><surname>Taylor</surname><given-names>Julian</given-names></name>
+          <name><surname>Berg</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Smith</surname><given-names>Nathaniel J.</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Picus</surname><given-names>Matti</given-names></name>
+          <name><surname>Hoyer</surname><given-names>Stephan</given-names></name>
+          <name><surname>Kerkwijk</surname><given-names>Marten H. van</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Haldane</surname><given-names>Allan</given-names></name>
+          <name><surname>Rio</surname><given-names>Jaime Fernandez del</given-names></name>
+          <name><surname>Wiebe</surname><given-names>Mark</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Gerard-Marchant</surname><given-names>Pierre</given-names></name>
+          <name><surname>Sheppard</surname><given-names>Kevin</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Abbasi</surname><given-names>Hameer</given-names></name>
+          <name><surname>Gohlke</surname><given-names>Christoph</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+        </person-group>
+        <article-title>Array programming with NumPy</article-title>
+        <source>Nature</source>
+        <publisher-name>Springer Science; Business Media LLC</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>585</volume>
+        <issue>7825</issue>
+        <pub-id pub-id-type="doi">10.1038/s41586-020-2649-2</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2946</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02946</article-id>
+<title-group>
+<article-title>sboxgates: A program for finding low gate count
+implementations of S-boxes</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-9246-0263</contrib-id>
+<string-name>Marcus Dansarie</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Swedish Defence University</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>University of Skövde, Sweden</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-12-28">
+<day>28</day>
+<month>12</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>62</issue>
+<fpage>2946</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>S-box</kwd>
+<kwd>cryptography</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>S-boxes are often the only nonlinear components in modern block
+  ciphers. They are commonly selected to comply with very specific
+  criteria in order to make a cipher secure against, for example, linear
+  and differential attacks. An <inline-formula><alternatives>
+  <tex-math><![CDATA[M \times N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>M</mml:mi><mml:mo>×</mml:mo><mml:mi>N</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  S-box can be thought of as a lookup table that relates an
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[M]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>M</mml:mi></mml:math></alternatives></inline-formula>-bit
+  input value to an <inline-formula><alternatives>
+  <tex-math><![CDATA[N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>-bit
+  output value, or as a set of <inline-formula><alternatives>
+  <tex-math><![CDATA[N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
+  boolean functions of <inline-formula><alternatives>
+  <tex-math><![CDATA[M]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>M</mml:mi></mml:math></alternatives></inline-formula>
+  variables
+  (<xref alt="Schneier, 1996" rid="ref-schneier1996" ref-type="bibr">Schneier,
+  1996</xref>). </p>
+  <p>Although cipher specifications generally describe S-boxes using
+  their lookup tables, they can also be described as boolean functions
+  or logic gate circuits. <monospace>sboxgates</monospace>, which is
+  presented here, finds equivalent logic gate circuits for S-boxes,
+  given their lookup table specification. Generated circuits are output
+  in a human-readable XML format. The software can convert the output
+  files into C or CUDA (a parallel computing platform for Nvidia GPUs)
+  source code. The generated circuits can also be converted to the DOT
+  graph description language for visualization with Graphviz
+  (<xref alt="Ellson et al., 2002" rid="ref-graphviz" ref-type="bibr">Ellson
+  et al., 2002</xref>).</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Knowledge of a low gate count logic gate representation of an S-box
+  can be of interest both when assessing the security of a cipher
+  through cryptanalysis and when implementing it in hardware or
+  software. When the design specification for an S-box is known,
+  analytic approaches can sometimes be used to construct such a
+  representation. The most notable case of this is the AES cipher where
+  a very efficient representation of the S-box has been constructed in
+  this manner
+  (<xref alt="Canright, 2005" rid="ref-canright2005" ref-type="bibr">Canright,
+  2005</xref>). However, this is not possible in many cases, such as
+  when the design specification is unknown or if the S-box is a randomly
+  generated permutation.</p>
+  <p>While finding a large, inefficient, logic circuit representation is
+  trivial, finding the representation with the fewest possible gates is
+  an NP-complete problem
+  (<xref alt="Knuth, 2015" rid="ref-knuth2015tacp4f6" ref-type="bibr">Knuth,
+  2015</xref>). The best known way to find a low gate count logic
+  circuit representation for an S-box given its lookup table is to use
+  Kwan’s algorithm, which performs a heuristic search. Although not
+  optimal, it has been shown to produce significantly better results
+  than previous approaches
+  (<xref alt="Kwan, 2000" rid="ref-kwan2000" ref-type="bibr">Kwan,
+  2000</xref>).</p>
+  <p><monospace>sboxgates</monospace> implements Kwan’s algorithm and
+  supports generation of logic circuits for S-boxes with up to 8 input
+  bits using any subset of the 16 possible two-input boolean functions.
+  Additionally, the program can generate circuits that include three-bit
+  lookup tables (LUTs). The LUT search function is parallelized using
+  MPI
+  (<xref alt="Walker &amp; Dongarra, 1996" rid="ref-walker1996" ref-type="bibr">Walker
+  &amp; Dongarra, 1996</xref>).</p>
+  <p>The generated logic circuit representation of an S-box can be
+  directly used in applications such as: creating bitslice
+  implementations in software for CPUs and GPUs, creating small chip
+  area or low gate count S-boxes for application specific integrated
+  circuits (ASICs) or field programmable gate arrays (FPGAs), and
+  compact satisfiability (SAT) problem generation.</p>
+  <p>A bitslice software implementation was first described by Biham
+  (<xref alt="1997" rid="ref-biham1994" ref-type="bibr">1997</xref>). It
+  implements a cipher in a way that mimics a parallel hardware
+  implementation. The number of parallel operations is equivalent to the
+  platform register size, which can be up to 512 bits on modern
+  machines. Some operations, such as bit permutations, have effectively
+  no cost in bitslice implementations. For these reasons, bitslice
+  implementations are generally many times faster than conventional
+  implementations. The primary contributor to their time complexity is
+  the size and efficiency of the S-box logic circuit
+  (<xref alt="Biham, 1997" rid="ref-biham1994" ref-type="bibr">Biham,
+  1997</xref>). Modern Nvidia GPUs have an instruction (LOP3.LUT) that
+  evaluates three-bit lookup tables. This makes them a very attractive
+  target for bitslice cipher implementations that use LUTs.</p>
+  <p>In addition to bitslice implementations in software, which attempt
+  to mimic hardware implementations, designs of actual hardware such as
+  application specific integrated circuits (ASICs) or field programmable
+  gate arrays (FPGAs) can also be made more efficient by small
+  equivalent logic gate circuits for S-boxes.</p>
+  <p>In algebraic cryptanalysis, one attack method is to model a cipher
+  along with its inputs and outputs as a SAT problem. This can be used
+  to find, for example, weak keys in block ciphers or preimages in hash
+  functions
+  (<xref alt="Lafitte et al., 2014" rid="ref-lafitte2014" ref-type="bibr">Lafitte
+  et al., 2014</xref>). SAT problems are typically expressed in
+  conjunctive normal form (CNF) and logic circuits can quickly be
+  converted into CNF using the Tseytin transform
+  (<xref alt="Knuth, 2015" rid="ref-knuth2015tacp4f6" ref-type="bibr">Knuth,
+  2015</xref>). Thus, an efficient logic gate representation of an S-box
+  can be transformed into an efficient CNF representation. CNF
+  representations can in turn be transformed into a system of equations
+  in GF(2)
+  (<xref alt="Lafitte et al., 2014" rid="ref-lafitte2014" ref-type="bibr">Lafitte
+  et al., 2014</xref>).</p>
+  <p>The only known software with similar functionality to
+  <monospace>sboxgates</monospace> is
+  <monospace>SBOXDiscovery</monospace> which is restricted to generating
+  logic circuit representations of the DES S-boxes
+  (<xref alt="“SBOXDiscovery,” 2015" rid="ref-sboxdiscovery" ref-type="bibr">“SBOXDiscovery,”
+  2015</xref>). The software has been abandoned by its original author.
+  Many of the optimizations of Kwan’s algorithm made in
+  <monospace>SBOXDiscovery</monospace> have been included in
+  <monospace>sboxgates</monospace>.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-biham1994">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Biham</surname><given-names>Eli</given-names></name>
+        </person-group>
+        <article-title>A fast new DES implementation in software</article-title>
+        <source>Fast Software Encryption. FSE 1997. Lecture Notes in Computer Science</source>
+        <person-group person-group-type="editor">
+          <name><surname>Biham</surname><given-names>Eli</given-names></name>
+        </person-group>
+        <publisher-name>Springer, Berlin, Heidelberg</publisher-name>
+        <year iso-8601-date="1997">1997</year>
+        <volume>1267</volume>
+        <pub-id pub-id-type="doi">10.1007/BFb0052352</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-canright2005">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Canright</surname><given-names>David</given-names></name>
+        </person-group>
+        <article-title>A Very Compact S-Box for AES</article-title>
+        <source>Cryptographic Hardware and Embedded Systems. CHES 2005. Lecture Notes in Computer Science</source>
+        <person-group person-group-type="editor">
+          <name><surname>Rao</surname><given-names>Josyula R.</given-names></name>
+          <name><surname>Sunar</surname><given-names>Berk</given-names></name>
+        </person-group>
+        <publisher-name>Springer, Berlin, Heidelberg</publisher-name>
+        <year iso-8601-date="2005">2005</year>
+        <volume>3659</volume>
+        <pub-id pub-id-type="doi">10.1007/11545262_32</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-graphviz">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Ellson</surname><given-names>John</given-names></name>
+          <name><surname>Gansner</surname><given-names>Emden</given-names></name>
+          <name><surname>Koutsofios</surname><given-names>Lefteris</given-names></name>
+          <name><surname>North</surname><given-names>Stephen C.</given-names></name>
+          <name><surname>Woodhull</surname><given-names>Gordon</given-names></name>
+        </person-group>
+        <article-title>Graphviz — Open Source Graph Drawing Tools</article-title>
+        <source>Graph Drawing. GD 2001. Lecture Notes in Computer Science</source>
+        <person-group person-group-type="editor">
+          <name><surname>Mutzel</surname><given-names>Petra</given-names></name>
+          <name><surname>Jünger</surname><given-names>Michael</given-names></name>
+          <name><surname>Leipert</surname><given-names>Sebastian</given-names></name>
+        </person-group>
+        <publisher-name>Springer, Berlin, Heidelberg</publisher-name>
+        <year iso-8601-date="2002">2002</year>
+        <volume>2265</volume>
+        <pub-id pub-id-type="doi">10.1007/3-540-45848-4_57</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-knuth2015tacp4f6">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Knuth</surname><given-names>Donald E</given-names></name>
+        </person-group>
+        <source>The Art of Computer Programming, Volume 4, Fascicle 6: Satisfiability</source>
+        <publisher-name>Pearson Education Inc., Boston, MA</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-kwan2000">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Kwan</surname><given-names>Matthew</given-names></name>
+        </person-group>
+        <article-title>Reducing the Gate Count of Bitslice DES</article-title>
+        <publisher-name>Cryptology ePrint Archive, Report 2000/051</publisher-name>
+        <year iso-8601-date="2000">2000</year>
+        <uri>https://eprint.iacr.org/2000/051</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-lafitte2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lafitte</surname><given-names>Frédéric</given-names></name>
+          <name><surname>Nakahara</surname><given-names>Jorge</given-names></name>
+          <name><surname>Van Heule</surname><given-names>Dirk</given-names></name>
+        </person-group>
+        <article-title>Applications of SAT Solvers in Cryptanalysis: Finding Weak Keys and Preimages</article-title>
+        <source>Journal on Satisfiability, Boolean Modeling and Computation</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>9</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.3233/SAT190099</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sboxdiscovery">
+      <element-citation>
+        <article-title>SBOXDiscovery</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>https://github.com/tripcode/SBOXDiscovery; GitHub</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-schneier1996">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Schneier</surname><given-names>Bruce</given-names></name>
+        </person-group>
+        <source>Applied Cryptography : Protocols, Algorithms, and Source Code in C</source>
+        <publisher-name>John Wiley &amp; Sons, Inc.</publisher-name>
+        <year iso-8601-date="1996">1996</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-walker1996">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Walker</surname><given-names>David W.</given-names></name>
+          <name><surname>Dongarra</surname><given-names>Jack J.</given-names></name>
+        </person-group>
+        <article-title>MPI: A Standard Message Passing Interface</article-title>
+        <source>Supercomputer</source>
+        <year iso-8601-date="1996-01">1996</year><month>01</month>
+        <volume>12</volume>
+        <issue>1</issue>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

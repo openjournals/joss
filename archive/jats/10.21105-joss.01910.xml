@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1910</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01910</article-id>
+<title-group>
+<article-title>Dryft: A Python and MATLAB package to correct drifting
+ground reaction force signals during treadmill running</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-8539-711X</contrib-id>
+<string-name>Ryan S. Alcantara</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Integrative Physiology, University of
+Colorado Boulder, Boulder CO, USA</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-10-31">
+<day>31</day>
+<month>10</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>44</issue>
+<fpage>1910</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>biomechanics</kwd>
+<kwd>signal processing</kwd>
+<kwd>detrend</kwd>
+<kwd>GRF</kwd>
+<kwd>walking</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="background">
+  <title>Background</title>
+  <p>Ground reaction forces (GRFs) are exerted by the body on the ground
+  during running, measured by treadmills instrumented with force
+  transducers, and are used to calculate a variety of clinical and
+  performance-related biomechanical variables
+  (<xref alt="Kram et al., 1998" rid="ref-kramU003A1998" ref-type="bibr">Kram
+  et al., 1998</xref>). However, force transducer signals can be
+  affected by changes in temperature during warm up or over long periods
+  (<xref alt="Sloot et al., 2015" rid="ref-sloot2015comprehensive" ref-type="bibr">Sloot
+  et al., 2015</xref>), causing the signal to drift. If ignored, signal
+  drift can lead to the inaccurate calculation of biomechanical
+  variables. For example, ground contact time is defined as the time the
+  foot is in contact with the ground and is often calculated as the time
+  a vertical GRF exceeds a threshold. Signal drift can cause more (or
+  less) of the vertical GRF signal to fall below the threshold,
+  affecting one’s ability to identify stance phase
+  (<xref alt="Riley et al., 2008" rid="ref-riley2008kinematics" ref-type="bibr">Riley
+  et al., 2008</xref>) or calculate time-dependent GRF metrics. Signal
+  drift can also potentially lead to data loss if the signal exceeds the
+  range of the force transducer.</p>
+  <fig>
+    <caption><p>The process of correcting drift in a vertical ground
+    reaction force (GRF) signal collected during treadmill running.
+    After aerial phases have been identified using a force threshold,
+    <monospace>dryft</monospace> interpolates aerial phase values to
+    estimate the underlying drift and subtracts it from the vertical GRF
+    signal.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="example_JOSS.png" xlink:title="" />
+  </fig>
+  <p>To prospectively counteract signal drift, it is best practice to
+  zero (tare) the force transducers between trials during data
+  collection. However, zeroing force transducers may not be feasible for
+  protocols requiring extended periods of continuous running on an
+  instrumented treadmill. There are signal processing methods available
+  to remove a constant offset
+  (<xref alt="C-Motion, 2015" rid="ref-v3dU003AFP_ZERO" ref-type="bibr">C-Motion,
+  2015</xref>) or linear drift
+  (<xref alt="SciPy.org, 2016" rid="ref-scipyU003Adetrend" ref-type="bibr">SciPy.org,
+  2016</xref>) in GRF signals, but their effectiveness is limited
+  because signal drift may not be linear over the duration of the trial.
+  Here I introduce <monospace>dryft</monospace>, an open source Python
+  and MATLAB package that takes a simple approach to identifying and
+  correcting linear or non-linear drift in GRF signals produced during
+  treadmill running.</p>
+</sec>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The body exerts no force on the ground during the aerial phase of
+  running and <monospace>dryft</monospace> assumes that any ground
+  reaction force measured during an aerial phase is due to noise or
+  drift in the signal. <monospace>dryft</monospace> implements a
+  user-defined force threshold to approximate the start and end of each
+  stance phase and identify aerial phases in a filtered vertical GRF
+  signal (Figure 1). Next, the force measured by the instrumented
+  treadmill during the middle of each aerial phase is identified. The
+  middle value of each aerial phase is identified to avoid the
+  possibility that part of the adjacent stance phases are included in
+  the drift estimation process. These aerial phase values are then cubic
+  spline interpolated to the full length of the GRF signal to estimate
+  the underlying drift in the GRF signal. The estimated drift is then
+  subtracted from the GRF signal (Figure 1). This process can also be
+  applied to horizontal GRF signals once aerial phases have been
+  identified using the vertical GRF signal.</p>
+  <p>To test the performance of this method, I added drift to a
+  30-second vertical GRF signal collected by an instrumented treadmill
+  during running
+  (<xref alt="Fukuchi et al., 2017" rid="ref-fukuchi2017public" ref-type="bibr">Fukuchi
+  et al., 2017</xref>). Using <monospace>dryft</monospace> to reduce
+  this vertical GRF signal’s drift produced favorable results, as the
+  average (± SD) force measured across the extracted aerial phases
+  values was -0.01 N (± 0.09 N) for the corrected signal (Figure 2).
+  While <monospace>dryft</monospace> was intended to be used with GRF
+  signals measured during treadmill running, it could also be applied to
+  GRF signals measured during split-belt treadmill walking, since only
+  one foot is on a belt at a time. However, extra care should be taken
+  to identify crossover steps prior to correcting drift in split-belt
+  treadmill walking GRF data as they will influence the accuracy of the
+  force values measured during the swing phase.</p>
+  <fig>
+    <caption><p>Vertical ground reaction force (GRF) measured during
+    each aerial phase before (red) and after (blue) using
+    <monospace>dryft</monospace> to correct the drifting vertical GRF
+    signal. Each point represents the force measured by the treadmill at
+    the middle of an aerial phase.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="steps.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="conclusion">
+  <title>Conclusion</title>
+  <p>Prior work has corrected drift in GRF signals by subtracting the
+  force measured during a given aerial phase from the following stance
+  phase
+  (<xref alt="Paolini et al., 2007" rid="ref-paolini2007testing" ref-type="bibr">Paolini
+  et al., 2007</xref>;
+  <xref alt="Riley et al., 2008" rid="ref-riley2008kinematics" ref-type="bibr">Riley
+  et al., 2008</xref>;
+  <xref alt="Sloot et al., 2015" rid="ref-sloot2015comprehensive" ref-type="bibr">Sloot
+  et al., 2015</xref>). The success of this approach relies on how
+  accurately stance and aerial phases are identified and assumes that
+  there is no change in drift within a given step (consecutive aerial
+  and stance phases). Instead, <monospace>dryft</monospace> interpolates
+  the force measured at the middle of each aerial phase and subtracts
+  this from the entire trial. This package can be used to identify
+  stance phases and correct linear or non-linear drift in GRF signals
+  produced during treadmill running or split-belt treadmill walking.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>The author would like to thank Maggie Peterson for their continued
+  support and Gary Bruening, the Applied Biomechanics Lab, and
+  <ext-link ext-link-type="uri" xlink:href="https://reddit.com/r/learnpython">/r/learnpython</ext-link>
+  for their feedback on this package and manuscript.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-kramU003A1998">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kram</surname><given-names>Rodger</given-names></name>
+          <name><surname>Griffin</surname><given-names>Timothy M</given-names></name>
+          <name><surname>Donelan</surname><given-names>J Maxwell</given-names></name>
+          <name><surname>Chang</surname><given-names>Young Hui</given-names></name>
+        </person-group>
+        <article-title>Force treadmill for measuring vertical and horizontal ground reaction forces</article-title>
+        <source>Journal of Applied Physiology</source>
+        <year iso-8601-date="1998">1998</year>
+        <volume>85</volume>
+        <issue>2</issue>
+        <uri>https://doi.org/10.1152/jappl.1998.85.2.764</uri>
+        <pub-id pub-id-type="doi">10.1152/jappl.1998.85.2.764</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-fukuchi2017public">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fukuchi</surname><given-names>Reginaldo K</given-names></name>
+          <name><surname>Fukuchi</surname><given-names>Claudiane A</given-names></name>
+          <name><surname>Duarte</surname><given-names>Marcos</given-names></name>
+        </person-group>
+        <article-title>A public dataset of running biomechanics and the effects of running speed on lower extremity kinematics and kinetics</article-title>
+        <source>PeerJ</source>
+        <publisher-name>PeerJ Inc.</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>5</volume>
+        <uri>https://doi.org/10.7717/peerj.3298</uri>
+        <pub-id pub-id-type="doi">10.7717/peerj.3298</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-paolini2007testing">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Paolini</surname><given-names>Gabriele</given-names></name>
+          <name><surname>Della Croce</surname><given-names>Ugo</given-names></name>
+          <name><surname>Riley</surname><given-names>Patrick O</given-names></name>
+          <name><surname>Newton</surname><given-names>Frederic K</given-names></name>
+          <name><surname>Kerrigan</surname><given-names>D Casey</given-names></name>
+        </person-group>
+        <article-title>Testing of a tri-instrumented-treadmill unit for kinetic analysis of locomotion tasks in static and dynamic loading conditions</article-title>
+        <source>Medical engineering &amp; physics</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>29</volume>
+        <issue>3</issue>
+        <uri>https://www.ncbi.nlm.nih.gov/pubmed/16759895</uri>
+        <pub-id pub-id-type="doi">10.1016/j.medengphy.2006.04.002</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sloot2015comprehensive">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sloot</surname><given-names>LH</given-names></name>
+          <name><surname>Houdijk</surname><given-names>H</given-names></name>
+          <name><surname>Harlaar</surname><given-names>J</given-names></name>
+        </person-group>
+        <article-title>A comprehensive protocol to test instrumented treadmills</article-title>
+        <source>Medical engineering &amp; physics</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <volume>37</volume>
+        <issue>6</issue>
+        <uri>https://www.ncbi.nlm.nih.gov/pubmed/25921721</uri>
+        <pub-id pub-id-type="doi">10.1016/j.medengphy.2015.03.018</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-riley2008kinematics">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Riley</surname><given-names>Patrick O</given-names></name>
+          <name><surname>Dicharry</surname><given-names>Jay</given-names></name>
+          <name><surname>Franz</surname><given-names>Jason</given-names></name>
+          <name><surname>Della Croce</surname><given-names>Ugo</given-names></name>
+          <name><surname>Wilder</surname><given-names>Robert P</given-names></name>
+          <name><surname>Kerrigan</surname><given-names>D Casey</given-names></name>
+        </person-group>
+        <article-title>A kinematics and kinetic comparison of overground and treadmill running</article-title>
+        <source>Medicine &amp; Science in Sports &amp; Exercise</source>
+        <publisher-name>LWW</publisher-name>
+        <year iso-8601-date="2008">2008</year>
+        <volume>40</volume>
+        <issue>6</issue>
+        <uri>https://www.ncbi.nlm.nih.gov/pubmed/18460996</uri>
+        <pub-id pub-id-type="doi">10.1249/MSS.0b013e3181677530</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-scipyU003Adetrend">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>SciPy.org</surname></name>
+        </person-group>
+        <source>Scipy.signal.detrend</source>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://docs.scipy.org/doc/scipy-1.1.0/reference/generated/scipy.signal.detrend.html</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-v3dU003AFP_ZERO">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>C-Motion</surname></name>
+        </person-group>
+        <source>Visual3D</source>
+        <year iso-8601-date="2015">2015</year>
+        <uri>https://www.c-motion.com/v3dwiki/index.php/FP_ZERO</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

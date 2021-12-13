@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2145</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02145</article-id>
+<title-group>
+<article-title>Visions: An Open-Source Library for Semantic
+Data</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author" equal-contrib="yes">
+<contrib-id contrib-id-type="orcid">0000-0001-9866-7767</contrib-id>
+<string-name>Simon Brugman</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author" equal-contrib="yes">
+<contrib-id contrib-id-type="orcid">0000-0001-6788-8188</contrib-id>
+<string-name>Ian Eaves</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Radboud University</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Independent</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-02-01">
+<day>1</day>
+<month>2</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>48</issue>
+<fpage>2145</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>data types</kwd>
+<kwd>data workflows</kwd>
+<kwd>data integration</kwd>
+<kwd>machine learning</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>Many common data workflows such as loading tabular data from plain
+  text files, data compression, and machine learning data processing
+  rely on <italic>semantically</italic> meaningful representations of
+  the data’s type. Most type inference algorithms, including those used
+  by
+  <ext-link ext-link-type="uri" xlink:href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.infer_objects.html">pandas</ext-link>
+  and within the
+  <ext-link ext-link-type="uri" xlink:href="https://readr.tidyverse.org/reference/parse_guess.html">tidyverse</ext-link>
+  employ rule-based heuristics tightly coupled to the
+  <italic>machine</italic> type implementation used by the library. In
+  practice these two representations are distinct. For example, while
+  the set of real numbers between 0 and 1 are stored on the computer
+  disk as float, their <italic>semantics</italic> might instead be a
+  probability.</p>
+  <p><monospace>Visions</monospace> is an expressive, user-configurable
+  framework for capturing the semantic relations between data types
+  forming a development bedrock supporting a range of potential
+  applications.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>While data processing libraries like pandas and the tidyverse are
+  primarily focused on the machine representation of data on disk, there
+  does not exist a systematic solution to expose semantic
+  representations of data. Additionally, most current libraries solve
+  the challenge of type inference through a suite of fixed heuristics.
+  In practice, this restricts developers to the limited set of machine
+  type representations embedded within the libraries implementation.</p>
+  <p>These heuristics usually consist of rules like “if the series can
+  be cast to integer then do so, otherwise try float,” which fail to
+  support the myriad, often hierarchical, semantic representations
+  deployed by users in real-world cases. Virtually every data
+  practitioner has experienced the frustration of reading a column of
+  integers with trailing decimal zeros as float. Despite being obvious
+  to most any human, the heuristics in our tooling usually fail this
+  simple test case. We refer to <monospace>visions</monospace>
+  <ext-link ext-link-type="uri" xlink:href="https://dylan-profiler.github.io/visions/index.html">documentation</ext-link>
+  for other, similar examples.</p>
+  <p>Providing a general solution to customized data types is subtly
+  more difficult than it might first appear.</p>
+  <p>The usual approach is to define a type inference strategy for each
+  machine type where a sequence of potential coercions is applied until
+  one succeeds or the options are exhausted. For example, the string
+  value <monospace>'1.0'</monospace> might first be cast to integer,
+  which would naively fail, before being cast to float. The heuristic
+  would not provide further inference, as coercion already
+  succeeded.</p>
+  <p>Defining inference strategies in this manner introduces hard
+  coupling between types, e.g. strings are required to know about
+  integers and floats to attempt casting. Introducing a new type like
+  probability necessitates modifying the string inference strategy to
+  account for the possibility of the new type. Worse still, a user
+  introducing a new semantic type like “probability” which is a subset
+  of float, means modifying float’s inference strategy similarly. This
+  rapidly becomes infeasible as adding a second new type means modifying
+  string, float, and probability. In effect, each new type requires
+  rewriting the heuristics for each type that came before. Further, it
+  introduces strong dependency on the heuristics ordering - if the float
+  test is applied before probability it always infer float. In general,
+  there is no systematic method to determine a “correct” ordering for
+  hierarchically defined generic types in this manner.</p>
+</sec>
+<sec id="proposed-solution">
+  <title>Proposed Solution</title>
+  <p><monospace>Visions</monospace> exposes a lightweight and flexible
+  API for dynamically defining semantic data types and the relationships
+  between them. Following the <monospace>visions</monospace> model of
+  types allows users to build domain-specific groupings of types,
+  referred to as type systems or typesets, using composition as seen
+  below.</p>
+  <p>In this way, users gain a consistent mechanism for detecting,
+  inferring, and casting data into their chosen type system without
+  being locked into fixed, heuristic-based approaches.</p>
+  <p>A rich library of pre-defined types is available in the package
+  alongside an expressive API for third-party contributions.</p>
+  <p><inline-graphic mimetype="image" mime-subtype="png" xlink:href="https://raw.githubusercontent.com/dylan-profiler/visions/master/paper/images/typeset_standard.png" />
+  <italic>Figure 1: An example of semantic types and their hierarchical
+  relations in the standard typeset. Solid edges denote inference
+  relations where no casting is required, dashed edges denote that
+  casting is required to traverse the edge.</italic></p>
+</sec>
+<sec id="research-purpose-and-contributions">
+  <title>Research purpose and Contributions</title>
+  <p>The need to capture semantic and machine type distinctions has been
+  a key challenge facing the development of pandas 2.0 where tight
+  coupling has limited type-level expressivity for users and lead to
+  code complexity where type inference heuristics are expanded to
+  support multiple divergent needs
+  <ext-link ext-link-type="uri" xlink:href="https://dev.pandas.io/pandas2/internal-architecture.html#logical-types-and-physical-storage-decoupling">pandas2-docs</ext-link>.</p>
+  <p><monospace>visions</monospace> was designed to be used by
+  researchers and practitioners to experiment with more flexible data
+  workflows. The package aims to make defining and relating data types
+  simple while maximizing expressive capability. This enables users to
+  define, relate, modify and share types to solve data tasks and has
+  direct applications to exploratory data analytics (EDA) problem such
+  as those found in
+  (<xref alt="Brugman, 2020" rid="ref-pandasprofiling" ref-type="bibr">Brugman,
+  2020</xref>) where the appropriate statistics for data of different
+  types varies greatly. It further paves the way for exciting future
+  opportunities to identify and understand semantically useful data
+  abstractions across a variety of potential domains.</p>
+  <p><monospace>visions</monospace> builds on
+  <monospace>pandas</monospace>
+  (<xref alt="McKinney, 2010" rid="ref-mckinney-proc-scipy-2010" ref-type="bibr">McKinney,
+  2010</xref>;
+  <xref alt="The pandas development team, 2020" rid="ref-reback2020pandas" ref-type="bibr">The
+  pandas development team, 2020</xref>) and <monospace>numpy</monospace>
+  (<xref alt="Walt et al., 2011" rid="ref-van2011numpy" ref-type="bibr">Walt
+  et al., 2011</xref>) for machine type representations. Other work has
+  created specific semantic data types for pandas, namely
+  <monospace>cyberpandas</monospace>
+  (<ext-link ext-link-type="uri" xlink:href="https://tomaugspurger.github.io/pandas-extension-arrays.html">1</ext-link>,
+  <ext-link ext-link-type="uri" xlink:href="https://www.anaconda.com/cyberpandas-extending-pandas-with-richer-types/">2</ext-link>,
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/ContinuumIO/cyberpandas">3</ext-link>)
+  and <monospace>geopandas</monospace>
+  (<xref alt="Jordahl et al., 2019" rid="ref-kelsey_jordahl_2019_3545747" ref-type="bibr">Jordahl
+  et al., 2019</xref>). Moreover, <monospace>networkx</monospace>
+  (<xref alt="Hagberg et al., 2008" rid="ref-SciPyProceedings_11" ref-type="bibr">Hagberg
+  et al., 2008</xref>) is employed to construct type relation
+  graphs.</p>
+</sec>
+<sec id="potential-applications">
+  <title>Potential Applications</title>
+  <sec id="data-summarization">
+    <title>Data summarization</title>
+    <p>Producing highly representative descriptive statistics, also
+    known as data summarization is a critical first step in most
+    exploratory data analysis (EDA). However, machine type
+    representations are rarely sufficiently informative to fully guide
+    initial, exploratory, steps. Consider the 5-star movie rating scale
+    - although numeric, measures like simple means fail to capture the
+    statistical characteristics of the measure. Work on the automated
+    EDA tool
+    (<xref alt="Brugman, 2020" rid="ref-pandasprofiling" ref-type="bibr">Brugman,
+    2020</xref>) regularly faced this challenge and served as initial
+    motivation for developing <monospace>visions</monospace>.</p>
+  </sec>
+  <sec id="simplifying-data-workflows-with-visions">
+    <title>Simplifying Data Workflows with
+    <monospace>visions</monospace></title>
+    <p>Decoupling semantic and machine types allows programmers to reuse
+    type-specific logic in many subsequent tasks and hence can be used
+    to simplify data workflows. For example,
+    <ext-link ext-link-type="uri" xlink:href="https://dylan-profiler.github.io/visions/visions/applications/validation.html">data
+    validation</ext-link> covering meaningful properties of the data,
+    has to include some form of
+    <ext-link ext-link-type="uri" xlink:href="https://dylan-profiler.github.io/visions/visions/applications/summarizer.html">data
+    summarization</ext-link>, which in turn relies on meaningful types.
+    Similarly, in
+    <ext-link ext-link-type="uri" xlink:href="https://dylan-profiler.github.io/visions/visions/applications/machine_learning.html">machine
+    learning</ext-link> the encoding of variables depends on their
+    <ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/Statistical_data_type">statistical
+    data type</ext-link>, which are also used for
+    <ext-link ext-link-type="uri" xlink:href="https://dylan-profiler.github.io/visions/visions/applications/summarizer.html">data
+    summarization</ext-link>. Potential workflows that could be
+    simplified range from general data workflows to domain-specific
+    applications including machine learning.</p>
+    <p>We refer to the
+    <ext-link ext-link-type="uri" xlink:href="https://dylan-profiler.github.io/visions/visions/applications/applications.html">application
+    section</ext-link> in the project documentation for a more elaborate
+    list of potential applications.</p>
+  </sec>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>The <monospace>visions</monospace> package is part of the Dylan
+  Profiler ecosystem. This work was supported by SIDN Fonds under
+  project number 191118.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-mckinney-proc-scipy-2010">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>McKinney</surname></name>
+        </person-group>
+        <article-title>Data Structures for Statistical Computing in Python</article-title>
+        <source>Proceedings of the 9th Python in Science Conference</source>
+        <person-group person-group-type="editor">
+          <name><surname>Walt</surname></name>
+          <name><surname>Millman</surname></name>
+        </person-group>
+        <year iso-8601-date="2010">2010</year>
+        <pub-id pub-id-type="doi"> 10.25080/Majora-92bf1922-00a </pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-reback2020pandas">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>The pandas development team</string-name>
+        </person-group>
+        <source>Pandas-dev/pandas: Pandas 1.0.1</source>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2020-02">2020</year><month>02</month>
+        <uri>https://doi.org/10.5281/zenodo.3644238</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3644238</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-van2011numpy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Walt</surname><given-names>Stéfan van der</given-names></name>
+          <name><surname>Colbert</surname><given-names>S Chris</given-names></name>
+          <name><surname>Varoquaux</surname><given-names>Gael</given-names></name>
+        </person-group>
+        <article-title>The NumPy Array: A Structure for Efficient Numerical Computation</article-title>
+        <source>Computing in Science Engineering</source>
+        <publisher-name>IEEE Computer Society</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <volume>13</volume>
+        <issue>2</issue>
+        <issn>1558-366X</issn>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2011.37</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SciPyProceedings_11">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Hagberg</surname><given-names>Aric A.</given-names></name>
+          <name><surname>Schult</surname><given-names>Daniel A.</given-names></name>
+          <name><surname>Swart</surname><given-names>Pieter J.</given-names></name>
+        </person-group>
+        <article-title>Exploring Network Structure, Dynamics, and Function using NetworkX</article-title>
+        <source>Proceedings of the 7th python in science conference</source>
+        <person-group person-group-type="editor">
+          <name><surname>Varoquaux</surname><given-names>Gaël</given-names></name>
+          <name><surname>Vaught</surname><given-names>Travis</given-names></name>
+          <name><surname>Millman</surname><given-names>Jarrod</given-names></name>
+        </person-group>
+        <publisher-loc>Pasadena, CA USA</publisher-loc>
+        <year iso-8601-date="2008">2008</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-kelsey_jordahl_2019_3545747">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Jordahl</surname><given-names>Kelsey</given-names></name>
+          <name><surname>Bossche</surname><given-names>Joris Van den</given-names></name>
+          <name><surname>Wasserman</surname><given-names>Jacob</given-names></name>
+          <name><surname>McBride</surname><given-names>James</given-names></name>
+          <name><surname>Fleischmann</surname><given-names>Martin</given-names></name>
+          <name><surname>Gerard</surname><given-names>Jeffrey</given-names></name>
+          <name><surname>Tratner</surname><given-names>Jeff</given-names></name>
+          <name><surname>Perry</surname><given-names>Matthew</given-names></name>
+          <name><surname>Farmer</surname><given-names>Carson</given-names></name>
+          <name><surname>Hjelle</surname><given-names>Geir Arne</given-names></name>
+          <name><surname>Gillies</surname><given-names>Sean</given-names></name>
+          <name><surname>Cochran</surname><given-names>Micah</given-names></name>
+          <name><surname>Bartos</surname><given-names>Matt</given-names></name>
+          <name><surname>Culbertson</surname><given-names>Lucas</given-names></name>
+          <name><surname>Eubank</surname><given-names>Nick</given-names></name>
+          <name><surname>maxalbert</surname></name>
+          <name><surname>Rey</surname><given-names>Sergio</given-names></name>
+          <name><surname>Bilogur</surname><given-names>Aleksey</given-names></name>
+          <name><surname>Arribas-Bel</surname><given-names>Dani</given-names></name>
+          <name><surname>Ren</surname><given-names>Christopher</given-names></name>
+          <name><surname>Wilson</surname><given-names>Joshua</given-names></name>
+          <name><surname>Journois</surname><given-names>Martin</given-names></name>
+          <name><surname>Wolf</surname><given-names>Levi John</given-names></name>
+          <name><surname>Wasser</surname><given-names>Leah</given-names></name>
+          <name><surname>Snow</surname><given-names>Alan D.</given-names></name>
+          <name><surname>YuichiNotoya</surname></name>
+          <name><surname>Leblanc</surname><given-names>François</given-names></name>
+          <name><surname>Filipe</surname></name>
+          <name><surname>Holdgraf</surname><given-names>Chris</given-names></name>
+          <name><surname>Greenhall</surname><given-names>Adam</given-names></name>
+        </person-group>
+        <source>Geopandas/geopandas: v0.6.2</source>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2019-11">2019</year><month>11</month>
+        <uri>https://doi.org/10.5281/zenodo.3545747</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3545747</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pandasprofiling">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Brugman</surname><given-names>Simon</given-names></name>
+        </person-group>
+        <article-title>pandas-profiling: Exploratory data analysis reports in Python</article-title>
+        <publisher-name>https://github.com/pandas-profiling/pandas-profiling</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

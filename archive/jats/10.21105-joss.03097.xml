@@ -1,0 +1,559 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3097</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03097</article-id>
+<title-group>
+<article-title>epipack: An infectious disease modeling package for
+Python</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-7414-8823</contrib-id>
+<string-name>Benjamin F. Maier</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Institute for Theoretical Biology, Humboldt-University of
+Berlin, Philippstr. 13, D-10115 Berlin</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Robert Koch Institute, Nordufer 20, D-13353
+Berlin</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-03-04">
+<day>4</day>
+<month>3</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>60</issue>
+<fpage>3097</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>infectious disease modeling</kwd>
+<kwd>stochastic simulations</kwd>
+<kwd>computer algebra systems</kwd>
+<kwd>networks</kwd>
+<kwd>visualization</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Analyzing the spread of infectious diseases by means of
+  compartmental mathematical models has been an active area of research
+  for almost a century
+  (<xref alt="Anderson &amp; May, 2010" rid="ref-anderson_infectious_2010" ref-type="bibr">Anderson
+  &amp; May, 2010</xref>;
+  <xref alt="Keeling &amp; Rohani, 2011" rid="ref-keeling_modeling_2011" ref-type="bibr">Keeling
+  &amp; Rohani, 2011</xref>;
+  <xref alt="Kermack &amp; McKendrick, 1991" rid="ref-kermack_contributions_1991" ref-type="bibr">Kermack
+  &amp; McKendrick, 1991</xref>). Since the emergence of the coronavirus
+  disease 2019 pandemic in early 2020, the field has seen yet another
+  considerable boost in interest. Researchers have since been working on
+  a large number of different models that are used to forecast case
+  numbers, to analyze the implications of different contact structures
+  between individual people, or to discuss the influence of various
+  mitigation and containment strategies, to only name a few applications
+  (<xref alt="Estrada, 2020" rid="ref-estrada_covid-19_2020" ref-type="bibr">Estrada,
+  2020</xref>).</p>
+  <p>The complexity of detailed epidemiological models often mitigates
+  simple replication and/or adaptation to local circumstances.
+  Typically, modifications are quickly thought up, but their influence
+  on system properties such as the epidemic threshold or outbreak size
+  are less clear. Variations in model formulation often entail the
+  reimplementation of simulation and analysis frameworks for every model
+  iteration, taking up valuable time and resources for debugging and
+  reanalysis. Furthermore, researchers often need to cross-check their
+  results by implementing both deterministic well-mixed models as well
+  as models that consider explicit contact structures
+  (<italic>i.e.</italic>, static or temporal networks). Last but not
+  least, analytical derivations are often done using separate computer
+  algebra systems.</p>
+  <p><italic>epipack</italic> solves the raised issues by offering a
+  simple, process-based framework that allows researchers to quickly
+  prototype and modify compartmental epidemiological models and to
+  investigate their behavior based on analytical, numerical, stochastic,
+  and network-based simulations, facilitated by a visualization
+  framework and parsimonious, customizable interactives.</p>
+  <p>Here, the overarching design principle focuses on defining
+  epidemiological models via reaction processes or reaction events, from
+  which ordinary differential equations (ODEs) and simulation classes
+  are generated automatically. This allows the user to transfer
+  implemented models quickly between analytical, numerical, or
+  stochastical formulations.</p>
+  <p><italic>epipack</italic> provides four base classes to accomodate
+  building models for different analysis methods:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p><italic>EpiModel</italic>: Define a model based on transition,
+      birth, death, fission, fusion, or transmission reactions to
+      integrate the ordinary differential equations (ODEs) of the
+      corresponding well-mixed system numerically or simulate the system
+      using Gillespie’s algorithm
+      (<xref alt="Gillespie, 1977" rid="ref-gillespie_exact_1977" ref-type="bibr">Gillespie,
+      1977</xref>). Process rates can be numerical functions of time and
+      system state.</p>
+    </list-item>
+    <list-item>
+      <p><italic>SymbolicEpiModel</italic>: Define a model based on
+      transition, birth, death, fission, fusion, or transmission
+      reactions. Obtain the ODEs, fixed points, Jacobian, and the
+      Jacobian’s eigenvalues at fixed points as symbolic expressions
+      using <italic>sympy</italic>
+      (<xref alt="Meurer et al., 2017" rid="ref-meurer_sympy_2017" ref-type="bibr">Meurer
+      et al., 2017</xref>). Process rates can be symbolic expressions of
+      time and system state. Set numerical parameter values and
+      integrate the ODEs numerically, or simulate the stochastic
+      formulation using Gillespie’s algorithm
+      (<xref alt="Gillespie, 1977" rid="ref-gillespie_exact_1977" ref-type="bibr">Gillespie,
+      1977</xref>).</p>
+    </list-item>
+    <list-item>
+      <p><italic>StochasticEpiModel</italic>: Define a network model
+      based on node transition and link transmission reactions. Add
+      conditional link transmission reactions. Simulate your model on
+      any (un)directed, (un)weighted static/temporal network, or in a
+      well-mixed system. We make use of a generalized version of the
+      tree-based rejection sampling algorithm recently proposed
+      (<xref alt="St-Onge et al., 2019" rid="ref-st-onge_efficient_2019" ref-type="bibr">St-Onge
+      et al., 2019</xref>) and the accompanying implementation of
+      <italic>SamplableSet</italic>
+      (<xref alt="St-Onge, 2019" rid="ref-st-onge_samplableset_2019" ref-type="bibr">St-Onge,
+      2019</xref>). This algorithm is a variant of Gillespie’s
+      continuous-time algorithm, which <italic>epipack</italic> focuses
+      on because discrete-time approximative simulation methods like the
+      individual-based update algorithm are known to behave
+      problematically at times
+      (<xref alt="Givan et al., 2011" rid="ref-givan_predicting_2011" ref-type="bibr">Givan
+      et al., 2011</xref>;
+      <xref alt="Kiss et al., 2017" rid="ref-kiss_mathematics_2017" ref-type="bibr">Kiss
+      et al., 2017</xref>;
+      <xref alt="Maier, 2020" rid="ref-maier_spreading_2020" ref-type="bibr">Maier,
+      2020</xref>). The class further allows to define chained
+      (<italic>i.e.</italic>, conditional) reactions using which public
+      health interventions such as contact tracing can be simulated. The
+      <italic>StochasticEpiModel</italic> class is comparable to the
+      <monospace>Gillespie_simple_contagion</monospace> function of the
+      <italic>EoN</italic> (Epidemics on Networks) package
+      (<xref alt="Miller &amp; Ting, 2019" rid="ref-miller_eon_2019" ref-type="bibr">Miller
+      &amp; Ting, 2019</xref>), which does not yet, however, support
+      temporal networks or conditional reactions at the time of
+      writing.</p>
+    </list-item>
+    <list-item>
+      <p><italic>MatrixEpiModel</italic>: This class is a static-rate
+      version of the <italic>EpiModel</italic> class that runs faster on
+      more complex models (e.g. for meta-population reaction-diffusion
+      systems) by making use of scipy’s implementation of sparse
+      matrices
+      (<xref alt="Virtanen et al., 2020" rid="ref-virtanen_scipy_2020" ref-type="bibr">Virtanen
+      et al., 2020</xref>).</p>
+    </list-item>
+  </list>
+  <p>Moreover, we provide a simple OpenGL-based visualization framework
+  to animate stochastic simulations on networks, lattices, well-mixed
+  systems, or reaction-diffusion systems. The research process is
+  further facilitated by interactive analysis widgets for
+  <italic>Jupyter</italic> notebooks that give immediate visual feedback
+  regarding a system’s inner workings.</p>
+  <p><italic>epipack</italic> and its usage is exhaustively documented,
+  with the documentation being available at
+  <ext-link ext-link-type="uri" xlink:href="http://epipack.benmaier.org">epipack.benmaier.org</ext-link>
+  and in the repository.</p>
+  <p>While other reaction-based modeling packages exist, most focus
+  either purely on ODE systems (e.g. <italic>ChemPy</italic>
+  (<xref alt="Dahlgren, 2018" rid="ref-dahlgren_chempy_2018" ref-type="bibr">Dahlgren,
+  2018</xref>)) or simulations and analyses on static network systems
+  (for instance <italic>EoN</italic> (Epidemics on Networks)
+  (<xref alt="Miller &amp; Ting, 2019" rid="ref-miller_eon_2019" ref-type="bibr">Miller
+  &amp; Ting, 2019</xref>), <italic>epydemic</italic>
+  (<xref alt="Dobson, 2017" rid="ref-dobson_epydemic_2017" ref-type="bibr">Dobson,
+  2017</xref>), and <italic>GraphTool</italic>
+  (<xref alt="Peixoto, 2014" rid="ref-peixoto_graph-tool_2014" ref-type="bibr">Peixoto,
+  2014</xref>)). One exception is the <italic>EpiModel</italic> package,
+  which is, however, only available for the R language
+  (<xref alt="Jenness et al., 2018" rid="ref-jenness_epimodel_2018" ref-type="bibr">Jenness
+  et al., 2018</xref>).</p>
+  <p>To the best of our knowledge, <italic>epipack</italic> is the first
+  open source software suite for Python that offers extensive model
+  building and analysis frameworks for both mean-field and network
+  models with a simple and intuitive API. It thus presents a valuable
+  tool for researchers of the infectious disease modeling community.</p>
+  <fig>
+    <caption><p>Example use cases of <italic>epipack</italic>. (a)
+    Equations that have been generated automatically in a
+    <italic>Jupyter</italic> notebook from a
+    <italic>SymbolicEpiModel</italic> instance that was built via
+    reaction processes (here, a temporally forced SIRS model in a
+    population of 1000 individuals). (b) Stochastic simulation and
+    result from the ODE integration of the model defined for panel a.
+    Both stochastic and deterministic results have been obtained from
+    the same model instance. (c) A screen shot from a stochastic
+    simulation visualization of a model on a static network. (d) Screen
+    shot of the interactive <italic>Jupyter</italic> notebook widget for
+    a custom-built <italic>SymbolicEpiModel</italic>, plotted against
+    data.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="Fig1.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>BFM is financially supported as an <italic>Add-On Fellow for
+  Interdisciplinary Life Science</italic> by the Joachim Herz Stiftung.
+  BFM wants to thank A. Burdinski and K. Ledebur for valuable feedback
+  as well as J. S. Juul for the productive collaboration on a code base
+  that heavily inspired this project.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-kermack_contributions_1991">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kermack</surname><given-names>W. O.</given-names></name>
+          <name><surname>McKendrick</surname><given-names>A. G.</given-names></name>
+        </person-group>
+        <article-title>Contributions to the mathematical theory of epidemics I</article-title>
+        <source>Bulletin of Mathematical Biology</source>
+        <year iso-8601-date="1991-03">1991</year><month>03</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-02-25">2020</year><month>02</month><day>25</day></date-in-citation>
+        <volume>53</volume>
+        <issue>1-2</issue>
+        <issn>0092-8240, 1522-9602</issn>
+        <uri>http://link.springer.com/10.1007/BF02464423</uri>
+        <pub-id pub-id-type="doi">10.1007/BF02464423</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-keeling_modeling_2011">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Keeling</surname><given-names>Matt J</given-names></name>
+          <name><surname>Rohani</surname><given-names>Pejman</given-names></name>
+        </person-group>
+        <source>Modeling infectious diseases in humans and animals</source>
+        <publisher-name>Princeton University Press</publisher-name>
+        <publisher-loc>Princeton</publisher-loc>
+        <year iso-8601-date="2011">2011</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2016-07-01">2016</year><month>07</month><day>01</day></date-in-citation>
+        <isbn>978-1-4008-4103-5</isbn>
+        <uri>http://public.eblib.com/choice/publicfullrecord.aspx?p=769616</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-gillespie_exact_1977">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gillespie</surname><given-names>Daniel T.</given-names></name>
+        </person-group>
+        <article-title>Exact stochastic simulation of coupled chemical reactions</article-title>
+        <source>The Journal of Physical Chemistry</source>
+        <year iso-8601-date="1977">1977</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2016-07-01">2016</year><month>07</month><day>01</day></date-in-citation>
+        <volume>81</volume>
+        <issue>25</issue>
+        <issn>0022-3654</issn>
+        <uri>http://dx.doi.org/10.1021/j100540a008</uri>
+        <pub-id pub-id-type="doi">10.1021/j100540a008</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-jenness_epimodel_2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jenness</surname><given-names>Samuel M.</given-names></name>
+          <name><surname>Goodreau</surname><given-names>Steven M.</given-names></name>
+          <name><surname>Morris</surname><given-names>Martina</given-names></name>
+        </person-group>
+        <article-title>EpiModel: An R Package for Mathematical Modeling of Infectious Disease over Networks</article-title>
+        <source>Journal of statistical software</source>
+        <year iso-8601-date="2018-04">2018</year><month>04</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-03-01">2021</year><month>03</month><day>01</day></date-in-citation>
+        <volume>84</volume>
+        <issn>1548-7660</issn>
+        <uri>https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5931789/</uri>
+        <pub-id pub-id-type="doi">10.18637/jss.v084.i08</pub-id>
+        <pub-id pub-id-type="pmid">29731699</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-dobson_epydemic_2017">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Dobson</surname><given-names>Simon</given-names></name>
+        </person-group>
+        <article-title>Epydemic: Epidemic simulations on networks in Python</article-title>
+        <year iso-8601-date="2017">2017</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-03-01">2021</year><month>03</month><day>01</day></date-in-citation>
+        <uri>https://pyepydemic.readthedocs.io/en/latest/index.html</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-peixoto_graph-tool_2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Peixoto</surname><given-names>Tiago P.</given-names></name>
+        </person-group>
+        <article-title>The graph-tool python library</article-title>
+        <source>figshare</source>
+        <year iso-8601-date="2014">2014</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2014-09-10">2014</year><month>09</month><day>10</day></date-in-citation>
+        <uri>http://figshare.com/articles/graph_tool/1164194</uri>
+        <pub-id pub-id-type="doi">10.6084/m9.figshare.1164194</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-miller_eon_2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Miller</surname><given-names>Joel</given-names></name>
+          <name><surname>Ting</surname><given-names>Tony</given-names></name>
+        </person-group>
+        <article-title>EoN (Epidemics on Networks): A fast, flexible Python package for simulation, analytic approximation, and analysis of epidemics on networks</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2019-12">2019</year><month>12</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-03-01">2021</year><month>03</month><day>01</day></date-in-citation>
+        <volume>4</volume>
+        <issue>44</issue>
+        <issn>2475-9066</issn>
+        <uri>https://joss.theoj.org/papers/10.21105/joss.01731</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.01731</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-anderson_infectious_2010">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Anderson</surname><given-names>Roy M.</given-names></name>
+          <name><surname>May</surname><given-names>Robert M.</given-names></name>
+        </person-group>
+        <source>Infectious diseases of humans: Dynamics and control</source>
+        <publisher-name>Oxford Univ. Press</publisher-name>
+        <publisher-loc>Oxford</publisher-loc>
+        <year iso-8601-date="2010">2010</year>
+        <isbn>978-0-19-854040-3</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-estrada_covid-19_2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Estrada</surname><given-names>Ernesto</given-names></name>
+        </person-group>
+        <article-title>COVID-19 and SARS-CoV-2. Modeling the present, looking at the future</article-title>
+        <source>Physics Reports</source>
+        <year iso-8601-date="2020-07">2020</year><month>07</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-03-01">2021</year><month>03</month><day>01</day></date-in-citation>
+        <volume>869</volume>
+        <issn>0370-1573</issn>
+        <uri>https://www.sciencedirect.com/science/article/pii/S0370157320302544</uri>
+        <pub-id pub-id-type="doi">10.1016/j.physrep.2020.07.005</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-st-onge_efficient_2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>St-Onge</surname><given-names>Guillaume</given-names></name>
+          <name><surname>Young</surname><given-names>Jean-Gabriel</given-names></name>
+          <name><surname>Hébert-Dufresne</surname><given-names>Laurent</given-names></name>
+          <name><surname>Dubé</surname><given-names>Louis J.</given-names></name>
+        </person-group>
+        <article-title>Efficient sampling of spreading processes on complex networks using a composition and rejection algorithm</article-title>
+        <source>Computer Physics Communications</source>
+        <year iso-8601-date="2019-07">2019</year><month>07</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-03-01">2021</year><month>03</month><day>01</day></date-in-citation>
+        <volume>240</volume>
+        <issn>00104655</issn>
+        <uri>https://linkinghub.elsevier.com/retrieve/pii/S0010465519300608</uri>
+        <pub-id pub-id-type="doi">10.1016/j.cpc.2019.02.008</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-st-onge_samplableset_2019">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>St-Onge</surname><given-names>Guillaume</given-names></name>
+        </person-group>
+        <article-title>SamplableSet</article-title>
+        <year iso-8601-date="2019">2019</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-03-01">2020</year><month>03</month><day>01</day></date-in-citation>
+        <uri>https://github.com/gstonge/SamplableSet</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-meurer_sympy_2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Meurer</surname><given-names>Aaron</given-names></name>
+          <name><surname>Smith</surname><given-names>Christopher P.</given-names></name>
+          <name><surname>Paprocki</surname><given-names>Mateusz</given-names></name>
+          <name><surname>Čertík</surname><given-names>Ondřej</given-names></name>
+          <name><surname>Kirpichev</surname><given-names>Sergey B.</given-names></name>
+          <name><surname>Rocklin</surname><given-names>Matthew</given-names></name>
+          <name><surname>Kumar</surname><given-names>AMiT</given-names></name>
+          <name><surname>Ivanov</surname><given-names>Sergiu</given-names></name>
+          <name><surname>Moore</surname><given-names>Jason K.</given-names></name>
+          <name><surname>Singh</surname><given-names>Sartaj</given-names></name>
+          <name><surname>Rathnayake</surname><given-names>Thilina</given-names></name>
+          <name><surname>Vig</surname><given-names>Sean</given-names></name>
+          <name><surname>Granger</surname><given-names>Brian E.</given-names></name>
+          <name><surname>Muller</surname><given-names>Richard P.</given-names></name>
+          <name><surname>Bonazzi</surname><given-names>Francesco</given-names></name>
+          <name><surname>Gupta</surname><given-names>Harsh</given-names></name>
+          <name><surname>Vats</surname><given-names>Shivam</given-names></name>
+          <name><surname>Johansson</surname><given-names>Fredrik</given-names></name>
+          <name><surname>Pedregosa</surname><given-names>Fabian</given-names></name>
+          <name><surname>Curry</surname><given-names>Matthew J.</given-names></name>
+          <name><surname>Terrel</surname><given-names>Andy R.</given-names></name>
+          <name><surname>Roučka</surname><given-names>Štěpán</given-names></name>
+          <name><surname>Saboo</surname><given-names>Ashutosh</given-names></name>
+          <name><surname>Fernando</surname><given-names>Isuru</given-names></name>
+          <name><surname>Kulal</surname><given-names>Sumith</given-names></name>
+          <name><surname>Cimrman</surname><given-names>Robert</given-names></name>
+          <name><surname>Scopatz</surname><given-names>Anthony</given-names></name>
+        </person-group>
+        <article-title>SymPy: Symbolic computing in Python</article-title>
+        <source>PeerJ Computer Science</source>
+        <year iso-8601-date="2017-01">2017</year><month>01</month>
+        <volume>3</volume>
+        <issn>2376-5992</issn>
+        <uri>https://doi.org/10.7717/peerj-cs.103</uri>
+        <pub-id pub-id-type="doi">10.7717/peerj-cs.103</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-virtanen_scipy_2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+          <name><surname>Haberland</surname><given-names>Matt</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Burovski</surname><given-names>Evgeni</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Bright</surname><given-names>Jonathan</given-names></name>
+          <name><surname>Walt</surname><given-names>Stéfan J. van der</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Wilson</surname><given-names>Joshua</given-names></name>
+          <name><surname>Millman</surname><given-names>K. Jarrod</given-names></name>
+          <name><surname>Mayorov</surname><given-names>Nikolay</given-names></name>
+          <name><surname>Nelson</surname><given-names>Andrew R. J.</given-names></name>
+          <name><surname>Jones</surname><given-names>Eric</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Larson</surname><given-names>Eric</given-names></name>
+          <name><surname>Carey</surname><given-names>C J</given-names></name>
+          <name><surname>Polat</surname><given-names>İlhan</given-names></name>
+          <name><surname>Feng</surname><given-names>Yu</given-names></name>
+          <name><surname>Moore</surname><given-names>Eric W.</given-names></name>
+          <name><surname>VanderPlas</surname><given-names>Jake</given-names></name>
+          <name><surname>Laxalde</surname><given-names>Denis</given-names></name>
+          <name><surname>Perktold</surname><given-names>Josef</given-names></name>
+          <name><surname>Cimrman</surname><given-names>Robert</given-names></name>
+          <name><surname>Henriksen</surname><given-names>Ian</given-names></name>
+          <name><surname>Quintero</surname><given-names>E. A.</given-names></name>
+          <name><surname>Harris</surname><given-names>Charles R.</given-names></name>
+          <name><surname>Archibald</surname><given-names>Anne M.</given-names></name>
+          <name><surname>Ribeiro</surname><given-names>Antônio H.</given-names></name>
+          <name><surname>Pedregosa</surname><given-names>Fabian</given-names></name>
+          <name><surname>Mulbregt</surname><given-names>Paul van</given-names></name>
+          <string-name>SciPy 1.0 Contributors</string-name>
+        </person-group>
+        <article-title>SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python</article-title>
+        <source>Nature Methods</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>17</volume>
+        <pub-id pub-id-type="doi">10.1038/s41592-019-0686-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-maier_spreading_2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Maier</surname><given-names>Benjamin F.</given-names></name>
+        </person-group>
+        <article-title>Spreading Processes in Human Systems</article-title>
+        <year iso-8601-date="2020-01">2020</year><month>01</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-03-01">2021</year><month>03</month><day>01</day></date-in-citation>
+        <uri>https://edoc.hu-berlin.de/handle/18452/21788</uri>
+        <pub-id pub-id-type="doi">10.18452/20950</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-givan_predicting_2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Givan</surname><given-names>Or</given-names></name>
+          <name><surname>Schwartz</surname><given-names>Nehemia</given-names></name>
+          <name><surname>Cygelberg</surname><given-names>Assaf</given-names></name>
+          <name><surname>Stone</surname><given-names>Lewi</given-names></name>
+        </person-group>
+        <article-title>Predicting epidemic thresholds on complex networks: Limitations of mean-field approaches</article-title>
+        <source>Journal of Theoretical Biology</source>
+        <year iso-8601-date="2011-11">2011</year><month>11</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-03-01">2021</year><month>03</month><day>01</day></date-in-citation>
+        <volume>288</volume>
+        <issn>00225193</issn>
+        <uri>https://linkinghub.elsevier.com/retrieve/pii/S0022519311003651</uri>
+        <pub-id pub-id-type="doi">10.1016/j.jtbi.2011.07.015</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-dahlgren_chempy_2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dahlgren</surname><given-names>Björn</given-names></name>
+        </person-group>
+        <article-title>ChemPy: A package useful for chemistry written in Python</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2018-04">2018</year><month>04</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-03-03">2021</year><month>03</month><day>03</day></date-in-citation>
+        <volume>3</volume>
+        <issue>24</issue>
+        <issn>2475-9066</issn>
+        <uri>http://joss.theoj.org/papers/10.21105/joss.00565</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.00565</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kiss_mathematics_2017">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Kiss</surname><given-names>István Z.</given-names></name>
+          <name><surname>Miller</surname><given-names>Joel C.</given-names></name>
+          <name><surname>Simon</surname><given-names>Péter L.</given-names></name>
+        </person-group>
+        <source>Mathematics of Epidemics on Networks: From Exact to Approximate Models</source>
+        <publisher-name>Springer International Publishing</publisher-name>
+        <publisher-loc>Cham</publisher-loc>
+        <year iso-8601-date="2017">2017</year>
+        <isbn>978-3-319-50806-1</isbn>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-50806-1</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

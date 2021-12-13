@@ -1,0 +1,1161 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3430</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03430</article-id>
+<title-group>
+<article-title>JMcDM: A Julia package for multiple-criteria
+decision-making tools</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9402-1982</contrib-id>
+<string-name>Mehmet Hakan Satman</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-0475-741X</contrib-id>
+<string-name>Bahadır Fatih Yıldırım</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-2552-7701</contrib-id>
+<string-name>Ersagun Kuruca</string-name>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Econometrics, Istanbul University, Istanbul,
+Turkey</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Department of Transportation and Logistics, Istanbul
+University, Istanbul, Turkey</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Independent researcher</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-05-08">
+<day>8</day>
+<month>5</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>65</issue>
+<fpage>3430</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>decision making</kwd>
+<kwd>multiple criteria</kwd>
+<kwd>outranking</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>JMcDM</monospace> is a <monospace>Julia</monospace>
+  package that implements some leading multiple-criteria decision-making
+  tools for both researchers and developers. By having a REPL tool,
+  <monospace>Julia</monospace> is well suited for researchers to perform
+  their analysis using different methods and comparing their results.
+  <monospace>JMcDM</monospace> also provides the necessary
+  infrastructure, utility functions, and a standardized API for
+  implementing recently published methods.  The package brings MCDM
+  (Multiple-Criteria Decision-Making) tools to a relatively new language
+  such as <monospace>Julia</monospace> with its significant performance
+  promises. Besides Julia being a new language, the methods developed in
+  the package are designed to be familiar to users who previously used
+  the <monospace>R</monospace> and <monospace>Python</monospace>
+  languages. This paper presents the basics of the design, example
+  usage, and code snippets.</p>
+</sec>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>The one-dimensional array <inline-formula><alternatives>
+  <tex-math><![CDATA[a]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>a</mml:mi></mml:math></alternatives></inline-formula>
+  is in ascending order if and only if <inline-formula><alternatives>
+  <tex-math><![CDATA[a_i \le a_{i+1}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>a</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>≤</mml:mo><mml:msub><mml:mi>a</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[i = 1, 2, \dots, n-1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mn>2</mml:mn><mml:mo>,</mml:mo><mml:mi>…</mml:mi><mml:mo>,</mml:mo><mml:mi>n</mml:mi><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>,
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>
+  is the length of the array. In other terms, the process of ordering
+  numbers requires the logical <inline-formula><alternatives>
+  <tex-math><![CDATA[\le]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>≤</mml:mo></mml:math></alternatives></inline-formula>
+  operator to be perfectly defined. Since the operator
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\le]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>≤</mml:mo></mml:math></alternatives></inline-formula>
+  is not defined for any set of points in higher dimensions,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbb{R}^p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:mi>p</mml:mi></mml:msup></mml:math></alternatives></inline-formula>
+  for <inline-formula><alternatives>
+  <tex-math><![CDATA[p \ge 2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>≥</mml:mo><mml:mn>2</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>,
+  there is not a unique ordering of points. In the multi-dimensional
+  case, the binary domination operator <inline-formula><alternatives>
+  <tex-math><![CDATA[\succ]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>≻</mml:mo></mml:math></alternatives></inline-formula>
+  applied on points <inline-formula><alternatives>
+  <tex-math><![CDATA[a]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>a</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[b]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>b</mml:mi></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[a \succ b]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>a</mml:mi><mml:mo>≻</mml:mo><mml:mi>b</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>,
+  is true if each item in <inline-formula><alternatives>
+  <tex-math><![CDATA[a]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>a</mml:mi></mml:math></alternatives></inline-formula>
+  is not worse than the corresponding item in
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[b]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>b</mml:mi></mml:math></alternatives></inline-formula>
+  and at least one item is better than the corresponding item in
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[b]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>b</mml:mi></mml:math></alternatives></inline-formula>
+  (<xref alt="Deb et al., 2002" rid="ref-Deb_2002" ref-type="bibr">Deb
+  et al., 2002</xref>). On the other hand, the more relaxed operator
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\succeq]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>≽</mml:mo></mml:math></alternatives></inline-formula>
+  returns true if each item in <inline-formula><alternatives>
+  <tex-math><![CDATA[a]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>a</mml:mi></mml:math></alternatives></inline-formula>
+  is as good as the corresponding item in <inline-formula><alternatives>
+  <tex-math><![CDATA[b]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>b</mml:mi></mml:math></alternatives></inline-formula>
+  (<xref alt="Greco et al., 2016" rid="ref-greco2016multiple" ref-type="bibr">Greco
+  et al., 2016</xref>). Several outranking methods in MCDM
+  (Multiple-Criteria Decision Making) define a unique ranking mechanism
+  to select the best alternative among others.</p>
+  <p>Suppose a decision process has <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>
+  alternatives and <inline-formula><alternatives>
+  <tex-math><![CDATA[m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>m</mml:mi></mml:math></alternatives></inline-formula>
+  criteria that are either to be maximized or minimized. Each single
+  criterion has a weight <inline-formula><alternatives>
+  <tex-math><![CDATA[0 \le w_i \le 1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>0</mml:mn><mml:mo>≤</mml:mo><mml:msub><mml:mi>w</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>≤</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[\sum_i^m w_i = 1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mo>∑</mml:mo><mml:mi>i</mml:mi><mml:mi>m</mml:mi></mml:msubsup><mml:msub><mml:mi>w</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  and is represented by a function <inline-formula><alternatives>
+  <tex-math><![CDATA[f_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  which is either maximum or minimum. <inline-formula><alternatives>
+  <tex-math><![CDATA[g_j(.)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>g</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>.</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  is an evolution function and it is taken as
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[g_j(x) = x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>g</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>x</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  in many methods. A multiple criteria decision problem can be
+  represented using the decision table shown in Table
+  <xref alt="1" rid="decision_table">1</xref> without loss of
+  generality. When <inline-formula><alternatives>
+  <tex-math><![CDATA[A_1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>A</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[A_2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>A</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\dots]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>…</mml:mi></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[A_n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>A</mml:mi><mml:mi>n</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  are alternatives and <inline-formula><alternatives>
+  <tex-math><![CDATA[C_1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>C</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[C_2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>C</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\dots]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>…</mml:mi></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[C_m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>C</mml:mi><mml:mi>m</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  are different situations of a single criterion then the decision
+  problem is said to be a single criterion decision problem. If
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[A_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>A</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula> and
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[C_j]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>C</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  are strategies of two game players then <inline-formula><alternatives>
+  <tex-math><![CDATA[g_j(A_i)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>g</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>A</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  is the gain of the row player when she selects the strategy
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>
+  and the column player selects the strategy
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[C_j]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>C</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:math></alternatives></inline-formula>.</p>
+  <table-wrap>
+    <caption>
+      <p>Decision table
+      <styled-content id="decision_table"></styled-content></p>
+    </caption>
+    <table>
+      <thead>
+        <tr>
+          <th align="center"><bold>Criteria</bold>  </th>
+          <th align="center">  <inline-formula><alternatives>
+          <tex-math><![CDATA[C_1]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>C</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+             </th>
+          <th align="center">  <inline-formula><alternatives>
+          <tex-math><![CDATA[C_2]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>C</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+             </th>
+          <th align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[\dots]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>…</mml:mi></mml:math></alternatives></inline-formula>
+           </th>
+          <th align="center">  <inline-formula><alternatives>
+          <tex-math><![CDATA[C_m]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>C</mml:mi><mml:mi>m</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+             </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="center"> <bold>Weights</bold>  </td>
+          <td align="center">  <inline-formula><alternatives>
+          <tex-math><![CDATA[w_1]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>w</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+             </td>
+          <td align="center">  <inline-formula><alternatives>
+          <tex-math><![CDATA[w_2]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>w</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+             </td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[\dots]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>…</mml:mi></mml:math></alternatives></inline-formula>
+           </td>
+          <td align="center">  <inline-formula><alternatives>
+          <tex-math><![CDATA[w_m]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>w</mml:mi><mml:mi>m</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+             </td>
+        </tr>
+        <tr>
+          <td align="center"><bold>Functions</bold></td>
+          <td align="center">  <inline-formula><alternatives>
+          <tex-math><![CDATA[f_1]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+             </td>
+          <td align="center">  <inline-formula><alternatives>
+          <tex-math><![CDATA[f_2]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+             </td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[\dots]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>…</mml:mi></mml:math></alternatives></inline-formula>
+           </td>
+          <td align="center">  <inline-formula><alternatives>
+          <tex-math><![CDATA[f_m]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mi>m</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+             </td>
+        </tr>
+        <tr>
+          <td align="center">    <inline-formula><alternatives>
+          <tex-math><![CDATA[A_1]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>A</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+             </td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[g_1(A_1)]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>g</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>A</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula></td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[g_2(A_1)]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>g</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>A</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula></td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[\dots]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>…</mml:mi></mml:math></alternatives></inline-formula>
+           </td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[g_m(S_A)]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>g</mml:mi><mml:mi>m</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>S</mml:mi><mml:mi>A</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula></td>
+        </tr>
+        <tr>
+          <td align="center">    <inline-formula><alternatives>
+          <tex-math><![CDATA[A_2]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>A</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+             </td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[g_1(A_2)]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>g</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>A</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula></td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[g_2(A_2)]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>g</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>A</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula></td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[\dots]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>…</mml:mi></mml:math></alternatives></inline-formula>
+           </td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[g_m(A_2)]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>g</mml:mi><mml:mi>m</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>A</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula></td>
+        </tr>
+        <tr>
+          <td align="center">      ⋮      </td>
+          <td align="center">    ⋮      </td>
+          <td align="center">    ⋮      </td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[\ddots]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>⋱</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td align="center">    ⋮      </td>
+        </tr>
+        <tr>
+          <td align="center">    <inline-formula><alternatives>
+          <tex-math><![CDATA[A_n]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>A</mml:mi><mml:mi>n</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+             </td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[g_1(A_n)]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>g</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>A</mml:mi><mml:mi>n</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula></td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[g_2(A_n)]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>g</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>A</mml:mi><mml:mi>n</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula></td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[\dots]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>…</mml:mi></mml:math></alternatives></inline-formula>
+           </td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[g_m(A_n)]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>g</mml:mi><mml:mi>m</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>A</mml:mi><mml:mi>n</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula></td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+</sec>
+<sec id="state-of-the-field">
+  <title>State of the field</title>
+  <p>Multiple-criteria decision-making (MCDM) tools provide several
+  algorithms for ordering or  selecting alternatives and/or determining
+  the weights when there is uncertainty. Although some algorithms are
+  suitable for hand calculations, computer software is often required.
+  While some previous applications only focused on a single method, some
+  applications appear to include multiple methods.
+  <monospace>PyTOPS</monospace> is a Python tool for TOPSIS
+  (<xref alt="Yadav et al., 2019" rid="ref-PyTOPS" ref-type="bibr">Yadav
+  et al., 2019</xref>). <monospace>Super Decisions</monospace> is a
+  software package that is mainly focused on AHP (Analytic Hierarchy
+  Process) and ANP (Analytic Network Process)
+  (<xref alt="Adams &amp; Saaty, 2003" rid="ref-superdecision" ref-type="bibr">Adams
+  &amp; Saaty, 2003</xref>). <monospace>Visual Promethee</monospace>
+  implements the Promethee method on Windows platforms
+  (<xref alt="Mareschal &amp; Smet, 2009" rid="ref-visualpromethee" ref-type="bibr">Mareschal
+  &amp; Smet, 2009</xref>). <monospace>M-BACBETH</monospace> is another
+  commercial software product that implements MACBETH with an easy to
+  use GUI
+  (<xref alt="Bana e Costa et al., 2011" rid="ref-macbeth" ref-type="bibr">Bana
+  e Costa et al., 2011</xref>). <monospace>Sanna</monospace> is a
+  standard <monospace>MS Excel</monospace> add-in application that
+  supports several basic methods for multi-criteria evaluation of
+  alternatives (WSA, TOPSIS, ELECTRE I and III, PROMETHEE I and II,
+  MAPPAC and ORESTE)
+  (<xref alt="Jablonsky, 2014" rid="ref-sanna" ref-type="bibr">Jablonsky,
+  2014</xref>). The <monospace>DEAFrontier</monospace> software requires
+  an <monospace>Excel</monospace> add-in that can solve up to 50 DMUs
+  with unlimited number of inputs and outputs (subject to the capacity
+  of the standard <monospace>MS Excel Solver</monospace>)
+  (<xref alt="Zhu, 2014" rid="ref-deafrontier" ref-type="bibr">Zhu,
+  2014</xref>).</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>While the applications mentioned above are lacking in features such
+  as the number of methods included, being programmable, being free, and
+  the results being comparable by the researcher,
+  <monospace>JMcDM</monospace> clearly differs as it has all of these
+  features. <monospace>JMcDM</monospace> is designed to provide a
+  developer-friendly library for solving multiple-criteria decision
+  problems in <monospace>Julia</monospace>
+  (<xref alt="Bezanson et al., 2017" rid="ref-julia" ref-type="bibr">Bezanson
+  et al., 2017</xref>). Since <monospace>Julia</monospace> is a dynamic
+  language, it is also useful for researchers who are familiar with REPL
+  (Read-Eval-Print-Loop) environments. The package includes
+  multi-criteria decision methods as well as a game solver for zero-sum
+  games, and methods for single criterion methods.</p>
+  <p>The package implements methods for AHP
+  (<xref alt="Saaty, 1977" rid="ref-ahp" ref-type="bibr">Saaty,
+  1977</xref>), ARAS
+  (<xref alt="Edmundas Kazimieras Zavadskas &amp; Turskis, 2010" rid="ref-aras" ref-type="bibr">Edmundas
+  Kazimieras Zavadskas &amp; Turskis, 2010</xref>), COCOSO
+  (<xref alt="Yazdani et al., 2019" rid="ref-cocoso" ref-type="bibr">Yazdani
+  et al., 2019</xref>), CODAS
+  (<xref alt="Keshavarz Ghorabaee et al., 2016" rid="ref-codas" ref-type="bibr">Keshavarz
+  Ghorabaee et al., 2016</xref>), COPRAS
+  (<xref alt="Edmundas Kazimieras Zavadskas et al., 1994" rid="ref-copras" ref-type="bibr">Edmundas
+  Kazimieras Zavadskas et al., 1994</xref>), CRITIC
+  (<xref alt="Diakoulaki et al., 1995" rid="ref-critic" ref-type="bibr">Diakoulaki
+  et al., 1995</xref>), DEMATEL
+  (<xref alt="Gabus &amp; Fontela, 1972" rid="ref-dematel" ref-type="bibr">Gabus
+  &amp; Fontela, 1972</xref>), EDAS
+  (<xref alt="Ghorabaee et al., 2015" rid="ref-edas" ref-type="bibr">Ghorabaee
+  et al., 2015</xref>), ELECTRE
+  (<xref alt="Roy, 1968" rid="ref-electre" ref-type="bibr">Roy,
+  1968</xref>), Entropy
+  (<xref alt="Shannon, 1948" rid="ref-entropy" ref-type="bibr">Shannon,
+  1948</xref>), GRA
+  (<xref alt="Ju-Long, 1982" rid="ref-gra" ref-type="bibr">Ju-Long,
+  1982</xref>), MABAC
+  (<xref alt="Pamučar &amp; Ćirović, 2015" rid="ref-mabac" ref-type="bibr">Pamučar
+  &amp; Ćirović, 2015</xref>), MAIRCA
+  (<xref alt="Pamučar et al., 2014" rid="ref-mairca" ref-type="bibr">Pamučar
+  et al., 2014</xref>), MARCOS
+  (<xref alt="Stević et al., 2020" rid="ref-marcos" ref-type="bibr">Stević
+  et al., 2020</xref>), MOORA
+  (<xref alt="Brauers &amp; Zavadskas, 2006" rid="ref-moora" ref-type="bibr">Brauers
+  &amp; Zavadskas, 2006</xref>), NDS
+  (<xref alt="Deb et al., 2002" rid="ref-Deb_2002" ref-type="bibr">Deb
+  et al., 2002</xref>), PROMETHEE
+  (<xref alt="Brans &amp; Vincke, 1985" rid="ref-promethee" ref-type="bibr">Brans
+  &amp; Vincke, 1985</xref>), SAW
+  (<xref alt="Churchman &amp; Ackoff, 1954" rid="ref-saw" ref-type="bibr">Churchman
+  &amp; Ackoff, 1954</xref>;
+  <xref alt="Triantaphyllou &amp; Mann, 1989" rid="ref-wsm_wpm" ref-type="bibr">Triantaphyllou
+  &amp; Mann, 1989</xref>),   TOPSIS
+  (<xref alt="Hwang &amp; Yoon, 1981" rid="ref-topsis" ref-type="bibr">Hwang
+  &amp; Yoon, 1981</xref>), VIKOR
+  (<xref alt="Opricovic, 1998" rid="ref-vikor_1" ref-type="bibr">Opricovic,
+  1998</xref>;
+  <xref alt="Opricovic &amp; Tzeng, 2002" rid="ref-vikor_2" ref-type="bibr">Opricovic
+  &amp; Tzeng, 2002</xref>),   WASPAS
+  (<xref alt="E. K. Zavadskas et al., 2012" rid="ref-waspas" ref-type="bibr">E.
+  K. Zavadskas et al., 2012</xref>), and WPM
+  (<xref alt="Triantaphyllou &amp; Mann, 1989" rid="ref-wsm_wpm" ref-type="bibr">Triantaphyllou
+  &amp; Mann, 1989</xref>) for multiple-criteria tools. This list of
+  selected methods includes both classical (TOPSIS, ELECTRE, PROMETHEE,
+  etc.) and modern (COCOSO, MABAC, MARCOS, etc.) tools of the relevant
+  literature.</p>
+  <p>The package also performs Data Envelopment Analysis (DEA)
+  (<xref alt="Charnes et al., 1978" rid="ref-dea" ref-type="bibr">Charnes
+  et al., 1978</xref>) and includes a method for solving zero-sum games.
+  Although these methods may seem different from the methods mentioned
+  above, they are basically members of the same method family and solve
+  similar problems. DEA differs from the above methods in that it is not
+  an outranking method but compares efficiencies of decision units.
+  Solving zero-sum games is also a multi-criteria decision-making
+  problem, but this time, unlike outranking methods, both the rows and
+  columns of the decision matrix show alternative strategies.</p>
+  <p>The full set of other tools and utility functions are listed and
+  documented in the source code as well as in the online
+  documentation.</p>
+</sec>
+<sec id="installation-and-basic-usage">
+  <title>Installation and basic usage</title>
+  <p><monospace>JMcDM</monospace> can be downloaded and installed using
+  the Julia package manager by typing</p>
+  <code language="julia">julia&gt; using Pkg
+julia&gt; Pkg.add(&quot;JMcDM&quot;)</code>
+  <p>and can be loaded before using any functions by typing</p>
+  <code language="julia">julia&gt; using JMcDM</code>
+  <p>in <monospace>Julia</monospace> REPL.</p>
+  <p>Suppose a decision problem is given in the table below.</p>
+  <table-wrap>
+    <table>
+      <thead>
+        <tr>
+          <th align="center"><bold>Criteria</bold>  </th>
+          <th align="center"> Age  </th>
+          <th align="center"> Size  </th>
+          <th align="center"> Price  </th>
+          <th align="center">Distance</th>
+          <th align="center">Population</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="center"> <bold>Weights</bold>  </td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[0.35]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>0.35</mml:mn></mml:math></alternatives></inline-formula></td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[0.15]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>0.15</mml:mn></mml:math></alternatives></inline-formula></td>
+          <td align="center"> <inline-formula><alternatives>
+          <tex-math><![CDATA[0.25]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>0.25</mml:mn></mml:math></alternatives></inline-formula>
+           </td>
+          <td align="center"> <inline-formula><alternatives>
+          <tex-math><![CDATA[0.20]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>0.20</mml:mn></mml:math></alternatives></inline-formula>
+           </td>
+          <td align="center">  <inline-formula><alternatives>
+          <tex-math><![CDATA[0.05]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>0.05</mml:mn></mml:math></alternatives></inline-formula>
+           </td>
+        </tr>
+        <tr>
+          <td align="center"><bold>Functions</bold></td>
+          <td align="center"> min  </td>
+          <td align="center"> max  </td>
+          <td align="center">  min    </td>
+          <td align="center">  min    </td>
+          <td align="center">   max    </td>
+        </tr>
+        <tr>
+          <td align="center">    <inline-formula><alternatives>
+          <tex-math><![CDATA[A_1]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>A</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+             </td>
+          <td align="center"> <inline-formula><alternatives>
+          <tex-math><![CDATA[6]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>6</mml:mn></mml:math></alternatives></inline-formula>
+           </td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[140]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>140</mml:mn></mml:math></alternatives></inline-formula>
+           </td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[150000]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>150000</mml:mn></mml:math></alternatives></inline-formula></td>
+          <td align="center"> <inline-formula><alternatives>
+          <tex-math><![CDATA[950]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>950</mml:mn></mml:math></alternatives></inline-formula>
+           </td>
+          <td align="center">  <inline-formula><alternatives>
+          <tex-math><![CDATA[1500]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>1500</mml:mn></mml:math></alternatives></inline-formula>
+           </td>
+        </tr>
+        <tr>
+          <td align="center">    <inline-formula><alternatives>
+          <tex-math><![CDATA[A_2]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>A</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+             </td>
+          <td align="center"> <inline-formula><alternatives>
+          <tex-math><![CDATA[4]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>4</mml:mn></mml:math></alternatives></inline-formula>
+           </td>
+          <td align="center"> <inline-formula><alternatives>
+          <tex-math><![CDATA[90]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>90</mml:mn></mml:math></alternatives></inline-formula>
+           </td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[100000]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>100000</mml:mn></mml:math></alternatives></inline-formula></td>
+          <td align="center"> <inline-formula><alternatives>
+          <tex-math><![CDATA[1500]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>1500</mml:mn></mml:math></alternatives></inline-formula>
+           </td>
+          <td align="center">  <inline-formula><alternatives>
+          <tex-math><![CDATA[2000]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>2000</mml:mn></mml:math></alternatives></inline-formula>
+           </td>
+        </tr>
+        <tr>
+          <td align="center">    <inline-formula><alternatives>
+          <tex-math><![CDATA[A_3]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>A</mml:mi><mml:mn>3</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+             </td>
+          <td align="center"> <inline-formula><alternatives>
+          <tex-math><![CDATA[12]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>12</mml:mn></mml:math></alternatives></inline-formula>
+           </td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[140]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>140</mml:mn></mml:math></alternatives></inline-formula>
+           </td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[75000]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>75000</mml:mn></mml:math></alternatives></inline-formula>
+           </td>
+          <td align="center"> <inline-formula><alternatives>
+          <tex-math><![CDATA[550]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>550</mml:mn></mml:math></alternatives></inline-formula>
+           </td>
+          <td align="center">  <inline-formula><alternatives>
+          <tex-math><![CDATA[1100]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>1100</mml:mn></mml:math></alternatives></inline-formula>
+           </td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>In this sample problem, a decision maker is subject to select an
+  apartment by considering the age of the building, size (in
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[m^2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>m</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:math></alternatives></inline-formula>s),
+  price (in $), distance to city centre (in
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>m</mml:mi></mml:math></alternatives></inline-formula>s),
+  and nearby population. The data can be entered as a two-dimensional
+  array (matrix) or as a DataFrame object:</p>
+  <code language="julia">julia&gt; using JMcDM
+julia&gt; df = DataFrame(
+:age        =&gt; [6.0, 4, 12],
+:size       =&gt; [140.0, 90, 140],
+:price      =&gt; [150000.0, 100000, 75000],
+:distance   =&gt; [950.0, 1500, 550],
+:population =&gt; [1500.0, 2000, 1100]);</code>
+  <p>The weight vector <monospace>w</monospace>, vector of directions
+  <monospace>fns</monospace>, and <monospace>topsis()</monospace>
+  function call can be performed using the <monospace>Julia</monospace>
+  REPL.</p>
+  <code language="julia">julia&gt; w  = [0.35, 0.15, 0.25, 0.20, 0.05];
+julia&gt; fns = makeminmax([minimum, maximum, minimum, minimum, maximum]);
+julia&gt; result = topsis(df, w, fns);
+julia&gt; result.scores
+3-element Array{Float64,1}:
+0.5854753145549456
+0.6517997936899308
+0.41850223305822903
+
+julia&gt; result.bestIndex
+2</code>
+  <p>In the output above, it is shown that the alternative
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[A_2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>A</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+  has a score of <inline-formula><alternatives>
+  <tex-math><![CDATA[0.65179]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>0.65179</mml:mn></mml:math></alternatives></inline-formula>
+  and it is selected as the best. The same analysis can be performed
+  using <monospace>saw()</monospace> for the method of Simple Additive
+  Weighting</p>
+  <code language="julia">julia&gt; result = saw(df, w, fns);
+julia&gt; result.bestIndex
+2</code>
+  <p>as well as using <monospace>wpm</monospace> for the method of
+  Weighted Product Method</p>
+  <code language="julia">julia&gt; result = wpm(df, w, fns);
+julia&gt; result.bestIndex
+2</code>
+  <p>For any method, <monospace>?methodname</monospace> shows the
+  documentation as in the same way in other <monospace>Julia</monospace>
+  packages.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Deb_2002">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Deb</surname><given-names>K.</given-names></name>
+          <name><surname>Pratap</surname><given-names>A.</given-names></name>
+          <name><surname>Agarwal</surname><given-names>S.</given-names></name>
+          <name><surname>Meyarivan</surname><given-names>T.</given-names></name>
+        </person-group>
+        <article-title>A fast and elitist multiobjective genetic algorithm: NSGA-II</article-title>
+        <source>IEEE Transactions on Evolutionary Computation</source>
+        <publisher-name>Institute of Electrical; Electronics Engineers (IEEE)</publisher-name>
+        <year iso-8601-date="2002-04">2002</year><month>04</month>
+        <volume>6</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1109/4235.996017</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-greco2016multiple">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Greco</surname><given-names>Salvatore</given-names></name>
+          <name><surname>Figueira</surname><given-names>Jose</given-names></name>
+          <name><surname>Ehrgott</surname><given-names>Matthias</given-names></name>
+        </person-group>
+        <source>Multiple criteria decision analysis</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>37</volume>
+        <pub-id pub-id-type="doi">10.1007/978-1-4939-3094-4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-PyTOPS">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yadav</surname><given-names>Vinay</given-names></name>
+          <name><surname>Karmakar</surname><given-names>Subhankar</given-names></name>
+          <name><surname>Kalbar</surname><given-names>Pradip P.</given-names></name>
+          <name><surname>Dikshit</surname><given-names>A. K.</given-names></name>
+        </person-group>
+        <article-title>PyTOPS: A Python based tool for TOPSIS</article-title>
+        <source>SoftwareX</source>
+        <publisher-name>Elsevier BV</publisher-name>
+        <year iso-8601-date="2019-01">2019</year><month>01</month>
+        <volume>9</volume>
+        <pub-id pub-id-type="doi">10.1016/j.softx.2019.02.004</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-superdecision">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Adams</surname><given-names>WJ</given-names></name>
+          <name><surname>Saaty</surname><given-names>Rozann</given-names></name>
+        </person-group>
+        <source>Super decisions software guide</source>
+        <year iso-8601-date="2003">2003</year>
+        <volume>9</volume>
+        <uri>https://superdecisions.com/sd_resources/v28_man01.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-visualpromethee">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Mareschal</surname><given-names>B.</given-names></name>
+          <name><surname>Smet</surname><given-names>Y. De</given-names></name>
+        </person-group>
+        <article-title>Visual PROMETHEE: Developments of the PROMETHEE - GAIA multicriteria decision aid methods</article-title>
+        <source>2009 IEEE international conference on industrial engineering and engineering management</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2009-12">2009</year><month>12</month>
+        <pub-id pub-id-type="doi">10.1109/ieem.2009.5373124</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-macbeth">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Bana e Costa</surname><given-names>Carlos A.</given-names></name>
+          <name><surname>Corte</surname><given-names>Jean-Marie de</given-names></name>
+          <name><surname>Vansnick</surname><given-names>Jean-Claude</given-names></name>
+        </person-group>
+        <article-title>MACBETH (measuring attractiveness by a categorical based evaluation technique)</article-title>
+        <publisher-name>John Wiley &amp; Sons, Inc.</publisher-name>
+        <year iso-8601-date="2011-02-15">2011</year><month>02</month><day>15</day>
+        <isbn>9780470400531</isbn>
+        <uri>https://doi.org/10.1002/9780470400531.eorms0970</uri>
+        <pub-id pub-id-type="doi">10.1002/9780470400531.eorms0970</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sanna">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jablonsky</surname><given-names>Josef</given-names></name>
+        </person-group>
+        <article-title>MS Excel based software support tools for decision problems with multiple criteria</article-title>
+        <source>Procedia Economics and Finance</source>
+        <publisher-name>Elsevier BV</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>12</volume>
+        <uri>https://doi.org/10.1016%2Fs2212-5671%2814%2900342-6</uri>
+        <pub-id pub-id-type="doi">10.1016/s2212-5671(14)00342-6</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-deafrontier">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Zhu</surname><given-names>Joe</given-names></name>
+        </person-group>
+        <source>Quantitative models for performance evaluation and benchmarking</source>
+        <publisher-name>Springer International Publishing</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <uri>https://doi.org/10.1007%2F978-3-319-06647-9</uri>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-06647-9</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-julia">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bezanson</surname><given-names>Jeff</given-names></name>
+          <name><surname>Edelman</surname><given-names>Alan</given-names></name>
+          <name><surname>Karpinski</surname><given-names>Stefan</given-names></name>
+          <name><surname>Shah</surname><given-names>Viral B.</given-names></name>
+        </person-group>
+        <article-title>Julia: A fresh approach to numerical computing</article-title>
+        <source>SIAM Review</source>
+        <publisher-name>Society for Industrial &amp; Applied Mathematics (SIAM)</publisher-name>
+        <year iso-8601-date="2017-01">2017</year><month>01</month>
+        <volume>59</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1137%2F141000671</uri>
+        <pub-id pub-id-type="doi">10.1137/141000671</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-topsis">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Hwang</surname><given-names>Ching-Lai</given-names></name>
+          <name><surname>Yoon</surname><given-names>Kwangsun</given-names></name>
+        </person-group>
+        <article-title>Methods for multiple attribute decision making</article-title>
+        <source>Multiple attribute decision making</source>
+        <publisher-name>Springer Berlin Heidelberg</publisher-name>
+        <year iso-8601-date="1981">1981</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-642-48318-9_3</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-electre">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Roy</surname><given-names>B.</given-names></name>
+        </person-group>
+        <article-title>Classement et choix en présence de points de vue multiples</article-title>
+        <source>RAIRO - Operations Research - Recherche Opérationnelle</source>
+        <publisher-name>EDP-Sciences</publisher-name>
+        <year iso-8601-date="1968">1968</year>
+        <volume>2</volume>
+        <issue>V1</issue>
+        <uri>http://eudml.org/doc/104443</uri>
+        <pub-id pub-id-type="doi">10.1051/ro/196802v100571</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-promethee">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Brans</surname><given-names>Jean-Pierre</given-names></name>
+          <name><surname>Vincke</surname><given-names>Ph</given-names></name>
+        </person-group>
+        <article-title>Note—a preference ranking organisation method: (The PROMETHEE method for multiple criteria decision-making)</article-title>
+        <source>Management science</source>
+        <publisher-name>INFORMS</publisher-name>
+        <year iso-8601-date="1985">1985</year>
+        <volume>31</volume>
+        <pub-id pub-id-type="doi">10.1287/mnsc.31.6.647</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-dematel">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Gabus</surname><given-names>A</given-names></name>
+          <name><surname>Fontela</surname><given-names>E_</given-names></name>
+        </person-group>
+        <article-title>World problems, an invitation to further thought within the framework of DEMATEL</article-title>
+        <source>Battelle Geneva Research Center, Geneva, Switzerland</source>
+        <year iso-8601-date="1972">1972</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-moora">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Brauers</surname><given-names>Willem Karel</given-names></name>
+          <name><surname>Zavadskas</surname><given-names>Edmundas Kazimieras</given-names></name>
+        </person-group>
+        <article-title>The MOORA method and its application to privatization in a transition economy</article-title>
+        <source>Control and cybernetics</source>
+        <year iso-8601-date="2006">2006</year>
+        <volume>35</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-vikor_2">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Opricovic</surname><given-names>Serafim</given-names></name>
+          <name><surname>Tzeng</surname><given-names>Gwo-Hshiung</given-names></name>
+        </person-group>
+        <article-title>Multicriteria planning of post-earthquake sustainable reconstruction</article-title>
+        <source>Computer-Aided Civil and Infrastructure Engineering</source>
+        <publisher-name>Wiley</publisher-name>
+        <year iso-8601-date="2002-05">2002</year><month>05</month>
+        <volume>17</volume>
+        <issue>3</issue>
+        <uri>https://doi.org/10.1111%2F1467-8667.00269</uri>
+        <pub-id pub-id-type="doi">10.1111/1467-8667.00269</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-vikor_1">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Opricovic</surname><given-names>Serafim</given-names></name>
+        </person-group>
+        <article-title>Multicriteria optimization of civil engineering systems</article-title>
+        <source>Faculty of Civil Engineering, Belgrade</source>
+        <year iso-8601-date="1998">1998</year>
+        <volume>2</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-ahp">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Saaty</surname><given-names>Thomas L</given-names></name>
+        </person-group>
+        <article-title>A scaling method for priorities in hierarchical structures</article-title>
+        <source>Journal of Mathematical Psychology</source>
+        <publisher-name>Elsevier BV</publisher-name>
+        <year iso-8601-date="1977-06">1977</year><month>06</month>
+        <volume>15</volume>
+        <issue>3</issue>
+        <uri>https://doi.org/10.1016%2F0022-2496%2877%2990033-5</uri>
+        <pub-id pub-id-type="doi">10.1016/0022-2496(77)90033-5</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gra">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ju-Long</surname><given-names>Deng</given-names></name>
+        </person-group>
+        <article-title>Control problems of grey systems</article-title>
+        <source>Systems &amp; Control Letters</source>
+        <publisher-name>Elsevier BV</publisher-name>
+        <year iso-8601-date="1982-03">1982</year><month>03</month>
+        <volume>1</volume>
+        <issue>5</issue>
+        <uri>https://doi.org/10.1016%2Fs0167-6911%2882%2980025-x</uri>
+        <pub-id pub-id-type="doi">10.1016/s0167-6911(82)80025-x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-wsm_wpm">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Triantaphyllou</surname><given-names>Evangelos</given-names></name>
+          <name><surname>Mann</surname><given-names>Stuart H.</given-names></name>
+        </person-group>
+        <article-title>An examination of the effectiveness of multi-dimensional decision-making methods: A decision-making paradox</article-title>
+        <source>Decision Support Systems</source>
+        <publisher-name>Elsevier BV</publisher-name>
+        <year iso-8601-date="1989-09">1989</year><month>09</month>
+        <volume>5</volume>
+        <issue>3</issue>
+        <uri>https://doi.org/10.1016%2F0167-9236%2889%2990037-7</uri>
+        <pub-id pub-id-type="doi">10.1016/0167-9236(89)90037-7</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-saw">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Churchman</surname><given-names>C. West</given-names></name>
+          <name><surname>Ackoff</surname><given-names>Russell L.</given-names></name>
+        </person-group>
+        <article-title>An approximate measure of value</article-title>
+        <source>Journal of the Operations Research Society of America</source>
+        <publisher-name>Institute for Operations Research; the Management Sciences (INFORMS)</publisher-name>
+        <year iso-8601-date="1954-05">1954</year><month>05</month>
+        <volume>2</volume>
+        <issue>2</issue>
+        <uri>https://doi.org/10.1287%2Fopre.2.2.172</uri>
+        <pub-id pub-id-type="doi">10.1287/opre.2.2.172</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-aras">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Zavadskas</surname><given-names>Edmundas Kazimieras</given-names></name>
+          <name><surname>Turskis</surname><given-names>Zenonas</given-names></name>
+        </person-group>
+        <article-title>A new additive ratio assessment (ARAS) method in multicriteria decision-making</article-title>
+        <source>Technological and Economic Development of Economy</source>
+        <publisher-name>Taylor &amp; Francis</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <volume>16</volume>
+        <pub-id pub-id-type="doi">10.3846/tede.2010.10</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-waspas">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zavadskas</surname><given-names>E. K.</given-names></name>
+          <name><surname>Turskis</surname><given-names>Z.</given-names></name>
+          <name><surname>Antucheviciene</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>Optimization of weighted aggregated sum product assessment</article-title>
+        <source>Electronics and Electrical Engineering</source>
+        <publisher-name>Publishing House Technologija</publisher-name>
+        <year iso-8601-date="2012-06">2012</year><month>06</month>
+        <volume>122</volume>
+        <issue>6</issue>
+        <uri>https://doi.org/10.5755%2Fj01.eee.122.6.1810</uri>
+        <pub-id pub-id-type="doi">10.5755/j01.eee.122.6.1810</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-edas">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ghorabaee</surname><given-names>Mehdi Keshavarz</given-names></name>
+          <name><surname>Zavadskas</surname><given-names>Edmundas Kazimieras</given-names></name>
+          <name><surname>Olfat</surname><given-names>Laya</given-names></name>
+          <name><surname>Turskis</surname><given-names>Zenonas</given-names></name>
+        </person-group>
+        <article-title>Multi-criteria inventory classification using a new method of evaluation based on distance from average solution (EDAS)</article-title>
+        <source>Informatica</source>
+        <publisher-name>Vilnius University Press</publisher-name>
+        <year iso-8601-date="2015-01">2015</year><month>01</month>
+        <volume>26</volume>
+        <issue>3</issue>
+        <uri>https://doi.org/10.15388%2Finformatica.2015.57</uri>
+        <pub-id pub-id-type="doi">10.15388/informatica.2015.57</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mabac">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pamučar</surname><given-names>Dragan</given-names></name>
+          <name><surname>Ćirović</surname><given-names>Goran</given-names></name>
+        </person-group>
+        <article-title>The selection of transport and handling resources in logistics centers using multi-attributive border approximation area comparison (MABAC)</article-title>
+        <source>Expert Systems with Applications</source>
+        <publisher-name>Elsevier BV</publisher-name>
+        <year iso-8601-date="2015-04">2015</year><month>04</month>
+        <volume>42</volume>
+        <issue>6</issue>
+        <uri>https://doi.org/10.1016%2Fj.eswa.2014.11.057</uri>
+        <pub-id pub-id-type="doi">10.1016/j.eswa.2014.11.057</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-marcos">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Stević</surname></name>
+          <name><surname>Pamučar</surname><given-names>Dragan</given-names></name>
+          <name><surname>Puška</surname><given-names>Adis</given-names></name>
+          <name><surname>Chatterjee</surname><given-names>Prasenjit</given-names></name>
+        </person-group>
+        <article-title>Sustainable supplier selection in healthcare industries using a new MCDM method: Measurement of alternatives and ranking according to COmpromise solution (MARCOS)</article-title>
+        <source>Computers &amp; Industrial Engineering</source>
+        <publisher-name>Elsevier BV</publisher-name>
+        <year iso-8601-date="2020-02">2020</year><month>02</month>
+        <volume>140</volume>
+        <uri>https://doi.org/10.1016%2Fj.cie.2019.106231</uri>
+        <pub-id pub-id-type="doi">10.1016/j.cie.2019.106231</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mairca">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Pamučar</surname><given-names>Dragan</given-names></name>
+          <name><surname>Vasin</surname><given-names>Ljubislav</given-names></name>
+          <name><surname>Lukovac</surname><given-names>L</given-names></name>
+        </person-group>
+        <article-title>Selection of railway level crossings for investing in security equipment using hybrid TEL-MARICA model</article-title>
+        <source>XVI international scientific-expert conference on railway, railcon</source>
+        <year iso-8601-date="2014">2014</year>
+        <pub-id pub-id-type="doi">10.13140/2.1.2707.6807</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-copras">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Zavadskas</surname><given-names>Edmundas Kazimieras</given-names></name>
+          <name><surname>Kaklauskas</surname><given-names>Artūras</given-names></name>
+          <name><surname>Sarka</surname><given-names>V</given-names></name>
+        </person-group>
+        <article-title>The new method of multicriteria complex proportional assessment of projects</article-title>
+        <source>Technological and economic development of economy</source>
+        <year iso-8601-date="1994">1994</year>
+        <volume>1</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-cocoso">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yazdani</surname><given-names>Morteza</given-names></name>
+          <name><surname>Zarate</surname><given-names>Pascale</given-names></name>
+          <name><surname>Zavadskas</surname><given-names>Edmundas Kazimieras</given-names></name>
+          <name><surname>Turskis</surname><given-names>Zenonas</given-names></name>
+        </person-group>
+        <article-title>A combined compromise solution (CoCoSo) method for multi-criteria decision-making problems</article-title>
+        <source>Management Decision</source>
+        <publisher-name>Emerald</publisher-name>
+        <year iso-8601-date="2019-10">2019</year><month>10</month>
+        <volume>57</volume>
+        <issue>9</issue>
+        <uri>https://doi.org/10.1108%2Fmd-05-2017-0458</uri>
+        <pub-id pub-id-type="doi">10.1108/md-05-2017-0458</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-codas">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Keshavarz Ghorabaee</surname><given-names>Mehdi</given-names></name>
+          <name><surname>Zavadskas</surname><given-names>Edmundas Kazimieras</given-names></name>
+          <name><surname>Turskis</surname><given-names>Zenonas</given-names></name>
+          <name><surname>Antucheviciene</surname><given-names>Jurgita</given-names></name>
+        </person-group>
+        <article-title>A new combinative distance-based assessment (CODAS) method for multi-criteria decision-making</article-title>
+        <source>Economic Computation and Economic Cybernetics Studies and Research</source>
+        <publisher-name>Academy of Economic Studies in Bucharest</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>50</volume>
+        <uri>http://www.ecocyb.ase.ro/nr20163/02%20-%20Mehdi%20K.%20GHORABAEE,%20Ed.%20Zavadskas(T).pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-critic">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Diakoulaki</surname><given-names>D.</given-names></name>
+          <name><surname>Mavrotas</surname><given-names>G.</given-names></name>
+          <name><surname>Papayannakis</surname><given-names>L.</given-names></name>
+        </person-group>
+        <article-title>Determining objective weights in multiple criteria problems: The critic method</article-title>
+        <source>Computers &amp; Operations Research</source>
+        <publisher-name>Elsevier BV</publisher-name>
+        <year iso-8601-date="1995-08">1995</year><month>08</month>
+        <volume>22</volume>
+        <issue>7</issue>
+        <uri>https://doi.org/10.1016%2F0305-0548%2894%2900059-h</uri>
+        <pub-id pub-id-type="doi">10.1016/0305-0548(94)00059-h</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-entropy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Shannon</surname><given-names>C. E.</given-names></name>
+        </person-group>
+        <article-title>A mathematical theory of communication</article-title>
+        <source>Bell System Technical Journal</source>
+        <publisher-name>Institute of Electrical; Electronics Engineers (IEEE)</publisher-name>
+        <year iso-8601-date="1948-07">1948</year><month>07</month>
+        <volume>27</volume>
+        <issue>3</issue>
+        <uri>https://doi.org/10.1002%2Fj.1538-7305.1948.tb01338.x</uri>
+        <pub-id pub-id-type="doi">10.1002/j.1538-7305.1948.tb01338.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-dea">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Charnes</surname><given-names>A.</given-names></name>
+          <name><surname>Cooper</surname><given-names>W. W.</given-names></name>
+          <name><surname>Rhodes</surname><given-names>E.</given-names></name>
+        </person-group>
+        <article-title>Measuring the efficiency of decision making units</article-title>
+        <source>European Journal of Operational Research</source>
+        <publisher-name>Elsevier BV</publisher-name>
+        <year iso-8601-date="1978-11">1978</year><month>11</month>
+        <volume>2</volume>
+        <issue>6</issue>
+        <uri>https://doi.org/10.1016%2F0377-2217%2878%2990138-8</uri>
+        <pub-id pub-id-type="doi">10.1016/0377-2217(78)90138-8</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

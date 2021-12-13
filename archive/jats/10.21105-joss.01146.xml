@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1146</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01146</article-id>
+<title-group>
+<article-title>swsc: A sitewise UCE partitioner</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-9750-1925</contrib-id>
+<string-name>Ryan A. Hagenson</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Omaha’s Henry Doorly Zoo and Aquarium</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2018-12-04">
+<day>4</day>
+<month>12</month>
+<year>2018</year>
+</pub-date>
+<volume>4</volume>
+<issue>33</issue>
+<fpage>1146</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>ultraconserved elements</kwd>
+<kwd>partitioning</kwd>
+<kwd>entropy</kwd>
+<kwd>gc percentage</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Ultraconserved elements (UCEs) are regions of the genome that
+  retain partial identity across a vast number of species. This identity
+  retention makes UCEs especially useful for inferring otherwise
+  intractable phylogenies. UCE partitioning acts to split a UCE into
+  three parts: variable left flank, conserved core, and variable right
+  flank. The heightened variation found in the flanks allows for
+  phylogenetic inferences
+  (<xref alt="Baca et al., 2017" rid="ref-Baca2017" ref-type="bibr">Baca
+  et al., 2017</xref>;
+  <xref alt="Blaimer et al., 2016" rid="ref-Blaimer2016" ref-type="bibr">Blaimer
+  et al., 2016</xref>;
+  <xref alt="Crawford et al., 2012" rid="ref-Crawford2012" ref-type="bibr">Crawford
+  et al., 2012</xref>;
+  <xref alt="Faircloth et al., 2012" rid="ref-Faircloth2012" ref-type="bibr">Faircloth
+  et al., 2012</xref>,
+  <xref alt="2013" rid="ref-Faircloth2013" ref-type="bibr">2013</xref>;
+  <xref alt="Harrington et al., 2016" rid="ref-Harrington2016" ref-type="bibr">Harrington
+  et al., 2016</xref>;
+  <xref alt="McCormack et al., 2012" rid="ref-McCormack2012" ref-type="bibr">McCormack
+  et al., 2012</xref>;
+  <xref alt="Moyle et al., 2016" rid="ref-Moyle2016" ref-type="bibr">Moyle
+  et al., 2016</xref>;
+  <xref alt="Smith et al., 2014" rid="ref-Smith2014" ref-type="bibr">Smith
+  et al., 2014</xref>).</p>
+  <p>Based on a method originally described by
+  (<xref alt="Tagliacollo &amp; Lanfear, 2018" rid="ref-Tagliacollo2018" ref-type="bibr">Tagliacollo
+  &amp; Lanfear, 2018</xref>) as Sliding-Window Site Characteristics
+  (SWSC), <monospace>swsc</monospace> partitions UCEs based on chosen
+  sitewise metrics such as Shannon’s entropy or GC percentage. Input is
+  either a modified Nexus file or standard FASTA+CSV files, containing
+  the concatenated UCE sequences of individuals under analysis along
+  with the range of each UCE in the concatenation (see
+  <monospace>example-data/</monospace> in code repository for example
+  formats). Output is a single CSV containing the UCE partitions.
+  Optionally, a configuration file
+  for<monospace>PartitionFinder2</monospace> can be produced.</p>
+  <p>The original method by
+  (<xref alt="Tagliacollo &amp; Lanfear, 2018" rid="ref-Tagliacollo2018" ref-type="bibr">Tagliacollo
+  &amp; Lanfear, 2018</xref>) used a sequential, brute-force approach,
+  considering all potential core windows from the provided minimum
+  window size up to <inline-formula><alternatives>
+  <tex-math><![CDATA[1/3]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>1</mml:mn><mml:mi>/</mml:mi><mml:mn>3</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  of each UCE’s length. This is inefficient when small minimum window
+  sizes combined with either many UCEs or large UCEs. The method herein
+  uses a candidate windows plus extension procedure.</p>
+  <p>Overview of <monospace>swsc</monospace>’s candidate window plus
+  extension procedure:</p>
+  <list list-type="order">
+    <list-item>
+      <p>Generate candidate windows of size
+      <monospace>--minWin</monospace> across the UCE (both from the
+      start forward and the end backwards)</p>
+      <list list-type="bullet">
+        <list-item>
+          <p>Example: a UCE of length <inline-formula><alternatives>
+          <tex-math><![CDATA[120]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>120</mml:mn></mml:math></alternatives></inline-formula>
+          and <monospace>--minWin</monospace> of
+          <inline-formula><alternatives>
+          <tex-math><![CDATA[50]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>50</mml:mn></mml:math></alternatives></inline-formula>
+          has forward windows of <inline-formula><alternatives>
+          <tex-math><![CDATA[1-50]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:mn>50</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+          and <inline-formula><alternatives>
+          <tex-math><![CDATA[51-100]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>51</mml:mn><mml:mo>−</mml:mo><mml:mn>100</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>,
+          as well as backwards windows of <inline-formula><alternatives>
+          <tex-math><![CDATA[81-120]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>81</mml:mn><mml:mo>−</mml:mo><mml:mn>120</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+          and <inline-formula><alternatives>
+          <tex-math><![CDATA[31-80]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>31</mml:mn><mml:mo>−</mml:mo><mml:mn>80</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+        </list-item>
+      </list>
+    </list-item>
+    <list-item>
+      <p>Find the best <inline-formula><alternatives>
+      <tex-math><![CDATA[C]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>C</mml:mi></mml:math></alternatives></inline-formula>
+      candidates</p>
+      <list list-type="bullet">
+        <list-item>
+          <p>Fitness is determined by minimum sum of square errors of
+          sitewise metrics, minimum variance of left flank, core, right
+          flank lengths, and user preference for
+          <monospace>--largeCore</monospace> or not, in that order.</p>
+        </list-item>
+        <list-item>
+          <p>Minimum sum of square error finds the best core windows,
+          minimum variance acts to select more centered cores, while
+          user preference allows flexibility in desired results</p>
+        </list-item>
+      </list>
+    </list-item>
+    <list-item>
+      <p>Extend the best <inline-formula><alternatives>
+      <tex-math><![CDATA[C]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>C</mml:mi></mml:math></alternatives></inline-formula>
+      candidates by <inline-formula><alternatives>
+      <tex-math><![CDATA[1/2]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>1</mml:mn><mml:mi>/</mml:mi><mml:mn>2</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+      of <monospace>--minWin</monospace> in both directions; as well,
+      consider the single maximum window made by the lowest starting
+      position and highest stopping position among best
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[C]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>C</mml:mi></mml:math></alternatives></inline-formula>
+      candidates (not extended further)</p>
+    </list-item>
+    <list-item>
+      <p>Find the best window within the extended candidate windows set
+      using the same criteria as before</p>
+    </list-item>
+  </list>
+  <p>All UCEs are processed concurrently using the gorountines afforded
+  by the Go programming language – further speed up is bounded by
+  Amdahl’s law
+  (<xref alt="Amdahl, 1967" rid="ref-Amdahl1967" ref-type="bibr">Amdahl,
+  1967</xref>) as only IO is done sequentially.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>UCEs have the ability to resolve otherwise intractable phylogeny
+  questions, but as these questions confront resolving more distant
+  relationships or require longer UCEs to capture enough variation in
+  the flanks to be useful, a more efficient method is required. Using a
+  candidate window plus extension procedure cuts the combinatorial
+  search from definite:</p>
+  <p><inline-formula><alternatives>
+  <tex-math><![CDATA[\sum_{i=0}^{i=N}{\frac{n_i(n_i+1)}{2}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>0</mml:mn></mml:mrow><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mi>N</mml:mi></mml:mrow></mml:msubsup><mml:mfrac><mml:mrow><mml:msub><mml:mi>n</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>n</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>+</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow><mml:mn>2</mml:mn></mml:mfrac></mml:mrow></mml:math></alternatives></inline-formula></p>
+  <p>where <inline-formula><alternatives>
+  <tex-math><![CDATA[N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
+  is the number of UCEs, <inline-formula><alternatives>
+  <tex-math><![CDATA[n_i = (UCE_{i,L} - m \times 3) + 1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>n</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>U</mml:mi><mml:mi>C</mml:mi><mml:msub><mml:mi>E</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mo>,</mml:mo><mml:mi>L</mml:mi></mml:mrow></mml:msub><mml:mo>−</mml:mo><mml:mi>m</mml:mi><mml:mo>×</mml:mo><mml:mn>3</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>,
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[UCE_{i,L}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>U</mml:mi><mml:mi>C</mml:mi><mml:msub><mml:mi>E</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mo>,</mml:mo><mml:mi>L</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+  is the length of the <inline-formula><alternatives>
+  <tex-math><![CDATA[i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>-th
+  UCE</p>
+  <p>down to an upward bound of:</p>
+  <p><inline-formula><alternatives>
+  <tex-math><![CDATA[2 \sum_{i=1}^{i=N}{\lfloor \frac{UCE_{i,L}}{m}\rfloor} + C \frac{m(m+1)}{2}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>2</mml:mn><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mi>N</mml:mi></mml:mrow></mml:msubsup><mml:mrow><mml:mo stretchy="false" form="prefix">⌊</mml:mo><mml:mfrac><mml:mrow><mml:mi>U</mml:mi><mml:mi>C</mml:mi><mml:msub><mml:mi>E</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mo>,</mml:mo><mml:mi>L</mml:mi></mml:mrow></mml:msub></mml:mrow><mml:mi>m</mml:mi></mml:mfrac><mml:mo stretchy="false" form="postfix">⌋</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mi>C</mml:mi><mml:mfrac><mml:mrow><mml:mi>m</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>m</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow><mml:mn>2</mml:mn></mml:mfrac></mml:mrow></mml:math></alternatives></inline-formula></p>
+  <p>where <inline-formula><alternatives>
+  <tex-math><![CDATA[N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
+  is the number of UCEs, <inline-formula><alternatives>
+  <tex-math><![CDATA[UCE_{i,L}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>U</mml:mi><mml:mi>C</mml:mi><mml:msub><mml:mi>E</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mo>,</mml:mo><mml:mi>L</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+  is the length of the <inline-formula><alternatives>
+  <tex-math><![CDATA[i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>-th
+  UCE, <inline-formula><alternatives>
+  <tex-math><![CDATA[m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>m</mml:mi></mml:math></alternatives></inline-formula>
+  is the minimum window size, and <inline-formula><alternatives>
+  <tex-math><![CDATA[C]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>C</mml:mi></mml:math></alternatives></inline-formula>
+  is the number of best candidates to consider.</p>
+  <p>In the initial project <monospace>swsc</monospace> was built for
+  this change equated to roughly a <inline-formula><alternatives>
+  <tex-math><![CDATA[10^4]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mn>10</mml:mn><mml:mn>4</mml:mn></mml:msup></mml:math></alternatives></inline-formula>
+  order of reduction in the search space.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>I acknowledge Cynthia L. Frasier, Timothy M. Sefczek, and Melissa
+  T. R. Hawkins for their input on decisions made during
+  development.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Amdahl1967">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Amdahl</surname><given-names>Gene M</given-names></name>
+        </person-group>
+        <article-title>Validity of the single processor approach to achieving large scale computing capabilities</article-title>
+        <source>AFIPS spring joint computer conference</source>
+        <year iso-8601-date="1967">1967</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Baca2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Baca</surname><given-names>Stephen M.</given-names></name>
+          <name><surname>Alexander</surname><given-names>Alana</given-names></name>
+          <name><surname>Gustafson</surname><given-names>Grey T.</given-names></name>
+          <name><surname>Short</surname><given-names>Andrew E. Z.</given-names></name>
+        </person-group>
+        <article-title>Ultraconserved elements show utility in phylogenetic inference of Adephaga (Coleoptera) and suggest paraphyly of ‘Hydradephaga’</article-title>
+        <source>Systematic Entomology</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>42</volume>
+        <issue>4</issue>
+        <issn>13653113</issn>
+        <pub-id pub-id-type="doi">10.1111/syen.12244</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Blaimer2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Blaimer</surname><given-names>Bonnie B.</given-names></name>
+          <name><surname>Lloyd</surname><given-names>Michael W.</given-names></name>
+          <name><surname>Guillory</surname><given-names>Wilson X.</given-names></name>
+          <name><surname>Brady</surname><given-names>Seán G.</given-names></name>
+        </person-group>
+        <article-title>Sequence capture and phylogenetic utility of genomic ultraconserved elements obtained from pinned insect specimens</article-title>
+        <source>PLoS ONE</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>11</volume>
+        <issue>8</issue>
+        <issn>19326203</issn>
+        <pub-id pub-id-type="doi">10.1371/journal.pone.0161531</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Crawford2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Crawford</surname><given-names>Nicholas G.</given-names></name>
+          <name><surname>Faircloth</surname><given-names>Brant C.</given-names></name>
+          <name><surname>McCormack</surname><given-names>John E.</given-names></name>
+          <name><surname>Brumfield</surname><given-names>Robb T.</given-names></name>
+          <name><surname>Winker</surname><given-names>Kevin</given-names></name>
+          <name><surname>Glenn</surname><given-names>Travis C.</given-names></name>
+        </person-group>
+        <article-title>More than 1000 ultraconserved elements provide evidence that turtles are the sister group of archosaurs</article-title>
+        <source>Biology Letters</source>
+        <year iso-8601-date="2012">2012</year>
+        <volume>8</volume>
+        <issue>5</issue>
+        <isbn>1744-9561</isbn>
+        <issn>1744957X</issn>
+        <uri>https://arxiv.org/abs/NIHMS150003</uri>
+        <pub-id pub-id-type="doi">10.1098/rsbl.2012.0331</pub-id>
+        <pub-id pub-id-type="pmid">22593086</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Faircloth2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Faircloth</surname><given-names>Brant C.</given-names></name>
+          <name><surname>McCormack</surname><given-names>John E.</given-names></name>
+          <name><surname>Crawford</surname><given-names>Nicholas G.</given-names></name>
+          <name><surname>Harvey</surname><given-names>Michael G.</given-names></name>
+          <name><surname>Brumfield</surname><given-names>Robb T.</given-names></name>
+          <name><surname>Glenn</surname><given-names>Travis C.</given-names></name>
+        </person-group>
+        <article-title>Ultraconserved elements anchor thousands of genetic markers spanning multiple evolutionary timescales</article-title>
+        <source>Systematic Biology</source>
+        <year iso-8601-date="2012">2012</year>
+        <volume>61</volume>
+        <issue>5</issue>
+        <isbn>1076-836X (Electronic)$\backslash$n1063-5157 (Linking)</isbn>
+        <issn>10635157</issn>
+        <pub-id pub-id-type="doi">10.1093/sysbio/sys004</pub-id>
+        <pub-id pub-id-type="pmid">22232343</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Faircloth2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Faircloth</surname><given-names>Brant C.</given-names></name>
+          <name><surname>Sorenson</surname><given-names>Laurie</given-names></name>
+          <name><surname>Santini</surname><given-names>Francesco</given-names></name>
+          <name><surname>Alfaro</surname><given-names>Michael E.</given-names></name>
+        </person-group>
+        <article-title>A Phylogenomic Perspective on the Radiation of Ray-Finned Fishes Based upon Targeted Sequencing of Ultraconserved Elements (UCEs)</article-title>
+        <source>PLoS ONE</source>
+        <year iso-8601-date="2013">2013</year>
+        <volume>8</volume>
+        <issue>6</issue>
+        <isbn>10.1371/journal.pone.0065923</isbn>
+        <issn>19326203</issn>
+        <uri>https://arxiv.org/abs/1210.0120</uri>
+        <pub-id pub-id-type="doi">10.1371/journal.pone.0065923</pub-id>
+        <pub-id pub-id-type="pmid">23824177</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Harrington2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Harrington</surname><given-names>Richard C.</given-names></name>
+          <name><surname>Faircloth</surname><given-names>Brant C.</given-names></name>
+          <name><surname>Eytan</surname><given-names>Ron I.</given-names></name>
+          <name><surname>Smith</surname><given-names>W. Leo</given-names></name>
+          <name><surname>Near</surname><given-names>Thomas J.</given-names></name>
+          <name><surname>Alfaro</surname><given-names>Michael E.</given-names></name>
+          <name><surname>Friedman</surname><given-names>Matt</given-names></name>
+        </person-group>
+        <article-title>Phylogenomic analysis of carangimorph fishes reveals flatfish asymmetry arose in a blink of the evolutionary eye</article-title>
+        <source>BMC Evolutionary Biology</source>
+        <publisher-name>BMC Evolutionary Biology</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>16</volume>
+        <issue>1</issue>
+        <isbn>1471-2148 (Electronic)$\backslash$r1471-2148 (Linking)</isbn>
+        <issn>14712148</issn>
+        <uri>http://dx.doi.org/10.1186/s12862-016-0786-x</uri>
+        <pub-id pub-id-type="doi">10.1186/s12862-016-0786-x</pub-id>
+        <pub-id pub-id-type="pmid">27769164</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-McCormack2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>McCormack</surname><given-names>John E.</given-names></name>
+          <name><surname>Faircloth</surname><given-names>Brant C.</given-names></name>
+          <name><surname>Crawford</surname><given-names>Nicholas G.</given-names></name>
+          <name><surname>Gowaty</surname><given-names>Patricia Adair</given-names></name>
+          <name><surname>Brumfield</surname><given-names>Robb T.</given-names></name>
+          <name><surname>Glenn</surname><given-names>Travis C.</given-names></name>
+        </person-group>
+        <article-title>Ultraconserved elements are novel phylogenomic markers that resolve placental mammal phylogeny when combined with species-tree analysis</article-title>
+        <source>Genome Research</source>
+        <year iso-8601-date="2012">2012</year>
+        <volume>22</volume>
+        <issue>4</issue>
+        <isbn>1088-9051</isbn>
+        <issn>10889051</issn>
+        <uri>http://genome.cshlp.org/cgi/doi/10.1101/gr.125864.111</uri>
+        <pub-id pub-id-type="doi">10.1101/gr.125864.111</pub-id>
+        <pub-id pub-id-type="pmid">22207614</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Moyle2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Moyle</surname><given-names>Robert G.</given-names></name>
+          <name><surname>Oliveros</surname><given-names>Carl H.</given-names></name>
+          <name><surname>Andersen</surname><given-names>Michael J.</given-names></name>
+          <name><surname>Hosner</surname><given-names>Peter A.</given-names></name>
+          <name><surname>Benz</surname><given-names>Brett W.</given-names></name>
+          <name><surname>Manthey</surname><given-names>Joseph D.</given-names></name>
+          <name><surname>Travers</surname><given-names>Scott L.</given-names></name>
+          <name><surname>Brown</surname><given-names>Rafe M.</given-names></name>
+          <name><surname>Faircloth</surname><given-names>Brant C.</given-names></name>
+        </person-group>
+        <article-title>Tectonic collision and uplift of Wallacea triggered the global songbird radiation</article-title>
+        <source>Nature Communications</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>7</volume>
+        <isbn>2041-1723 (Electronic)$\backslash$r2041-1723 (Linking)</isbn>
+        <issn>00406090</issn>
+        <uri>http://dx.doi.org/10.1038/ncomms12709</uri>
+        <pub-id pub-id-type="doi">10.1016/0040-6090(84)90224-4</pub-id>
+        <pub-id pub-id-type="pmid">27575437</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Smith2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Smith</surname><given-names>Brian Tilston</given-names></name>
+          <name><surname>Harvey</surname><given-names>Michael G.</given-names></name>
+          <name><surname>Faircloth</surname><given-names>Brant C.</given-names></name>
+          <name><surname>Glenn</surname><given-names>Travis C.</given-names></name>
+          <name><surname>Brumfield</surname><given-names>Robb T.</given-names></name>
+        </person-group>
+        <article-title>Target capture and massively parallel sequencing of ultraconserved elements for comparative studies at shallow evolutionary time scales</article-title>
+        <source>Systematic Biology</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>63</volume>
+        <issue>1</issue>
+        <isbn>1063-5157</isbn>
+        <issn>1076836X</issn>
+        <uri>https://arxiv.org/abs/1308.5342</uri>
+        <pub-id pub-id-type="doi">10.1093/sysbio/syt061</pub-id>
+        <pub-id pub-id-type="pmid">24021724</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Tagliacollo2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tagliacollo</surname><given-names>Victor A.</given-names></name>
+          <name><surname>Lanfear</surname><given-names>Robert</given-names></name>
+        </person-group>
+        <article-title>Estimating improved partitioning schemes for ultraconserved elements</article-title>
+        <source>Molecular Biology and Evolution</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>35</volume>
+        <issue>7</issue>
+        <isbn>0000000000</isbn>
+        <issn>15371719</issn>
+        <pub-id pub-id-type="doi">10.1093/molbev/msy069</pub-id>
+        <pub-id pub-id-type="pmid">29659989</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

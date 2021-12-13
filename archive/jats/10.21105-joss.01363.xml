@@ -1,0 +1,690 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1363</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01363</article-id>
+<title-group>
+<article-title>ACHR.cu: GPU-accelerated sampling of metabolic
+networks</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-5934-966X</contrib-id>
+<string-name>Marouen Ben Guebila</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Luxembourg Centre for Systems Biomedicine, University of
+Luxembourg, Esch-sur-Alzette, Luxembourg.</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-03-03">
+<day>3</day>
+<month>3</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>37</issue>
+<fpage>1363</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>cuda</kwd>
+<kwd>metabolism</kwd>
+<kwd>constraint-based modeling</kwd>
+<kwd>GPU</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>The <italic>in silico</italic> modeling of biological organisms
+  consists of the mathematical representation of key functions of a
+  biological system and the study of its behavior in different
+  conditions and environments. It serves as a tool to support wet lab
+  experiments and to generate hypotheses about the functioning of the
+  subsystems. Among the many biological products, metabolism is the most
+  amenable to modeling because it is directly related to key biological
+  functions and processes. Moreover, public data resources of several
+  metabolites and their abundances have been developing rapidly in
+  recent years thereby enabling applications in many areas. In
+  biotechnology, the metabolic modeling of ethanol-producing bacteria
+  allows finding key interventions, such as substrate optimization, that
+  would increase the yield in the bioreactor and improve its efficiency
+  (<xref alt="Radhakrishnan Mahadevan et al., 2005" rid="ref-mahadevan2005applications" ref-type="bibr">Radhakrishnan
+  Mahadevan et al., 2005</xref>).</p>
+  <p>Recently, high-throughput technologies allowed to generate a large
+  amount of biological data that enabled complex modeling of biological
+  systems. As models expand in size, the tools used for their analysis
+  have to be appropriately scaled to include the use of parallel
+  software.</p>
+  <p>A tool of choice for the analysis of metabolic models is the
+  sampling of the space of their possible phenotypes. Instead of
+  considering one specific biological function of interest, sampling is
+  an unbiased tool for metabolic modeling that explores all the space of
+  possible metabolic phenotypes. For large models, sampling becomes
+  expensive both in time and computational resources. To make sampling
+  accessible in the modeler’s toolbox, we present ACHR.cu which is a
+  fast Graphical Processing Unit (GPU) implementation of the sampling
+  algorithm Artificial Centering Hit-and-Run (ACHR)
+  (<xref alt="Kaufman &amp; Smith, 1998" rid="ref-kaufman1998direction" ref-type="bibr">Kaufman
+  &amp; Smith, 1998</xref>) using the parallel computing platform CUDA
+  (<xref alt="Nickolls et al., 2008" rid="ref-nickolls2008scalable" ref-type="bibr">Nickolls
+  et al., 2008</xref>).</p>
+</sec>
+<sec id="results">
+  <title>Results</title>
+  <p>Metabolic models are networks of <inline-formula><alternatives>
+  <tex-math><![CDATA[m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>m</mml:mi></mml:math></alternatives></inline-formula>
+  metabolites involved in <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>
+  reactions. Briefly, they are formulated as linear programs
+  (<xref alt="O’Brien et al., 2015" rid="ref-o2015using" ref-type="bibr">O’Brien
+  et al., 2015</xref>) using the stoichiometric matrix
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[S_{(m,n)}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>S</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>m</mml:mi><mml:mo>,</mml:mo><mml:mi>n</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>.
+  A central hypothesis in metabolic modeling is the steady-state
+  assumption, meaning that generating fluxes are equal to degrading
+  fluxes and the rate of change of metabolite concentrations is null.
+  Mathematically, the steady-state assumption translates to constraining
+  the solution space to the null space of the stoichiometric matrix
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[S_{(m,n)}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>S</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>m</mml:mi><mml:mo>,</mml:mo><mml:mi>n</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>.</p>
+  <p>The solution to the linear program allows finding flux values in
+  the network that achieve the objective function of interest.
+  Particularly, ACHR allows obtaining a distribution of possible fluxes
+  for each reaction.</p>
+  <p>The sampling of the solution space of metabolic models is a
+  two-step process:</p>
+  <sec id="generation-of-warmup-points">
+    <title>Generation of warmup points</title>
+    <p>The first step of sampling the solution space of metabolic models
+    involves the generation of warmup points that are solutions to the
+    metabolic model’s linear program. The sampling chain starts from
+    those solutions to explore the solution space.</p>
+    <p>The generation of <inline-formula><alternatives>
+    <tex-math><![CDATA[p \geq 2n]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>≥</mml:mo><mml:mn>2</mml:mn><mml:mi>n</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    warmup points corresponds to flux variability analysis (FVA)
+    (<xref alt="R. Mahadevan &amp; Schilling, 2003" rid="ref-mahadevan2003effects" ref-type="bibr">R.
+    Mahadevan &amp; Schilling, 2003</xref>) solutions for the first
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[2n]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>2</mml:mn><mml:mi>n</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    points, with <inline-formula><alternatives>
+    <tex-math><![CDATA[n]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>
+    the number of reactions in the network and the objective function is
+    to minimize and maximize each reaction in the model (hence
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[2n]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>2</mml:mn><mml:mi>n</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>).
+    For the remaining <inline-formula><alternatives>
+    <tex-math><![CDATA[p - 2n]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>−</mml:mo><mml:mn>2</mml:mn><mml:mi>n</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    points, they correspond to solutions generated using a random
+    objective vector <inline-formula><alternatives>
+    <tex-math><![CDATA[c_{(n,1)}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>c</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>n</mml:mi><mml:mo>,</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+    in the linear program.</p>
+    <p>The generation of warmup points is a time-consuming process and
+    requires the use of more than one core in parallel. The distribution
+    of the points to generate among the <inline-formula><alternatives>
+    <tex-math><![CDATA[nc]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>n</mml:mi><mml:mi>c</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    cores of the computer is often performed through static balancing
+    with each core getting <inline-formula><alternatives>
+    <tex-math><![CDATA[p/nc]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mi>/</mml:mi><mml:mi>n</mml:mi><mml:mi>c</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    points to generate. Nevertheless, the formulation of the problem
+    induces a significant imbalance in the distribution of work, meaning
+    that the workers will not converge at the same time thereby slowing
+    down the overall process. We showed previously that FVA is
+    imbalanced, especially with metabolism-expression models
+    (<xref alt="Guebila, 2018" rid="ref-guebila2018dynamic" ref-type="bibr">Guebila,
+    2018</xref>). The generation of warmup points through random
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[c]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>c</mml:mi></mml:math></alternatives></inline-formula>
+    vectors of objective coefficients is yet another factor to favor
+    ill-conditioned problems and the imbalance between the parallel
+    workers.</p>
+    <p>To address the imbalance between the workers, dynamic loading
+    balancing as implemented through the OpenMP parallel library in C
+    (<xref alt="Dagum &amp; Menon, 1998" rid="ref-dagum1998openmp" ref-type="bibr">Dagum
+    &amp; Menon, 1998</xref>) allows assigning fewer points to workers
+    that required more time to solve previous chunks of reactions. In
+    the end, the workers converge at the same time.</p>
+    <p>Given this background, the generation of 30,000 warmup points
+    using an OpenMP dynamically load balanced implementation
+    (CreateWarmupVF)
+    (<xref alt="Guebila, 2018" rid="ref-guebila2018dynamic" ref-type="bibr">Guebila,
+    2018</xref>) and the MATLAB version (CreateWarmupMATLAB) were
+    compared on three metabolic models, i.e., E. coli core
+    (<xref alt="Orth et al., 2010" rid="ref-orth2010reconstruction" ref-type="bibr">Orth
+    et al., 2010</xref>), P. putida
+    (<xref alt="Nogales et al., 2008" rid="ref-nogales2008genome" ref-type="bibr">Nogales
+    et al., 2008</xref>), and Recon2
+    (<xref alt="Thiele et al., 2013" rid="ref-thiele2013community" ref-type="bibr">Thiele
+    et al., 2013</xref>). The speedup achieved by CreateWarmupVF over
+    CreateWarmupMATLAB was substantial (up to 50 fold)
+    (<xref alt="Guebila, 2018" rid="ref-guebila2018dynamic" ref-type="bibr">Guebila,
+    2018</xref>) and showed the power of dynamic load balancing in
+    ill-conditioned parallel problems. Using the generated warmup
+    points, the uniform sampling process can start to explore the
+    solution space.</p>
+  </sec>
+  <sec id="sampling-of-the-solution-space">
+    <title>Sampling of the solution space</title>
+    <p>Second, the sampling of the solution space of metabolic models
+    involves the generation of sampling chains starting from the warmup
+    points. The sampling in MATLAB was performed using the ACHR serial
+    function using one sampling chain, and each point was saved after
+    1000 steps. The GPU parallel version (ACHR.cu) creates one chain for
+    each point executed by one thread in the GPU. Moreover, each thread
+    can call additional threads to perform large matrix operations using
+    the grid nesting and dynamic parallelism capabilities of the new
+    NVIDIA cards (<monospace>sm_35</monospace> and higher). When
+    compared to the CPU, the speedup with the GPU is quite important as
+    reported in table 1. It is noteworthy that even for a single core,
+    the CPU is multithreaded especially with optimized MATLAB base
+    functions such as min and max, and that despite a large number of
+    cores in the GPU, they are slow (0.7 GHz) in comparison to CPU (3.5
+    GHz).</p>
+    <table-wrap>
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th><inline-formula><alternatives>
+            <tex-math><![CDATA[m]]></tex-math>
+            <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>m</mml:mi></mml:math></alternatives></inline-formula>/<inline-formula><alternatives>
+            <tex-math><![CDATA[n]]></tex-math>
+            <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula></th>
+            <th>Points</th>
+            <th>Steps per point</th>
+            <th>Intel Xeon (3.5 GHz)</th>
+            <th>Tesla K40</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>E. coli core</td>
+            <td>72/95</td>
+            <td>1000</td>
+            <td>1000</td>
+            <td>42</td>
+            <td>2 (SVD)</td>
+          </tr>
+          <tr>
+            <td>E. coli core</td>
+            <td>72/95</td>
+            <td>5000</td>
+            <td>1000</td>
+            <td>208</td>
+            <td>12 (SVD)</td>
+          </tr>
+          <tr>
+            <td>E. coli core</td>
+            <td>72/95</td>
+            <td>10000</td>
+            <td>1000</td>
+            <td>420</td>
+            <td>24 (SVD)</td>
+          </tr>
+          <tr>
+            <td>P. putida</td>
+            <td>911/1060</td>
+            <td>1000</td>
+            <td>1000</td>
+            <td>103</td>
+            <td>17 (SVD)</td>
+          </tr>
+          <tr>
+            <td>P. putida</td>
+            <td>911/1060</td>
+            <td>5000</td>
+            <td>1000</td>
+            <td>516</td>
+            <td>70 (SVD)</td>
+          </tr>
+          <tr>
+            <td>P. putida</td>
+            <td>911/1060</td>
+            <td>10000</td>
+            <td>1000</td>
+            <td>1081</td>
+            <td>138 (SVD)</td>
+          </tr>
+          <tr>
+            <td>Recon2</td>
+            <td>4036/7324</td>
+            <td>1000</td>
+            <td>1000</td>
+            <td>2815</td>
+            <td>269 (QR)</td>
+          </tr>
+          <tr>
+            <td>Recon2</td>
+            <td>4036/7324</td>
+            <td>5000</td>
+            <td>1000</td>
+            <td>14014</td>
+            <td>1110 (QR)</td>
+          </tr>
+          <tr>
+            <td>Recon2</td>
+            <td>4036/7324</td>
+            <td>10000</td>
+            <td>1000</td>
+            <td>28026</td>
+            <td>2240 (QR)</td>
+          </tr>
+        </tbody>
+      </table>
+    </table-wrap>
+    <p>Table 1: Runtimes in seconds of ACHR in MATLAB and ACHR.cu for a
+    set of metabolic models starting from 30,000 warmup points. SVD and
+    QR refer to the implementation of the null space computation,
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[m]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>m</mml:mi></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[n]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>
+    respectively refer to the number of metabolites and reactions in the
+    model.</p>
+    <p>The implementation of null space computation to constrain the
+    metabolic model was a significant determinant in the final runtime,
+    and the fastest implementation was reported (Table 1). Particularly,
+    there was a tradeoff between memory usage and access, and the
+    computation time when either QR or Singular Value Decomposition
+    (SVD) was used.</p>
+    <p>While computing the SVD of the <inline-formula><alternatives>
+    <tex-math><![CDATA[S]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>S</mml:mi></mml:math></alternatives></inline-formula>
+    matrix is generally more precise than QR, it is not prone to
+    parallel computation in the GPU which can be even slower than the
+    CPU in some cases. However, computing the null space through QR
+    decomposition is faster but less precise and consumes more memory as
+    it takes all the dimensions of the matrix in contrast to SVD that
+    removes columns below a given precision of the singular values.</p>
+    <p>Finally, ACHR.cu was developed as a high-performance tool for the
+    modeling of metabolic networks using a parallel architecture that
+    segregates the generation of warmup points and the sampling.</p>
+  </sec>
+</sec>
+<sec id="comparison-to-existing-software">
+  <title>Comparison to existing software</title>
+  <p>Conceptually, the architecture of the parallel GPU implementation
+  of ACHR.cu is similar to the MATLAB Cobra Toolbox
+  (<xref alt="Heirendt et al., 2019" rid="ref-heirendt2019creation" ref-type="bibr">Heirendt
+  et al., 2019</xref>) GpSampler. Another tool, OptGpSampler
+  (<xref alt="Megchelenbrink et al., 2014" rid="ref-megchelenbrink2014optgpsampler" ref-type="bibr">Megchelenbrink
+  et al., 2014</xref>) provides up to 40 fold speedup over GpSampler
+  through a i) C implementation and ii) fewer but longer sampling chains
+  launch. Since OptGpSampler performs the generation of the warmup
+  points and the sampling in one process, it is clear from the results
+  of the current work that the speedup achieved with the generation of
+  warmup points is more significant than sampling itself. We decoupled
+  the generation of warmup points from sampling to take advantage of
+  dynamic load balancing with OpenMP. Additionally, in OptGpSampler each
+  worker gets the same amount of points and steps to compute; the
+  problem is statically load balanced by design. In contrast, when the
+  generation of warmup points is performed separately from sampling, the
+  problem can be dynamically balanced and the parallel workers are
+  ensured to converge simultaneously.</p>
+  <p>Finally, future improvements of this work can consider an MPI/CUDA
+  hybrid to take advantage of the multi-GPU architecture of recent
+  NVIDIA cards like the K80. Additionally, the integration of LP solvers
+  on the GPU
+  (<xref alt="Charlton et al., 2019" rid="ref-charlton2019two" ref-type="bibr">Charlton
+  et al., 2019</xref>;
+  <xref alt="Gurung &amp; Ray, 2019" rid="ref-gurung2019simultaneous" ref-type="bibr">Gurung
+  &amp; Ray, 2019</xref>;
+  <xref alt="Li et al., 2011" rid="ref-li2011gpu" ref-type="bibr">Li et
+  al., 2011</xref>) can help the development of end-to-end sampling
+  solutions. Taken together, the parallel architecture of ACHR.cu allows
+  faster sampling of metabolic models over existing tools thereby
+  enabling the unbiased analyses of large-scale systems biology
+  models.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>The experiments presented in this paper were carried out using the
+  HPC facilities of the University of Luxembourg
+  (<xref alt="Varrette et al., 2014" rid="ref-VBCG_HPCS14" ref-type="bibr">Varrette
+  et al., 2014</xref>) – see
+  <ext-link ext-link-type="uri" xlink:href="https://hpc.uni.lu">https://hpc.uni.lu</ext-link>.
+  The author acknowledges the support of the Fonds National de la
+  Recherche’s National Centre of Excellence in Research on Parkinson’s
+  disease (FNR-NCER-PD).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-megchelenbrink2014optgpsampler">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Megchelenbrink</surname><given-names>Wout</given-names></name>
+          <name><surname>Huynen</surname><given-names>Martijn</given-names></name>
+          <name><surname>Marchiori</surname><given-names>Elena</given-names></name>
+        </person-group>
+        <article-title>optGpSampler: An improved tool for uniformly sampling the solution-space of genome-scale metabolic networks</article-title>
+        <source>PloS one</source>
+        <publisher-name>Public Library of Science</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>9</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1371/journal.pone.0086587</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-guebila2018dynamic">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Guebila</surname><given-names>Marouen Ben</given-names></name>
+        </person-group>
+        <article-title>Dynamic load balancing enables large-scale flux variability analysis</article-title>
+        <source>bioRxiv</source>
+        <publisher-name>Cold Spring Harbor Laboratory</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <pub-id pub-id-type="doi">10.1101/440701</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-nickolls2008scalable">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Nickolls</surname><given-names>John</given-names></name>
+          <name><surname>Buck</surname><given-names>Ian</given-names></name>
+          <name><surname>Garland</surname><given-names>Michael</given-names></name>
+        </person-group>
+        <article-title>Scalable parallel programming</article-title>
+        <source>2008 IEEE hot chips 20 symposium (HCS)</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2008">2008</year>
+        <pub-id pub-id-type="doi">10.1145/1365490.1365500</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kaufman1998direction">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kaufman</surname><given-names>David E</given-names></name>
+          <name><surname>Smith</surname><given-names>Robert L</given-names></name>
+        </person-group>
+        <article-title>Direction choice for accelerated convergence in hit-and-run sampling</article-title>
+        <source>Operations Research</source>
+        <publisher-name>INFORMS</publisher-name>
+        <year iso-8601-date="1998">1998</year>
+        <volume>46</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1287/opre.46.1.84</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-VBCG_HPCS14">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Varrette</surname><given-names>S.</given-names></name>
+          <name><surname>Bouvry</surname><given-names>P.</given-names></name>
+          <name><surname>Cartiaux</surname><given-names>H.</given-names></name>
+          <name><surname>Georgatos</surname><given-names>F.</given-names></name>
+        </person-group>
+        <article-title>Management of an academic HPC cluster: The UL experience</article-title>
+        <source>Proc. Of the 2014 intl. Conf. On high performance computing &amp; simulation (HPCS 2014)</source>
+        <publisher-name>IEEE</publisher-name>
+        <publisher-loc>Bologna, Italy</publisher-loc>
+        <year iso-8601-date="2014">2014</year>
+        <pub-id pub-id-type="doi">10.1109/hpcsim.2014.6903792</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-heirendt2019creation">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Heirendt</surname><given-names>Laurent</given-names></name>
+          <name><surname>Arreckx</surname><given-names>Sylvain</given-names></name>
+          <name><surname>Pfau</surname><given-names>Thomas</given-names></name>
+          <name><surname>Mendoza</surname><given-names>Sebastián N</given-names></name>
+          <name><surname>Richelle</surname><given-names>Anne</given-names></name>
+          <name><surname>Heinken</surname><given-names>Almut</given-names></name>
+          <name><surname>Haraldsdóttir</surname><given-names>Hulda S</given-names></name>
+          <name><surname>Wachowiak</surname><given-names>Jacek</given-names></name>
+          <name><surname>Keating</surname><given-names>Sarah M</given-names></name>
+          <name><surname>Vlasov</surname><given-names>Vanja</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Creation and analysis of biochemical constraint-based models using the COBRA toolbox v. 3.0</article-title>
+        <source>Nature protocols</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <pub-id pub-id-type="doi">10.1038/s41596-018-0098-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-o2015using">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>O’Brien</surname><given-names>Edward J</given-names></name>
+          <name><surname>Monk</surname><given-names>Jonathan M</given-names></name>
+          <name><surname>Palsson</surname><given-names>Bernhard O</given-names></name>
+        </person-group>
+        <article-title>Using genome-scale models to predict biological capabilities</article-title>
+        <source>Cell</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <volume>161</volume>
+        <issue>5</issue>
+        <pub-id pub-id-type="doi">10.1016/j.cell.2015.05.019</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mahadevan2003effects">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mahadevan</surname><given-names>R</given-names></name>
+          <name><surname>Schilling</surname><given-names>CH</given-names></name>
+        </person-group>
+        <article-title>The effects of alternate optimal solutions in constraint-based genome-scale metabolic models</article-title>
+        <source>Metabolic engineering</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2003">2003</year>
+        <volume>5</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1016/j.ymben.2003.09.002</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-dagum1998openmp">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dagum</surname><given-names>Leonardo</given-names></name>
+          <name><surname>Menon</surname><given-names>Ramesh</given-names></name>
+        </person-group>
+        <article-title>OpenMP: An industry-standard API for shared-memory programming</article-title>
+        <source>Computing in Science &amp; Engineering</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="1998">1998</year>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1109/99.660313</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mahadevan2005applications">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mahadevan</surname><given-names>Radhakrishnan</given-names></name>
+          <name><surname>Burgard</surname><given-names>Anthony P.</given-names></name>
+          <name><surname>Famili</surname><given-names>Iman</given-names></name>
+          <name><surname>Dien</surname><given-names>Steve Van</given-names></name>
+          <name><surname>Schilling</surname><given-names>Christophe H.</given-names></name>
+        </person-group>
+        <article-title>Applications of metabolic modeling to drive bioprocess development for the production of value-added chemicals</article-title>
+        <source>Biotechnology and Bioprocess Engineering</source>
+        <year iso-8601-date="2005-10">2005</year><month>10</month>
+        <volume>10</volume>
+        <issue>5</issue>
+        <pub-id pub-id-type="doi">10.1007/bf02989823</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-thiele2013community">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Thiele</surname><given-names>Ines</given-names></name>
+          <name><surname>Swainston</surname><given-names>Neil</given-names></name>
+          <name><surname>Fleming</surname><given-names>Ronan M T</given-names></name>
+          <name><surname>Hoppe</surname><given-names>Andreas</given-names></name>
+          <name><surname>Sahoo</surname><given-names>Swagatika</given-names></name>
+          <name><surname>Aurich</surname><given-names>Maike K</given-names></name>
+          <name><surname>Haraldsdottir</surname><given-names>Hulda</given-names></name>
+          <name><surname>Mo</surname><given-names>Monica L</given-names></name>
+          <name><surname>Rolfsson</surname><given-names>Ottar</given-names></name>
+          <name><surname>Stobbe</surname><given-names>Miranda D</given-names></name>
+          <name><surname>Thorleifsson</surname><given-names>Stefan G</given-names></name>
+          <name><surname>Agren</surname><given-names>Rasmus</given-names></name>
+          <name><surname>Bölling</surname><given-names>Christian</given-names></name>
+          <name><surname>Bordel</surname><given-names>Sergio</given-names></name>
+          <name><surname>Chavali</surname><given-names>Arvind K</given-names></name>
+          <name><surname>Dobson</surname><given-names>Paul</given-names></name>
+          <name><surname>Dunn</surname><given-names>Warwick B</given-names></name>
+          <name><surname>Endler</surname><given-names>Lukas</given-names></name>
+          <name><surname>Hala</surname><given-names>David</given-names></name>
+          <name><surname>Hucka</surname><given-names>Michael</given-names></name>
+          <name><surname>Hull</surname><given-names>Duncan</given-names></name>
+          <name><surname>Jameson</surname><given-names>Daniel</given-names></name>
+          <name><surname>Jamshidi</surname><given-names>Neema</given-names></name>
+          <name><surname>Jonsson</surname><given-names>Jon J</given-names></name>
+          <name><surname>Juty</surname><given-names>Nick</given-names></name>
+          <name><surname>Keating</surname><given-names>Sarah</given-names></name>
+          <name><surname>Nookaew</surname><given-names>Intawat</given-names></name>
+          <name><surname>Novère</surname><given-names>Nicolas Le</given-names></name>
+          <name><surname>Malys</surname><given-names>Naglis</given-names></name>
+          <name><surname>Mazein</surname><given-names>Alexander</given-names></name>
+          <name><surname>Papin</surname><given-names>Jason A</given-names></name>
+          <name><surname>Price</surname><given-names>Nathan D</given-names></name>
+          <name><surname>Selkov</surname><given-names>Evgeni</given-names></name>
+          <name><surname>Sigurdsson</surname><given-names>Martin I</given-names></name>
+          <name><surname>Simeonidis</surname><given-names>Evangelos</given-names></name>
+          <name><surname>Sonnenschein</surname><given-names>Nikolaus</given-names></name>
+          <name><surname>Smallbone</surname><given-names>Kieran</given-names></name>
+          <name><surname>Sorokin</surname><given-names>Anatoly</given-names></name>
+          <name><surname>Beek</surname><given-names>Johannes H G M van</given-names></name>
+          <name><surname>Weichart</surname><given-names>Dieter</given-names></name>
+          <name><surname>Goryanin</surname><given-names>Igor</given-names></name>
+          <name><surname>Nielsen</surname><given-names>Jens</given-names></name>
+          <name><surname>Westerhoff</surname><given-names>Hans V</given-names></name>
+          <name><surname>Kell</surname><given-names>Douglas B</given-names></name>
+          <name><surname>Mendes</surname><given-names>Pedro</given-names></name>
+          <name><surname>Palsson</surname><given-names>Bernhard Ø</given-names></name>
+        </person-group>
+        <article-title>A community-driven global reconstruction of human metabolism</article-title>
+        <source>Nature Biotechnology</source>
+        <publisher-name>Springer Nature</publisher-name>
+        <year iso-8601-date="2013-03">2013</year><month>03</month>
+        <volume>31</volume>
+        <issue>5</issue>
+        <pub-id pub-id-type="doi">10.1038/nbt.2488</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-orth2010reconstruction">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Orth</surname><given-names>Jeffrey D.</given-names></name>
+          <name><surname>Palsson</surname><given-names>Bernhard Ø.</given-names></name>
+          <name><surname>Fleming</surname><given-names>R. M. T.</given-names></name>
+        </person-group>
+        <article-title>Reconstruction and use of microbial metabolic networks: The core Escherichia coli metabolic model as an educational guide</article-title>
+        <source>EcoSal Plus</source>
+        <year iso-8601-date="2010-09">2010</year><month>09</month>
+        <volume>4</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1128/ecosalplus.10.2.1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-nogales2008genome">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Nogales</surname><given-names>Juan</given-names></name>
+          <name><surname>Palsson</surname><given-names>Bernhard Ø</given-names></name>
+          <name><surname>Thiele</surname><given-names>Ines</given-names></name>
+        </person-group>
+        <article-title>A genome-scale metabolic reconstruction of pseudomonas putida KT2440: iJN746 as a cell factory</article-title>
+        <source>BMC Systems Biology</source>
+        <year iso-8601-date="2008">2008</year>
+        <volume>2</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1186/1752-0509-2-79</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-li2011gpu">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Li</surname><given-names>Jianming</given-names></name>
+          <name><surname>Lv</surname><given-names>Renping</given-names></name>
+          <name><surname>Hu</surname><given-names>Xiangpei</given-names></name>
+          <name><surname>Jiang</surname><given-names>Zhongqiang</given-names></name>
+        </person-group>
+        <article-title>A GPU-based parallel algorithm for large scale linear programming problem</article-title>
+        <source>Intelligent decision technologies</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-642-22194-1_4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gurung2019simultaneous">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Gurung</surname><given-names>Amit</given-names></name>
+          <name><surname>Ray</surname><given-names>Rajarshi</given-names></name>
+        </person-group>
+        <article-title>Simultaneous solving of batched linear programs on a GPU</article-title>
+        <source>Proceedings of the 2019 ACM/SPEC international conference on performance engineering</source>
+        <publisher-name>ACM</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <pub-id pub-id-type="doi">10.1145/3297663.3310308</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-charlton2019two">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Charlton</surname><given-names>John</given-names></name>
+          <name><surname>Maddock</surname><given-names>Steve</given-names></name>
+          <name><surname>Richmond</surname><given-names>Paul</given-names></name>
+        </person-group>
+        <article-title>Two-dimensional batch linear programming on the GPU</article-title>
+        <source>Journal of Parallel and Distributed Computing</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>126</volume>
+        <pub-id pub-id-type="doi">10.1016/j.jpdc.2019.01.001</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

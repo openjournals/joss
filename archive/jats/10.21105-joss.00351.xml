@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">351</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00351</article-id>
+<title-group>
+<article-title>Nimbus: a Ruby gem to implement Random Forest algorithms
+in a genomic selection context</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-7699-3983</contrib-id>
+<string-name>Juanjo Bazán</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9106-4063</contrib-id>
+<string-name>Oscar Gonzalez-Recio</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Departamento de Física Teórica. Universidad Autónoma de
+Madrid.</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Departamento de Mejora Genética Animal. Instituto Nacional
+de Investigación y Tecnología Agraria y Alimentaria.</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2017-07-12">
+<day>12</day>
+<month>7</month>
+<year>2017</year>
+</pub-date>
+<volume>2</volume>
+<issue>16</issue>
+<fpage>351</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>random forest</kwd>
+<kwd>genomics</kwd>
+<kwd>machine learning</kwd>
+<kwd>ruby</kwd>
+<kwd>open science</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Nimbus is a Ruby gem implementing Random Forest in a genomic
+  selection context, meaning every input file is expected to contain
+  genotype and/or phenotype data from a sample of individuals. Other
+  than the ids of the individuals, Nimbus handle the data as genotype
+  values for single-nucleotide polymorphisms (SNPs), so the variables in
+  the classifier must have values of 0, 1 or 2, corresponding with SNPs
+  classes of AA, AB and BB.</p>
+  <p>Nimbus provides a novel dataframe of random forest under ruby, and
+  implements a modified algorithm that can separate all genotypes for a
+  single marker, which can accommodate both additivity and dominance.
+  Further, it allows the user to specify a loss function and provide
+  full information of the trees in a .yml file.</p>
+  <p>Nimbus can be used to:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Create a random forest using a training sample of individuals
+      with phenotype data.</p>
+    </list-item>
+    <list-item>
+      <p>Use an existent random forest to get predictions for a testing
+      sample.</p>
+    </list-item>
+  </list>
+  <sec id="random-forest">
+    <title>Random Forest</title>
+    <p>The random forest algorithm is a classifier consisting in many
+    random decision trees, it was first proposed as a massively
+    non-parametric machine-learning algorithm by Leo Breiman
+    (<xref alt="Breiman, 2001" rid="ref-Breiman2001" ref-type="bibr">Breiman,
+    2001</xref>). It is based on choosing random subsets of variables
+    for each tree and using the most frequent, or the averaged tree
+    output as the overall classification. Random forest makes use of
+    bagging and randomization, constructing many decision trees
+    (<xref alt="Kamiński et al., 2017" rid="ref-Kamiski2017" ref-type="bibr">Kamiński
+    et al., 2017</xref>) on bootstrapped samples of a given data set.
+    The prediction from the trees are averaged to make final
+    predictions.</p>
+    <p>In machine learning terms, it is an ensemble classifier, so it
+    uses multiple models to obtain better predictive performance than
+    could be obtained from any of the constituent models.</p>
+    <p>The forest outputs the class that is the mean or the mode (in
+    regression problems) or the majority class (in classification
+    problems) of the node’s output by individual trees.</p>
+    <p>The algorithm is robust to over-fitting and able to capture
+    complex interaction structures in the data, which may alleviate the
+    problems of analyzing genome-wide data.</p>
+  </sec>
+  <sec id="learning-algorithm">
+    <title>Learning algorithm</title>
+    <p><bold>Training</bold>: Each tree in the forest is constructed
+    using the following algorithm:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p>Let the number of training cases be N, and the number of
+        variables (SNPs) in the classifier be M.</p>
+      </list-item>
+      <list-item>
+        <p>The mtry number of input variables is told to the algorithm
+        to be used in determining the decision at a node of the tree; m
+        should be much less than M (usually 1/3), and the optimal value
+        should be tuned for methods like grid search.</p>
+      </list-item>
+      <list-item>
+        <p>Choose a training set for this tree by drawing n samples with
+        replacement from all N available training cases (i.e. bootstrap
+        sampling). The rest of the cases (Out Of Bag sample) will be
+        used to estimate the error of the tree at predicting the classes
+        of this out of Bag samples.</p>
+      </list-item>
+      <list-item>
+        <p>For each node of the tree, randomly choose m SNPs on which to
+        base the decision at that node. Calculate the best split based
+        on these m SNPs in the training set.</p>
+      </list-item>
+      <list-item>
+        <p>Each tree is fully grown and not pruned (as may be done in
+        constructing a normal tree classifier).</p>
+      </list-item>
+      <list-item>
+        <p>When in a node there is not any SNP split that minimizes the
+        general loss function of the node, or the number of individuals
+        in the node is less than the minimum node size then label the
+        node with the average phenotype value of the individuals in the
+        node.</p>
+      </list-item>
+    </list>
+    <p><bold>Testing</bold>: An independent sample can be pushed down
+    the tree to predict the most probable phenotype given the SNP
+    genotypes. It is assigned the label of the training sample in the
+    terminal node it ends up in. This procedure is iterated over all
+    trees in the ensemble, and the average vote of all trees is reported
+    as the random forest prediction.</p>
+  </sec>
+  <sec id="nimbus">
+    <title>Nimbus</title>
+    <p>Nimbus trains the algorithm based on an input file (learning
+    sample) containing the phenotypes of the individuals and their
+    respective list of genotype markers (i.e. SNPs). A random forest is
+    created and stored in a .yml file for future use.</p>
+    <p>Nimbus can also be run to make prediction in a validation set or
+    in a set of data containing yet to be observed response variable. In
+    this case, the predictions can be obtained using the random forest
+    created with a learning sample or using a previously stored random
+    forest.</p>
+    <p>If a learning sample is provided, the gem will create a file with
+    the variable importance of each feature (marker) in the data. The
+    higher the importance is, the more relevant the marker is to
+    correctly predict the response variable in new data.</p>
+    <p>Nimbus can be used for both classification or regression
+    problems, and the user may provide different parameter values in a
+    configuration file to tune the performance of the algorithm.</p>
+    <p>-<inline-graphic mimetype="image" mime-subtype="png" xlink:href="nimbus_outputs.png" /></p>
+  </sec>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Breiman2001">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Breiman</surname><given-names>Leo</given-names></name>
+        </person-group>
+        <article-title>Random forest</article-title>
+        <source>Machine Learning</source>
+        <publisher-name>Springer Nature</publisher-name>
+        <year iso-8601-date="2001">2001</year>
+        <volume>45</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1023/a:1010933404324</uri>
+        <pub-id pub-id-type="doi">10.1023/a:1010933404324</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Kamiski2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kamiński</surname><given-names>Bogumił</given-names></name>
+          <name><surname>Jakubczyk</surname><given-names>Michał</given-names></name>
+          <name><surname>Szufel</surname><given-names>Przemysław</given-names></name>
+        </person-group>
+        <article-title>A framework for sensitivity analysis of decision trees</article-title>
+        <source>Central European Journal of Operations Research</source>
+        <publisher-name>Springer Nature</publisher-name>
+        <year iso-8601-date="2017-05">2017</year><month>05</month>
+        <uri>https://doi.org/10.1007/s10100-017-0479-6</uri>
+        <pub-id pub-id-type="doi">10.1007/s10100-017-0479-6</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

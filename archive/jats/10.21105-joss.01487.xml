@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1487</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01487</article-id>
+<title-group>
+<article-title>cppduals: a nestable vectorized templated dual number
+library for C++11</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-4096-1562</contrib-id>
+<string-name>Michael Tesch</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Chemistry, Technische Universität München,
+85747 Garching, Germany</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-05-09">
+<day>9</day>
+<month>5</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>43</issue>
+<fpage>1487</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>dual numbers</kwd>
+<kwd>autodiff</kwd>
+<kwd>differentiation</kwd>
+<kwd>vectorization</kwd>
+<kwd>Eigen</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Mathematical algorithms in the field of optimization often require
+  the simultaneous computation of a function and its derivative. The
+  derivative of many functions can be found automatically, a process
+  referred to as automatic differentiation. Dual numbers, close
+  relatives of the complex numbers, are of particular use in automatic
+  differentiation. This library provides an extremely fast
+  implementation of dual numbers for C++,
+  <monospace>duals::dual&lt;&gt;</monospace>, which, when replacing
+  scalar types, can be used to automatically calculate a derivative.</p>
+  <p>A real function’s value can be made to carry the derivative of the
+  function with respect to a real argument by replacing the real
+  argument with a dual number having a unit dual part. This property is
+  recursive: replacing the real part of a dual number with more dual
+  numbers results in the dual part’s dual part holding the function’s
+  second derivative. The <monospace>dual&lt;&gt;</monospace> type in
+  this library allows this nesting (although we note here that it may
+  not be the fastest solution for calculating higher order
+  derivatives.)</p>
+  <p>There are a large number of automatic differentiation libraries and
+  classes for C++: adolc
+  (<xref alt="Walther, 2012" rid="ref-adolc" ref-type="bibr">Walther,
+  2012</xref>), FAD
+  (<xref alt="Aubert &amp; Di Césaré, 2002" rid="ref-FAD" ref-type="bibr">Aubert
+  &amp; Di Césaré, 2002</xref>), autodiff
+  (<xref alt="Leal, 2019" rid="ref-autodiff" ref-type="bibr">Leal,
+  2019</xref>), ceres
+  (<xref alt="Agarwal et al., n.d." rid="ref-ceres" ref-type="bibr">Agarwal
+  et al., n.d.</xref>), AuDi
+  (<xref alt="Izzo et al., 2019" rid="ref-audi" ref-type="bibr">Izzo et
+  al., 2019</xref>), to name a few, with another 30-some listed at
+  (autodiff.org
+  <xref alt="Bücker &amp; Hovland, 2019" rid="ref-autodifforg" ref-type="bibr">Bücker
+  &amp; Hovland, 2019</xref>). But there were no simple single-file
+  stand-alone header libraries that were explicitly vectorized.
+  <italic>Cppduals</italic> can be copied and used as a single header
+  file <monospace>duals/dual</monospace> with no dependencies other than
+  the standard library, and the vectorization support is contained in a
+  small number of additional auxiliary files. The interface generally
+  follows the conventions of the C++11 standard library’s
+  <monospace>std::complex</monospace> type, and has very liberal
+  licensing.</p>
+  <p>In order to fully utilize the computing resources of modern CPUs it
+  is often necessary to use their special data-parallel capabilities.
+  However, compilers often struggle to find the best sequence of
+  instructions to achieve maximum performance due to difficulties in
+  automatically detecting parallel data operations in programs and then
+  mapping those parallel operations onto the CPU’s data-parallel
+  instructions. Some intervention from the programmer to exploit these
+  special data-parallel instructions, combined with cache-optimized
+  algorithms, can improve program execution speed significantly. This is
+  done by <italic>cppduals</italic> through providing template
+  specializations for selected C++ data types.</p>
+  <p>Template specializations that map the dual arithmetic directly to
+  vector machine language are provided for the types typically used to
+  calculate first-order derivatives:
+  <monospace>dual&lt;float&gt;</monospace>,
+  <monospace>dual&lt;double&gt;</monospace>,
+  <monospace>std::complex&lt;dual&lt;float&gt;&gt;</monospace>, and
+  <monospace>std::complex&lt;dual&lt;double&gt;&gt;</monospace>. These
+  types and their algebras are expressed in hand-coded assembly for use
+  with the Eigen
+  (<xref alt="Guennebaud et al., 2010" rid="ref-eigenweb" ref-type="bibr">Guennebaud
+  et al., 2010</xref>) matrix library. The vector operations for the
+  <monospace>dual&lt;&gt;</monospace> type are then picked up
+  automatically by Eigen’s cache-optimized algorithms. The integration
+  lets us achieve extremely fast performance for automatic forward,
+  first-order differentiation of matrix expressions. Furthermore, by
+  piggy-backing on Eigen’s algorithms, the library inherits future
+  improvements and adaptations to other hardware platforms. The vector
+  specializations are currently available for the x86_64 SSE and AVX
+  instruction sets, though support for other vector machine
+  architectures (such as GPUs) can easily be added.</p>
+</sec>
+<sec id="mathematics">
+  <title>Mathematics</title>
+  <p>A dual number has a <italic>real part</italic> and a <italic>dual
+  part</italic>, the <italic>dual part</italic> is multiplied by the
+  dual unit <inline-formula><alternatives>
+  <tex-math><![CDATA[\epsilon]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϵ</mml:mi></mml:math></alternatives></inline-formula>,
+  with the property that <inline-formula><alternatives>
+  <tex-math><![CDATA[\epsilon^2 = 0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mi>ϵ</mml:mi><mml:mn>2</mml:mn></mml:msup><mml:mo>=</mml:mo><mml:mn>0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>.
+  Formally the dual space, <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbb{D} = \{ x = a + b \epsilon \; | \; a, b \in \mathbb{R}, \epsilon^2 = 0 \}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="double-struck"><mml:mi>𝔻</mml:mi></mml:mstyle><mml:mo>=</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mi>x</mml:mi><mml:mo>=</mml:mo><mml:mi>a</mml:mi><mml:mo>+</mml:mo><mml:mi>b</mml:mi><mml:mi>ϵ</mml:mi><mml:mspace width="0.278em"></mml:mspace><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:mspace width="0.278em"></mml:mspace><mml:mi>a</mml:mi><mml:mo>,</mml:mo><mml:mi>b</mml:mi><mml:mo>∈</mml:mo><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:mo>,</mml:mo><mml:msup><mml:mi>ϵ</mml:mi><mml:mn>2</mml:mn></mml:msup><mml:mo>=</mml:mo><mml:mn>0</mml:mn><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+  <p>The property can be used to differentiate functions of real values
+  by expanding <inline-formula><alternatives>
+  <tex-math><![CDATA[f(x)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  as its Taylor series at <inline-formula><alternatives>
+  <tex-math><![CDATA[a]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>a</mml:mi></mml:math></alternatives></inline-formula>:</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[f(x) = f(a) + f'(a)(x-a) + \frac{f''(a)}{2!}(x-a)^2 + \frac{f'''(a)}{3!}(x-a)^3 + ... ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>a</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mi>f</mml:mi><mml:mi>′</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>a</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>−</mml:mo><mml:mi>a</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mfrac><mml:mrow><mml:mi>f</mml:mi><mml:mi>″</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>a</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow><mml:mrow><mml:mn>2</mml:mn><mml:mi>!</mml:mi></mml:mrow></mml:mfrac><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>−</mml:mo><mml:mi>a</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup><mml:mo>+</mml:mo><mml:mfrac><mml:mrow><mml:mi>f</mml:mi><mml:mi>‴</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>a</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow><mml:mrow><mml:mn>3</mml:mn><mml:mi>!</mml:mi></mml:mrow></mml:mfrac><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>−</mml:mo><mml:mi>a</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>3</mml:mn></mml:msup><mml:mo>+</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>Setting <inline-formula><alternatives>
+  <tex-math><![CDATA[x = a + b\epsilon]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>x</mml:mi><mml:mo>=</mml:mo><mml:mi>a</mml:mi><mml:mo>+</mml:mo><mml:mi>b</mml:mi><mml:mi>ϵ</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  in this expansion gives</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[\begin{split}
+      f(a + b \epsilon) &= f(a) + f'(a)(b \epsilon) + \frac{f''(a)}{2!}(b \epsilon)^2
+      + \frac{f'''(a)}{3!}(b \epsilon)^3 + ...\\
+      &= f(a) + f'(a)(b \epsilon)
+    \end{split}]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtable><mml:mtr><mml:mtd columnalign="right"><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>a</mml:mi><mml:mo>+</mml:mo><mml:mi>b</mml:mi><mml:mi>ϵ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>a</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mi>f</mml:mi><mml:mi>′</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>a</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>b</mml:mi><mml:mi>ϵ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mfrac><mml:mrow><mml:mi>f</mml:mi><mml:mi>″</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>a</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow><mml:mrow><mml:mn>2</mml:mn><mml:mi>!</mml:mi></mml:mrow></mml:mfrac><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>b</mml:mi><mml:mi>ϵ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup><mml:mo>+</mml:mo><mml:mfrac><mml:mrow><mml:mi>f</mml:mi><mml:mi>‴</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>a</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow><mml:mrow><mml:mn>3</mml:mn><mml:mi>!</mml:mi></mml:mrow></mml:mfrac><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>b</mml:mi><mml:mi>ϵ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>3</mml:mn></mml:msup><mml:mo>+</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>a</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mi>f</mml:mi><mml:mi>′</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>a</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>b</mml:mi><mml:mi>ϵ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd></mml:mtr></mml:mtable></mml:math></alternatives></disp-formula></p>
+  <p>Because the <inline-formula><alternatives>
+  <tex-math><![CDATA[\epsilon^2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>ϵ</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:math></alternatives></inline-formula>
+  terms are zero, the Taylor expansion truncates after the
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[f']]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mi>′</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  term. Thus to evaluate <inline-formula><alternatives>
+  <tex-math><![CDATA[f'(a)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mi>′</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>a</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>:
+  set <inline-formula><alternatives>
+  <tex-math><![CDATA[x = a + b\epsilon]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>x</mml:mi><mml:mo>=</mml:mo><mml:mi>a</mml:mi><mml:mo>+</mml:mo><mml:mi>b</mml:mi><mml:mi>ϵ</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  with <inline-formula><alternatives>
+  <tex-math><![CDATA[b=1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>b</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>,
+  and take the dual part of the evaluated function
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathfrak{Du}(f(x))]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="fraktur"><mml:mi>𝔇</mml:mi><mml:mi>𝔲</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+  <p>A matrix representation of the dual numbers is
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\bigl( \begin{smallmatrix}a & b \\ 0 & a\end{smallmatrix}\bigr)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo minsize="1.2" maxsize="1.2" stretchy="false" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mi>a</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:mi>b</mml:mi></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd><mml:mtd columnalign="center"><mml:mi>a</mml:mi></mml:mtd></mml:mtr></mml:mtable><mml:mo minsize="1.2" maxsize="1.2" stretchy="false" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>.
+  This form can be used to calculate Fréchet derivatives of matrix
+  functions <inline-formula><alternatives>
+  <tex-math><![CDATA[D_B f(\mathbf{A})]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>D</mml:mi><mml:mi>B</mml:mi></mml:msub><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐀</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  by doubling the size of the calculation and embedding the parameter
+  (<inline-formula><alternatives>
+  <tex-math><![CDATA[A]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>A</mml:mi></mml:math></alternatives></inline-formula>)
+  and with-regard-to parts (<inline-formula><alternatives>
+  <tex-math><![CDATA[B]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>B</mml:mi></mml:math></alternatives></inline-formula>)
+  into this doubled matrix, zeroing the lower left quadrant:
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[D_B f(\mathbf{A}) = C]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>D</mml:mi><mml:mi>B</mml:mi></mml:msub><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐀</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>C</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[f\bigl( \begin{smallmatrix}A & B \\ 0 & A\end{smallmatrix}\bigr) = \bigl( \begin{smallmatrix}F & C \\ 0 & F\end{smallmatrix}\bigr)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mo minsize="1.2" maxsize="1.2" stretchy="false" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mi>A</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:mi>B</mml:mi></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd><mml:mtd columnalign="center"><mml:mi>A</mml:mi></mml:mtd></mml:mtr></mml:mtable><mml:mo minsize="1.2" maxsize="1.2" stretchy="false" form="postfix">)</mml:mo><mml:mo>=</mml:mo><mml:mo minsize="1.2" maxsize="1.2" stretchy="false" form="prefix">(</mml:mo><mml:mtable><mml:mtr><mml:mtd columnalign="center"><mml:mi>F</mml:mi></mml:mtd><mml:mtd columnalign="center"><mml:mi>C</mml:mi></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="center"><mml:mn>0</mml:mn></mml:mtd><mml:mtd columnalign="center"><mml:mi>F</mml:mi></mml:mtd></mml:mtr></mml:mtable><mml:mo minsize="1.2" maxsize="1.2" stretchy="false" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+</sec>
+<sec id="benchmarks">
+  <title>Benchmarks</title>
+  <p>The above blocking method of computing matrix function derivatives
+  requires twice as much memory as using dual numbers, and furthermore
+  does not take advantage of the relative sparsity of dual number
+  arithmetic. However, the blocking method <italic>does</italic> permit
+  the use of highly optimized complex-valued BLAS libraries, which are
+  often significantly faster than “regularly” compiled code, being
+  hand-tuned for a specific CPU architecture and memory heirarchy. We
+  compared using <monospace>dual&lt;&gt;</monospace> to calculate the
+  derivative of the matrix-matrix product with using the blocking method
+  implemented with OpenBLAS
+  (<xref alt="Wang et al., 2013" rid="ref-openblas" ref-type="bibr">Wang
+  et al., 2013</xref>). All benchmarks were performed single-threaded on
+  an <italic>Intel(R) Core(TM) i7-7700 CPU @ 3.60GHz</italic> running
+  <italic>Fedora 30</italic>, using <italic>Eigen v3.3.7</italic>,
+  <italic>OpenBLAS v0.3.6</italic>, and compiled using <italic>clang
+  v8.0.0</italic>.</p>
+  <p>The <italic>cppduals</italic> vectorized type reduced the time of a
+  32x32 matrix-multiplication derivative by 40% over the 2Nx2N (in this
+  case 64x64) multiplication performed by OpenBLAS (even with a
+  suspected performance bug in Eigen’s GEMM algorithm, described below).
+  In the current implementation, this advantage diminishes as the matrix
+  size grows, as shown in Figure 1
+  <inline-graphic mimetype="image" mime-subtype="png" xlink:href="benchmark.png" />,
+  we suspect this is due to a bug in Eigen’s cache optimization for
+  non-scalar valued matrix-matrix multiplication. We note that the Eigen
+  scalar-valued matrix multiplications are roughly as fast as OpenBLAS,
+  demonstrating the validity of Eigen’s approach to optimization, but
+  complex-valued multiplications take roughly twice as much time as
+  their OpenBLAS equivalents, indicating a performance bug in Eigen’s
+  current optimizations, though only for complex-valued (and
+  consequently, dual-valued) matrices.</p>
+  <p>We hope to achieve further speed improvements with tuning and more
+  debugging of the integration with Eigen. In general, dual-valued
+  operations should be marginally faster than corresponding
+  complex-valued operations, as they require slightly fewer floating
+  point operations.</p>
+</sec>
+<sec id="usage">
+  <title>Usage</title>
+  <p><italic>Cppduals</italic> is used in the SpinDrops
+  (<xref alt="Tesch et al., 2019" rid="ref-spindrops" ref-type="bibr">Tesch
+  et al., 2019</xref>) NMR and quantum computing software for
+  optimization of pulse quality functions.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>We acknowledge first of all the Eigen project and its contributors,
+  upon which the vectorization was based. Some funding was provided by
+  the TUM School of Education.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-eigenweb">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Guennebaud</surname><given-names>Gaël</given-names></name>
+          <name><surname>Jacob</surname><given-names>Benoît</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Eigen v3</article-title>
+        <publisher-name>http://eigen.tuxfamily.org</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-autodiff">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Leal</surname><given-names>Allan</given-names></name>
+        </person-group>
+        <article-title>Autodiff</article-title>
+        <publisher-name>https://github.com/autodiff/autodiff</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-autodifforg">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Bücker</surname><given-names>Martin</given-names></name>
+          <name><surname>Hovland</surname><given-names>Paul</given-names></name>
+        </person-group>
+        <article-title>Autodiff.org</article-title>
+        <publisher-name>http://www.autodiff.org</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-spindrops">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Tesch</surname><given-names>Michael</given-names></name>
+          <name><surname>Glaser</surname><given-names>Niklas</given-names></name>
+          <name><surname>Glaser</surname><given-names>Steffen J.</given-names></name>
+        </person-group>
+        <article-title>SpinDrops 2.0</article-title>
+        <publisher-name>https://spindrops.org/</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-openblas">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Wang</surname><given-names>Qian</given-names></name>
+          <name><surname>Zhang</surname><given-names>Xianyi</given-names></name>
+          <name><surname>Zhang</surname><given-names>Yunquan</given-names></name>
+          <name><surname>Yi</surname><given-names>Qing</given-names></name>
+        </person-group>
+        <article-title>AUGEM: Automatically generate high performance dense linear algebra kernels on X86 CPUs</article-title>
+        <source>Proceedings of the international conference for high performance computing, networking, storage and analysis (SC13)</source>
+        <publisher-name>ACM Press</publisher-name>
+        <publisher-loc>Denver, Colorado</publisher-loc>
+        <year iso-8601-date="2013">2013</year>
+        <isbn>978-1-4503-2378-9</isbn>
+        <pub-id pub-id-type="doi">10.1145/2503210.2503219</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-FAD">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Aubert</surname><given-names>Pierre</given-names></name>
+          <name><surname>Di Césaré</surname><given-names>Nicolas</given-names></name>
+        </person-group>
+        <article-title>Expression templates and forward mode automatic differentiation</article-title>
+        <source>Automatic differentiation of algorithms: From simulation to optimization</source>
+        <person-group person-group-type="editor">
+          <name><surname>Corliss</surname><given-names>George</given-names></name>
+          <name><surname>Faure</surname><given-names>Christèle</given-names></name>
+          <name><surname>Griewank</surname><given-names>Andreas</given-names></name>
+          <name><surname>Hascoët</surname><given-names>Laurent</given-names></name>
+          <name><surname>Naumann</surname><given-names>Uwe</given-names></name>
+        </person-group>
+        <publisher-name>Springer</publisher-name>
+        <publisher-loc>New York, NY</publisher-loc>
+        <year iso-8601-date="2002">2002</year>
+        <pub-id pub-id-type="doi">10.1007/978-1-4613-0075-5</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-audi">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Izzo</surname><given-names>Dario</given-names></name>
+          <name><surname>Biscani</surname><given-names>Francesco</given-names></name>
+          <name><surname>Sánchez</surname><given-names>Carlos</given-names></name>
+          <name><surname>Müller</surname><given-names>Jörg</given-names></name>
+          <name><surname>Heddes</surname><given-names>Mike</given-names></name>
+        </person-group>
+        <article-title>Darioizzo/audi: Update third party dependencies</article-title>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2019-05">2019</year><month>05</month>
+        <pub-id pub-id-type="doi">10.5281/zenodo.2677671</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-adolc">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Walther</surname><given-names>Andrea</given-names></name>
+        </person-group>
+        <article-title>Getting started with ADOL-C</article-title>
+        <source>Combinatorial scientific computing</source>
+        <person-group person-group-type="editor">
+          <name><surname>Naumann</surname><given-names>Uwe</given-names></name>
+          <name><surname>Schenk</surname><given-names>Olaf</given-names></name>
+        </person-group>
+        <publisher-name>Chapman-Hall CRC Computational Science</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <isbn>9781439827352</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-ceres">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Agarwal</surname><given-names>Sameer</given-names></name>
+          <name><surname>Mierle</surname><given-names>Keir</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Ceres solver</article-title>
+        <publisher-name>http://ceres-solver.org</publisher-name>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

@@ -1,0 +1,806 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2392</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02392</article-id>
+<title-group>
+<article-title>multivar_horner: A Python package for computing Horner
+factorisations of multivariate polynomials</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1819-6975</contrib-id>
+<string-name>Jannik Michelfeit</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Technische Universität Dresden, Dresden,
+Germany</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Max Planck Institute of Molecular Cell Biology and
+Genetics, Dresden, Germany</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-04-20">
+<day>20</day>
+<month>4</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>54</issue>
+<fpage>2392</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>python</kwd>
+<kwd>mathematics</kwd>
+<kwd>polynomial</kwd>
+<kwd>evaluation</kwd>
+<kwd>multivariate</kwd>
+<kwd>horner</kwd>
+<kwd>factorisation</kwd>
+<kwd>factorization</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="abstract">
+  <title>Abstract</title>
+  <p>Many applications in the sciences require numerically stable and
+  computationally efficient evaluation of multivariate polynomials.
+  Finding beneficial representations of polynomials, such as Horner
+  factorisations, is therefore crucial.
+  <monospace>multivar_horner</monospace>
+  (<xref alt="Michelfeit, 2018" rid="ref-github" ref-type="bibr">Michelfeit,
+  2018</xref>), the Python package presented here, is, as far as we are
+  aware, the first open-source software for computing multivariate
+  Horner factorisations. This paper briefly outlines the functionality
+  of the package and places it in context with respect to previous work
+  in the field. Benchmarks additionally demonstrate the advantages of
+  the implementation and Horner factorisations in general.</p>
+</sec>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>Polynomials are a central concept in mathematics and find
+  application in a wide range of fields
+  (<xref alt="Akritas, 1989" rid="ref-akritas1989elements" ref-type="bibr">Akritas,
+  1989</xref>;
+  <xref alt="Boumova, 2002" rid="ref-boumova2002applications" ref-type="bibr">Boumova,
+  2002</xref>;
+  <xref alt="Cools, 2002" rid="ref-cools2002advances" ref-type="bibr">Cools,
+  2002</xref>;
+  <xref alt="Hecht et al., 2018" rid="ref-Hecht1" ref-type="bibr">Hecht
+  et al., 2018</xref>;
+  <xref alt="Prasolov, 2009" rid="ref-prasolov2009polynomials" ref-type="bibr">Prasolov,
+  2009</xref>). (Multivariate) polynomials have different possible
+  mathematical representations and the beneficial properties of some
+  representations are in great demand in many applications
+  (<xref alt="Hecht et al., 2018" rid="ref-Hecht1" ref-type="bibr">Hecht
+  et al., 2018</xref>;
+  <xref alt="Lee, 2013" rid="ref-LeeFactorization2013" ref-type="bibr">Lee,
+  2013</xref>;
+  <xref alt="Leiserson et al., 2010" rid="ref-leiserson2010efficient" ref-type="bibr">Leiserson
+  et al., 2010</xref>).</p>
+  <p>The <italic>Horner factorisation</italic> is such a representation
+  with beneficial properties. Compared to the unfactorised
+  representation of a multivariate polynomial, in the following called
+  <italic>canonical form</italic>, this representation offers some
+  important advantages. Firstly, the Horner factorisation is more
+  compact, in the sense that it requires fewer mathematical operations
+  in order to evaluate the polynomial
+  (cf. <xref alt="Figure 4" rid="figU003Anum_ops_growth">Figure 4</xref>).
+  Consequently, evaluating a multivariate polynomial in Horner
+  factorisation is faster and numerically more stable
+  (<xref alt="Ceberio &amp; Kreinovich, 2004" rid="ref-greedyHorner" ref-type="bibr">Ceberio
+  &amp; Kreinovich, 2004</xref>;
+  <xref alt="Peña &amp; Sauer, 2000a" rid="ref-pena2000multivariate" ref-type="bibr">Peña
+  &amp; Sauer, 2000a</xref>,
+  <xref alt="2000b" rid="ref-pena2000multivariate2" ref-type="bibr">2000b</xref>)
+  (cf. <xref alt="Figure 2" rid="figU003Anum_err_growth">Figure 2</xref>).
+  These advantages come at the cost of an initial computational effort
+  required to find the factorisation.</p>
+  <p>The <monospace>multivar_horner</monospace> Python package
+  implements a multivariate Horner scheme (“Horner’s method”, “Horner’s
+  rule”)
+  (<xref alt="Horner, 1819" rid="ref-horner1819xxi" ref-type="bibr">Horner,
+  1819</xref>) to compute Horner factorisations of multivariate
+  polynomials given in canonical form. The package offers the
+  functionality of representing multivariate polynomials of arbitrary
+  degree in Horner factorisation as well as in canonical form.
+  Additionally it allows to compute the partial derivatives of a
+  polynomial and to evaluate a polynomial at a given point. Accordingly
+  the package presented here is useful whenever (multivariate)
+  polynomials have to be evaluated efficiently, the numerical error of
+  the polynomial evaluation has to be small, or a compact representation
+  of the polynomial is required. This holds true for many applications
+  applying numerical analysis. One example use case where this package
+  is already being employed are novel response surface methods
+  (<xref alt="Michelfeit, 2019" rid="ref-michelfeitresponse" ref-type="bibr">Michelfeit,
+  2019</xref>) based on multivariate Newton interpolation
+  (<xref alt="Hecht et al., 2018" rid="ref-Hecht1" ref-type="bibr">Hecht
+  et al., 2018</xref>).</p>
+</sec>
+<sec id="functionality">
+  <title>Functionality</title>
+  <p><monospace>multivar_horner</monospace> implements a multivariate
+  Horner scheme using the greedy heuristic presented in
+  (<xref alt="Ceberio &amp; Kreinovich, 2004" rid="ref-greedyHorner" ref-type="bibr">Ceberio
+  &amp; Kreinovich, 2004</xref>). In the following the key functionality
+  of this package is outlined. For more details on polynomials and
+  Horner factorisations please refer to the literature, e.g.
+  (<xref alt="Neumaier, 2001" rid="ref-neumaier2001introduction" ref-type="bibr">Neumaier,
+  2001</xref>).</p>
+  <p>A polynomial in canonical form is a sum of monomials. For a
+  univariate polynomial <inline-formula><alternatives>
+  <tex-math><![CDATA[f(x) = a_0 + a_1 x + a_2 x^2 + \cdots + a_d x^d]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msub><mml:mi>a</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mo>+</mml:mo><mml:msub><mml:mi>a</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mi>x</mml:mi><mml:mo>+</mml:mo><mml:msub><mml:mi>a</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:msup><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msup><mml:mo>+</mml:mo><mml:mi>⋯</mml:mi><mml:mo>+</mml:mo><mml:msub><mml:mi>a</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:msup><mml:mi>x</mml:mi><mml:mi>d</mml:mi></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>
+  (canonical form), the Horner factorisation is unique:
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[f(x) = a_0 + x ( a_1 + x( \cdots x (a_d) \cdots )]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msub><mml:mi>a</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mo>+</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="false" form="prefix">(</mml:mo><mml:msub><mml:mi>a</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>+</mml:mo><mml:mi>x</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>⋯</mml:mi><mml:mi>x</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>a</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>⋯</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.
+  In the multivariate case, however, the factorisation is ambiguous, as
+  there are multiple possible factors to factorise with. The key
+  functionality of <monospace>multivar_horner</monospace> is finding a
+  good instance among the many possible Horner factorisations of a
+  multivariate polynomial.</p>
+  <p>Let’s consider the example multivariate polynomial given in
+  canonical form by <inline-formula><alternatives>
+  <tex-math><![CDATA[p(x) = 5 + x_1^3 x_2 + 2 x_1^2 x_3 + 3 x_1 x_2 x_3]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mn>5</mml:mn><mml:mo>+</mml:mo><mml:msubsup><mml:mi>x</mml:mi><mml:mn>1</mml:mn><mml:mn>3</mml:mn></mml:msubsup><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo>+</mml:mo><mml:mn>2</mml:mn><mml:msubsup><mml:mi>x</mml:mi><mml:mn>1</mml:mn><mml:mn>2</mml:mn></mml:msubsup><mml:msub><mml:mi>x</mml:mi><mml:mn>3</mml:mn></mml:msub><mml:mo>+</mml:mo><mml:mn>3</mml:mn><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:msub><mml:mi>x</mml:mi><mml:mn>3</mml:mn></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>.
+  The polynomial <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+  is the sum of <inline-formula><alternatives>
+  <tex-math><![CDATA[4]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>4</mml:mn></mml:math></alternatives></inline-formula>
+  monomials, has dimensionality <inline-formula><alternatives>
+  <tex-math><![CDATA[3]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>3</mml:mn></mml:math></alternatives></inline-formula>
+  and can also be written as <inline-formula><alternatives>
+  <tex-math><![CDATA[p(x) = 5 x_1^0 x_2^0 x_3^0 + 1 x_1^3 x_2^1 x_3^0 + 2 x_1^2 x_2^0 x_3^1 + 3 x_1^1 x_2^1 x_3^1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mn>5</mml:mn><mml:msubsup><mml:mi>x</mml:mi><mml:mn>1</mml:mn><mml:mn>0</mml:mn></mml:msubsup><mml:msubsup><mml:mi>x</mml:mi><mml:mn>2</mml:mn><mml:mn>0</mml:mn></mml:msubsup><mml:msubsup><mml:mi>x</mml:mi><mml:mn>3</mml:mn><mml:mn>0</mml:mn></mml:msubsup><mml:mo>+</mml:mo><mml:mn>1</mml:mn><mml:msubsup><mml:mi>x</mml:mi><mml:mn>1</mml:mn><mml:mn>3</mml:mn></mml:msubsup><mml:msubsup><mml:mi>x</mml:mi><mml:mn>2</mml:mn><mml:mn>1</mml:mn></mml:msubsup><mml:msubsup><mml:mi>x</mml:mi><mml:mn>3</mml:mn><mml:mn>0</mml:mn></mml:msubsup><mml:mo>+</mml:mo><mml:mn>2</mml:mn><mml:msubsup><mml:mi>x</mml:mi><mml:mn>1</mml:mn><mml:mn>2</mml:mn></mml:msubsup><mml:msubsup><mml:mi>x</mml:mi><mml:mn>2</mml:mn><mml:mn>0</mml:mn></mml:msubsup><mml:msubsup><mml:mi>x</mml:mi><mml:mn>3</mml:mn><mml:mn>1</mml:mn></mml:msubsup><mml:mo>+</mml:mo><mml:mn>3</mml:mn><mml:msubsup><mml:mi>x</mml:mi><mml:mn>1</mml:mn><mml:mn>1</mml:mn></mml:msubsup><mml:msubsup><mml:mi>x</mml:mi><mml:mn>2</mml:mn><mml:mn>1</mml:mn></mml:msubsup><mml:msubsup><mml:mi>x</mml:mi><mml:mn>3</mml:mn><mml:mn>1</mml:mn></mml:msubsup></mml:mrow></mml:math></alternatives></inline-formula>.
+  The coefficients of the monomials are <inline-formula><alternatives>
+  <tex-math><![CDATA[5]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>5</mml:mn></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>1</mml:mn></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>2</mml:mn></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[3]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>3</mml:mn></mml:math></alternatives></inline-formula>
+  respectively.</p>
+  <p>From this formulation it is straightforward to represent a
+  multivariate polynomial with a single vector of coefficients and one
+  exponent matrix. Due to its simplicity and universality this kind of
+  representation is used for defining polynomials as input. It should be
+  noted that this most trivial representation is computationally
+  expensive to evaluate.</p>
+  <p>The number of additions of a polynomial remains constant
+  irrespective of the polynomial factorisation, since it depends solely
+  on the number of monomials and a factorisation does not influence the
+  number of monomials. This holds true only without taking common
+  subexpression elimination into account. Hence the number of additions
+  is irrelevant for evaluating the quality of a factorisation. In the
+  following we accordingly only count the number of multiplications for
+  a less biased comparison to other polynomial representations. Note
+  that each exponentiation is counted as (exponent - 1) operations.</p>
+</sec>
+<sec id="usage">
+  <title>Usage</title>
+  <p>The following code snippet shows how to use
+  <monospace>multivar_horner</monospace> to compute a Horner
+  factorisation of <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>:</p>
+  <code language="python">from multivar_horner import HornerMultivarPolynomial
+coefficients = [5.0, 1.0, 2.0, 3.0]
+exponents = [[0, 0, 0], [3, 1, 0], [2, 0, 1], [1, 1, 1]]
+p = HornerMultivarPolynomial(coefficients, exponents, rectify_input=True,
+    compute_representation=True)</code>
+  <p>The factorisation computed by
+  <monospace>multivar_horner</monospace> is
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[p(x) = x_1 (x_1 (x_1 (1 x_2) + 2 x_3) + 3 x_2 x_3) + 5]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mn>2</mml:mn><mml:msub><mml:mi>x</mml:mi><mml:mn>3</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mn>3</mml:mn><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:msub><mml:mi>x</mml:mi><mml:mn>3</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mn>5</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  and requires 7 multiplications for every polynomial evaluation. The
+  human readable representation of the polynomial can be accessed
+  with:</p>
+  <code language="python">print(p.representation)
+# [#ops=7] p(x) = x_1 (x_1 (x_1 (1.0 x_2) + 2.0 x_3) + 3.0 x_2 x_3) + 5.0</code>
+  <p>It should be noted that the implemented factorisation procedure is
+  coefficient-agnostic and hence does not, for example, optimise
+  multiplications with <inline-formula><alternatives>
+  <tex-math><![CDATA[1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>1</mml:mn></mml:math></alternatives></inline-formula>.
+  This design choice has been made in order to have the ability to
+  change the coefficients of a computed polynomial representation a
+  posteriori.</p>
+  <p>With the default settings a Horner factorisation is computed by
+  recursively factorising with respect to the factor most commonly used
+  in all monomials. When no leaves of the resulting binary “Horner
+  factorisation tree” can be factorised any more, a “recipe” for
+  evaluating the polynomial is compiled. This recipe encodes all
+  operations required to evaluate the polynomial in
+  <monospace>numpy</monospace> arrays
+  (<xref alt="Walt et al., 2011" rid="ref-numpy" ref-type="bibr">Walt et
+  al., 2011</xref>). This enables the use of functions just-in-time
+  compiled by <monospace>numba</monospace>
+  (<xref alt="Lam et al., 2015" rid="ref-numba" ref-type="bibr">Lam et
+  al., 2015</xref>), which allow the polynomial evaluation to be
+  computationally efficient. The just-in-time compiled functions are
+  always used, since a pure-Python polynomial evaluation would to some
+  extent outweigh the benefits of Horner factorisation
+  representations.</p>
+  <p><monospace>multivar_horner</monospace> allows to evaluate the
+  polynomial <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+  at a point <inline-formula><alternatives>
+  <tex-math><![CDATA[x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>:</p>
+  <code language="python">x = [-2.0, 3.0, 1.0]
+p_x = p.eval(x, rectify_input=True) # -29.0</code>
+</sec>
+<sec id="degrees-of-multivariate-polynomials">
+  <title>Degrees of multivariate polynomials</title>
+  <fig>
+    <caption><p>The number of coefficients of fully occupied polynomials
+    of different degrees in 3
+    dimensions.<styled-content id="figU003Anum_coeff_growth"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="num_coeff_growth.png" xlink:title="" />
+  </fig>
+  <p>In contrast to the one-dimensional case, there are several concepts
+  of degree for polynomials in multiple dimensions. Following the
+  notation of
+  (<xref alt="Trefethen, 2017" rid="ref-trefethen2017multivariate" ref-type="bibr">Trefethen,
+  2017</xref>) the usual notion of degree of a polynomial, the
+  <italic>total degree</italic>, is the maximal sum of exponents of all
+  monomials. This is equal to the maximal <inline-formula><alternatives>
+  <tex-math><![CDATA[l_1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>l</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>-norm
+  of all exponent vectors of the monomials. Accordingly the
+  <italic>euclidean degree</italic> is the maximal
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[l_2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>l</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>-norm
+  and the <italic>maximal degree</italic> is the maximal
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[l_{\infty}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>l</mml:mi><mml:mi>∞</mml:mi></mml:msub></mml:math></alternatives></inline-formula>-norm
+  of all exponent vectors. Please refer to
+  (<xref alt="Trefethen, 2017" rid="ref-trefethen2017multivariate" ref-type="bibr">Trefethen,
+  2017</xref>) for precise definitions.</p>
+  <p>A polynomial is called <italic>fully occupied</italic> with respect
+  to a certain degree if all possible monomials having a smaller or
+  equal degree are present. The occupancy of a polynomial can then be
+  defined as the number of monomials present, relative to the
+  fully-occupied polynomial of this degree. A fully-occupied polynomial
+  hence has an occupancy of <inline-formula><alternatives>
+  <tex-math><![CDATA[1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>1</mml:mn></mml:math></alternatives></inline-formula>.</p>
+  <p>The number of coefficients (equal to the number of possible
+  monomials) in multiple dimensions highly depends on the type of degree
+  a polynomial has
+  (cf. <xref alt="Figure 1" rid="figU003Anum_coeff_growth">Figure 1</xref>).
+  This effect intensifies as the dimensionality grows.</p>
+</sec>
+<sec id="benchmarks">
+  <title>Benchmarks</title>
+  <fig>
+    <caption><p>Numerical error of evaluating randomly-generated
+    polynomials of varying
+    sizes.<styled-content id="figU003Anum_err_growth"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="../docs/_static/num_err_growth.png" xlink:title="" />
+  </fig>
+  <p>For benchmarking our method the following procedure is used: In
+  order to sample polynomials with uniformly random occupancy, the
+  probability of monomials being present is picked randomly. For a fixed
+  <italic>maximal</italic> degree <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>
+  in <inline-formula><alternatives>
+  <tex-math><![CDATA[m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>m</mml:mi></mml:math></alternatives></inline-formula>
+  dimensions there are <inline-formula><alternatives>
+  <tex-math><![CDATA[(n+1)^m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>m</mml:mi></mml:msup></mml:math></alternatives></inline-formula>
+  possible exponent vectors corresponding to monomials. Each of these
+  monomials is included with the chosen probability.</p>
+  <p>Five polynomials were sampled randomly for each maximal degree up
+  to 7 and dimensionality up to 7. In order to compute the numerical
+  error, each polynomial is evaluated at a point sampled uniformly from
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[[-1; 1]^m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mo>−</mml:mo><mml:mn>1</mml:mn><mml:mo>;</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mi>m</mml:mi></mml:msup></mml:math></alternatives></inline-formula>
+  with the different methods. The polynomial evaluation algorithms use
+  64-bit floating point numbers, whereas the ground truth is computed
+  with 128-bit accuracy in order to avoid numerical errors in the ground
+  truth value. To obtain more representative results, the numerical
+  error is averaged over 100 runs with uniformly-random coefficients
+  each in the range <inline-formula><alternatives>
+  <tex-math><![CDATA[[-1; 1]]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mo>−</mml:mo><mml:mn>1</mml:mn><mml:mo>;</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>.
+  All errors are displayed relative to the ground truth.</p>
+  <fig>
+    <caption><p>Numerical error of evaluating randomly generated
+    polynomials in canonical form relative to the Horner
+    factorisation.<styled-content id="figU003Anum_err_heatmap"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="../docs/_static/num_err_heatmap.png" xlink:title="" />
+  </fig>
+  <p>Note that even though the original monomials are not actually
+  present in a Horner factorisation, the number of coefficients is
+  nonetheless identical to the number of coefficients of its canonical
+  form. With increasing size in terms of the number of included
+  coefficients, the numerical error of both the canonical form and the
+  Horner factorisation found by <monospace>multivar_horner</monospace>
+  grow exponentially
+  (cf. <xref alt="Figure 2" rid="figU003Anum_err_growth">Figure 2</xref>).
+  However, in comparison to the canonical form, the Horner factorisation
+  is more numerically stable, as visualised in
+  <xref alt="Figure 3" rid="figU003Anum_err_heatmap">Figure 3</xref>.
+  The numerical stability of Horner factorisations has theoretically
+  been shown in
+  (<xref alt="Ceberio &amp; Kreinovich, 2004" rid="ref-greedyHorner" ref-type="bibr">Ceberio
+  &amp; Kreinovich, 2004</xref>;
+  <xref alt="Peña &amp; Sauer, 2000a" rid="ref-pena2000multivariate" ref-type="bibr">Peña
+  &amp; Sauer, 2000a</xref>,
+  <xref alt="2000b" rid="ref-pena2000multivariate2" ref-type="bibr">2000b</xref>).</p>
+  <p>Even though the number of operations required for evaluating the
+  polynomials grows exponentially with their size, irrespective of the
+  considered representation,
+  <xref alt="Figure 4" rid="figU003Anum_ops_growth">Figure 4</xref>
+  shows that the rate of growth is lower for the Horner factorisation.
+  As a result, the Horner factorisations are computationally easier to
+  evaluate.</p>
+  <fig>
+    <caption><p>Number of operations required to evaluate randomly
+    generated
+    polynomials.<styled-content id="figU003Anum_ops_growth"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="../docs/_static/num_ops_growth.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="related-work">
+  <title>Related work</title>
+  <p>This package has been created due to the recent advances in
+  multivariate polynomial interpolation
+  (<xref alt="Hecht et al., 2018" rid="ref-Hecht1" ref-type="bibr">Hecht
+  et al., 2018</xref>;
+  <xref alt="Hecht &amp; Sbalzarini, 2018" rid="ref-Hecht2" ref-type="bibr">Hecht
+  &amp; Sbalzarini, 2018</xref>). High-dimensional interpolants of large
+  degrees create the demand for evaluating multivariate polynomials in a
+  computationally efficient and numerically stable way. These advances
+  enable modeling the behaviour of (physical) systems with polynomials.
+  Obtaining an analytical, multidimensional and nonlinear representation
+  of a system opens up many possibilities. With so-called “interpolation
+  response surface methods”
+  (<xref alt="Michelfeit, 2019" rid="ref-michelfeitresponse" ref-type="bibr">Michelfeit,
+  2019</xref>), for example, a system can be analysed and optimised.</p>
+  <p>The commercial software
+  <ext-link ext-link-type="uri" xlink:href="https://www.maplesoft.com/support/help/Maple/view.aspx?path=convert%2Fhorner"><monospace>Maple</monospace></ext-link>
+  offers the ability to compute multivariate Horner factorisations.
+  However <monospace>multivar_horner</monospace> is, as far as we are
+  aware, the first open-source implementation of a multivariate Horner
+  scheme. The <monospace>Wolfram Mathematica</monospace> framework
+  supports
+  <ext-link ext-link-type="uri" xlink:href="https://reference.wolfram.com/language/ref/HornerForm.html">univariate
+  Horner factorisations</ext-link>. The <monospace>Julia</monospace>
+  package
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/JuliaAlgebra/StaticPolynomials.jl">StaticPolynomials</ext-link>
+  has a functionality similar to <monospace>multivar_horner</monospace>,
+  but does not support computing Horner factorisations.</p>
+  <p><ext-link ext-link-type="uri" xlink:href="https://numpy.org/doc/stable/reference/routines.polynomials.polynomial.html"><monospace>NumPy</monospace></ext-link>
+  (<xref alt="Walt et al., 2011" rid="ref-numpy" ref-type="bibr">Walt et
+  al., 2011</xref>) offers functionality to represent and manipulate
+  polynomials of dimensionality up to 3. <monospace>SymPy</monospace>
+  offers the dedicated module
+  <ext-link ext-link-type="uri" xlink:href="https://docs.sympy.org/latest/modules/polys/index.html"><monospace>sympy.polys</monospace></ext-link>
+  for symbolically operating with polynomials. As stated in the
+  <ext-link ext-link-type="uri" xlink:href="https://mattpap.github.io/masters-thesis/html/src/algorithms.html#evaluation-of-polynomials">documentation</ext-link>,
+  <monospace>SymPy</monospace> does not use Horner factorisations for
+  polynomial evaluation in the multivariate case.
+  <ext-link ext-link-type="uri" xlink:href="https://doc.sagemath.org/html/en/reference/polynomial_rings/index.html"><monospace>Sage</monospace></ext-link>
+  covers the algebraic side of polynomials.</p>
+  <p><monospace>multivar_horner</monospace> has no functions to directly
+  interoperate with other software packages. The generality of the
+  required input parameters (coefficients and exponents), however, still
+  ensures the compatibility with other approaches. It is, for example,
+  easy to manipulate a polynomial with other libraries and then compute
+  the Horner factorisation representation of the resulting output
+  polynomial with <monospace>multivar_horner</monospace> afterwards, by
+  simply transferring coefficients and exponents. Some intermediate
+  operations to convert the parameters into the required format might be
+  necessary.</p>
+</sec>
+<sec id="further-reading">
+  <title>Further reading</title>
+  <p>The documentation of the package is hosted on
+  <ext-link ext-link-type="uri" xlink:href="https://multivar_horner.readthedocs.io/en/latest/">readthedocs.io</ext-link>.
+  Any bugs or feature requests can be filed on
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/MrMinimal64/multivar_horner/issues">GitHub</ext-link>
+  (<xref alt="Michelfeit, 2018" rid="ref-github" ref-type="bibr">Michelfeit,
+  2018</xref>). The
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/MrMinimal64/multivar_horner/blob/master/CONTRIBUTING.rst">contribution
+  guidelines</ext-link> can be found there as well.</p>
+  <p>The underlying basic mathematical concepts are explained in
+  numerical analysis textbooks like
+  (<xref alt="Neumaier, 2001" rid="ref-neumaier2001introduction" ref-type="bibr">Neumaier,
+  2001</xref>). The Horner scheme at the core of
+  <monospace>multivar_horner</monospace> has been theoretically outlined
+  in
+  (<xref alt="Ceberio &amp; Kreinovich, 2004" rid="ref-greedyHorner" ref-type="bibr">Ceberio
+  &amp; Kreinovich, 2004</xref>).</p>
+  <p>Instead of using a heuristic to choose the next factor, one could
+  instead search over all possible Horner factorisations in order to
+  arrive at a minimal factorisation. The number of possible
+  factorisations, however, increases exponentially with the degree and
+  dimensionality of a polynomial (number of monomials). One possibility
+  to avoid computing each factorisation is to employ a version of A-star
+  search
+  (<xref alt="Hart et al., 1968" rid="ref-hart1968formal" ref-type="bibr">Hart
+  et al., 1968</xref>) adapted for factorisation trees.
+  <monospace>multivar_horner</monospace> also implements this approach,
+  which is similar to the branch-and-bound method suggested in
+  (<xref alt="Kojima, 2008" rid="ref-kojima2008efficient" ref-type="bibr">Kojima,
+  2008</xref>, ch. 3.1).</p>
+  <p>(<xref alt="Carnicer &amp; Gasca, 1990" rid="ref-carnicer1990evaluation" ref-type="bibr">Carnicer
+  &amp; Gasca, 1990</xref>) shows how factorisation trees can be used to
+  evaluate multivariate polynomials and their derivatives. In
+  (<xref alt="Kuipers et al., 2013" rid="ref-kuipers2013improving" ref-type="bibr">Kuipers
+  et al., 2013</xref>) Monte Carlo tree search has been used to find
+  more performant factorisations than with greedy heuristics. Other
+  beneficial representations of polynomials are specified, for example,
+  in
+  (<xref alt="Lee, 2013" rid="ref-LeeFactorization2013" ref-type="bibr">Lee,
+  2013</xref>) and
+  (<xref alt="Leiserson et al., 2010" rid="ref-leiserson2010efficient" ref-type="bibr">Leiserson
+  et al., 2010</xref>).</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>Thanks to Michael Hecht (Max Planck Institute of Molecular Cell
+  Biology and Genetics) and Steve Schmerler (Helmholtz-Zentrum
+  Dresden-Rossendorf) for valuable input enabling this publication. I
+  also thank the editor David P. Sanders (Universidad Nacional Autónoma
+  de México) as well as the reviewers Henrik Barthels (RWTH Aachen
+  University) and Sascha Timme (TU Berlin) for their helpful
+  feedback.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-github">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <name><surname>Michelfeit</surname><given-names>Jannik</given-names></name>
+        </person-group>
+        <article-title>Multivar_horner</article-title>
+        <year iso-8601-date="2018">2018</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-05-28">2020</year><month>05</month><day>28</day></date-in-citation>
+        <uri>https://github.com/MrMinimal64/multivar_horner</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-numpy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Walt</surname><given-names>Stefan van der</given-names></name>
+          <name><surname>Colbert</surname><given-names>S. Chris</given-names></name>
+          <name><surname>Varoquaux</surname><given-names>Gael</given-names></name>
+        </person-group>
+        <article-title>The NumPy array: A structure for efficient numerical computation</article-title>
+        <source>Computing in Science and Engg.</source>
+        <publisher-name>IEEE Educational Activities Department</publisher-name>
+        <publisher-loc>Piscataway, NJ, USA</publisher-loc>
+        <year iso-8601-date="2011-03">2011</year><month>03</month>
+        <volume>13</volume>
+        <issue>2</issue>
+        <issn>1521-9615</issn>
+        <uri>http://dx.doi.org/10.1109/MCSE.2011.37</uri>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2011.37</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-numba">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Lam</surname><given-names>Siu Kwan</given-names></name>
+          <name><surname>Pitrou</surname><given-names>Antoine</given-names></name>
+          <name><surname>Seibert</surname><given-names>Stanley</given-names></name>
+        </person-group>
+        <article-title>Numba: A LLVM-based python JIT compiler</article-title>
+        <source>Proceedings of the second workshop on the LLVM compiler infrastructure in HPC</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="2015">2015</year>
+        <isbn>9781450340052</isbn>
+        <uri>https://doi.org/10.1145/2833157.2833162</uri>
+        <pub-id pub-id-type="doi">10.1145/2833157.2833162</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-horner1819xxi">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Horner</surname><given-names>William George</given-names></name>
+        </person-group>
+        <article-title>XXI. A new method of solving numerical equations of all orders, by continuous approximation</article-title>
+        <source>Philosophical Transactions of the Royal Society of London</source>
+        <publisher-name>The Royal Society London</publisher-name>
+        <year iso-8601-date="1819">1819</year>
+        <issue>109</issue>
+        <pub-id pub-id-type="doi">10.1098/rstl.1819.0023</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hart1968formal">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hart</surname><given-names>Peter E</given-names></name>
+          <name><surname>Nilsson</surname><given-names>Nils J</given-names></name>
+          <name><surname>Raphael</surname><given-names>Bertram</given-names></name>
+        </person-group>
+        <article-title>A formal basis for the heuristic determination of minimum cost paths</article-title>
+        <source>IEEE transactions on Systems Science and Cybernetics</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="1968">1968</year>
+        <volume>4</volume>
+        <issue>2</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-neumaier2001introduction">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Neumaier</surname><given-names>Arnold</given-names></name>
+        </person-group>
+        <source>Introduction to numerical analysis</source>
+        <publisher-name>Cambridge University Press</publisher-name>
+        <year iso-8601-date="2001">2001</year>
+        <pub-id pub-id-type="doi">10.1017/CBO9780511612916</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-michelfeitresponse">
+      <element-citation publication-type="thesis">
+        <person-group person-group-type="author">
+          <name><surname>Michelfeit</surname><given-names>Jannik</given-names></name>
+        </person-group>
+        <article-title>A response surface method based on multivariate newton interpolation</article-title>
+        <year iso-8601-date="2019">2019</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-05-28">2020</year><month>05</month><day>28</day></date-in-citation>
+        <uri>https://mosaic.mpi-cbg.de/docs/Michelfeit2019.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hecht1">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hecht</surname><given-names>Michael</given-names></name>
+          <name><surname>Hoffmann</surname><given-names>Karl B</given-names></name>
+          <name><surname>Cheeseman</surname><given-names>Bevan L</given-names></name>
+          <name><surname>Sbalzarini</surname><given-names>Ivo F</given-names></name>
+        </person-group>
+        <article-title>Multivariate Newton interpolation</article-title>
+        <source>arXiv preprint arXiv:1812.04256</source>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hecht2">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Hecht</surname><given-names>Michael</given-names></name>
+          <name><surname>Sbalzarini</surname><given-names>Ivo F.</given-names></name>
+        </person-group>
+        <article-title>Fast interpolation and Fourier transform in high-dimensional spaces</article-title>
+        <source>Intelligent computing. Proc. 2018 IEEE computing conf., Vol. 2,</source>
+        <person-group person-group-type="editor">
+          <name><surname>Arai</surname><given-names>K.</given-names></name>
+          <name><surname>Kapoor</surname><given-names>S.</given-names></name>
+          <name><surname>Bhatia</surname><given-names>R.</given-names></name>
+        </person-group>
+        <publisher-name>Springer Nature</publisher-name>
+        <publisher-loc>London, UK</publisher-loc>
+        <year iso-8601-date="2018">2018</year>
+        <volume>857</volume>
+        <pub-id pub-id-type="doi">10.1007/978-3-030-01177-2_5</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-trefethen2017multivariate">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Trefethen</surname><given-names>Lloyd</given-names></name>
+        </person-group>
+        <article-title>Multivariate polynomial approximation in the hypercube</article-title>
+        <source>Proceedings of the American Mathematical Society</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>145</volume>
+        <issue>11</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-greedyHorner">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ceberio</surname><given-names>Martine</given-names></name>
+          <name><surname>Kreinovich</surname><given-names>Vladik</given-names></name>
+        </person-group>
+        <article-title>Greedy algorithms for optimizing multivariate Horner schemes</article-title>
+        <publisher-name>Association for Computing Machinery (ACM)</publisher-name>
+        <year iso-8601-date="2004">2004</year>
+        <pub-id pub-id-type="doi">10.1145/980175.980179</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pena2000multivariate">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Peña</surname><given-names>Juan Manuel</given-names></name>
+          <name><surname>Sauer</surname><given-names>Thomas</given-names></name>
+        </person-group>
+        <article-title>On the multivariate Horner scheme</article-title>
+        <source>SIAM journal on numerical analysis</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2000">2000</year>
+        <volume>37</volume>
+        <issue>4</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-pena2000multivariate2">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Peña</surname><given-names>Juan Manuel</given-names></name>
+          <name><surname>Sauer</surname><given-names>Thomas</given-names></name>
+        </person-group>
+        <article-title>On the multivariate Horner scheme II: Running error analysis</article-title>
+        <source>Computing</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2000">2000</year>
+        <volume>65</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1007/s006070070002</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kojima2008efficient">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kojima</surname><given-names>Masakazu</given-names></name>
+        </person-group>
+        <article-title>Efficient evaluation of polynomials and their partial derivatives in homotopy continuation methods</article-title>
+        <source>Journal of the Operations Research Society of Japan</source>
+        <publisher-name>The Operations Research Society of Japan</publisher-name>
+        <year iso-8601-date="2008">2008</year>
+        <volume>51</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.15807/jorsj.51.29</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-carnicer1990evaluation">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Carnicer</surname><given-names>J</given-names></name>
+          <name><surname>Gasca</surname><given-names>M</given-names></name>
+        </person-group>
+        <article-title>Evaluation of multivariate polynomials and their derivatives</article-title>
+        <source>Mathematics of Computation</source>
+        <year iso-8601-date="1990">1990</year>
+        <volume>54</volume>
+        <issue>189</issue>
+        <pub-id pub-id-type="doi">10.1090/s0025-5718-1990-0993925-1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kuipers2013improving">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kuipers</surname><given-names>Jan</given-names></name>
+          <name><surname>Plaat</surname><given-names>Aske</given-names></name>
+          <name><surname>Vermaseren</surname><given-names>JAM</given-names></name>
+          <name><surname>Herik</surname><given-names>H Jaap van den</given-names></name>
+        </person-group>
+        <article-title>Improving multivariate Horner schemes with Monte Carlo tree search</article-title>
+        <source>Computer Physics Communications</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <volume>184</volume>
+        <issue>11</issue>
+        <pub-id pub-id-type="doi">10.1016/j.cpc.2013.05.008</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LeeFactorization2013">
+      <element-citation publication-type="thesis">
+        <person-group person-group-type="author">
+          <name><surname>Lee</surname><given-names>Martin Mok-Don</given-names></name>
+        </person-group>
+        <article-title>Factorization of multivariate polynomials</article-title>
+        <publisher-name>Technische Universität Kaiserslautern</publisher-name>
+        <year iso-8601-date="2013-06-13">2013</year><month>06</month><day>13</day>
+      </element-citation>
+    </ref>
+    <ref id="ref-leiserson2010efficient">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Leiserson</surname><given-names>Charles E</given-names></name>
+          <name><surname>Li</surname><given-names>Liyun</given-names></name>
+          <name><surname>Maza</surname><given-names>Marc Moreno</given-names></name>
+          <name><surname>Xie</surname><given-names>Yuzhen</given-names></name>
+        </person-group>
+        <article-title>Efficient evaluation of large polynomials</article-title>
+        <source>International congress on mathematical software</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-642-15582-6_55</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-prasolov2009polynomials">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Prasolov</surname><given-names>Victor V</given-names></name>
+        </person-group>
+        <source>Polynomials</source>
+        <publisher-name>Springer Science &amp; Business Media</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <volume>11</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-boumova2002applications">
+      <element-citation publication-type="thesis">
+        <person-group person-group-type="author">
+          <name><surname>Boumova</surname><given-names>Silvia</given-names></name>
+        </person-group>
+        <article-title>Applications of polynomials to spherical codes and designs</article-title>
+        <publisher-name>Technische Universiteit Eindhoven</publisher-name>
+        <year iso-8601-date="2002">2002</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-cools2002advances">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cools</surname><given-names>Ronald</given-names></name>
+        </person-group>
+        <article-title>Advances in multidimensional integration</article-title>
+        <source>Journal of computational and applied mathematics</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2002">2002</year>
+        <volume>149</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1016/s0377-0427(02)00517-4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-akritas1989elements">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Akritas</surname><given-names>Alkiviadis</given-names></name>
+        </person-group>
+        <source>Elements of computer algebra with applications</source>
+        <publisher-name>John Wiley &amp; Sons, Inc.</publisher-name>
+        <year iso-8601-date="1989">1989</year>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

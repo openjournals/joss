@@ -1,0 +1,582 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3050</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03050</article-id>
+<title-group>
+<article-title>kallisto: A command-line interface to simplify
+computational modelling and the generation of atomic
+features</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-3985-595X</contrib-id>
+<string-name>Eike Caldeweyher</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="corresp" rid="cor-1"><sup>*</sup></xref>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Data Science and Modelling, Pharmaceutical Science,
+R&amp;D, AstraZeneca, Gothenburg, Sweden</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<author-notes>
+<corresp id="cor-1">* E-mail: <email></email></corresp>
+</author-notes>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-03-08">
+<day>8</day>
+<month>3</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>60</issue>
+<fpage>3050</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Poetry</kwd>
+<kwd>Atomic Features</kwd>
+<kwd>Machine Learning</kwd>
+<kwd>Computational Chemistry</kwd>
+<kwd>Pharmaceutical Science</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>Machine learning (ML) has recently become very popular within
+  pharmaceutical industry
+  (<xref alt="Roy et al., 2015" rid="ref-roy2015" ref-type="bibr">Roy et
+  al., 2015</xref>;
+  <xref alt="Sprous et al., 2010" rid="ref-sprous2010" ref-type="bibr">Sprous
+  et al., 2010</xref>). Tasks as, e.g., building predictive models,
+  performing virtual screening, or predicting compound activities are
+  potential use cases for such ML applications
+  (<xref alt="Li et al., 2021" rid="ref-li2021" ref-type="bibr">Li et
+  al., 2021</xref>;
+  <xref alt="Simm et al., 2018" rid="ref-simm2018" ref-type="bibr">Simm
+  et al., 2018</xref>). Traditionally, ML models often rely on the
+  quantitative structure-activity relationship (QSAR) that has been
+  popularized by medicinal chemists and statisticians to relate
+  bioactivities to specific functional group manipulations
+  (<xref alt="Dudek et al., 2006" rid="ref-dudek2006" ref-type="bibr">Dudek
+  et al., 2006</xref>;
+  <xref alt="Verma et al., 2010" rid="ref-verma2010" ref-type="bibr">Verma
+  et al., 2010</xref>). This QSAR approach decreases the dimensionality
+  of the underlying problem and projects the molecular structure into a
+  space spanned by the physicochemical features. While early approaches
+  relied more on linear regression, modern approaches combine such
+  features with non-linear ML algorithms.</p>
+  <p>Chemoinformatic packages like RDKit
+  (<xref alt="Landrum et al., 2006" rid="ref-landrum2006" ref-type="bibr">Landrum
+  et al., 2006</xref>) enable the fast calculation of atomic/molecular
+  features based on structural information like the molecular graph,
+  while recently an extended Hueckel package has been added as well
+  (<xref alt="Landrum, 2019" rid="ref-landrum2019" ref-type="bibr">Landrum,
+  2019</xref>). However, frequently we want to go beyond a
+  structure-only approach thus incorporating electronic structure
+  effects as obtained, e.g., by a (higher-level) quantum mechanical (QM)
+  treatment. The calculation of QM-based features relies often on
+  well-established quantum chemistry methods like Kohn-Sham density
+  functional theory (DFT) that is currently the workhorse of
+  computational chemistry
+  (<xref alt="Kohn, 1999" rid="ref-kohn1999" ref-type="bibr">Kohn,
+  1999</xref>;
+  <xref alt="Parr, 1980" rid="ref-parr1980" ref-type="bibr">Parr,
+  1980</xref>). However, generating the feature space by DFT is
+  computationally demanding and can become the computational bottleneck
+  especially when aiming for high-throughput experiments with several
+  hundred to thousands of molecules.</p>
+  <p>Since there exists a critical need for an efficient yet accurate
+  featurizer, we developed the <monospace>kallisto</monospace>
+  command-line interface that is able to calculate QM-based atomic
+  features for atoms and molecules efficiently (whole periodic table up
+  to Radon). The features are either interpolating high-level references
+  (e.g., static/dynamic polarizabilities with time-dependent DFT data)
+  or are parametrized
+  (<xref alt="Caldeweyher et al., 2019" rid="ref-caldeweyher2019" ref-type="bibr">Caldeweyher
+  et al., 2019</xref>) to reproduce QM references (e.g., DFT Hirshfeld
+  (<xref alt="Hirshfeld, 1977" rid="ref-hirshfeld1977" ref-type="bibr">Hirshfeld,
+  1977</xref>) atomic partial charges). Molecular geometries need to
+  have an
+  <ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/XYZ_file_format"><monospace>xmol</monospace></ext-link>
+  or a
+  <ext-link ext-link-type="uri" xlink:href="https://www.turbomole.org/wp-content/uploads/2019/11/Turbomole_Manual_7-4-1.pdf"><monospace>Turbomole</monospace></ext-link>
+  like format to be processed by <monospace>kallisto</monospace>.
+  Besides, we implemented several computational modelling helpers to
+  simplify the development of high-throughput procedures. Some of those
+  modelling helpers depend on the open-source
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/grimme-lab/xtb">xtb</ext-link>
+  tight-binding scheme that has been developed by Stefan Grimme and
+  co-worker
+  (<xref alt="Bannwarth et al., 2020" rid="ref-bannwarth2020" ref-type="bibr">Bannwarth
+  et al., 2020</xref>). The <monospace>kallisto</monospace> software
+  depends on the scientific libraries Numpy
+  (<xref alt="Harris et al., 2020" rid="ref-harris2020" ref-type="bibr">Harris
+  et al., 2020</xref>) and SciPy
+  (<xref alt="Virtanen et al., 2020" rid="ref-virtanen2020" ref-type="bibr">Virtanen
+  et al., 2020</xref>). The
+  <ext-link ext-link-type="uri" xlink:href="https://ehjc.gitbook.io/kallisto/">online
+  documentation</ext-link> covers all high-level functionalizations of
+  this software mostly in terms of copy-paste recipes. Furthermore, we
+  cover bits of the underlying theory and compare to experimental data
+  as well as to other modern deep learning models.</p>
+</sec>
+<sec id="atomic-and-molecular-features">
+  <title>Atomic and Molecular Features</title>
+  <p>The following atomic and molecular features are available for all
+  atoms up to Radon</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Coordination numbers
+      (<xref alt="Caldeweyher et al., 2019" rid="ref-caldeweyher2019" ref-type="bibr">Caldeweyher
+      et al., 2019</xref>;
+      <xref alt="Grimme et al., 2010" rid="ref-grimme2010" ref-type="bibr">Grimme
+      et al., 2010</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>Proximity shells</p>
+    </list-item>
+    <list-item>
+      <p>Environment-dependent electronegativity equilibration partial
+      charges
+      (<xref alt="Caldeweyher et al., 2019" rid="ref-caldeweyher2019" ref-type="bibr">Caldeweyher
+      et al., 2019</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>Environment- and charge-dependent dynamic polarizabilities
+      (<xref alt="Caldeweyher et al., 2019" rid="ref-caldeweyher2019" ref-type="bibr">Caldeweyher
+      et al., 2019</xref>;
+      <xref alt="Grimme et al., 2010" rid="ref-grimme2010" ref-type="bibr">Grimme
+      et al., 2010</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>Environment- and charge-dependent van-der-Waals radii
+      (<xref alt="Fedorov et al., 2018" rid="ref-fedorov2018" ref-type="bibr">Fedorov
+      et al., 2018</xref>;
+      <xref alt="Mantina et al., 2009" rid="ref-mantina2009" ref-type="bibr">Mantina
+      et al., 2009</xref>;
+      <xref alt="Rahm et al., 2017" rid="ref-rahm2017" ref-type="bibr">Rahm
+      et al., 2017</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>Sterimol descriptors (L, Bmin, Bmax)
+      (<xref alt="Brethome et al., 2019" rid="ref-brethome2019" ref-type="bibr">Brethome
+      et al., 2019</xref>)</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="modelling-helpers">
+  <title>Modelling Helpers</title>
+  <p>The following modelling helper are implemented</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Breadth first sorting</p>
+    </list-item>
+    <list-item>
+      <p>Root mean squared deviation (quaternions)
+      (<xref alt="Coutsias et al., 2004" rid="ref-coutsias2004" ref-type="bibr">Coutsias
+      et al., 2004</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>Substructure identifier</p>
+    </list-item>
+    <list-item>
+      <p>Substructure exchanger</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>EC acknowledges contributions from Philipp Pracht
+  (<monospace>@pprcht</monospace>) and thanks Kjell Jorner
+  (<monospace>@kjelljorner</monospace>) for sharing his Sterimol
+  algorithm.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-grimme2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Grimme</surname><given-names>S.</given-names></name>
+          <name><surname>Antony</surname><given-names>J.</given-names></name>
+          <name><surname>Ehrlich</surname><given-names>S.</given-names></name>
+          <name><surname>Krieg</surname><given-names>H.</given-names></name>
+        </person-group>
+        <article-title>A consistent and accurate ab initio parametrization of density functional dispersion correction (DFT-D) for the 94 elements H-Pu</article-title>
+        <source>J. Chem. Phys.</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>132</volume>
+        <issue>15</issue>
+        <uri>https://doi.org/10.1063/1.3382344</uri>
+        <pub-id pub-id-type="doi">10.1063/1.3382344</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-caldeweyher2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Caldeweyher</surname><given-names>E.</given-names></name>
+          <name><surname>Ehlert</surname><given-names>S.</given-names></name>
+          <name><surname>Hansen</surname><given-names>A.</given-names></name>
+          <name><surname>Neugebauer</surname><given-names>H.</given-names></name>
+          <name><surname>Spicher</surname><given-names>S.</given-names></name>
+          <name><surname>Bannwarth</surname><given-names>C.</given-names></name>
+          <name><surname>Grimme</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>A generally applicable atomic-charge dependent London dispersion correction</article-title>
+        <source>J. Chem. Phys.</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>150</volume>
+        <issue>15</issue>
+        <uri>https://doi.org/10.1063/1.5090222</uri>
+        <pub-id pub-id-type="doi">10.1063/1.5090222</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-fedorov2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fedorov</surname><given-names>D. V.</given-names></name>
+          <name><surname>Sadhukhan</surname><given-names>M.</given-names></name>
+          <name><surname>Stöhr</surname><given-names>M.</given-names></name>
+          <name><surname>Tkatchenko</surname><given-names>A.</given-names></name>
+        </person-group>
+        <article-title>Quantum-mechanical relation between atomic dipole polarizability and the van der Waals radius</article-title>
+        <source>Phys, Rev. Lett.</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>121</volume>
+        <issue>18</issue>
+        <uri>https://doi.org/10.1103/PhysRevLett.121.183401</uri>
+        <pub-id pub-id-type="doi">10.1103/PhysRevLett.121.183401</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-rahm2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rahm</surname><given-names>M.</given-names></name>
+          <name><surname>Hoffmann</surname><given-names>R.</given-names></name>
+          <name><surname>Ashcroft</surname><given-names>N. W.</given-names></name>
+        </person-group>
+        <article-title>Corrigendum: Atomic and Ionic Radii of Elements 1–96</article-title>
+        <source>Chem. Eur. J.</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>23</volume>
+        <issue>16</issue>
+        <uri>https://doi.org/10.1002/chem.201700610</uri>
+        <pub-id pub-id-type="doi">10.1002/chem.201700610</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mantina2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mantina</surname><given-names>M.</given-names></name>
+          <name><surname>Chamberlin</surname><given-names>A. C.</given-names></name>
+          <name><surname>Valero</surname><given-names>R.</given-names></name>
+          <name><surname>Cramer</surname><given-names>C. J.</given-names></name>
+          <name><surname>Truhlar</surname><given-names>D. G.</given-names></name>
+        </person-group>
+        <article-title>Consistent van der Waals radii for the whole main group</article-title>
+        <source>J. Phys. Chem. A</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume>113</volume>
+        <issue>19</issue>
+        <uri>https://doi.org/10.1021/jp8111556</uri>
+        <pub-id pub-id-type="doi">10.1021/jp8111556</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-brethome2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Brethome</surname><given-names>A. V.</given-names></name>
+          <name><surname>Fletcher</surname><given-names>S. P.</given-names></name>
+          <name><surname>Paton</surname><given-names>R. S.</given-names></name>
+        </person-group>
+        <article-title>Conformational Effects on Physical-Organic Descriptors: The Case of Sterimol Steric Parameters</article-title>
+        <source>ACS Catalysis</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>9</volume>
+        <issue>3</issue>
+        <uri>https://doi.org/10.1021/acscatal.8b04043</uri>
+        <pub-id pub-id-type="doi">10.1021/acscatal.8b04043</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-coutsias2004">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Coutsias</surname><given-names>E. A.</given-names></name>
+          <name><surname>Seok</surname><given-names>C.</given-names></name>
+          <name><surname>Dill</surname><given-names>K. A.</given-names></name>
+        </person-group>
+        <article-title>Using quaternions to calculate RMSD</article-title>
+        <source>J. Comput. Chem.</source>
+        <year iso-8601-date="2004">2004</year>
+        <volume>25</volume>
+        <issue>15</issue>
+        <uri>https://doi.org/10.1002/jcc.20110</uri>
+        <pub-id pub-id-type="doi">10.1002/jcc.20110</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-roy2015">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Roy</surname><given-names>K.</given-names></name>
+          <name><surname>Kar</surname><given-names>S.</given-names></name>
+          <name><surname>Das</surname><given-names>R. N.</given-names></name>
+        </person-group>
+        <source>Understanding the basics of QSAR for applications in pharmaceutical sciences and risk assessment</source>
+        <publisher-name>Elsevier Inc.</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <uri>https://doi.org/10.1016/c2014-0-00286-9</uri>
+        <pub-id pub-id-type="doi">10.1016/c2014-0-00286-9</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sprous2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sprous</surname><given-names>D. G.</given-names></name>
+          <name><surname>Palmer</surname><given-names>R. K.</given-names></name>
+          <name><surname>Swanson</surname><given-names>J. T.</given-names></name>
+          <name><surname>Lawless</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>QSAR in the pharmaceutical research setting: QSAR models for broad, large problems</article-title>
+        <source>Curr. Top. Med. Chem.</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>10</volume>
+        <issue>6</issue>
+        <uri>https://doi.org/10.2174/156802610791111506</uri>
+        <pub-id pub-id-type="doi">10.2174/156802610791111506</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-li2021">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Li</surname><given-names>H.</given-names></name>
+          <name><surname>Sze</surname><given-names>K.-H.</given-names></name>
+          <name><surname>Lu</surname><given-names>G.</given-names></name>
+          <name><surname>Ballester</surname><given-names>P. J.</given-names></name>
+        </person-group>
+        <article-title>Machine-learning scoring functions for structure-based virtual screening</article-title>
+        <source>WIREs Comput. Mol. Sci.</source>
+        <year iso-8601-date="2021">2021</year>
+        <volume>11</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1002/wcms.1478</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-simm2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Simm</surname><given-names>J.</given-names></name>
+          <name><surname>Klambauer</surname><given-names>G.</given-names></name>
+          <name><surname>Arany</surname><given-names>A.</given-names></name>
+          <name><surname>Steijaert</surname><given-names>M.</given-names></name>
+          <name><surname>Wegner</surname><given-names>J. K.</given-names></name>
+          <name><surname>Gustin</surname><given-names>E.</given-names></name>
+          <name><surname>Chupakhin</surname><given-names>V.</given-names></name>
+          <name><surname>Chong</surname><given-names>Y. T.</given-names></name>
+          <name><surname>Vialard</surname><given-names>J.</given-names></name>
+          <name><surname>Buijnsters</surname><given-names>P.</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Repurposing high-throughput image assays enables biological activity prediction for drug discovery</article-title>
+        <source>Cell Chem. Biol.</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>25</volume>
+        <issue>5</issue>
+        <uri>https://doi.org/10.1016/j.chembiol.2018.01.015</uri>
+        <pub-id pub-id-type="doi">10.1016/j.chembiol.2018.01.015</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-dudek2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dudek</surname><given-names>A. Z.</given-names></name>
+          <name><surname>Arodz</surname><given-names>T.</given-names></name>
+          <name><surname>Gálvez</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>Computational methods in developing quantitative structure-activity relationships (QSAR): a review</article-title>
+        <source>Comb. Chem. High Throughput Screen.</source>
+        <year iso-8601-date="2006">2006</year>
+        <volume>9</volume>
+        <issue>3</issue>
+        <uri>https://doi.org/10.2174/138620706776055539</uri>
+        <pub-id pub-id-type="doi">10.2174/138620706776055539</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-verma2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Verma</surname><given-names>J.</given-names></name>
+          <name><surname>Khedkar</surname><given-names>V. M.</given-names></name>
+          <name><surname>Coutinho</surname><given-names>E. C.</given-names></name>
+        </person-group>
+        <article-title>3D-QSAR in drug design-a review</article-title>
+        <source>Curr. Top. Med. Chem.</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>10</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.2174/156802610790232260</uri>
+        <pub-id pub-id-type="doi">10.2174/156802610790232260</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-landrum2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Landrum</surname><given-names>G.</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>RDKit: Open-source cheminformatics</article-title>
+        <year iso-8601-date="2006">2006</year>
+        <uri>https://www.rdkit.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-landrum2019">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Landrum</surname><given-names>G.</given-names></name>
+        </person-group>
+        <article-title>YAeHMOP: Yet Another extended Hueckel Molecular Orbital Package</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>GitHub</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://github.com/greglandrum/yaehmop</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-parr1980">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Parr</surname><given-names>R. G.</given-names></name>
+        </person-group>
+        <source>Density Functional Theory of Atoms and Molecules</source>
+        <publisher-name>Springer-Verlag GmbH, Heidelberg</publisher-name>
+        <year iso-8601-date="1980">1980</year>
+        <uri>https://doi.org/10.1007/978-94-009-9027-2_2</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-kohn1999">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kohn</surname><given-names>W.</given-names></name>
+        </person-group>
+        <article-title>Nobel Lecture: Electronic structure of matter—wave functions and density functionals</article-title>
+        <source>Rev. Mod. Phys.</source>
+        <year iso-8601-date="1999">1999</year>
+        <volume>71</volume>
+        <issue>5</issue>
+        <uri>https://doi.org/10.1103/revmodphys.71.1253</uri>
+        <pub-id pub-id-type="doi">10.1103/revmodphys.71.1253</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hirshfeld1977">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hirshfeld</surname><given-names>F. L.</given-names></name>
+        </person-group>
+        <article-title>Bonded-atom fragments for describing molecular charge densities</article-title>
+        <source>Theor. Chim. Acta</source>
+        <year iso-8601-date="1977">1977</year>
+        <volume>44</volume>
+        <issue>2</issue>
+        <uri>https://doi.org/10.1007/bf00549096</uri>
+        <pub-id pub-id-type="doi">10.1007/bf00549096</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bannwarth2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bannwarth</surname><given-names>C.</given-names></name>
+          <name><surname>Caldeweyher</surname><given-names>E.</given-names></name>
+          <name><surname>Ehlert</surname><given-names>S.</given-names></name>
+          <name><surname>Hansen</surname><given-names>A.</given-names></name>
+          <name><surname>Pracht</surname><given-names>P.</given-names></name>
+          <name><surname>Seibert</surname><given-names>J.</given-names></name>
+          <name><surname>Spicher</surname><given-names>S.</given-names></name>
+          <name><surname>Grimme</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>Extended tight-binding quantum chemistry methods</article-title>
+        <source>WIREs Comput. Mol. Sci.</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://doi.org/10.1002/wcms.1493</uri>
+        <pub-id pub-id-type="doi">10.1002/wcms.1493</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-harris2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Harris</surname><given-names>C. R.</given-names></name>
+          <name><surname>Millman</surname><given-names>K. J.</given-names></name>
+          <name><surname>van der Walt</surname><given-names>S. J.</given-names></name>
+          <name><surname>Gommers</surname><given-names>R.</given-names></name>
+          <name><surname>Virtanen</surname><given-names>P.</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>D.</given-names></name>
+          <name><surname>Wieser</surname><given-names>E.</given-names></name>
+          <name><surname>Taylor</surname><given-names>J.</given-names></name>
+          <name><surname>Berg</surname><given-names>S.</given-names></name>
+          <name><surname>Smith</surname><given-names>N. J.</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Array programming with NumPy</article-title>
+        <source>Nature</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>585</volume>
+        <issue>7825</issue>
+        <uri>https://doi.org/10.1038/s41586-020-2649-2</uri>
+        <pub-id pub-id-type="doi">10.1038/s41586-020-2649-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-virtanen2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Virtanen</surname><given-names>P.</given-names></name>
+          <name><surname>Gommers</surname><given-names>R.</given-names></name>
+          <name><surname>Oliphant</surname><given-names>T. E.</given-names></name>
+          <name><surname>Haberland</surname><given-names>M.</given-names></name>
+          <name><surname>Reddy</surname><given-names>T.</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>D.</given-names></name>
+          <name><surname>Burovski</surname><given-names>E.</given-names></name>
+          <name><surname>Peterson</surname><given-names>P.</given-names></name>
+          <name><surname>Weckesser</surname><given-names>W.</given-names></name>
+          <name><surname>Bright</surname><given-names>J.</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>SciPy 1.0: fundamental algorithms for scientific computing in Python</article-title>
+        <source>Nat. Methods</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>17</volume>
+        <issue>3</issue>
+        <uri>https://doi.org/10.1038/s41592-019-0686-2</uri>
+        <pub-id pub-id-type="doi">10.1038/s41592-019-0686-2</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

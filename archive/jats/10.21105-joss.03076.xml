@@ -1,0 +1,657 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3076</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03076</article-id>
+<title-group>
+<article-title>MUQ: The MIT Uncertainty Quantification
+Library</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9419-2693</contrib-id>
+<string-name>Matthew Parno</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="corresp" rid="cor-1"><sup>*</sup></xref>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-6023-0989</contrib-id>
+<string-name>Andrew Davis</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-8632-8493</contrib-id>
+<string-name>Linus Seelinger</string-name>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Mathematics, Dartmouth College, Hanover, NH
+USA</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Courant Institute of Mathematical Sciences, New York
+University, New York, NY USA</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Institute for Scientific Computing, Heidelberg University,
+Heidelberg, Germany</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<author-notes>
+<corresp id="cor-1">* E-mail: <email></email></corresp>
+</author-notes>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-02-22">
+<day>22</day>
+<month>2</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>68</issue>
+<fpage>3076</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Python</kwd>
+<kwd>Bayesian Inference</kwd>
+<kwd>Inverse Problems</kwd>
+<kwd>Uncertainty Quantification</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Scientists and engineers frequently rely on mathematical and
+  numerical models to interpret observational data, forecast system
+  behavior, and make decisions. However, unknown and neglected physics,
+  limited and noisy data, and numerical error result in uncertain model
+  predictions. The MIT Uncertainty Quantification library (MUQ) is a
+  modular software framework for defining and solving uncertainty
+  quantification problems involving complex models. MUQ is written in
+  C++ but uses pybind11
+  (<xref alt="Jakob et al., 2017" rid="ref-pybind11" ref-type="bibr">Jakob
+  et al., 2017</xref>) to provide a nearly comprehensive Python
+  interface. Users can access nearly all of MUQ’s capabilities from
+  either language.</p>
+  <p>MUQ provides users many commonly used UQ tools and its modular
+  design allows developers to easily modify, extend, and advance
+  existing algorithms. For example, MUQ allows exact sampling of
+  non-Gaussian distributions (e.g., Markov chain Monte Carlo and
+  importance sampling), approximating computationally intensive forward
+  models (e.g., polynomial chaos expansions and Gaussian process
+  regression), working with integral covariance operators (e.g.,
+  Gaussian processes and Karhunen-Loève decompositions), and
+  characterizing predictive uncertainties. The software is designed to
+  support algorithm developers who want to easily construct new
+  algorithms by exploiting a wide variety of existing algorithmic
+  building blocks. Many UQ algorithms are model agnostic: Different
+  physics-based or statistical models can be substituted into the
+  algorithm based on the application. Therefore, MUQ enables users to
+  quickly implement new models and exploit state-of-the art UQ
+  algorithms.</p>
+  <p>A suite of documented examples, including Gaussian process
+  regression of Mauna Loa C02 observations, global sensitivity analysis
+  of an Euler-Bernoulli beam, and a hierarchical Bayesian model of
+  groundwater pump-test data, are provided to guide users through the
+  process of implementing their own models and leveraging MUQ’s UQ
+  algorithms on quasi-realistic applications.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Scientists and engineers are increasingly using physical and
+  statistical models to inform policy, system design, and experiments.
+  Although useful tools, models are inherently error prone and assessing
+  predictive capabilities and robustness requires rigorous uncertainty
+  quantification (UQ). The last decade has seen an explosion in the
+  number and complexity of algorithms for characterizing various sources
+  of uncertainty (e.g, Kennedy &amp; O’Hagan
+  (<xref alt="2001" rid="ref-kennedy2001" ref-type="bibr">2001</xref>),
+  Conrad &amp; Marzouk
+  (<xref alt="2013" rid="ref-conrad2013adaptive" ref-type="bibr">2013</xref>),
+  Giles (<xref alt="2008" rid="ref-MLMC" ref-type="bibr">2008</xref>),
+  Sargsyan et al.
+  (<xref alt="2019" rid="ref-sargsyan2019embedded" ref-type="bibr">2019</xref>),
+  Cotter et al.
+  (<xref alt="2013" rid="ref-cotter2013" ref-type="bibr">2013</xref>),
+  Cui et al.
+  (<xref alt="2016" rid="ref-cui2016" ref-type="bibr">2016</xref>), Han
+  &amp; Liu
+  (<xref alt="2018" rid="ref-han2018stein" ref-type="bibr">2018</xref>),
+  Detommaso et al.
+  (<xref alt="2018" rid="ref-detommaso2018stein" ref-type="bibr">2018</xref>)).
+  The complexity of many recent advancements makes it difficult to
+  rigorously compare new algorithms against the current state-of-the-art
+  and for users to leverage these new tools on practical applications.
+  Likewise, many interesting models are developed, but due to a lack of
+  a common interface they are often not widely used. MUQ aims to reduce
+  the gap between algorithmic research and application by providing a
+  software pipeline between the algorithmic development community and UQ
+  practitioners. The goal is to reduce the costly and error prone
+  practice of reimplementing state-of-the-art techniques, lower the
+  barriers preventing widespread use of cutting-edge techniques, and
+  provide an algorithm-agnostic model interface. MUQ leverages
+  well-known packages such as Eigen3
+  (<xref alt="Guennebaud et al., 2010" rid="ref-eigenweb" ref-type="bibr">Guennebaud
+  et al., 2010</xref>), Stan Math
+  (<xref alt="Carpenter et al., 2015" rid="ref-carpenter2015stan" ref-type="bibr">Carpenter
+  et al., 2015</xref>), NLOpt
+  (<xref alt="Johnson, 2007" rid="ref-nlopt" ref-type="bibr">Johnson,
+  2007</xref>), Sundials
+  (<xref alt="Hindmarsh et al., 2005" rid="ref-hindmarsh2005sundials" ref-type="bibr">Hindmarsh
+  et al., 2005</xref>), Nanoflann
+  (<xref alt="Blanco &amp; Rai, 2014" rid="ref-blanco2014nanoflann" ref-type="bibr">Blanco
+  &amp; Rai, 2014</xref>), and boost
+  (<xref alt="Boost, 2015" rid="ref-boost" ref-type="bibr">Boost,
+  2015</xref>), to help make this possible.</p>
+  <fig>
+    <caption><p>MUQ allows for complicated models to be constructed by
+    connecting model components on a graph. Here is a possible graph for
+    a Bayesian inverse problem built on a model for groundwater flow.
+    MUQ treats each box as a black-box, but if all components can
+    provide derivative information individually, e.g., through adjoint
+    methods, then MUQ can compute gradients, Jacobians, and Hessian
+    actions through the entire graph.
+    <styled-content id="figU003Agraph"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="Graph.png" xlink:title="" />
+  </fig>
+  <p>While MUQ is capable of solving both forward and inverse UQ
+  problems, its primary focus is solving of Bayesian inverse problems
+  with computationally expensive models, as demonstrated in Davis et al.
+  (<xref alt="2021" rid="ref-davis2020rate" ref-type="bibr">2021</xref>),
+  and potentially high dimensional parameter spaces. In comparison,
+  other MCMC and UQ packages, such as Stan
+  (<xref alt="Carpenter et al., 2017" rid="ref-carpenter2017" ref-type="bibr">Carpenter
+  et al., 2017</xref>), BUGS
+  (<xref alt="Lunn et al., 2009" rid="ref-lunn2009" ref-type="bibr">Lunn
+  et al., 2009</xref>), or JAGS
+  (<xref alt="Plummer et al., 2003" rid="ref-plummer2003" ref-type="bibr">Plummer
+  et al., 2003</xref>), are rooted in the statistics community. MUQ is
+  particularly useful when the target distribution depends on
+  complicated physical models that are difficult to implement and
+  computationally expensive. MUQ employs a semi-intrusive “gray-box”
+  approach (see Figure
+  <xref alt="Figure 1" rid="figU003Agraph">Figure 1</xref>) that enables
+  efficient gradient calculations, through techniques like the adjoint
+  methods used in PDE constrained optimization, but does not rely on
+  automatic differentiation and does not place any restrictions on how
+  the model is implemented (language, solver, etc…). Other sampling
+  packages, such as PyMC3
+  (<xref alt="Salvatier et al., 2016" rid="ref-salvatier2016" ref-type="bibr">Salvatier
+  et al., 2016</xref>), Stan
+  (<xref alt="Carpenter et al., 2017" rid="ref-carpenter2017" ref-type="bibr">Carpenter
+  et al., 2017</xref>), and tensorflow-probability
+  (<xref alt="Lao et al., 2020" rid="ref-lao2020" ref-type="bibr">Lao et
+  al., 2020</xref>), have adopted various probabilistic programming
+  approaches that are more intrusive than MUQ’s gray-box approach.
+  Although such tools are useful, they make it more difficult for users
+  to expose efficient gradient evaluation techniques for problems that
+  rely on PDE solvers or other complex forward models. MUQ also has a
+  variety of algorithms (e.g., Cotter et al.
+  (<xref alt="2013" rid="ref-cotter2013" ref-type="bibr">2013</xref>);
+  Cui et al.
+  (<xref alt="2016" rid="ref-cui2016" ref-type="bibr">2016</xref>)) for
+  tackling discretizations of infinite-dimensional Bayesian inverse
+  problems and several other novel MCMC implementations, including
+  multi-level Dodwell et al.
+  (<xref alt="2019" rid="ref-MLMCMCRevised" ref-type="bibr">2019</xref>)
+  and multi-index MCMC, local approximation algorithms Davis et al.
+  (<xref alt="2021" rid="ref-davis2020rate" ref-type="bibr">2021</xref>),
+  and adaptive transport map MCMC
+  (<xref alt="Parno &amp; Marzouk, 2018" rid="ref-parno2018transport" ref-type="bibr">Parno
+  &amp; Marzouk, 2018</xref>).</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We are grateful for the many users and developers in the MUQ
+  community. In particular, we would like to acknowledge software
+  contributions from Alexandra Datz, Arnold Song, Brendan West, Devin
+  O’Connor, Taylor Hodgdon, Patrick Conrad, Josephine Westermann, Ki-Tae
+  Kim, Max Liu, and Cassie Lumbrazo. We would also like to acknowledge
+  financial and technical support from Youssef Marzouk, Matthew
+  Farthing, Peter Bastian, and Robert Scheichl.</p>
+  <p>This material is based upon work supported by the National Science
+  Foundation under Grant No. ACI-1550487.</p>
+  <p>This material is based upon work supported by the US Department of
+  Energy, Office of Advanced Scientific Computing Research, SciDAC
+  (Scientific Discovery through Advanced Computing) program under awards
+  DE-SC0007099 and DE-SC0021226, for the QUEST and FASTMath SciDAC
+  Institutes.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-salvatier2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Salvatier</surname><given-names>John</given-names></name>
+          <name><surname>Wiecki</surname><given-names>Thomas V</given-names></name>
+          <name><surname>Fonnesbeck</surname><given-names>Christopher</given-names></name>
+        </person-group>
+        <article-title>Probabilistic programming in Python using PyMC3</article-title>
+        <source>PeerJ Computer Science</source>
+        <publisher-name>PeerJ Inc.</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>2</volume>
+        <pub-id pub-id-type="doi">10.7717/peerj-cs.55</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-cui2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cui</surname><given-names>Tiangang</given-names></name>
+          <name><surname>Law</surname><given-names>Kody JH</given-names></name>
+          <name><surname>Marzouk</surname><given-names>Youssef M</given-names></name>
+        </person-group>
+        <article-title>Dimension-independent likelihood-informed MCMC</article-title>
+        <source>Journal of Computational Physics</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>304</volume>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2015.10.008</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-nlopt">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Johnson</surname><given-names>Steven</given-names></name>
+        </person-group>
+        <article-title>The NLopt nonlinear-optimization package</article-title>
+        <publisher-name>http://github.com/stevengj/nlopt</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-eigenweb">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Guennebaud</surname><given-names>Gaël</given-names></name>
+          <name><surname>Jacob</surname><given-names>Benoît</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Eigen v3</article-title>
+        <publisher-name>http://eigen.tuxfamily.org</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-blanco2014nanoflann">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Blanco</surname><given-names>Jose Luis</given-names></name>
+          <name><surname>Rai</surname><given-names>Pranjal Kumar</given-names></name>
+        </person-group>
+        <article-title>Nanoflann: A C++ header-only fork of FLANN, a library for nearest neighbor (NN) with KD-trees</article-title>
+        <publisher-name>https://github.com/jlblancoc/nanoflann</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-hindmarsh2005sundials">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hindmarsh</surname><given-names>Alan C</given-names></name>
+          <name><surname>Brown</surname><given-names>Peter N</given-names></name>
+          <name><surname>Grant</surname><given-names>Keith E</given-names></name>
+          <name><surname>Lee</surname><given-names>Steven L</given-names></name>
+          <name><surname>Serban</surname><given-names>Radu</given-names></name>
+          <name><surname>Shumaker</surname><given-names>Dan E</given-names></name>
+          <name><surname>Woodward</surname><given-names>Carol S</given-names></name>
+        </person-group>
+        <article-title>SUNDIALS: Suite of nonlinear and differential/algebraic equation solvers</article-title>
+        <source>ACM Transactions on Mathematical Software (TOMS)</source>
+        <publisher-name>ACM</publisher-name>
+        <year iso-8601-date="2005">2005</year>
+        <volume>31</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1145/1089014.1089020</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-boost">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Boost</surname></name>
+        </person-group>
+        <article-title>Boost C++ Libraries</article-title>
+        <publisher-name>http://www.boost.org/</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-carpenter2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Carpenter</surname><given-names>Bob</given-names></name>
+          <name><surname>Gelman</surname><given-names>Andrew</given-names></name>
+          <name><surname>Hoffman</surname><given-names>Matthew D.</given-names></name>
+          <name><surname>Lee</surname><given-names>Daniel</given-names></name>
+          <name><surname>Goodrich</surname><given-names>Ben</given-names></name>
+          <name><surname>Betancourt</surname><given-names>Michael</given-names></name>
+          <name><surname>Brubaker</surname><given-names>Marcus</given-names></name>
+          <name><surname>Guo</surname><given-names>Jiqiang</given-names></name>
+          <name><surname>Li</surname><given-names>Peter</given-names></name>
+          <name><surname>Riddell</surname><given-names>Allen</given-names></name>
+        </person-group>
+        <article-title>Stan: A probabilistic programming language</article-title>
+        <source>Journal of Statistical Software</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>76</volume>
+        <issue>1</issue>
+        <uri>https://www.jstatsoft.org/index.php/jss/article/view/v076i01</uri>
+        <pub-id pub-id-type="doi">10.18637/jss.v076.i01</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-carpenter2015stan">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Carpenter</surname><given-names>Bob</given-names></name>
+          <name><surname>Hoffman</surname><given-names>Matthew D.</given-names></name>
+          <name><surname>Brubaker</surname><given-names>Marcus</given-names></name>
+          <name><surname>Lee</surname><given-names>Daniel</given-names></name>
+          <name><surname>Li</surname><given-names>Peter</given-names></name>
+          <name><surname>Betancourt</surname><given-names>Michael</given-names></name>
+        </person-group>
+        <article-title>The Stan Math library: Reverse-mode automatic differentiation in C++</article-title>
+        <year iso-8601-date="2015">2015</year>
+        <uri>https://arxiv.org/abs/1509.07164</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-lao2020">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Lao</surname><given-names>Junpeng</given-names></name>
+          <name><surname>Suter</surname><given-names>Christopher</given-names></name>
+          <name><surname>Langmore</surname><given-names>Ian</given-names></name>
+          <name><surname>Chimisov</surname><given-names>Cyril</given-names></name>
+          <name><surname>Saxena</surname><given-names>Ashish</given-names></name>
+          <name><surname>Sountsov</surname><given-names>Pavel</given-names></name>
+          <name><surname>Moore</surname><given-names>Dave</given-names></name>
+          <name><surname>Saurous</surname><given-names>Rif A.</given-names></name>
+          <name><surname>Hoffman</surname><given-names>Matthew D.</given-names></name>
+          <name><surname>Dillon</surname><given-names>Joshua V.</given-names></name>
+        </person-group>
+        <article-title>Tfp.mcmc: Modern Markov chain Monte Carlo tools built for modern hardware</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://arxiv.org/abs/2002.01184</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-lunn2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lunn</surname><given-names>David</given-names></name>
+          <name><surname>Spiegelhalter</surname><given-names>David</given-names></name>
+          <name><surname>Thomas</surname><given-names>Andrew</given-names></name>
+          <name><surname>Best</surname><given-names>Nicky</given-names></name>
+        </person-group>
+        <article-title>The BUGS project: Evolution, critique and future directions</article-title>
+        <source>Statistics in medicine</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <volume>28</volume>
+        <issue>25</issue>
+        <pub-id pub-id-type="doi">10.1002/sim.3680</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-plummer2003">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Plummer</surname><given-names>Martyn</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>JAGS: A program for analysis of Bayesian graphical models using Gibbs sampling</article-title>
+        <source>Proceedings of the 3rd international workshop on distributed statistical computing</source>
+        <publisher-name>Vienna, Austria.</publisher-name>
+        <year iso-8601-date="2003">2003</year>
+        <volume>124</volume>
+        <uri>https://www.r-project.org/conferences/DSC-2003/Proceedings/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-cotter2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cotter</surname><given-names>Simon L</given-names></name>
+          <name><surname>Roberts</surname><given-names>Gareth O</given-names></name>
+          <name><surname>Stuart</surname><given-names>Andrew M</given-names></name>
+          <name><surname>White</surname><given-names>David</given-names></name>
+        </person-group>
+        <article-title>MCMC methods for functions: Modifying old algorithms to make them faster</article-title>
+        <source>Statistical Science</source>
+        <publisher-name>JSTOR</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <pub-id pub-id-type="doi">10.1214/13-STS421</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kennedy2001">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kennedy</surname><given-names>Marc C</given-names></name>
+          <name><surname>O’Hagan</surname><given-names>Anthony</given-names></name>
+        </person-group>
+        <article-title>Bayesian calibration of computer models</article-title>
+        <source>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2001">2001</year>
+        <volume>63</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1111/1467-9868.00294</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sargsyan2019embedded">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sargsyan</surname><given-names>Khachik</given-names></name>
+          <name><surname>Huan</surname><given-names>Xun</given-names></name>
+          <name><surname>Najm</surname><given-names>Habib N</given-names></name>
+        </person-group>
+        <article-title>Embedded model error representation for Bayesian model calibration</article-title>
+        <source>International Journal for Uncertainty Quantification</source>
+        <publisher-name>Begel House Inc.</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>9</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1615/Int.J.UncertaintyQuantification.2019027384</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-detommaso2018stein">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Detommaso</surname><given-names>Gianluca</given-names></name>
+          <name><surname>Cui</surname><given-names>Tiangang</given-names></name>
+          <name><surname>Spantini</surname><given-names>Alessio</given-names></name>
+          <name><surname>Marzouk</surname><given-names>Youssef</given-names></name>
+          <name><surname>Scheichl</surname><given-names>Robert</given-names></name>
+        </person-group>
+        <article-title>A Stein variational Newton method</article-title>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://arxiv.org/abs/1806.03085</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-han2018stein">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Han</surname><given-names>Jun</given-names></name>
+          <name><surname>Liu</surname><given-names>Qiang</given-names></name>
+        </person-group>
+        <article-title>Stein variational gradient descent without gradient</article-title>
+        <source>Proceedings of the 35th international conference on machine learning</source>
+        <person-group person-group-type="editor">
+          <name><surname>Dy</surname><given-names>Jennifer</given-names></name>
+          <name><surname>Krause</surname><given-names>Andreas</given-names></name>
+        </person-group>
+        <publisher-name>PMLR</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>80</volume>
+        <uri>https://proceedings.mlr.press/v80/han18b.html</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-MLMCMC">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dodwell</surname><given-names>Tim</given-names></name>
+          <name><surname>Ketelsen</surname><given-names>Chris</given-names></name>
+          <name><surname>Scheichl</surname><given-names>Robert</given-names></name>
+          <name><surname>Teckentrup</surname><given-names>Aretha</given-names></name>
+        </person-group>
+        <article-title>A hierarchical multilevel Markov chain Monte Carlo algorithm with applications to uncertainty quantification in subsurface flow</article-title>
+        <source>SIAM ASA journal on uncertainty quantification</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>3</volume>
+        <issn>2166-2525</issn>
+        <pub-id pub-id-type="doi">10.1137/130915005</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MLMCMCRevised">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dodwell</surname><given-names>Tim</given-names></name>
+          <name><surname>Ketelsen</surname><given-names>Chris</given-names></name>
+          <name><surname>Scheichl</surname><given-names>Robert</given-names></name>
+          <name><surname>Teckentrup</surname><given-names>Aretha</given-names></name>
+        </person-group>
+        <article-title>Multilevel Markov chain Monte Carlo</article-title>
+        <source>SIAM Review</source>
+        <year iso-8601-date="2019-01">2019</year><month>01</month>
+        <volume>61</volume>
+        <pub-id pub-id-type="doi">10.1137/19M126966X</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-conrad2013adaptive">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Conrad</surname><given-names>Patrick R</given-names></name>
+          <name><surname>Marzouk</surname><given-names>Youssef M</given-names></name>
+        </person-group>
+        <article-title>Adaptive Smolyak pseudospectral approximations</article-title>
+        <source>SIAM Journal on Scientific Computing</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <volume>35</volume>
+        <issue>6</issue>
+        <pub-id pub-id-type="doi">10.1137/120890715</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-conrad2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Conrad</surname><given-names>Patrick R</given-names></name>
+          <name><surname>Davis</surname><given-names>Andrew D</given-names></name>
+          <name><surname>Marzouk</surname><given-names>Youssef M</given-names></name>
+          <name><surname>Pillai</surname><given-names>Natesh S</given-names></name>
+          <name><surname>Smith</surname><given-names>Aaron</given-names></name>
+        </person-group>
+        <article-title>Parallel local approximation MCMC for expensive models</article-title>
+        <source>SIAM/ASA Journal on Uncertainty Quantification</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>6</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1137/16M1084080</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-davis2020rate">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Davis</surname><given-names>Andrew D.</given-names></name>
+          <name><surname>Marzouk</surname><given-names>Youssef</given-names></name>
+          <name><surname>Smith</surname><given-names>Aaron</given-names></name>
+          <name><surname>Pillai</surname><given-names>Natesh</given-names></name>
+        </person-group>
+        <article-title>Rate-optimal refinement strategies for local approximation MCMC</article-title>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://arxiv.org/abs/2006.00032</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-parno2018transport">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Parno</surname><given-names>Matthew D</given-names></name>
+          <name><surname>Marzouk</surname><given-names>Youssef M</given-names></name>
+        </person-group>
+        <article-title>Transport map accelerated Markov chain Monte Carlo</article-title>
+        <source>SIAM/ASA Journal on Uncertainty Quantification</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>6</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1137/17M1134640</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MLMC">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Giles</surname><given-names>Michael B.</given-names></name>
+        </person-group>
+        <article-title>Multilevel Monte Carlo path simulation</article-title>
+        <source>Operations Research</source>
+        <publisher-name>INFORMS</publisher-name>
+        <publisher-loc>Linthicum, MD, USA</publisher-loc>
+        <year iso-8601-date="2008-05">2008</year><month>05</month>
+        <volume>56</volume>
+        <issue>3</issue>
+        <issn>0030-364X</issn>
+        <uri>https://doi.org/10.1287/opre.1070.0496</uri>
+        <pub-id pub-id-type="doi">10.1287/opre.1070.0496</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pybind11">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Jakob</surname><given-names>Wenzel</given-names></name>
+          <name><surname>Rhinelander</surname><given-names>Jason</given-names></name>
+          <name><surname>Moldovan</surname><given-names>Dean</given-names></name>
+        </person-group>
+        <article-title>pybind11 – seamless operability between C++11 and Python</article-title>
+        <publisher-name>https://github.com/pybind/pybind11</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-ParallelMLMCMC">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Seelinger</surname><given-names>Linus</given-names></name>
+          <name><surname>Reinarz</surname><given-names>Anne</given-names></name>
+          <name><surname>Rannabauer</surname><given-names>Leonhard</given-names></name>
+          <name><surname>Bader</surname><given-names>Michael</given-names></name>
+          <name><surname>Bastian</surname><given-names>Peter</given-names></name>
+          <name><surname>Scheichl</surname><given-names>Robert</given-names></name>
+        </person-group>
+        <article-title>High performance uncertainty quantification with parallelized multilevel Markov chain Monte Carlo</article-title>
+        <source>Proceedings of the international conference for high performance computing, networking, storage and analysis</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="2021">2021</year>
+        <isbn>9781450384421</isbn>
+        <uri>https://doi.org/10.1145/3458817.3476150</uri>
+        <pub-id pub-id-type="doi">10.1145/3458817.3476150</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

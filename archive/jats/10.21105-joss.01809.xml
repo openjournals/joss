@@ -1,0 +1,613 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1809</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01809</article-id>
+<title-group>
+<article-title>Geometric nested sampling: sampling from distributions
+defined on non-trivial geometries</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-2089-3964</contrib-id>
+<string-name>Kamran Javid</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Kavli Institute for Cosmology Cambridge, Madingley Road,
+Cambridge, CB3 0HA, United Kingdom</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Astrophysics Group, Cavendish Laboratory, JJ Thomson
+Avenue, Cambridge CB3 0HE, United Kingdom</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-10-02">
+<day>2</day>
+<month>10</month>
+<year>2019</year>
+</pub-date>
+<volume>5</volume>
+<issue>46</issue>
+<fpage>1809</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Nested sampling</kwd>
+<kwd>Monte Carlo methods</kwd>
+<kwd>Bayesian inference</kwd>
+<kwd>Astrophysics</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="abstract">
+  <title>Abstract</title>
+  <p>Metropolis Hastings nested sampling evolves a Markov chain,
+  accepting new points along the chain according to a version of the
+  Metropolis Hastings acceptance ratio, which has been modified to
+  satisfy the nested sampling likelihood constraint. The geometric
+  nested sampling algorithm I present here is based on the Metropolis
+  Hastings method, but treats parameters as though they represent points
+  on certain geometric objects, namely circles, tori and spheres. For
+  parameters which represent points on a circle or torus, the trial
+  distribution is “wrapped” around the domain of the posterior
+  distribution such that samples cannot be rejected automatically when
+  evaluating the Metropolis ratio due to being outside the sampling
+  domain. Furthermore, this enhances the mobility of the sampler. For
+  parameters which represent coordinates on the surface of a sphere, the
+  algorithm transforms the parameters into a Cartesian coordinate system
+  before sampling which again makes sure no samples are automatically
+  rejected, and provides a physically intuitive way of the sampling the
+  parameter space.</p>
+</sec>
+<sec id="bayesian-inference-and-nested-sampling">
+  <title>Bayesian inference and nested sampling</title>
+  <p>For a model <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{M}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>ℳ</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  and data <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{\mathcal{D}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mstyle mathvariant="script"><mml:mi>𝒟</mml:mi></mml:mstyle></mml:mstyle></mml:math></alternatives></inline-formula>,
+  we can obtain model parameters (also known as input or sampling
+  parameters) <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{\theta}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝛉</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  conditioned on <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{M}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>ℳ</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{\mathcal{D}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mstyle mathvariant="script"><mml:mi>𝒟</mml:mi></mml:mstyle></mml:mstyle></mml:math></alternatives></inline-formula>
+  using Bayes’ theorem:</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[
+  \mathrm{Pr}\left(\mathbf{\theta}|\mathbf{\mathcal{D}},\mathcal{M}\right) = \frac{\mathrm{Pr}\left(\mathbf{\mathcal{D}}|\mathbf{\theta},\mathcal{M}\right)\mathrm{Pr}\left(\mathbf{\theta}|\mathcal{M}\right)}{\mathrm{Pr}\left(\mathbf{\mathcal{D}}|\mathcal{M}\right)},
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="normal"><mml:mi>P</mml:mi><mml:mi>r</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛉</mml:mi></mml:mstyle><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:mstyle mathvariant="bold"><mml:mstyle mathvariant="script"><mml:mi>𝒟</mml:mi></mml:mstyle></mml:mstyle><mml:mo>,</mml:mo><mml:mstyle mathvariant="script"><mml:mi>ℳ</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mfrac><mml:mrow><mml:mstyle mathvariant="normal"><mml:mi>P</mml:mi><mml:mi>r</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mstyle mathvariant="script"><mml:mi>𝒟</mml:mi></mml:mstyle></mml:mstyle><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛉</mml:mi></mml:mstyle><mml:mo>,</mml:mo><mml:mstyle mathvariant="script"><mml:mi>ℳ</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mstyle mathvariant="normal"><mml:mi>P</mml:mi><mml:mi>r</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛉</mml:mi></mml:mstyle><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:mstyle mathvariant="script"><mml:mi>ℳ</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow><mml:mrow><mml:mstyle mathvariant="normal"><mml:mi>P</mml:mi><mml:mi>r</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mstyle mathvariant="script"><mml:mi>𝒟</mml:mi></mml:mstyle></mml:mstyle><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:mstyle mathvariant="script"><mml:mi>ℳ</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:mfrac><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>where <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathrm{Pr}\left(\mathbf{\theta}|\mathbf{\mathcal{D}},\mathcal{M}\right) \equiv \mathcal{P}\left(\mathbf{\theta}\right)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="normal"><mml:mi>P</mml:mi><mml:mi>r</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛉</mml:mi></mml:mstyle><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:mstyle mathvariant="bold"><mml:mstyle mathvariant="script"><mml:mi>𝒟</mml:mi></mml:mstyle></mml:mstyle><mml:mo>,</mml:mo><mml:mstyle mathvariant="script"><mml:mi>ℳ</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>≡</mml:mo><mml:mstyle mathvariant="script"><mml:mi>𝒫</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛉</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  is the posterior distribution of the model parameter set,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathrm{Pr}\left(\mathbf{\mathcal{D}}|\mathbf{\theta},\mathcal{M}\right) \equiv \mathcal{L}\left(\mathbf{\theta}\right)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="normal"><mml:mi>P</mml:mi><mml:mi>r</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mstyle mathvariant="script"><mml:mi>𝒟</mml:mi></mml:mstyle></mml:mstyle><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛉</mml:mi></mml:mstyle><mml:mo>,</mml:mo><mml:mstyle mathvariant="script"><mml:mi>ℳ</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>≡</mml:mo><mml:mstyle mathvariant="script"><mml:mi>ℒ</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛉</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  is the likelihood function for the data,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathrm{Pr}\left(\mathbf{\theta}|\mathcal{M}\right) \equiv \pi\left(\mathbf{\theta}\right)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="normal"><mml:mi>P</mml:mi><mml:mi>r</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛉</mml:mi></mml:mstyle><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:mstyle mathvariant="script"><mml:mi>ℳ</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>≡</mml:mo><mml:mi>π</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛉</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  is the prior probability distribution for the model parameter set, and
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathrm{Pr}\left(\mathbf{\mathcal{D}}|\mathcal{M}\right) \equiv \mathcal{Z}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="normal"><mml:mi>P</mml:mi><mml:mi>r</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mstyle mathvariant="script"><mml:mi>𝒟</mml:mi></mml:mstyle></mml:mstyle><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:mstyle mathvariant="script"><mml:mi>ℳ</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>≡</mml:mo><mml:mstyle mathvariant="script"><mml:mi>𝒵</mml:mi></mml:mstyle></mml:mrow></mml:math></alternatives></inline-formula>
+  is the Bayesian evidence of the data given a model
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{M}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>ℳ</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>.
+  The evidence can be interpreted as the factor required to normalise
+  the posterior over the model parameter space:</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[
+  \mathcal{Z} = \int \mathcal{L}\left(\mathbf{\theta}\right) \pi\left(\mathbf{\theta}\right)\, \mathrm{d}\mathbf{\theta}.
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>𝒵</mml:mi></mml:mstyle><mml:mo>=</mml:mo><mml:mo>∫</mml:mo><mml:mstyle mathvariant="script"><mml:mi>ℒ</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛉</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>π</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛉</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mspace width="0.167em"></mml:mspace><mml:mstyle mathvariant="normal"><mml:mi>d</mml:mi></mml:mstyle><mml:mstyle mathvariant="bold"><mml:mi>𝛉</mml:mi></mml:mstyle><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula>.</p>
+  <p>Nested sampling
+  (<xref alt="Skilling et al., 2006" rid="ref-skilling2006nested" ref-type="bibr">Skilling
+  et al., 2006</xref>) exploits the relation between the likelihood and
+  prior volume to transform the integral which gives the evidence as a
+  one-dimensional integral. The prior volume
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[X]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>X</mml:mi></mml:math></alternatives></inline-formula>
+  is defined by <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathrm{d}X = \pi\left(\mathbf{\theta}\right) \mathrm{d}\mathbf{\theta}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="normal"><mml:mi>d</mml:mi></mml:mstyle><mml:mi>X</mml:mi><mml:mo>=</mml:mo><mml:mi>π</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛉</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mstyle mathvariant="normal"><mml:mi>d</mml:mi></mml:mstyle><mml:mstyle mathvariant="bold"><mml:mi>𝛉</mml:mi></mml:mstyle></mml:mrow></mml:math></alternatives></inline-formula>,
+  thus <inline-formula><alternatives>
+  <tex-math><![CDATA[X]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>X</mml:mi></mml:math></alternatives></inline-formula>
+  is defined on <inline-formula><alternatives>
+  <tex-math><![CDATA[[0,1]]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+  and we can say:</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[
+  \mathcal{Z} = \int_{0}^{1} \mathcal{L}(X) \mathrm{d}X.
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>𝒵</mml:mi></mml:mstyle><mml:mo>=</mml:mo><mml:msubsup><mml:mo>∫</mml:mo><mml:mn>0</mml:mn><mml:mn>1</mml:mn></mml:msubsup><mml:mstyle mathvariant="script"><mml:mi>ℒ</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>X</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mstyle mathvariant="normal"><mml:mi>d</mml:mi></mml:mstyle><mml:mi>X</mml:mi><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>The integral extends over the region(s) of the parameter space
+  contained within the iso-likelihood contour
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{L}\left(\mathbf{\theta}\right) = \mathcal{L}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>ℒ</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛉</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mstyle mathvariant="script"><mml:mi>ℒ</mml:mi></mml:mstyle></mml:mrow></mml:math></alternatives></inline-formula>
+  (see Javid
+  (<xref alt="2019b" rid="ref-javid2019physical" ref-type="bibr">2019b</xref>)
+  for a proof of the equivalence of both evidence integrals).</p>
+  <p>Nested sampling has been used extensively within the astrophysics
+  community for both computing the posterior distributions of parameters
+  of interest and for model comparison (see e.g.
+  (<xref alt="Farhan Feroz et al., 2009" rid="ref-feroz2009bayesian" ref-type="bibr">Farhan
+  Feroz et al., 2009</xref>;
+  <xref alt="Javid, Olamaie, et al., 2018" rid="ref-javid2018physical" ref-type="bibr">Javid,
+  Olamaie, et al., 2018</xref>;
+  <xref alt="Javid, Perrott, et al., 2018" rid="ref-javid2018comparison" ref-type="bibr">Javid,
+  Perrott, et al., 2018</xref>;
+  <xref alt="Javid, 2019b" rid="ref-javid2019physical" ref-type="bibr">Javid,
+  2019b</xref>;
+  <xref alt="Javid et al., 2019" rid="ref-javid2019physical2" ref-type="bibr">Javid
+  et al., 2019</xref>;
+  <xref alt="Perrott et al., 2019" rid="ref-perrott2019sunyaev" ref-type="bibr">Perrott
+  et al., 2019</xref>) which all use data from the Arcminute MicroKelvin
+  Imager
+  (<xref alt="Hickish et al., 2018" rid="ref-hickish2018digital" ref-type="bibr">Hickish
+  et al., 2018</xref>) to solve Bayesian inference problems). Two of the
+  most popular nested sampling algorithms are MultiNest
+  (<xref alt="F. Feroz et al., 2009" rid="ref-feroz2009multinest" ref-type="bibr">F.
+  Feroz et al., 2009</xref>) and PolyChord
+  (<xref alt="Handley et al., 2015b" rid="ref-handley2015polychord" ref-type="bibr">Handley
+  et al., 2015b</xref>,
+  <xref alt="2015a" rid="ref-handley2015polychord2" ref-type="bibr">2015a</xref>).
+  The former of these approximates the iso-likelihood contours as
+  hyperellipsoids in the unit hypercube in which it samples. PolyChord
+  performs coordinate transformations such that the resultant space is
+  easier to navigate.</p>
+  <p>A comparison between the performance of the geometric nested
+  sampler and MultiNest is presented in Javid
+  (<xref alt="2019a" rid="ref-javid2019nested" ref-type="bibr">2019a</xref>).
+  Figures 6 - 9 of that paper show their performance on a toroidal
+  model, while Figure 11 shows their relative performance on a complex
+  spherical toy model.</p>
+</sec>
+<sec id="summary-of-the-geometric-nested-sampler">
+  <title>Summary of the geometric nested sampler</title>
+  <p>Here I present the geometric nested sampling algorithm, as
+  described in Javid
+  (<xref alt="2019a" rid="ref-javid2019nested" ref-type="bibr">2019a</xref>).
+  The geometric nested sampling algorithm is based on the Metropolis
+  Hastings nested sampling algorithm presented in Farhan Feroz &amp;
+  Hobson
+  (<xref alt="2008" rid="ref-feroz2008multimodal" ref-type="bibr">2008</xref>),
+  which at each iteration, evolves an Markov Chain Monte Carlo (MCMC)
+  chain to find the next livepoint (point within the iso-likelihood
+  contour). Each point in the chain is sampled from a trial
+  distribution, and whether that point is accepted or not, depends on
+  the value of the Metropolis Hastings ratio
+  (<xref alt="Chib &amp; Greenberg, 1995" rid="ref-chib1995understanding" ref-type="bibr">Chib
+  &amp; Greenberg, 1995</xref>). In the case that the point is not
+  accepted, the next point in the chain is taken to be the point from
+  the previous step.</p>
+  <p>One key issue with Metropolis Hastings nested sampling is that at
+  each nested sampling iteration, if too many trial points are rejected,
+  then the livepoints will be highly correlated with each other after a
+  number of nested sampling iterations. To prevent this, one must sample
+  a large number of trial points in order to increase the number of
+  acceptances and decrease the auto-correlation of the trial point
+  chain.</p>
+  <p>This method can be problematic if computing the likelihood is
+  computationally expensive. One particular case in which the sampled
+  point is guaranteed to be rejected, is if the point lies outside of
+  the domain of <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{P}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>𝒫</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  (support of <inline-formula><alternatives>
+  <tex-math><![CDATA[\pi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>π</mml:mi></mml:math></alternatives></inline-formula>).
+  Of course, this can be avoided by adapting
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[q\left(\mathbf{\theta}_{\mathrm{t}} | \mathbf{\theta}_{l}\right)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>q</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝛉</mml:mi></mml:mstyle><mml:mstyle mathvariant="normal"><mml:mi>t</mml:mi></mml:mstyle></mml:msub><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝛉</mml:mi></mml:mstyle><mml:mi>l</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  so that it is truncated to fit the support of
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\pi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>π</mml:mi></mml:math></alternatives></inline-formula>,
+  but in high dimensions this can be tedious, and inefficient in itself.
+  Hence one desires an algorithm which does not sample outside the
+  support of <inline-formula><alternatives>
+  <tex-math><![CDATA[\pi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>π</mml:mi></mml:math></alternatives></inline-formula>,
+  without having to truncate <inline-formula><alternatives>
+  <tex-math><![CDATA[q]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>q</mml:mi></mml:math></alternatives></inline-formula>.</p>
+  <fig>
+    <caption><p>Wrapped trial distribution for circular parameters.
+    Dotted red lines denote edge of posterior domain. Green and blue
+    curves are candidate trial distributions. The dotted part of these
+    curves are the parts of the distribution which would sample outside
+    of the posterior domain if a wrapped trial distribution was not
+    used. The crosses are examples of how a trial point could be sampled
+    when the wrapped trial distributions are used.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="paper_figs/wrapped_plot.png" xlink:title="" />
+  </fig>
+  <p>Another issue which most sampling algorithms are subject to occurs
+  when the modes of the posterior distribution are far away from each
+  other in <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{\theta}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝛉</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  space, e.g. when they are at “opposite ends” of the domain of
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\pi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>π</mml:mi></mml:math></alternatives></inline-formula>.
+  In the context of nested sampling this can result in one or more of
+  the modes not being sampled accurately, particularly in the case of
+  low livepoint runs. Thus a sampling algorithm should be able to
+  efficiently manoeuvre between well separated modes which lie at the
+  “edges” of <inline-formula><alternatives>
+  <tex-math><![CDATA[\pi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>π</mml:mi></mml:math></alternatives></inline-formula>’s
+  support.</p>
+  <p>Specific to the geometric nested sampler, is the way it treats
+  parameters that exhibit certain geometrical properties. For example,
+  for periodic parameters (e.g. time or angle) the trial distribution
+  used in the MCMC evaluation is “wrapped” around its domain as shown in
+  Figure 1. A wrapped trial distribution such as this one ensures that
+  samples are never automatically rejected for being outside of the
+  domain of the posterior. Furthermore, any modes occurring near the
+  edge of the domain are still “close to the other end” of the domain,
+  and so can be sampled more efficiently. For parameters which exhibit
+  spherical properties (e.g. polar and azimuthal angles
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϕ</mml:mi></mml:math></alternatives></inline-formula>),
+  the geometric nested sampler uses another trick. Instead of
+  considering their joint rectangular sampling space with area
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\pi \times 2\pi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>π</mml:mi><mml:mo>×</mml:mo><mml:mn>2</mml:mn><mml:mi>π</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>,
+  the algorithm transforms their values into their three-dimensional
+  Euclidean representation (<inline-formula><alternatives>
+  <tex-math><![CDATA[x, y, z]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>y</mml:mi><mml:mo>,</mml:mo><mml:mi>z</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>),
+  and samples from a spherical Gaussian trial distribution. Any sampled
+  points which do not lay on the original sphere described by
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϕ</mml:mi></mml:math></alternatives></inline-formula>
+  are projected back onto the sphere before being converted back to
+  their angular forms, which ensures no trial points outside of the
+  domain are sampled. This idea is illustrated in Figure 2: at iteration
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[l]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>l</mml:mi></mml:math></alternatives></inline-formula>
+  of the algorithm we consider a point (<inline-formula><alternatives>
+  <tex-math><![CDATA[\theta_{l}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>θ</mml:mi><mml:mi>l</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\phi_{l}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>ϕ</mml:mi><mml:mi>l</mml:mi></mml:msub></mml:math></alternatives></inline-formula>)
+  as a point in the MCMC chain. This point can be transformed into its
+  Cartesian representation (<inline-formula><alternatives>
+  <tex-math><![CDATA[x_{l}, y_{l}, z_{l}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>x</mml:mi><mml:mi>l</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mi>l</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>z</mml:mi><mml:mi>l</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>),
+  which forms the centre of the trial distribution from which a
+  candidate point is sampled. In general the point sampled from the
+  trial distribution, (<inline-formula><alternatives>
+  <tex-math><![CDATA[x', y', z']]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>x</mml:mi><mml:mi>′</mml:mi><mml:mo>,</mml:mo><mml:mi>y</mml:mi><mml:mi>′</mml:mi><mml:mo>,</mml:mo><mml:mi>z</mml:mi><mml:mi>′</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>),
+  will not lay on the surface of the sphere. Thus the point is projected
+  back onto the sphere to give (<inline-formula><alternatives>
+  <tex-math><![CDATA[x_{t}, y_{t}, z_{t}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>x</mml:mi><mml:mi>t</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mi>t</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>z</mml:mi><mml:mi>t</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>),
+  which can be converted back into angular coordinates to give the trial
+  point (<inline-formula><alternatives>
+  <tex-math><![CDATA[\theta_{t}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>θ</mml:mi><mml:mi>t</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\phi_{t}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>ϕ</mml:mi><mml:mi>t</mml:mi></mml:msub></mml:math></alternatives></inline-formula>).</p>
+  <fig>
+    <caption><p>Sampling spherical parameters by using their Euclidean
+    interpretation. <inline-formula><alternatives>
+    <tex-math><![CDATA[(x_{l}, y_{l}, z_{l})]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>l</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mi>l</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>z</mml:mi><mml:mi>l</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+    represents the centre of the trial distribution, from which point
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[(x', y', z')]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mi>′</mml:mi><mml:mo>,</mml:mo><mml:mi>y</mml:mi><mml:mi>′</mml:mi><mml:mo>,</mml:mo><mml:mi>z</mml:mi><mml:mi>′</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+    is sampled. Since this point does not lay on the sphere, it is
+    projected back onto it (to give point <inline-formula><alternatives>
+    <tex-math><![CDATA[(x_{t}, y_{t}, z_{t})]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>t</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mi>t</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>z</mml:mi><mml:mi>t</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>)
+    before it is converted back to its angular
+    representation.</p></caption>
+    <graphic mimetype="image" mime-subtype="jpeg" xlink:href="paper_figs/Sphere.jpg" xlink:title="" />
+  </fig>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>The author wishes to thank Will Handley for his contribution to the
+  project associated with this algorithm.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-chib1995understanding">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Chib</surname><given-names>Siddhartha</given-names></name>
+          <name><surname>Greenberg</surname><given-names>Edward</given-names></name>
+        </person-group>
+        <article-title>Understanding the metropolis-hastings algorithm</article-title>
+        <source>The american statistician</source>
+        <publisher-name>Taylor &amp; Francis Group</publisher-name>
+        <year iso-8601-date="1995">1995</year>
+        <volume>49</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1080/00031305.1995.10476177</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-javid2018physical">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Javid</surname><given-names>Kamran</given-names></name>
+          <name><surname>Olamaie</surname><given-names>Malak</given-names></name>
+          <name><surname>Perrott</surname><given-names>Yvette C</given-names></name>
+          <name><surname>Carvalho</surname><given-names>Pedro</given-names></name>
+          <name><surname>Grainge</surname><given-names>Keith JB</given-names></name>
+          <name><surname>Hobson</surname><given-names>Michael P</given-names></name>
+          <name><surname>Rumsey</surname><given-names>Clare</given-names></name>
+          <name><surname>Saunders</surname><given-names>Richard DE</given-names></name>
+        </person-group>
+        <article-title>Physical modelling of galaxy clusters detected by the planck satellite</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>483</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1093/mnras/sty3115</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-javid2018comparison">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Javid</surname><given-names>Kamran</given-names></name>
+          <name><surname>Perrott</surname><given-names>Yvette C</given-names></name>
+          <name><surname>Hobson</surname><given-names>Michael P</given-names></name>
+          <name><surname>Olamaie</surname><given-names>Malak</given-names></name>
+          <name><surname>Rumsey</surname><given-names>Clare</given-names></name>
+          <name><surname>Saunders</surname><given-names>Richard DE</given-names></name>
+        </person-group>
+        <article-title>Comparison of physical and observational galaxy cluster modelling</article-title>
+        <source>arXiv preprint arXiv:1805.01968</source>
+        <year iso-8601-date="2018">2018</year>
+        <pub-id pub-id-type="doi">10.17863/CAM.38865</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-perrott2019sunyaev">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Perrott</surname><given-names>Yvette C</given-names></name>
+          <name><surname>Javid</surname><given-names>Kamran</given-names></name>
+          <name><surname>Carvalho</surname><given-names>Pedro</given-names></name>
+          <name><surname>Elwood</surname><given-names>Patrick J</given-names></name>
+          <name><surname>Hobson</surname><given-names>Michael P</given-names></name>
+          <name><surname>Lasenby</surname><given-names>Anthony N</given-names></name>
+          <name><surname>Olamaie</surname><given-names>Malak</given-names></name>
+          <name><surname>Saunders</surname><given-names>Richard DE</given-names></name>
+        </person-group>
+        <article-title>Sunyaev–zel’dovich profile fitting with joint AMI-planck analysis</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>486</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1093/mnras/stz826</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-javid2019nested">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Javid</surname><given-names>Kamran</given-names></name>
+        </person-group>
+        <article-title>Nested sampling on non-trivial geometries</article-title>
+        <source>arXiv preprint arXiv:1905.09110</source>
+        <year iso-8601-date="2019">2019</year>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3627542</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-javid2019physical">
+      <element-citation publication-type="thesis">
+        <person-group person-group-type="author">
+          <name><surname>Javid</surname><given-names>Kamran</given-names></name>
+        </person-group>
+        <article-title>Physical modelling of galaxy clusters and bayesian inference in astrophysics</article-title>
+        <publisher-name>University of Cambridge</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <pub-id pub-id-type="doi">10.17863/CAM.40616</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-javid2019physical2">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Javid</surname><given-names>Kamran</given-names></name>
+          <name><surname>Perrott</surname><given-names>Yvette C</given-names></name>
+          <name><surname>Rumsey</surname><given-names>Clare</given-names></name>
+          <name><surname>Saunders</surname><given-names>Richard DE</given-names></name>
+        </person-group>
+        <article-title>Physical modelling of galaxy cluster sunyaev–zel’dovich data using einasto dark matter profiles</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>489</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1093/mnras/stz2341</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-feroz2009bayesian">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Feroz</surname><given-names>Farhan</given-names></name>
+          <name><surname>Hobson</surname><given-names>Michael P</given-names></name>
+          <name><surname>Zwart</surname><given-names>Jonathan TL</given-names></name>
+          <name><surname>Saunders</surname><given-names>Richard DE</given-names></name>
+          <name><surname>Grainge</surname><given-names>Keith JB</given-names></name>
+        </person-group>
+        <article-title>Bayesian modelling of clusters of galaxies from multifrequency-pointed sunyaev–zel’dovich observations</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <publisher-name>Blackwell Publishing Ltd Oxford, UK</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <volume>398</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1111/j.1365-2966.2009.15247.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-feroz2009multinest">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Feroz</surname><given-names>F</given-names></name>
+          <name><surname>Hobson</surname><given-names>MP</given-names></name>
+          <name><surname>Bridges</surname><given-names>M</given-names></name>
+        </person-group>
+        <article-title>MultiNest: An efficient and robust bayesian inference tool for cosmology and particle physics</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <publisher-name>Blackwell Publishing Ltd Oxford, UK</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <volume>398</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1111/j.1365-2966.2009.14548.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-skilling2006nested">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Skilling</surname><given-names>John</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Nested sampling for general bayesian computation</article-title>
+        <source>Bayesian analysis</source>
+        <publisher-name>International Society for Bayesian Analysis</publisher-name>
+        <year iso-8601-date="2006">2006</year>
+        <volume>1</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1214/06-BA127</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-handley2015polychord">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Handley</surname><given-names>WJ</given-names></name>
+          <name><surname>Hobson</surname><given-names>MP</given-names></name>
+          <name><surname>Lasenby</surname><given-names>AN</given-names></name>
+        </person-group>
+        <article-title>POLYCHORD: Next-generation nested sampling</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <volume>453</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1093/mnras/stv1911</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-handley2015polychord2">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Handley</surname><given-names>WJ</given-names></name>
+          <name><surname>Hobson</surname><given-names>MP</given-names></name>
+          <name><surname>Lasenby</surname><given-names>AN</given-names></name>
+        </person-group>
+        <article-title>PolyChord: Nested sampling for cosmology</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society: Letters</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <volume>450</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1093/mnrasl/slv047</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-feroz2008multimodal">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Feroz</surname><given-names>Farhan</given-names></name>
+          <name><surname>Hobson</surname><given-names>Mike P</given-names></name>
+        </person-group>
+        <article-title>Multimodal nested sampling: An efficient and robust alternative to markov chain monte carlo methods for astronomical data analyses</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <publisher-name>Blackwell Publishing Ltd Oxford, UK</publisher-name>
+        <year iso-8601-date="2008">2008</year>
+        <volume>384</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1111/j.1365-2966.2007.12353.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hickish2018digital">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hickish</surname><given-names>Jack</given-names></name>
+          <name><surname>Razavi-Ghods</surname><given-names>Nima</given-names></name>
+          <name><surname>Perrott</surname><given-names>Yvette C</given-names></name>
+          <name><surname>Titterington</surname><given-names>David J</given-names></name>
+          <name><surname>Carey</surname><given-names>Steve H</given-names></name>
+          <name><surname>Scott</surname><given-names>Paul F</given-names></name>
+          <name><surname>Grainge</surname><given-names>Keith JB</given-names></name>
+          <name><surname>Scaife</surname><given-names>Anna MM</given-names></name>
+          <name><surname>Alexander</surname><given-names>Paul</given-names></name>
+          <name><surname>Saunders</surname><given-names>Richard DE</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>A digital correlator upgrade for the arcminute MicroKelvin imager</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>475</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1093/mnras/sty074</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

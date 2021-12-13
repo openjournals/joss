@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1145</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01145</article-id>
+<title-group>
+<article-title>strandCheckR: An R package for quantifying and removing
+double strand sequences for strand-specific RNA-seq</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-2902-3655</contrib-id>
+<string-name>Thu-Hien To</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-8197-3303</contrib-id>
+<string-name>Stephen M Pederson</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Bioinformatics Hub - University of Adelaide</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2018-12-14">
+<day>14</day>
+<month>12</month>
+<year>2018</year>
+</pub-date>
+<volume>4</volume>
+<issue>34</issue>
+<fpage>1145</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Bioinformatics</kwd>
+<kwd>RNA-seq</kwd>
+<kwd>strand specific</kwd>
+<kwd>DNA contamination</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>RNA-seq data reveals the expression level of every gene/transcript
+  extracted from a specific tissue of an individual. Numerous research
+  questions can involve a study of the relationship between gene
+  expression and phenotypes, or treatment groups. However, assessing
+  data quality is the first step before performing any analysis.
+  <monospace>fastqc</monospace>
+  (<xref alt="Andrews, 2014" rid="ref-Andrews2014" ref-type="bibr">Andrews,
+  2014</xref>) has become an industry-standard quality control tool for
+  much high throughput sequencing data. This package aims to provide an
+  additional quality control step for strand-specific RNA-seq data, to
+  quickly detect issues with library preparation, and also to rescue it
+  in some less extreme cases.</p>
+  <p>Within the genome, each gene is encoded on either the positive or
+  negative strand, which is used as the template for transcribed,
+  single-stranded RNA. In high-throughput sequencing technology,
+  cellular RNA molecules are extracted, fragmented then several library
+  preparation steps are performed before being sequenced in a massively
+  parallel reaction, which generates millions of reads. A sequencing
+  machine is agnostic to the original strand of the fragments, however,
+  a strand-specific library preparation protocol
+  (<xref alt="Zhong et al., 2011" rid="ref-Zhong2011" ref-type="bibr">Zhong
+  et al., 2011</xref>) is able to preserve information about the strand
+  of the original RNA template molecule. Hence, in the bam file, which
+  is obtained from mapping reads back to the reference genome, reads
+  deriving from the same RNA molecule should be mapped to the same
+  strand. In contrast, if contaminating genomic DNA is present, the
+  double stranded nature of these molecules will lead to reads aligning
+  to both strands. By studying the strand of aligned reads within a
+  suitable window, we can identify the presence of reads which are
+  likely to derive from double stranded DNA fragments.</p>
+  <p>In the R package <monospace>strandCheckR</monospace>, we use a
+  sliding window to scan any bam files under review. This will return a
+  data frame giving the coordinates of each window and the number of
+  reads aligning to the <inline-formula><alternatives>
+  <tex-math><![CDATA[+]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>+</mml:mo></mml:math></alternatives></inline-formula>/<inline-formula><alternatives>
+  <tex-math><![CDATA[-]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>−</mml:mo></mml:math></alternatives></inline-formula>
+  strands within it. Using this data frame, users can plot a histogram
+  of strand proportions which can enable identification of the levels of
+  DNA contamination. In the example shown in Fig.1, the file
+  <monospace>s1.sorted.bam</monospace> has minimal contaminating DNA,
+  whilst the file <monospace>s2.sorted.bam</monospace> shows a pattern
+  consistent with contamination.</p>
+  <fig>
+    <caption><p>Fig.1 - The file shown on the left appears to have
+    minimal contaminating DNA, whilst the file on the right shows a
+    large number of windows with alignments coming from both strands,
+    indicating potential DNA contamination.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="Rplot1.png" xlink:title="" />
+  </fig>
+  <p>We also provide a scatter plot with threshold guidelines (Fig.2)
+  which can help to select an appropriate threshold
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\tau]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>τ</mml:mi></mml:math></alternatives></inline-formula>
+  (<inline-formula><alternatives>
+  <tex-math><![CDATA[0.5 < \tau < 1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>0.5</mml:mn><mml:mo>&lt;</mml:mo><mml:mi>τ</mml:mi><mml:mo>&lt;</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>)
+  to filter reads which are likely to derive from contaminating DNA.</p>
+  <fig>
+    <caption><p>Fig.2 - Plot showing read depth against the proportion
+    of reads aligning to the + strand. Possible values for
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\tau]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>τ</mml:mi></mml:math></alternatives></inline-formula>
+    are shown as a series of lines</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="Rplot2.png" xlink:title="" />
+  </fig>
+  <p>For the filtering steps, we use logistic regression to estimate the
+  read strand proportion <inline-formula><alternatives>
+  <tex-math><![CDATA[\pi_W]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>π</mml:mi><mml:mi>W</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  and its standard deviation <inline-formula><alternatives>
+  <tex-math><![CDATA[\sigma_W]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>σ</mml:mi><mml:mi>W</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  in each window <inline-formula><alternatives>
+  <tex-math><![CDATA[W]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>W</mml:mi></mml:math></alternatives></inline-formula>.
+  We then use these values to decides if <inline-formula><alternatives>
+  <tex-math><![CDATA[W]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>W</mml:mi></mml:math></alternatives></inline-formula>
+  contains any reads coming from RNA or not. The null hypothesis for a
+  window containing positively-stranded reads is
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[H_0: \pi < \tau]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>H</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mo>:</mml:mo><mml:mi>π</mml:mi><mml:mo>&lt;</mml:mo><mml:mi>τ</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>,
+  and for negative-stranded windows is <inline-formula><alternatives>
+  <tex-math><![CDATA[H_0: \pi \ge 1-\tau]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>H</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mo>:</mml:mo><mml:mi>π</mml:mi><mml:mo>≥</mml:mo><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:mi>τ</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.
+  By default, only windows which reject <inline-formula><alternatives>
+  <tex-math><![CDATA[H0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>H</mml:mi><mml:mn>0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  at the level <inline-formula><alternatives>
+  <tex-math><![CDATA[\alpha = 0.05]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>α</mml:mi><mml:mo>=</mml:mo><mml:mn>0.05</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  are considered to contain RNA.</p>
+  <p>For each window <inline-formula><alternatives>
+  <tex-math><![CDATA[W]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>W</mml:mi></mml:math></alternatives></inline-formula>,
+  let <inline-formula><alternatives>
+  <tex-math><![CDATA[p_W]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>p</mml:mi><mml:mi>W</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[n_W]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>n</mml:mi><mml:mi>W</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  be the number of positive and negative reads in
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[W]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>W</mml:mi></mml:math></alternatives></inline-formula>.
+  We then assign for <inline-formula><alternatives>
+  <tex-math><![CDATA[W]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>W</mml:mi></mml:math></alternatives></inline-formula>
+  an initial probability of keeping positive and negative reads, namely
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[k^{+}_W]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mi>k</mml:mi><mml:mi>W</mml:mi><mml:mo>+</mml:mo></mml:msubsup></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[k^{-}_W]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mi>k</mml:mi><mml:mi>W</mml:mi><mml:mo>−</mml:mo></mml:msubsup></mml:math></alternatives></inline-formula>
+  using the following procedure. If <inline-formula><alternatives>
+  <tex-math><![CDATA[W]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>W</mml:mi></mml:math></alternatives></inline-formula>
+  is determined to not contain any read coming from RNA, then
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[k^{+}_W=k^{-}_W=0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mi>k</mml:mi><mml:mi>W</mml:mi><mml:mo>+</mml:mo></mml:msubsup><mml:mo>=</mml:mo><mml:msubsup><mml:mi>k</mml:mi><mml:mi>W</mml:mi><mml:mo>−</mml:mo></mml:msubsup><mml:mo>=</mml:mo><mml:mn>0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>.
+  Otherwise, <inline-formula><alternatives>
+  <tex-math><![CDATA[W]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>W</mml:mi></mml:math></alternatives></inline-formula>
+  is assumed to contain some RNA reads and two scenarios are
+  investigated. If <inline-formula><alternatives>
+  <tex-math><![CDATA[W]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>W</mml:mi></mml:math></alternatives></inline-formula>
+  contains more positive reads than negative ones
+  (<inline-formula><alternatives>
+  <tex-math><![CDATA[p_W >> n_W]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>p</mml:mi><mml:mi>W</mml:mi></mml:msub><mml:mo>&gt;</mml:mo><mml:mo>&gt;</mml:mo><mml:msub><mml:mi>n</mml:mi><mml:mi>W</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>),
+  then <inline-formula><alternatives>
+  <tex-math><![CDATA[W]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>W</mml:mi></mml:math></alternatives></inline-formula>
+  is assumed to contain RNA coming from positive strand, and we remove
+  reads aligned to the negative strand,
+  (i.e. <inline-formula><alternatives>
+  <tex-math><![CDATA[k^{-}_W=0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mi>k</mml:mi><mml:mi>W</mml:mi><mml:mo>−</mml:mo></mml:msubsup><mml:mo>=</mml:mo><mml:mn>0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>)
+  and the same number of reads aligned to the positive strand. As these
+  are assumed to each be paired with a read aligned to the negative
+  strand ones (i.e. <inline-formula><alternatives>
+  <tex-math><![CDATA[k^{+}_W=(p_W-n_W)/p_W]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mi>k</mml:mi><mml:mi>W</mml:mi><mml:mo>+</mml:mo></mml:msubsup><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>p</mml:mi><mml:mi>W</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mi>n</mml:mi><mml:mi>W</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>/</mml:mi><mml:msub><mml:mi>p</mml:mi><mml:mi>W</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>),
+  each positive read is kept with probability
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[k^{+}_W]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mi>k</mml:mi><mml:mi>W</mml:mi><mml:mo>+</mml:mo></mml:msubsup></mml:math></alternatives></inline-formula>.
+  The mirror of this process is applied if a windows is determined to
+  contain reads primarily from a negatively stranded gene. However, each
+  read can be belong to several different sliding windows due to
+  overlapping windows can overlap, and due to the nature of spliced
+  alignments. Hence, the final probability of each read is the maximum
+  of all windows which contain that read. Fig.3 shows the differences in
+  strand proportion before and after filtering DNA of an example
+  file.</p>
+  <fig>
+    <caption><p>Fig.3 - Histogram showing the contaminated file from Fig
+    1 (s2.sorted.bam), both before and after filtering
+    reads.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="Rplot3.png" xlink:title="" />
+  </fig>
+  <p><monospace>strandCheckR</monospace> is an R package which make uses
+  of several functions from core Bioconductor packages such as
+  <monospace>GenomicAlignments</monospace>,
+  <monospace>GenomicRanges</monospace>
+  (<xref alt="Lawrence et al., 2013" rid="ref-Lawrence2013" ref-type="bibr">Lawrence
+  et al., 2013</xref>), and <monospace>Rsamtools</monospace>
+  (<xref alt="Morgan et al., 2018" rid="ref-Morgan2018" ref-type="bibr">Morgan
+  et al., 2018</xref>). The window read count function is designed
+  flexibly so that user can filter low mapping quality reads, set the
+  minimum proportion required for a read to overlap and be included in a
+  window, define window length &amp; step size etc. It has also been
+  implemented in an efficient way to manage large bam files. For a
+  typical human RNA-seq bam file, it takes about 3 minutes to scan and
+  get strand information using a standard laptop 2,3 GHz i5 16 GB. The
+  package can be installed via Bioconductor repository
+  https://bioconductor.org/packages/strandCheckR and is also available
+  on github http://github.com/UofABioinformaticsHub/strandCheckR.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Lawrence2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lawrence</surname><given-names>Michael</given-names></name>
+          <name><surname>Huber</surname><given-names>Wolfgang</given-names></name>
+          <name><surname>Pagès</surname><given-names>Hervé</given-names></name>
+          <name><surname>Aboyoun</surname><given-names>Patrick</given-names></name>
+          <name><surname>Carlson</surname><given-names>Marc</given-names></name>
+          <name><surname>Gentleman</surname><given-names>Robert</given-names></name>
+          <name><surname>Morgan</surname><given-names>Martin</given-names></name>
+          <name><surname>Carey</surname><given-names>Vincent</given-names></name>
+        </person-group>
+        <article-title>Software for computing and annotating genomic ranges</article-title>
+        <source>PLoS Computational Biology</source>
+        <year iso-8601-date="2013">2013</year>
+        <volume>9</volume>
+        <uri>http://www.ploscompbiol.org/article/info%3Adoi%2F10.1371%2Fjournal.pcbi.1003118</uri>
+        <pub-id pub-id-type="doi">10.1371/journal.pcbi.1003118</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Morgan2018">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Morgan</surname><given-names>Martin</given-names></name>
+          <name><surname>Pagès</surname><given-names>Hervé</given-names></name>
+          <name><surname>Obenchain</surname><given-names>Valerie</given-names></name>
+          <name><surname>Hayden</surname><given-names>Nathaniel</given-names></name>
+        </person-group>
+        <source>Rsamtools: Binary alignment (BAM), FASTA, variant call (BCF), and tabix file import</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>http://bioconductor.org/packages/release/bioc/html/Rsamtools.html</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Andrews2014">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Andrews</surname><given-names>S.</given-names></name>
+        </person-group>
+        <source>FastQC a quality control tool for high throughput sequence data</source>
+        <year iso-8601-date="2014">2014</year>
+        <uri>https://www.bioinformatics.babraham.ac.uk/projects/fastqc/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Zhong2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zhong</surname><given-names>Silin</given-names></name>
+          <name><surname>Joung</surname><given-names>Je-Gun</given-names></name>
+          <name><surname>Zheng</surname><given-names>Yi</given-names></name>
+          <name><surname>Chen</surname><given-names>Yun-ru</given-names></name>
+          <name><surname>Liu</surname><given-names>Bao</given-names></name>
+          <name><surname>Shao</surname><given-names>Ying</given-names></name>
+          <name><surname>Xiang</surname><given-names>Jenny Z.</given-names></name>
+          <name><surname>Fei</surname><given-names>Zhangjun</given-names></name>
+          <name><surname>Giovannoni</surname><given-names>James J.</given-names></name>
+        </person-group>
+        <article-title>High-throughput illumina strand-specific RNA sequencing library preparation</article-title>
+        <source>Cold Spring Harbor Protocols</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>2011</volume>
+        <issue>8</issue>
+        <uri>http://cshprotocols.cshlp.org/content/2011/8/pdb.prot5652.abstract</uri>
+        <pub-id pub-id-type="doi">10.1101/pdb.prot5652</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

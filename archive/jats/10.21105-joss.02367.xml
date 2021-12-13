@@ -1,0 +1,635 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2367</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02367</article-id>
+<title-group>
+<article-title>HOOMD-TF: GPU-Accelerated, Online Machine Learning in the
+HOOMD-blue Molecular Dynamics Engine</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-5728-9074</contrib-id>
+<string-name>Rainier Barrett</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-5706-3027</contrib-id>
+<string-name>Maghesree Chakraborty</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-6961-3081</contrib-id>
+<string-name>Dilnoza B Amirkulova</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9465-3840</contrib-id>
+<string-name>Heta A Gandhi</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-3772-6927</contrib-id>
+<string-name>Geemi P Wellawatte</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-6647-3965</contrib-id>
+<string-name>Andrew D White</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>University of Rochester Chemical Engineering Department,
+Rochester, New York, United States of America</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>University of Rochester Chemistry Department, Rochester,
+New York, United States of America</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-02-27">
+<day>27</day>
+<month>2</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>51</issue>
+<fpage>2367</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>molecular dynamics</kwd>
+<kwd>machine learning</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>Machine learning (ML) is emerging as an essential tool in the
+  molecular modeling community. The most mature applications are in
+  batch learning with data generated from molecular modeling
+  calculations. For example, one can run a molecular dynamics (MD) or
+  density functional theory (DFT) simulation to completion, from which
+  the trajectory is then used as input data to train a deep neural
+  network that reproduces the energetics at a fraction of the
+  computational cost. Some recent examples include an energy-conserving
+  force-field learned with a custom gradient-domain model
+  (<xref alt="Chmiela et al., 2017" rid="ref-ChmielaConservedEnergyMLFF2017" ref-type="bibr">Chmiela
+  et al., 2017</xref>), DFT-based neural network force-fields
+  (<xref alt="Smith et al., 2017a" rid="ref-SmithDFTNNPotential2017" ref-type="bibr">Smith
+  et al., 2017a</xref>), and a neural network coarse-grained potential
+  (<xref alt="J. Wang et al., 2019" rid="ref-WangCGML2019" ref-type="bibr">J.
+  Wang et al., 2019</xref>). Other applications include the use of ML
+  methods for collective variable (CV) calculation
+  (<xref alt="Trapl et al., 2019" rid="ref-TraplAnnColvar2019" ref-type="bibr">Trapl
+  et al., 2019</xref>) and enhanced sampling
+  (<xref alt="Y. Wang et al., 2020" rid="ref-WangMLSampling2020" ref-type="bibr">Y.
+  Wang et al., 2020</xref>) for MD simulations. A limitation of these
+  methods is that they treat the molecular modeling calculations as a
+  static dataset, whereas molecular modeling calculations can be treated
+  as interrogative functions, opening the door to methods like
+  reinforcement learning or active learning. Thus there is a clear
+  limitation of existing implementations due to their sequential nature
+  of going from calculation to ML. Another practical issue is that
+  neural network force-field implementations often duplicate standard ML
+  frameworks, preventing them from keeping progress with state-of-the
+  art methods. For example Rupp et al.
+  (<xref alt="2012" rid="ref-RuppMLAtomizationE2012" ref-type="bibr">2012</xref>)
+  and Botu &amp; Ramprasad
+  (<xref alt="2015" rid="ref-BotuMLQMMD" ref-type="bibr">2015</xref>)
+  are benchmark works in this field and custom implementations. This
+  limits the scope and speed of translating ML advances to the molecular
+  modeling community.</p>
+  <p>This need has led us to develop HOOMD-TF, a flexible direct
+  integration of a standard ML library and standard molecular simulation
+  framework that maintains GPU acceleration. Our goals are to improve
+  the reproducibility of ML methods in molecular simulation, ease
+  translation of ML advances, and remove the need for sequential
+  simulation and ML. This should enable active learning, reinforcement
+  learning, and online learning of molecular simulations.</p>
+  <p>There are other applications focusing on ML in molecular modeling,
+  such as
+  <ext-link ext-link-type="uri" xlink:href="https://www.deepchem.io/">DeepChem</ext-link>
+  and Pyzer-Knapp et al.
+  (<xref alt="2015" rid="ref-Aspuru-GuzikMaterialsDiscovery2015" ref-type="bibr">2015</xref>),
+  which are largely concerned with property prediction and
+  representation. There are also similar works to HOOMD-TF called
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/openmm/openmm-nn">OpenMM-NN</ext-link>
+  (<xref alt="P. Eastman, 2018" rid="ref-EastmanOpenMMNN2018" ref-type="bibr">P.
+  Eastman, 2018</xref>), which allows the use of pre-trained TensorFlow
+  models in
+  <ext-link ext-link-type="uri" xlink:href="http://openmm.org/">OpenMM</ext-link>
+  (<xref alt="Eastman Peter et al., 2013" rid="ref-PandeOpenMM2013" ref-type="bibr">Eastman
+  Peter et al., 2013</xref>), and TorchANI
+  (<xref alt="Gao et al., 2020" rid="ref-GaoTorchANI2020" ref-type="bibr">Gao
+  et al., 2020</xref>), which uses PyTorch
+  (<xref alt="Paszke et al., 2016" rid="ref-PyTorch" ref-type="bibr">Paszke
+  et al., 2016</xref>) for similar purposes. In contrast, HOOMD-TF fills
+  the niche of online model training, while also allowing pre-trained
+  model imports in MD simulation, coarse-grained force-field learning,
+  collective variable calculation and manipulation, and force-field
+  biasing.</p>
+</sec>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The HOOMD-TF package pairs the TensorFlow ML library
+  (<xref alt="Abadi et al., 2015" rid="ref-tensorflow2015whitepaper" ref-type="bibr">Abadi
+  et al., 2015</xref>) with the HOOMD-blue simulation engine
+  (<xref alt="Anderson et al., 2020" rid="ref-Anderson2020HOOMD" ref-type="bibr">Anderson
+  et al., 2020</xref>) to allow for flexible online ML and tensor
+  calculations during HOOMD-blue simulations. Since both TensorFlow and
+  HOOMD-blue are GPU-accelerated, HOOMD-TF was designed with a GPU-GPU
+  communication scheme that minimizes latency between GPU memory to
+  preserve execution speed.</p>
+  <p>HOOMD-TF enables online ML in MD simulations with the support of
+  the suite of tools available through TensorFlow. It can be used for
+  force matching, calculation of arbitrary collective variables,
+  force-field biasing or learning using said CVs, and analysis using
+  tensor calculations. These tasks can be performed either online during
+  a simulation or offline using a saved trajectory. This is accomplished
+  by using TensorFlow tensors filled with particle positions and
+  neighbor lists from HOOMD-blue. This also allows the use of
+  TensorFlow’s derivative propagation to perform biasing with arbitrary
+  CVs, provided that they can be expressed as a tensor operation of
+  either the neighbor list or particle positions. Another application of
+  this software is learning coarse-grained force-fields with either
+  neural networks or other ML models. The ability to run force matching
+  calculations online makes the coarse-graining workflow straightforward
+  in HOOMD-TF. Since HOOMD-blue can use external force-fields and
+  TensorFlow can learn as the simulation is running, learning can be
+  terminated as soon as the force-matching algorithm converges,
+  requiring only one simulation iteration. Contrast this with a popular
+  force-matching package, VOTCA
+  (<xref alt="Rühle et al., 2009" rid="ref-RuhleVOTCA2009" ref-type="bibr">Rühle
+  et al., 2009</xref>), which uses an iterative approach. See, for
+  example, Jadrich et al.
+  (<xref alt="2017" rid="ref-JadrichInverseDesign2017" ref-type="bibr">2017</xref>).</p>
+  <p>HOOMD-TF uses TensorFlow to save and load models, and is therefore
+  compatible with pre-trained TensorFlow models. TensorFlow’s
+  TensorBoard utility can also be used to track and examine model
+  training and performance. HOOMD-TF can be used independent of
+  HOOMD-blue by using trajectories via the MDAnalysis framework
+  (<xref alt="Gowers et al., 2016" rid="ref-MDAnalysis2016" ref-type="bibr">Gowers
+  et al., 2016</xref>;
+  <xref alt="Michaud-Agrawal &amp; Beckstein, 2011" rid="ref-MDAnalysis2011" ref-type="bibr">Michaud-Agrawal
+  &amp; Beckstein, 2011</xref>). This allows for previously-trained
+  TensorFlow models to be used on trajectories that were produced by
+  other MD engines, analysis of new CVs from a previously-run
+  simulation, and training of models from trajectories. This offline
+  execution scheme is functionally similar to TorchANI
+  (<xref alt="Gao et al., 2020" rid="ref-GaoTorchANI2020" ref-type="bibr">Gao
+  et al., 2020</xref>). TorchANI uses
+  <ext-link ext-link-type="uri" xlink:href="https://pytorch.org/">PyTorch</ext-link>
+  (<xref alt="Paszke et al., 2016" rid="ref-PyTorch" ref-type="bibr">Paszke
+  et al., 2016</xref>) rather than TensorFlow to implement the ANI deep
+  learning models
+  (<xref alt="Smith et al., 2017b" rid="ref-SmithANI2017" ref-type="bibr">Smith
+  et al., 2017b</xref>), with many of the same advantages provided by
+  HOOMD-TF. TorchANI is not an MD engine, so it has less support for
+  specific features like neighbor lists or particle mesh Ewald
+  summation.</p>
+  <p>Overall, HOOMD-TF makes online ML in MD simulations possible with
+  little additional effort, and eases the use of TensorFlow models on MD
+  trajectories for both machine learning and analysis. The ability to
+  tightly integrate trained ML models in HOOMD-TF can enable their use
+  in simulations by removing the need for custom implementations and
+  improve reproducibility in the field. The online functionality of
+  HOOMD-TF enables the use of simulations as interrogable models rather
+  than static data generators, allowing direct use in an active and/or
+  reinforcement learning framework. TensorFlow computation graphs allow
+  for transparent and simple model designation with a high degree of
+  customizability, replicability, and efficiency.</p>
+</sec>
+<sec id="accessing-the-software">
+  <title>Accessing the Software</title>
+  <p>HOOMD-TF is freely available under the MIT license on
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/ur-whitelab/hoomd-tf">github</ext-link>.
+  The documentation is hosted on
+  <ext-link ext-link-type="uri" xlink:href="https://hoomd-tf.readthedocs.io/en/latest/">readthedocs.io</ext-link>.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We would like to thank Joshua Anderson and Jens Glaser for
+  instructive conversations about the HOOMD-blue architecture. We thank
+  the Center for Integrated Research Computing (CIRC) at the University
+  of Rochester for providing computational resources and technical
+  support. This work was supported by the National Science Foundation
+  (CBET‐1751471 and CHE-1764415).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-ChmielaConservedEnergyMLFF2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Chmiela</surname><given-names>Stefan</given-names></name>
+          <name><surname>Tkatchenko</surname><given-names>Alexandre</given-names></name>
+          <name><surname>Sauceda</surname><given-names>Huziel E.</given-names></name>
+          <name><surname>Poltavsky</surname><given-names>Igor</given-names></name>
+          <name><surname>Schütt</surname><given-names>Kristof T.</given-names></name>
+          <name><surname>Müller</surname><given-names>Klaus-Robert</given-names></name>
+        </person-group>
+        <article-title>Machine learning of accurate energy-conserving molecular force fields</article-title>
+        <source>Sci. Adv.</source>
+        <publisher-name>American Association for the Advancement of Science</publisher-name>
+        <year iso-8601-date="2017-05">2017</year><month>05</month>
+        <volume>3</volume>
+        <issue>5</issue>
+        <issn>2375-2548</issn>
+        <uri>http://advances.sciencemag.org/lookup/doi/10.1126/sciadv.1603015</uri>
+        <pub-id pub-id-type="doi">10.1126/sciadv.1603015</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SmithDFTNNPotential2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Smith</surname><given-names>J. S.</given-names></name>
+          <name><surname>Isayev</surname><given-names>O.</given-names></name>
+          <name><surname>Roitberg</surname><given-names>A. E.</given-names></name>
+        </person-group>
+        <article-title>ANI-1: an extensible neural network potential with DFT accuracy at force field computational cost</article-title>
+        <source>Chem. Sci.</source>
+        <publisher-name>Royal Society of Chemistry</publisher-name>
+        <year iso-8601-date="2017-03">2017</year><month>03</month>
+        <volume>8</volume>
+        <issue>4</issue>
+        <issn>2041-6520</issn>
+        <uri>http://xlink.rsc.org/?DOI=C6SC05720A</uri>
+        <pub-id pub-id-type="doi">10.1039/C6SC05720A</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-WangCGML2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wang</surname><given-names>Jiang</given-names></name>
+          <name><surname>Olsson</surname><given-names>Simon</given-names></name>
+          <name><surname>Wehmeyer</surname><given-names>Christoph</given-names></name>
+          <name><surname>Pérez</surname><given-names>Adrià</given-names></name>
+          <name><surname>Charron</surname><given-names>Nicholas E.</given-names></name>
+          <name><surname>De Fabritiis</surname><given-names>Gianni</given-names></name>
+          <name><surname>Noé</surname><given-names>Frank</given-names></name>
+          <name><surname>Clementi</surname><given-names>Cecilia</given-names></name>
+        </person-group>
+        <article-title>Machine Learning of Coarse-Grained Molecular Dynamics Force Fields</article-title>
+        <source>ACS Central Science</source>
+        <publisher-name>American Chemical Society</publisher-name>
+        <year iso-8601-date="2019-05">2019</year><month>05</month>
+        <volume>5</volume>
+        <issue>5</issue>
+        <issn>23747951</issn>
+        <uri>https://arxiv.org/abs/1812.01736</uri>
+        <pub-id pub-id-type="doi">10.1021/acscentsci.8b00913</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-RuppMLAtomizationE2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rupp</surname><given-names>Matthias</given-names></name>
+          <name><surname>Tkatchenko</surname><given-names>Alexandre</given-names></name>
+          <name><surname>Müller</surname><given-names>Klaus-Robert</given-names></name>
+          <name><surname>Anatole Von Lilienfeld</surname><given-names>O</given-names></name>
+        </person-group>
+        <article-title>Fast and Accurate Modeling of Molecular Atomization Energies with Machine Learning</article-title>
+        <source>Phys. Rev. Lett.</source>
+        <year iso-8601-date="2012">2012</year>
+        <volume>108</volume>
+        <uri>https://journals.aps.org/prl/pdf/10.1103/PhysRevLett.108.058301</uri>
+        <pub-id pub-id-type="doi">10.1103/PhysRevLett.108.058301</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-BotuMLQMMD">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Botu</surname><given-names>Venkatesh</given-names></name>
+          <name><surname>Ramprasad</surname><given-names>Rampi</given-names></name>
+        </person-group>
+        <article-title>Adaptive Machine Learning Framework to Accelerate Ab Initio Molecular Dynamics</article-title>
+        <source>Int. J. Quantum Chem.</source>
+        <year iso-8601-date="2015">2015</year>
+        <issue>115</issue>
+        <uri>https://rampi.ims.uconn.edu/wp-content/uploads/sites/486/2016/12/129.pdf</uri>
+        <pub-id pub-id-type="doi">10.1002/qua.24836</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Aspuru-GuzikMaterialsDiscovery2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pyzer-Knapp</surname><given-names>Edward O.</given-names></name>
+          <name><surname>Li</surname><given-names>Kewei</given-names></name>
+          <name><surname>Aspuru-Guzik</surname><given-names>Alan</given-names></name>
+        </person-group>
+        <article-title>Learning from the harvard clean energy project: The use of neural networks to accelerate materials discovery</article-title>
+        <source>Advanced Functional Materials</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>25</volume>
+        <issue>41</issue>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1002/adfm.201501919</uri>
+        <pub-id pub-id-type="doi">10.1002/adfm.201501919</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-EastmanOpenMMNN2018">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Eastman</surname><given-names>Peter</given-names></name>
+        </person-group>
+        <article-title>OpenMM neural network plugin</article-title>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://github.com/pandegroup/openmm-nn</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-PandeOpenMM2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Eastman</surname><suffix>Peter</suffix></name>
+          <name><surname>Friedrichs</surname><suffix>Mark S.</suffix></name>
+          <name><surname>Chodera</surname><suffix>John D.</suffix></name>
+          <name><surname>Radmer</surname><suffix>Randall J.</suffix></name>
+          <name><surname>Bruns</surname><suffix>Christopher M.</suffix></name>
+          <name><surname>Ku</surname><suffix>Joy P.</suffix></name>
+          <name><surname>Beauchamp</surname><suffix>Kyle A.</suffix></name>
+          <name><surname>Lane</surname><suffix>Thomas J.</suffix></name>
+          <name><surname>Wang</surname><suffix>Lee-Ping</suffix></name>
+          <name><surname>Shukla</surname><suffix>Diwakar</suffix></name>
+          <name><surname>Tye</surname><suffix>Tony</suffix></name>
+          <name><surname>Houston</surname><suffix>Mike</suffix></name>
+          <name><surname>Stich</surname><suffix>Timo</suffix></name>
+          <name><surname>Klein</surname><suffix>Christoph</suffix></name>
+          <name><surname>Shirts</surname><suffix>Michael R.</suffix></name>
+          <name><surname>Pande</surname><given-names>Vijay S.</given-names></name>
+        </person-group>
+        <article-title>OpenMM 4: A Reusable, Extensible, Hardware Independent Library for High Performance Molecular Simulation</article-title>
+        <source>Journal of Chemical Theory and Computation</source>
+        <publisher-name>ACS Publications</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <volume>9</volume>
+        <issue>1</issue>
+        <uri>https://pubs.acs.org/doi/abs/10.1021/ct300857j</uri>
+        <pub-id pub-id-type="doi">10.1021/ct300857j</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-tensorflow2015whitepaper">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Abadi</surname><given-names>Martín</given-names></name>
+          <name><surname>Agarwal</surname><given-names>Ashish</given-names></name>
+          <name><surname>Barham</surname><given-names>Paul</given-names></name>
+          <name><surname>Brevdo</surname><given-names>Eugene</given-names></name>
+          <name><surname>Chen</surname><given-names>Zhifeng</given-names></name>
+          <name><surname>Citro</surname><given-names>Craig</given-names></name>
+          <name><surname>Corrado</surname><given-names>Greg S.</given-names></name>
+          <name><surname>Davis</surname><given-names>Andy</given-names></name>
+          <name><surname>Dean</surname><given-names>Jeffrey</given-names></name>
+          <name><surname>Devin</surname><given-names>Matthieu</given-names></name>
+          <name><surname>Ghemawat</surname><given-names>Sanjay</given-names></name>
+          <name><surname>Goodfellow</surname><given-names>Ian</given-names></name>
+          <name><surname>Harp</surname><given-names>Andrew</given-names></name>
+          <name><surname>Irving</surname><given-names>Geoffrey</given-names></name>
+          <name><surname>Isard</surname><given-names>Michael</given-names></name>
+          <name><surname>Jia</surname><given-names>Yangqing</given-names></name>
+          <name><surname>Jozefowicz</surname><given-names>Rafal</given-names></name>
+          <name><surname>Kaiser</surname><given-names>Lukasz</given-names></name>
+          <name><surname>Kudlur</surname><given-names>Manjunath</given-names></name>
+          <name><surname>Levenberg</surname><given-names>Josh</given-names></name>
+          <name><surname>Mané</surname><given-names>Dandelion</given-names></name>
+          <name><surname>Monga</surname><given-names>Rajat</given-names></name>
+          <name><surname>Moore</surname><given-names>Sherry</given-names></name>
+          <name><surname>Murray</surname><given-names>Derek</given-names></name>
+          <name><surname>Olah</surname><given-names>Chris</given-names></name>
+          <name><surname>Schuster</surname><given-names>Mike</given-names></name>
+          <name><surname>Shlens</surname><given-names>Jonathon</given-names></name>
+          <name><surname>Steiner</surname><given-names>Benoit</given-names></name>
+          <name><surname>Sutskever</surname><given-names>Ilya</given-names></name>
+          <name><surname>Talwar</surname><given-names>Kunal</given-names></name>
+          <name><surname>Tucker</surname><given-names>Paul</given-names></name>
+          <name><surname>Vanhoucke</surname><given-names>Vincent</given-names></name>
+          <name><surname>Vasudevan</surname><given-names>Vijay</given-names></name>
+          <name><surname>Viégas</surname><given-names>Fernanda</given-names></name>
+          <name><surname>Vinyals</surname><given-names>Oriol</given-names></name>
+          <name><surname>Warden</surname><given-names>Pete</given-names></name>
+          <name><surname>Wattenberg</surname><given-names>Martin</given-names></name>
+          <name><surname>Wicke</surname><given-names>Martin</given-names></name>
+          <name><surname>Yu</surname><given-names>Yuan</given-names></name>
+          <name><surname>Zheng</surname><given-names>Xiaoqiang</given-names></name>
+        </person-group>
+        <article-title>TensorFlow: Large-Scale Machine Learning on Heterogeneous Systems</article-title>
+        <year iso-8601-date="2015">2015</year>
+        <uri>https://www.tensorflow.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-MDAnalysis2016">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Gowers</surname></name>
+          <name><surname>Linke</surname></name>
+          <name><surname>Barnoud</surname></name>
+          <name><surname>Reddy</surname></name>
+          <name><surname>Melo</surname></name>
+          <name><surname>Seyler</surname></name>
+          <name><surname>Domański</surname></name>
+          <name><surname>Dotson</surname></name>
+          <name><surname>Buchoux</surname></name>
+          <name><surname>Kenney</surname></name>
+          <name><surname>Beckstein</surname></name>
+        </person-group>
+        <article-title>MDAnalysis: A Python Package for the Rapid Analysis of Molecular Dynamics Simulations</article-title>
+        <source>Proceedings of the 15th Python in Science Conference</source>
+        <person-group person-group-type="editor">
+          <name><surname>Benthall</surname></name>
+          <name><surname>Rostrup</surname></name>
+        </person-group>
+        <year iso-8601-date="2016">2016</year>
+        <pub-id pub-id-type="doi"> 10.25080/Majora-629e541a-00e </pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MDAnalysis2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Michaud-Agrawal</surname><given-names>Denning</given-names><suffix>N.</suffix></name>
+          <name><surname>Beckstein</surname><given-names>O.</given-names></name>
+        </person-group>
+        <article-title>MDAnalysis: A toolkit for the analysis of molecular dynamics simulations</article-title>
+        <source>Journal of Computational Chemistry</source>
+        <publisher-name>Wiley</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <volume>32</volume>
+        <issue>10</issue>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1002/jcc.21787</uri>
+        <pub-id pub-id-type="doi">10.1002/jcc.21787</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-WangMLSampling2020">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Wang</surname><given-names>Yihang</given-names></name>
+          <name><surname>Lamim Ribeiro</surname><given-names>João Marcelo</given-names></name>
+          <name><surname>Tiwary</surname><given-names>Pratyush</given-names></name>
+        </person-group>
+        <article-title>Machine learning approaches for analyzing and enhancing molecular dynamics simulations</article-title>
+        <publisher-name>Elsevier Ltd</publisher-name>
+        <year iso-8601-date="2020-04">2020</year><month>04</month>
+        <volume>61</volume>
+        <issn>1879033X</issn>
+        <uri>https://arxiv.org/abs/1909.11748</uri>
+        <pub-id pub-id-type="doi">10.1016/j.sbi.2019.12.016</pub-id>
+        <pub-id pub-id-type="pmid">31972477</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-TraplAnnColvar2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Trapl</surname><given-names>Dalibor</given-names></name>
+          <name><surname>Horvacanin</surname><given-names>Izabela</given-names></name>
+          <name><surname>Mareska</surname><given-names>Vaclav</given-names></name>
+          <name><surname>Ozcelik</surname><given-names>Furkan</given-names></name>
+          <name><surname>Unal</surname><given-names>Gozde</given-names></name>
+          <name><surname>Spiwok</surname><given-names>Vojtech</given-names></name>
+        </person-group>
+        <article-title>Anncolvar: Approximation of Complex Collective Variables by Artificial Neural Networks for Analysis and Biasing of Molecular Simulations</article-title>
+        <source>Frontiers in Molecular Biosciences</source>
+        <publisher-name>Frontiers Media S.A.</publisher-name>
+        <year iso-8601-date="2019-04">2019</year><month>04</month>
+        <volume>6</volume>
+        <issue>APR</issue>
+        <issn>2296-889X</issn>
+        <uri>https://www.frontiersin.org/article/10.3389/fmolb.2019.00025/full</uri>
+        <pub-id pub-id-type="doi">10.3389/fmolb.2019.00025</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SmithANI2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Smith</surname><given-names>J. S.</given-names></name>
+          <name><surname>Isayev</surname><given-names>O.</given-names></name>
+          <name><surname>Roitberg</surname><given-names>A. E.</given-names></name>
+        </person-group>
+        <article-title>ANI-1: an extensible neural network potential with DFT accuracy at force field computational cost</article-title>
+        <source>Chemical Science</source>
+        <publisher-name>Royal Society of Chemistry</publisher-name>
+        <year iso-8601-date="2017-03">2017</year><month>03</month>
+        <volume>8</volume>
+        <issue>4</issue>
+        <issn>20416539</issn>
+        <uri>https://pubs.rsc.org/en/content/articlehtml/2017/sc/c6sc05720a https://pubs.rsc.org/en/content/articlelanding/2017/sc/c6sc05720a</uri>
+        <pub-id pub-id-type="doi">10.1039/C6SC05720A</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-JadrichInverseDesign2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jadrich</surname><given-names>R. B.</given-names></name>
+          <name><surname>Lindquist</surname><given-names>B. A.</given-names></name>
+          <name><surname>Truskett</surname><given-names>T. M.</given-names></name>
+        </person-group>
+        <article-title>Probabilistic inverse design for self-assembling materials</article-title>
+        <source>Journal of Chemical Physics</source>
+        <publisher-name>American Institute of Physics Inc.</publisher-name>
+        <year iso-8601-date="2017-05">2017</year><month>05</month>
+        <volume>146</volume>
+        <issue>18</issue>
+        <issn>00219606</issn>
+        <uri>http://aip.scitation.org/doi/10.1063/1.4981796</uri>
+        <pub-id pub-id-type="doi">10.1063/1.4981796</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-RuhleVOTCA2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rühle</surname><given-names>Victor</given-names></name>
+          <name><surname>Junghans</surname><given-names>Christoph</given-names></name>
+          <name><surname>Lukyanov</surname><given-names>Alexander</given-names></name>
+          <name><surname>Kremer</surname><given-names>Kurt</given-names></name>
+          <name><surname>Andrienko</surname><given-names>Denis</given-names></name>
+        </person-group>
+        <article-title>Versatile object-oriented toolkit for coarse-graining applications</article-title>
+        <source>Journal of Chemical Theory and Computation</source>
+        <publisher-name>American Chemical Society</publisher-name>
+        <year iso-8601-date="2009-12">2009</year><month>12</month>
+        <volume>5</volume>
+        <issue>12</issue>
+        <issn>15499618</issn>
+        <uri>https://pubs.acs.org/doi/abs/10.1021/ct900369w</uri>
+        <pub-id pub-id-type="doi">10.1021/ct900369w</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-GaoTorchANI2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gao</surname><given-names>Xiang</given-names></name>
+          <name><surname>Ramezanghorbani</surname><given-names>Farhad</given-names></name>
+          <name><surname>Isayev</surname><given-names>Olexandr</given-names></name>
+          <name><surname>Smith</surname><given-names>Justin S.</given-names></name>
+          <name><surname>Roitberg</surname><given-names>Adrian E.</given-names></name>
+        </person-group>
+        <article-title>TorchANI: A Free and Open Source PyTorch Based Deep Learning Implementation of the ANI Neural Network Potentials</article-title>
+        <source>Journal of Chemical Information and Modeling</source>
+        <publisher-name>American Chemical Society</publisher-name>
+        <year iso-8601-date="2020-06">2020</year><month>06</month>
+        <issn>1549-9596</issn>
+        <uri>https://pubs.acs.org/doi/10.1021/acs.jcim.0c00451</uri>
+        <pub-id pub-id-type="doi">10.1021/acs.jcim.0c00451</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-PyTorch">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Paszke</surname><given-names>Adam</given-names></name>
+          <name><surname>Gross</surname><given-names>Sam</given-names></name>
+          <name><surname>Chintala</surname><given-names>Soumith</given-names></name>
+          <name><surname>Chanan</surname><given-names>Gregory</given-names></name>
+        </person-group>
+        <article-title>PyTorch</article-title>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://github.com/pytorch/pytorch</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Anderson2020HOOMD">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Anderson</surname><given-names>Joshua A.</given-names></name>
+          <name><surname>Glaser</surname><given-names>Jens</given-names></name>
+          <name><surname>Glotzer</surname><given-names>Sharon C.</given-names></name>
+        </person-group>
+        <article-title>HOOMD-blue: A Python package for high-performance molecular dynamics and hard particle Monte Carlo simulations</article-title>
+        <source>Computational Materials Science</source>
+        <publisher-name>Elsevier B.V.</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>173</volume>
+        <issn>09270256</issn>
+        <uri>https://arxiv.org/abs/1308.5587</uri>
+        <pub-id pub-id-type="doi">10.1016/j.commatsci.2019.109363</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

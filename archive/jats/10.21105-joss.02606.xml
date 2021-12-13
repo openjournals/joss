@@ -1,0 +1,848 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2606</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02606</article-id>
+<title-group>
+<article-title>TorchGAN: A Flexible Framework for GAN Training and
+Evaluation</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-3938-7375</contrib-id>
+<string-name>Avik Pal</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Aniket Das</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Indian Institute of Technology Kanpur</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-05-26">
+<day>26</day>
+<month>5</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>66</issue>
+<fpage>2606</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Deep Learning</kwd>
+<kwd>Machine Learning</kwd>
+<kwd>Generative Adversarial Networks</kwd>
+<kwd>Unsupervised Learning</kwd>
+<kwd>Computer Vision</kwd>
+<kwd>Generative Models</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="abstract">
+  <title>Abstract</title>
+  <p>TorchGAN is a PyTorch based framework for writing succinct and
+  comprehensible code for training and evaluation of Generative
+  Adversarial Networks. The framework’s modular design allows effortless
+  customization of the model architecture, loss functions, training
+  paradigms, and evaluation metrics. The key features of TorchGAN are
+  its extensibility, built-in support for a large number of popular
+  models, losses and evaluation metrics, and zero overhead compared to
+  vanilla PyTorch. By using the framework to implement several popular
+  GAN models, we demonstrate its extensibility and ease of use. We also
+  benchmark the training time of our framework for said models against
+  the corresponding baseline PyTorch implementations and observe that
+  TorchGAN’s features bear almost zero overhead.</p>
+</sec>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>Generative Adversarial Networks (GANs)
+  (<xref alt="Goodfellow et al., 2014" rid="ref-gan2014" ref-type="bibr">Goodfellow
+  et al., 2014</xref>) are a class of deep generative models that
+  formulate the model estimation problem as an adversarial game between
+  two neural networks, a Generator representing an implicit generative
+  distribution, and a Discriminator that differentiates between samples
+  from said implicit distribution and the true data distribution. The
+  implicit distribution recovers the data distribution when the game
+  reaches equilibrium. Apart from being one of the most popular
+  approaches for generative modeling and unsupervised learning tasks in
+  Computer Vision, with diverse applications such as photo-realistic
+  image generation
+  (<xref alt="Brock et al., 2019" rid="ref-biggan" ref-type="bibr">Brock
+  et al., 2019</xref>;
+  <xref alt="Karras et al., 2018" rid="ref-karras2017progressive" ref-type="bibr">Karras
+  et al., 2018</xref>), image super-resolution
+  (<xref alt="Ledig et al., 2017" rid="ref-srgan" ref-type="bibr">Ledig
+  et al., 2017</xref>), image-to-image translation
+  (<xref alt="Zhu et al., 2017" rid="ref-cyclegan" ref-type="bibr">Zhu
+  et al., 2017</xref>) and video generation
+  (<xref alt="Clark et al., 2019" rid="ref-dvdgan" ref-type="bibr">Clark
+  et al., 2019</xref>;
+  <xref alt="Tulyakov et al., 2018" rid="ref-mocogan" ref-type="bibr">Tulyakov
+  et al., 2018</xref>), it has also found applicability in domains such
+  as Natural Language Processing
+  (<xref alt="Zhang et al., 2017" rid="ref-zhang2017adversarial" ref-type="bibr">Zhang
+  et al., 2017</xref>) and Time Series Analysis
+  (<xref alt="Esteban et al., 2017" rid="ref-esteban2017real" ref-type="bibr">Esteban
+  et al., 2017</xref>).</p>
+  <p>GANs generally share a standard design paradigm, with the building
+  blocks comprising one or more generator and discriminator models, and
+  the associated loss functions for training them. TorchGAN makes use of
+  this design similarity by exposing a simple API for customizing these
+  blocks. The interaction between these components at training time is
+  facilitated by a highly robust trainer which automatically adapts to
+  user-defined GAN models and losses. TorchGAN provides an extensive and
+  continually expanding collection of popular GAN models, losses,
+  evaluation metrics, and stability-enhancing features, which can either
+  be used off the shelf or easily extended or combined to design more
+  sophisticated models effortlessly. With the above design principles in
+  mind, we aim to improve upon existing GAN training frameworks such as
+  TFGAN (<xref alt="Shor, 2017" rid="ref-tfgan" ref-type="bibr">Shor,
+  2017</xref>), HyperGAN
+  (<xref alt="Community, 2016" rid="ref-hypergan" ref-type="bibr">Community,
+  2016</xref>), and IBM GAN-Toolkit
+  (<xref alt="Raunak Sinha, 2018" rid="ref-gantoolkit" ref-type="bibr">Raunak
+  Sinha, 2018</xref>) on the aspects of extensibility, the richness of
+  the feature set and documentation.</p>
+</sec>
+<sec id="implementing-models-in-torchgan">
+  <title>Implementing Models in TorchGAN</title>
+  <p>The core of the TorchGAN framework is a highly versatile trainer
+  module, responsible for its flexibility and ease of use. The trainer
+  requires specification of the generator and the discriminator
+  architecture along with the optimizers associated with each of them,
+  represented as a dictionary, as well as the list of associated loss
+  functions, and optionally, evaluation metrics. We provide an
+  illustrative example for training DCGAN on CIFAR10. One can either
+  choose from the in-built implementations of popular GAN models, losses
+  and metrics or define custom variants of their own with minimal effort
+  by extending the appropriate base classes. This extensibility is
+  widely useful in research applications where the user only needs to
+  write code for the model architecture and/or the loss function. The
+  trainer automatically handles the intricacies of training with custom
+  models/losses. The trainer also supports the usage of multiple
+  generators and discriminators, allowing training of more sophisticated
+  models such as Generative Multi Adversarial Networks
+  (<xref alt="Durugkar et al., 2016" rid="ref-gman" ref-type="bibr">Durugkar
+  et al., 2016</xref>). Performance visualization is handled by a
+  customizable Logger object, which, apart from console logging,
+  currently supports the Tensorboard and Vizdom backends.</p>
+  <code language="python">train_dataset = dsets.CIFAR10(root='./cifar10', train=True,
+    transform=transforms.Compose([transforms.ToTensor(),
+        transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))]
+    ), download=True)
+train_loader = data.DataLoader(train_dataset, batch_size=128, shuffle=True)
+trainer = Trainer(
+    {&quot;generator&quot;: {&quot;name&quot;: DCGANGenerator, &quot;args&quot;: {&quot;out_channels&quot;: 3,
+        &quot;step_channels&quot;: 16}, &quot;optimizer&quot;: {&quot;name&quot;: Adam, &quot;args&quot;:
+            {&quot;lr&quot;: 0.0002, &quot;betas&quot;: (0.5, 0.999)}}}, 
+    &quot;discriminator&quot;: {&quot;name&quot;: DCGANDiscriminator, &quot;args&quot;:
+        {&quot;in_channels&quot;: 3, &quot;step_channels&quot;: 16}, &quot;optimizer&quot;: {&quot;name&quot;: Adam,
+            &quot;args&quot;: {&quot;lr&quot;: 0.0002, &quot;betas&quot;: (0.5, 0.999)}}}},
+    [MinimaxGeneratorLoss(), MinimaxDiscriminatorLoss()], sample_size=64,
+    epochs=20)
+trainer(train_loader)</code>
+  <fig>
+    <caption><p>Overview of TorchGAN
+    Design.<styled-content id="figU003Atgan_design"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="fig/TorchGAN_Design.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="existing-frameworks">
+  <title>Existing Frameworks</title>
+  <p>TorchGAN provides high-quality implementations of various GAN
+  models, metrics for evaluating GANs, and various approaches for
+  improving the stability of GAN training. We provide an overview of the
+  features that are provided off the shelf by TorchGAN and compare them
+  with the ones provided by other frameworks. Note that the list is not
+  exhaustive as the modular and extensible structure of TorchGAN allows
+  one to extend or modify these features, or use them as building blocks
+  for more sophisticated models.</p>
+  <table-wrap>
+    <caption>
+      <p>Supported features of different frameowrks. Features officiallt
+      supported are marked “<inline-formula><alternatives>
+      <tex-math><![CDATA[\checkmark]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula>”,
+      under active development are marked
+      “<inline-formula><alternatives>
+      <tex-math><![CDATA[\star]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>⋆</mml:mo></mml:math></alternatives></inline-formula>”,
+      and those currently unsupported are left blank.
+      <styled-content id="tabU003Aframeworks"></styled-content></p>
+    </caption>
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>TorchGAN</th>
+          <th>TFGAN</th>
+          <th>IBM GAN-Toolkit</th>
+          <th>HyperGAN</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Vanilla GAN</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+        </tr>
+        <tr>
+          <td>DCGAN</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+        </tr>
+        <tr>
+          <td>Wasserstein GAN</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+        </tr>
+        <tr>
+          <td>Wasserstein GAN-GP</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+        </tr>
+        <tr>
+          <td>Inception Score</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>InfoGAN</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+        </tr>
+        <tr>
+          <td>CycleGAN</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+        </tr>
+        <tr>
+          <td>Least Squares GAN</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+        </tr>
+        <tr>
+          <td>Auxillary Classifier GAN</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Spectral Normalization GAN</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Self Attention GAN</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Conditional GAN</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Energy Based GAN</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+          <td></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+        </tr>
+        <tr>
+          <td>Boundary Equilibrium GAN</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>DRAGAN-GP</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Binary GAN</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Adversarial Autoencoders</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Historical Averaging</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Feature Matching</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Minibatch Discrimination</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Frechet Inception Distance</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\star]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>⋆</mml:mo></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Progressive GAN</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\star]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>⋆</mml:mo></mml:math></alternatives></inline-formula></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Adversarially Learned Inference</td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\star]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>⋆</mml:mo></mml:math></alternatives></inline-formula></td>
+          <td></td>
+          <td></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+        </tr>
+        <tr>
+          <td>Star GAN</td>
+          <td></td>
+          <td><inline-formula><alternatives>
+          <tex-math><![CDATA[\checkmark]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>✓</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>Table <xref alt="1" rid="tabU003Aframeworks">1</xref> summarizes
+  the features supported by a variety of open-source GAN frameworks. It
+  suggests that TorchGAN supports the widest variety of features among
+  the frameworks being considered. For comparison, we only consider the
+  models present in the official repository of a given framework or an
+  associated officially maintained model-zoo/examples repository. We
+  avoid comparisons with projects like Pytorch-GAN, Keras-GAN, etc., as
+  these are not frameworks and hence cannot be extended to newer
+  models.</p>
+</sec>
+<sec id="performance">
+  <title>Performance</title>
+  <p>In order to demonstrate that TorchGAN incurs zero training overhead
+  despite the high level of abstraction it provides, we compare the
+  training time of TorchGAN with vanilla PyTorch implementations of
+  DCGAN
+  (<xref alt="Radford et al., 2016" rid="ref-dcgan2015" ref-type="bibr">Radford
+  et al., 2016</xref>), CGAN
+  (<xref alt="Mirza &amp; Osindero, 2014" rid="ref-mirza2014conditional" ref-type="bibr">Mirza
+  &amp; Osindero, 2014</xref>), BEGAN
+  (<xref alt="Berthelot et al., 2017" rid="ref-berthelot2017began" ref-type="bibr">Berthelot
+  et al., 2017</xref>) and WGAN-GP
+  (<xref alt="Gulrajani et al., 2017" rid="ref-gulrajani2017improved" ref-type="bibr">Gulrajani
+  et al., 2017</xref>). Table
+  <xref alt="2" rid="tabU003Abenchmarks">2</xref> reports the training
+  time for TorchGAN and Pytorch for 1 epoch, averaged over 8 runs.</p>
+  <table-wrap>
+    <caption>
+      <p>Average Training Time: TorchGAN vs Pytorch Baselines. DCGAN is
+      trained on CIFAR-10, and the other models are trained on MNIST.
+      <styled-content id="tabU003Abenchmarks"></styled-content></p>
+    </caption>
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>DCGAN</th>
+          <th>CGAN</th>
+          <th>WGAN-GP</th>
+          <th>BEGAN</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><bold>TorchGAN</bold></td>
+          <td><bold>15.9s <inline-formula><alternatives>
+          <tex-math><![CDATA[\pm]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>±</mml:mo></mml:math></alternatives></inline-formula>
+          0.64s</bold></td>
+          <td><bold>21.8s <inline-formula><alternatives>
+          <tex-math><![CDATA[\pm]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>±</mml:mo></mml:math></alternatives></inline-formula>
+          0.43s</bold></td>
+          <td><bold>30.6s <inline-formula><alternatives>
+          <tex-math><![CDATA[\pm]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>±</mml:mo></mml:math></alternatives></inline-formula>
+          1.35s</bold></td>
+          <td><bold>86.0s <inline-formula><alternatives>
+          <tex-math><![CDATA[\pm]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>±</mml:mo></mml:math></alternatives></inline-formula>
+          0.62s</bold></td>
+        </tr>
+        <tr>
+          <td><bold>Pytorch</bold></td>
+          <td>16.7s <inline-formula><alternatives>
+          <tex-math><![CDATA[\pm]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>±</mml:mo></mml:math></alternatives></inline-formula>
+          0.24s</td>
+          <td>22.4s <inline-formula><alternatives>
+          <tex-math><![CDATA[\pm]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>±</mml:mo></mml:math></alternatives></inline-formula>
+          0.52s</td>
+          <td>31.1s <inline-formula><alternatives>
+          <tex-math><![CDATA[\pm]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>±</mml:mo></mml:math></alternatives></inline-formula>
+          0.97s</td>
+          <td>87.0s <inline-formula><alternatives>
+          <tex-math><![CDATA[\pm]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>±</mml:mo></mml:math></alternatives></inline-formula>
+          0.27s</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>For a fair comparison, we disable any form of logging and compute
+  the training time using the <inline-formula><alternatives>
+  <tex-math><![CDATA[\%timeit]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>%</mml:mi><mml:mi>t</mml:mi><mml:mi>i</mml:mi><mml:mi>m</mml:mi><mml:mi>e</mml:mi><mml:mi>i</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  magic function. We train the models on the CIFAR10
+  (<xref alt="Krizhevsky, 2009" rid="ref-Krizhevsky2009LearningML" ref-type="bibr">Krizhevsky,
+  2009</xref>) and MNIST datasets, with a batch size of 128, on an
+  Nvidia GTX Titan X GPU.</p>
+</sec>
+<sec id="conclusion-and-future-work">
+  <title>Conclusion and Future Work</title>
+  <p>We present the features of the TorchGAN framework and demonstrate
+  its extensibility, ease of use and efficiency. Future work and
+  extensions under active development include, integration of GAN models
+  for video generation, generalization of the training loop to support
+  Inference GAN models, such that they can be conveniently modified and
+  extended, addition of features such as Adaptive Instance Normalization
+  layers, and expanding the model zoo and documentation to cover more
+  sophisticated examples such as Multi Agent-GAN training. We also
+  envision the extension of the framework to domains beyond Computer
+  Vision by adding support for NLP and Time Series GAN models.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-dcgan2015">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Radford</surname><given-names>Alec</given-names></name>
+          <name><surname>Metz</surname><given-names>Luke</given-names></name>
+          <name><surname>Chintala</surname><given-names>Soumith</given-names></name>
+        </person-group>
+        <article-title>Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks</article-title>
+        <source>2016 International Conference on Learning Representations</source>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://arxiv.org/abs/1511.06434</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-gan2014">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Goodfellow</surname><given-names>Ian</given-names></name>
+          <name><surname>Pouget-Abadie</surname><given-names>Jean</given-names></name>
+          <name><surname>Mirza</surname><given-names>Mehdi</given-names></name>
+          <name><surname>Xu</surname><given-names>Bing</given-names></name>
+          <name><surname>Warde-Farley</surname><given-names>David</given-names></name>
+          <name><surname>Ozair</surname><given-names>Sherjil</given-names></name>
+          <name><surname>Courville</surname><given-names>Aaron</given-names></name>
+          <name><surname>Bengio</surname><given-names>Yoshua</given-names></name>
+        </person-group>
+        <article-title>Generative Adversarial Nets</article-title>
+        <source>Advances in neural information processing systems</source>
+        <year iso-8601-date="2014">2014</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-berthelot2017began">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Berthelot</surname><given-names>David</given-names></name>
+          <name><surname>Schumm</surname><given-names>Thomas</given-names></name>
+          <name><surname>Metz</surname><given-names>Luke</given-names></name>
+        </person-group>
+        <article-title>BEGAN: Boundary Equilibrium Generative Adversarial Networks</article-title>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://arxiv.org/abs/1703.10717</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-gulrajani2017improved">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Gulrajani</surname><given-names>Ishaan</given-names></name>
+          <name><surname>Ahmed</surname><given-names>Faruk</given-names></name>
+          <name><surname>Arjovsky</surname><given-names>Martin</given-names></name>
+          <name><surname>Dumoulin</surname><given-names>Vincent</given-names></name>
+          <name><surname>Courville</surname><given-names>Aaron</given-names></name>
+        </person-group>
+        <article-title>Improved training of wasserstein GANs</article-title>
+        <source>Proceedings of the 31st international conference on neural information processing systems</source>
+        <publisher-name>Curran Associates Inc.</publisher-name>
+        <publisher-loc>Red Hook, NY, USA</publisher-loc>
+        <year iso-8601-date="2017">2017</year>
+        <isbn>9781510860964</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-mirza2014conditional">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Mirza</surname><given-names>Mehdi</given-names></name>
+          <name><surname>Osindero</surname><given-names>Simon</given-names></name>
+        </person-group>
+        <article-title>Conditional Generative Adversarial Nets</article-title>
+        <year iso-8601-date="2014">2014</year>
+        <uri>https://arxiv.org/abs/1411.1784</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-cyclegan">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zhu</surname><given-names>Jun-Yan</given-names></name>
+          <name><surname>Park</surname><given-names>Taesung</given-names></name>
+          <name><surname>Isola</surname><given-names>Phillip</given-names></name>
+          <name><surname>Efros</surname><given-names>Alexei A.</given-names></name>
+        </person-group>
+        <article-title>Unpaired Image-to-Image Translation Using Cycle-Consistent Adversarial Networks</article-title>
+        <source>2017 IEEE International Conference on Computer Vision (ICCV)</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2017-10">2017</year><month>10</month>
+        <isbn>9781538610329</isbn>
+        <uri>http://dx.doi.org/10.1109/ICCV.2017.244</uri>
+        <pub-id pub-id-type="doi">10.1109/iccv.2017.244</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-srgan">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ledig</surname><given-names>Christian</given-names></name>
+          <name><surname>Theis</surname><given-names>Lucas</given-names></name>
+          <name><surname>Huszar</surname><given-names>Ferenc</given-names></name>
+          <name><surname>Caballero</surname></name>
+          <name><surname>al.</surname></name>
+        </person-group>
+        <article-title>Photo-Realistic Single Image Super-Resolution Using a Generative Adversarial Network</article-title>
+        <source>2017 IEEE Conference on Computer Vision and Pattern Recognition (CVPR)</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2017-07">2017</year><month>07</month>
+        <isbn>9781538604571</isbn>
+        <uri>http://dx.doi.org/10.1109/CVPR.2017.19</uri>
+        <pub-id pub-id-type="doi">10.1109/cvpr.2017.19</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-karras2017progressive">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Karras</surname><given-names>Tero</given-names></name>
+          <name><surname>Aila</surname><given-names>Timo</given-names></name>
+          <name><surname>Laine</surname><given-names>Samuli</given-names></name>
+          <name><surname>Lehtinen</surname><given-names>Jaakko</given-names></name>
+        </person-group>
+        <article-title>Progressive growing of GANs for improved quality, stability, and variation</article-title>
+        <source>International conference on learning representations</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://openreview.net/forum?id=Hk99zCeAb</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-biggan">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Brock</surname><given-names>Andrew</given-names></name>
+          <name><surname>Donahue</surname><given-names>Jeff</given-names></name>
+          <name><surname>Simonyan</surname><given-names>Karen</given-names></name>
+        </person-group>
+        <article-title>Large scale GAN training for high fidelity natural image synthesis</article-title>
+        <source>International conference on learning representations</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://openreview.net/forum?id=B1xsqj09Fm</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-zhang2017adversarial">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Zhang</surname><given-names>Yizhe</given-names></name>
+          <name><surname>Gan</surname><given-names>Zhe</given-names></name>
+          <name><surname>Fan</surname><given-names>Kai</given-names></name>
+          <name><surname>Chen</surname><given-names>Zhi</given-names></name>
+          <name><surname>Henao</surname><given-names>Ricardo</given-names></name>
+          <name><surname>Shen</surname><given-names>Dinghan</given-names></name>
+          <name><surname>Carin</surname><given-names>Lawrence</given-names></name>
+        </person-group>
+        <article-title>Adversarial feature matching for text generation</article-title>
+        <source>Proceedings of the 34th international conference on machine learning-volume 70</source>
+        <publisher-name>JMLR. org</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-esteban2017real">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Esteban</surname><given-names>Cristóbal</given-names></name>
+          <name><surname>Hyland</surname><given-names>Stephanie L</given-names></name>
+          <name><surname>Rätsch</surname><given-names>Gunnar</given-names></name>
+        </person-group>
+        <article-title>Real-valued (medical) time series generation with recurrent conditional gans</article-title>
+        <source>arXiv preprint arXiv:1706.02633</source>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Krizhevsky2009LearningML">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Krizhevsky</surname><given-names>Alex</given-names></name>
+        </person-group>
+        <article-title>Learning Multiple Layers of Features from Tiny Images</article-title>
+        <publisher-name>Citeseer</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-mocogan">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Tulyakov</surname><given-names>Sergey</given-names></name>
+          <name><surname>Liu</surname><given-names>Ming-Yu</given-names></name>
+          <name><surname>Yang</surname><given-names>Xiaodong</given-names></name>
+          <name><surname>Kautz</surname><given-names>Jan</given-names></name>
+        </person-group>
+        <article-title>MoCoGAN: Decomposing Motion and Content for Video Generation</article-title>
+        <source>The IEEE Conference on Computer Vision and Pattern Recognition (CVPR)</source>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-dvdgan">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Clark</surname><given-names>Aidan</given-names></name>
+          <name><surname>Donahue</surname><given-names>Jeff</given-names></name>
+          <name><surname>Simonyan</surname><given-names>Karen</given-names></name>
+        </person-group>
+        <article-title>Efficient video generation on complex datasets</article-title>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://arxiv.org/abs/1907.06571</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-gman">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Durugkar</surname><given-names>Ishan</given-names></name>
+          <name><surname>Gemp</surname><given-names>Ian</given-names></name>
+          <name><surname>Mahadevan</surname><given-names>Sridhar</given-names></name>
+        </person-group>
+        <article-title>Generative Multi-Adversarial Networks</article-title>
+        <source>International conference on learning representations</source>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://openreview.net/forum?id=Byk-VI9eg</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-tfgan">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Shor</surname><given-names>Joel</given-names></name>
+        </person-group>
+        <article-title>Tensorflow GAN</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>https://github.com/tensorflow/models/tree/master/research/gan; GitHub</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-hypergan">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Community</surname><given-names>KyperGAN</given-names></name>
+        </person-group>
+        <article-title>HyperGAN</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>https://github.com/HyperGAN/HyperGAN; GitHub</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-gantoolkit">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Raunak Sinha</surname><given-names>Anush Sankaran</given-names><suffix>Naveen Panwar</suffix></name>
+        </person-group>
+        <article-title>IBM GAN Toolkit</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>https://https://github.com/IBM/gan-toolkit; GitHub</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

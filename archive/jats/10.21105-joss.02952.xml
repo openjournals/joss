@@ -1,0 +1,863 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2952</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02952</article-id>
+<title-group>
+<article-title>RivGraph: Automatic extraction and analysis of river and
+delta channel network topology</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-5803-9686</contrib-id>
+<string-name>Jon Schwenk</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="corresp" rid="cor-1"><sup>*</sup></xref>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1343-193X</contrib-id>
+<string-name>Jayaram Hariharan</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Los Alamos National Laboratory, Division of Earth and
+Environmental Sciences</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Department of Civil, Architectural and Environmental
+Engineering, The University of Texas at Austin</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<author-notes>
+<corresp id="cor-1">* E-mail: <email></email></corresp>
+</author-notes>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-01-01">
+<day>1</day>
+<month>1</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>59</issue>
+<fpage>2952</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>rivers</kwd>
+<kwd>deltas</kwd>
+<kwd>image processing</kwd>
+<kwd>networks</kwd>
+<kwd>channel network extraction</kwd>
+<kwd>fluvial geomorphology</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>River networks sustain life and landscapes by carrying and
+  distributing water, sediment, and nutrients throughout ecosystems and
+  communities. At the largest scale, river networks drain continents
+  through tree-like <italic>tributary</italic> networks. At typically
+  smaller scales, river deltas and braided rivers form loopy, complex
+  <italic>distributary</italic> river networks via avulsions and
+  bifurcations. In order to model flows through these networks or
+  analyze network structure, the topology, or connectivity, of the
+  network must be resolved. Additionally, morphologic properties of each
+  river channel as well as the direction of flow through the channel
+  inform how fluxes travel through the network’s channels.</p>
+  <p><monospace>RivGraph</monospace> is a Python package that automates
+  the extraction and characterization of river channel networks from a
+  user-provided binary image, or mask, of a channel network (Fig. 1).
+  Masks may be derived from (typically remotely-sensed) imagery,
+  simulations, or even hand-drawn. <monospace>RivGraph</monospace> will
+  create explicit representations of the channel network by resolving
+  river centerlines as links, and junctions as nodes. Flow directions
+  are solved for each link of the network without using auxiliary data,
+  e.g., a digital elevation model (DEM). Morphologic properties are
+  computed as well, including link lengths, widths, sinuosities,
+  branching angles, and braiding indices. If provided,
+  <monospace>RivGraph</monospace> will preserve georeferencing
+  information of the mask and will export results as ESRI shapefiles,
+  GeoJSONs, and GeoTIFFs for easy import into GIS software.
+  <monospace>RivGraph</monospace> can also return extracted networks as
+  <monospace>networkx</monospace> objects for convenient interfacing
+  with the full-featured <monospace>networkx</monospace> package
+  (<xref alt="Hagberg et al., 2008" rid="ref-hagberg2008" ref-type="bibr">Hagberg
+  et al., 2008</xref>). Finally, <monospace>RivGraph</monospace> offers
+  a suite of topologic metrics that were specifically designed for river
+  channel network analysis
+  (<xref alt="Tejedor et al., 2015b" rid="ref-tejedor2015" ref-type="bibr">Tejedor
+  et al., 2015b</xref>).</p>
+  <fig>
+    <caption><p>The core functionality of RivGraph for a delta channel
+    network.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="./examples/images/rivgraph_overview_white.PNG" xlink:title="" />
+  </fig>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Satellite and aerial photography have provided unprecedented
+  opportunities to study the structure and dynamics of rivers and their
+  networks. As both the quantity and quality of these remotely-sensed
+  observations grow, the need for tools that automatically map and
+  measure river channel network properties has grown in turn. The
+  genesis of <monospace>RivGraph</monospace> is rooted in the work of
+  Tejedor et al.
+  (<xref alt="2017" rid="ref-tejedor2017" ref-type="bibr">2017</xref>)
+  in a revitalized effort to see river channel networks through the
+  lenses of their network structure. The authors were relegated to
+  time-consuming hand-delineations of the delta channel networks they
+  analyzed. <monospace>RivGraph</monospace> was thus born from a need to
+  transform binary masks of river channel networks into their graphical
+  representations accurately, objectively, and efficiently.</p>
+  <p><monospace>RivGraph</monospace> has already been instrumental in a
+  number of investigations. The development of the flow directions
+  algorithms itself provided insights into the nature of river channel
+  network structure in braided rivers and deltas
+  (<xref alt="Schwenk et al., 2020" rid="ref-schwenk2020" ref-type="bibr">Schwenk
+  et al., 2020</xref>). For deltas specifically,
+  <monospace>RivGraph</monospace>-extracted networks have been used to
+  study how water and sediment are partitioned at bifurcations
+  (<xref alt="Dong et al., 2020" rid="ref-dong2020" ref-type="bibr">Dong
+  et al., 2020</xref>), to determine how distance to the channel network
+  plays a controlling role on Arctic delta lake dynamics
+  (<xref alt="Vulis et al., 2020" rid="ref-vulis2020" ref-type="bibr">Vulis
+  et al., 2020</xref>), and to construct a network-based model of
+  nitrate removal across the Wax Lake Delta
+  (<xref alt="Knights et al., 2020" rid="ref-knights2020" ref-type="bibr">Knights
+  et al., 2020</xref>). For braided rivers,
+  <monospace>RivGraph</monospace> was used to extract channel networks
+  from hydrodynamic simulations in order to develop the novel “entropic
+  braiding index” (eBI,
+  <xref alt="Tejedor et al., 2019" rid="ref-tejedor2019" ref-type="bibr">Tejedor
+  et al., 2019</xref>), and a function for computing the eBI (as well as
+  the classic braiding index) for braided rivers is provided in
+  <monospace>RivGraph</monospace>. The work of Marra et al.
+  (<xref alt="2014" rid="ref-marra2014" ref-type="bibr">2014</xref>)
+  represented an effort to understand braided rivers through their
+  topologies, although their networks were apparently extracted
+  manually. Ongoing, yet-unpublished work is using
+  <monospace>RivGraph</monospace> to study river dynamics, delta
+  loopiness, and nutrient transport through Arctic deltas.</p>
+  <p>We are aware of one other package that extracts network topology
+  from channel network masks. The <monospace>Orinoco</monospace> Python
+  package
+  (<xref alt="Marshak et al., 2020" rid="ref-marshak2020" ref-type="bibr">Marshak
+  et al., 2020</xref>) uses a fast marching method to resolve the
+  channel network in contrast to <monospace>RivGraph</monospace>’s
+  skeletonization approach. <monospace>Orinoco</monospace> uses only a
+  shortest-path approach for setting flow directions rather than
+  <monospace>RivGraph</monospace>’s exploitation of many morphologic
+  features (including shortest path) to set flow directions. If a DEM of
+  the channel network is available, the Lowpath
+  (<xref alt="Hiatt et al., 2020" rid="ref-hiatt2020" ref-type="bibr">Hiatt
+  et al., 2020</xref>) add-on to the
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/tue-alga/ttga">Topological
+  Tools for Geomorphological Analysis</ext-link> package may be of
+  interest. <monospace>RivGraph</monospace>’s along-river mesh
+  generation for braided rivers (Fig. 2) was inspired by RivMAP
+  (<xref alt="Schwenk et al., 2017" rid="ref-schwenk2017b" ref-type="bibr">Schwenk
+  et al., 2017</xref>).</p>
+</sec>
+<sec id="functionality">
+  <title>Functionality</title>
+  <p><monospace>RivGraph</monospace> requires the user to provide a
+  binary mask of a channel network. If the provided mask is
+  georeferenced (e.g., a GeoTIFF), <monospace>RivGraph</monospace> will
+  export results in the same coordinate reference system (CRS) for easy
+  analysis with a Geographical Information System (GIS) software.
+  Otherwise, a “dummy” CRS is applied, and calculated physical
+  quantities (e.g., length and width) will be in units of pixels. The
+  channel mask is the basis for all <monospace>RivGraph</monospace>
+  processing, so the user should consider carefully the features to
+  include and the desired level of smoothing.
+  <monospace>RivGraph</monospace> respects the connectivity of the
+  channel mask such that all groups of pixels connected in the mask will
+  be connected in the vectorized representation as well. The user may
+  therefore wish to preprocess their mask to fill small or unwanted
+  islands or smooth channel boundaries.
+  <monospace>RivGraph</monospace>’s <monospace>im_utils()</monospace>
+  module contains a number of functions for achieving these tasks,
+  including island-filling and morphological operators. Detailed
+  information about how to create and prepare masks is provided in
+  <ext-link ext-link-type="uri" xlink:href="https://jonschwenk.github.io/RivGraph/maskmaking/index.html">the
+  documentation</ext-link>.</p>
+  <sec id="basic-functionality">
+    <title>Basic Functionality</title>
+    <p><monospace>RivGraph</monospace> was designed with an emphasis on
+    user-friendliness and accessibility, guided by the idea that even
+    novice Python users should be able to make use of its functionality.
+    Anticipated common workflows are gathered into two classes that
+    manage georeferencing conversions, path management, and I/O with
+    simple, clearly-named methods. Beginning users will want to
+    instantiate either a <monospace>delta</monospace> or a (braided)
+    <monospace>river</monospace> class and apply the relevant methods,
+    which are as follows:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p><monospace>skeletonize()</monospace> : skeletonizes the mask;
+        minor conditioning of the skeleton is performed to simplify the
+        topology. For example, if a “+” pattern with the center pixel
+        “off” appears in the skeleton, the center pixel will be added to
+        the skeleton to reduce the number of branchpoints from four to
+        one.</p>
+      </list-item>
+      <list-item>
+        <p><monospace>compute_network()</monospace> : walks along the
+        skeleton to resolve the links and nodes. All pixels in the
+        unpruned skeleton will be visited and therefore represented in
+        the vectorized output.</p>
+      </list-item>
+      <list-item>
+        <p><monospace>prune_network()</monospace> : removes portions of
+        the network that do not contribute meaningfully to its topology.
+        The skeletonization process often results in many “dangling
+        links,” or links connected to the network at only one end.
+        During pruning, all dangling links are removed except those
+        connected to inlet or outlet nodes. For the
+        <monospace>delta</monospace> class, user-provided shoreline and
+        inlet nodes files are required so that
+        <monospace>RivGraph</monospace> can prune the network to the
+        shoreline and identify the inlet and outlet nodes. Additionally,
+        bridging links, or links whose removal results in two
+        subnetworks, are removed if one of the resulting subnetworks
+        contains no inlet or outlet nodes. The corresponding subnetwork
+        without inlet or outlet nodes is also removed.</p>
+      </list-item>
+      <list-item>
+        <p><monospace>compute_link_width_and_length()</monospace> : adds
+        width and length attributes to each link. Width is computed via
+        sampling a distance transform image along the link (centerline)
+        coordinates and multiplying by two. Length is the sum of the
+        Euclidean distance between each pair of pixels along a link.</p>
+      </list-item>
+      <list-item>
+        <p><monospace>assign_flow_directions()</monospace> : uses a
+        suite of algorithms to set the flow direction of each link in
+        the network. Separate “recipes” are provided for the
+        <monospace>delta</monospace> and <monospace>river</monospace>
+        classes, but users may also create their own. Rationale of the
+        various algorithms and details of recipe construction are given
+        in Schwenk et al.
+        (<xref alt="2020" rid="ref-schwenk2020" ref-type="bibr">2020</xref>).</p>
+      </list-item>
+    </list>
+    <p>Additional methods are available for plotting, exporting GeoTIFFs
+    and geovectors, saving/loading the network, converting to adjacency
+    matrices, computing junction angles, and finding islands.</p>
+    <p>Braided rivers should be analyzed with the
+    <monospace>river</monospace> class, which instead of a user-provided
+    shoreline requires a two-character string denoting the <italic>exit
+    sides</italic> of the river with respect to the mask, e.g., ‘NS’ for
+    a river whose upstream terminus is at the top of the image and
+    downstream at the bottom. <monospace>RivGraph</monospace> exploits
+    the general direction of the braided river’s channel belt to set
+    flow directions and generate an along-river mesh (Fig. 2) that can
+    be used for characterizing downstream changes. In addition to the
+    methods above, the <monospace>river</monospace> class also
+    features:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p><monospace>compute_centerline()</monospace> : computes the
+        centerline of the holes-filled river mask (not individual
+        channels)</p>
+      </list-item>
+      <list-item>
+        <p><monospace>compute_mesh()</monospace> : creates a mesh of
+        evenly-spaced transects that are approximately perpendicular to
+        the centerline. The user can specify the mesh spacing, transect
+        width, and degree of smoothing.</p>
+      </list-item>
+    </list>
+    <fig>
+      <caption><p>Figure 2. A RivGraph-generated mesh for a mask of the
+      Indus River.</p></caption>
+      <graphic mimetype="image" mime-subtype="jpeg" xlink:href="./examples/images/indus_mesh_paper.JPG" xlink:title="" />
+    </fig>
+  </sec>
+  <sec id="advanced-functionality">
+    <title>Advanced Functionality</title>
+    <p><monospace>RivGraph</monospace> is organized into a set of
+    modules such that users can find particular functions based on their
+    general class. Customized workflows can be created by calling
+    appropriate functions from these modules, which include</p>
+    <list list-type="bullet">
+      <list-item>
+        <p><monospace>classes</monospace> : contains the
+        <monospace>river</monospace> and <monospace>delta</monospace>
+        classes and associated methods</p>
+      </list-item>
+      <list-item>
+        <p><monospace>directionality</monospace> : algorithms for
+        setting flow directions that are not specific to deltas or
+        braided rivers</p>
+      </list-item>
+      <list-item>
+        <p><monospace>geo_utils</monospace> : functions for handling
+        geospatial data</p>
+      </list-item>
+      <list-item>
+        <p><monospace>im_utils</monospace> : image processing utilities,
+        including morphologic operators</p>
+      </list-item>
+      <list-item>
+        <p><monospace>io_utils</monospace> : functions for reading and
+        writing data and results</p>
+      </list-item>
+      <list-item>
+        <p><monospace>ln_utils</monospace> : functions for building and
+        manipulating the links and nodes of the network</p>
+      </list-item>
+      <list-item>
+        <p><monospace>mask_to_graph</monospace> : the algorithm for
+        converting the mask to a set of links and nodes</p>
+      </list-item>
+      <list-item>
+        <p><monospace>walk</monospace> : functions for walking along the
+        skeleton and identifying branchpoints</p>
+      </list-item>
+      <list-item>
+        <p><monospace>deltas/delta_directionality</monospace> :
+        delta-specific algorithms for setting flow directions</p>
+      </list-item>
+      <list-item>
+        <p><monospace>deltas/delta_metrics</monospace> : functions for
+        computing topologic metrics</p>
+      </list-item>
+      <list-item>
+        <p><monospace>deltas/delta_utils</monospace> : algorithm for
+        pruning deltas and clipping the delta network by the
+        shoreline</p>
+      </list-item>
+      <list-item>
+        <p><monospace>rivers/river_directionality</monospace> :
+        river-specific algorithms for setting flow directions</p>
+      </list-item>
+      <list-item>
+        <p><monospace>rivers/river_utils</monospace> : algorithms for
+        pruning rivers and generating along-river meshes</p>
+      </list-item>
+    </list>
+  </sec>
+</sec>
+<sec id="dependencies">
+  <title>Dependencies</title>
+  <p><monospace>RivGraph</monospace> relies on functionality from the
+  following Python packages: GDAL
+  (<xref alt="GDAL/OGR contributors, 2020" rid="ref-gdal2020" ref-type="bibr">GDAL/OGR
+  contributors, 2020</xref>), NumPy
+  (<xref alt="Harris et al., 2020" rid="ref-harris2020" ref-type="bibr">Harris
+  et al., 2020</xref>), Matplotlib
+  (<xref alt="Hunter, 2007" rid="ref-hunter2007" ref-type="bibr">Hunter,
+  2007</xref>), GeoPandas
+  (<xref alt="Jordahl et al., 2020" rid="ref-jordahl2020" ref-type="bibr">Jordahl
+  et al., 2020</xref>), Shapely
+  (<xref alt="Gillies et al., 2007" rid="ref-gillies2007" ref-type="bibr">Gillies
+  et al., 2007</xref>), Fiona
+  (<xref alt="Gillies et al., 2011" rid="ref-gillies2011" ref-type="bibr">Gillies
+  et al., 2011</xref>), pyproj
+  (<xref alt="Snow et al., 2020" rid="ref-snow2020" ref-type="bibr">Snow
+  et al., 2020</xref>), scikit-image
+  (<xref alt="van der Walt et al., 2014" rid="ref-vanderwalt2014" ref-type="bibr">van
+  der Walt et al., 2014</xref>), OpenCV
+  (<xref alt="Bradski, 2000" rid="ref-bradski2000" ref-type="bibr">Bradski,
+  2000</xref>), networkx
+  (<xref alt="Hagberg et al., 2008" rid="ref-hagberg2008" ref-type="bibr">Hagberg
+  et al., 2008</xref>), and fastdtw
+  (<xref alt="Slaypni, 2020" rid="ref-slaypni2020" ref-type="bibr">Slaypni,
+  2020</xref>).</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We thank Efi Foufoula-Georgiou, Alejandro Tejedor, Anthony Longjas,
+  Lawrence Vulius, Kensuke Naito, and Deon Knights for providing test
+  cases and feedback for <monospace>RivGraph</monospace>’s development.
+  We are also grateful to Anastasia Piliouras and Joel Rowland for
+  providing valuable insights and subsequent testing of
+  <monospace>RivGraph</monospace>’s flow directionality algorithms.</p>
+  <p><monospace>RivGraph</monospace> has received financial support from
+  NSF under EAR-1719670, the United States Department of Energy, and Los
+  Alamos National Laboratory’s Lab Directed Research and Development
+  (LDRD) program. Special thanks are due to Dr. Efi Foufoula-Georgiou
+  for providing support during the nascent phase of
+  <monospace>RivGraph</monospace>’s development.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-bradski2000">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bradski</surname><given-names>G.</given-names></name>
+        </person-group>
+        <article-title>The OpenCV library</article-title>
+        <source>Dr. Dobb’s Journal of Software Tools</source>
+        <year iso-8601-date="2000">2000</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-dong2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dong</surname><given-names>Tian Y.</given-names></name>
+          <name><surname>Nittrouer</surname><given-names>Jeffrey A.</given-names></name>
+          <name><surname>McElroy</surname><given-names>Brandon</given-names></name>
+          <name><surname>Il’icheva</surname><given-names>Elena</given-names></name>
+          <name><surname>Pavlov</surname><given-names>Maksim</given-names></name>
+          <name><surname>Ma</surname><given-names>Hongbo</given-names></name>
+          <name><surname>Moodie</surname><given-names>Andrew J.</given-names></name>
+          <name><surname>Moreido</surname><given-names>Vsevolod M.</given-names></name>
+        </person-group>
+        <article-title>Predicting Water and Sediment Partitioning in a Delta Channel Network Under Varying Discharge Conditions</article-title>
+        <source>Water Resources Research</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>56</volume>
+        <issue>11</issue>
+        <issn>1944-7973</issn>
+        <pub-id pub-id-type="doi">10.1029/2020WR027199</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gdal2020">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>GDAL/OGR contributors</string-name>
+        </person-group>
+        <source>GDAL/OGR geospatial data abstraction software library</source>
+        <publisher-name>Open Source Geospatial Foundation</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-gillies2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gillies</surname><given-names>Sean</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Shapely: Manipulation and analysis of geometric objects</article-title>
+        <publisher-name>toblerity.org</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-gillies2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gillies</surname><given-names>Sean</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Fiona is OGR’s neat, nimble, no-nonsense API</article-title>
+        <publisher-name>Toblerity</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-hagberg2008">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Hagberg</surname><given-names>Aric A</given-names></name>
+          <name><surname>Schult</surname><given-names>Daniel A</given-names></name>
+          <name><surname>Swart</surname><given-names>Pieter J</given-names></name>
+        </person-group>
+        <article-title>Exploring Network Structure, Dynamics, and Function using NetworkX</article-title>
+        <source>Proceedings of the 7th Python in Science Conference</source>
+        <year iso-8601-date="2008">2008</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-harris2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Harris</surname><given-names>Charles R.</given-names></name>
+          <name><surname>Millman</surname><given-names>K. Jarrod</given-names></name>
+          <name><surname>van der Walt</surname><given-names>Stéfan J.</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Wieser</surname><given-names>Eric</given-names></name>
+          <name><surname>Taylor</surname><given-names>Julian</given-names></name>
+          <name><surname>Berg</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Smith</surname><given-names>Nathaniel J.</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Picus</surname><given-names>Matti</given-names></name>
+          <name><surname>Hoyer</surname><given-names>Stephan</given-names></name>
+          <name><surname>van Kerkwijk</surname><given-names>Marten H.</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Haldane</surname><given-names>Allan</given-names></name>
+          <name><surname>del Río</surname><given-names>Jaime Fernández</given-names></name>
+          <name><surname>Wiebe</surname><given-names>Mark</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Gérard-Marchant</surname><given-names>Pierre</given-names></name>
+          <name><surname>Sheppard</surname><given-names>Kevin</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Abbasi</surname><given-names>Hameer</given-names></name>
+          <name><surname>Gohlke</surname><given-names>Christoph</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+        </person-group>
+        <article-title>Array programming with NumPy</article-title>
+        <source>Nature</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="2020-09">2020</year><month>09</month>
+        <volume>585</volume>
+        <issue>7825</issue>
+        <issn>1476-4687</issn>
+        <pub-id pub-id-type="doi">10.1038/s41586-020-2649-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hiatt2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hiatt</surname><given-names>Matthew</given-names></name>
+          <name><surname>Sonke</surname><given-names>Willem</given-names></name>
+          <name><surname>Addink</surname><given-names>Elisabeth A.</given-names></name>
+          <name><surname>Dijk</surname><given-names>Wout M. van</given-names></name>
+          <name><surname>Kreveld</surname><given-names>Marc van</given-names></name>
+          <name><surname>Ophelders</surname><given-names>Tim</given-names></name>
+          <name><surname>Verbeek</surname><given-names>Kevin</given-names></name>
+          <name><surname>Vlaming</surname><given-names>Joyce</given-names></name>
+          <name><surname>Speckmann</surname><given-names>Bettina</given-names></name>
+          <name><surname>Kleinhans</surname><given-names>Maarten G.</given-names></name>
+        </person-group>
+        <article-title>Geometry and Topology of Estuary and Braided River Channel Networks Automatically Extracted From Topographic Data</article-title>
+        <source>Journal of Geophysical Research: Earth Surface</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>125</volume>
+        <issue>1</issue>
+        <issn>2169-9011</issn>
+        <pub-id pub-id-type="doi">10.1029/2019JF005206</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hunter2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hunter</surname><given-names>J. D.</given-names></name>
+        </person-group>
+        <article-title>Matplotlib: A 2D graphics environment</article-title>
+        <source>Computing in Science &amp; Engineering</source>
+        <publisher-name>IEEE COMPUTER SOC</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>9</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2007.55</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-jordahl2020">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Jordahl</surname><given-names>Kelsey</given-names></name>
+          <name><surname>Bossche</surname><given-names>Joris Van den</given-names></name>
+          <name><surname>Fleischmann</surname><given-names>Martin</given-names></name>
+          <name><surname>Wasserman</surname><given-names>Jacob</given-names></name>
+          <name><surname>McBride</surname><given-names>James</given-names></name>
+          <name><surname>Gerard</surname><given-names>Jeffrey</given-names></name>
+          <name><surname>Tratner</surname><given-names>Jeff</given-names></name>
+          <name><surname>Perry</surname><given-names>Matthew</given-names></name>
+          <name><surname>Badaracco</surname><given-names>Adrian Garcia</given-names></name>
+          <name><surname>Farmer</surname><given-names>Carson</given-names></name>
+          <name><surname>Hjelle</surname><given-names>Geir Arne</given-names></name>
+          <name><surname>Snow</surname><given-names>Alan D.</given-names></name>
+          <name><surname>Cochran</surname><given-names>Micah</given-names></name>
+          <name><surname>Gillies</surname><given-names>Sean</given-names></name>
+          <name><surname>Culbertson</surname><given-names>Lucas</given-names></name>
+          <name><surname>Bartos</surname><given-names>Matt</given-names></name>
+          <name><surname>Eubank</surname><given-names>Nick</given-names></name>
+          <string-name>maxalbert</string-name>
+          <name><surname>Bilogur</surname><given-names>Aleksey</given-names></name>
+          <name><surname>Rey</surname><given-names>Sergio</given-names></name>
+          <name><surname>Ren</surname><given-names>Christopher</given-names></name>
+          <name><surname>Arribas-Bel</surname><given-names>Dani</given-names></name>
+          <name><surname>Wasser</surname><given-names>Leah</given-names></name>
+          <name><surname>Wolf</surname><given-names>Levi John</given-names></name>
+          <name><surname>Journois</surname><given-names>Martin</given-names></name>
+          <name><surname>Wilson</surname><given-names>Joshua</given-names></name>
+          <name><surname>Greenhall</surname><given-names>Adam</given-names></name>
+          <name><surname>Holdgraf</surname><given-names>Chris</given-names></name>
+          <string-name>Filipe</string-name>
+          <name><surname>Leblanc</surname><given-names>François</given-names></name>
+        </person-group>
+        <article-title>Geopandas/geopandas: V0.8.1</article-title>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3946761</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-knights2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Knights</surname><given-names>Deon</given-names></name>
+          <name><surname>Sawyer</surname><given-names>Audrey H.</given-names></name>
+          <name><surname>Barnes</surname><given-names>Rebecca T.</given-names></name>
+          <name><surname>Piliouras</surname><given-names>Anastasia</given-names></name>
+          <name><surname>Schwenk</surname><given-names>Jon</given-names></name>
+          <name><surname>Edmonds</surname><given-names>Douglas A.</given-names></name>
+          <name><surname>Brown</surname><given-names>Alexander M.</given-names></name>
+        </person-group>
+        <article-title>Nitrate Removal Across Ecogeomorphic Zones in Wax Lake Delta, Louisiana (USA)</article-title>
+        <source>Water Resources Research</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>56</volume>
+        <issue>8</issue>
+        <issn>1944-7973</issn>
+        <pub-id pub-id-type="doi">10.1029/2019WR026867</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-marra2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Marra</surname><given-names>Wouter A.</given-names></name>
+          <name><surname>Kleinhans</surname><given-names>Maarten G.</given-names></name>
+          <name><surname>Addink</surname><given-names>Elisabeth A.</given-names></name>
+        </person-group>
+        <article-title>Network concepts to describe channel importance and change in multichannel systems: Test results for the Jamuna River, Bangladesh</article-title>
+        <source>Earth Surface Processes and Landforms</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>39</volume>
+        <issue>6</issue>
+        <issn>1096-9837</issn>
+        <pub-id pub-id-type="doi">10.1002/esp.3482</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-marshak2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Marshak</surname><given-names>Charlie</given-names></name>
+          <name><surname>Simard</surname><given-names>Marc</given-names></name>
+          <name><surname>Denbina</surname><given-names>Michael</given-names></name>
+          <name><surname>Nilsson</surname><given-names>Johan</given-names></name>
+          <name><surname>Van der Stocken</surname><given-names>Tom</given-names></name>
+        </person-group>
+        <article-title>Orinoco: Retrieving a River Delta Network with the Fast Marching Method and Python</article-title>
+        <source>ISPRS International Journal of Geo-Information</source>
+        <publisher-name>Multidisciplinary Digital Publishing Institute</publisher-name>
+        <year iso-8601-date="2020-11">2020</year><month>11</month>
+        <volume>9</volume>
+        <issue>11</issue>
+        <pub-id pub-id-type="doi">10.3390/ijgi9110658</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-schwenk2017b">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Schwenk</surname><given-names>Jon</given-names></name>
+          <name><surname>Khandelwal</surname><given-names>Ankush</given-names></name>
+          <name><surname>Fratkin</surname><given-names>Mulu</given-names></name>
+          <name><surname>Kumar</surname><given-names>Vipin</given-names></name>
+          <name><surname>Foufoula-Georgiou</surname><given-names>Efi</given-names></name>
+        </person-group>
+        <article-title>High spatiotemporal resolution of river planform dynamics from Landsat: The RivMAP toolbox and results from the Ucayali River</article-title>
+        <source>Earth and Space Science</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>4</volume>
+        <issue>2</issue>
+        <issn>2333-5084</issn>
+        <pub-id pub-id-type="doi">10.1002/2016EA000196</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-schwenk2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Schwenk</surname><given-names>Jon</given-names></name>
+          <name><surname>Piliouras</surname><given-names>Anastasia</given-names></name>
+          <name><surname>Rowland</surname><given-names>Joel C.</given-names></name>
+        </person-group>
+        <article-title>Determining flow directions in river channel networks using planform morphology and topology</article-title>
+        <source>Earth Surface Dynamics</source>
+        <year iso-8601-date="2020-02">2020</year><month>02</month>
+        <volume>8</volume>
+        <issue>1</issue>
+        <issn>2196-6311</issn>
+        <pub-id pub-id-type="doi">10.5194/esurf-8-87-2020</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-slaypni2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>Slaypni</string-name>
+        </person-group>
+        <article-title>Fastdtw: A python implementation of FastDTW</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>GitHub</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-snow2020">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Snow</surname><given-names>Alan D.</given-names></name>
+          <name><surname>Whitaker</surname><given-names>Jeff</given-names></name>
+          <name><surname>Cochran</surname><given-names>Micah</given-names></name>
+          <name><surname>Bossche</surname><given-names>Joris Van den</given-names></name>
+          <name><surname>Mayo</surname><given-names>Chris</given-names></name>
+          <name><surname>de Kloe</surname><given-names>Jos</given-names></name>
+          <name><surname>Karney</surname><given-names>Charles</given-names></name>
+          <name><surname>Ouzounoudis</surname><given-names>George</given-names></name>
+          <name><surname>Dearing</surname><given-names>Justin</given-names></name>
+          <name><surname>Lostis</surname><given-names>Guillaume</given-names></name>
+          <string-name>Heitor</string-name>
+          <string-name>Filipe</string-name>
+          <name><surname>May</surname><given-names>Ryan</given-names></name>
+          <name><surname>Itkin</surname><given-names>Mikhail</given-names></name>
+          <name><surname>Couwenberg</surname><given-names>Bas</given-names></name>
+          <name><surname>Berardinelli</surname><given-names>Greg</given-names></name>
+          <name><surname>Badger</surname><given-names>The Gitter</given-names></name>
+          <name><surname>Eubank</surname><given-names>Nick</given-names></name>
+          <name><surname>Dunphy</surname><given-names>Michael</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Raspaud</surname><given-names>Martin</given-names></name>
+          <name><surname>da Costa</surname><given-names>Marco Aurélio</given-names></name>
+          <name><surname>Evers</surname><given-names>Kristian</given-names></name>
+          <name><surname>Ranalli</surname><given-names>Joe</given-names></name>
+          <name><surname>de Maeyer</surname><given-names>Jakob</given-names></name>
+          <name><surname>Popov</surname><given-names>Eduard</given-names></name>
+          <name><surname>Gohlke</surname><given-names>Christoph</given-names></name>
+          <name><surname>Willoughby</surname><given-names>Chris</given-names></name>
+          <name><surname>Barker</surname><given-names>Chris</given-names></name>
+          <name><surname>Wiedemann</surname><given-names>Bernhard M.</given-names></name>
+        </person-group>
+        <article-title>Pyproj4/pyproj: 2.6.1 Release</article-title>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2020-05">2020</year><month>05</month>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3783866</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-tejedor2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tejedor</surname><given-names>Alejandro</given-names></name>
+          <name><surname>Longjas</surname><given-names>Anthony</given-names></name>
+          <name><surname>Zaliapin</surname><given-names>Ilya</given-names></name>
+          <name><surname>Foufoula-Georgiou</surname><given-names>Efi</given-names></name>
+        </person-group>
+        <article-title>Delta channel networks: 2. Metrics of topologic and dynamic complexity for delta comparison, physical inference, and vulnerability assessment</article-title>
+        <source>Water Resources Research</source>
+        <year iso-8601-date="2015-06">2015</year><month>06</month>
+        <volume>51</volume>
+        <issue>6</issue>
+        <issn>00431397</issn>
+        <pub-id pub-id-type="doi">10.1002/2014WR016604</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-tejedor2015a">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tejedor</surname><given-names>Alejandro</given-names></name>
+          <name><surname>Longjas</surname><given-names>Anthony</given-names></name>
+          <name><surname>Zaliapin</surname><given-names>Ilya</given-names></name>
+          <name><surname>Foufoula-Georgiou</surname><given-names>Efi</given-names></name>
+        </person-group>
+        <article-title>Delta channel networks: 1. A graph-theoretic approach for studying connectivity and steady state transport on deltaic surfaces: Graph-theoretic approach for delta channel networks</article-title>
+        <source>Water Resources Research</source>
+        <year iso-8601-date="2015-06">2015</year><month>06</month>
+        <volume>51</volume>
+        <issue>6</issue>
+        <issn>00431397</issn>
+        <pub-id pub-id-type="doi">10.1002/2014WR016577</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-tejedor2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tejedor</surname><given-names>Alejandro</given-names></name>
+          <name><surname>Longjas</surname><given-names>Anthony</given-names></name>
+          <name><surname>Edmonds</surname><given-names>Douglas A.</given-names></name>
+          <name><surname>Zaliapin</surname><given-names>Ilya</given-names></name>
+          <name><surname>Georgiou</surname><given-names>Tryphon T.</given-names></name>
+          <name><surname>Rinaldo</surname><given-names>Andrea</given-names></name>
+          <name><surname>Foufoula-Georgiou</surname><given-names>Efi</given-names></name>
+        </person-group>
+        <article-title>Entropy and optimality in river deltas</article-title>
+        <source>Proceedings of the National Academy of Sciences</source>
+        <year iso-8601-date="2017-10">2017</year><month>10</month>
+        <volume>114</volume>
+        <issue>44</issue>
+        <issn>0027-8424, 1091-6490</issn>
+        <pub-id pub-id-type="doi">10.1073/pnas.1708404114</pub-id>
+        <pub-id pub-id-type="pmid">29078329</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-tejedor2019">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Tejedor</surname><given-names>Alejandro</given-names></name>
+          <name><surname>Schwenk</surname><given-names>Jon</given-names></name>
+          <name><surname>Kleinhans</surname><given-names>Maarten</given-names></name>
+          <name><surname>Carling</surname><given-names>Paul</given-names></name>
+          <name><surname>Foufoula-Georgiou</surname><given-names>Efi</given-names></name>
+        </person-group>
+        <article-title>The Braiding Index 2.0: eBI</article-title>
+        <source>AGU Fall Meeting</source>
+        <publisher-loc>San Francisco</publisher-loc>
+        <year iso-8601-date="2019">2019</year>
+        <pub-id pub-id-type="doi">10.1002/essoar.10502024.1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-vanderwalt2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>van der Walt</surname><given-names>Stéfan</given-names></name>
+          <name><surname>Schönberger</surname><given-names>Johannes L.</given-names></name>
+          <name><surname>Nunez-Iglesias</surname><given-names>Juan</given-names></name>
+          <name><surname>Boulogne</surname><given-names>François</given-names></name>
+          <name><surname>Warner</surname><given-names>Joshua D.</given-names></name>
+          <name><surname>Yager</surname><given-names>Neil</given-names></name>
+          <name><surname>Gouillart</surname><given-names>Emmanuelle</given-names></name>
+          <name><surname>Yu</surname><given-names>Tony</given-names></name>
+          <string-name>scikit-image contributors</string-name>
+        </person-group>
+        <article-title>Scikit-image: Image processing in Python</article-title>
+        <source>PeerJ</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>2</volume>
+        <issn>2167-8359</issn>
+        <pub-id pub-id-type="doi">10.7717/peerj.453</pub-id>
+        <pub-id pub-id-type="pmid">25024921</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-vulis2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Vulis</surname><given-names>Lawrence</given-names></name>
+          <name><surname>Tejedor</surname><given-names>Alejandro</given-names></name>
+          <name><surname>Schwenk</surname><given-names>Jon</given-names></name>
+          <name><surname>Piliouras</surname><given-names>Anastasia</given-names></name>
+          <name><surname>Rowland</surname><given-names>Joel</given-names></name>
+          <name><surname>Foufoula-Georgiou</surname><given-names>Efi</given-names></name>
+        </person-group>
+        <article-title>Channel Network Control on Seasonal Lake Area Dynamics in Arctic Deltas</article-title>
+        <source>Geophysical Research Letters</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>47</volume>
+        <issue>7</issue>
+        <issn>1944-8007</issn>
+        <pub-id pub-id-type="doi">10.1029/2019GL086710</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

@@ -1,0 +1,800 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1667</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01667</article-id>
+<title-group>
+<article-title>Open-Unmix - A Reference Implementation for Music Source
+Separation</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-0872-7098</contrib-id>
+<string-name>Fabian-Robert Stöter</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-3158-4945</contrib-id>
+<string-name>Stefan Uhlich</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-3458-6498</contrib-id>
+<string-name>Antoine Liutkus</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-6806-6140</contrib-id>
+<string-name>Yuki Mitsufuji</string-name>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Inria and LIRMM, University of Montpellier,
+France</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Sony Europe B.V., Germany</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Sony Corporation, Japan</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-07-17">
+<day>17</day>
+<month>7</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>41</issue>
+<fpage>1667</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>audio</kwd>
+<kwd>music</kwd>
+<kwd>separation</kwd>
+<kwd>deep learning</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Music source separation is the task of decomposing music into its
+  constitutive components, e.g., yielding separated stems for the
+  vocals, bass, and drums. Such a separation has many applications
+  ranging from rearranging/repurposing the stems (remixing, repanning,
+  upmixing) to full extraction (karaoke, sample creation, audio
+  restoration). Music separation has a long history of scientific
+  activity as it is known to be a very challenging problem. In recent
+  years, deep learning-based systems - for the first time - yielded
+  high-quality separations that also lead to increased commercial
+  interest. However, until now, no open-source implementation that
+  achieves state-of-the-art results is available.
+  <italic>Open-Unmix</italic> closes this gap by providing a reference
+  implementation based on deep neural networks. It serves two main
+  purposes. Firstly, to accelerate academic research as
+  <italic>Open-Unmix</italic> provides implementations for the most
+  popular deep learning frameworks, giving researchers a flexible way to
+  reproduce results. Secondly, we provide a pre-trained model for end
+  users and even artists to try and use source separation. Furthermore,
+  we designed <italic>Open-Unmix</italic> to be one core component in an
+  open ecosystem on music separation, where we already provide open
+  datasets, software utilities, and open evaluation to foster
+  reproducible research as the basis of future development.</p>
+</sec>
+<sec id="background">
+  <title>Background</title>
+  <p>Music separation is a problem which has fascinated researchers for
+  over 50 years. This is partly because, mathematically, there exists no
+  closed-form solution when many sources (instruments) are recorded in a
+  mono or stereo signal. To address the problem, researchers exploited
+  additional knowledge about the way the signals were recorded and
+  mixed. A large number of these methods are centered around “classical”
+  signal processing methods. For a more detailed overview see
+  (<xref alt="Rafii et al., 2017" rid="ref-rafii17" ref-type="bibr">Rafii
+  et al., 2017</xref>) and
+  (<xref alt="Cano et al., 2019" rid="ref-cano19" ref-type="bibr">Cano
+  et al., 2019</xref>). Many of these methods were hand-crafted and
+  tuned to a small number of music recordings
+  (<xref alt="Araki et al., 2012" rid="ref-sisec11" ref-type="bibr">Araki
+  et al., 2012</xref>;
+  <xref alt="Ono et al., 2013" rid="ref-sisec13" ref-type="bibr">Ono et
+  al., 2013</xref>;
+  <xref alt="Vincent et al., 2012" rid="ref-sisec10" ref-type="bibr">Vincent
+  et al., 2012</xref>). Systematic objective evaluation of these
+  methods, however, was hardly feasible as freely available datasets did
+  not exist at that time. In fact, for a meaningful evaluation, the
+  ground truth separated stems are necessary. However, because
+  commercial music is usually subject to copyright protection, and the
+  separated stems are considered to be valuable assets in the music
+  recording industry, they are usually unavailable.</p>
+  <p>Nonetheless, thanks to some artists who choose licenses like
+  Creative Commons, that allow sharing of the stems, freely available
+  datasets were released in the past five years and have enabled the
+  development of data-driven methods. Since then, progress in
+  performance has been closely linked to the availability of more data
+  that allowed the use of machine-learning-based methods. This led to a
+  large performance boost similar to other audio tasks such as automatic
+  speech recognition (ASR) where a large amount of data was available.
+  In fact, in 2016 the speech recognition community had access to
+  datasets with more than 10000 hours of speech
+  (<xref alt="Amodei et al., 2016" rid="ref-amodei16" ref-type="bibr">Amodei
+  et al., 2016</xref>). In contrast, at the same time, the
+  <italic>MUSDB18</italic> dataset was released
+  (<xref alt="Rafii et al., 2017" rid="ref-rafii17" ref-type="bibr">Rafii
+  et al., 2017</xref>) which comprises 150 full-length music tracks – a
+  total of just 10 hours of music. To date, this is still the largest
+  freely available dataset for source separation. Nonetheless, even with
+  this small amount of data, deep neural networks (DNNs) were not only
+  successfully used for music separation but they are now setting the
+  state-of-the-art in this domain as can be seen by the results of the
+  community-based signal separation evaluation campaign (SiSEC)
+  (<xref alt="Liutkus et al., 2017" rid="ref-sisec16" ref-type="bibr">Liutkus
+  et al., 2017</xref>;
+  <xref alt="Ono et al., 2015" rid="ref-sisec15" ref-type="bibr">Ono et
+  al., 2015</xref>;
+  <xref alt="Stöter et al., 2018" rid="ref-sisec18" ref-type="bibr">Stöter
+  et al., 2018</xref>). In these challenges, the proposed systems are
+  compared to other methods. Among the systems under test, classical
+  signal processing based methods were clearly outperformed by machine
+  learning methods. However they were still useful as a
+  <italic>fast</italic> and often <italic>simple to understand</italic>
+  baseline.</p>
+  <p>In the following, we will describe a number of these reference
+  implementations for source separation. While there are some commercial
+  systems available, such as <italic>Audionamix XTRAX STEMS</italic>,
+  <italic>IZOTOPE RX 7</italic> or <italic>AudioSourceRE</italic>, we
+  only considered tools that are available as open-source software, and
+  are suitable for research.</p>
+  <p>The first publicly available software for source separation was
+  <italic>openBlissart</italic>, released in 2011
+  (<xref alt="Weninger et al., 2011" rid="ref-weninger11" ref-type="bibr">Weninger
+  et al., 2011</xref>). It is written in C++ and accounts for the class
+  of systems that are based on non-negative matrix factorization (NMF).
+  In 2012, the <italic>Flexible Audio Source Separation Toolbox
+  (FASST)</italic> was presented in
+  (<xref alt="Ozerov et al., 2011" rid="ref-ozerov2011general" ref-type="bibr">Ozerov
+  et al., 2011</xref>;
+  <xref alt="Salaün et al., 2014" rid="ref-salaun14" ref-type="bibr">Salaün
+  et al., 2014</xref>). It is written in MATLAB/C++ and is also based on
+  NMF methods, but also includes other model-based methods. In 2016, the
+  <italic>untwist</italic> library was proposed in
+  (<xref alt="Roma et al., 2016" rid="ref-roma16" ref-type="bibr">Roma
+  et al., 2016</xref>). It comprises several methods, ranging from
+  classical signal-processing-based methods to feed-forward neural
+  networks. The library is written in Python 2.7. Unfortunately, it has
+  not been updated since 2017 and many of its methods are not subjected
+  to automated testing. <italic>Nussl</italic> is a very recent
+  framework, presented in
+  (<xref alt="Manilow et al., 2018" rid="ref-manilow18" ref-type="bibr">Manilow
+  et al., 2018</xref>). It includes a large number of methods and
+  generally focuses on classical signal processing methods rather than
+  machine-learning-based techniques. It has built-in interfaces for
+  common evaluation metrics and data sets. The library offers great
+  modularity and a good level of abstraction. However, this also means
+  that it is challenging for beginners who might only want to focus on
+  changing the machine learning parts of the techniques.</p>
+  <p>The main problem with these implementations is that they do not
+  deliver state-of-the-art results. No open-source system is available
+  today that matches the performance of the best system proposed more
+  than four years ago by
+  (<xref alt="Uhlich et al., 2015" rid="ref-uhlich15" ref-type="bibr">Uhlich
+  et al., 2015</xref>). We believe that the lack of such a baseline has
+  a serious negative impact on future research on source separation.
+  Many new methods that were published in the last few years are usually
+  compared to their own baseline implementations, thus showing relative
+  instead of absolute performance gains, so that other researchers
+  cannot assess if a method performs as well as state-of-the-art. Also,
+  the lack of a common reference for the community potentially misguides
+  young researchers and students who enter the field of music
+  separation. The result of this can be observed by looking at the
+  popularity of the above-mentioned music separation frameworks on
+  GitHub: all of the frameworks mentioned above, combined, are less
+  popular than two recent deep learning papers that were accompanied by
+  code such as <monospace>MTG/DeepConvSep</monospace> from
+  (<xref alt="Chandna et al., 2017" rid="ref-chandna17" ref-type="bibr">Chandna
+  et al., 2017</xref>) and <monospace>f90/Wave-U-Net</monospace> from
+  (<xref alt="Stoller et al., 2018" rid="ref-stoller18" ref-type="bibr">Stoller
+  et al., 2018</xref>). Thus, users might be confused regarding which of
+  these implementations can be considered state-of-the-art.</p>
+</sec>
+<sec id="open-unmix">
+  <title>Open-Unmix</title>
+  <p>We propose to close this gap with <italic>Open-Unmix</italic>,
+  which applies machine learning to the specific tasks of music
+  separation. With the rise of simple to use machine learning frameworks
+  such as <italic>Pytorch</italic>, <italic>Keras</italic>,
+  <italic>Tensorflow</italic> or <italic>NNabla</italic>, the technical
+  challenge of developing a music separation system appears to be very
+  low at first glance. However, the lack of domain knowledge about the
+  specifics of music signals often results in poor performance where
+  issues are difficult to track using learning-based algorithms. We
+  therefore designed <italic>Open-Unmix</italic> to address these issues
+  by relying on procedures that were verified by the community or have
+  proven to work well in the literature.</p>
+  <sec id="design-choices">
+    <title>Design Choices</title>
+    <p>The design choices made for <italic>Open-Unmix</italic> have
+    sought to reach two somewhat contradictory objectives. Its first aim
+    is to have state-of-the-art performance, and its second aim is to
+    still be easily understandable, so that it can serve as a basis for
+    research to allow improved performance in the future. In the past,
+    many researchers faced difficulties in pre- and post-processing that
+    could be avoided by sharing domain knowledge. Our aim was thus to
+    design a system that allows researchers to focus on A) new
+    representations and B) new architectures.</p>
+    <sec id="framework-specific-vs.-framework-agnostic">
+      <title>Framework specific vs. framework agnostic</title>
+      <p>We choose <italic>PyTorch</italic> to serve as a reference
+      implementation due to its balance between simplicity and
+      modularity
+      (<xref alt="Stöter &amp; Liutkus, 2019e" rid="ref-openunmixpytorch" ref-type="bibr">Stöter
+      &amp; Liutkus, 2019e</xref>). Furthermore, we already ported the
+      core model to
+      <ext-link ext-link-type="uri" xlink:href="https://github.com/sigsep/open-unmix-nnabla">NNabla</ext-link>
+      and plan to release a port for Tensorflow 2.0, once the framework
+      is released. Note that the ports will not include pre-trained
+      models as we cannot make sure the ports would yield identical
+      results, thus leaving a single baseline model for researchers to
+      compare with.</p>
+    </sec>
+    <sec id="mnist-like">
+      <title>“MNIST-like”</title>
+      <p>Keeping in mind that the learning curve can be quite steep in
+      audio processing, we did our best for <italic>Open-unmix</italic>
+      to be:</p>
+      <list list-type="bullet">
+        <list-item>
+          <p><bold>simple to extend</bold>: The pre/post-processing,
+          data-loading, training and models part of the code is isolated
+          and easy to replace/update. In particular, a specific effort
+          was done to make it easy to replace the model.</p>
+        </list-item>
+        <list-item>
+          <p><bold>not a package</bold>: The software is composed of
+          largely independent and self-containing parts, keeping it easy
+          to use and easy to change.</p>
+        </list-item>
+        <list-item>
+          <p><bold>hackable (MNIST like)</bold>: Due to our objective of
+          making it easier for machine-learning experts to try out music
+          separation, we did our best to stick to the philosophy of
+          baseline implementations for this community. In particular,
+          <italic>Open-unmix</italic> mimics the famous MNIST example,
+          including the ability to instantly start training on a dataset
+          that is automatically downloaded.</p>
+        </list-item>
+      </list>
+    </sec>
+    <sec id="reproducible">
+      <title>Reproducible</title>
+      <p>Releasing <italic>Open-Unmix</italic> is first and foremost an
+      attempt to provide a reliable implementation sticking to
+      established programming practice as were also proposed in
+      (<xref alt="McFee et al., 2018" rid="ref-mcfee2018open" ref-type="bibr">McFee
+      et al., 2018</xref>). In particular:</p>
+      <list list-type="bullet">
+        <list-item>
+          <p><bold>reproducible code</bold>: everything is provided to
+          exactly reproduce our experiments and display our results.</p>
+        </list-item>
+        <list-item>
+          <p><bold>pre-trained models</bold>: we provide pre-trained
+          weights that allow a user to use the model right away or
+          fine-tune it on user-provided data
+          (<xref alt="Stöter &amp; Liutkus, 2019c" rid="ref-umx" ref-type="bibr">Stöter
+          &amp; Liutkus, 2019c</xref>,
+          <xref alt="2019d" rid="ref-umxhq" ref-type="bibr">2019d</xref>).</p>
+        </list-item>
+        <list-item>
+          <p><bold>tests</bold>: the release includes unit and
+          regression tests, useful to organize future open collaboration
+          using pull requests.</p>
+        </list-item>
+      </list>
+    </sec>
+  </sec>
+  <sec id="results">
+    <title>Results</title>
+    <fig>
+      <caption><p>Boxplots of evaluation results of the
+      <monospace>UMX</monospace> model compared with other methods from
+      (<xref alt="Stöter et al., 2018" rid="ref-sisec18" ref-type="bibr">Stöter
+      et al., 2018</xref>) (methods that did not only use MUSDB18 for
+      training were
+      omitted)<styled-content id="boxplot"></styled-content></p></caption>
+      <graphic mimetype="application" mime-subtype="pdf" xlink:href="boxplot.pdf" xlink:title="" />
+    </fig>
+    <p><italic>Open-Unmix</italic> is based on the bi-directional LSTM
+    model from
+    (<xref alt="Uhlich et al., 2017" rid="ref-uhlich17" ref-type="bibr">Uhlich
+    et al., 2017</xref>) and we compared it to other separation models
+    that were submitted to the last SiSEC contest
+    (<xref alt="Stöter et al., 2018" rid="ref-sisec18" ref-type="bibr">Stöter
+    et al., 2018</xref>). The results of <monospace>UMX</monospace> are
+    depicted in <xref alt="1" rid="boxplot">1</xref>. It can be seen
+    that our proposed model reaches state-of-the-art results. There is
+    no statistically significant difference between the best method
+    <monospace>TAK1</monospace> and <monospace>UMX</monospace>. Because
+    <monospace>TAK1</monospace> is not released as open-source, this
+    indicates that <italic>Open-Unmix</italic> is the current
+    state-of-the-art open-source source separation system.</p>
+  </sec>
+</sec>
+<sec id="community">
+  <title>Community</title>
+  <p>Open-Unmix was developed by Fabian-Robert Stöter and Antoine
+  Liutkus at Inria Montpellier. The research concerning the deep neural
+  network architecture as well as the training process was done in close
+  collaboration with Stefan Uhlich and Yuki Mitsufuji from Sony
+  Corporation.</p>
+  <p>In the future, we hope the software will be well received by the
+  community. <italic>Open-Unmix</italic> is part of an ecosystem of
+  software, datasets, and online resources: the <bold>sigsep</bold>
+  community.</p>
+  <p>First, we provide MUSDB18
+  (<xref alt="Rafii et al., 2017" rid="ref-rafii17" ref-type="bibr">Rafii
+  et al., 2017</xref>) and MUSDB18-HQ
+  (<xref alt="Rafii et al., 2019" rid="ref-musdb18hq" ref-type="bibr">Rafii
+  et al., 2019</xref>) which are the largest freely available datasets;
+  this comes with a complete toolchain to easily parse and read the
+  datasets
+  (<xref alt="Stöter &amp; Liutkus, 2019b" rid="ref-musdb" ref-type="bibr">Stöter
+  &amp; Liutkus, 2019b</xref>). We maintain <italic>museval</italic>,
+  the most used evaluation package for source separation
+  (<xref alt="Stöter &amp; Liutkus, 2019a" rid="ref-museval" ref-type="bibr">Stöter
+  &amp; Liutkus, 2019a</xref>). We also are the organizers of the
+  largest source separation evaluation campaign such as
+  (<xref alt="Stöter et al., 2018" rid="ref-sisec18" ref-type="bibr">Stöter
+  et al., 2018</xref>). In addition, we implemented a reference
+  implementation using a multi-channel Wiener filter, released in
+  (<xref alt="Liutkus &amp; Stöter, 2019" rid="ref-norbert" ref-type="bibr">Liutkus
+  &amp; Stöter, 2019</xref>). The <monospace>sigsep</monospace>
+  community is organized and presented on its
+  <ext-link ext-link-type="uri" xlink:href="https://sigsep.github.com">own
+  website</ext-link>. <italic>Open-Unmix</italic> itself can be found on
+  <ext-link ext-link-type="uri" xlink:href="https://open.unmix.app">https://open.unmix.app</ext-link>,
+  which links to all other relevant sites and provides further
+  information, such as audio demos.</p>
+  <sec id="outlook">
+    <title>Outlook</title>
+    <p><italic>Open-Unmix</italic> is a community-focused project. We
+    therefore encourage the community to submit bug-fixes and comments
+    and improve the computational performance. However, we are not
+    looking for changes that only focus on improving the separation
+    performance as this would be out of scope for a baseline
+    implementation. Instead, we expect many researchers will fork the
+    software as a basis for their research and the documentation
+    explicates several custom options to extend the code (shown
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/sigsep/open-unmix-pytorch/blob/master/docs/extensions.md">here</ext-link>).</p>
+  </sec>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-weninger11">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Weninger</surname><given-names>F.</given-names></name>
+          <name><surname>Lehmann</surname><given-names>A.</given-names></name>
+          <name><surname>Schuller</surname><given-names>B.</given-names></name>
+        </person-group>
+        <article-title>OpenBliSSART: Design and evaluation of a research toolkit for blind source separation in audio recognition tasks</article-title>
+        <source>Proc. IEEE intl. Conf. On acoustics, speech and signal processing (ICASSP)</source>
+        <year iso-8601-date="2011-05">2011</year><month>05</month>
+        <volume></volume>
+        <issn>2379-190X</issn>
+        <pub-id pub-id-type="doi">10.1109/ICASSP.2011.5946809</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-norbert">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Liutkus</surname><given-names>Antoine</given-names></name>
+          <name><surname>Stöter</surname><given-names>Fabian-Robert</given-names></name>
+        </person-group>
+        <article-title>sigsep/norbert: v0.2.1</article-title>
+        <year iso-8601-date="2019-09">2019</year><month>09</month>
+        <uri>https://doi.org/10.5281/zenodo.3386463</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3386463</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-musdb18hq">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Rafii</surname><given-names>Zafar</given-names></name>
+          <name><surname>Liutkus</surname><given-names>Antoine</given-names></name>
+          <name><surname>Stöter</surname><given-names>Fabian-Robert</given-names></name>
+          <name><surname>Mimilakis</surname><given-names>Stylianos Ioannis</given-names></name>
+          <name><surname>Bittner</surname><given-names>Rachel</given-names></name>
+        </person-group>
+        <article-title>MUSDB18-HQ - an uncompressed version of MUSDB18</article-title>
+        <year iso-8601-date="2019-08">2019</year><month>08</month>
+        <uri>https://doi.org/10.5281/zenodo.3338373</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3338373</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-openunmixpytorch">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Stöter</surname><given-names>Fabian-Robert</given-names></name>
+          <name><surname>Liutkus</surname><given-names>Antoine</given-names></name>
+        </person-group>
+        <article-title>sigsep/open-unmix-pytorch: Initial release of Open-Unmix</article-title>
+        <year iso-8601-date="2019-08">2019</year><month>08</month>
+        <uri>https://doi.org/10.5281/zenodo.3382104</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3382104</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-umx">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Stöter</surname><given-names>Fabian-Robert</given-names></name>
+          <name><surname>Liutkus</surname><given-names>Antoine</given-names></name>
+        </person-group>
+        <article-title>Open-unmix-pytorch UMX</article-title>
+        <year iso-8601-date="2019-08">2019</year><month>08</month>
+        <uri>https://doi.org/10.5281/zenodo.3370486</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3370486</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-umxhq">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Stöter</surname><given-names>Fabian-Robert</given-names></name>
+          <name><surname>Liutkus</surname><given-names>Antoine</given-names></name>
+        </person-group>
+        <article-title>Open-unmix-pytorch UMX-HQ</article-title>
+        <year iso-8601-date="2019-08">2019</year><month>08</month>
+        <uri>https://doi.org/10.5281/zenodo.3370489</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3370489</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-museval">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Stöter</surname><given-names>Fabian-Robert</given-names></name>
+          <name><surname>Liutkus</surname><given-names>Antoine</given-names></name>
+        </person-group>
+        <article-title>sigsep/sigsep-mus-eval: v0.3.0</article-title>
+        <year iso-8601-date="2019-06">2019</year><month>06</month>
+        <uri>https://doi.org/10.5281/zenodo.3261102</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3261102</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-musdb">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Stöter</surname><given-names>Fabian-Robert</given-names></name>
+          <name><surname>Liutkus</surname><given-names>Antoine</given-names></name>
+        </person-group>
+        <article-title>sigsep/sigsep-mus-db: v0.1.7</article-title>
+        <year iso-8601-date="2019-07">2019</year><month>07</month>
+        <uri>https://doi.org/10.5281/zenodo.3271451</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3271451</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-manilow18">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Manilow</surname><given-names>E.</given-names></name>
+          <name><surname>Seetharaman</surname><given-names>P.</given-names></name>
+          <name><surname>Pardo</surname><given-names>B.</given-names></name>
+        </person-group>
+        <article-title>The northwestern university source separation library.</article-title>
+        <source>ISMIR</source>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-ozerov2011general">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ozerov</surname><given-names>Alexey</given-names></name>
+          <name><surname>Vincent</surname><given-names>Emmanuel</given-names></name>
+          <name><surname>Bimbot</surname><given-names>Frédéric</given-names></name>
+        </person-group>
+        <article-title>A general flexible framework for the handling of prior information in audio source separation</article-title>
+        <source>IEEE Transactions on Audio, Speech, and Language Processing</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <volume>20</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1109/TASL.2011.2172425</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-salaun14">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Salaün</surname><given-names>Yann</given-names></name>
+          <name><surname>Vincent</surname><given-names>Emmanuel</given-names></name>
+          <name><surname>Bertin</surname><given-names>Nancy</given-names></name>
+          <name><surname>Souviraà-Labastie</surname><given-names>Nathan</given-names></name>
+          <name><surname>Jaureguiberry</surname><given-names>Xabier</given-names></name>
+          <name><surname>Tran</surname><given-names>Dung T.</given-names></name>
+          <name><surname>Bimbot</surname><given-names>Frédéric</given-names></name>
+        </person-group>
+        <article-title>The Flexible Audio Source Separation Toolbox Version 2.0</article-title>
+        <publisher-name>ICASSP</publisher-name>
+        <year iso-8601-date="2014-05">2014</year><month>05</month>
+        <uri>https://hal.inria.fr/hal-00957412</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-roma16">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Roma</surname><given-names>Gerard</given-names></name>
+          <name><surname>Grais</surname><given-names>Emad M</given-names></name>
+          <name><surname>Simpson</surname><given-names>AJ</given-names></name>
+          <name><surname>Sobieraj</surname><given-names>Iwona</given-names></name>
+          <name><surname>Plumbley</surname><given-names>Mark D</given-names></name>
+        </person-group>
+        <article-title>Untwist: A new toolbox for audio source separation</article-title>
+        <source>Extended abstracts for the late-breaking demo session of the 17th international society for music information retrieval conference, ISMIR</source>
+        <year iso-8601-date="2016">2016</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-chandna17">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Chandna</surname><given-names>P.</given-names></name>
+          <name><surname>Miron</surname><given-names>M.</given-names></name>
+          <name><surname>Janer</surname><given-names>J.</given-names></name>
+          <name><surname>Gómez</surname><given-names>E.</given-names></name>
+        </person-group>
+        <article-title>Monoaural audio source separation using deep convolutional neural networks</article-title>
+        <source>Latent variable analysis and signal separation</source>
+        <year iso-8601-date="2017">2017</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-53547-0_25</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sisec10">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Vincent</surname><given-names>Emmanuel</given-names></name>
+          <name><surname>Araki</surname><given-names>Shoko</given-names></name>
+          <name><surname>Theis</surname><given-names>Fabian J.</given-names></name>
+          <name><surname>Nolte</surname><given-names>Guido</given-names></name>
+          <name><surname>Bofill</surname><given-names>Pau</given-names></name>
+          <name><surname>Sawada</surname><given-names>Hiroshi</given-names></name>
+          <name><surname>Ozerov</surname><given-names>Alexey</given-names></name>
+          <name><surname>Gowreesunker</surname><given-names>Vikrham</given-names></name>
+          <name><surname>Lutter</surname><given-names>Dominik</given-names></name>
+          <name><surname>Duong</surname><given-names>Ngoc Q. K.</given-names></name>
+        </person-group>
+        <article-title>The signal separation evaluation campaign (2007-2010): Achievements and remaining challenges</article-title>
+        <source>j_sp</source>
+        <year iso-8601-date="2012-08">2012</year><month>08</month>
+        <volume>92</volume>
+        <issue>8</issue>
+        <pub-id pub-id-type="doi">10.1016/j.sigpro.2011.10.007</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sisec11">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Araki</surname><given-names>Shoko</given-names></name>
+          <name><surname>Nesta</surname><given-names>Francesco</given-names></name>
+          <name><surname>Vincent</surname><given-names>Emmanuel</given-names></name>
+          <name><surname>Koldovsky</surname><given-names>Zbynek</given-names></name>
+          <name><surname>Nolte</surname><given-names>Guido</given-names></name>
+          <name><surname>Ziehe</surname><given-names>Andreas</given-names></name>
+          <name><surname>Benichoux</surname><given-names>Alexis</given-names></name>
+        </person-group>
+        <article-title>The 2011 signal separation evaluation campaign (SiSEC2011): - audio source separation -</article-title>
+        <source>10th international conference on latent variable analysis and signal separation</source>
+        <year iso-8601-date="2012">2012</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-642-28551-6_51</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sisec13">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Ono</surname><given-names>Nobutaka</given-names></name>
+          <name><surname>Koldovsky</surname><given-names>Zbynek</given-names></name>
+          <name><surname>Miyabe</surname><given-names>Shigeki</given-names></name>
+          <name><surname>Ito</surname><given-names>Nobutaka</given-names></name>
+        </person-group>
+        <article-title>The 2013 signal separation evaluation campaign</article-title>
+        <source>Proc. IEEE international workshop on machine learning for signal processing (MLSP)</source>
+        <year iso-8601-date="2013">2013</year>
+        <pub-id pub-id-type="doi">10.1109/MLSP.2013.6661988</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sisec15">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Ono</surname><given-names>Nobutaka</given-names></name>
+          <name><surname>Rafii</surname><given-names>Zafar</given-names></name>
+          <name><surname>Kitamura</surname><given-names>Daichi</given-names></name>
+          <name><surname>Ito</surname><given-names>Nobutaka</given-names></name>
+          <name><surname>Liutkus</surname><given-names>Antoine</given-names></name>
+        </person-group>
+        <article-title>The 2015 signal separation evaluation campaign</article-title>
+        <source>Proc. Intl. Conference on latent variable analysis and signal separation (LVA/ICA)</source>
+        <publisher-loc>Liberec, Czech Republic,</publisher-loc>
+        <year iso-8601-date="2015-08">2015</year><month>08</month>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-22482-4_45</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sisec16">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Liutkus</surname><given-names>Antoine</given-names></name>
+          <name><surname>Stöter</surname><given-names>Fabian-Robert</given-names></name>
+          <name><surname>Rafii</surname><given-names>Zafar</given-names></name>
+          <name><surname>Kitamura</surname><given-names>Daichi</given-names></name>
+          <name><surname>Rivet</surname><given-names>Bertrand</given-names></name>
+          <name><surname>Ito</surname><given-names>Nobutaka</given-names></name>
+          <name><surname>Ono</surname><given-names>Nobutaka</given-names></name>
+          <name><surname>Fontecave</surname><given-names>Julie</given-names></name>
+        </person-group>
+        <article-title>The 2016 signal separation evaluation campaign</article-title>
+        <source>Proc. Intl. Conference on latent variable analysis and signal separation (LVA/ICA)</source>
+        <publisher-name>Springer International Publishing</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-53547-0_31</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sisec18">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Stöter</surname><given-names>Fabian-Robert</given-names></name>
+          <name><surname>Liutkus</surname><given-names>Antoine</given-names></name>
+          <name><surname>Ito</surname><given-names>Nobutaka</given-names></name>
+        </person-group>
+        <article-title>The 2018 signal separation evaluation campaign</article-title>
+        <source>Latent variable analysis and signal separation: 14th international conference, LVA/ICA 2018, surrey, UK</source>
+        <year iso-8601-date="2018">2018</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-93764-9_28</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-amodei16">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Amodei</surname><given-names>D.</given-names></name>
+          <name><surname>Anubhai</surname><given-names>R.</given-names></name>
+          <name><surname>Battenberg</surname><given-names>E.</given-names></name>
+          <name><surname>Case</surname><given-names>C.</given-names></name>
+          <name><surname>Casper</surname><given-names>J.</given-names></name>
+          <name><surname>Catanzaro</surname><given-names>B.</given-names></name>
+          <name><surname>Chen</surname><given-names>J.</given-names></name>
+          <name><surname>Chrzanowski</surname><given-names>M.</given-names></name>
+          <name><surname>Coates</surname><given-names>A.</given-names></name>
+          <name><surname>Diamos</surname><given-names>G.</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Deep speech 2: End-to-end speech recognition in English and Mandarin</article-title>
+        <source>ICML</source>
+        <year iso-8601-date="2016">2016</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-rafii17">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Rafii</surname><given-names>Zafar</given-names></name>
+          <name><surname>Liutkus</surname><given-names>Antoine</given-names></name>
+          <name><surname>Stöter</surname><given-names>Fabian-Robert</given-names></name>
+          <name><surname>Mimilakis</surname><given-names>Stylianos Ioannis</given-names></name>
+          <name><surname>Bittner</surname><given-names>Rachel</given-names></name>
+        </person-group>
+        <article-title>MUSDB18, a corpus for audio source separation</article-title>
+        <year iso-8601-date="2017-12">2017</year><month>12</month>
+        <uri>https://sigsep.github.io/musdb</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.1117372</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-cano19">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cano</surname><given-names>E.</given-names></name>
+          <name><surname>FitzGerald</surname><given-names>D.</given-names></name>
+          <name><surname>Liutkus</surname><given-names>A.</given-names></name>
+          <name><surname>Plumbley</surname><given-names>M. D.</given-names></name>
+          <name><surname>Stöter</surname><given-names>F.</given-names></name>
+        </person-group>
+        <article-title>Musical source separation: An introduction</article-title>
+        <source>IEEE Signal Processing Magazine</source>
+        <year iso-8601-date="2019-01">2019</year><month>01</month>
+        <volume>36</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1109/MSP.2018.2874719</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-uhlich17">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Uhlich</surname><given-names>S.</given-names></name>
+          <name><surname>Porcu</surname><given-names>M.</given-names></name>
+          <name><surname>Giron</surname><given-names>F.</given-names></name>
+          <name><surname>Enenkl</surname><given-names>M.</given-names></name>
+          <name><surname>Kemp</surname><given-names>T.</given-names></name>
+          <name><surname>Takahashi</surname><given-names>N.</given-names></name>
+          <name><surname>Mitsufuji</surname><given-names>Y.</given-names></name>
+        </person-group>
+        <article-title>Improving music source separation based on deep neural networks through data augmentation and network blending</article-title>
+        <source>Icassp</source>
+        <publisher-loc>New Orleans, LA, USA</publisher-loc>
+        <year iso-8601-date="2017-03">2017</year><month>03</month>
+        <pub-id pub-id-type="doi">10.1109/ICASSP.2017.7952158</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-uhlich15">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Uhlich</surname><given-names>S.</given-names></name>
+          <name><surname>Giron</surname><given-names>F.</given-names></name>
+          <name><surname>Mitsufuji</surname><given-names>Y.</given-names></name>
+        </person-group>
+        <article-title>Deep neural network based instrument extraction from music</article-title>
+        <source>Icassp</source>
+        <year iso-8601-date="2015-04">2015</year><month>04</month>
+        <pub-id pub-id-type="doi">10.1109/ICASSP.2015.7178348</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-stoller18">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Stoller</surname><given-names>Daniel</given-names></name>
+          <name><surname>Ewert</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Dixon</surname><given-names>Simon</given-names></name>
+        </person-group>
+        <article-title>Wave-u-net: A multi-scale neural network for end-to-end audio source separation</article-title>
+        <source>arXiv preprint arXiv:1806.03185</source>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-mcfee2018open">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>McFee</surname><given-names>Brian</given-names></name>
+          <name><surname>Kim</surname><given-names>Jong Wook</given-names></name>
+          <name><surname>Cartwright</surname><given-names>Mark</given-names></name>
+          <name><surname>Salamon</surname><given-names>Justin</given-names></name>
+          <name><surname>Bittner</surname><given-names>Rachel M</given-names></name>
+          <name><surname>Bello</surname><given-names>Juan Pablo</given-names></name>
+        </person-group>
+        <article-title>Open-source practices for music signal processing research: Recommendations for transparent, sustainable, and reproducible audio research</article-title>
+        <source>IEEE Signal Processing Magazine</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>36</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1109/MSP.2018.2875349</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

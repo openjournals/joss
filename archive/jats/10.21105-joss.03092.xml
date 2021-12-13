@@ -1,0 +1,578 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3092</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03092</article-id>
+<title-group>
+<article-title>bleiglas: An R package for interpolation and
+visualisation of spatiotemporal data with 3D
+tessellation</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-3448-5715</contrib-id>
+<string-name>Clemens Schmid</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1017-9150</contrib-id>
+<string-name>Stephan Schiffels</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Archaeogenetics, Max Planck Institute for the
+Science of Human History, Kahlaische Strasse 10, 07745 Jena,
+Germany</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-02-11">
+<day>11</day>
+<month>2</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>60</issue>
+<fpage>3092</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>3D data analysis</kwd>
+<kwd>Tessellation</kwd>
+<kwd>Voronoi diagrams</kwd>
+<kwd>Spatiotemporal analysis</kwd>
+<kwd>Archaeology</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="background">
+  <title>Background</title>
+  <p>The open source software library
+  <ext-link ext-link-type="uri" xlink:href="http://math.lbl.gov/voro++">Voro++</ext-link>
+  (<xref alt="Rycroft, 2009" rid="ref-Rycroft2009-rp" ref-type="bibr">Rycroft,
+  2009</xref>) allows fast calculation of Voronoi diagrams in three
+  dimensions. Voronoi diagrams are a special form of tessellation (i.e.,
+  filling space with geometric shapes without gaps or overlaps) where
+  each polygon is defined as the area closest to one particular seed
+  point. Imagine a volume in three dimensional space and an arbitrary
+  distribution of unique points within this volume. Voro++ creates a
+  polygon around each point so that everything within this polygon is
+  closest to the corresponding point and farther away from every other
+  point.</p>
+  <p>Voronoi tessellation has useful applications in all kinds of
+  scientific contexts spanning astronomy (e.g., Paranjape &amp; Alam
+  (<xref alt="2020" rid="ref-Paranjape2020-sg" ref-type="bibr">2020</xref>)),
+  material science (e.g., Tsuru et al.
+  (<xref alt="2020" rid="ref-Tsuru2020-ep" ref-type="bibr">2020</xref>)),
+  and geography (e.g., Liu et al.
+  (<xref alt="2019" rid="ref-Liu2019-fw" ref-type="bibr">2019</xref>)).
+  In computational and landscape archaeology, Delaunay triangulation and
+  Voronoi diagrams have also been applied
+  (<xref alt="Nakoinz &amp; Knitter, 2016" rid="ref-Nakoinz2016-bq" ref-type="bibr">Nakoinz
+  &amp; Knitter, 2016</xref>), but to our knowledge, mostly limited to
+  an entirely spatial 2D perspective. 3D tessellation could be employed
+  here to add a third dimension, most intriguingly a temporal one. This
+  could allow for new methods of spatiotemporal data interpolation,
+  analysis, and visualisation.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>The <monospace>bleiglas</monospace> R package serves as an R
+  interface to the Voro++ command line tool. It adds a number of utility
+  functions for particular data manipulation applications, including but
+  not limited to automatic 2D cutting of the 3D Voro++ output for
+  subsequent mapping and grid sampling for position and value
+  uncertainty mitigation. The relevant workflows are explained below.
+  Although we wrote this package for our own needs in archaeology and
+  archaeogenetics, the code is by no means restricted to data from these
+  fields, just as Voronoi tessellation is a generic, subject-agnostic
+  method with a huge range of use cases.</p>
+  <p>Voronoi tessellation is implemented in many R packages, perhaps
+  most prominently in the deldir (<italic>Delaunay Triangulation and
+  Dirichlet (Voronoi) Tessellation</italic>)
+  (<xref alt="Turner, 2021" rid="ref-Turner2021" ref-type="bibr">Turner,
+  2021</xref>) and tripack (<italic>Triangulation of Irregularly Spaced
+  Data</italic>)
+  (<xref alt="Gebhardt et al., 2020" rid="ref-Gebhardt2020" ref-type="bibr">Gebhardt
+  et al., 2020</xref>) packages, which were specifically designed for
+  this application. ggvoronoi (<italic>Voronoi Diagrams and Heatmaps
+  with ‘ggplot2’</italic>)
+  (<xref alt="Garrett et al., 2018" rid="ref-Garrett2018" ref-type="bibr">Garrett
+  et al., 2018</xref>) and <monospace>dismo::voronoi()</monospace>
+  (<xref alt="Hijmans et al., 2020" rid="ref-Hijmans2020" ref-type="bibr">Hijmans
+  et al., 2020</xref>) build on deldir. Other implementations such as
+  <monospace>sf::st_voronoi()</monospace>
+  (<xref alt="Pebesma, 2018" rid="ref-Pebesma2018" ref-type="bibr">Pebesma,
+  2018</xref>) and <monospace>geos::geos_voronoi_polygons()</monospace>
+  (<xref alt="Dunnington &amp; Pebesma, 2021" rid="ref-Dunnington2021" ref-type="bibr">Dunnington
+  &amp; Pebesma, 2021</xref>) rely on the
+  <ext-link ext-link-type="uri" xlink:href="https://trac.osgeo.org/geos">GEOS
+  library</ext-link>
+  (<xref alt="GEOS Development Team, 2021" rid="ref-geos2021" ref-type="bibr">GEOS
+  Development Team, 2021</xref>). All of these packages and functions
+  focus on 2D data, and to our knowledge, none offer a toolset to handle
+  3D Voronoi diagrams comparable to that introduced with
+  <monospace>bleiglas</monospace>.</p>
+</sec>
+<sec id="core-functionality">
+  <title>Core functionality</title>
+  <p><monospace>bleiglas</monospace> provides the
+  <monospace>bleiglas::tessellate()</monospace> function, which is a
+  command line utility wrapper for Voro++. It requires Voro++ to be
+  installed locally. <monospace>tessellate()</monospace> takes input
+  points in the form of a <monospace>data.frame</monospace> with an
+  integer ID and three numeric coordinate columns. Additional Voro++
+  <ext-link ext-link-type="uri" xlink:href="http://math.lbl.gov/voro++/doc/cmd.html">options</ext-link>
+  can be set with a character argument <monospace>options</monospace>
+  and only the
+  <ext-link ext-link-type="uri" xlink:href="http://math.lbl.gov/voro++/doc/custom.html">output
+  format definition</ext-link> (<monospace>-c</monospace>) is lifted to
+  an extra character argument <monospace>output_definition</monospace>.
+  <monospace>tessellate()</monospace> returns a character vector
+  containing the raw output of Voro++ with one vector element
+  corresponding to one row. Depending on the structure of this raw
+  output, different parsing functions are required to transform it to a
+  useful R object. At the moment, <monospace>bleiglas</monospace>
+  provides one such function:
+  <monospace>bleiglas::read_polygon_edges()</monospace>. It is
+  configured to read data produced with the Voro++ output format string
+  <monospace>%i*%P*%t</monospace>, which returns polygon edge
+  coordinates. These are necessary for the default
+  <monospace>bleiglas</monospace> workflow illustrated in the example
+  below. Future versions of the package may include other parsing
+  functions for different pipelines.</p>
+  <p>The output of <monospace>read_polygon_edges()</monospace> is (for
+  performance reasons) a <monospace>data.table</monospace>
+  (<xref alt="Dowle &amp; Srinivasan, 2019" rid="ref-Dowle2019" ref-type="bibr">Dowle
+  &amp; Srinivasan, 2019</xref>) object that can be used with
+  <monospace>bleiglas::cut_polygons()</monospace>. This function now
+  shoulders the core task of cutting the 3D, polgyon-filled Voro++
+  output box into 2D slices. 3D data is notoriously difficult to plot
+  and read. Extracting and visualizing slices is therefore
+  indispensable. The necessary algorithm for each 3D polygon can be
+  summarised as finding the cutting point of each polygon edge line with
+  the requested cutting surface and then defining the convex hull of the
+  cutting points as a result 2D polygon. We implemented the
+  line-segment-plane-intersection operation via Rcpp
+  (<xref alt="Eddelbuettel &amp; Balamuta, 2017" rid="ref-Eddelbuettel2017" ref-type="bibr">Eddelbuettel
+  &amp; Balamuta, 2017</xref>) in C++ for better performance and used
+  <monospace>grDevices::chull()</monospace> for the convex hull search.
+  The output of <monospace>cut_polygons()</monospace> is a list (for
+  each cut surface) of lists (for each polygon) of
+  <monospace>data.table</monospace>s (3D coordinates for each 2D cutting
+  point). Optionally, and in case of horizontal (z-axis) cuts with
+  spatial coordinates on the x- and y-axis, this output can be
+  transformed to an <monospace>sf</monospace>
+  (<xref alt="Pebesma, 2018" rid="ref-Pebesma2018" ref-type="bibr">Pebesma,
+  2018</xref>) object via
+  <monospace>bleiglas::cut_polygons_to_sf()</monospace>. This
+  significantly simplifies subsequent map plotting.</p>
+  <p>The final core function of <monospace>bleiglas</monospace> is
+  <monospace>bleiglas::predict_grid()</monospace>, which paves the way
+  for more complex applications and data subject to a higher degree of
+  positional uncertainty. It employs the tessellation output to predict
+  values at arbitrary positions by determining in which 3D polygons they
+  are located. Therefore <monospace>bleiglas::predict_grid()</monospace>
+  should theoretically mimic the outcome of a nearest neighbor search,
+  but is fully implemented with the above mentioned tessellation
+  workflow. The core algorithm
+  <monospace>bleiglas::attribute_grid_points_to_polygons()</monospace>
+  uses <monospace>cut_polygons()</monospace> to cut the tessellation
+  volume at the z-axis level for each prediction point. It then checks
+  in which 2D polygon the point is located to attribute it accordingly.
+  This is done with custom C++ code initially developed for our
+  recexcavAAR package
+  (<xref alt="Schmid &amp; Serbe, 2017" rid="ref-Schmid2017" ref-type="bibr">Schmid
+  &amp; Serbe, 2017</xref>).
+  <monospace>bleiglas::predict_grid()</monospace> can be used to
+  automatically rerun tessellation multiple times for data with
+  uncertain position in one or multiple of the three dimensions. In this
+  case the resulting wiggling of input points and therefore output
+  polygons is recorded with the static prediction grid. Different
+  per-prediction-point observations in the grid can eventually be
+  summarised to calculate mean outcomes and deviation. One concrete
+  archaeological application of this feature is temporal resampling from
+  post-calibration radiocarbon age probability distributions.</p>
+  <p>A prerequisite for performing tessellation in three dimensions is
+  the normalisation or mapping of length units across three dimensions.
+  If all three dimensions have the same units (as is the case for 3D
+  spatial data), this is not an issue, and tessellation works as
+  expected. However, if dimensions have different units, the outcome and
+  meaning of the tessellation depends crucially on how these units are
+  mapped to each other. This is the case for spatiotemporal data, in
+  which one axis denotes time and the other two axes denote a 2D spatial
+  position. In such cases it is critical to use external information to
+  inform on an appropriate scaling. For example, one might set 1 km to
+  correspond to 1 year, in which case two contemporaneous points 100 km
+  apart are considered “as close as” two points 100 years apart. What
+  scaling to use clearly depends on the dataset and how to query it.</p>
+</sec>
+<sec id="example-burial-rite-distributions-in-bronze-age-europe">
+  <title>Example: Burial rite distributions in Bronze Age Europe</title>
+  <p>One strength of <monospace>bleiglas</monospace> is visualisation of
+  spatiotemporal data. Here we show an example of Bronze Age burial
+  rites as measured on radiocarbon dates from burials in Central,
+  Northern, and Northwestern Europe between 2200 and 800 calBC.
+  Information about source data (taken from the
+  <ext-link ext-link-type="uri" xlink:href="https://radon-b.ufg.uni-kiel.de">RADON-B
+  database</ext-link>
+  (<xref alt="Kneisel et al., 2013" rid="ref-kneiselRadonB2013" ref-type="bibr">Kneisel
+  et al., 2013</xref>)), data preparation, and meaning are presented in
+  Schmid
+  (<xref alt="2019" rid="ref-Schmid2019" ref-type="bibr">2019</xref>). A
+  vignette in <monospace>bleiglas</monospace>
+  (<monospace>vignette(&quot;bleiglas_case_study&quot;)</monospace>)
+  contains the complete code to reproduce the following figures.</p>
+  <p>Bronze Age burials can be classified by two main aspects:
+  inhumation vs. cremation (<italic>burial type</italic>) and flat grave
+  vs. burial mound (<italic>burial construction</italic>).
+  <xref alt="Figure 1" rid="figU003Aplot_map">Figure 1</xref> is a map
+  of burials through time for which we have some information about these
+  variables. Each grave has a position in space (coordinates) and in
+  time (median calibrated radiocarbon age). For
+  <xref alt="Figure 2" rid="figU003Aplot_3D">Figure 2</xref> and
+  <xref alt="Figure 3" rid="figU003Aplot_bleiglas">Figure 3</xref>, we
+  only look at the <italic>burial type</italic> aspect. The burials are
+  distributed in a three dimensional, spatiotemporal space and therefore
+  can be subjected to Voronoi tessellation with Voro++. As detailed
+  above, the outcome depends on the relative scaling of the input
+  dimensions - for this example we choose <inline-formula><alternatives>
+  <tex-math><![CDATA[1\text{kilometer}=1\text{year}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>1</mml:mn><mml:mtext mathvariant="normal">kilometer</mml:mtext><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mtext mathvariant="normal">year</mml:mtext></mml:mrow></mml:math></alternatives></inline-formula>,
+  informed by some intuition about the range of human movement through
+  time.</p>
+  <p>For
+  <xref alt="Figure 3" rid="figU003Aplot_bleiglas">Figure 3</xref> we
+  cut these polygons into 2D time slices that can be visualized in a map
+  matrix (<italic>bleiglas plot</italic>). We believe this matrix is a
+  visually appealing and highly informative way to communicate processes
+  derived from 3D point patterns. It conveys both the main trends (here,
+  the general switch from inhumation to cremation from the Middle Bronze
+  Age onwards) as well as how much data is available in certain areas
+  and periods. The latter is especially relevant regarding the derived
+  question which resolution could be expected from a model based on this
+  input data.</p>
+  <p>For the final
+  <xref alt="[fig:plot_prediction_grid]" rid="figU003Aplot_prediction_grid">[fig:plot_prediction_grid]</xref>,
+  we applied temporal resampling with
+  <monospace>bleiglas::predict_grid()</monospace> to record
+  observational error caused by radiocarbon dating uncertainty. For
+  reasons of computational performance we kept the number of resampling
+  runs and the spatial resolution in this example low. Nevertheless the
+  advantages of the resampling approach are easily seen: areas and
+  periods with uncertain attribution to one burial type or the other are
+  indicated as such.</p>
+  <fig>
+    <caption><p>Graves in the research area (rectangular frame) dating
+    between 2200 and 800 calBC as extracted from the . The classes of
+    the variable burial type are distinguished by colour; the ones of
+    burial construction by shape. The map projection is EPSG:102013
+    (Europe Albers Equal Area Conic) and the base layer data is taken
+    from the
+    .<styled-content id="figU003Aplot_map"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="jpeg" xlink:href="03_map_plot.jpeg" xlink:title="" />
+  </fig>
+  <fig>
+    <caption><p>Graves in 3D space defined by two spatial (x and y in
+    km) and one temporal (z in years calBC) dimensions with Voronoi
+    polygons constructed by Voro++. Each red dot represents one grave
+    with known burial type, the fine black lines the edges of the result
+    polygons, and the rectangular wireframe box the research area now in
+    space and
+    time.<styled-content id="figU003Aplot_3D"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="jpeg" xlink:href="05_3D_plot.jpeg" xlink:title="" />
+  </fig>
+  <fig>
+    <caption><p><italic>bleiglas plot</italic>. Map matrix of 2D cuts
+    through 3D Voronoi polygons as presented in
+    <xref alt="Figure 2" rid="figU003Aplot_3D">Figure 2</xref>. Each
+    subplot shows one timeslice between 2200 and 800 calBC. As each 2D
+    polygon belongs to one input grave and data density in some areas
+    and time periods is very low, some graves are represented in
+    multiple subplots. Color coding and map background is as in
+    <xref alt="Figure 1" rid="figU003Aplot_map">Figure 1</xref>.<styled-content id="figU003Aplot_bleiglas"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="jpeg" xlink:href="06_bleiglas_plot.jpeg" xlink:title="" />
+  </fig>
+  <p>![Temporal resampling version of the bleiglas map matrix. 30
+  resampling runs, and a spatial resolution of 100*100 cells in the
+  research area shape bounding box. Color coding and map background
+  again as in
+  <xref alt="Figure 1" rid="figU003Aplot_map">Figure 1</xref>.<styled-content id="figU003Aplot_prediction_grid">[fig:plot_prediction_grid]</styled-content>](07_prediction_grid_plot.jpeg)</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>The package benefitted from valuable comments by Joscha Gretzinger,
+  who also suggested the name <italic>bleiglas</italic> (German
+  <italic>Bleiglasfenster</italic> for English
+  <italic>Leadlight</italic>) inspired by the appearance of the cut
+  surface plots.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Rycroft2009-rp">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rycroft</surname><given-names>Chris H</given-names></name>
+        </person-group>
+        <article-title>Voro++: A three-dimensional Voronoi cell library in C++</article-title>
+        <source>Chaos</source>
+        <year iso-8601-date="2009-12">2009</year><month>12</month>
+        <volume>19</volume>
+        <issue>4</issue>
+        <uri>https://doi.org/10.1063/1.3215722</uri>
+        <pub-id pub-id-type="doi">10.1063/1.3215722</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Tsuru2020-ep">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tsuru</surname><given-names>Tomohito</given-names></name>
+          <name><surname>Shimizu</surname><given-names>Kazuyuki</given-names></name>
+          <name><surname>Yamaguchi</surname><given-names>Masatake</given-names></name>
+          <name><surname>Itakura</surname><given-names>Mitsuhiro</given-names></name>
+          <name><surname>Ebihara</surname><given-names>Kenichi</given-names></name>
+          <name><surname>Bendo</surname><given-names>Artenis</given-names></name>
+          <name><surname>Matsuda</surname><given-names>Kenji</given-names></name>
+          <name><surname>Toda</surname><given-names>Hiroyuki</given-names></name>
+        </person-group>
+        <article-title>Hydrogen-accelerated spontaneous microcracking in high-strength aluminium alloys</article-title>
+        <source>Scientific Reports</source>
+        <year iso-8601-date="2020-04">2020</year><month>04</month>
+        <volume>10</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1038/s41598-020-58834-6</uri>
+        <pub-id pub-id-type="doi">10.1038/s41598-020-58834-6</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Liu2019-fw">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Liu</surname><given-names>Gang</given-names></name>
+          <name><surname>Yao</surname><given-names>Xiaobai</given-names></name>
+          <name><surname>Luo</surname><given-names>Zongming</given-names></name>
+          <name><surname>Kang</surname><given-names>Shunwang</given-names></name>
+          <name><surname>Long</surname><given-names>Wen</given-names></name>
+          <name><surname>Fan</surname><given-names>Qinjin</given-names></name>
+          <name><surname>Gao</surname><given-names>Peichao</given-names></name>
+        </person-group>
+        <article-title>Agglomeration centrality to examine spatial scaling law in cities</article-title>
+        <source>Computers, Environment and Urban Systems</source>
+        <year iso-8601-date="2019-09">2019</year><month>09</month>
+        <volume>77</volume>
+        <uri>https://doi.org/10.1016/j.compenvurbsys.2019.101357</uri>
+        <pub-id pub-id-type="doi">10.1016/j.compenvurbsys.2019.101357</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Paranjape2020-sg">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Paranjape</surname><given-names>Aseem</given-names></name>
+          <name><surname>Alam</surname><given-names>Shadab</given-names></name>
+        </person-group>
+        <article-title>Voronoi volume function: A new probe of cosmology and galaxy evolution</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <publisher-name>Oxford Academic</publisher-name>
+        <year iso-8601-date="2020-07">2020</year><month>07</month>
+        <volume>495</volume>
+        <issue>3</issue>
+        <uri>https://doi.org/10.1093/mnras/staa1379</uri>
+        <pub-id pub-id-type="doi">10.1093/mnras/staa1379</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Nakoinz2016-bq">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Nakoinz</surname><given-names>Oliver</given-names></name>
+          <name><surname>Knitter</surname><given-names>Daniel</given-names></name>
+        </person-group>
+        <source>Modelling human behaviour in landscapes: Basic concepts and modelling elements</source>
+        <publisher-name>Springer International Publishing</publisher-name>
+        <year iso-8601-date="2016-04">2016</year><month>04</month>
+        <uri>https://doi.org/10.1007/978-3-319-29538-1</uri>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-29538-1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Dowle2019">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Dowle</surname><given-names>Matt</given-names></name>
+          <name><surname>Srinivasan</surname><given-names>Arun</given-names></name>
+        </person-group>
+        <source>data.table: Extension of data.frame</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://CRAN.R-project.org/package=data.table</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Eddelbuettel2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Eddelbuettel</surname><given-names>Dirk</given-names></name>
+          <name><surname>Balamuta</surname><given-names>James Joseph</given-names></name>
+        </person-group>
+        <article-title>Extending R with C++: A brief introduction to Rcpp</article-title>
+        <source>PeerJ Preprints</source>
+        <year iso-8601-date="2017-08">2017</year><month>08</month>
+        <volume>5</volume>
+        <issn>2167-9843</issn>
+        <uri>https://doi.org/10.7287/peerj.preprints.3188v1</uri>
+        <pub-id pub-id-type="doi">10.7287/peerj.preprints.3188v1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Pebesma2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pebesma</surname><given-names>Edzer</given-names></name>
+        </person-group>
+        <article-title>Simple Features for R: Standardized Support for Spatial Vector Data</article-title>
+        <source>The R Journal</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>10</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.32614/RJ-2018-009</uri>
+        <pub-id pub-id-type="doi">10.32614/RJ-2018-009</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Schmid2017">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Schmid</surname><given-names>Clemens</given-names></name>
+          <name><surname>Serbe</surname><given-names>Benjamin</given-names></name>
+        </person-group>
+        <source>recexcavAAR: 3D reconstruction of archaeological excavations</source>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://CRAN.R-project.org/package=recexcavAAR</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Schmid2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Schmid</surname><given-names>Clemens</given-names></name>
+        </person-group>
+        <article-title>Evaluating cultural transmission in bronze age burial rites of Central, Northern and Northwestern Europe using radiocarbon data</article-title>
+        <source>Adaptive Behavior</source>
+        <publisher-name>SAGE Publications Ltd STM</publisher-name>
+        <year iso-8601-date="2019-07">2019</year><month>07</month>
+        <uri>https://doi.org/10.1177/1059712319860842</uri>
+        <pub-id pub-id-type="doi">10.1177/1059712319860842</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kneiselRadonB2013">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Kneisel</surname><given-names>Jutta</given-names></name>
+          <name><surname>Hinz</surname><given-names>Martin</given-names></name>
+          <name><surname>Rinne</surname><given-names>Christoph</given-names></name>
+        </person-group>
+        <article-title>Radon-B</article-title>
+        <publisher-name>http://radon-b.ufg.uni-kiel.de.</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Turner2021">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Turner</surname><given-names>Rolf</given-names></name>
+        </person-group>
+        <source>Deldir: Delaunay triangulation and Dirichlet (Voronoi) tessellation</source>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://CRAN.R-project.org/package=deldir</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Gebhardt2020">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Gebhardt</surname><given-names>Albrecht</given-names></name>
+          <name><surname>Renka</surname><given-names>R. J.</given-names></name>
+          <name><surname>Eglen</surname><given-names>Stephen</given-names></name>
+          <name><surname>Zuyev</surname><given-names>Sergei</given-names></name>
+          <name><surname>White</surname><given-names>Denis</given-names></name>
+        </person-group>
+        <source>tripack: Triangulation of irregularly spaced data</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://CRAN.R-project.org/package=tripack</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hijmans2020">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Hijmans</surname><given-names>Robert J.</given-names></name>
+          <name><surname>Phillips</surname><given-names>Steven</given-names></name>
+          <name><surname>Leathwick</surname><given-names>John</given-names></name>
+          <name><surname>Elith</surname><given-names>Jane</given-names></name>
+        </person-group>
+        <source>dismo: Species distribution modeling</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://CRAN.R-project.org/package=dismo</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Garrett2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Garrett</surname><given-names>Robert C.</given-names></name>
+          <name><surname>Nar</surname><given-names>Austin</given-names></name>
+          <name><surname>Fisher</surname><given-names>Thomas J.</given-names></name>
+          <name><surname>Maurer</surname><given-names>Karsten</given-names></name>
+        </person-group>
+        <article-title>ggvoronoi: Voronoi diagrams and heatmaps with ggplot2</article-title>
+        <source>Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>3</volume>
+        <issue>32</issue>
+        <uri>https://doi.org/10.21105/joss.01096</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.01096</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Dunnington2021">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Dunnington</surname><given-names>Dewey</given-names></name>
+          <name><surname>Pebesma</surname><given-names>Edzer</given-names></name>
+        </person-group>
+        <source>geos: Open source geometry engine (’GEOS’) R API</source>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://CRAN.R-project.org/package=geos</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-geos2021">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>GEOS Development Team</string-name>
+        </person-group>
+        <article-title>GEOS - geometry engine, open source</article-title>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://trac.osgeo.org/geos</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

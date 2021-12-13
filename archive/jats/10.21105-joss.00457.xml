@@ -1,0 +1,442 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">457</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00457</article-id>
+<title-group>
+<article-title>A framework for generating interactive reports for cancer
+genome analysis</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9782-5900</contrib-id>
+<string-name>Ai Okada</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Kenichi Chiba</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Hiroko Tanaka</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Satoru Miyano</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-6144-5845</contrib-id>
+<string-name>Yuichi Shiraishi</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Laboratory of DNA Information Analysis, Human Genome
+Center, Institute of Medical Science, The University of Tokyo, Tokyo,
+Japan</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2017-11-13">
+<day>13</day>
+<month>11</month>
+<year>2017</year>
+</pub-date>
+<volume>2</volume>
+<issue>20</issue>
+<fpage>457</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Bioinformatics</kwd>
+<kwd>Visualization</kwd>
+<kwd>Cancer Genome</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>We introduce paplot, the software for generating dynamic reports
+  that are frequently necessary in the post analytical phases of cancer
+  genome studies. The “interactive” nature of the paplot-generated
+  reports enables users to extract much richer information than that
+  obtained from static graphs via most conventional visualization
+  tools.</p>
+</sec>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>The worldwide rapid accumulation of massive cancer genome
+  sequencing data presents an unprecedented opportunity for obtaining
+  enormous biologically and clinically important information. Several
+  analytical tools have been developed for identifying somatic mutations
+  (<xref alt="Koboldt et al., 2012" rid="ref-koboldt2012varscan" ref-type="bibr">Koboldt
+  et al., 2012</xref>;
+  <xref alt="Shiraishi et al., 2013" rid="ref-shiraishi2013empirical" ref-type="bibr">Shiraishi
+  et al., 2013</xref>), structural variations
+  (<xref alt="Rausch et al., 2012" rid="ref-rausch2012delly" ref-type="bibr">Rausch
+  et al., 2012</xref>), and prominent mutation signatures
+  (<xref alt="Shiraishi et al., 2015" rid="ref-shiraishi2015simple" ref-type="bibr">Shiraishi
+  et al., 2015</xref>) and so on. However, the subsequent visualization
+  and interpretation often demand us additional laborious efforts such
+  as formatting and organizing the result tables via additional
+  scripting, as well as graphic manipulation via drawing tools,
+  occasionally with multiple trial-and-error parameter adjustments.
+  Additionally, as many existing tools only provide static figures
+  (<xref alt="Skidmore et al., 2016" rid="ref-skidmore2016genvisr" ref-type="bibr">Skidmore
+  et al., 2016</xref>;
+  <xref alt="Yin et al., 2012" rid="ref-yin2012ggbio" ref-type="bibr">Yin
+  et al., 2012</xref>), it is necessary to again repeatedly execute
+  drawing tools with different settings even for generating slightly
+  different visualizations (e.g., sorting and filtering by specific
+  criteria). Furthermore, even when some interesting characteristics are
+  observed, we often need to bother to refer back to the raw analytical
+  result tables for identifying the samples and the exact values of
+  interest, as these may not be shown in the static figures.</p>
+  <p>Here, we present
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/Genomon-Project/paplot">paplot</ext-link>,
+  a suite of programs to generate various reports for commonly needed
+  tasks in cancer genome analysis. paplot accepts text-based input data
+  and configuration files and generates HTML files with dynamic,
+  interactive data visualizations powered by
+  <ext-link ext-link-type="uri" xlink:href="https://d3js.org">D3.js</ext-link>.
+  By modifying settings in the configuration files, users can freely
+  change various visual aspects such as colors of objects and contents
+  of pop-up windows appearing after DOM events such as mouse-click and
+  mouse-over.</p>
+  <fig>
+    <caption><p>Example of interactive reports created by paplot. (A)
+    Quality Control Report. (B) Chromosomal Aberration Report. (C)
+    Mutation Matrix Report. (D) Mutational Signature
+    Report.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="graphs.png" xlink:title="" />
+  </fig>
+  <sec id="quality-control-report">
+    <title>Quality Control Report</title>
+    <p>Confirming the quality of sequence data (e.g., coverage, insert
+    size and mapping ratio) is a fundamental step in sequence analysis.
+    In many cases, the quality control check is performed by visual
+    inspection of the barplot to check whether there are some samples
+    with strangely heights. However, as adding the X-axis labels for all
+    the samples is not always possible especially when the sample size
+    in the cohort is large, we have to spend excessive time to retrieve
+    the raw table data to identify the samples with the strange
+    features. By using the Quality Control Report generated by paplot
+    (Figure 1A), one can immediately identify such samples via pop-up
+    contents.</p>
+  </sec>
+  <sec id="chromosomal-aberration-report">
+    <title>Chromosomal Aberration Report</title>
+    <p>Chromosomal aberrations play important roles in cancer
+    development
+    (<xref alt="Mitelman et al., 2007" rid="ref-mitelman2007impact" ref-type="bibr">Mitelman
+    et al., 2007</xref>). After characterizing chromosomal aberrations
+    (genomic structural variations from whole genome sequencing data or
+    fusion transcripts from transcriptome sequencing data), it is common
+    to generate a visual overview of chromosomal aberrations, typically
+    using the circos plot
+    (<xref alt="Krzywinski et al., 2009" rid="ref-krzywinski2009circos" ref-type="bibr">Krzywinski
+    et al., 2009</xref>), to examine for certain specific phenomena such
+    as chromothripsis
+    (<xref alt="Stephens et al., 2011" rid="ref-stephens2011massive" ref-type="bibr">Stephens
+    et al., 2011</xref>).</p>
+    <p>When the users open the Chromosomal Aberrations Report (Figure
+    1B), they will first find thumbnails for chromosomal aberrations
+    across all the samples, thus providing a cohort-level landscape. On
+    clicking one of the thumbnails, the bigger picture of chromosomal
+    aberrations for the sample of interest appears, and detailed
+    information of each variant (e.g., exact coordinates of breakpoints
+    and affected genes) pops up upon mouse-over. Furthermore, the
+    distribution for the cumulative count of breakpoints of chromosomal
+    aberrations partitioned by a certain chromosomal bin size (default
+    size is 50 Kbp) is automatically generated, facilitating
+    identification of common cancer-driving variants represented by
+    prominent peaks.</p>
+  </sec>
+  <sec id="mutation-matrix-report">
+    <title>Mutation Matrix Report</title>
+    <p>Obtaining a comprehensive vision of somatic mutations across
+    cancer genomes in a cohort of interest to examine frequencies of
+    affected genes, relative ratio of variant types (e.g., missense,
+    non-sense), and co-occurrence and exclusivity between two genes, is
+    a principal goal in cancer genome analysis. paplot produces the
+    Mutation Matrix Report (Figure 1C), a dynamic report illustrating
+    the mutation status, which can fulfill the above purpose. Users can
+    enjoy sorting by several criteria such as sample-wise and gene-wise
+    frequencies. In addition, the user can generate a “waterfall” plot
+    (<xref alt="Skidmore et al., 2016" rid="ref-skidmore2016genvisr" ref-type="bibr">Skidmore
+    et al., 2016</xref>), where samples are hierarchically divided per
+    the mutation status of genes in descending order of mutation
+    frequencies. Furthermore, clinical information can be included in
+    the plot footer, which can work as additional sort keys.</p>
+  </sec>
+  <sec id="mutational-signature-report">
+    <title>Mutational Signature Report</title>
+    <p>In the past few years, massive genome cancer sequencing analysis
+    revealed many characteristic patterns of somatic mutations. The
+    profile of such mutation signature is typically represented by a bar
+    plot with 96 possible types (6 types of substitution × 4 types of 5’
+    base × 4 types of 3’ base)
+    (<xref alt="Alexandrov et al., 2013" rid="ref-alexandrov2013deciphering" ref-type="bibr">Alexandrov
+    et al., 2013</xref>). We have recently proposed another way of
+    visualizing mutation signatures to enable the inclusion of more
+    contextual factors
+    (<xref alt="Shiraishi et al., 2015" rid="ref-shiraishi2015simple" ref-type="bibr">Shiraishi
+    et al., 2015</xref>). paplot can generate the Mutational Signature
+    Report (Figure 1D) in both format types. Furthermore, since the
+    barplot of membership parameters (estimated fractions of operative
+    mutation signatures for each sample) is also generated, the user can
+    easily spot the sample with prominent mutation signatures via pop-up
+    windows.</p>
+  </sec>
+</sec>
+<sec id="conclusion">
+  <title>Conclusion</title>
+  <p>Interactive graphics contain richer information than static ones,
+  thus facilitating effective and intuitive interpretation of analytical
+  results. Owing to the advancement in information technologies and
+  development of application frameworks for easy generation of
+  interactive graphics, using interactive graphics for academic research
+  and auto-generated reports for clinical sequencing will become more
+  common. We believe that paplot will be useful for academic research
+  and clinical practice.</p>
+</sec>
+<sec id="funding">
+  <title>Funding</title>
+  <p>This work was supported by a Grant-in-Aid from the Japan Agency for
+  Medical Research and Development [Advanced Genome Research and
+  Bioinformatics Study to Facilitate Medical Innovation
+  (17km0405207h0002)] and a Grant-in-Aid for Scientific Research
+  (KAKENHI 15H05912 and 15K00398).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-alexandrov2013deciphering">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Alexandrov</surname><given-names>Ludmil B</given-names></name>
+          <name><surname>Nik-Zainal</surname><given-names>Serena</given-names></name>
+          <name><surname>Wedge</surname><given-names>David C</given-names></name>
+          <name><surname>Campbell</surname><given-names>Peter J</given-names></name>
+          <name><surname>Stratton</surname><given-names>Michael R</given-names></name>
+        </person-group>
+        <article-title>Deciphering signatures of mutational processes operative in human cancer</article-title>
+        <source>Cell reports</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <volume>3</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1016/j.celrep.2012.12.008</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-koboldt2012varscan">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Koboldt</surname><given-names>Daniel C</given-names></name>
+          <name><surname>Zhang</surname><given-names>Qunyuan</given-names></name>
+          <name><surname>Larson</surname><given-names>David E</given-names></name>
+          <name><surname>Shen</surname><given-names>Dong</given-names></name>
+          <name><surname>McLellan</surname><given-names>Michael D</given-names></name>
+          <name><surname>Lin</surname><given-names>Ling</given-names></name>
+          <name><surname>Miller</surname><given-names>Christopher A</given-names></name>
+          <name><surname>Mardis</surname><given-names>Elaine R</given-names></name>
+          <name><surname>Ding</surname><given-names>Li</given-names></name>
+          <name><surname>Wilson</surname><given-names>Richard K</given-names></name>
+        </person-group>
+        <article-title>VarScan 2: Somatic mutation and copy number alteration discovery in cancer by exome sequencing</article-title>
+        <source>Genome research</source>
+        <publisher-name>Cold Spring Harbor Lab</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>22</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1101/gr.129684.111</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-krzywinski2009circos">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Krzywinski</surname><given-names>Martin</given-names></name>
+          <name><surname>Schein</surname><given-names>Jacqueline</given-names></name>
+          <name><surname>Birol</surname><given-names>Inanc</given-names></name>
+          <name><surname>Connors</surname><given-names>Joseph</given-names></name>
+          <name><surname>Gascoyne</surname><given-names>Randy</given-names></name>
+          <name><surname>Horsman</surname><given-names>Doug</given-names></name>
+          <name><surname>Jones</surname><given-names>Steven J</given-names></name>
+          <name><surname>Marra</surname><given-names>Marco A</given-names></name>
+        </person-group>
+        <article-title>Circos: An information aesthetic for comparative genomics</article-title>
+        <source>Genome research</source>
+        <publisher-name>Cold Spring Harbor Lab</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <volume>19</volume>
+        <issue>9</issue>
+        <pub-id pub-id-type="doi">10.1101/gr.092759.109</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mitelman2007impact">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mitelman</surname><given-names>Felix</given-names></name>
+          <name><surname>Johansson</surname><given-names>Bertil</given-names></name>
+          <name><surname>Mertens</surname><given-names>Fredrik</given-names></name>
+        </person-group>
+        <article-title>The impact of translocations and gene fusions on cancer causation</article-title>
+        <source>Nature Reviews Cancer</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>7</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1038/nrc2091</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-rausch2012delly">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rausch</surname><given-names>Tobias</given-names></name>
+          <name><surname>Zichner</surname><given-names>Thomas</given-names></name>
+          <name><surname>Schlattl</surname><given-names>Andreas</given-names></name>
+          <name><surname>Stütz</surname><given-names>Adrian M</given-names></name>
+          <name><surname>Benes</surname><given-names>Vladimir</given-names></name>
+          <name><surname>Korbel</surname><given-names>Jan O</given-names></name>
+        </person-group>
+        <article-title>DELLY: Structural variant discovery by integrated paired-end and split-read analysis</article-title>
+        <source>Bioinformatics</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>28</volume>
+        <issue>18</issue>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/bts378</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-shiraishi2013empirical">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Shiraishi</surname><given-names>Yuichi</given-names></name>
+          <name><surname>Sato</surname><given-names>Yusuke</given-names></name>
+          <name><surname>Chiba</surname><given-names>Kenichi</given-names></name>
+          <name><surname>Okuno</surname><given-names>Yusuke</given-names></name>
+          <name><surname>Nagata</surname><given-names>Yasunobu</given-names></name>
+          <name><surname>Yoshida</surname><given-names>Kenichi</given-names></name>
+          <name><surname>Shiba</surname><given-names>Norio</given-names></name>
+          <name><surname>Hayashi</surname><given-names>Yasuhide</given-names></name>
+          <name><surname>Kume</surname><given-names>Haruki</given-names></name>
+          <name><surname>Homma</surname><given-names>Yukio</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>An empirical bayesian framework for somatic mutation detection from cancer genome sequencing data</article-title>
+        <source>Nucleic acids research</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <volume>41</volume>
+        <issue>7</issue>
+        <pub-id pub-id-type="doi">10.1093/nar/gkt126</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-shiraishi2015simple">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Shiraishi</surname><given-names>Yuichi</given-names></name>
+          <name><surname>Tremmel</surname><given-names>Georg</given-names></name>
+          <name><surname>Miyano</surname><given-names>Satoru</given-names></name>
+          <name><surname>Stephens</surname><given-names>Matthew</given-names></name>
+        </person-group>
+        <article-title>A simple model-based approach to inferring and visualizing cancer mutation signatures</article-title>
+        <source>PLoS genetics</source>
+        <publisher-name>Public Library of Science</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <volume>11</volume>
+        <issue>12</issue>
+        <pub-id pub-id-type="doi">10.1371/journal.pgen.1005657</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-skidmore2016genvisr">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Skidmore</surname><given-names>Zachary L</given-names></name>
+          <name><surname>Wagner</surname><given-names>Alex H</given-names></name>
+          <name><surname>Lesurf</surname><given-names>Robert</given-names></name>
+          <name><surname>Campbell</surname><given-names>Katie M</given-names></name>
+          <name><surname>Kunisaki</surname><given-names>Jason</given-names></name>
+          <name><surname>Griffith</surname><given-names>Obi L</given-names></name>
+          <name><surname>Griffith</surname><given-names>Malachi</given-names></name>
+        </person-group>
+        <article-title>GenVisR: Genomic visualizations in r</article-title>
+        <source>Bioinformatics</source>
+        <publisher-name>Oxford University Press</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>32</volume>
+        <issue>19</issue>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btw325</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-stephens2011massive">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Stephens</surname><given-names>Philip J</given-names></name>
+          <name><surname>Greenman</surname><given-names>Chris D</given-names></name>
+          <name><surname>Fu</surname><given-names>Beiyuan</given-names></name>
+          <name><surname>Yang</surname><given-names>Fengtang</given-names></name>
+          <name><surname>Bignell</surname><given-names>Graham R</given-names></name>
+          <name><surname>Mudie</surname><given-names>Laura J</given-names></name>
+          <name><surname>Pleasance</surname><given-names>Erin D</given-names></name>
+          <name><surname>Lau</surname><given-names>King Wai</given-names></name>
+          <name><surname>Beare</surname><given-names>David</given-names></name>
+          <name><surname>Stebbings</surname><given-names>Lucy A</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Massive genomic rearrangement acquired in a single catastrophic event during cancer development</article-title>
+        <source>cell</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <volume>144</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1016/j.cell.2010.11.055</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-yin2012ggbio">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yin</surname><given-names>Tengfei</given-names></name>
+          <name><surname>Cook</surname><given-names>Dianne</given-names></name>
+          <name><surname>Lawrence</surname><given-names>Michael</given-names></name>
+        </person-group>
+        <article-title>Ggbio: An r package for extending the grammar of graphics for genomic data</article-title>
+        <source>Genome biology</source>
+        <publisher-name>BioMed Central</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>13</volume>
+        <issue>8</issue>
+        <pub-id pub-id-type="doi">10.1186/gb-2012-13-8-r77</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

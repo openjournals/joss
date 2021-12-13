@@ -1,0 +1,524 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3394</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03394</article-id>
+<title-group>
+<article-title>ImSwitch: Generalizing microscope control in
+Python</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9583-9022</contrib-id>
+<string-name>Xavier Casas Moreno</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-3488-6845</contrib-id>
+<string-name>Staffan Al-Kadhimi</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-3554-9322</contrib-id>
+<string-name>Jonatan Alvelid</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-9302-7576</contrib-id>
+<string-name>Andreas Bodén</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-4005-4997</contrib-id>
+<string-name>Ilaria Testa</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>SciLifeLab, KTH Royal Institute of Technology</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-04-25">
+<day>25</day>
+<month>4</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>64</issue>
+<fpage>3394</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Fluorescence microscopy</kwd>
+<kwd>Super-resolution</kwd>
+<kwd>Scanning microscopy</kwd>
+<kwd>Microscope automation</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The constant development of novel microscopy methods with an
+  increased number of dedicated hardware devices poses significant
+  challenges to software development. On the one hand, software should
+  control complex instruments, provide flexibility to adapt between
+  different microscope modalities, and be open and resilient to
+  modification and extension by users and developers. On the other hand,
+  the community needs software that can satisfy the requirements of the
+  users, such as a user-friendly interface and robustness of the code.
+  In this context, we present ImSwitch, based on the
+  model-view-presenter (MVP) design pattern
+  (<xref alt="Potel, 1996" rid="ref-mvp" ref-type="bibr">Potel,
+  1996</xref>), with an architecture that uses polymorphism to provide a
+  generalized solution to microscope control. Consequently, ImSwitch
+  makes it possible to adapt between different modalities and aims at
+  satisfying the needs of both users and developers. We have also
+  included a scripting module for microscope automation applications and
+  a structure to efficiently share data between different modules, such
+  as hardware control and image processing. Currently, ImSwitch provides
+  support for light microscopy techniques but could be extended to other
+  microscopy modalities requiring multiple hardware synchronization.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>As described in Chhetri et al.
+  (<xref alt="2020" rid="ref-janelia" ref-type="bibr">2020</xref>),
+  there is a need to have a generalized solution for microscope control,
+  since the usual approach in microscopy labs is to create their own
+  custom-built software. A complete list is available in Stuurman et al.
+  (<xref alt="2021" rid="ref-zenodo_janelia" ref-type="bibr">2021</xref>).
+  ImSwitch is designed to be compatible with many different microscope
+  modalities and customizable to the specific design of individual
+  custom-built microscopes, all while using the same code. We would like
+  to involve the community in further developing ImSwitch in this
+  direction, believing that it is possible to integrate current
+  state-of-the-art solutions into one unified software.</p>
+</sec>
+<sec id="architecture-and-implementation">
+  <title>Architecture and implementation</title>
+  <p>ImSwitch consists of software modules, e.g., hardware control and
+  image processing, that exchange data through the
+  ModuleCommunicationChannel
+  (<xref alt="Figure 1" rid="figU003Adiagram">Figure 1</xref>). Modules
+  can also expose an internal Application Programming Interface (API) to
+  the scripting platform, allowing user-defined scripts to interact with
+  them without requiring the user to modify the code itself to meet
+  their demands. Each of the modules follows the MVP architecture, which
+  has three primary layers: model, view, and presenter. The hardware
+  control module has the following structure:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>The <bold>model</bold> layer represents the backend of the
+      program. It has direct access to the hardware through a device
+      sub-layer, which contains the interfaces of the devices, drivers,
+      and Python packages. To provide polymorphism, we have added
+      another sub-layer in the model that consists of what we name
+      managers and multi-managers. The managers are objects that will
+      specify how to control the devices, and which packages should be
+      used. For example, a microscope setup with two cameras and three
+      point detectors will make use of a multi-manager called
+      <monospace>DetectorsManager</monospace>, which in turn will manage
+      two instances of <monospace>CameraManager</monospace> and three
+      instances of <monospace>PointDetectorManager</monospace>. Both
+      managers implement the same functionality through identical
+      function calls but with different implementations.</p>
+    </list-item>
+    <list-item>
+      <p>The <bold>view</bold> layer is the Graphical User Interface
+      (GUI). The GUI for each component of the hardware control module
+      is represented by a view element called a
+      <monospace>Widget</monospace>. The view layer is linked to the
+      presenter layer by linking each <monospace>Widget</monospace> with
+      a <monospace>WidgetController</monospace>. The presenters
+      (<monospace>WidgetControllers</monospace>) manipulate the views
+      (<monospace>Widgets</monospace>) but not vice versa.</p>
+    </list-item>
+    <list-item>
+      <p>We implemented the <bold>presenter</bold> layer using two
+      sub-layers: the first sub-layer contains
+      <monospace>WidgetControllers</monospace> that mainly read the
+      input of the user through the view and communicate it to the
+      <monospace>MasterController</monospace>; the second sub-layer has
+      the <monospace>MasterController</monospace> that directly
+      interacts with the managers. The
+      <monospace>CommunicationChannel</monospace> serves as a platform
+      to share demands and information between
+      <monospace>WidgetControllers</monospace>.</p>
+    </list-item>
+  </list>
+  <fig>
+    <caption><p>Architecture of ImSwitch
+    <styled-content id="figU003Adiagram"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="diagram.png" xlink:title="" />
+  </fig>
+  <p>We use PyQt
+  (<xref alt="PyQT, 2012" rid="ref-pyqt_docu" ref-type="bibr">PyQT,
+  2012</xref>) for the GUI layout, thread management, and event
+  management; Napari
+  (<xref alt="napari contributors, 2019" rid="ref-napari" ref-type="bibr">napari
+  contributors, 2019</xref>) for image visualization, which can easily
+  integrate multiple image layers and supports plugins for image
+  processing; and HDF5
+  (<xref alt="The HDF Group, 2000-2010" rid="ref-hdf5" ref-type="bibr">The
+  HDF Group, 2000-2010</xref>) for storing image data and metadata,
+  including all parameters of each experiment and acquisition. The user
+  can readily load metadata from stored files into ImSwitch, allowing
+  experiment acquisition from templates.</p>
+  <p>Central to the concept of allowing modularity is the use of JSON
+  configuration files to define different microscopes. They contain
+  information about the hardware devices and their connections, and the
+  GUI tools to be loaded.</p>
+  <p>As a proof of concept ImSwitch has been implemented to control the
+  various microscopes of our lab: point-scanning STED/confocal
+  (<xref alt="Alvelid &amp; Testa, 2019" rid="ref-sted" ref-type="bibr">Alvelid
+  &amp; Testa, 2019</xref>) and parallelized RESOLFT/confocal (MoNaLISA)
+  (<xref alt="Masullo et al., 2018" rid="ref-monalisa" ref-type="bibr">Masullo
+  et al., 2018</xref>). These microscopes were previously controlled
+  with a combination of purpose-built software that were
+  microscope-specific or closed-source software. The reader can find
+  more details about the implementations and documentation of ImSwitch
+  at
+  <ext-link ext-link-type="uri" xlink:href="https://imswitch.readthedocs.io">imswitch.readthedocs.io</ext-link>.
+  We have implemented the image processing module for reconstructing
+  MoNaLISA images using our pre-existing shared library. Other
+  microscope modalities requiring designated reconstruction or
+  processing could implement separate modules, using the
+  ModuleCommunicationChannel to retrieve the data, and readily load them
+  into ImSwitch.</p>
+</sec>
+<sec id="comparison-to-other-software">
+  <title>Comparison to other software</title>
+  <p>µManager
+  (<xref alt="Edelstein et al., 2010" rid="ref-uManager" ref-type="bibr">Edelstein
+  et al., 2010</xref>) is a free and open-source software for microscope
+  control written in Java and C++, with pervasive driver support to
+  different devices and widely used by microscopists. However, µManager
+  does not adapt fully to complex microscopes that require scanning and
+  triggering or other intricate operations. Moreover, software
+  modification and extension are difficult due to the programming
+  languages and the architecture.
+  <ext-link ext-link-type="uri" xlink:href="https://pypi.org/project/pymmcore/">Python
+  bindings</ext-link> were recently made available for
+  <ext-link ext-link-type="uri" xlink:href="https://valelab4.ucsf.edu/~MM/doc/MMCore/html/class_c_m_m_core.html">MMCore</ext-link>,
+  which is the device control layer of µManager, making it compatible
+  with ImSwitch implementation (through the model device sub-layer).
+  Pycro-Manager
+  (<xref alt="Pinkard et al., 2021" rid="ref-pycroManager" ref-type="bibr">Pinkard
+  et al., 2021</xref>) provides access to µManager from Python and
+  combines it with image processing and multiple applications. However,
+  custom plugins must still be written for the µManager Java layer,
+  making it complicated to use in complex devices without a pre-existing
+  specialized implementation. This limits the user-friendliness for
+  microscope users.</p>
+  <p>Microscope
+  (<xref alt="Pinto et al., 2021" rid="ref-microscope" ref-type="bibr">Pinto
+  et al., 2021</xref>) is a recent alternative for providing a resilient
+  device layer in Python for controlling microscope devices. It is
+  possible to script microscope experiments and use Cockpit
+  (<xref alt="Phillips et al., 2021" rid="ref-cockpit" ref-type="bibr">Phillips
+  et al., 2021</xref>) as a GUI. However, the GUI is still limited to
+  simpler microscopes. The most substantial focus of Microscope is to
+  provide a standard interface to control microscope device types.
+  Therefore, it could be integrated with ImSwitch to work towards
+  software generalization by increasing compatibility and including even
+  more devices.</p>
+  <p>TANGO Controls
+  (<xref alt="Tango Controls, 2015" rid="ref-tango" ref-type="bibr">Tango
+  Controls, 2015</xref>) is a software solution for distributed control
+  systems that provides a communication protocol and an object-oriented
+  architecture for controlling devices of a range of applications.
+  Similar to TANGO Controls, EPICS
+  (<xref alt="Dalesio et al., 1991" rid="ref-epics" ref-type="bibr">Dalesio
+  et al., 1991</xref>) focuses on supporting applications that operate
+  complex devices such as particle accelerators and telescopes. While
+  their design and architecture are conceptually similar to ImSwitch,
+  our focus resides on microscopy applications and, in particular,
+  image-based control systems and related hardware when performing
+  experiments and handling data (image acquisition, reconstruction, and
+  analysis). We also provide general tools for microscope users and
+  builders of custom-made microscopes.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We would like to acknowledge the authors of
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/TestaLab/Tempesta">Tempesta</ext-link>,
+  a further development of Tormenta
+  (<xref alt="Barabas &amp; Masullo, 2016" rid="ref-tormenta" ref-type="bibr">Barabas
+  &amp; Masullo, 2016</xref>), for their contributions to earlier
+  software and inspiration for a user-friendly interface. We are also
+  thankful to Francesca Pennacchietti for testing and providing
+  feedback.</p>
+  <p>We thank the Swedish Foundation for Strategic Research (SSF)
+  funding FFL15-0031 for supporting the project.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-sted">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Alvelid</surname><given-names>Jonatan</given-names></name>
+          <name><surname>Testa</surname><given-names>Ilaria</given-names></name>
+        </person-group>
+        <article-title>Stable stimulated emission depletion imaging of extended sample regions</article-title>
+        <source>Journal of Physics D: Applied Physics</source>
+        <year iso-8601-date="2019-10">2019</year><month>10</month>
+        <volume>53</volume>
+        <uri>https://iopscience.iop.org/article/10.1088/1361-6463/ab4c13/meta</uri>
+        <pub-id pub-id-type="doi">10.1088/1361-6463/ab4c13</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-monalisa">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Masullo</surname><given-names>Luciano A.</given-names></name>
+          <name><surname>Bodén</surname><given-names>Andreas</given-names></name>
+          <name><surname>Pennacchietti</surname><given-names>Francesca</given-names></name>
+          <name><surname>Coceano</surname><given-names>Giovanna</given-names></name>
+          <name><surname>Ratz</surname><given-names>Michael</given-names></name>
+          <name><surname>Testa</surname><given-names>Ilaria</given-names></name>
+        </person-group>
+        <article-title>Enhanced photon collection enables four dimensional fluorescence nanoscopy of living systems</article-title>
+        <source>Nat Commun</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>9</volume>
+        <issue>3281</issue>
+        <uri>https://www.nature.com/articles/s41467-018-05799-w</uri>
+        <pub-id pub-id-type="doi">10.1038/s41467-018-05799-w</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pyqt_docu">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>PyQT</surname></name>
+        </person-group>
+        <article-title>PyQt reference guide</article-title>
+        <year iso-8601-date="2012">2012</year>
+        <uri>http://www.riverbankcomputing.com/static/Docs/PyQt4/html/index.html</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-napari">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>napari contributors</string-name>
+        </person-group>
+        <article-title>napari: a multi-dimensional image viewer for python</article-title>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://napari.org</uri>
+        <pub-id pub-id-type="doi">doi:10.5281/zenodo.3555620</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hdf5">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <string-name>The HDF Group</string-name>
+        </person-group>
+        <article-title>Hierarchical data format version 5</article-title>
+        <uri>http://www.hdfgroup.org/HDF5</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-uManager">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Edelstein</surname><given-names>Arthur</given-names></name>
+          <name><surname>Amodaj</surname><given-names>Nenad</given-names></name>
+          <name><surname>Hoover</surname><given-names>Karl</given-names></name>
+          <name><surname>Vale</surname><given-names>Ron</given-names></name>
+          <name><surname>Stuurman</surname><given-names>Nico</given-names></name>
+        </person-group>
+        <article-title>Computer control of microscopes using ÂµManager</article-title>
+        <source>Current Protocols in Molecular Biology</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>92</volume>
+        <issue>1</issue>
+        <uri>https://currentprotocols.onlinelibrary.wiley.com/doi/abs/10.1002/0471142727.mb1420s92</uri>
+        <pub-id pub-id-type="doi">10.1002/0471142727.mb1420s92</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pycroManager">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pinkard</surname><given-names>Henry</given-names></name>
+          <name><surname>Stuurman</surname><given-names>Nico</given-names></name>
+          <name><surname>Ivanov</surname><given-names>Ivan E.</given-names></name>
+          <name><surname>Anthony</surname><given-names>Nicholas M.</given-names></name>
+          <name><surname>Ouyang</surname><given-names>Wei</given-names></name>
+          <name><surname>Li</surname><given-names>Bin</given-names></name>
+          <name><surname>Yang</surname><given-names>Bin</given-names></name>
+          <name><surname>Tsuchida</surname><given-names>Mark A.</given-names></name>
+          <name><surname>Chhun</surname><given-names>Bryant</given-names></name>
+          <name><surname>Zhang</surname><given-names>Grace</given-names></name>
+          <name><surname>Mei</surname><given-names>Ryan</given-names></name>
+          <name><surname>Anderson</surname><given-names>Michael</given-names></name>
+          <name><surname>Shepherd</surname><given-names>Douglas P.</given-names></name>
+          <name><surname>Hunt-Isaak</surname><given-names>Ian</given-names></name>
+          <name><surname>Dunn</surname><given-names>Raymond L.</given-names></name>
+          <name><surname>Jahr</surname><given-names>Wiebke</given-names></name>
+          <name><surname>Kato</surname><given-names>Saul</given-names></name>
+          <name><surname>Royer</surname><given-names>Loïc A.</given-names></name>
+          <name><surname>Thiagarajah</surname><given-names>Jay R.</given-names></name>
+          <name><surname>Eliceiri</surname><given-names>Kevin W.</given-names></name>
+          <name><surname>Lundberg</surname><given-names>Emma</given-names></name>
+          <name><surname>Mehta</surname><given-names>Shalin B.</given-names></name>
+          <name><surname>Waller</surname><given-names>Laura</given-names></name>
+        </person-group>
+        <article-title>Pycro-manager: Open-source software for customized and reproducible microscope control</article-title>
+        <source>Nature Methods</source>
+        <year iso-8601-date="2021">2021</year>
+        <volume>18</volume>
+        <issue>3</issue>
+        <uri>https://doi.org/10.1038/s41592-021-01087-6</uri>
+        <pub-id pub-id-type="doi">10.1038/s41592-021-01087-6</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-microscope">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pinto</surname><given-names>David Miguel Susano</given-names></name>
+          <name><surname>Phillips</surname><given-names>Mick A</given-names></name>
+          <name><surname>Hall</surname><given-names>Nicholas</given-names></name>
+          <name><surname>MateosLangerak</surname><given-names>Julio</given-names></name>
+          <name><surname>Stoychev</surname><given-names>Danail</given-names></name>
+          <name><surname>Pinto</surname><given-names>Tiago Susano</given-names></name>
+          <name><surname>Booth</surname><given-names>Martin J</given-names></name>
+          <name><surname>Davis</surname><given-names>Ilan</given-names></name>
+          <name><surname>Dobbie</surname><given-names>Ian M</given-names></name>
+        </person-group>
+        <article-title>Python-microscope: High performance control of arbitrarily complex and scalable bespoke microscopes</article-title>
+        <source>bioRxiv</source>
+        <publisher-name>Cold Spring Harbor Laboratory</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://www.biorxiv.org/content/early/2021/01/19/2021.01.18.427171</uri>
+        <pub-id pub-id-type="doi">10.1101/2021.01.18.427171</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-cockpit">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Phillips</surname><given-names>Mick A</given-names></name>
+          <name><surname>Pinto</surname><given-names>David Miguel Susano</given-names></name>
+          <name><surname>Hall</surname><given-names>Nicholas</given-names></name>
+          <name><surname>Mateos-Langerak</surname><given-names>Julio</given-names></name>
+          <name><surname>Parton</surname><given-names>Richard M</given-names></name>
+          <name><surname>Titlow</surname><given-names>Josh</given-names></name>
+          <name><surname>Stoychev</surname><given-names>Danail V</given-names></name>
+          <name><surname>Parks</surname><given-names>Thomas</given-names></name>
+          <name><surname>Pinto</surname><given-names>Tiago Susano</given-names></name>
+          <name><surname>Sedat</surname><given-names>John W</given-names></name>
+          <name><surname>Booth</surname><given-names>Martin J</given-names></name>
+          <name><surname>Davis</surname><given-names>Ilan</given-names></name>
+          <name><surname>Dobbie</surname><given-names>Ian M</given-names></name>
+        </person-group>
+        <article-title>Microscope-cockpit: Python-based bespoke microscopy for bio-medical science</article-title>
+        <source>bioRxiv</source>
+        <publisher-name>Cold Spring Harbor Laboratory</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://www.biorxiv.org/content/early/2021/01/19/2021.01.18.427178</uri>
+        <pub-id pub-id-type="doi">10.1101/2021.01.18.427178</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-tormenta">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Barabas</surname><given-names>Federico</given-names></name>
+          <name><surname>Masullo</surname><given-names>Luciano A.</given-names></name>
+        </person-group>
+        <article-title>Note: Tormenta: An open source Python-powered control software for camera based optical microscopy</article-title>
+        <source>Review of Scientific Instruments</source>
+        <year iso-8601-date="2016-12">2016</year><month>12</month>
+        <volume>87</volume>
+        <issue>126103</issue>
+        <uri>https://aip.scitation.org/doi/pdf/10.1063/1.4972392</uri>
+        <pub-id pub-id-type="doi">10.1063/1.4972392</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-janelia">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Chhetri</surname><given-names>Raghav</given-names></name>
+          <name><surname>Preibisch</surname><given-names>Stephan</given-names></name>
+          <name><surname>Stuurman</surname><given-names>Nico</given-names></name>
+        </person-group>
+        <article-title>Software for microscopy workshop white paper</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://arxiv.org/abs/2005.00082</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-zenodo_janelia">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Stuurman</surname><given-names>Nico</given-names></name>
+          <name><surname>Preibisch</surname><given-names>Stephan</given-names></name>
+          <name><surname>Babcock</surname><given-names>Hazen</given-names></name>
+          <name><surname>Chhetri</surname><given-names>Raghav</given-names></name>
+        </person-group>
+        <article-title>uScopeControl</article-title>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2021-01">2021</year><month>01</month>
+        <uri>https://doi.org/10.5281/zenodo.4433237</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.4433237</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mvp">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Potel</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>MVP: Model-view-presenter the taligent programming model for c++ and java</article-title>
+        <year iso-8601-date="1996">1996</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-epics">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dalesio</surname><given-names>L R</given-names></name>
+          <name><surname>Kozubal</surname><given-names>A J</given-names></name>
+          <name><surname>Kraimer</surname><given-names>M R</given-names></name>
+        </person-group>
+        <article-title>EPICS architecture</article-title>
+        <year iso-8601-date="1991-01">1991</year><month>01</month>
+        <uri>https://www.osti.gov/biblio/6110347</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-tango">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>Tango Controls</string-name>
+        </person-group>
+        <article-title>Tango controls</article-title>
+        <year iso-8601-date="2015">2015</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-07-20">2021</year><month>07</month><day>20</day></date-in-citation>
+        <uri>https://www.tango-controls.org</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

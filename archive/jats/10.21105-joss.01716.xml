@@ -1,0 +1,748 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1716</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01716</article-id>
+<title-group>
+<article-title>Pakman: a modular, efficient and portable tool for
+approximate Bayesian inference</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-7198-7688</contrib-id>
+<string-name>Thomas F. Pak</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-6304-9333</contrib-id>
+<string-name>Ruth E. Baker</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-5094-5403</contrib-id>
+<string-name>Joe M. Pitt-Francis</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Mathematical Institute, University of Oxford</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Department of Computer Science, University of
+Oxford</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-06-14">
+<day>14</day>
+<month>6</month>
+<year>2019</year>
+</pub-date>
+<volume>5</volume>
+<issue>47</issue>
+<fpage>1716</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>MPI</kwd>
+<kwd>approximate Bayesian computation</kwd>
+<kwd>Bayesian inference</kwd>
+<kwd>parallel computing</kwd>
+<kwd>distributed computing</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The development of high-throughput techniques in the biological
+  sciences has resulted in an abundance of experimental data. At the
+  same time, mathematical models are becoming increasingly popular in
+  the biological sciences. Combined, these parallel advances have the
+  potential to greatly expand our understanding of biological processes
+  through mathematical modelling and data-driven parameter inference.
+  When the data are noisy or the mathematical model is inherently
+  stochastic, we can apply Bayesian methods for parameter inference and
+  model selection. Moreover, even when the likelihood function is
+  unknown or intractable, it is still possible to make progress by
+  applying a method known as <bold>approximate Bayesian computation
+  (ABC)</bold>
+  (<xref alt="Marjoram et al., 2003" rid="ref-Marjoram2003" ref-type="bibr">Marjoram
+  et al., 2003</xref>;
+  <xref alt="Toni et al., 2009" rid="ref-Toni2009" ref-type="bibr">Toni
+  et al., 2009</xref>).</p>
+  <p>The drawback of ABC methods is that they require many model
+  simulations, which quickly becomes a bottleneck when simulations are
+  computationally expensive. Fortunately, some ABC algorithms have a
+  simulation workload that is embarrassingly parallel, or proceed
+  through a sequence of embarrassingly parallel simulation workloads.
+  These algorithms, ABC rejection and ABC sequential Monte Carlo (SMC)
+  specifically, can be parallelised to dramatically reduce computation
+  times
+  (<xref alt="Toni et al., 2009" rid="ref-Toni2009" ref-type="bibr">Toni
+  et al., 2009</xref>). Therefore, parallel ABC methods are a natural
+  choice for leveraging “big data” and “big compute” for parameter
+  inference.</p>
+  <p>There are a number of software tools for ABC already available.
+  However, some were designed for particular classes of domain-specific
+  models. For instance, <monospace>DIYABC</monospace>
+  (<xref alt="Cornuet et al., 2014" rid="ref-Cornuet2014" ref-type="bibr">Cornuet
+  et al., 2014</xref>) is a comprehensive software package for inference
+  in population genetics, and includes a graphical user interface.
+  Another example is <monospace>ABC-SysBio</monospace>
+  (<xref alt="Liepe et al., 2010" rid="ref-Liepe2010" ref-type="bibr">Liepe
+  et al., 2010</xref>), a Python package for inferring the parameters of
+  dynamical models of biochemical systems based on ordinary or
+  stochastic differential equations. Other software tools are modular
+  and can be used with any type of model, but do not scale well with
+  computational resources. For instance, the R package
+  <monospace>abc</monospace>
+  (<xref alt="Csilléry et al., 2012" rid="ref-Csillery2012" ref-type="bibr">Csilléry
+  et al., 2012</xref>) can handle arbitrary models, but does not
+  parallelise simulations. <monospace>ABCtoolbox</monospace>
+  (<xref alt="Wegmann et al., 2010" rid="ref-Wegmann2010" ref-type="bibr">Wegmann
+  et al., 2010</xref>) is a command-line tool for running ABC algorithms
+  on models that are supplied as command-line programs, but it does not
+  support explicit parallelisation. For an overview of general-purpose
+  ABC software, see Kousathanas et al.
+  (<xref alt="2018" rid="ref-Kousathanas2018" ref-type="bibr">2018</xref>).</p>
+  <p>More recently, parallel ABC has been implemented successfully to
+  accelerate inference in a computationally intensive problem
+  (<xref alt="Jagiella et al., 2017" rid="ref-Jagiella2017" ref-type="bibr">Jagiella
+  et al., 2017</xref>). However, the implementation was problem- and
+  architecture-specific and thus could not be applied more generally. In
+  response, the Python package <monospace>pyABC</monospace>
+  (<xref alt="Klinger et al., 2018" rid="ref-Klinger2018" ref-type="bibr">Klinger
+  et al., 2018</xref>) was developed as a more flexible implementation
+  of parallel ABC, supporting shared- and distributed-memory computing.
+  In principle, <monospace>pyABC</monospace> can be used with any type
+  of model, but its computational implementation must be expressed as a
+  Python function. This poses a problem when the user develops their
+  model in a programming language other than Python or is using an
+  external software package that cannot easily be adapted to Python.</p>
+  <p>Pakman is a parallel ABC manager that is designed to be modular at
+  the systems-level, as opposed to the application-level. Furthermore,
+  Pakman is also designed to be portable and efficient. Pakman is
+  written in C++11
+  (<xref alt="The C++ Standards Committee, 2011" rid="ref-ISO2011" ref-type="bibr">The
+  C++ Standards Committee, 2011</xref>), and relies on the Message
+  Passing Interface (MPI) library, standard MPI-3.1
+  (<xref alt="Message Passing Interface Forum, 2015" rid="ref-MPI2015" ref-type="bibr">Message
+  Passing Interface Forum, 2015</xref>), for parallelisation. We chose
+  C++11 because of its native support for MPI and POSIX system calls,
+  high-level programming language features, and efficiency. Moreover, we
+  chose MPI as the platform for parallelisation because it is a
+  well-established standard for distributed computing that has been
+  implemented on a wide variety of systems, ranging from multi-core
+  machines to large computational clusters.</p>
+  <p>In summary, Pakman was made for performing likelihood-free
+  inference when model simulations are computationally expensive. The
+  lack of an analytical likelihood requires the application of ABC
+  methods, and the computational cost of individual simulations merits a
+  parallel approach to decrease the time to solution. Moreover, in order
+  to be as modular as possible, models are specified as black-box
+  programs. The target audience consists of researchers who want to
+  parameterise a computationally demanding stochastic model based on
+  experimental data.</p>
+  <sec id="modularity">
+    <title>Modularity</title>
+    <p>Pakman is designed around a modular framework where
+    problem-specific tasks are performed by <bold>user
+    executables</bold>. These are executables (binaries or scripts) that
+    are supplied by the user, which are then invoked by Pakman using the
+    system calls <monospace>fork()</monospace> and
+    <monospace>exec()</monospace>. Furthermore, Pakman communicates with
+    user executables through their standard input and standard
+    output.</p>
+    <p>Conceptually, user executables serve the same role as
+    <italic>functions</italic> in programming languages; they are called
+    with some input, perform a computational task and return an output.
+    The difference is that they are treated as black boxes that are not
+    constrained to any programming language. The user can therefore use
+    any language or software package they desire to implement user
+    executables. As long as the model simulation can be executed in the
+    shell, or wrapped in a shell script, it can be used with Pakman.</p>
+  </sec>
+  <sec id="efficiency">
+    <title>Efficiency</title>
+    <p>The parallel architecture of Pakman is based on the Master–Worker
+    model, where a Master process dispatches jobs to a pool of Worker
+    processes, ensuring that Workers are busy at all times. In our case,
+    each job is a single simulation and a Worker is an instance of the
+    <monospace>simulator</monospace> user executable. The choice of MPI
+    for parallelisation prevents us from directly applying the
+    Master–Worker model however; a Worker cannot simultaneously be an
+    MPI process and an instance of a user executable. If the Worker were
+    an MPI process, the simulation would have to be compiled into
+    Pakman, breaking the modular framework.</p>
+    <p>Our solution is to implement a layer of “Managers” between the
+    Master and Workers, resulting in a
+    <bold>Master–Manager–Worker</bold> architecture. These Managers are
+    parallel MPI processes that communicate with the Master through MPI
+    and fork Workers as user executables to perform the actual work.
+    Hence, the Master and Manager processes collectively form a parallel
+    infrastructure from which processes are spawned to perform
+    simulations.</p>
+    <p>Further efficiency improvements are achieved by implementing the
+    Master and Managers with event-based loops. This means that the
+    Master and Manager processes are asleep most of the time and only
+    take action when an event requires it (e.g. a Worker has finished
+    its simulation and wants to report its results), leaving the CPU to
+    focus on running simulations.</p>
+  </sec>
+  <sec id="portability">
+    <title>Portability</title>
+    <p>As highlighted earlier, Pakman is written in C++11 and uses MPI
+    for parallelisation. Moreover, we use CMake, a cross-platform tool,
+    to manage the build process. As a result, Pakman can be built and
+    used on wide variety of systems with few dependencies, making it a
+    very portable tool. Travis CI is used to continuously test Pakman on
+    Linux (Ubuntu Xenial distribution), as well as macOS (version
+    10.13). Details on the Travis CI configuration can be found in the
+    code repository.</p>
+  </sec>
+</sec>
+<sec id="illustrative-examples">
+  <title>Illustrative examples</title>
+  <p>Pakman comes with three examples that demonstrate its capabilities.
+  In the first example, a biased coin with an unknown probability to
+  land on heads, <inline-formula><alternatives>
+  <tex-math><![CDATA[q]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>q</mml:mi></mml:math></alternatives></inline-formula>,
+  is flipped 20 times and lands on heads five times. This example is
+  simple enough that the likelihood for the parameter of interest
+  (<inline-formula><alternatives>
+  <tex-math><![CDATA[q]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>q</mml:mi></mml:math></alternatives></inline-formula>)
+  and thus the posterior distribution, can be written down analytically,
+  as the number of heads obeys a binomial distribution. Therefore,
+  numerical results can be compared with the analytical solution to
+  verify correctness of the ABC methods. In Figure 1, we show the
+  results of applying the ABC rejection method and the ABC SMC
+  method.</p>
+  <fig>
+    <caption><p>The computed posterior distributions for
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[q]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>q</mml:mi></mml:math></alternatives></inline-formula>
+    obtained using the ABC rejection method (left) and the ABC SMC
+    method (right). We chose a standard uniform distribution as the
+    prior distribution. For the ABC rejection method, we used a
+    tolerance of zero and obtained 10,000 accepted samples. For the ABC
+    SMC method, we used a normal distribution with a standard deviation
+    of 0.3 as the perturbation kernel. The tolerance series was
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\langle 2, 1, 0 \rangle]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">⟨</mml:mo><mml:mn>2</mml:mn><mml:mo>,</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mn>0</mml:mn><mml:mo stretchy="false" form="postfix">⟩</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+    and the population size was 10,000. For both methods, the computed
+    distributions closely fit the analytical solution, validating our
+    implementation.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="biased-coin-histogram.png" xlink:title="" />
+  </fig>
+  <p>The second example involves a dynamic model for the spread of an
+  infectious disease that confers no immunity to the host after
+  recovery. Representing susceptible individuals by
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[S]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>S</mml:mi></mml:math></alternatives></inline-formula>
+  and infected individuals by <inline-formula><alternatives>
+  <tex-math><![CDATA[I]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>I</mml:mi></mml:math></alternatives></inline-formula>,
+  the SIS model we consider is given by <disp-formula><alternatives>
+  <tex-math><![CDATA[
+  S + I \xrightarrow{\beta} 2I,
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>S</mml:mi><mml:mo>+</mml:mo><mml:mi>I</mml:mi><mml:mover><mml:mo>→</mml:mo><mml:mi>β</mml:mi></mml:mover><mml:mn>2</mml:mn><mml:mi>I</mml:mi><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+  <disp-formula><alternatives>
+  <tex-math><![CDATA[
+  I \xrightarrow{\gamma} S.
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>I</mml:mi><mml:mover><mml:mo>→</mml:mo><mml:mi>γ</mml:mi></mml:mover><mml:mi>S</mml:mi><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula>
+  The first reaction represents infection of a susceptible individual by
+  an infected individual and the second reaction describes the recovery
+  of an infected individual. We observe the number of susceptible and
+  infected individuals at a series of fixed time points and our goal is
+  to infer the parameters <inline-formula><alternatives>
+  <tex-math><![CDATA[\beta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>β</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\gamma]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>γ</mml:mi></mml:math></alternatives></inline-formula>.
+  The exact likelihood is feasible to compute when the total number of
+  individuals is relatively small, so here too we can compare numerical
+  and analytical results. The results of running the ABC SMC method are
+  given in Figure 2.</p>
+  <fig>
+    <caption><p>The computed (left) and analytical (right) bivariate
+    posterior distribution for <inline-formula><alternatives>
+    <tex-math><![CDATA[\beta]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>β</mml:mi></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[\gamma]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>γ</mml:mi></mml:math></alternatives></inline-formula>.
+    We obtained the computed posterior using the ABC SMC method. We used
+    a uniform prior for both parameters and used normally distributed
+    perturbation kernels to perturb them independently, with standard
+    deviations 0.006 and 0.2 for <inline-formula><alternatives>
+    <tex-math><![CDATA[\beta]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>β</mml:mi></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[\gamma]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>γ</mml:mi></mml:math></alternatives></inline-formula>,
+    respectively. The tolerance series was
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\langle 75, 70, \ldots, 35 \rangle]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">⟨</mml:mo><mml:mn>75</mml:mn><mml:mo>,</mml:mo><mml:mn>70</mml:mn><mml:mo>,</mml:mo><mml:mi>…</mml:mi><mml:mo>,</mml:mo><mml:mn>35</mml:mn><mml:mo stretchy="false" form="postfix">⟩</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+    and the population size was 10,000. We obtained the analytical
+    posterior by numerically computing the transition probabilities of
+    the corresponding discrete-state continuous-time Markov chain. The
+    computed and analytical posteriors do not correspond exactly because
+    we used a nonzero tolerance. See the GitHub wiki for more
+    details.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="sis-smc-joint-histogram.png" xlink:title="" />
+  </fig>
+  <p>In the final example, we use a cell-based model of epithelial
+  tissue growth to infer the average cell cycle time,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[t_{\textrm{cycle}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>t</mml:mi><mml:mtext mathvariant="normal">cycle</mml:mtext></mml:msub></mml:math></alternatives></inline-formula>,
+  from the number of cells that we observe after letting an initial
+  population of four cells grow and divide for a fixed period of time.
+  The model was implemented in Chaste, a software library for
+  computational physiology and biology
+  (<xref alt="Mirams et al., 2013" rid="ref-Mirams2013" ref-type="bibr">Mirams
+  et al., 2013</xref>) that includes a range of cell-based models
+  (<xref alt="Osborne et al., 2017" rid="ref-Osborne2017" ref-type="bibr">Osborne
+  et al., 2017</xref>). This example demonstrates that Pakman is
+  flexible enough to run simulations implemented using established
+  scientific software packages and libraries. We used Pakman to run the
+  ABC SMC method on this example and obtained the posterior histogram
+  shown in Figure 3.</p>
+  <fig>
+    <caption><p>Left: an example simulation of the cell-based model.
+    Right: the approximate posterior distribution for
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[t_{\textrm{cycle}}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>t</mml:mi><mml:mtext mathvariant="normal">cycle</mml:mtext></mml:msub></mml:math></alternatives></inline-formula>,
+    computed using the ABC SMC method. We used a uniform prior and a
+    normally distributed perturbation kernel with a standard deviation
+    of 1. The tolerance series was <inline-formula><alternatives>
+    <tex-math><![CDATA[\langle 4, 3, 2, 1, 0 \rangle]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">⟨</mml:mo><mml:mn>4</mml:mn><mml:mo>,</mml:mo><mml:mn>3</mml:mn><mml:mo>,</mml:mo><mml:mn>2</mml:mn><mml:mo>,</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mn>0</mml:mn><mml:mo stretchy="false" form="postfix">⟩</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+    and the population size was 2,000. See the GitHub wiki for more
+    details.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="cell-figure.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="future-development">
+  <title>Future development</title>
+  <p>At the current time, the ABC rejection method and the ABC SMC
+  method have been implemented in Pakman. These are the most widely used
+  ABC algorithms, as well as the easiest to parallelise. Nevertheless,
+  the software architecture of Pakman was designed with object-oriented
+  programming to facilitate extending Pakman to include other ABC
+  algorithms. These include variations of ABC SMC that employ adaptive
+  proposal kernels to improve acceptance rates, such as ABC population
+  Monte Carlo
+  (<xref alt="Beaumont et al., 2009" rid="ref-Beaumont2009" ref-type="bibr">Beaumont
+  et al., 2009</xref>), or further generalisations thereof
+  (<xref alt="Filippi et al., 2013" rid="ref-Filippi2013" ref-type="bibr">Filippi
+  et al., 2013</xref>).</p>
+  <p>There are also ABC algorithms that are not directly related to ABC
+  SMC, such as ABC Markov Chain Monte Carlo (MCMC)
+  (<xref alt="Marjoram et al., 2003" rid="ref-Marjoram2003" ref-type="bibr">Marjoram
+  et al., 2003</xref>), and ABC parallel tempering
+  (<xref alt="Baragatti et al., 2013" rid="ref-Baragatti2013" ref-type="bibr">Baragatti
+  et al., 2013</xref>). The latter method is inspired by a Monte Carlo
+  method for simulating physical systems. We aim to implement these
+  advanced ABC algorithms in the near future. Furthermore, we plan to
+  update Pakman with new parallel ABC algorithms as they are introduced
+  to the field of ABC.</p>
+  <p>The design of Pakman also lends itself well to systematically
+  exploring the parameter space of models in a non-Bayesian context. In
+  this case, Pakman functions as an engine to parallelise simulation
+  workloads where the model needs to be evaluated for a large number of
+  parameter sets and/or initial conditions. We have implemented a
+  parameter sweep method that leverages Pakman’s modular framework and
+  parallel architecture to achieve this. Using Pakman to parallelise
+  parameter sweeps has the potential to greatly accelerate the parameter
+  sensitivity analysis of models where a large range of parameter sets
+  needs to be considered, such as models of cardiac electrophysiology
+  (<xref alt="Britton et al., 2013" rid="ref-Britton2013" ref-type="bibr">Britton
+  et al., 2013</xref>;
+  <xref alt="Lawson et al., 2018" rid="ref-Lawson2018" ref-type="bibr">Lawson
+  et al., 2018</xref>).</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>Thomas Pak was supported by funding from the Biotechnology and
+  Biological Sciences Research Council (BBSRC) via grant number
+  BB/M011224/1.</p>
+  <p>Ruth E. Baker is a Royal Society Wolfson Research Merit Award
+  holder and a Leverhulme Research Fellow, and also acknowledges the
+  BBSRC for funding via grant number BB/R000816/1.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Marjoram2003">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Marjoram</surname><given-names>Paul</given-names></name>
+          <name><surname>Molitor</surname><given-names>John</given-names></name>
+          <name><surname>Plagnol</surname><given-names>Vincent</given-names></name>
+          <name><surname>Tavare</surname><given-names>Simon</given-names></name>
+        </person-group>
+        <article-title>Markov chain Monte Carlo without likelihoods.</article-title>
+        <source>Proceedings of the National Academy of Sciences of the United States of America</source>
+        <year iso-8601-date="2003">2003</year>
+        <volume>100</volume>
+        <issue>26</issue>
+        <isbn>0027-8424</isbn>
+        <issn>0027-8424</issn>
+        <uri>http://www.pubmedcentral.nih.gov/articlerender.fcgi?artid=307566{\&amp;}tool=pmcentrez{\&amp;}rendertype=abstract</uri>
+        <pub-id pub-id-type="doi">10.1073/pnas.0306899100</pub-id>
+        <pub-id pub-id-type="pmid">14663152</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Toni2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Toni</surname><given-names>Tina</given-names></name>
+          <name><surname>Welch</surname><given-names>David</given-names></name>
+          <name><surname>Strelkowa</surname><given-names>Natalja</given-names></name>
+          <name><surname>Ipsen</surname><given-names>Andreas</given-names></name>
+          <name><surname>Stumpf</surname><given-names>Michael P. H.</given-names></name>
+        </person-group>
+        <article-title>Approximate Bayesian computation scheme for parameter inference and model selection in dynamical systems</article-title>
+        <source>Journal of the Royal Society Interface</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume>6</volume>
+        <issue>31</issue>
+        <isbn>1742-5689</isbn>
+        <issn>17425662</issn>
+        <uri>https://arxiv.org/abs/0901.1925</uri>
+        <pub-id pub-id-type="doi">10.1098/rsif.2008.0172</pub-id>
+        <pub-id pub-id-type="pmid">19205079</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Jagiella2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jagiella</surname><given-names>Nick</given-names></name>
+          <name><surname>Rickert</surname><given-names>Dennis</given-names></name>
+          <name><surname>Theis</surname><given-names>Fabian J.</given-names></name>
+          <name><surname>Hasenauer</surname><given-names>Jan</given-names></name>
+        </person-group>
+        <article-title>Parallelization and high-performance computing enables automated statistical inference of multi-scale models</article-title>
+        <source>Cell Systems</source>
+        <publisher-name>Elsevier Inc.</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>4</volume>
+        <issue>2</issue>
+        <issn>24054720</issn>
+        <uri>http://dx.doi.org/10.1016/j.cels.2016.12.002</uri>
+        <pub-id pub-id-type="doi">10.1016/j.cels.2016.12.002</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Klinger2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Klinger</surname><given-names>Emmanuel</given-names></name>
+          <name><surname>Rickert</surname><given-names>Dennis</given-names></name>
+          <name><surname>Hasenauer</surname><given-names>Jan</given-names></name>
+        </person-group>
+        <article-title>pyABC: distributed, likelihood-free inference</article-title>
+        <source>Bioinformatics</source>
+        <publisher-name>Narnia</publisher-name>
+        <year iso-8601-date="2018-10">2018</year><month>10</month>
+        <volume>34</volume>
+        <issue>20</issue>
+        <issn>1367-4803</issn>
+        <uri>https://academic.oup.com/bioinformatics/article/34/20/3591/4995841</uri>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/bty361</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ISO2011">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>The C++ Standards Committee</string-name>
+        </person-group>
+        <article-title>ISO/IEC 14882:2011, standard for programming language C++</article-title>
+        <publisher-name>International Organization for Standardization</publisher-name>
+        <publisher-loc>Geneva</publisher-loc>
+        <year iso-8601-date="2011">2011</year>
+        <uri>https://www.iso.org/standard/50372.html</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-MPI2015">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>Message Passing Interface Forum</string-name>
+        </person-group>
+        <source>MPI : A Message-Passing Interface Standard, Version 3.1</source>
+        <publisher-name>University of Tennessee</publisher-name>
+        <publisher-loc>Knoxville</publisher-loc>
+        <year iso-8601-date="2015">2015</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Mirams2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mirams</surname><given-names>Gary R.</given-names></name>
+          <name><surname>Arthurs</surname><given-names>Christopher J.</given-names></name>
+          <name><surname>Bernabeu</surname><given-names>Miguel O.</given-names></name>
+          <name><surname>Bordas</surname><given-names>Rafel</given-names></name>
+          <name><surname>Cooper</surname><given-names>Jonathan</given-names></name>
+          <name><surname>Corrias</surname><given-names>Alberto</given-names></name>
+          <name><surname>Davit</surname><given-names>Yohan</given-names></name>
+          <name><surname>Dunn</surname><given-names>Sara-Jane</given-names></name>
+          <name><surname>Fletcher</surname><given-names>Alexander G.</given-names></name>
+          <name><surname>Harvey</surname><given-names>Daniel G.</given-names></name>
+          <name><surname>Marsh</surname><given-names>Megan E.</given-names></name>
+          <name><surname>Osborne</surname><given-names>James M.</given-names></name>
+          <name><surname>Pathmanathan</surname><given-names>Pras</given-names></name>
+          <name><surname>Pitt-Francis</surname><given-names>Joe</given-names></name>
+          <name><surname>Southern</surname><given-names>James</given-names></name>
+          <name><surname>Zemzemi</surname><given-names>Nejib</given-names></name>
+          <name><surname>Gavaghan</surname><given-names>David J.</given-names></name>
+        </person-group>
+        <article-title>Chaste: an open source C++ library for computational physiology and biology</article-title>
+        <source>PLoS Computational Biology</source>
+        <publisher-name>Public Library of Science</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <volume>9</volume>
+        <issue>3</issue>
+        <issn>1553-7358</issn>
+        <uri>http://dx.plos.org/10.1371/journal.pcbi.1002970</uri>
+        <pub-id pub-id-type="doi">10.1371/journal.pcbi.1002970</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Osborne2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Osborne</surname><given-names>James M.</given-names></name>
+          <name><surname>Fletcher</surname><given-names>Alexander G.</given-names></name>
+          <name><surname>Pitt-Francis</surname><given-names>Joe M.</given-names></name>
+          <name><surname>Maini</surname><given-names>Philip K.</given-names></name>
+          <name><surname>Gavaghan</surname><given-names>David J.</given-names></name>
+        </person-group>
+        <article-title>Comparing individual-based approaches to modelling the self-organization of multicellular tissues</article-title>
+        <source>PLoS Computational Biology</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>13</volume>
+        <issue>2</issue>
+        <isbn>1111111111</isbn>
+        <issn>15537358</issn>
+        <pub-id pub-id-type="doi">10.1371/journal.pcbi.1005387</pub-id>
+        <pub-id pub-id-type="pmid">28192427</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Beaumont2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Beaumont</surname><given-names>Mark A.</given-names></name>
+          <name><surname>Cornuet</surname><given-names>Jean Marie</given-names></name>
+          <name><surname>Marin</surname><given-names>Jean Michel</given-names></name>
+          <name><surname>Robert</surname><given-names>Christian P.</given-names></name>
+        </person-group>
+        <article-title>Adaptive approximate Bayesian computation</article-title>
+        <source>Biometrika</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume>96</volume>
+        <issue>4</issue>
+        <issn>14643510</issn>
+        <pub-id pub-id-type="doi">10.1093/biomet/asp052</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Filippi2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Filippi</surname><given-names>Sarah</given-names></name>
+          <name><surname>Barnes</surname><given-names>Chris P.</given-names></name>
+          <name><surname>Cornebise</surname><given-names>Julien</given-names></name>
+          <name><surname>Stumpf</surname><given-names>Michael P. H.</given-names></name>
+        </person-group>
+        <article-title>On optimality of kernels for approximate Bayesian computation using sequential Monte Carlo</article-title>
+        <source>Statistical Applications in Genetics and Molecular Biology</source>
+        <year iso-8601-date="2013">2013</year>
+        <volume>12</volume>
+        <issue>1</issue>
+        <issn>15446115</issn>
+        <pub-id pub-id-type="doi">10.1515/sagmb-2012-0069</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Baragatti2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Baragatti</surname><given-names>Meïli</given-names></name>
+          <name><surname>Grimaud</surname><given-names>Agnès</given-names></name>
+          <name><surname>Pommeret</surname><given-names>Denys</given-names></name>
+        </person-group>
+        <article-title>Likelihood-free parallel tempering</article-title>
+        <source>Statistics and Computing</source>
+        <year iso-8601-date="2013">2013</year>
+        <volume>23</volume>
+        <issue>4</issue>
+        <issn>09603174</issn>
+        <pub-id pub-id-type="doi">10.1007/s11222-012-9328-6</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Britton2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Britton</surname><given-names>Oliver J.</given-names></name>
+          <name><surname>Bueno-Orovio</surname><given-names>Alfonso</given-names></name>
+          <name><surname>Van Ammel</surname><given-names>Karel</given-names></name>
+          <name><surname>Lu</surname><given-names>Hua Rong</given-names></name>
+          <name><surname>Towart</surname><given-names>Rob</given-names></name>
+          <name><surname>Gallacher</surname><given-names>David J.</given-names></name>
+          <name><surname>Rodriguez</surname><given-names>Blanca</given-names></name>
+        </person-group>
+        <article-title>Experimentally calibrated population of models predicts and explains intersubject variability in cardiac cellular electrophysiology</article-title>
+        <source>Proceedings of the National Academy of Sciences</source>
+        <year iso-8601-date="2013">2013</year>
+        <volume>110</volume>
+        <issue>23</issue>
+        <issn>0027-8424</issn>
+        <pub-id pub-id-type="doi">10.1073/pnas.1304382110</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Lawson2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lawson</surname><given-names>Brodie A. J.</given-names></name>
+          <name><surname>Drovandi</surname><given-names>Christopher C.</given-names></name>
+          <name><surname>Cusimano</surname><given-names>Nicole</given-names></name>
+          <name><surname>Burrage</surname><given-names>Pamela</given-names></name>
+          <name><surname>Rodriguez</surname><given-names>Blanca</given-names></name>
+          <name><surname>Burrage</surname><given-names>Kevin</given-names></name>
+        </person-group>
+        <article-title>Unlocking data sets by calibrating populations of models to data density: A study in atrial electrophysiology</article-title>
+        <source>Science Advances</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>4</volume>
+        <issue>1</issue>
+        <issn>23752548</issn>
+        <pub-id pub-id-type="doi">10.1126/sciadv.1701676</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Cornuet2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cornuet</surname><given-names>Jean Marie</given-names></name>
+          <name><surname>Pudlo</surname><given-names>Pierre</given-names></name>
+          <name><surname>Veyssier</surname><given-names>Julien</given-names></name>
+          <name><surname>Dehne-Garcia</surname><given-names>Alexandre</given-names></name>
+          <name><surname>Gautier</surname><given-names>Mathieu</given-names></name>
+          <name><surname>Leblois</surname><given-names>Raphaël</given-names></name>
+          <name><surname>Marin</surname><given-names>Jean Michel</given-names></name>
+          <name><surname>Estoup</surname><given-names>Arnaud</given-names></name>
+        </person-group>
+        <article-title>DIYABC v2.0: a software to make approximate Bayesian computation inferences about population history using single nucleotide polymorphism, DNA sequence and microsatellite data</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>30</volume>
+        <issue>8</issue>
+        <issn>14602059</issn>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btt763</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Liepe2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Liepe</surname><given-names>Juliane</given-names></name>
+          <name><surname>Barnes</surname><given-names>Chris</given-names></name>
+          <name><surname>Cule</surname><given-names>Erika</given-names></name>
+          <name><surname>Erguler</surname><given-names>Kamil</given-names></name>
+          <name><surname>Kirk</surname><given-names>Paul</given-names></name>
+          <name><surname>Toni</surname><given-names>Tina</given-names></name>
+          <name><surname>Stumpf</surname><given-names>Michael P. H.</given-names></name>
+        </person-group>
+        <article-title>ABC-SysBio–approximate Bayesian computation in Python with GPU support</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>26</volume>
+        <issue>14</issue>
+        <issn>13674803</issn>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btq278</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Csillery2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Csilléry</surname><given-names>Katalin</given-names></name>
+          <name><surname>François</surname><given-names>Olivier</given-names></name>
+          <name><surname>Blum</surname><given-names>Michael G B</given-names></name>
+        </person-group>
+        <article-title>abc: an R package for approximate Bayesian computation (ABC)</article-title>
+        <source>Methods in Ecology and Evolution</source>
+        <year iso-8601-date="2012">2012</year>
+        <volume>3</volume>
+        <issue>3</issue>
+        <issn>2041210X</issn>
+        <uri>https://arxiv.org/abs/1106.2793</uri>
+        <pub-id pub-id-type="doi">10.1111/j.2041-210X.2011.00179.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Kousathanas2018">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Kousathanas</surname><given-names>Athanasios</given-names></name>
+          <name><surname>Duchen</surname><given-names>Pablo</given-names></name>
+          <name><surname>Wegmann</surname><given-names>Daniel</given-names></name>
+        </person-group>
+        <article-title>A guide to general-purpose approximate Bayesian computation software</article-title>
+        <source>Handbook of approximate Bayesian computation</source>
+        <publisher-name>Chapman and Hall/CRC</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://arxiv.org/abs/1806.08320</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Wegmann2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wegmann</surname><given-names>Daniel</given-names></name>
+          <name><surname>Leuenberger</surname><given-names>Christoph</given-names></name>
+          <name><surname>Neuenschwander</surname><given-names>Samuel</given-names></name>
+          <name><surname>Excoffier</surname><given-names>Laurent</given-names></name>
+        </person-group>
+        <article-title>ABCtoolbox: a versatile toolkit for approximate Bayesian computations</article-title>
+        <source>BMC Bioinformatics</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>11</volume>
+        <issn>14712105</issn>
+        <pub-id pub-id-type="doi">10.1186/1471-2105-11-116</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

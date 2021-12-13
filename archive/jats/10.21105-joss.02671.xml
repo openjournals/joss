@@ -1,0 +1,868 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2671</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02671</article-id>
+<title-group>
+<article-title>FHI-vibes: Ab Initio Vibrational
+Simulations</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-7132-039X</contrib-id>
+<string-name>Florian Knoop</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-4564-7206</contrib-id>
+<string-name>Thomas A. R. Purcell</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Matthias Scheffler</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-0635-8364</contrib-id>
+<string-name>Christian Carbogno</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Fritz Haber Institute of the Max Planck Society, Berlin,
+Germany</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<volume>5</volume>
+<issue>56</issue>
+<fpage>2671</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Physics</kwd>
+<kwd>Phonons</kwd>
+<kwd>Transport</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>The vibrational motion of nuclei determines many important
+  properties of materials, including their thermodynamic equilibrium and
+  non-equilibrium properties. Accurately assessing the nuclear dynamics
+  and the associated material properties is therefore an important task
+  for computational materials scientists in a broad range of sub-fields.
+  Of particular importance are simulation techniques that build on
+  first-principles electronic-structure simulations and thereby allow to
+  systematically investigate the virtually infinite space of materials,
+  including those systems for which little or no experimental data is
+  hitherto available
+  (<xref alt="Curtarolo et al., 2013" rid="ref-Curtarolo2013" ref-type="bibr">Curtarolo
+  et al., 2013</xref>). This allows one to design novel and improved
+  materials with optimal properties for many applications, e.g.,
+  high-performance thermal insulators for gas and airplane turbines
+  (<xref alt="Evans et al., 2008" rid="ref-Evans2008" ref-type="bibr">Evans
+  et al., 2008</xref>), organic semicondcutors with long-term phase
+  stabilities
+  (<xref alt="Salzillo et al., 2016" rid="ref-Salzillo2016" ref-type="bibr">Salzillo
+  et al., 2016</xref>), thermoelectric generators
+  (<xref alt="Snyder &amp; Toberer, 2008" rid="ref-Snyder2008" ref-type="bibr">Snyder
+  &amp; Toberer, 2008</xref>), and improved thermal management systems
+  (<xref alt="Tian &amp; Ren, 2019" rid="ref-Tian2019" ref-type="bibr">Tian
+  &amp; Ren, 2019</xref>).</p>
+  <p>Essentially, there are two distinct routes towards assessing
+  vibrational properties: In perturbative <italic>lattice
+  dynamics</italic> techniques, the potential-energy surface on which
+  the nuclei move is approximated with a Taylor expansion around the
+  equilibrium structure. Typically, one starts from a second-order
+  expansion, i.e., the <italic>harmonic approximation</italic>, which
+  allows for an analytic solution of the equations of motion
+  (<xref alt="Dove, 1993" rid="ref-Dove1993" ref-type="bibr">Dove,
+  1993</xref>) and thus for a straightforward evaluation of observables
+  (thermodynamic expectation values). Higher-order terms in the Taylor
+  expansion can be accounted for perturbatively. Conversely,
+  <italic>molecular dynamics</italic> (MD) based approaches account for
+  the full, non-perturbative potential-energy surface
+  <italic>without</italic> approximating the actual interactions. This
+  requires one to solve the equations of motion numerically by
+  propagating the atoms in time; physical properties can then be
+  extracted as time averages of properly chosen observables
+  (<xref alt="Tuckerman, 2010" rid="ref-Tuckerman2010" ref-type="bibr">Tuckerman,
+  2010</xref>). Although both <italic>lattice dynamics</italic> and
+  <italic>molecular dynamics</italic> techniques aim at computing the
+  same physical observables, the involved methodologies, formalisms, and
+  challenges are quite different. Accordingly, both methodologies also
+  have different strengths and weaknesses: For instance, performing and
+  analyzing MD simulations is typically computationally and conceptually
+  more challenging, whereas perturbative lattice dynamics calculations
+  inherently rely on approximations that are hard to validate.</p>
+  <p>To date, a variety of different software packages exists at
+  different degrees of sophistication in both fields. Prominent examples
+  are the <italic>phonopy</italic> code
+  (<xref alt="Togo &amp; Tanaka, 2015" rid="ref-Togo2015" ref-type="bibr">Togo
+  &amp; Tanaka, 2015</xref>) for performing <italic>lattice
+  dynamics</italic> calculations using Parlinski’s finite-difference
+  formalism
+  (<xref alt="Parlinski et al., 1997" rid="ref-Parlinski1997" ref-type="bibr">Parlinski
+  et al., 1997</xref>) and the <italic>i-PI</italic> code
+  (<xref alt="Kapil et al., 2019" rid="ref-Kapil2019" ref-type="bibr">Kapil
+  et al., 2019</xref>) for performing classical MD and
+  quantum-mechanical path-integral MD simulations. Both packages
+  interface with a variety of first-principles codes like
+  <italic>VASP</italic>
+  (<xref alt="Kresse &amp; Furthmüller, 1996" rid="ref-Kresse1996" ref-type="bibr">Kresse
+  &amp; Furthmüller, 1996</xref>), <italic>QuantumEspresso</italic>
+  (<xref alt="Giannozzi et al., 2009" rid="ref-Giannozzi2009" ref-type="bibr">Giannozzi
+  et al., 2009</xref>), <italic>Abinit</italic>
+  (<xref alt="Gonze et al., 2020" rid="ref-Gonze2020" ref-type="bibr">Gonze
+  et al., 2020</xref>), <italic>FHI-aims</italic>
+  (<xref alt="Blum et al., 2009" rid="ref-Blum2009" ref-type="bibr">Blum
+  et al., 2009</xref>), and several others.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>To date, there is no software solution that allows for the seamless
+  bridging and interlinking of <italic>lattice dynamics</italic> and
+  <italic>molecular dynamics</italic> based approaches, despite the fact
+  that actual material science studies can profit in accuracy and
+  efficiency by exploiting both approaches. For instance, potential use
+  cases include accelerating <italic>MD</italic> calculations by
+  starting from harmonic equilibrium configurations
+  (<xref alt="West &amp; Estreicher, 2006" rid="ref-West2006" ref-type="bibr">West
+  &amp; Estreicher, 2006</xref>), analyzing <italic>MD</italic>
+  simulations in terms of harmonic phonons
+  (<xref alt="Turney et al., 2009" rid="ref-Turney2009" ref-type="bibr">Turney
+  et al., 2009</xref>), investigating the range of validity of the
+  perturbative expansion used in <italic>lattice dynamics</italic>
+  (<xref alt="Knoop et al., 2020" rid="ref-Knoop2020" ref-type="bibr">Knoop
+  et al., 2020</xref>), and overcoming finite-size and finite-time
+  effects in <italic>ab initio</italic> Green Kubo simulations of the
+  thermal conductivity
+  (<xref alt="Carbogno et al., 2017" rid="ref-Carbogno2016" ref-type="bibr">Carbogno
+  et al., 2017</xref>). Given the wide opportunities for application,
+  the aspect of <italic>integration</italic>, i.e., the ability to
+  utilize different methodologies from distinct codes in a flexible
+  fashion using a consistent user interface, is paramount. In
+  particular, this is a prerequisite for automatizing these workflows to
+  enable hierarchical high-throughput screening of whole material
+  classes in a systematic fashion. For example, such a workflow would
+  start from geometry optimizations followed by a study of harmonic
+  properties for many materials, so to single out candidate materials
+  for more involved, fully anharmonic aiMD simulation techniques. Along
+  these lines, let us mention that providing descriptive input and
+  output files is a prerequisite for sharing raw data and results in a
+  transparent and interpretable way in the spirit of open science and
+  the FAIR Principles
+  (<xref alt="Draxl &amp; Scheffler, 2018" rid="ref-Draxl2018" ref-type="bibr">Draxl
+  &amp; Scheffler, 2018</xref>). On top of that, tracking the
+  provenance (<xref alt="Huber et al., 2020" rid="ref-AiiDA" ref-type="bibr">Huber
+  et al., 2020</xref>) across different codes facilitates the
+  repurposing and analysis of the obtained data.</p>
+</sec>
+<sec id="summary">
+  <title>Summary</title>
+  <p><italic>FHI-vibes</italic> is a <italic>python</italic> package
+  that allows for such an integrated workflow. It uses the
+  <italic>Atomistic Simulation Environment (ASE)</italic>
+  (<xref alt="Hjorth Larsen et al., 2017" rid="ref-Larsen2017" ref-type="bibr">Hjorth
+  Larsen et al., 2017</xref>) as a backend in order to represent
+  materials and to connect to various first-principles codes. Via
+  <italic>ASE</italic>, <italic>FHI-vibes</italic> provides a flexible
+  framework for geometry optimization and MD, and connects to external
+  codes like <italic>spglib</italic>
+  (<xref alt="Togo &amp; Tanaka, 2018" rid="ref-Togo2018" ref-type="bibr">Togo
+  &amp; Tanaka, 2018</xref>), <italic>phonopy</italic>
+  (<xref alt="Togo &amp; Tanaka, 2015" rid="ref-Togo2015" ref-type="bibr">Togo
+  &amp; Tanaka, 2015</xref>), <italic>phono3py</italic>
+  (<xref alt="Togo et al., 2015" rid="ref-Togo2015b" ref-type="bibr">Togo
+  et al., 2015</xref>), and <italic>hiphive</italic>
+  (<xref alt="Eriksson et al., 2019" rid="ref-Eriksson2019" ref-type="bibr">Eriksson
+  et al., 2019</xref>) that implement lattice dynamics techniques based
+  on the harmonic approximation. For all these tasks,
+  <italic>FHI-vibes</italic> provides defined input files and a command
+  line interface to set up and run calculations on local machines and
+  clusters using the <italic>slurm</italic> submission system. The
+  output is organized in self-contained and descriptive output files
+  that enable a straightforward exchange of the data obtained with
+  different methodologies. For advanced analysis, it provides an API
+  fully compatible with <italic>ASE</italic> as well as
+  <italic>numpy</italic>
+  (<xref alt="van der Walt et al., 2011" rid="ref-Walt2011" ref-type="bibr">van
+  der Walt et al., 2011</xref>), <italic>pandas</italic>
+  (<xref alt="McKinney, 2011" rid="ref-McKinney2011" ref-type="bibr">McKinney,
+  2011</xref>), and <italic>xarray</italic>
+  (<xref alt="Hoyer &amp; Hamman, 2017" rid="ref-Hoyer2017" ref-type="bibr">Hoyer
+  &amp; Hamman, 2017</xref>); several user-friendly utilities allow to
+  perform the most common postprocessing tasks within the command-line
+  interface, such as providing comprehensive summaries of MD simulations
+  or phonon calculations.</p>
+  <p><italic>FHI-vibes</italic> provides a connection to
+  <italic>FireWorks</italic>
+  (<xref alt="Jain et al., 2015" rid="ref-Jain2015" ref-type="bibr">Jain
+  et al., 2015</xref>), a workflow management system for running
+  simulation workflows on extensive sets of materials in high-throughput
+  fashion. <italic>FHI-vibes</italic> is tightly integrated with
+  <italic>FHI-aims</italic>
+  (<xref alt="Blum et al., 2009" rid="ref-Blum2009" ref-type="bibr">Blum
+  et al., 2009</xref>) to perform energy and force calculations, but
+  extending the functionality to any calculator available via
+  <italic>ASE</italic> is straightforward.</p>
+  <p><italic>FHI-vibes</italic> was used to produce the results in
+  (<xref alt="Knoop et al., 2020" rid="ref-Knoop2020" ref-type="bibr">Knoop
+  et al., 2020</xref>).</p>
+  <sec id="features">
+    <title>Features</title>
+    <p>To facilitate the scientific studies described in the
+    <xref alt="statement of need" rid="statement-of-need">statement of
+    need</xref>, <italic>FHI-vibes 1.0</italic> offers the following
+    main features:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p>Free and symmetry-constrained geometry optimization,</p>
+      </list-item>
+      <list-item>
+        <p>harmonic phonon calculations,</p>
+      </list-item>
+      <list-item>
+        <p>molecular dynamics simulations,</p>
+      </list-item>
+      <list-item>
+        <p>harmonic sampling, and</p>
+      </list-item>
+      <list-item>
+        <p>anharmonicity quantification.</p>
+      </list-item>
+    </list>
+    <p>An extensive user guide including tutorials and a reference
+    documentation for these features is available at
+    <ext-link ext-link-type="uri" xlink:href="http://vibes.fhi-berlin.mpg.de/"><monospace>vibes.fhi-berlin.mpg.de</monospace></ext-link>.
+    As demonstrated in a dedicated tutorial, the tasks can be easily
+    combined and tailored to define workflows for high-throughput
+    screening of material space.</p>
+    <p>The codebase and user interface of <italic>FHI-vibes</italic> are
+    designed as a modular framework such that more advanced features and
+    workflows are straightforward to add in the future.</p>
+  </sec>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>The authors would like to thank Roman Kempt and Marcel Hülsberg for
+  testing and providing valuable feedback. F.K. would like to thank
+  Marcel Langer and Zhenkun Yuan for feedback and Ask Hjorth Larsen for
+  valuable discussions. T.P. would like to thank the Alexander von
+  Humboldt Foundation for their support through the Alexander von
+  Humboldt Postdoctoral Fellowship Program. This project was supported
+  by TEC1p (the European Research Council (ERC) Horizon 2020 research
+  and innovation programme, grant agreement No. 740233), BigMax (the Max
+  Planck Society’s Research Network on Big-Data-Driven
+  Materials-Science), and the NOMAD pillar of the FAIR-DI e.V.
+  association.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Togo2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Togo</surname><given-names>Atsushi</given-names></name>
+          <name><surname>Tanaka</surname><given-names>Isao</given-names></name>
+        </person-group>
+        <article-title>Spglib: A software library for crystal symmetry search</article-title>
+        <source>arXiv e-prints</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://arxiv.org/abs/1808.01590</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Knoop2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Knoop</surname><given-names>Florian</given-names></name>
+          <name><surname>Purcell</surname><given-names>Thomas A. R.</given-names></name>
+          <name><surname>Scheffler</surname><given-names>Matthias</given-names></name>
+          <name><surname>Carbogno</surname><given-names>Christian</given-names></name>
+        </person-group>
+        <article-title>Anharmonicity measure for materials</article-title>
+        <source>Phys. Rev. Materials</source>
+        <publisher-name>American Physical Society</publisher-name>
+        <year iso-8601-date="2020-08">2020</year><month>08</month>
+        <volume>4</volume>
+        <uri>https://link.aps.org/doi/10.1103/PhysRevMaterials.4.083809</uri>
+        <pub-id pub-id-type="doi">10.1103/PhysRevMaterials.4.083809</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Larsen2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hjorth Larsen</surname><given-names>Ask</given-names></name>
+          <name><surname>JØrgen Mortensen</surname><given-names>Jens</given-names></name>
+          <name><surname>Blomqvist</surname><given-names>Jakob</given-names></name>
+          <name><surname>Castelli</surname><given-names>Ivano E.</given-names></name>
+          <name><surname>Christensen</surname><given-names>Rune</given-names></name>
+          <name><surname>Dułak</surname><given-names>Marcin</given-names></name>
+          <name><surname>Friis</surname><given-names>Jesper</given-names></name>
+          <name><surname>Groves</surname><given-names>Michael N.</given-names></name>
+          <name><surname>Hammer</surname><given-names>BjØrk</given-names></name>
+          <name><surname>Hargus</surname><given-names>Cory</given-names></name>
+          <name><surname>Hermes</surname><given-names>Eric D.</given-names></name>
+          <name><surname>Jennings</surname><given-names>Paul C.</given-names></name>
+          <name><surname>Bjerre Jensen</surname><given-names>Peter</given-names></name>
+          <name><surname>Kermode</surname><given-names>James</given-names></name>
+          <name><surname>Kitchin</surname><given-names>John R.</given-names></name>
+          <name><surname>Leonhard Kolsbjerg</surname><given-names>Esben</given-names></name>
+          <name><surname>Kubal</surname><given-names>Joseph</given-names></name>
+          <name><surname>Kaasbjerg</surname><given-names>Kristen</given-names></name>
+          <name><surname>Lysgaard</surname><given-names>Steen</given-names></name>
+          <name><surname>Bergmann Maronsson</surname><given-names>Jón</given-names></name>
+          <name><surname>Maxson</surname><given-names>Tristan</given-names></name>
+          <name><surname>Olsen</surname><given-names>Thomas</given-names></name>
+          <name><surname>Pastewka</surname><given-names>Lars</given-names></name>
+          <name><surname>Peterson</surname><given-names>Andrew</given-names></name>
+          <name><surname>Rostgaard</surname><given-names>Carsten</given-names></name>
+          <name><surname>SchiØtz</surname><given-names>Jakob</given-names></name>
+          <name><surname>Schütt</surname><given-names>Ole</given-names></name>
+          <name><surname>Strange</surname><given-names>Mikkel</given-names></name>
+          <name><surname>Thygesen</surname><given-names>Kristian S.</given-names></name>
+          <name><surname>Vegge</surname><given-names>Tejs</given-names></name>
+          <name><surname>Vilhelmsen</surname><given-names>Lasse</given-names></name>
+          <name><surname>Walter</surname><given-names>Michael</given-names></name>
+          <name><surname>Zeng</surname><given-names>Zhenhua</given-names></name>
+          <name><surname>Jacobsen</surname><given-names>Karsten W.</given-names></name>
+        </person-group>
+        <article-title>The atomic simulation environment - A Python library for working with atoms</article-title>
+        <source>J. Phys.: Condens. Matter</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>29</volume>
+        <issue>27</issue>
+        <pub-id pub-id-type="doi">10.1088/1361-648X/aa680e</pub-id>
+        <pub-id pub-id-type="pmid">28323250</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Togo2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Togo</surname><given-names>Atsushi</given-names></name>
+          <name><surname>Tanaka</surname><given-names>Isao</given-names></name>
+        </person-group>
+        <article-title>First principles phonon calculations in materials science</article-title>
+        <source>Scr. Mater.</source>
+        <year iso-8601-date="2015-11">2015</year><month>11</month>
+        <volume>108</volume>
+        <pub-id pub-id-type="doi">10.1016/j.scriptamat.2015.07.021</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Togo2015b">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Togo</surname><given-names>Atsushi</given-names></name>
+          <name><surname>Chaput</surname><given-names>Laurent</given-names></name>
+          <name><surname>Tanaka</surname><given-names>Isao</given-names></name>
+        </person-group>
+        <article-title>Distributions of phonon lifetimes in brillouin zones</article-title>
+        <source>Phys. Rev. B</source>
+        <publisher-name>American Physical Society</publisher-name>
+        <year iso-8601-date="2015-03">2015</year><month>03</month>
+        <volume>91</volume>
+        <pub-id pub-id-type="doi">10.1103/PhysRevB.91.094306</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Blum2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Blum</surname><given-names>Volker</given-names></name>
+          <name><surname>Gehrke</surname><given-names>Ralf</given-names></name>
+          <name><surname>Hanke</surname><given-names>Felix</given-names></name>
+          <name><surname>Havu</surname><given-names>Paula</given-names></name>
+          <name><surname>Havu</surname><given-names>Ville</given-names></name>
+          <name><surname>Ren</surname><given-names>Xinguo</given-names></name>
+          <name><surname>Reuter</surname><given-names>Karsten</given-names></name>
+          <name><surname>Scheffler</surname><given-names>Matthias</given-names></name>
+        </person-group>
+        <article-title>Ab initio molecular simulations with numeric atom-centered orbitals</article-title>
+        <source>Comp. Phys. Commun.</source>
+        <publisher-name>Elsevier B.V.</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <volume>180</volume>
+        <issue>11</issue>
+        <pub-id pub-id-type="doi">10.1016/j.cpc.2009.06.022</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Kapil2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kapil</surname><given-names>Venkat</given-names></name>
+          <name><surname>Rossi</surname><given-names>Mariana</given-names></name>
+          <name><surname>Marsalek</surname><given-names>Ondrej</given-names></name>
+          <name><surname>Petraglia</surname><given-names>Riccardo</given-names></name>
+          <name><surname>Litman</surname><given-names>Yair</given-names></name>
+          <name><surname>Spura</surname><given-names>Thomas</given-names></name>
+          <name><surname>Cheng</surname><given-names>Bingqing</given-names></name>
+          <name><surname>Cuzzocrea</surname><given-names>Alice</given-names></name>
+          <name><surname>Meißner</surname><given-names>Robert H.</given-names></name>
+          <name><surname>Wilkins</surname><given-names>David M.</given-names></name>
+          <name><surname>Helfrecht</surname><given-names>Benjamin A.</given-names></name>
+          <name><surname>Juda</surname><given-names>Przemysław</given-names></name>
+          <name><surname>Bienvenue</surname><given-names>Sébastien P.</given-names></name>
+          <name><surname>Fang</surname><given-names>Wei</given-names></name>
+          <name><surname>Kessler</surname><given-names>Jan</given-names></name>
+          <name><surname>Poltavsky</surname><given-names>Igor</given-names></name>
+          <name><surname>Vandenbrande</surname><given-names>Steven</given-names></name>
+          <name><surname>Wieme</surname><given-names>Jelle</given-names></name>
+          <name><surname>Corminboeuf</surname><given-names>Clemence</given-names></name>
+          <name><surname>Kühne</surname><given-names>Thomas D.</given-names></name>
+          <name><surname>Manolopoulos</surname><given-names>David E.</given-names></name>
+          <name><surname>Markland</surname><given-names>Thomas E.</given-names></name>
+          <name><surname>Richardson</surname><given-names>Jeremy O.</given-names></name>
+          <name><surname>Tkatchenko</surname><given-names>Alexandre</given-names></name>
+          <name><surname>Tribello</surname><given-names>Gareth A.</given-names></name>
+          <name><surname>Speybroeck</surname><given-names>Veronique Van</given-names></name>
+          <name><surname>Ceriotti</surname><given-names>Michele</given-names></name>
+        </person-group>
+        <article-title>I-PI 2.0: A universal force engine for advanced molecular simulations</article-title>
+        <source>Computer Physics Communications</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>236</volume>
+        <issn>0010-4655</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S0010465518303436</uri>
+        <pub-id pub-id-type="doi">10.1016/j.cpc.2018.09.020</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hoyer2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hoyer</surname><given-names>S.</given-names></name>
+          <name><surname>Hamman</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>Xarray: N-D labeled arrays and datasets in Python</article-title>
+        <source>Journal of Open Research Software</source>
+        <publisher-name>Ubiquity Press</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>5</volume>
+        <issue>1</issue>
+        <uri>http://doi.org/10.5334/jors.148</uri>
+        <pub-id pub-id-type="doi">10.5334/jors.148</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Walt2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>van der Walt</surname><given-names>S.</given-names></name>
+          <name><surname>Colbert</surname><given-names>S. C.</given-names></name>
+          <name><surname>Varoquaux</surname><given-names>G.</given-names></name>
+        </person-group>
+        <article-title>The NumPy array: A structure for efficient numerical computation</article-title>
+        <source>Computing in Science Engineering</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>13</volume>
+        <issue>2</issue>
+        <issn>1558-366X</issn>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2011.37</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-McKinney2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>McKinney</surname><given-names>Wes</given-names></name>
+        </person-group>
+        <article-title>Pandas: A foundational python library for data analysis and statistics</article-title>
+        <source>Python for High Performance and Scientific Computing</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>14</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-Tuckerman2010">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Tuckerman</surname><given-names>Mark</given-names></name>
+        </person-group>
+        <source>Statistical mechanics: Theory and molecular simulation</source>
+        <publisher-name>Oxford university press</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Dove1993">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Dove</surname><given-names>M.</given-names></name>
+        </person-group>
+        <source>Introduction to lattice dynamics</source>
+        <publisher-name>Cambridge University Press</publisher-name>
+        <year iso-8601-date="1993">1993</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Jain2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jain</surname><given-names>Anubhav</given-names></name>
+          <name><surname>Ong</surname><given-names>Shyue Ping</given-names></name>
+          <name><surname>Chen</surname><given-names>Wei</given-names></name>
+          <name><surname>Medasani</surname><given-names>Bharat</given-names></name>
+          <name><surname>Qu</surname><given-names>Xiaohui</given-names></name>
+          <name><surname>Kocher</surname><given-names>Michael</given-names></name>
+          <name><surname>Brafman</surname><given-names>Miriam</given-names></name>
+          <name><surname>Petretto</surname><given-names>Guido</given-names></name>
+          <name><surname>Rignanese</surname><given-names>Gian-Marco</given-names></name>
+          <name><surname>Hautier</surname><given-names>Geoffroy</given-names></name>
+          <name><surname>Gunter</surname><given-names>Daniel</given-names></name>
+          <name><surname>Persson</surname><given-names>Kristin A.</given-names></name>
+        </person-group>
+        <article-title>FireWorks: A dynamic workflow system designed for high-throughput applications</article-title>
+        <source>Concurrency and Computation: Practice and Experience</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>27</volume>
+        <issue>17</issue>
+        <uri>http://dx.doi.org/10.1002/cpe.3505</uri>
+        <pub-id pub-id-type="doi">10.1002/cpe.3505</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Giannozzi2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Giannozzi</surname><given-names>Paolo</given-names></name>
+          <name><surname>Baroni</surname><given-names>Stefano</given-names></name>
+          <name><surname>Bonini</surname><given-names>Nicola</given-names></name>
+          <name><surname>Calandra</surname><given-names>Matteo</given-names></name>
+          <name><surname>Car</surname><given-names>Roberto</given-names></name>
+          <name><surname>Cavazzoni</surname><given-names>Carlo</given-names></name>
+          <name><surname>Ceresoli</surname><given-names>Davide</given-names></name>
+          <name><surname>Chiarotti</surname><given-names>Guido L</given-names></name>
+          <name><surname>Cococcioni</surname><given-names>Matteo</given-names></name>
+          <name><surname>Dabo</surname><given-names>Ismaila</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>QUANTUM ESPRESSO: A modular and open-source software project for quantum simulations of materials</article-title>
+        <source>Journal of physics: Condensed matter</source>
+        <publisher-name>IOP Publishing</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <volume>21</volume>
+        <issue>39</issue>
+        <pub-id pub-id-type="doi">10.1088/0953-8984/21/39/395502</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Kresse1996">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kresse</surname><given-names>Georg</given-names></name>
+          <name><surname>Furthmüller</surname><given-names>Jürgen</given-names></name>
+        </person-group>
+        <article-title>Efficient iterative schemes for ab initio total-energy calculations using a plane-wave basis set</article-title>
+        <source>Physical review B</source>
+        <publisher-name>APS</publisher-name>
+        <year iso-8601-date="1996">1996</year>
+        <volume>54</volume>
+        <issue>16</issue>
+        <pub-id pub-id-type="doi">10.1103/PhysRevB.54.11169</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Curtarolo2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Curtarolo</surname><given-names>Stefano</given-names></name>
+          <name><surname>Hart</surname><given-names>Gus L. W.</given-names></name>
+          <name><surname>Nardelli</surname><given-names>Marco Buongiorno</given-names></name>
+          <name><surname>Mingo</surname><given-names>Natalio</given-names></name>
+          <name><surname>Sanvito</surname><given-names>Stefano</given-names></name>
+          <name><surname>Levy</surname><given-names>Ohad</given-names></name>
+        </person-group>
+        <article-title>The high-throughput highway to computational materials design</article-title>
+        <source>Nature Materials</source>
+        <year iso-8601-date="2013">2013</year>
+        <volume>12</volume>
+        <issue>3</issue>
+        <issn>1476-4660</issn>
+        <uri>https://doi.org/10.1038/nmat3568</uri>
+        <pub-id pub-id-type="doi">10.1038/nmat3568</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Parlinski1997">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Parlinski</surname><given-names>K.</given-names></name>
+          <name><surname>Li</surname><given-names>Z.</given-names></name>
+          <name><surname>Kawazoe</surname><given-names>Y.</given-names></name>
+        </person-group>
+        <article-title>First-Principles Determination of the Soft Mode in Cubic ZrO2</article-title>
+        <source>Phys. Rev. Lett.</source>
+        <year iso-8601-date="1997">1997</year>
+        <volume>78</volume>
+        <issue>21</issue>
+        <pub-id pub-id-type="doi">10.1103/PhysRevLett.78.4063</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Carbogno2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Carbogno</surname><given-names>Christian</given-names></name>
+          <name><surname>Ramprasad</surname><given-names>Rampi</given-names></name>
+          <name><surname>Scheffler</surname><given-names>Matthias</given-names></name>
+        </person-group>
+        <article-title>Ab initio Green-Kubo Approach for the Thermal Conductivity of Solids</article-title>
+        <source>Phys. Rev. Lett.</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>118</volume>
+        <issue>175901</issue>
+        <issn>0031-9007</issn>
+        <pub-id pub-id-type="doi">10.1103/PhysRevLett.118.175901</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Eriksson2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Eriksson</surname><given-names>Fredrik</given-names></name>
+          <name><surname>Fransson</surname><given-names>Erik</given-names></name>
+          <name><surname>Erhart</surname><given-names>Paul</given-names></name>
+        </person-group>
+        <article-title>The Hiphive Package for the Extraction of High‐Order Force Constants by Machine Learning</article-title>
+        <source>Adv. Theor. Simul.</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>2</volume>
+        <issue>5</issue>
+        <pub-id pub-id-type="doi">10.1002/adts.201800184</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Tian2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tian</surname><given-names>Fei</given-names></name>
+          <name><surname>Ren</surname><given-names>Zhifeng</given-names></name>
+        </person-group>
+        <article-title>High Thermal Conductivity in Boron Arsenide: From Prediction to Reality</article-title>
+        <source>Angewandte Chemie - International Edition</source>
+        <publisher-name>Wiley-VCH Verlag</publisher-name>
+        <year iso-8601-date="2019-04">2019</year><month>04</month>
+        <volume>58</volume>
+        <issue>18</issue>
+        <issn>15213773</issn>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1002/anie.201812112</uri>
+        <pub-id pub-id-type="doi">10.1002/anie.201812112</pub-id>
+        <pub-id pub-id-type="pmid">30523650</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Salzillo2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Salzillo</surname><given-names>Tommaso</given-names></name>
+          <name><surname>Della Valle</surname><given-names>Raffaele Guido</given-names></name>
+          <name><surname>Venuti</surname><given-names>Elisabetta</given-names></name>
+          <name><surname>Brillante</surname><given-names>Aldo</given-names></name>
+          <name><surname>Siegrist</surname><given-names>Theo</given-names></name>
+          <name><surname>Masino</surname><given-names>Matteo</given-names></name>
+          <name><surname>Mezzadri</surname><given-names>Francesco</given-names></name>
+          <name><surname>Girlando</surname><given-names>Alberto</given-names></name>
+        </person-group>
+        <article-title>Two new polymorphs of the organic semiconductor 9,10-diphenylanthracene: Raman and X-ray analysis</article-title>
+        <source>Journal of Physical Chemistry C</source>
+        <publisher-name>UTC</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>120</volume>
+        <issue>3</issue>
+        <issn>19327455</issn>
+        <uri>https://pubs.acs.org/sharingguidelines</uri>
+        <pub-id pub-id-type="doi">10.1021/acs.jpcc.5b11115</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Snyder2008">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Snyder</surname><given-names>G. Jeffrey</given-names></name>
+          <name><surname>Toberer</surname><given-names>Eric S.</given-names></name>
+        </person-group>
+        <article-title>Complex thermoelectric materials</article-title>
+        <source>Nature Materials</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="2008-02">2008</year><month>02</month>
+        <volume>7</volume>
+        <issue>2</issue>
+        <issn>14761122</issn>
+        <uri>www.nature.com/naturematerials</uri>
+        <pub-id pub-id-type="doi">10.1038/nmat2090</pub-id>
+        <pub-id pub-id-type="pmid">18219332</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Evans2008">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Evans</surname><given-names>AG</given-names></name>
+          <name><surname>Clarke</surname><given-names>DR</given-names></name>
+          <name><surname>Levi</surname><given-names>CG</given-names></name>
+        </person-group>
+        <article-title>The influence of oxides on the performance of advanced gas turbines</article-title>
+        <source>J. Eur. Ceram. Soc.</source>
+        <year iso-8601-date="2008">2008</year>
+        <volume>28</volume>
+        <issue>7</issue>
+        <pub-id pub-id-type="doi">10.1016/j.jeurceramsoc.2007.12.023</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-West2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>West</surname><given-names>D.</given-names></name>
+          <name><surname>Estreicher</surname><given-names>S. K.</given-names></name>
+        </person-group>
+        <article-title>First-principles calculations of vibrational lifetimes and decay channels: Hydrogen-related modes in Si</article-title>
+        <source>Phys. Rev. Lett.</source>
+        <year iso-8601-date="2006">2006</year>
+        <volume>96</volume>
+        <issue>11</issue>
+        <pub-id pub-id-type="doi">10.1103/PhysRevLett.96.115504</pub-id>
+        <pub-id pub-id-type="pmid">16605840</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Turney2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Turney</surname><given-names>JE</given-names></name>
+          <name><surname>Landry</surname><given-names>ES</given-names></name>
+          <name><surname>McGaughey</surname><given-names>AJH</given-names></name>
+          <name><surname>Amon</surname><given-names>CH</given-names></name>
+        </person-group>
+        <article-title>Predicting phonon properties and thermal conductivity from anharmonic lattice dynamics calculations and molecular dynamics simulations</article-title>
+        <source>Phys. Rev. B</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume>79</volume>
+        <issue>6</issue>
+        <pub-id pub-id-type="doi">10.1103/physrevb.79.064301</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Gonze2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gonze</surname><given-names>Xavier</given-names></name>
+          <name><surname>Amadon</surname><given-names>Bernard</given-names></name>
+          <name><surname>Antonius</surname><given-names>Gabriel</given-names></name>
+          <name><surname>Arnardi</surname><given-names>Frédéric</given-names></name>
+          <name><surname>Baguet</surname><given-names>Lucas</given-names></name>
+          <name><surname>Beuken</surname><given-names>Jean-Michel</given-names></name>
+          <name><surname>Bieder</surname><given-names>Jordan</given-names></name>
+          <name><surname>Bottin</surname><given-names>François</given-names></name>
+          <name><surname>Bouchet</surname><given-names>Johann</given-names></name>
+          <name><surname>Bousquet</surname><given-names>Eric</given-names></name>
+          <name><surname>Brouwer</surname><given-names>Nils</given-names></name>
+          <name><surname>Bruneval</surname><given-names>Fabien</given-names></name>
+          <name><surname>Brunin</surname><given-names>Guillaume</given-names></name>
+          <name><surname>Cavignac</surname><given-names>Théo</given-names></name>
+          <name><surname>Charraud</surname><given-names>Jean-Baptiste</given-names></name>
+          <name><surname>Chen</surname><given-names>Wei</given-names></name>
+          <name><surname>Côté</surname><given-names>Michel</given-names></name>
+          <name><surname>Cottenier</surname><given-names>Stefaan</given-names></name>
+          <name><surname>Denier</surname><given-names>Jules</given-names></name>
+          <name><surname>Geneste</surname><given-names>Grégory</given-names></name>
+          <name><surname>Ghosez</surname><given-names>Philippe</given-names></name>
+          <name><surname>Giantomassi</surname><given-names>Matteo</given-names></name>
+          <name><surname>Gillet</surname><given-names>Yannick</given-names></name>
+          <name><surname>Gingras</surname><given-names>Olivier</given-names></name>
+          <name><surname>Hamann</surname><given-names>Donald R.</given-names></name>
+          <name><surname>Hautier</surname><given-names>Geoffroy</given-names></name>
+          <name><surname>He</surname><given-names>Xu</given-names></name>
+          <name><surname>Helbig</surname><given-names>Nicole</given-names></name>
+          <name><surname>Holzwarth</surname><given-names>Natalie</given-names></name>
+          <name><surname>Jia</surname><given-names>Yongchao</given-names></name>
+          <name><surname>Jollet</surname><given-names>François</given-names></name>
+          <name><surname>Lafargue-Dit-Hauret</surname><given-names>William</given-names></name>
+          <name><surname>Lejaeghere</surname><given-names>Kurt</given-names></name>
+          <name><surname>Marques</surname><given-names>Miguel A. L.</given-names></name>
+          <name><surname>Martin</surname><given-names>Alexandre</given-names></name>
+          <name><surname>Martins</surname><given-names>Cyril</given-names></name>
+          <name><surname>Miranda</surname><given-names>Henrique P. C.</given-names></name>
+          <name><surname>Naccarato</surname><given-names>Francesco</given-names></name>
+          <name><surname>Persson</surname><given-names>Kristin</given-names></name>
+          <name><surname>Petretto</surname><given-names>Guido</given-names></name>
+          <name><surname>Planes</surname><given-names>Valentin</given-names></name>
+          <name><surname>Pouillon</surname><given-names>Yann</given-names></name>
+          <name><surname>Prokhorenko</surname><given-names>Sergei</given-names></name>
+          <name><surname>Ricci</surname><given-names>Fabio</given-names></name>
+          <name><surname>Rignanese</surname><given-names>Gian-Marco</given-names></name>
+          <name><surname>Romero</surname><given-names>Aldo H.</given-names></name>
+          <name><surname>Schmitt</surname><given-names>Michael Marcus</given-names></name>
+          <name><surname>Torrent</surname><given-names>Marc</given-names></name>
+          <name><surname>Setten</surname><given-names>Michiel J. van</given-names></name>
+          <name><surname>Troeye</surname><given-names>Benoit Van</given-names></name>
+          <name><surname>Verstraete</surname><given-names>Matthieu J.</given-names></name>
+          <name><surname>Zérah</surname><given-names>Gilles</given-names></name>
+          <name><surname>Zwanziger</surname><given-names>Josef W.</given-names></name>
+        </person-group>
+        <article-title>The abinit project: Impact, environment and recent developments</article-title>
+        <source>Comput. Phys. Commun.</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>248</volume>
+        <uri>https://doi.org/10.1016/j.cpc.2019.107042</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Draxl2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Draxl</surname><given-names>Claudia</given-names></name>
+          <name><surname>Scheffler</surname><given-names>Matthias</given-names></name>
+        </person-group>
+        <article-title>NOMAD: The FAIR concept for big data-driven materials science</article-title>
+        <source>MRS Bulletin</source>
+        <publisher-name>Cambridge University Press (CUP)</publisher-name>
+        <year iso-8601-date="2018-09">2018</year><month>09</month>
+        <volume>43</volume>
+        <issue>9</issue>
+        <uri>https://doi.org/10.1557/mrs.2018.208</uri>
+        <pub-id pub-id-type="doi">10.1557/mrs.2018.208</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-AiiDA">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Huber</surname><given-names>Sebastiaan. P.</given-names></name>
+          <name><surname>Zoupanos</surname><given-names>Spyros</given-names></name>
+          <name><surname>Uhrin</surname><given-names>Martin</given-names></name>
+          <name><surname>Talirz</surname><given-names>Leopold</given-names></name>
+          <name><surname>Kahle</surname><given-names>Leonid</given-names></name>
+          <name><surname>Häuselmann</surname><given-names>Rico</given-names></name>
+          <name><surname>Gresch</surname><given-names>Dominik</given-names></name>
+          <name><surname>Müller</surname><given-names>Tiziano</given-names></name>
+          <name><surname>Yakutovich</surname><given-names>Aliaksandr V.</given-names></name>
+          <name><surname>Andersen</surname><given-names>Casper W.</given-names></name>
+          <name><surname>Ramirez</surname><given-names>Francisco F.</given-names></name>
+          <name><surname>Adorf</surname><given-names>Carl S.</given-names></name>
+          <name><surname>Gargiulo</surname><given-names>Fernando</given-names></name>
+          <name><surname>Kumbhar</surname><given-names>Snehal</given-names></name>
+          <name><surname>Passaro</surname><given-names>Elsa</given-names></name>
+          <name><surname>Johnston</surname><given-names>Conrad</given-names></name>
+          <name><surname>Merkys</surname><given-names>Andrius</given-names></name>
+          <name><surname>Cepellotti</surname><given-names>Andrea</given-names></name>
+          <name><surname>Mounet</surname><given-names>Nicolas</given-names></name>
+          <name><surname>Marzari</surname><given-names>Nicola</given-names></name>
+          <name><surname>Kozinsky</surname><given-names>Boris</given-names></name>
+          <name><surname>Pizzi</surname><given-names>Giovanni</given-names></name>
+        </person-group>
+        <article-title>AiiDA 1.0, a scalable computational infrastructure for automated reproducible workflows and data provenance</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <pub-id pub-id-type="doi">10.1038/s41597-020-00638-4</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

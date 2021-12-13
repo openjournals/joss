@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2749</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02749</article-id>
+<title-group>
+<article-title>POMDPStressTesting.jl: Adaptive Stress Testing for
+Black-Box Systems</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-2403-454X</contrib-id>
+<string-name>Robert J. Moss</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Stanford University</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-08-26">
+<day>26</day>
+<month>8</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>60</issue>
+<fpage>2749</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>stress testing</kwd>
+<kwd>black-box systems</kwd>
+<kwd>POMDPs.jl</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p> is a package that uses reinforcement learning and stochastic
+  optimization to find likely failures in black-box systems through a
+  technique called adaptive stress testing
+  (<xref alt="Lee et al., 2019" rid="ref-ast" ref-type="bibr">Lee et
+  al., 2019</xref>). Adaptive stress testing (AST) has been used to find
+  failures in safety-critical systems such as aircraft collision
+  avoidance systems
+  (<xref alt="Lee et al., 2015" rid="ref-ast_acasx" ref-type="bibr">Lee
+  et al., 2015</xref>), flight management systems
+  (<xref alt="Moss et al., 2020" rid="ref-ast_fms" ref-type="bibr">Moss
+  et al., 2020</xref>), and autonomous vehicles
+  (<xref alt="Koren et al., 2018" rid="ref-ast_av" ref-type="bibr">Koren
+  et al., 2018</xref>). The POMDPStressTesting.jl package is written in
+  Julia
+  (<xref alt="Bezanson et al., 2017" rid="ref-julia" ref-type="bibr">Bezanson
+  et al., 2017</xref>) and is part of the wider POMDPs.jl ecosystem
+  (<xref alt="Egorov et al., 2017" rid="ref-pomdps_jl" ref-type="bibr">Egorov
+  et al., 2017</xref>), which provides access to simulation tools,
+  policies, visualizations, and—most importantly—solvers. We provide
+  different solver variants including online planning algorithms such as
+  Monte Carlo tree search
+  (<xref alt="Coulom, 2006" rid="ref-mcts" ref-type="bibr">Coulom,
+  2006</xref>) and deep reinforcement learning algorithms such as trust
+  region policy optimization (TRPO)
+  (<xref alt="Schulman et al., 2015" rid="ref-trpo" ref-type="bibr">Schulman
+  et al., 2015</xref>) and proximal policy optimization (PPO)
+  (<xref alt="Schulman et al., 2017" rid="ref-ppo" ref-type="bibr">Schulman
+  et al., 2017</xref>). Stochastic optimization solvers such as the
+  cross-entropy method
+  (<xref alt="Rubinstein, 1999" rid="ref-cem" ref-type="bibr">Rubinstein,
+  1999</xref>) are also available and random search is provided as a
+  baseline. Additional solvers can easily be added by adhering to the
+  POMDPs.jl interface.</p>
+  <p>The AST formulation treats the falsification problem (i.e., finding
+  failures) as a Markov decision process (MDP) with a reward function
+  that uses a measure of distance to a failure event to guide the search
+  towards failure. The reward function also uses the state transition
+  probabilities to guide towards failures. Reinforcement learning aims
+  to maximize the discounted sum of expected rewards, therefore
+  maximizing the sum of log-likelihoods is equivalent to maximizing the
+  likelihood of a trajectory. A gray-box simulation environment steps
+  the simulation and outputs the state transition probabilities, and the
+  black-box system under test is evaluated in the simulator and outputs
+  an event indication and the real-valued distance metric (i.e., how
+  close we are to failure). To apply AST to a general black-box system,
+  a user has to implement the following Julia interface:</p>
+  <p>Our package builds off work originally done in the
+  AdaptiveStressTesting.jl package
+  (<xref alt="Lee et al., 2019" rid="ref-ast" ref-type="bibr">Lee et
+  al., 2019</xref>), but POMDPStressTesting.jl adheres to the interface
+  defined by POMDPs.jl and provides different action modes and solver
+  types. Related falsification tools (i.e. tools that do not include
+  most-likely failure analysis) are
+  (<xref alt="Annapureddy et al., 2011" rid="ref-staliro" ref-type="bibr">Annapureddy
+  et al., 2011</xref>), Breach
+  (<xref alt="Donzé, 2010" rid="ref-breach" ref-type="bibr">Donzé,
+  2010</xref>), and
+  (<xref alt="Zhang et al., 2018" rid="ref-falstar" ref-type="bibr">Zhang
+  et al., 2018</xref>). These packages use a combination of
+  optimization, path planning, and reinforcement learning techniques to
+  solve the falsification problem. The tool most closely related to
+  POMDPStressTesting.jl is the AST Toolbox in Python
+  (<xref alt="Koren et al., 2018" rid="ref-ast_av" ref-type="bibr">Koren
+  et al., 2018</xref>), which wraps around the gym reinforcement
+  learning environment
+  (<xref alt="Brockman et al., 2016" rid="ref-gym" ref-type="bibr">Brockman
+  et al., 2016</xref>). The author has contributed to the AST Toolbox
+  and found the need to create a similar package in pure Julia for
+  better performance and to interface with the POMDPs.jl ecosystem.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>Validating autonomous systems is a crucial requirement before their
+  deployment into real-world environments. Searching for likely failures
+  using automated tools enable engineers to address potential problems
+  during development. Because many autonomous systems are in
+  environments with rare failure events, it is especially important to
+  incorporate likelihood of failure within the search to help inform the
+  potential problem mitigation. This tool provides a simple interface
+  for general black-box systems to fit into the adaptive stress testing
+  problem formulation and gain access to solvers. Due to varying
+  simulation environment complexities, random seeds can be used as the
+  AST action when the user does not have direct access to the
+  environmental probability distributions or when the environment is
+  complex. Alternatively, directly sampling from the distributions
+  allows for finer control over the search. The interface is designed to
+  easily extend to other autonomous system applications and explicitly
+  separating the simulation environment from the system under test
+  allows for wider validation of complex black-box systems.</p>
+</sec>
+<sec id="research-and-industrial-usage">
+  <title>Research and Industrial Usage</title>
+  <p>POMDPStressTesting.jl has been used to find likely failures in
+  aircraft trajectory prediction systems
+  (<xref alt="Moss et al., 2020" rid="ref-ast_fms" ref-type="bibr">Moss
+  et al., 2020</xref>), which are flight-critical subsystems used to aid
+  in-flight automation. A developmental commercial flight management
+  system was stress tested so the system engineers could mitigate
+  potential issues before system deployment
+  (<xref alt="Moss et al., 2020" rid="ref-ast_fms" ref-type="bibr">Moss
+  et al., 2020</xref>). In addition to traditional requirements-based
+  testing for avionics certification
+  (<xref alt="RTCA, 2011" rid="ref-do178c" ref-type="bibr">RTCA,
+  2011</xref>), this work is being used to find potential problems
+  during development. There is also ongoing research on the use of
+  POMDPStressTesting.jl for assessing the risk of autonomous vehicles
+  and determining failure scenarios of autonomous lunar rovers.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>We acknowledge Ritchie Lee for his guidance and original work on
+  adaptive stress testing and the AdaptiveStressTesting.jl package and
+  Mark Koren, Xiaobai Ma, and Anthony Corso for their work on the AST
+  Toolbox Python package and the CrossEntropyMethod.jl package. We also
+  acknowledge Shreyas Kowshik for his initial implementation of the TRPO
+  and PPO algorithms in Julia. We want to thank the Stanford Intelligent
+  Systems Laboratory for their development of the POMDPs.jl ecosystem
+  and the MCTS.jl package; particular thanks to Zachary Sunberg. We also
+  want to thank Mykel J. Kochenderfer for his support and research input
+  and for advancing the Julia community.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-julia">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bezanson</surname><given-names>Jeff</given-names></name>
+          <name><surname>Edelman</surname><given-names>Alan</given-names></name>
+          <name><surname>Karpinski</surname><given-names>Stefan</given-names></name>
+          <name><surname>Shah</surname><given-names>Viral B.</given-names></name>
+        </person-group>
+        <article-title>Julia: A fresh approach to numerical computing</article-title>
+        <source>SIAM Review</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>59</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1137/141000671</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pomdps_jl">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Egorov</surname><given-names>Maxim</given-names></name>
+          <name><surname>Sunberg</surname><given-names>Zachary N.</given-names></name>
+          <name><surname>Balaban</surname><given-names>Edward</given-names></name>
+          <name><surname>Wheeler</surname><given-names>Tim A.</given-names></name>
+          <name><surname>Gupta</surname><given-names>Jayesh K.</given-names></name>
+          <name><surname>Kochenderfer</surname><given-names>Mykel J.</given-names></name>
+        </person-group>
+        <article-title>POMDPs.jl: A Framework for Sequential Decision Making under Uncertainty</article-title>
+        <source>Journal of Machine Learning Research</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>18</volume>
+        <issue>26</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-ast">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Lee</surname><given-names>Ritchie</given-names></name>
+          <name><surname>Mengshoel</surname><given-names>Ole J.</given-names></name>
+          <name><surname>Kochenderfer</surname><given-names>Mykel J.</given-names></name>
+        </person-group>
+        <article-title>Adaptive Stress Testing of Safety-Critical Systems</article-title>
+        <source>Safe, Autonomous and Intelligent Vehicles</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-97301-2_5</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ast_acasx">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Lee</surname><given-names>Ritchie</given-names></name>
+          <name><surname>Kochenderfer</surname><given-names>Mykel J.</given-names></name>
+          <name><surname>Mengshoel</surname><given-names>Ole J.</given-names></name>
+          <name><surname>Brat</surname><given-names>Guillaume P.</given-names></name>
+          <name><surname>Owen</surname><given-names>Michael P.</given-names></name>
+        </person-group>
+        <article-title>Adaptive stress testing of airborne collision avoidance systems</article-title>
+        <source>IEEE/AIAA Digital Avionics Systems Conference (DASC)</source>
+        <year iso-8601-date="2015-09">2015</year><month>09</month>
+        <volume></volume>
+        <issn>2155-7209</issn>
+        <pub-id pub-id-type="doi">10.1109/DASC.2015.7311450</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ast_fms">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Moss</surname><given-names>Robert J.</given-names></name>
+          <name><surname>Lee</surname><given-names>Ritchie</given-names></name>
+          <name><surname>Visser</surname><given-names>Nicholas</given-names></name>
+          <name><surname>Hochwarth</surname><given-names>Joachim</given-names></name>
+          <name><surname>Lopez</surname><given-names>James G.</given-names></name>
+          <name><surname>Kochenderfer</surname><given-names>Mykel J.</given-names></name>
+        </person-group>
+        <article-title>Adaptive Stress Testing of Trajectory Predictions in Flight Management Systems</article-title>
+        <source>IEEE/AIAA Digital Avionics Systems Conference (DASC)</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume></volume>
+        <pub-id pub-id-type="doi">10.1109/DASC50938.2020.9256730</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ast_av">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Koren</surname><given-names>Mark</given-names></name>
+          <name><surname>Alsaif</surname><given-names>Saud</given-names></name>
+          <name><surname>Lee</surname><given-names>Ritchie</given-names></name>
+          <name><surname>Kochenderfer</surname><given-names>Mykel J.</given-names></name>
+        </person-group>
+        <article-title>Adaptive Stress Testing for Autonomous Vehicles</article-title>
+        <source>IEEE Intelligent Vehicles Symposium (IV)</source>
+        <year iso-8601-date="2018-06">2018</year><month>06</month>
+        <volume></volume>
+        <issn>1931-0587</issn>
+        <pub-id pub-id-type="doi">10.1109/IVS.2018.8500400</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mcts">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Coulom</surname><given-names>Rémi</given-names></name>
+        </person-group>
+        <article-title>Efficient Selectivity and Backup Operators in Monte-Carlo Tree Search</article-title>
+        <source>International Conference on Computers and Games</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2006">2006</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-540-75538-8_7</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-trpo">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Schulman</surname><given-names>John</given-names></name>
+          <name><surname>Levine</surname><given-names>Sergey</given-names></name>
+          <name><surname>Abbeel</surname><given-names>Pieter</given-names></name>
+          <name><surname>Jordan</surname><given-names>Michael</given-names></name>
+          <name><surname>Moritz</surname><given-names>Philipp</given-names></name>
+        </person-group>
+        <article-title>Trust Region Policy Optimization</article-title>
+        <source>International Conference on Machine Learning</source>
+        <year iso-8601-date="2015">2015</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-ppo">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Schulman</surname><given-names>John</given-names></name>
+          <name><surname>Wolski</surname><given-names>Filip</given-names></name>
+          <name><surname>Dhariwal</surname><given-names>Prafulla</given-names></name>
+          <name><surname>Radford</surname><given-names>Alec</given-names></name>
+          <name><surname>Klimov</surname><given-names>Oleg</given-names></name>
+        </person-group>
+        <article-title>Proximal Policy Optimization Algorithms</article-title>
+        <source>arXiv:1707.06347</source>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-cem">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rubinstein</surname><given-names>Reuven</given-names></name>
+        </person-group>
+        <article-title>The Cross-Entropy Method for Combinatorial and Continuous Optimization</article-title>
+        <source>Methodology and Computing in Applied Probability</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="1999">1999</year>
+        <volume>1</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1023/A:1010091220143</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-staliro">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Annapureddy</surname><given-names>Yashwanth</given-names></name>
+          <name><surname>Liu</surname><given-names>Che</given-names></name>
+          <name><surname>Fainekos</surname><given-names>Georgios</given-names></name>
+          <name><surname>Sankaranarayanan</surname><given-names>Sriram</given-names></name>
+        </person-group>
+        <article-title>S-TaLiRo: A Tool for Temporal Logic Falsification for Hybrid Systems</article-title>
+        <source>Tools and Algorithms for the Construction and Analysis of Systems (TACAS)</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-642-19835-9_21</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-breach">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Donzé</surname><given-names>Alexandre</given-names></name>
+        </person-group>
+        <article-title>Breach, A Toolbox for Verification and Parameter Synthesis of Hybrid Systems</article-title>
+        <source>Computer Aided Verification</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-642-14295-6_17</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-falstar">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zhang</surname><given-names>Zhenya</given-names></name>
+          <name><surname>Ernst</surname><given-names>Gidon</given-names></name>
+          <name><surname>Sedwards</surname><given-names>Sean</given-names></name>
+          <name><surname>Arcaini</surname><given-names>Paolo</given-names></name>
+          <name><surname>Hasuo</surname><given-names>Ichiro</given-names></name>
+        </person-group>
+        <article-title>Two-Layered Falsification of Hybrid Systems Guided by Monte Carlo Tree Search</article-title>
+        <source>IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>37</volume>
+        <issue>11</issue>
+        <pub-id pub-id-type="doi">10.1109/TCAD.2018.2858463</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gym">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Brockman</surname><given-names>Greg</given-names></name>
+          <name><surname>Cheung</surname><given-names>Vicki</given-names></name>
+          <name><surname>Pettersson</surname><given-names>Ludwig</given-names></name>
+          <name><surname>Schneider</surname><given-names>Jonas</given-names></name>
+          <name><surname>Schulman</surname><given-names>John</given-names></name>
+          <name><surname>Tang</surname><given-names>Jie</given-names></name>
+          <name><surname>Zaremba</surname><given-names>Wojciech</given-names></name>
+        </person-group>
+        <article-title>OpenAI gym</article-title>
+        <source>arXiv:1606.01540</source>
+        <year iso-8601-date="2016">2016</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-do178c">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>RTCA</surname></name>
+        </person-group>
+        <article-title>Software Considerations in Airborne Systems and Equipment Certification</article-title>
+        <publisher-name>DO-178C</publisher-name>
+        <year iso-8601-date="2011-12">2011</year><month>12</month>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

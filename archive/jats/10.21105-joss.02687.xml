@@ -1,0 +1,592 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2687</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02687</article-id>
+<title-group>
+<article-title>SeismicMesh: Triangular meshing for
+seismology</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<string-name>Keith J. Roberts</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Rafael dos Santos Gioria</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>William J. Pringle</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Research Center for Gas Innovation, Escola Politécnica da
+Universidade de São Paulo, São Paulo, Brazil.</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Dept. of Civil and Environmental Engineering and Earth
+Sciences, University of Notre Dame, 156 Fitzpatrick Hall, Notre Dame,
+IN, U.S.A.</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-08-20">
+<day>20</day>
+<month>8</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>57</issue>
+<fpage>2687</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Seismology</kwd>
+<kwd>Mesh generation</kwd>
+<kwd>DistMesh</kwd>
+<kwd>Parallel mesh generation</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>SeismicMesh is a Python package for simplex mesh generation in two
+  or three dimensions. As an implementation of DistMesh
+  (<xref alt="Persson &amp; Strang, 2004" rid="ref-doiU003A10.1137U002FS0036144503429121" ref-type="bibr">Persson
+  &amp; Strang, 2004</xref>), it produces high-quality meshes at the
+  expense of speed. For increased efficiency, the core package is
+  written in C++, works in parallel, and uses the Computational Geometry
+  Algorithms Library
+  (<xref alt="Hert &amp; Seel, 2020" rid="ref-cgalU003Ahs-chdt3-20b" ref-type="bibr">Hert
+  &amp; Seel, 2020</xref>). SeismicMesh can also produce mesh-density
+  functions from seismological data to be used in the mesh
+  generator.</p>
+</sec>
+<sec id="background">
+  <title>Background</title>
+  <p>Generating a high-quality graded mesh for a geophysical domain
+  represents a challenge for seismological modeling using the finite
+  element method (FEM). In these applications, a domain is discretized
+  typically with triangular/tetrahedral elements that vary widely in
+  size around features of interest. These meshes are commonly used with
+  the FEM to solve partial differential equations that model acoustic or
+  elastic waves, which are used in seismic velocity model building
+  algorithms such as full waveform inversion (FWI)
+  (<xref alt="Tarantola, 1984" rid="ref-doiU003A10.1190U002F1.1441754" ref-type="bibr">Tarantola,
+  1984</xref>;
+  <xref alt="Virieux &amp; Operto, 2009" rid="ref-virieux2009overview" ref-type="bibr">Virieux
+  &amp; Operto, 2009</xref>) and reverse time migration
+  (<xref alt="Modave et al., 2015" rid="ref-10.1093U002FgjiU002Fggv380" ref-type="bibr">Modave
+  et al., 2015</xref>).</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>Despite the fact that many mesh generation programs exist such as
+  Gmsh
+  (<xref alt="Geuzaine &amp; Remacle, 2009" rid="ref-doiU003A10.1002U002Fnme.2579" ref-type="bibr">Geuzaine
+  &amp; Remacle, 2009</xref>) and CGAL
+  (<xref alt="Alliez et al., 2020" rid="ref-cgalU003Arty-m3-20b" ref-type="bibr">Alliez
+  et al., 2020</xref>;
+  <xref alt="Rineau, 2020" rid="ref-cgalU003Ar-ctm2-20b" ref-type="bibr">Rineau,
+  2020</xref>), it is uncommon to find capabilities that incorporate
+  geophysical data into the mesh generation process to appropriately
+  size elements. This in part contributes to the reality that automatic
+  mesh generation for geophysical domains is not user-friendly.</p>
+  <p>Some packages have been created to script mesh generation from
+  geophysical datasets such as in coastal ocean modeling
+  (<xref alt="Gorman et al., 2008" rid="ref-gorman2008systematic" ref-type="bibr">Gorman
+  et al., 2008</xref>;
+  <xref alt="K. J. Roberts et al., 2019" rid="ref-roberts2019oceanmesh2d" ref-type="bibr">K.
+  J. Roberts et al., 2019</xref>) and reservoir modeling
+  (<xref alt="Cacace &amp; Blöcher, 2015" rid="ref-cacace2015meshit" ref-type="bibr">Cacace
+  &amp; Blöcher, 2015</xref>). In a similar manner, the aim of this
+  package is to provide a straightforward Python package to script mesh
+  generation directly from seismic velocity models. This is accomplished
+  first by building a mesh density function using seismic velocity data
+  and then supplying these inputs to a mesh generator that can use these
+  inputs and operate at scale.</p>
+  <p>The mesh density function can be used as input other mesh
+  generators. However, the usage of a sizing function can have
+  significant impact on the mesh generation performance. For example,
+  Gmsh’s advancing front and Delaunay refinement methods construct the
+  mesh incrementally and do not permit vectorization, which leads to
+  reduced performance at scale in 2D/3D. In contrast, the DistMesh
+  algorithm takes advantage of vectorization when querying a complex
+  mesh density function making it efficient and competitive to Gmsh for
+  this kind of meshing problem.</p>
+</sec>
+<sec id="core-functionality">
+  <title>Core functionality</title>
+  <list list-type="order">
+    <list-item>
+      <p>The creation of 2D/3D graded mesh size functions defined on
+      axis-aligned regular Cartesian grids. These mesh sizing functions
+      encode mesh resolution distributions that conform to the
+      variations from inputted seismic velocity model data and are
+      distributed according to several heuristics (see
+      <xref alt="K. Roberts, 2020" rid="ref-SeismicMeshDocs" ref-type="bibr">K.
+      Roberts, 2020</xref> for further details). Mesh size function
+      grading is accomplished using Persson
+      (<xref alt="2006" rid="ref-persson2006mesh" ref-type="bibr">2006</xref>).</p>
+    </list-item>
+    <list-item>
+      <p>Distributed memory parallelism. The generation of potentially
+      large (&gt; 10 million cells) high-quality triangular or
+      tetrahedral meshes using distributed memory parallelism with mesh
+      resolution following sizing functions.</p>
+    </list-item>
+    <list-item>
+      <p>An implementation of a 3D so-called sliver tetrahedral element
+      removal technique
+      (<xref alt="Tournois et al., 2009" rid="ref-tournois2009perturbing" ref-type="bibr">Tournois
+      et al., 2009</xref>) to bound a mesh quality metric. Note that 2D
+      mesh generation does not suffer from the formation of sliver
+      elements.</p>
+    </list-item>
+  </list>
+  <p>Similar to other meshing programs such as Gmsh, SeismicMesh
+  (<xref alt="K. Roberts, 2020" rid="ref-SeismicMeshDocs" ref-type="bibr">K.
+  Roberts, 2020</xref>) enables generation of simplex meshes through a
+  Python application programming interface.</p>
+  <p>The mesh’s domain geometry is defined as the 0-level set of a
+  signed distance function (SDF), which avoids the need to have explicit
+  geometry information defining the boundary and can be particularly
+  useful in geophysical domains.</p>
+</sec>
+<sec id="performance-comparison">
+  <title>Performance Comparison</title>
+  <p>We compare the 2D/3D serial performance in terms of cell quality
+  and mesh creation time between SeismicMesh, Gmsh
+  (<xref alt="Geuzaine &amp; Remacle, 2009" rid="ref-doiU003A10.1002U002Fnme.2579" ref-type="bibr">Geuzaine
+  &amp; Remacle, 2009</xref>) and CGAL
+  (<xref alt="Alliez et al., 2020" rid="ref-cgalU003Arty-m3-20b" ref-type="bibr">Alliez
+  et al., 2020</xref>;
+  <xref alt="Rineau, 2020" rid="ref-cgalU003Ar-ctm2-20b" ref-type="bibr">Rineau,
+  2020</xref>). The cell quality is defined as the product of the
+  topological dimension of the mesh (2 or 3) and the incircle radius
+  divided by the circumcircle radius and ranges between 0 and 1, where 1
+  is a perfectly symmetrical simplex. In mesh generation, there is
+  always a trade-off between generation speed and mesh quality. We find
+  that Gmsh produces high-quality meshes by far the fastest, SeismicMesh
+  will produce meshes with the best quality, but much slower. Gmsh
+  becomes comparatively slow when a user-defined mesh-density function
+  is involved, which is SeismicMesh’s primary use case.</p>
+  <p>For the two seismic domains (e.g., BP2004 and EAGE), SeismicMesh is
+  faster than Gmsh for the 2D BP2004 benchmark but slightly slower for
+  the 3D EAGE benchmark at scale. CGAL is not competitive for the 3D
+  benchmark and is therefore not shown. Interpolant-based mesh sizing
+  functions significantly slow the mesh generation time of Gmsh by a
+  factor of <inline-formula><alternatives>
+  <tex-math><![CDATA[\sim 3]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>∼</mml:mo><mml:mn>3</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  as Gmsh calls the sizing function for each point individually (e.g.,
+  95,756 times) whereas SeismicMesh does it for all points at once each
+  meshing iteration (e.g., 26 times).</p>
+  <fig>
+    <caption><p>Using SeismicMesh V3.2.0, the mesh creation time (left
+    columns) and resulting cell quality (right columns) for the four
+    benchmarks studied over a range of problem sizes. For the panels
+    that show cell quality, solid lines indicate the mean and dashed
+    lines indicate the minimum cell quality in the mesh.
+    <styled-content id="figU003Abenchmark"></styled-content></p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="Performance.pdf" xlink:title="" />
+  </fig>
+</sec>
+<sec id="parallelism">
+  <title>Parallelism</title>
+  <p>A simplified version of the parallel Delaunay algorithm proposed by
+  Peterka et al.
+  (<xref alt="2014" rid="ref-peterka2014high" ref-type="bibr">2014</xref>)
+  is implemented inside the DistMesh algorithm, which does not consider
+  sophisticated domain decomposition or load balancing yet.
+  <xref alt="Figure 2" rid="figU003Aspeedup">Figure 2</xref> shows a
+  peak speed-up of approximately 6 times using 11 cores when performing
+  50 meshing iterations to generate the 33M cell mesh of the EAGE P-wave
+  velocity model. While the parallel performance is not perfect at this
+  stage of development, the capability reduces the generation time of
+  this relatively large example (e.g., 33 M cells) from 91.0 minutes to
+  approximately 15.6 minutes. Results indicate that the simple domain
+  decomposition approach inhibit perfect scalability. The machine used
+  for this experiment was an Intel Xeon Gold 6148 machine clocked at 2.4
+  GHz with 192 GB of RAM connected together with a 100 Gb/s InfiniBand
+  network.</p>
+  <fig>
+    <caption><p>The speedup (left-panel) as compared to the serial
+    version of SeismicMesh V3.2.0 for a relatively light and heavy mesh
+    each adapted to P-wave data from the EAGE Salt seismic velocity
+    model. The total mesh generation wall-clock time is annotated in
+    decimal minutes next to each point. The panel on the right hand side
+    shows the mesh generation rate normalized by the number of total
+    number of cells in the mesh.
+    <styled-content id="figU003Aspeedup"></styled-content></p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="Benchmarks.pdf" xlink:title="" />
+  </fig>
+</sec>
+<sec id="ongoing-and-future-applications">
+  <title>Ongoing and future applications</title>
+  <p>Some future applications for this software:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>SeismicMesh is being used by a group of researchers to build
+      2D/3D meshes for a seismological FEM model that has been developed
+      in the Firedrake computing environment
+      (<xref alt="Rathgeber et al., 2017" rid="ref-10.1145U002F2998441" ref-type="bibr">Rathgeber
+      et al., 2017</xref>).</p>
+    </list-item>
+    <list-item>
+      <p>The usage of SDF to implicitly define the meshing domain
+      presents potential use cases in a topology-optimization framework
+      (<xref alt="Laurain, 2018" rid="ref-laurain2018level" ref-type="bibr">Laurain,
+      2018</xref>) for modeling the sharp interface of salt-bodies in
+      seismological domains. In these applications, the 0-level set of a
+      SDF is used to demarcate the boundary of the feature. Each
+      inversion iteration, an optimization problem is solved to produce
+      modifications to the location of the 0-level set. In this
+      framework, SeismicMesh can be used within the inversion algorithm
+      to generate and adapt meshes.</p>
+    </list-item>
+    <list-item>
+      <p>Much like how the original DistMesh program has been used,
+      SeismicMesh can be adapted for other domain-specific applications
+      besides seismology (e.g., fluid dynamics, astrophysics, and
+      oceanography). An open source project project is already under way
+      to use the same mesh generation technology for a Python version of
+      OceanMesh2D to build industrial-grade meshes of coastal oceans
+      (<xref alt="K. J. Roberts et al., 2019" rid="ref-roberts2019oceanmesh2d" ref-type="bibr">K.
+      J. Roberts et al., 2019</xref>).</p>
+    </list-item>
+  </list>
+  <p>We expect future extensions of the program to introduce better
+  domain decomposition algorithms to improve parallel performance.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This research was carried out in association with the ongoing
+  R&amp;D project registered as ANP 20714-2, “Software technologies for
+  modelling and inversion, with applications in seismic imaging”
+  (University of São Paulo / Shell Brasil / ANP). We would like to thank
+  the two reviewers who helped improve the presentation and quality of
+  this manuscript and package greatly.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-cgalU003Ahs-chdt3-20b">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Hert</surname><given-names>Susan</given-names></name>
+          <name><surname>Seel</surname><given-names>Michael</given-names></name>
+        </person-group>
+        <article-title>Convex hulls</article-title>
+        <source>Lectures on convex sets</source>
+        <publisher-name>WORLD SCIENTIFIC</publisher-name>
+        <year iso-8601-date="2020-01">2020</year><month>01</month>
+        <isbn>9789811202117, 9789811202124</isbn>
+        <uri>https://doi.org/10.1142/9789811202124_0004</uri>
+        <pub-id pub-id-type="doi">10.1142/9789811202124_0004</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-cgalU003Ar-ctm2-20b">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Rineau</surname><given-names>Laurent</given-names></name>
+        </person-group>
+        <article-title>2D conforming triangulations and meshes</article-title>
+        <source>CGAL user and reference manual</source>
+        <publisher-name>CGAL Editorial Board</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://doc.cgal.org/5.1/Manual/packages.html#PkgMesh2</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-cgalU003Arty-m3-20b">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Alliez</surname><given-names>Pierre</given-names></name>
+          <name><surname>Jamin</surname><given-names>Clément</given-names></name>
+          <name><surname>Rineau</surname><given-names>Laurent</given-names></name>
+          <name><surname>Tayeb</surname><given-names>Stéphane</given-names></name>
+          <name><surname>Tournois</surname><given-names>Jane</given-names></name>
+          <name><surname>Yvinec</surname><given-names>Mariette</given-names></name>
+        </person-group>
+        <article-title>3D mesh generation</article-title>
+        <source>CGAL user and reference manual</source>
+        <publisher-name>CGAL Editorial Board</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://doc.cgal.org/5.1/Manual/packages.html#PkgMesh3</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-SeismicMeshDocs">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Roberts</surname><given-names>Keith</given-names></name>
+        </person-group>
+        <article-title>Tutorial: Seismicmesh</article-title>
+        <source>ReadTheDocs website</source>
+        <publisher-name>https://seismicmesh.readthedocs.io/en/master/tutorial.html; ReadTheDocs</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-persson2006mesh">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Persson</surname><given-names>Per-Olof</given-names></name>
+        </person-group>
+        <article-title>Mesh size functions for implicit geometries and PDE-based gradient limiting</article-title>
+        <source>Eng. Comput-germany.</source>
+        <publisher-name>Springer Science; Business Media LLC</publisher-name>
+        <year iso-8601-date="2006-07">2006</year><month>07</month>
+        <volume>22</volume>
+        <issue>2</issue>
+        <issn>0177-0667, 1435-5663</issn>
+        <uri>https://doi.org/10.1007/s00366-006-0014-1</uri>
+        <pub-id pub-id-type="doi">10.1007/s00366-006-0014-1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gorman2008systematic">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gorman</surname><given-names>G. J.</given-names></name>
+          <name><surname>Piggott</surname><given-names>M. D.</given-names></name>
+          <name><surname>Wells</surname><given-names>M. R.</given-names></name>
+          <name><surname>Pain</surname><given-names>C. C.</given-names></name>
+          <name><surname>Allison</surname><given-names>P. A.</given-names></name>
+        </person-group>
+        <article-title>A systematic approach to unstructured mesh generation for ocean modelling using GMT and terreno</article-title>
+        <source>Comput. Geosci-uk.</source>
+        <publisher-name>Elsevier BV</publisher-name>
+        <year iso-8601-date="2008-12">2008</year><month>12</month>
+        <volume>34</volume>
+        <issue>12</issue>
+        <issn>0098-3004</issn>
+        <uri>https://doi.org/10.1016/j.cageo.2007.06.014</uri>
+        <pub-id pub-id-type="doi">10.1016/j.cageo.2007.06.014</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-10.1145U002F2998441">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rathgeber</surname><given-names>Florian</given-names></name>
+          <name><surname>Ham</surname><given-names>David A.</given-names></name>
+          <name><surname>Mitchell</surname><given-names>Lawrence</given-names></name>
+          <name><surname>Lange</surname><given-names>Michael</given-names></name>
+          <name><surname>Luporini</surname><given-names>Fabio</given-names></name>
+          <name><surname>Mcrae</surname><given-names>Andrew T. T.</given-names></name>
+          <name><surname>Bercea</surname><given-names>Gheorghe-Teodor</given-names></name>
+          <name><surname>Markall</surname><given-names>Graham R.</given-names></name>
+          <name><surname>Kelly</surname><given-names>Paul H. J.</given-names></name>
+        </person-group>
+        <article-title>Firedrake: Automating the finite element method by composing abstractions</article-title>
+        <source>ACM Trans. Math. Softw.</source>
+        <publisher-name>Association for Computing Machinery (ACM)</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="2017-01">2017</year><month>01</month>
+        <volume>43</volume>
+        <issue>3</issue>
+        <issn>0098-3500, 1557-7295</issn>
+        <uri>https://doi.org/10.1145/2998441</uri>
+        <pub-id pub-id-type="doi">10.1145/2998441</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-laurain2018level">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Laurain</surname><given-names>Antoine</given-names></name>
+        </person-group>
+        <article-title>A level set-based structural optimization code using FEniCS</article-title>
+        <source>Struct Multidisc Optim</source>
+        <publisher-name>Springer Science; Business Media LLC</publisher-name>
+        <year iso-8601-date="2018-05">2018</year><month>05</month>
+        <volume>58</volume>
+        <issue>3</issue>
+        <issn>1615-147X, 1615-1488</issn>
+        <uri>https://doi.org/10.1007/s00158-018-1950-2</uri>
+        <pub-id pub-id-type="doi">10.1007/s00158-018-1950-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-cacace2015meshit">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cacace</surname><given-names>Mauro</given-names></name>
+          <name><surname>Blöcher</surname><given-names>Guido</given-names></name>
+        </person-group>
+        <article-title>MeshIt—a software for three dimensional volumetric meshing of complex faulted reservoirs</article-title>
+        <source>Environ Earth Sci</source>
+        <publisher-name>Springer Science; Business Media LLC</publisher-name>
+        <year iso-8601-date="2015-05">2015</year><month>05</month>
+        <volume>74</volume>
+        <issue>6</issue>
+        <issn>1866-6280, 1866-6299</issn>
+        <uri>https://doi.org/10.1007/s12665-015-4537-x</uri>
+        <pub-id pub-id-type="doi">10.1007/s12665-015-4537-x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-roberts2019oceanmesh2d">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Roberts</surname><given-names>Keith J.</given-names></name>
+          <name><surname>Pringle</surname><given-names>William J.</given-names></name>
+          <name><surname>Westerink</surname><given-names>Joannes J.</given-names></name>
+        </person-group>
+        <article-title>OceanMesh2D 1.0: Matlab-based software for two-dimensional unstructured mesh generation in coastal ocean modeling</article-title>
+        <source>Geosci. Model Dev.</source>
+        <publisher-name>Copernicus GmbH</publisher-name>
+        <year iso-8601-date="2019-05">2019</year><month>05</month>
+        <volume>12</volume>
+        <issue>5</issue>
+        <issn>1991-9603</issn>
+        <uri>https://doi.org/10.5194/gmd-12-1847-2019</uri>
+        <pub-id pub-id-type="doi">10.5194/gmd-12-1847-2019</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-peterka2014high">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Peterka</surname><given-names>Tom</given-names></name>
+          <name><surname>Morozov</surname><given-names>Dmitriy</given-names></name>
+          <name><surname>Phillips</surname><given-names>Carolyn</given-names></name>
+        </person-group>
+        <article-title>High-performance computation of distributed-memory parallel 3D voronoi and delaunay tessellation</article-title>
+        <source>SC14: International conference for high performance computing, networking, storage and analysis</source>
+        <publisher-name>IEEE; IEEE</publisher-name>
+        <year iso-8601-date="2014-11">2014</year><month>11</month>
+        <isbn>9781479955008, 9781479954995</isbn>
+        <uri>https://doi.org/10.1109/sc.2014.86</uri>
+        <pub-id pub-id-type="doi">10.1109/sc.2014.86</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-doiU003A10.1002U002Fnme.2579">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Geuzaine</surname><given-names>Christophe</given-names></name>
+          <name><surname>Remacle</surname><given-names>Jean-François</given-names></name>
+        </person-group>
+        <article-title>Gmsh: A 3-d finite element mesh generator with built-in pre- and post-processing facilities: THE GMSH PAPER</article-title>
+        <source>Int. J. Numer. Meth. Engng.</source>
+        <publisher-name>Wiley</publisher-name>
+        <year iso-8601-date="2009-05">2009</year><month>05</month>
+        <volume>79</volume>
+        <issue>11</issue>
+        <issn>0029-5981</issn>
+        <uri>https://doi.org/10.1002/nme.2579</uri>
+        <pub-id pub-id-type="doi">10.1002/nme.2579</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-10.1093U002FgjiU002Fggv380">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Modave</surname><given-names>A.</given-names></name>
+          <name><surname>St-Cyr</surname><given-names>A.</given-names></name>
+          <name><surname>Mulder</surname><given-names>W. A.</given-names></name>
+          <name><surname>Warburton</surname><given-names>T.</given-names></name>
+        </person-group>
+        <article-title>A nodal discontinuous galerkin method for reverse-time migration on GPU clusters</article-title>
+        <source>Geophys. J. Int.</source>
+        <publisher-name>Oxford University Press (OUP)</publisher-name>
+        <year iso-8601-date="2015-10">2015</year><month>10</month>
+        <volume>203</volume>
+        <issue>2</issue>
+        <issn>0956-540X, 1365-246X</issn>
+        <uri>https://doi.org/10.1093/gji/ggv380</uri>
+        <pub-id pub-id-type="doi">10.1093/gji/ggv380</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-virieux2009overview">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Virieux</surname><given-names>J.</given-names></name>
+          <name><surname>Operto</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>An overview of full-waveform inversion in exploration geophysics</article-title>
+        <source>Geophysics</source>
+        <publisher-name>Society of Exploration Geophysicists</publisher-name>
+        <year iso-8601-date="2009-11">2009</year><month>11</month>
+        <volume>74</volume>
+        <issue>6</issue>
+        <issn>0016-8033, 1942-2156</issn>
+        <uri>https://doi.org/10.1190/1.3238367</uri>
+        <pub-id pub-id-type="doi">10.1190/1.3238367</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-doiU003A10.1137U002FS0036144503429121">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Persson</surname><given-names>Per-Olof</given-names></name>
+          <name><surname>Strang</surname><given-names>Gilbert</given-names></name>
+        </person-group>
+        <article-title>A simple mesh generator in MATLAB</article-title>
+        <source>SIAM Rev.</source>
+        <publisher-name>Society for Industrial &amp; Applied Mathematics (SIAM)</publisher-name>
+        <year iso-8601-date="2004-01">2004</year><month>01</month>
+        <volume>46</volume>
+        <issue>2</issue>
+        <issn>0036-1445, 1095-7200</issn>
+        <uri>https://doi.org/10.1137/s0036144503429121</uri>
+        <pub-id pub-id-type="doi">10.1137/s0036144503429121</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-doiU003A10.1190U002F1.1441754">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tarantola</surname><given-names>Albert</given-names></name>
+        </person-group>
+        <article-title>Inversion of seismic reflection data in the acoustic approximation</article-title>
+        <source>Geophysics</source>
+        <publisher-name>Society of Exploration Geophysicists</publisher-name>
+        <year iso-8601-date="1984-08">1984</year><month>08</month>
+        <volume>49</volume>
+        <issue>8</issue>
+        <issn>0016-8033, 1942-2156</issn>
+        <uri>https://doi.org/10.1190/1.1441754</uri>
+        <pub-id pub-id-type="doi">10.1190/1.1441754</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-tournois2009perturbing">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Tournois</surname><given-names>Jane</given-names></name>
+          <name><surname>Srinivasan</surname><given-names>Rahul</given-names></name>
+          <name><surname>Alliez</surname><given-names>Pierre</given-names></name>
+        </person-group>
+        <article-title>Perturbing slivers in 3D delaunay meshes</article-title>
+        <source>Proceedings of the 18th international meshing roundtable</source>
+        <publisher-name>Springer Berlin Heidelberg</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <isbn>9783642043185, 9783642043192</isbn>
+        <uri>https://doi.org/10.1007/978-3-642-04319-2_10</uri>
+        <pub-id pub-id-type="doi">10.1007/978-3-642-04319-2_10</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

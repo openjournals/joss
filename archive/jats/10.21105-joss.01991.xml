@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1991</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01991</article-id>
+<title-group>
+<article-title>partition: A fast and flexible framework for data
+reduction in R</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-0299-5825</contrib-id>
+<string-name>Malcolm Barrett</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Joshua Millstein</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Preventive Medicine, University of Southern
+California</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-03-18">
+<day>18</day>
+<month>3</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>47</issue>
+<fpage>1991</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Data are increasingly feature-rich, including many variables for
+  each observation; in modern genomics, for example, high-resolution
+  genetic data captures much more information than it did just a decade
+  ago. While improved measurements contribute immensely to science, they
+  also increase computational burden and complicate interpretability
+  (<xref alt="Karczewski &amp; Snyder, 2018" rid="ref-karczewski2018" ref-type="bibr">Karczewski
+  &amp; Snyder, 2018</xref>). Data reduction techniques, such as
+  principal component analysis (PCA) and K-Means clustering, are vital
+  tools used to address these issues, particularly for noise and
+  redundancy. However, these techniques may lead to problems in
+  scalability, information loss, and interpretability
+  (<xref alt="Malod-Dognin et al., 2018" rid="ref-malod-dogin-2018" ref-type="bibr">Malod-Dognin
+  et al., 2018</xref>). The Partition framework is an approach to data
+  reduction that is flexible, scalable, and interpretable, developed to
+  address information loss while maintaining speed
+  (<xref alt="Millstein et al., 2020" rid="ref-Millstein2019" ref-type="bibr">Millstein
+  et al., 2020</xref>). As opposed to other data reduction strategies,
+  Partition only reduces data if the data reduction retains a specified
+  amount of information. This framework is also agnostic to how
+  partitions form; users can easily use other tools such as PCA and
+  t-Distributed Stochastic Neighbor Embedding (t-SNE) to create a
+  partition or summarize data within a partition subset and thus reduce
+  data while constraining information loss.</p>
+  <p>The package partition is a fast and flexible data reduction tool
+  that implements the Partition framework for the statistical
+  programming language R, available for download on CRAN
+  (<xref alt="R Core Team, 2019" rid="ref-r-base" ref-type="bibr">R Core
+  Team, 2019</xref>). partition enforces a minimum level of information,
+  specified by the user, that reduced features must capture. Each
+  feature begins as an independent cluster. Then, a bottom-up
+  (agglomerative) approach grows clusters as much as possible, subject
+  to the information loss constraint. partition then summarizes each
+  feature subset into a single new feature. The reduced features are
+  highly interpretable because original features map to one and only one
+  feature in the reduced data set. The partition software is flexible
+  and customizable in the way features are agglomerated, information is
+  measured, and data are reduced. Additionally, we have thoroughly
+  benchmarked and profiled partition, with critical components written
+  in C++ to improve performance.</p>
+  <p>partition uses an approach we call Direct-Measure-Reduce to
+  modularize the Partition framework, facilitating the speed and
+  flexibility of the data reduction process. These three components
+  (directors, metrics, and reducers), collectively called partitioners,
+  tell the partition algorithm (1) how to partition data, (2) how to
+  measure information loss when reducing data, and (3) how to summarize
+  partition subsets into reduced features, respectively. partition has
+  several pre-specified partitioners for data reduction, but this
+  approach is also quite flexible.</p>
+  <p>The default partitioner uses a correlation-based distance matrix to
+  find the pair of features with the smallest distance between them;
+  intraclass correlation (ICC) to measure information explained by the
+  reduced variable; and scaled row means to reduce variables with a
+  sufficient minimum ICC. In simulations, this ICC-based partitioner
+  outperformed K-means and other approaches both in terms of speed and
+  number of discoveries
+  (<xref alt="Millstein et al., 2020" rid="ref-Millstein2019" ref-type="bibr">Millstein
+  et al., 2020</xref>). The ICC approach is fast and reliable, but
+  partition also implements different strategies for directing,
+  measuring, and reducing. For instance, the user can use principal
+  component analysis to reduce variables instead of scaled row means. As
+  the framework is agnostic to how partitions are being directed,
+  measured, or reduced, custom partitioners are easy to implement.</p>
+  <p>Many tools exist in R for data reduction, including:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>In the base R stats package, <monospace>princomp()</monospace>
+      and <monospace>prcomp()</monospace> for PCA,
+      <monospace>kmeans()</monospace> for K-Means Clustering, and
+      <monospace>hclust()</monospace> for Hierarchical Clustering, among
+      others
+      (<xref alt="R Core Team, 2019" rid="ref-r-base" ref-type="bibr">R
+      Core Team, 2019</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>cluster, an R package (recommended by CRAN) for grouping data
+      using Hierarchical Clustering and other strategies
+      (<xref alt="Maechler et al., 2019" rid="ref-r-cluster" ref-type="bibr">Maechler
+      et al., 2019</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>Rtsne and tsne, R packages for t-SNE analysis
+      (<xref alt="Donaldson, 2016" rid="ref-r-tsne" ref-type="bibr">Donaldson,
+      2016</xref>;
+      <xref alt="Krijthe, 2015" rid="ref-r-Rtsne" ref-type="bibr">Krijthe,
+      2015</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>uwot, an R package for Uniform Manifold Approximation and
+      Projection (UMAP) dimensionality reduction
+      (<xref alt="Melville, 2019" rid="ref-r-uwot" ref-type="bibr">Melville,
+      2019</xref>)</p>
+    </list-item>
+  </list>
+  <p>partition differs from these tools mainly in that it constrains
+  information loss; the way features map to reduced data is more
+  interpretable than many other data reduction approaches. Notably,
+  because in the Partition framework the components of
+  Direct-Measure-Reduce are easily interchangeable, users may apply
+  tools from base R or other R packages at any of the three stages of
+  the partition.</p>
+  <p>partition offers a fast and flexible tool that addresses the need
+  for interpretability and information retention in reduced variables.
+  To our knowledge, it is the first package of its kind. Feature-rich
+  data, such as high-resolution genetic data, can be quickly reduced
+  without sacrificing information. Additionally, as each feature of the
+  data maps to a single reduced feature, it is easier to make inferences
+  from the reduced data set. The flexibility of partition makes it
+  adaptable to the needs of many data reduction strategies.</p>
+</sec>
+<sec id="funding-and-support">
+  <title>Funding and Support</title>
+  <p>This work is supported by the National Cancer Institute (NCI),
+  Award Number 5P01CA196569, and the National Institute on Aging (NIA),
+  Award Number P01AG055367.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Millstein2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Millstein</surname><given-names>Joshua</given-names></name>
+          <name><surname>Battaglin</surname><given-names>Francesca</given-names></name>
+          <name><surname>Barrett</surname><given-names>Malcolm</given-names></name>
+          <name><surname>Cao</surname><given-names>Shu</given-names></name>
+          <name><surname>Zhang</surname><given-names>Wu</given-names></name>
+          <name><surname>Stintzing</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Heinemann</surname><given-names>Volker</given-names></name>
+          <name><surname>Lenz</surname><given-names>Heinz-Josef</given-names></name>
+        </person-group>
+        <article-title>Partition: A surjective mapping approach for dimensionality reduction</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2020-02">2020</year><month>02</month>
+        <volume>36</volume>
+        <issue>3</issue>
+        <issn>1367-4803</issn>
+        <uri>https://doi.org/10.1093/bioinformatics/btz661</uri>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btz661</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-r-base">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>R Core Team</string-name>
+        </person-group>
+        <source>R: A language and environment for statistical computing</source>
+        <publisher-name>R Foundation for Statistical Computing</publisher-name>
+        <publisher-loc>Vienna, Austria</publisher-loc>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://www.R-project.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-karczewski2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Karczewski</surname><given-names>Konrad J</given-names></name>
+          <name><surname>Snyder</surname><given-names>Michael P</given-names></name>
+        </person-group>
+        <article-title>Integrative omics for health and disease</article-title>
+        <source>Nature Reviews. Genetics</source>
+        <year iso-8601-date="2018-05">2018</year><month>05</month>
+        <volume>19</volume>
+        <issue>5</issue>
+        <issn>1471-0064</issn>
+        <uri>https://www.ncbi.nlm.nih.gov/pubmed/29479082</uri>
+        <pub-id pub-id-type="doi">10.1038/nrg.2018.4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-malod-dogin-2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Malod-Dognin</surname><given-names>Noël</given-names></name>
+          <name><surname>Petschnigg</surname><given-names>Julia</given-names></name>
+          <name><surname>Pržulj</surname><given-names>Nataša</given-names></name>
+        </person-group>
+        <article-title>Precision medicine ― a promising, yet challenging road lies ahead</article-title>
+        <source>Current Opinion in Systems Biology</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>7</volume>
+        <issn>2452-3100</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S2452310017302007</uri>
+        <pub-id pub-id-type="doi">10.1016/j.coisb.2017.10.003</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-r-cluster">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Maechler</surname><given-names>Martin</given-names></name>
+          <name><surname>Rousseeuw</surname><given-names>Peter</given-names></name>
+          <name><surname>Struyf</surname><given-names>Anja</given-names></name>
+          <name><surname>Hubert</surname><given-names>Mia</given-names></name>
+          <name><surname>Hornik</surname><given-names>Kurt</given-names></name>
+        </person-group>
+        <source>Cluster: Cluster analysis basics and extensions</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://CRAN.R-project.org/package=cluster</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-r-Rtsne">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Krijthe</surname><given-names>Jesse H.</given-names></name>
+        </person-group>
+        <source>Rtsne: T-Distributed stochastic neighbor embedding using Barnes-Hut implementation</source>
+        <year iso-8601-date="2015">2015</year>
+        <uri>https://github.com/jkrijthe/Rtsne</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-r-tsne">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Donaldson</surname><given-names>Justin</given-names></name>
+        </person-group>
+        <source>Tsne: T-distributed stochastic neighbor embedding for R (t-SNE)</source>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://CRAN.R-project.org/package=tsne</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-r-uwot">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Melville</surname><given-names>James</given-names></name>
+        </person-group>
+        <source>uwot: The uniform manifold approximation and projection (UMAP) method for dimensionality reduction</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://CRAN.R-project.org/package=uwot</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

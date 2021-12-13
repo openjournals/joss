@@ -1,0 +1,718 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3525</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03525</article-id>
+<title-group>
+<article-title>SIMSOPT: A flexible framework for stellarator
+optimization</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-7233-577X</contrib-id>
+<string-name>Matt Landreman</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-2073-4162</contrib-id>
+<string-name>Bharat Medasani</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-2195-6522</contrib-id>
+<string-name>Florian Wechsung</string-name>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-4388-2782</contrib-id>
+<string-name>Andrew Giuliani</string-name>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-2941-6571</contrib-id>
+<string-name>Rogerio Jorge</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-2337-3232</contrib-id>
+<string-name>Caoxiang Zhu</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Institute for Research in Electronics and Applied Physics,
+University of Maryland, College Park</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Princeton Plasma Physics Laboratory</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Courant Institute of Mathematical Sciences, New York
+University</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-06-01">
+<day>1</day>
+<month>6</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>65</issue>
+<fpage>3525</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Python</kwd>
+<kwd>plasma</kwd>
+<kwd>plasma physics</kwd>
+<kwd>magnetohydrodynamics</kwd>
+<kwd>optimization</kwd>
+<kwd>stellarator</kwd>
+<kwd>fusion energy</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>A stellarator is a magnetic field configuration used to confine
+  plasma, and it is a candidate configuration for fusion energy, as well
+  as a general charged particle trap. A stellarator’s magnetic field is
+  typically produced using electromagnetic coils, and the shaping of the
+  field and coils must be optimized to achieve good confinement. SIMSOPT
+  is a collection of software components for carrying out these
+  optimizations. These components include</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Interfaces to physics codes, e.g. for magnetohydrodynamic (MHD)
+      equilibrium.</p>
+    </list-item>
+    <list-item>
+      <p>Tools for defining objective functions and parameter spaces for
+      optimization.</p>
+    </list-item>
+    <list-item>
+      <p>Geometric objects that are important for stellarators –
+      surfaces and curves – with several available
+      parameterizations.</p>
+    </list-item>
+    <list-item>
+      <p>Implementations of the Biot-Savart law and other magnetic
+      fields, including derivatives.</p>
+    </list-item>
+    <list-item>
+      <p>Tools for parallelized finite-difference gradient
+      calculations.</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>To effectively confine plasmas for the goal of fusion energy, the
+  three-dimensional magnetic field of a stellarator has to be carefully
+  designed. The design effort is essentially to vary the
+  magnetohydrodynamic (MHD) equilibrium to meet multiple metrics, for
+  example, MHD stability, neoclassical transport, fast-ion confinement,
+  turbulent transport, and buildable coils. This process involves
+  calling several physics codes and cannot be done manually. A software
+  framework is needed to connect these physics calculations with
+  numerical optimization algorithms.</p>
+  <p>Although the idea of stellarator optimization is several decades
+  old, there are limited codes available to use. The two most commonly
+  used codes are STELLOPT
+  (<xref alt="Hirshman et al., 1998" rid="ref-STELLOPT_Hirshman" ref-type="bibr">Hirshman
+  et al., 1998</xref>;
+  <xref alt="Lazerson et al., 2021" rid="ref-STELLOPT_repo" ref-type="bibr">Lazerson
+  et al., 2021</xref>;
+  <xref alt="Spong et al., 1998" rid="ref-STELLOPT_Spong" ref-type="bibr">Spong
+  et al., 1998</xref>) and ROSE
+  (<xref alt="Drevlak et al., 2018" rid="ref-ROSE" ref-type="bibr">Drevlak
+  et al., 2018</xref>). ROSE is closed-sourced, and STELLOPT has the
+  disadvantage that it is written in Fortran and couples all the codes
+  explicitly, meaning that it requires modification of multiple core
+  STELLOPT source files to write an interface for a new module. The goal
+  of SIMSOPT is to flatten the learning curve, improve the flexibility
+  for prototyping new problems, and enhance the extendibility and
+  maintainability. To achieve these goals, SIMSOPT is written in
+  object-oriented Python and incorporates software engineering best
+  practices like continuous integration. Modern tools are used in
+  SIMSOPT to manage the documentation and unit tests.</p>
+</sec>
+<sec id="structure">
+  <title>Structure</title>
+  <p>The components of SIMSOPT that are not performance bottlenecks are
+  written in python, for flexibility and ease of use and development. In
+  components where performance is critical, compiled C++ code is
+  interfaced to python using the <monospace>pybind11</monospace> package
+  (<xref alt="Jakob, 2021" rid="ref-pybind" ref-type="bibr">Jakob,
+  2021</xref>). As examples, the infrastructure for defining objective
+  functions and optimization problems is written in python, whereas the
+  Biot-Savart law is implemented in C++.</p>
+  <p>Some of the physics modules with compiled code reside in separate
+  repositories. Two such modules are the VMEC
+  (<xref alt="Hirshman &amp; Whitson, 1983" rid="ref-VMEC1983" ref-type="bibr">Hirshman
+  &amp; Whitson, 1983</xref>) and
+  SPEC<xref ref-type="fn" rid="fn1">1</xref>
+  (<xref alt="Hudson et al., 2012" rid="ref-SPEC" ref-type="bibr">Hudson
+  et al., 2012</xref>;
+  <xref alt="Qu et al., 2020" rid="ref-SPEC2" ref-type="bibr">Qu et al.,
+  2020</xref>) codes, for MHD equilibrium. These Fortran codes are
+  interfaced using the <monospace>f90wrap</monospace> package
+  (<xref alt="Kermode, 2020" rid="ref-f90wrap" ref-type="bibr">Kermode,
+  2020</xref>), so data can be passed directly in memory to and from
+  python. This is particularly useful for passing MPI communicators for
+  parallelized evaluation of finite-difference gradients. Another module
+  in a separate repository is BOOZ_XFORM
+  (<xref alt="Landreman, 2021" rid="ref-booz_xform" ref-type="bibr">Landreman,
+  2021</xref>), for calculation of Boozer coordinates. This latter
+  repository is a new C++ re-implementation of an algorithm in an older
+  fortran 77 code of the same name.</p>
+  <p>A variety of geometric objects and magnetic field types are
+  included in SIMSOPT. Several discretizations of curves and toroidal
+  surfaces are included, since curves are important both in the context
+  of electromagnetic coils and the magnetic axis, and flux surfaces are
+  a key concept for stellarators. One magnetic field type represents the
+  Biot-Savart law, defined by a set of curves and the electric current
+  they carry. Other available magnetic field types include Dommaschk
+  potentials
+  (<xref alt="Dommaschk, 1986" rid="ref-Dommaschk" ref-type="bibr">Dommaschk,
+  1986</xref>) and the analytic formula for the field of a circular
+  coil, and magnetic field instances can be scaled and summed. All the
+  geometric and magnetic field classes provide one or two derivatives,
+  either by explicit formulae, or by automatic differentiation with the
+  <monospace>jax</monospace> package
+  (<xref alt="Bradbury et al., 2018" rid="ref-jax" ref-type="bibr">Bradbury
+  et al., 2018</xref>). Caching is done automatically to avoid repeated
+  calculations.</p>
+  <p>To date, SIMSOPT calculations have primarily used optimization
+  algorithms from <monospace>scipy</monospace>
+  (<xref alt="Virtanen et al., 2020" rid="ref-scipy" ref-type="bibr">Virtanen
+  et al., 2020</xref>). However, since SIMSOPT provides the objective
+  function (and, for least-squares problems, the inidividual residual
+  terms) as a standard python function handle, it requires minimal
+  effort to connect the SIMSOPT objective to outside optimization
+  libraries.</p>
+  <p>Presently, MPI and OpenMP parallelism are used in different code
+  components. The parallelized finite-difference gradient capability
+  uses MPI, to support use of multiple compute nodes, and to support
+  concurrent calculations with physics codes like VMEC and SPEC that
+  employ MPI. Biot-Savart calculations are accelerated using SIMD
+  intrinsics (via the xsimd library
+  <xref alt="xtensor-stack, 2021" rid="ref-xsimd" ref-type="bibr">xtensor-stack,
+  2021</xref>) and OpenMP parallelization.</p>
+  <p>SIMSOPT does not presently use input data files to define
+  optimization problems, in contrast to STELLOPT. Rather, problems are
+  specified using a python driver script, in which objects are defined
+  and configured. An advantage of this approach is that any other
+  desired scripting elements can be included. One way this capability
+  can be used (which is done in the first example below) is to define a
+  series of optimization steps, in which the size of the parameter space
+  is increased at each step, along with the numerical resolution
+  parameters of the codes. The former is valuable to avoid getting stuck
+  in a local minimum, and the latter improves computational
+  efficiency.</p>
+</sec>
+<sec id="capabilities">
+  <title>Capabilities</title>
+  <p>Presently, SIMSOPT provides tools for each of the two optimization
+  stages used for the design of stellarators such as W7-X
+  (<xref alt="Klinger et al., 2017" rid="ref-Klinger2017" ref-type="bibr">Klinger
+  et al., 2017</xref>) and HSX
+  (<xref alt="Anderson et al., 1995" rid="ref-Anderson" ref-type="bibr">Anderson
+  et al., 1995</xref>). In the first stage, the boundary of a toroidal
+  magnetic surface is varied to optimize the physics properties inside
+  it. In the second stage, coil shapes are optimized to approximately
+  produce the boundary magnetic surface that resulted from the first
+  stage.</p>
+  <p>For the first stage, MHD equilibria or vacuum fields can be
+  represented using the VMEC or SPEC code, or both at the same time.
+  VMEC, which makes the assumption that good nested magnetic surfaces
+  exist, is extremely robust and many other physics codes are able to
+  postprocess its output. In VMEC-based optimizations, a typical
+  objective to minimize is the departure from quasisymmetry, a symmetry
+  in the field strength that provides good confinement
+  (<xref alt="Nührenberg &amp; Zille, 1988" rid="ref-Nuhrenberg" ref-type="bibr">Nührenberg
+  &amp; Zille, 1988</xref>). SPEC can provide added value because of its
+  ability to represent magnetic islands, which are undesirable since a
+  large temperature gradient cannot be supported across them. Islands
+  can be eliminated using SIMSOPT by minimizing the magnitude of the
+  residues
+  (<xref alt="Greene, 1979" rid="ref-Greene" ref-type="bibr">Greene,
+  1979</xref>), similar to the method in
+  (<xref alt="Hanson &amp; Cary, 1984" rid="ref-Hanson" ref-type="bibr">Hanson
+  &amp; Cary, 1984</xref>). An example of stage-1 optimization including
+  both VMEC and SPEC simultaneously is shown in
+  <xref alt="Figure 1" rid="figU003Axsections">Figure 1</xref>-<xref alt="Figure 2" rid="figU003Apoincare">Figure 2</xref>.
+  Here, the shape is optimized to both eliminate an internal island
+  chain, as computed from SPEC, and to achieve quasisymmetry, as
+  computed from VMEC and BOOZ_XFORM. More details of this calculation
+  can be found in Landreman et al.
+  (<xref alt="2021" rid="ref-combined_vmec_spec" ref-type="bibr">2021</xref>).</p>
+  <fig>
+    <caption><p>An example of stage-1 optimization using SIMSOPT, in
+    which the shape of a toroidal boundary is optimized to eliminate
+    magnetic islands and improve quasisymmetry. Shown on the left are
+    slices through the surface at different angles
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\phi]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϕ</mml:mi></mml:math></alternatives></inline-formula>
+    of the initial and the optimized configuratios.
+    <styled-content id="figU003Axsections"></styled-content></p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="20210530-01-014-combinedVmecSpecOpt_xsections.pdf" xlink:title="" />
+  </fig>
+  <fig>
+    <caption><p>VMEC flux surfaces (black lines) and Poincare plot
+    computed from the SPEC solution (colored points) for the initial and
+    optimized configurations in
+    <xref alt="Figure 1" rid="figU003Axsections">Figure 1</xref>. The
+    initial configuration contains an island chain, whereas the
+    optimized configuration has nested flux
+    surfaces.<styled-content id="figU003Apoincare"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="20210530-01-014-combinedVmecSpecOpt_poincare.png" xlink:title="" />
+  </fig>
+  <p>The curve and magnetic field classes in SIMSOPT can then be used
+  for the second optimization stage, in which coil shapes are designed.
+  Varying the shapes of the coils, derivative-based optimization can be
+  used to minimize the normal component of the magnetic field on the
+  target surface, similar to the FOCUS code
+  (<xref alt="Zhu et al., 2018" rid="ref-focus" ref-type="bibr">Zhu et
+  al., 2018</xref>).</p>
+  <p>One can also use SIMSOPT for other optimization problems that
+  differ from the above two-stage approach. For instance, SIMSOPT is
+  presently being used for a single-stage derivative-based method in
+  which coil shapes are varied to optimize directly for quasisymmetry
+  near the magnetic axis
+  (<xref alt="Giuliani et al., 2020" rid="ref-Giuliani" ref-type="bibr">Giuliani
+  et al., 2020</xref>).
+  <xref alt="Figure 3" rid="figU003Acoils">Figure 3</xref> shows an
+  example in which stochastic optimization is applied to find a
+  configuration in which the quasisymmetry is relatively insensitive to
+  errors in the coil shapes. This example is described in more detail in
+  Wechsung et al.
+  (<xref alt="2021" rid="ref-Wechsung" ref-type="bibr">2021</xref>).</p>
+  <fig>
+    <caption><p>A stellarator obtained using stochasic optimization with
+    <monospace>Curve</monospace> and <monospace>BiotSavart</monospace>
+    classes from SIMSOPT, with magnetic surfaces computed using
+    <monospace>Surface</monospace>
+    classes.<styled-content id="figU003Acoils"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="rt_angle.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We gratefully acknowledge discussions with and assistance from
+  Aaron Bader, Antoine Baillod, David Bindel, Benjamin Faber, Stuart
+  Hudson, Thomas Kruger, Jonathan Schilling, Georg Stadler, and Zhisong
+  Qu. This work was supported by a grant from the Simons Foundation
+  (560651, ML). BM and CZ are supported by the U.S. Department of Energy
+  under Contract No. DE-AC02-09CH11466 through the Princeton Plasma
+  Physics Laboratory.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-VMEC1983">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hirshman</surname><given-names>S P</given-names></name>
+          <name><surname>Whitson</surname><given-names>J C</given-names></name>
+        </person-group>
+        <article-title>Steepest-descent moment method for three-dimensional magnetohydrodynamic equilibria</article-title>
+        <source>Phys. Fluids</source>
+        <year iso-8601-date="1983">1983</year>
+        <volume>26</volume>
+        <pub-id pub-id-type="doi">10.1063/1.864116</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SPEC">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hudson</surname><given-names>S R</given-names></name>
+          <name><surname>Dewar</surname><given-names>R L</given-names></name>
+          <name><surname>Dennis</surname><given-names>G</given-names></name>
+          <name><surname>Hole</surname><given-names>M J</given-names></name>
+          <name><surname>McGann</surname><given-names>M</given-names></name>
+          <name><surname>von Nessi</surname><given-names>G</given-names></name>
+          <name><surname>Lazerson</surname><given-names>S</given-names></name>
+        </person-group>
+        <article-title>Computation of multi-region relaxed magnetohydrodynamic equilibria</article-title>
+        <source>Phys. Plasmas</source>
+        <year iso-8601-date="2012">2012</year>
+        <volume>19</volume>
+        <pub-id pub-id-type="doi">10.1063/1.4765691</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SPEC2">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Qu</surname><given-names>Z S</given-names></name>
+          <name><surname>Pfefferlé</surname><given-names>D</given-names></name>
+          <name><surname>Hudson</surname><given-names>S R</given-names></name>
+          <name><surname>Baillod</surname><given-names>A</given-names></name>
+          <name><surname>Kumar</surname><given-names>A</given-names></name>
+          <name><surname>Dewar</surname><given-names>R L</given-names></name>
+          <name><surname>Hole</surname><given-names>M J</given-names></name>
+        </person-group>
+        <article-title>Coordinate parameterisation and spectral method optimisation for Beltrami field solver in stellarator geometry</article-title>
+        <source>Plasma Phys. Controlled Fusion</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>62</volume>
+        <pub-id pub-id-type="doi">10.1088/1361-6587/abc08e</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Klinger2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Klinger</surname><given-names>T</given-names></name>
+          <name><surname>Alonso</surname><given-names>A</given-names></name>
+          <name><surname>Bozhenkov</surname><given-names>S</given-names></name>
+          <name><surname>Burhenn</surname><given-names>R</given-names></name>
+          <name><surname>Dinklage</surname><given-names>A</given-names></name>
+          <name><surname>Fuchert</surname><given-names>G</given-names></name>
+          <name><surname>Geiger</surname><given-names>J</given-names></name>
+          <name><surname>Grulke</surname><given-names>O</given-names></name>
+          <name><surname>Langenberg</surname><given-names>A</given-names></name>
+          <name><surname>Hirsch</surname><given-names>M</given-names></name>
+          <name><surname>Kocsis</surname><given-names>G</given-names></name>
+          <name><surname>Knauer</surname><given-names>J</given-names></name>
+          <name><surname>Kramer-Flecken</surname><given-names>A</given-names></name>
+          <name><surname>Laqua</surname><given-names>H</given-names></name>
+          <name><surname>Lazerson</surname><given-names>S</given-names></name>
+          <name><surname>Landreman</surname><given-names>M</given-names></name>
+          <name><surname>Maassberg</surname><given-names>H</given-names></name>
+          <name><surname>Marsen</surname><given-names>S</given-names></name>
+          <name><surname>Otte</surname><given-names>M</given-names></name>
+          <name><surname>Pablant</surname><given-names>N</given-names></name>
+          <name><surname>Pasch</surname><given-names>E</given-names></name>
+          <name><surname>Rahbarnia</surname><given-names>K</given-names></name>
+          <name><surname>Stange</surname><given-names>T</given-names></name>
+          <name><surname>Szepesi</surname><given-names>T</given-names></name>
+          <name><surname>Thomsen</surname><given-names>H</given-names></name>
+          <name><surname>Traverso</surname><given-names>P</given-names></name>
+          <name><surname>Velasco</surname><given-names>J L</given-names></name>
+          <name><surname>Wauters</surname><given-names>T</given-names></name>
+          <name><surname>Weir</surname><given-names>G</given-names></name>
+          <name><surname>Windisch</surname><given-names>T</given-names></name>
+          <string-name>the Wendelstein 7-X Team</string-name>
+        </person-group>
+        <article-title>Performance and properties of the first plasmas of Wendelstein 7-X</article-title>
+        <source>Plasma Phys. Controlled Fusion</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>59</volume>
+        <pub-id pub-id-type="doi">10.1088/0741-3335/59/1/014018</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Anderson">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Anderson</surname><given-names>F S B</given-names></name>
+          <name><surname>Almagri</surname><given-names>A F</given-names></name>
+          <name><surname>Anderson</surname><given-names>D T</given-names></name>
+          <name><surname>Matthews</surname><given-names>P G</given-names></name>
+          <name><surname>Talmadge</surname><given-names>J N</given-names></name>
+          <name><surname>Shohet</surname><given-names>J L</given-names></name>
+        </person-group>
+        <article-title>The helically symmetric experiment, (HSX) goals, design and status</article-title>
+        <source>Fusion Tech.</source>
+        <year iso-8601-date="1995">1995</year>
+        <volume>27</volume>
+        <pub-id pub-id-type="doi">10.13182/fst95-a11947086</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Dommaschk">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dommaschk</surname><given-names>W</given-names></name>
+        </person-group>
+        <article-title>Representations for vacuum potentials in stellarators</article-title>
+        <source>Comp. Phys. Comm.</source>
+        <year iso-8601-date="1986">1986</year>
+        <volume>40</volume>
+        <pub-id pub-id-type="doi">10.1016/0010-4655(86)90109-8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Greene">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Greene</surname><given-names>J M</given-names></name>
+        </person-group>
+        <article-title>A method for determining a stochastic transition</article-title>
+        <source>J. Math. Phys.</source>
+        <year iso-8601-date="1979">1979</year>
+        <volume>20</volume>
+        <pub-id pub-id-type="doi">10.1063/1.524170</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hanson">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hanson</surname><given-names>J D</given-names></name>
+          <name><surname>Cary</surname><given-names>J R</given-names></name>
+        </person-group>
+        <article-title>Elimination of stochasticity in stellarators</article-title>
+        <source>Phys. Fluids</source>
+        <year iso-8601-date="1984">1984</year>
+        <volume>27</volume>
+        <pub-id pub-id-type="doi">10.1063/1.864692</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-focus">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zhu</surname><given-names>C</given-names></name>
+          <name><surname>Hudson</surname><given-names>S</given-names></name>
+          <name><surname>Song</surname><given-names>Y</given-names></name>
+          <name><surname>Wan</surname><given-names>Y</given-names></name>
+        </person-group>
+        <article-title>New method to design stellarator coils without the winding surface</article-title>
+        <source>Nucl. Fusion</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>58</volume>
+        <pub-id pub-id-type="doi">10.1088/1741-4326/aa8e0a</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Giuliani">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Giuliani</surname><given-names>A</given-names></name>
+          <name><surname>Wechsung</surname><given-names>F</given-names></name>
+          <name><surname>Cerfon</surname><given-names>A</given-names></name>
+          <name><surname>Stadler</surname><given-names>G</given-names></name>
+          <name><surname>Landreman</surname><given-names>M</given-names></name>
+        </person-group>
+        <article-title>Single-stage gradient-based stellarator coil design: Optimization for near-axis quasi-symmetry</article-title>
+        <source>arXiv:2010.02033</source>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Nuhrenberg">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Nührenberg</surname><given-names>J</given-names></name>
+          <name><surname>Zille</surname><given-names>R</given-names></name>
+        </person-group>
+        <article-title>Quasi-helically symmetric toroidal stellarators</article-title>
+        <source>Phys. Lett. A</source>
+        <year iso-8601-date="1988">1988</year>
+        <volume>129</volume>
+        <pub-id pub-id-type="doi">10.1016/0375-9601(88)90080-1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-scipy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E</given-names></name>
+          <name><surname>Haberland</surname><given-names>Matt</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Burovski</surname><given-names>Evgeni</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Bright</surname><given-names>Jonathan</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>SciPy 1.0: Fundamental algorithms for scientific computing in python</article-title>
+        <source>Nature methods</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>17</volume>
+        <pub-id pub-id-type="doi">10.1038/s41592-019-0686-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ROSE">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Drevlak</surname><given-names>M</given-names></name>
+          <name><surname>Beidler</surname><given-names>CD</given-names></name>
+          <name><surname>Geiger</surname><given-names>J</given-names></name>
+          <name><surname>Helander</surname><given-names>P</given-names></name>
+          <name><surname>Turkin</surname><given-names>Y</given-names></name>
+        </person-group>
+        <article-title>Optimisation of stellarator equilibria with ROSE</article-title>
+        <source>Nucl. Fusion</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>59</volume>
+        <pub-id pub-id-type="doi">10.1088/1741-4326/aaed50</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-STELLOPT_Hirshman">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hirshman</surname><given-names>S P</given-names></name>
+          <name><surname>Spong</surname><given-names>D A</given-names></name>
+          <name><surname>Whitson</surname><given-names>J C</given-names></name>
+          <name><surname>Lynch</surname><given-names>V E</given-names></name>
+          <name><surname>Batchelor</surname><given-names>D B</given-names></name>
+          <name><surname>Carreras</surname><given-names>B A</given-names></name>
+          <name><surname>Rome</surname><given-names>J A</given-names></name>
+        </person-group>
+        <article-title>Transport optimization and MHD stability of a small aspect ratio toroidal hybrid stellarator</article-title>
+        <source>Phys. Rev. Lett.</source>
+        <year iso-8601-date="1998">1998</year>
+        <volume>80</volume>
+        <pub-id pub-id-type="doi">10.1103/physrevlett.80.528</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-STELLOPT_Spong">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Spong</surname><given-names>D A</given-names></name>
+          <name><surname>Hirshman</surname><given-names>S P</given-names></name>
+          <name><surname>Whitson</surname><given-names>J C</given-names></name>
+          <name><surname>Batchelor</surname><given-names>D B</given-names></name>
+          <name><surname>Carreras</surname><given-names>B A</given-names></name>
+          <name><surname>Lynch</surname><given-names>V E</given-names></name>
+          <name><surname>Rome</surname><given-names>J A</given-names></name>
+        </person-group>
+        <article-title>J^* optimization of small aspect ratio stellarator/tokamak hybrid devices</article-title>
+        <source>Phys. Plasmas</source>
+        <year iso-8601-date="1998">1998</year>
+        <volume>5</volume>
+        <pub-id pub-id-type="doi">10.1063/1.872844</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-STELLOPT_repo">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Lazerson</surname><given-names>S</given-names></name>
+          <name><surname>Zhu</surname><given-names>C</given-names></name>
+          <name><surname>Schmitt</surname><given-names>J</given-names></name>
+          <string-name>et al</string-name>
+        </person-group>
+        <source>STELLOPT</source>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://github.com/PrincetonUniversity/STELLOPT</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-f90wrap">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kermode</surname><given-names>J R</given-names></name>
+        </person-group>
+        <article-title>f90wrap: An automated tool for constructing deep python interfaces to modern fortran codes</article-title>
+        <source>J. Phys. Condens. Matter</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>32</volume>
+        <pub-id pub-id-type="doi">10.1088/1361-648x/ab82d2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pybind">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Jakob</surname><given-names>W</given-names></name>
+        </person-group>
+        <source>pybind11 — Seamless operability between C++11 and Python</source>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://github.com/pybind/pybind11</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-booz_xform">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Landreman</surname><given-names>M</given-names></name>
+        </person-group>
+        <source>Booz_xform</source>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://github.com/hiddenSymmetries/booz_xform</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-jax">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Bradbury</surname><given-names>James</given-names></name>
+          <name><surname>Frostig</surname><given-names>Roy</given-names></name>
+          <name><surname>Hawkins</surname><given-names>Peter</given-names></name>
+          <name><surname>Johnson</surname><given-names>Matthew James</given-names></name>
+          <name><surname>Leary</surname><given-names>Chris</given-names></name>
+          <name><surname>Maclaurin</surname><given-names>Dougal</given-names></name>
+          <name><surname>Necula</surname><given-names>George</given-names></name>
+          <name><surname>Paszke</surname><given-names>Adam</given-names></name>
+          <name><surname>VanderPlas</surname><given-names>Jake</given-names></name>
+          <name><surname>Wanderman-Milne</surname><given-names>Skye</given-names></name>
+          <name><surname>Zhang</surname><given-names>Qiao</given-names></name>
+        </person-group>
+        <source>JAX: Composable transformations of Python+NumPy programs</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>http://github.com/google/jax</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-xsimd">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>xtensor-stack</surname></name>
+        </person-group>
+        <source>xsimd: C++ wrappers for SIMD intrinsics and parallelized, optimized mathematical functions (SSE, AVX, NEON, AVX512)</source>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://github.com/xtensor-stack/xsimd</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-combined_vmec_spec">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Landreman</surname><given-names>M</given-names></name>
+          <name><surname>Medasani</surname><given-names>B</given-names></name>
+          <name><surname>Zhu</surname><given-names>C</given-names></name>
+        </person-group>
+        <article-title>Stellarator optimization for good magnetic surfaces at the same time as quasisymmetry</article-title>
+        <source>Phys. Plasmas</source>
+        <year iso-8601-date="2021">2021</year>
+        <volume>28</volume>
+        <pub-id pub-id-type="doi">10.1063/5.0061665</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Wechsung">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wechsung</surname><given-names>F</given-names></name>
+          <name><surname>Giuliani</surname><given-names>A</given-names></name>
+          <name><surname>Landreman</surname><given-names>M</given-names></name>
+          <name><surname>Cerfon</surname><given-names>A</given-names></name>
+          <name><surname>Stadler</surname><given-names>G</given-names></name>
+        </person-group>
+        <article-title>Single-stage gradient-based stellarator coil design: Stochastic optimization</article-title>
+        <source>arXiv:2106.12137</source>
+        <year iso-8601-date="2021">2021</year>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+<fn-group>
+  <fn id="fn1">
+    <label>1</label><p>It is expected that the SPEC repository will be
+    open-source soon, but as of this writing it remains private.</p>
+  </fn>
+</fn-group>
+</back>
+</article>

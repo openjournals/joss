@@ -1,0 +1,663 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1890</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01890</article-id>
+<title-group>
+<article-title>pybeach: A Python package for extracting the location of
+dune toes on beach profile transects</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-2762-9151</contrib-id>
+<string-name>Tomas Beuzen</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Statistics, University of British Columbia,
+Vancouver, Canada</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-10-26">
+<day>26</day>
+<month>10</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>44</issue>
+<fpage>1890</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>coastal</kwd>
+<kwd>morphology</kwd>
+<kwd>dunes</kwd>
+<kwd>machine learning</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Sandy coastlines typically comprise two key parts: a beach and
+  dune. The beach is the section of sandy coast that is mostly above
+  water (depending upon tide) and actively influenced by waves, while
+  dunes are elevated mounds/ridges of sand at the back of the beach. The
+  interface between the beach and dune is often characterised by a
+  distinct change in ground slope (with the dune having a steeper slope
+  than the beach). Dunes are particularly important along sandy
+  coastlines because they provide a natural barrier to coastal hazards
+  such as storm-induced waves and surge. The capacity of sandy dunes to
+  provide coastal hazard protection depends in large part on their
+  geometry. In particular, the location of the dune toe (the transition
+  point between the beach and dune) is a key factor used in coastal
+  erosion models and for assessing coastal vulnerability to hazards
+  (<xref alt="Sallenger, 2000" rid="ref-Sallenger2000" ref-type="bibr">Sallenger,
+  2000</xref>). There are many different algorithms currently available
+  for automatically detecting the dune toe on 2D cross-shore beach
+  profiles. The <bold><italic>pybeach</italic></bold> package documented
+  herein is motivated by two key aspects:</p>
+  <list list-type="order">
+    <list-item>
+      <p>to collect existing dune toe detection algorithms in a single,
+      functional Python package; and,</p>
+    </list-item>
+    <list-item>
+      <p>to provide an additional new method for detecting dune toe
+      location based on machine learning.</p>
+    </list-item>
+  </list>
+  <p><bold><italic>pybeach</italic></bold> is an open-source Python
+  package that allows a user to quickly and effectively identify the
+  dune toe location on 2D beach profiles (e.g., <bold>Figure 1</bold>).
+  The user inputs into <bold><italic>pybeach</italic></bold> an array of
+  cross-shore coordinates of shape (<italic>m</italic>,) and an array of
+  corresponding elevations of shape (<italic>m</italic>,) for a single
+  profile or shape (<italic>m</italic>, <italic>n</italic>) for
+  <italic>n</italic> profiles that share the same cross-shore
+  coordinates. The user can then use
+  <bold><italic>pybeach</italic></bold> to identify the location of the
+  dune toe using the following methods:</p>
+  <list list-type="order">
+    <list-item>
+      <p>Maximum curvature
+      (<xref alt="Stockdon et al., 2007" rid="ref-Stockdon2007" ref-type="bibr">Stockdon
+      et al., 2007</xref>) - the dune toe is defined as the location of
+      maximum slope change;</p>
+    </list-item>
+    <list-item>
+      <p>Relative relief
+      (<xref alt="Wernette et al., 2016" rid="ref-Wernette2016" ref-type="bibr">Wernette
+      et al., 2016</xref>) - the dune toe is defined based on relative
+      relief (the ratio of local morphology to computational scale);</p>
+    </list-item>
+    <list-item>
+      <p>Perpendicular distance - the dune toe is defined as the point
+      of maximum perpendicular distance from the straight line drawn
+      between the dune crest and shoreline; and,</p>
+    </list-item>
+    <list-item>
+      <p>Machine learning using Random Forest classification - discussed
+      further below.</p>
+    </list-item>
+  </list>
+  <p><bold>Figure 1</bold> shows examples of
+  <bold><italic>pybeach</italic></bold> applied to different beach
+  profile transects. The machine learning (ML) approach to identifying
+  the location of the dune toe is novel and aims to address some of the
+  issues with existing algorithms (discussed further in Section
+  <xref alt="Statement of Need" rid="statement-of-need">Statement of
+  Need</xref> below). As described further in Section
+  <xref alt="pybeach" rid="pybeach">pybeach</xref>, when tested on 200
+  unseen beach profiles, the ML approach to dune toe detection located
+  the dune toe more accurately than the other available methods. An
+  additional benefit of the ML approach is that it outputs a probability
+  distribution across the length of a profile describing the probability
+  of each individual cross-shore location being a dune toe. This can be
+  particularly useful for correcting errors and interpreting beach
+  morphology. Importantly, the methodology used to create the dune toe
+  ML model here (described in Section
+  <xref alt="pybeach" rid="pybeach">pybeach</xref>) is an example of how
+  ML can be more generally applied to geomorphic and Earth surface
+  systems.</p>
+  <fig>
+    <caption><p>Example applications of pybeach.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="docs/img/figure_1.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>Domain experts are generally able to identify the location of the
+  dune toe given a 2D beach profile. However, recent improvements in
+  coastal monitoring technologies (such as optical, Lidar, and satellite
+  remote sensing), have resulted in a significant increase in coastal
+  topographic data, for which analysis by an expert is infeasible. As a
+  result, there has been increased need for reliable and efficient
+  algorithms for extracting important features such as dune toes from
+  these large coastal datasets. To date, several different algorithms
+  have been developed for this purpose, which, for example, define the
+  dune toe based on profile curvature
+  (<xref alt="Stockdon et al., 2007" rid="ref-Stockdon2007" ref-type="bibr">Stockdon
+  et al., 2007</xref>) or local relative relief
+  (<xref alt="Wernette et al., 2016" rid="ref-Wernette2016" ref-type="bibr">Wernette
+  et al., 2016</xref>). However, a recent study by Wernette et al (2018)
+  that analysed existing approaches for extracting dune toe locations on
+  beach profiles found that there is considerable variation in the
+  performance of these algorithms and expert checking is often required
+  to validate results. Furthermore, these algorithms typically require
+  considerable subjective tuning of their parameters to generate
+  reasonable results
+  (<xref alt="Wernette et al., 2018" rid="ref-Wernette2018" ref-type="bibr">Wernette
+  et al., 2018</xref>). While experts can generally identify the dune
+  toe on a beach profile, it is difficult to develop an algorithm that
+  can consistently and reliably define the dune toe for the large
+  variety of beach profile shapes encountered in nature. Here, ML is
+  used as an alternative approach to creating a dune toe detection
+  model. The idea is to directly encode expert knowledge to create a
+  model that is applicable to a large variety of beach profile shapes,
+  and is scalable, such that it can be updated and improved as
+  additional data becomes available in the future. The methodology used
+  to develop the dune toe ML model in
+  <bold><italic>pybeach</italic></bold> is discussed in Section
+  <xref alt="pybeach" rid="pybeach">pybeach</xref> below. An additional
+  motivation of the <bold><italic>pybeach</italic></bold> package is to
+  facilitate the progression of coastal research in Python. MATLAB has
+  been the primary data processing environment in coastal research over
+  the last decade or so, however increased use of open-source data,
+  software, and machine learning, has resulted in Python becoming a more
+  popular programming language in coastal research and practice and
+  <bold><italic>pybeach</italic></bold> aims to continue and contribute
+  to this open-source movement.</p>
+</sec>
+<sec id="pybeach">
+  <title>pybeach</title>
+  <p><bold><italic>pybeach</italic></bold> contains a
+  <italic>Profile</italic> class in the <italic>beach.py</italic>
+  module. This class contains methods for defining the dune toe using
+  each of the approaches listed above.
+  <bold><italic>pybeach</italic></bold> utilises support functions
+  located within the <italic>classifier_support.py</italic> and
+  <italic>data_support.py</italic> modules. An instance of the
+  <italic>Profile</italic> class can be created using an array of
+  cross-shore coordinates of shape (<italic>m</italic>,) and an array of
+  corresponding elevations of shape (<italic>m</italic>,) for a single
+  profile or shape (<italic>m</italic>, <italic>n</italic>) for
+  <italic>n</italic> profiles that share the same cross-shore
+  coordinates. Profiles should be oriented with the sea on the right
+  hand side. Four methods may be called from an instance of the
+  <italic>Profile</italic> class to identify the dune toe location:</p>
+  <list list-type="order">
+    <list-item>
+      <p><monospace>Profile.predict_dunetoe_ml()</monospace> # machine
+      learning method (ML)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>Profile.predict_dunetoe_mc()</monospace> # maximum
+      curvature method (MC)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>Profile.predict_dunetoe_rr()</monospace> # relative
+      relief method (RR)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>Profile.predict_dunetoe_pd()</monospace> #
+      perpendicular distance method (PD)</p>
+    </list-item>
+  </list>
+  <p><bold><italic>pybeach</italic></bold> also includes methods for
+  identifying the dune crest
+  (<monospace>Profile.predict_dunecrest()</monospace>) and shoreline
+  (<monospace>Profile.predict_shoreline()</monospace>) location on a
+  beach profile; these methods are highly useful for constraining the
+  search area of the dune toe detection algorithms to the region between
+  the dune crest and shoreline and can be called using relevant
+  parameters for each of the methods above. See the relevant docstrings
+  for further details. The latter three dune toe detection methods above
+  were described previously in Section
+  <xref alt="Summary" rid="summary">Summary</xref>. The novel dune toe
+  location method provided by <bold><italic>pybeach</italic></bold> is
+  the ML method. In fact, three pre-trained ML models are provided with
+  the <bold><italic>pybeach</italic></bold> package:</p>
+  <list list-type="order">
+    <list-item>
+      <p>a “barrier-island” model. This model was developed using 1046
+      pre- and post- “Hurricane Ivan” airborne LIDAR profiles from
+      Santa-Rosa Island Florida (this data was collected in 2004 and is
+      described in
+      (<xref alt="Doran et al., 2018" rid="ref-Doran2018" ref-type="bibr">Doran
+      et al., 2018</xref>));</p>
+    </list-item>
+    <list-item>
+      <p>a “wave-embayed” model. This model was developed using 1768
+      pre- and post- “June 2016 storm” airborne LIDAR profiles from the
+      wave-dominated, embayed southeast Australian coastline (this data
+      was collected in 2016 and is described in
+      (<xref alt="Harley et al., 2017" rid="ref-Harley2017" ref-type="bibr">Harley
+      et al., 2017</xref>)).</p>
+    </list-item>
+    <list-item>
+      <p>a “mixed” model. Developed using a combination of the two above
+      datasets.</p>
+    </list-item>
+  </list>
+  <p>In addition to these three pre-trained ML models, the function
+  <italic>create_classifier()</italic> in the
+  <italic>classifier_support.py</italic> module, allows users to create
+  a custom ML model from their own data. As described below, the ML
+  models provided in <bold><italic>pybeach</italic></bold> are based on
+  Random Forest classification and the
+  <italic>create_classifier()</italic> function will create models based
+  on this algorithm by default using the scikit-learn library
+  (<xref alt="Pedregosa et al., 2011" rid="ref-sklearn2011" ref-type="bibr">Pedregosa
+  et al., 2011</xref>). However, <bold><italic>pybeach</italic></bold>
+  supports ML models developed using any scikit-learn classifier that
+  supports probabilistic prediction (e.g., kNN, logistic regression,
+  support vector classifier, etc.). The methodology for creating a model
+  is described briefly below and is demonstrated in the example Jupyter
+  notebook contained within the <bold><italic>pybeach</italic></bold>
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/TomasBeuzen/pybeach/blob/master/example/example.ipynb">GitHub
+  repository</ext-link>.</p>
+  <p>For each dataset described above, the true location of the dune toe
+  on each indiviudal profile transect was manually identified and
+  quality checked by <italic>multiple</italic> experts and verified
+  using satelitte imagery, digital elevation models and/or in-situ
+  observations where available. This resulted in the best possible data
+  to facilitate the creation of the ML models in
+  <bold><italic>pybeach</italic></bold>. As beach profile transects can
+  vary significantly in length (i.e., from 10’s of meters to 100’s of
+  meters), the ML models developed here were created using fixed lengths
+  of transect (hereafter referred to as a “window”) instead of an entire
+  transect (<bold>Figure 2a</bold>). Given a window, the aim of the ML
+  model is to predict the probability of a dune toe being located at the
+  center of the window. In practice,
+  <bold><italic>pybeach</italic></bold> creates a window around every
+  single cross-shore coordinate of an inputted profile and predicts the
+  probability that each cross-shore location is a dune toe, eventualy
+  selecting the point of highest probability as the dune toe. It was
+  found that the gradient of profile elevations within a window (instead
+  of the raw elevations) was a more effective and generalizable input
+  for the model (see <bold>Figure 2b</bold>). Training the ML models
+  required examples of windows that are both centered around a dune toe
+  (positive samples) and ones that are not centered around a dune toe
+  (negative samples). The negative samples can be a window centered at
+  any point other than the actual dune toe. However, the samples should
+  not be so close to the actual dune toe as to confuse the model.
+  Therefore a “buffer zone” is defined around the actual dune toe
+  location (<bold>Figure 2a</bold>) when generating negative samples,
+  such that negative samples can only be generated using points outside
+  of the buffer zone. For each beach profile used for model training, in
+  addition to the one positive sample (i.e., the window centered around
+  the true dune toe), a single negative sample is also randomly
+  extracted, resulting in equal numbers of positive and negative dune
+  toe windows for model training.</p>
+  <fig>
+    <caption><p>Example of “positive” and “negative” dune toe windows
+    used to train the ML models in pybeach. (a) shows the raw beach
+    profile data with the “positive” dune toe window and location marked
+    in green and a randomly selected “negative” dune toe window and
+    location markined in red. (b) shows the gradient (first
+    differential) of the raw profile data shown in (a) - these data are
+    used to train the ML models.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="docs/img/figure_2.png" xlink:title="" />
+  </fig>
+  <p>The “windows” are simply vectors of elevation change (the
+  features), symmetrically centered around a dune toe (positive sample,
+  given a class label of 1) or some other random location that is not a
+  dune toe (negative sample, given a class label of 0). The scikit-learn
+  (<xref alt="Pedregosa et al., 2011" rid="ref-sklearn2011" ref-type="bibr">Pedregosa
+  et al., 2011</xref>) Random Forest classifier algorithm was used to
+  develop the <bold><italic>pybeach</italic></bold> ML models using
+  these features and class labels, with an ensemble of 100 trees and no
+  maximum depth. While different algorithms were trialled, the random
+  forest classifier gave the highest accuracy during 10-fold
+  cross-validation testing. In addition, it can output the probability
+  associated with predictions, i.e., in this case the probability of a
+  particular point being a dune toe, which can be highly useful for
+  expert interpretation and for better understanding beach morphology.
+  The two key parameters of the ML methodology discussed above are the
+  window size and buffer size. During model development, a
+  cross-validation grid search was conducted over different values of
+  these two parameters, and a window size of 20 m and buffer size of 20
+  m were found to be optimal. However, users may adjust these parameters
+  when generating their own models.</p>
+  <sec id="performance-assessment">
+    <title>Performance Assessment</title>
+    <p>To test the performance of the dune toe location algorithms in
+    <bold><italic>pybeach</italic></bold>, 200 profiles were reserved as
+    testing data and were not at all involved in ML model development.
+    These profiles are located in the
+    <bold><italic>pybeach</italic></bold>
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/TomasBeuzen/pybeach/tree/master/example">GitHub
+    repository</ext-link>. Figure 3 and Table 1 show the performance of
+    the different dune toe detection algorithms (ML, MC, RR, PD) and can
+    be reproduced using the example Jupyter notebook contained within
+    the <bold><italic>pybeach</italic></bold>
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/TomasBeuzen/pybeach/blob/master/example/example.ipynb">GitHub
+    repository</ext-link>. It can be seen that the ML model considerably
+    outperforms the other dune toe location algorithms for this testing
+    set of 200 beach profiles.</p>
+    <fig>
+      <caption><p>Boxplot of pybeach results on 200 test beach
+      profiles.</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="docs/img/figure_3.png" xlink:title="" />
+    </fig>
+    <fig>
+      <caption><p>Mean absolute error (MAE), root-mean-squared-error
+      (RMSE), and r-squared (R2) of the four dune toe detection
+      algorithms in pybeach applied to the 200 test
+      profiles.</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="docs/img/table_1.png" xlink:title="" />
+    </fig>
+  </sec>
+  <sec id="installation">
+    <title>Installation</title>
+    <p><bold><italic>pybeach</italic></bold> is available on the Python
+    Package Index (PyPI) and can be installed with the following:</p>
+    <code language="bash">pip install pybeach</code>
+  </sec>
+  <sec id="usage">
+    <title>Usage</title>
+    <p>Given an array of cross-shore coordinates,
+    <bold><italic>x</italic></bold> of shape (<italic>m</italic>,) and
+    corresponding elevations <bold><italic>z</italic></bold> of shape
+    (<italic>m</italic>,) for a single profile or shape
+    (<italic>m</italic>, <italic>n</italic>) for <italic>n</italic>
+    profiles, <bold><italic>pybeach</italic></bold> can be used as
+    follows to make predictions of the dune toe location:</p>
+    <code language="python">from pybeach.beach import Profile
+
+# Some syntehtic data
+import numpy as np
+x = np.arange(0, 80, 0.5)
+z = np.concatenate((np.linspace(4, 5, 40),
+                    np.linspace(5, 2, 10),
+                    np.linspace(2, 0, 91)[1:],
+                    np.linspace(0, -1, 20)))
+
+# Instantiate Profile class
+pb = Profile(x, z)
+
+# Predict dune toe location
+toe_ml = pb.predict_dunetoe_ml('mixed_clf') # use the machine learning (ML) method
+toe_mc = pb.predict_dunetoe_mc() # use the maximum curvature (MC) method
+toe_rr = pb.predict_dunetoe_rr() # use the relative relief (RR) method
+toe_pd = pb.predict_dunetoe_pd() # use the perpendicular distance (PD) method
+
+# Predict shoreline and dune crest location
+crest = pb.predict_dunecrest()
+shoreline = pb.predict_shoreline()</code>
+    <p>The <bold><italic>pybeach</italic></bold> source code can be
+    found on
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/TomasBeuzen/pybeach">github</ext-link>.
+    Please see the
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/TomasBeuzen/pybeach/blob/master/example/example.ipynb">example
+    Jupyter notebook</ext-link> for additional information on how to use
+    <bold><italic>pybeach</italic></bold> and to re-create figures
+    presented in this paper.</p>
+  </sec>
+  <sec id="future-work">
+    <title>Future Work</title>
+    <p>An ambition of <bold><italic>pybeach</italic></bold> is to act as
+    a central repository for coastal data and algorithms related to
+    morphological and hydrodynamic calculations and to integrate with
+    existing coastal Python tools such as
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/kvos/CoastSat">CoastSat</ext-link>
+    (<xref alt="Vos et al., 2019" rid="ref-Vos2019" ref-type="bibr">Vos
+    et al., 2019</xref>),
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/chrisleaman/py-wave-runup">py-wave-runup</ext-link>
+    (<xref alt="Leaman, 2019" rid="ref-Leaman2019" ref-type="bibr">Leaman,
+    2019</xref>),
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/simmonsja/CVNetica_VS">CVNetica_VS</ext-link>
+    (<xref alt="Beuzen &amp; Simmons, 2019" rid="ref-Beuzen2019" ref-type="bibr">Beuzen
+    &amp; Simmons, 2019</xref>), and
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/dbuscombe-usgs/pyDGS">pyDGS</ext-link>
+    (<xref alt="Buscombe, 2013" rid="ref-Buscombe2013" ref-type="bibr">Buscombe,
+    2013</xref>). <bold><italic>pybeach</italic></bold> was created in
+    such as way that it can easily be expanded upon in future. Immediate
+    goals include adding capacity to identify morphological features
+    like dune toes from 3D coastal data (such as digital elevation
+    models) as well as adding new classes for the calculation of
+    commonly used hydrodynamic parameters (e.g., wave height, wave
+    length, wave period, wave runup).</p>
+  </sec>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>I would like to thank those that contributed to the collection and
+  processing of data used to develop the ML models in
+  <bold><italic>pybeach</italic></bold>. In particular, Dr. Mitchell
+  Harley, Prof. Jason H. Middleton, Peter J. Mumford, and the UNSW
+  School of Aviation for conducting the Airborne Lidar surveys and Lidar
+  data pre- processing for the June 2016 storm, and Dr. Kara Doran,
+  Dr. Nathaniel Plant, Dr. Hilary Stockdon, and the USGS for providing
+  the Hurricane Ivan Lidar data, available online
+  <ext-link ext-link-type="uri" xlink:href="https://coastal.er.usgs.gov/data-release/doi-F7GF0S0Z/">here</ext-link>.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Sallenger2000">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sallenger</surname><given-names>Asbury H.</given-names></name>
+        </person-group>
+        <article-title>Storm impact scale for barrier islands</article-title>
+        <source>Journal of Coastal Research</source>
+        <publisher-name>Coastal Education &amp; Research Foundation</publisher-name>
+        <year iso-8601-date="2000">2000</year>
+        <volume>16</volume>
+        <issue>3</issue>
+        <uri>https://journals.flvc.org/jcr/article/view/80902</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Stockdon2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Stockdon</surname><given-names>Hilary F.</given-names></name>
+          <name><surname>Sallenger</surname><given-names>Asbury H.</given-names></name>
+          <name><surname>Holman</surname><given-names>Rob A.</given-names></name>
+          <name><surname>Howd</surname><given-names>Peter A.</given-names></name>
+        </person-group>
+        <article-title>A simple model for the spatially-variable coastal response to hurricanes</article-title>
+        <source>Marine Geology</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>238</volume>
+        <issue>1-4</issue>
+        <uri>https://www.sciencedirect.com/science/article/abs/pii/S0025322706003355</uri>
+        <pub-id pub-id-type="doi">10.1016/j.margeo.2006.11.004</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Wernette2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wernette</surname><given-names>Phillipe</given-names></name>
+          <name><surname>Houser</surname><given-names>Chris</given-names></name>
+          <name><surname>Bishop</surname><given-names>Michael P</given-names></name>
+        </person-group>
+        <article-title>An automated approach for extracting barrier island morphology from digital elevation models</article-title>
+        <source>Geomorphology</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>262</volume>
+        <uri>https://www.sciencedirect.com/science/article/abs/pii/S0169555X16300630</uri>
+        <pub-id pub-id-type="doi">10.1016/j.geomorph.2016.02.024</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Wernette2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wernette</surname><given-names>Phillipe</given-names></name>
+          <name><surname>Thompson</surname><given-names>Stephanie</given-names></name>
+          <name><surname>Eyler</surname><given-names>Rachel</given-names></name>
+          <name><surname>Taylor</surname><given-names>Hannah</given-names></name>
+          <name><surname>Taube</surname><given-names>Caleb</given-names></name>
+          <name><surname>Medlin</surname><given-names>Alex</given-names></name>
+          <name><surname>Decuir</surname><given-names>Claire</given-names></name>
+          <name><surname>Houser</surname><given-names>Chris</given-names></name>
+        </person-group>
+        <article-title>Defining dunes: Evaluating how dune feature definitions affect dune interpretations from remote sensing</article-title>
+        <source>Journal of Coastal Research</source>
+        <publisher-name>The Coastal Education; Research Foundation</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>34</volume>
+        <issue>6</issue>
+        <uri>https://www.jcronline.org/doi/full/10.2112/JCOASTRES-D-17-00082.1</uri>
+        <pub-id pub-id-type="doi">10.2112/JCOASTRES-D-17-00082.1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Doran2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Doran</surname><given-names>Kara</given-names></name>
+          <name><surname>Long</surname><given-names>Joseph W</given-names></name>
+          <name><surname>Birchler</surname><given-names>Justin</given-names></name>
+          <name><surname>Brenner</surname><given-names>Owen T</given-names></name>
+          <name><surname>Hardy</surname><given-names>Matthew</given-names></name>
+          <name><surname>Morgan</surname><given-names>Karen LM</given-names></name>
+          <name><surname>Stockdon</surname><given-names>Hilary F</given-names></name>
+          <name><surname>Torres</surname><given-names>Miguel Loubriel</given-names></name>
+        </person-group>
+        <article-title>Lidar-derived beach morphology (dune crest, dune toe, and shoreline) for u.s. Sandy coastlines (ver. 2.0, august 2018): U.s. Geological survey data release</article-title>
+        <publisher-name>U.S. Geological Survey, U.S. Department of the Interior</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <pub-id pub-id-type="doi">https://doi.org/10.5066/F7GF0S0Z</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Harley2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Harley</surname><given-names>Mitchell D</given-names></name>
+          <name><surname>Turner</surname><given-names>Ian L</given-names></name>
+          <name><surname>Kinsela</surname><given-names>Michael A</given-names></name>
+          <name><surname>Middleton</surname><given-names>Jason H</given-names></name>
+          <name><surname>Mumford</surname><given-names>Peter J</given-names></name>
+          <name><surname>Splinter</surname><given-names>Kristen D</given-names></name>
+          <name><surname>S</surname><given-names>Phillips Matthew</given-names></name>
+          <name><surname>Simmons</surname><given-names>Joshua A</given-names></name>
+          <name><surname>Hanslow</surname><given-names>David J</given-names></name>
+          <name><surname>Short</surname><given-names>Andrew D</given-names></name>
+        </person-group>
+        <article-title>Extreme coastal erosion enhanced by anomalous extratropical storm wave direction</article-title>
+        <source>Scientific reports</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>7</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">https://doi.org/10.1038/s41598-017-05792-1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Vos2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Vos</surname><given-names>Kilian</given-names></name>
+          <name><surname>Splinter</surname><given-names>Kristen D</given-names></name>
+          <name><surname>Harley</surname><given-names>Mitchell D</given-names></name>
+          <name><surname>Simmons</surname><given-names>Joshua A</given-names></name>
+          <name><surname>Turner</surname><given-names>Ian L</given-names></name>
+        </person-group>
+        <article-title>CoastSat: A google earth engine-enabled python toolkit to extract shorelines from publicly available satellite imagery</article-title>
+        <source>Environmental Modelling &amp; Software</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>122</volume>
+        <pub-id pub-id-type="doi">https://doi.org/10.1016/j.envsoft.2019.104528</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Leaman2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Leaman</surname><given-names>Chris</given-names></name>
+        </person-group>
+        <article-title>Chrisleaman/py-wave-runup: v0.1.4</article-title>
+        <source>Zenodo</source>
+        <year iso-8601-date="2019">2019</year>
+        <pub-id pub-id-type="doi">http://doi.org/10.5281/zenodo.2697004</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Beuzen2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Beuzen</surname><given-names>Tomas</given-names></name>
+          <name><surname>Simmons</surname><given-names>Joshua</given-names></name>
+        </person-group>
+        <article-title>A variable selection package driving netica with python</article-title>
+        <source>Environmental modelling &amp; software</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>115</volume>
+        <pub-id pub-id-type="doi">https://doi.org/10.1016/j.envsoft.2019.01.018</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Buscombe2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Buscombe</surname><given-names>Daniel</given-names></name>
+        </person-group>
+        <article-title>Transferable wavelet method for grain-size distribution from images of sediment surfaces and thin sections, and other natural granular patterns</article-title>
+        <source>Sedimentology</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <volume>60</volume>
+        <issue>7</issue>
+        <pub-id pub-id-type="doi">https://doi.org/10.1111/sed.12049</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sklearn2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pedregosa</surname><given-names>F.</given-names></name>
+          <name><surname>Varoquaux</surname><given-names>G.</given-names></name>
+          <name><surname>Gramfort</surname><given-names>A.</given-names></name>
+          <name><surname>Michel</surname><given-names>V.</given-names></name>
+          <name><surname>Thirion</surname><given-names>B.</given-names></name>
+          <name><surname>Grisel</surname><given-names>O.</given-names></name>
+          <name><surname>Blondel</surname><given-names>M.</given-names></name>
+          <name><surname>Prettenhofer</surname><given-names>P.</given-names></name>
+          <name><surname>Weiss</surname><given-names>R.</given-names></name>
+          <name><surname>Dubourg</surname><given-names>V.</given-names></name>
+          <name><surname>Vanderplas</surname><given-names>J.</given-names></name>
+          <name><surname>Passos</surname><given-names>A.</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>D.</given-names></name>
+          <name><surname>Brucher</surname><given-names>M.</given-names></name>
+          <name><surname>Perrot</surname><given-names>M.</given-names></name>
+          <name><surname>Duchesnay</surname><given-names>E.</given-names></name>
+        </person-group>
+        <article-title>Scikit-learn: Machine learning in Python</article-title>
+        <source>Journal of Machine Learning Research</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>12</volume>
+        <pub-id pub-id-type="doi"></pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

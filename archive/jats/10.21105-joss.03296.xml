@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3296</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03296</article-id>
+<title-group>
+<article-title>Reiz: Structural Source Code Search</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<string-name>Batuhan Taskaya</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Python Core Developer</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-03-21">
+<day>21</day>
+<month>3</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>62</issue>
+<fpage>3296</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>source code search</kwd>
+<kwd>big code</kwd>
+<kwd>structure analysis</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Reiz is a structural source code search engine that can execute
+  queries written in ReizQL to retrieve partially known syntactical
+  constructs inside a pre-processed source index.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>The fact that developers search source code every day is
+  undeniable. This need to search has various reasons by different
+  groups of people. When introducing new features to a language,
+  developers often need to see what kind of an impact that those will
+  have before actually bothering to implement it (or even discuss it in
+  the first place). Prior to making any changes on a publicly facing
+  API, maintainers of those libraries do the pre-requisite work of
+  collecting samples and estimating the ramifications that operation
+  might cause. When the documentation of a framework doesn’t sustain the
+  curiosity, searching for a structure (e.g a function, a constant) to
+  see how it can be utilized in real-world software is a common need
+  among developers
+  (<xref alt="Xia et al., 2017" rid="ref-developersearch2017" ref-type="bibr">Xia
+  et al., 2017</xref>).</p>
+  <p>For the problems mentioned above, we present Reiz: a source code
+  search engine backend that can exercise queries to match syntax trees
+  in order to leverage the existing language syntax to describe partial
+  knowledge (e.g a searching for a <monospace>try</monospace>/
+  <monospace>finally</monospace> construct without knowing what is under
+  the <monospace>try</monospace> block).</p>
+</sec>
+<sec id="state-of-the-field">
+  <title>State of the field</title>
+  <p>Popular source code search engines (e.g Github Code Search
+  (<xref alt="Github Code Search, 2021" rid="ref-githubcodesearch" ref-type="bibr"><italic>Github
+  Code Search</italic>, 2021</xref>)) use full-text search where the
+  code is treated no differently than a regular textual document. Even
+  though this approach works for some basic queries, structurally it
+  can’t go further than matching token sequences. This often causes
+  seeing irrelevant search results on complex queries, or even not being
+  able to express the search itself in a purely textual form. In the
+  past, there has been some work done regarding making queries more
+  expressive through regular expressions (one example might
+  codesearch.debian.net
+  (<xref alt="Stapelberg, 2012" rid="ref-debiancodesearch" ref-type="bibr">Stapelberg,
+  2012</xref>)), and even annotating the result set with some semantic
+  and structural knowledge (via finding and resolving API names
+  (<xref alt="Bajracharya et al., 2014" rid="ref-BAJRACHARYA2014241" ref-type="bibr">Bajracharya
+  et al., 2014</xref>)). There also have been various tools
+  (<xref alt="Paganini, 2017" rid="ref-fast" ref-type="bibr">Paganini,
+  2017</xref>),
+  (<xref alt="Kluyver, 2014" rid="ref-astsearch" ref-type="bibr">Kluyver,
+  2014</xref>) to search AST patterns within source code, but with a
+  limited query format and in a file-by-file basis (no index database)
+  which makes them quite hard to work with in order to examine a large
+  dataset of source code.</p>
+</sec>
+<sec id="method">
+  <title>Method</title>
+  <fig>
+    <caption><p>Stages from the Reiz’s pipeline.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="internals.png" xlink:title="" />
+  </fig>
+  <p>The internals consists of a pipeline that enables the ability to
+  plug in and out different components, such as for frontends of
+  different languages. The primary piece that every other component
+  directly or indirectly interacts with is the Index DB (a.k.a source
+  warehouse) where the serialized AASTs (Annotated Abstract Syntax
+  Trees) are being held. It is based on an EdgeDB
+  (<xref alt="“EdgeDB,” 2020" rid="ref-edgedb" ref-type="bibr">“EdgeDB,”
+  2020</xref>) instance which interprets the compiled queries and
+  returns the raw result set. The schema used in the Index DB is in the
+  format of ESDL (EdgeDB Schema Definition Language) and automatically
+  generated from the host language’s ASDL
+  (<xref alt="Wang et al., 1997" rid="ref-asdl97" ref-type="bibr">Wang
+  et al., 1997</xref>) declaration. ASDL is a common format used by many
+  different projects, most notably by CPython itself.</p>
+  <sec id="sampling-source-code">
+    <title>Sampling Source Code</title>
+    <p>Reiz is able to sample source code from a list of projects on a
+    git remote (e.g GitHub). The reference implementation for Reiz comes
+    with an indexer which can automatically construct a list for the
+    most popular packages on PyPI, according to the download statistics
+    (<xref alt="Kemenade &amp; Si, 2021" rid="ref-hugovankemenade_richardsi_2021" ref-type="bibr">Kemenade
+    &amp; Si, 2021</xref>). The list then gets cross-linked to the
+    project’s corresponding source control platforms (so that, we can
+    reference the revision that we are fetching). Later on, the data
+    gets downloaded via <monospace>git</monospace> and then gets
+    sanitized until there is nothing left besides valid source files for
+    the host language.</p>
+    <p>Subsequently, files get parsed to the AST form offered by the
+    host language, and then annotated with some static knowledge, so
+    that the computation of these properties won’t cost anything at
+    runtime. The annotations include node tags (a unique identifier for
+    a piece of AST that will be the same every time the same structure
+    is annotated, like tree hash), ancestral information (like a set of
+    2-element tuples, where the first one points to the parent type and
+    the the second one points to the field that the child belongs to)
+    and metadata regarding the project (like the filename, project name,
+    GitHub URL). Afterward the annotated AST gets serialized into the
+    Index DB.</p>
+  </sec>
+  <sec id="query-compiler">
+    <title>Query Compiler</title>
+    <preformat>start                   ::= match_pattern
+
+pattern                 ::= negate_pattern
+                         | or_pattern
+                         | and_pattern
+                         | match_pattern
+                         | sequential_pattern
+                         | reference_pattern
+                         | match_string_pattern
+                         | atom_pattern
+
+negate_pattern          ::= &quot;not&quot; pattern
+or_pattern              ::= pattern &quot;|&quot; pattern
+and_pattern             ::= pattern &quot;&amp;&quot; pattern
+match_pattern           ::= NAME &quot;(&quot; &quot;,&quot;.argument+ &quot;)&quot;
+sequential_pattern      ::= &quot;[&quot; &quot;,&quot;.(pattern | &quot;*&quot; IGNORE)+ &quot;]&quot;
+reference_pattern       ::= &quot;~&quot; NAME
+atom_pattern            ::= NONE
+                         | STRING
+                         | NUMBER
+                         | IGNORE
+                         | &quot;f&quot; STRING
+
+argument                ::= pattern
+                         | NAME &quot;=&quot; pattern
+
+NONE                    ::= &quot;None&quot;
+IGNORE                  ::= &quot;...&quot;
+NAME                    ::= &quot;a&quot;..&quot;Z&quot;
+NUMBER                  ::= INTEGER | FLOAT</preformat>
+    <p>The grammar above describes the ReizQL language which is embedded
+    into the execution engine. It can be used as is, or can be selected
+    as a compilation target for a higher level language that is more
+    integrated with the syntax of the host language.</p>
+    <p>Following query will search for all occurrences of a for loop,
+    where the target’s <monospace>result</monospace> method is called
+    subsequently in the loop body. The <monospace>target</monospace> is
+    an example of the reference pattern, which has a query-bound value
+    (e.g if the first <monospace>~target</monospace> capture is
+    <monospace>X</monospace>, then the following capture is also
+    expected to be the same).</p>
+    <preformat>For(
+    target=~target,
+    body=[
+        Expr(
+            value=Call(
+                func=Attribute(value=~target, attr=&quot;result&quot;)
+            )
+        )
+    ],
+)</preformat>
+    <p>The query in the example can be automatically generated through
+    various forms, as well as being hand written. For example, the IRun
+    project targets ReizQL with a python superset form to be a more
+    human friendly interface to the engine:</p>
+    <preformat>for $target in ...:
+    $target.result()</preformat>
+  </sec>
+</sec>
+<sec id="evaluation">
+  <title>Evaluation</title>
+  <p>For the limited subset of things that can be described in any of
+  the competitor engines, we evaluate the performance of
+  <monospace>Reiz</monospace> by running similiar queries in Github Code
+  Search
+  (<xref alt="Github Code Search, 2021" rid="ref-githubcodesearch" ref-type="bibr"><italic>Github
+  Code Search</italic>, 2021</xref>) grep.app
+  (<xref alt="Grep.app, 2021" rid="ref-grepapp" ref-type="bibr"><italic>Grep.app</italic>,
+  2021</xref>) and Krugle
+  (<xref alt="Krugle.com, 2021" rid="ref-krugle" ref-type="bibr"><italic>Krugle.com</italic>,
+  2021</xref>) and report back the amount of true / false positives.
+  Each result that contains an exact match with the intended objective,
+  e.g a call to <monospace>len(...)</monospace> function will be counted
+  as a true positive, and otherwise will be counted as a false positive.
+  Some engines offer multiple matches per result, and they will be
+  marked as true positive if any of them checks out with the objective.
+  We also discard match spans, since none of the competitors can
+  successfully display the expression boundaries.</p>
+  <p>Objective: search for a <monospace>len(...)</monospace> call</p>
+  <table-wrap>
+    <table>
+      <thead>
+        <tr>
+          <th>engine</th>
+          <th>query</th>
+          <th>true positives</th>
+          <th>false positives</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Github Code Search</td>
+          <td><monospace>language:python len()</monospace></td>
+          <td>5</td>
+          <td>5</td>
+        </tr>
+        <tr>
+          <td>grep.app</td>
+          <td><monospace>len\((.*)\)</monospace></td>
+          <td>10</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <td>Krugle (advanced)</td>
+          <td><monospace>len functioncall:len</monospace></td>
+          <td>10</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <td>Reiz</td>
+          <td><monospace>Call(Name(&quot;len&quot;))</monospace></td>
+          <td>10</td>
+          <td>0</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>Objective: search for an addition or a subtraction operation</p>
+  <table-wrap>
+    <table>
+      <thead>
+        <tr>
+          <th>engine</th>
+          <th>query</th>
+          <th>true positives</th>
+          <th>false positives</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Github Code Search</td>
+          <td><monospace>language:python + -</monospace></td>
+          <td>0</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <td>Krugle (fuzzy)</td>
+          <td><monospace>expr + expr</monospace> /
+          <monospace>expr - expr</monospace></td>
+          <td>0</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <td>Krugle (solr syntax)</td>
+          <td><monospace>\+ \-</monospace></td>
+          <td>2</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td>Krugle (regex syntax)</td>
+          <td><monospace>(.*)(\+\|\-)(.*)</monospace></td>
+          <td>1</td>
+          <td>9</td>
+        </tr>
+        <tr>
+          <td>grep.app</td>
+          <td><monospace>(.*)(\+\|\-)(.*)</monospace></td>
+          <td>2</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td>Reiz</td>
+          <td><monospace>BinOp(op=Add() \| Sub())</monospace></td>
+          <td>10</td>
+          <td>0</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>Objective: search for a return statement that returns a tuple
+  <monospace>return ..., ...</monospace></p>
+  <table-wrap>
+    <table>
+      <thead>
+        <tr>
+          <th>engine</th>
+          <th>query</th>
+          <th>true positives</th>
+          <th>false positives</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Github Code Search</td>
+          <td><monospace>language:python return ,</monospace></td>
+          <td>2</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td>Krugle (solr syntax)</td>
+          <td><monospace>return \,</monospace></td>
+          <td>1</td>
+          <td>9</td>
+        </tr>
+        <tr>
+          <td>Krugle (regex syntax)</td>
+          <td><monospace>return ((.*))(,\s*(.*))+</monospace></td>
+          <td>0</td>
+          <td>10</td>
+        </tr>
+        <tr>
+          <td>grep.app</td>
+          <td><monospace>return ((.*))(,\s*(.*))+</monospace></td>
+          <td>0</td>
+          <td>10</td>
+        </tr>
+        <tr>
+          <td>grep.app (2)</td>
+          <td><monospace>return \(((.*))(,\s*(.*))+\)</monospace></td>
+          <td>9</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td>Reiz</td>
+          <td><monospace>Return(Tuple())</monospace></td>
+          <td>10</td>
+          <td>0</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <sec id="conclusion">
+    <title>Conclusion</title>
+    <p>On all three objectives, Reiz got all the matches as
+    true-positive due to due to it’s ability to leverage syntax tree
+    structure as well as other annotations that it could collect at
+    pre-processing stage (such as node boundaries to report the exact
+    location) unlike others where the source code is exercised like a
+    regular textual document.</p>
+  </sec>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-BAJRACHARYA2014241">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bajracharya</surname><given-names>Sushil</given-names></name>
+          <name><surname>Ossher</surname><given-names>Joel</given-names></name>
+          <name><surname>Lopes</surname><given-names>Cristina</given-names></name>
+        </person-group>
+        <article-title>Sourcerer: An infrastructure for large-scale collection and analysis of open-source code</article-title>
+        <source>Science of Computer Programming</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>79</volume>
+        <issn>0167-6423</issn>
+        <uri>https://www.sciencedirect.com/science/article/pii/S016764231200072X</uri>
+        <pub-id pub-id-type="doi">10.1016/j.scico.2012.04.008</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-debiancodesearch">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Stapelberg</surname><given-names>Michael</given-names></name>
+        </person-group>
+        <article-title>Debian code search</article-title>
+        <source>Bachelor-Thesis</source>
+        <publisher-name>Hochschule Mannheim Fakultät für Informatik</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <uri>http://codesearch.debian.net/research/bsc-thesis.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-asdl97">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Wang</surname><given-names>Daniel C.</given-names></name>
+          <name><surname>Appel</surname><given-names>Andrew W.</given-names></name>
+          <name><surname>Korn</surname><given-names>Jeff L.</given-names></name>
+          <name><surname>Serra</surname><given-names>Christopher S.</given-names></name>
+        </person-group>
+        <article-title>The zephyr abstract syntax description language</article-title>
+        <source>Proceedings of the conference on domain-specific languages on conference on domain-specific languages (DSL), 1997</source>
+        <publisher-name>USENIX Association</publisher-name>
+        <publisher-loc>Santa Barbara, California</publisher-loc>
+        <year iso-8601-date="1997">1997</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-hugovankemenade_richardsi_2021">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kemenade</surname><given-names>Hugo van</given-names></name>
+          <name><surname>Si</surname><given-names>Richard</given-names></name>
+        </person-group>
+        <article-title>Hugovk/top-pypi-packages: Release 2021.04</article-title>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <pub-id pub-id-type="doi">10.5281/zenodo.4657163</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-developersearch2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Xia</surname><given-names>Xin</given-names></name>
+          <name><surname>Bao</surname><given-names>Lingfeng</given-names></name>
+          <name><surname>Lo</surname><given-names>David</given-names></name>
+          <name><surname>Kochhar</surname><given-names>Pavneet Singh</given-names></name>
+          <name><surname>Hassan</surname><given-names>Ahmed E.</given-names></name>
+          <name><surname>Xing</surname><given-names>Zhenchang</given-names></name>
+        </person-group>
+        <article-title>What do developers search for on the web?</article-title>
+        <source>Empirical Softw. Engg.</source>
+        <publisher-name>Kluwer Academic Publishers</publisher-name>
+        <publisher-loc>USA</publisher-loc>
+        <year iso-8601-date="2017-12">2017</year><month>12</month>
+        <volume>22</volume>
+        <issue>6</issue>
+        <issn>1382-3256</issn>
+        <uri>https://doi.org/10.1007/s10664-017-9514-4</uri>
+        <pub-id pub-id-type="doi">10.1007/s10664-017-9514-4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-githubcodesearch">
+      <element-citation>
+        <article-title>Github code search</article-title>
+        <publisher-name>GitHub</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://github.com/search</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-grepapp">
+      <element-citation>
+        <article-title>Grep.app</article-title>
+        <publisher-name>grep.app</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://grep.app</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-krugle">
+      <element-citation>
+        <article-title>Krugle.com</article-title>
+        <publisher-name>krugle.com</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://krugle.com</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-edgedb">
+      <element-citation>
+        <article-title>EdgeDB: The next generation relational database</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>EdgeDB</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://github.com/edgedb/edgedb</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-fast">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Paganini</surname><given-names>Jônatas Davi</given-names></name>
+        </person-group>
+        <article-title>Fast: Find in AST</article-title>
+        <source>GitHub repository</source>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://github.com/jonatas/fast</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-astsearch">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Kluyver</surname><given-names>Thomas</given-names></name>
+        </person-group>
+        <article-title>Astsearch: Intelligently search in python code</article-title>
+        <source>GitHub repository</source>
+        <year iso-8601-date="2014">2014</year>
+        <uri>https://github.com/takluyver/astsearch</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

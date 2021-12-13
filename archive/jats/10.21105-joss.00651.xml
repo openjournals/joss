@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">651</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00651</article-id>
+<title-group>
+<article-title>mmappickle: Python 3 module to store memory-mapped numpy
+array in pickle format</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9853-8209</contrib-id>
+<string-name>Laurent Fasnacht</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>University of Neuchâtel</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2018-03-05">
+<day>5</day>
+<month>3</month>
+<year>2018</year>
+</pub-date>
+<volume>3</volume>
+<issue>26</issue>
+<fpage>651</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>memory-mapped</kwd>
+<kwd>mmap</kwd>
+<kwd>memmap</kwd>
+<kwd>numpy array</kwd>
+<kwd>pickle</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Mmappickle is a Python 3 library which enables storing large numpy
+  arrays into a file, along with the associated metadata, and to
+  retrieve it in such a way that the numpy array are memory-mapped
+  (numpy.memmap) instead of copied into the system memory.</p>
+  <p>This library allows working on matrices bigger than the size of the
+  RAM, and allows concurrent read/write access from multiple processes,
+  while having data stored in a structure behaving like a normal Python
+  dictionary. This structure is mutable, as keys can be added and
+  removed without having to rewrite the entire file. Moreover, the file
+  complies with the Python Pickle format, and can be loaded on computers
+  which don’t have mmappickle installed (provided enough RAM is
+  available to load all the matrices).</p>
+  <p>Mmappickle is designed to be used for the development of parallel
+  algorithms, using for example the Python
+  <ext-link ext-link-type="uri" xlink:href="https://docs.python.org/3/library/multiprocessing.html">multiprocessing</ext-link>
+  module
+  (<xref alt="multiprocessing — Process-based parallelism — Python 3.6.4 documentation, n.d." rid="ref-pythonmultiprocessing" ref-type="bibr"><italic><named-content content-type="nocase">multiprocessing
+  — Process-based parallelism — Python 3.6.4
+  documentation</named-content></italic>, n.d.</xref>). It also allows
+  unstructured parallel access, such as multiple different programs
+  accessing the same file.</p>
+  <p>Alternative solutions exist, for example:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>The various bindings for HDF5, like
+      <ext-link ext-link-type="uri" xlink:href="http://www.pytables.org/">pytables</ext-link>
+      (<xref alt="Alted et al., 2002" rid="ref-pytables" ref-type="bibr">Alted
+      et al., 2002</xref>) or
+      <ext-link ext-link-type="uri" xlink:href="https://www.h5py.org/">h5py</ext-link>
+      (<xref alt="Collette, 2013" rid="ref-collette_python_hdf5_2014" ref-type="bibr">Collette,
+      2013</xref>). However, they have severe limitations for concurrent
+      access, and the API adds complexity to the source code. It also
+      adds additional binary dependencies (and therefore requires either
+      a compiler or binary packages).</p>
+    </list-item>
+    <list-item>
+      <p><ext-link ext-link-type="uri" xlink:href="https://pythonhosted.org/joblib/">Joblib</ext-link>
+      (<xref alt="Joblib: running Python functions as pipeline jobs, n.d." rid="ref-joblib" ref-type="bibr"><italic><named-content content-type="nocase">Joblib:
+      running Python functions as pipeline
+      jobs</named-content></italic>, n.d.</xref>) provides advanced
+      features, such as providing memory-mapped access to arrays
+      embedded in complex structures, compression, and features to
+      enable caching with minimal code modifications. However, the files
+      it produce are not mutable (it is not possible to add or remove
+      entries from a structure), and are not compatible with the Python
+      Pickle protocol.</p>
+    </list-item>
+    <list-item>
+      <p>The direct use of
+      <ext-link ext-link-type="uri" xlink:href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.memmap.html">numpy.memmap</ext-link>
+      (<xref alt="numpy.memmap - NumPy v1.14 Manual, n.d." rid="ref-numpymemmap" ref-type="bibr"><italic><named-content content-type="nocase">numpy.memmap
+      - NumPy v1.14 Manual</named-content></italic>, n.d.</xref>).
+      Unfortunately,
+      <ext-link ext-link-type="uri" xlink:href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.memmap.html">numpy.memmap</ext-link>
+      is only able to store the matrix data into a file, but not its
+      shape (i.e. its dimensionality) or datatype. Moreover,
+      <ext-link ext-link-type="uri" xlink:href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.memmap.html">numpy.memmap</ext-link>
+      is difficult to use in practice because one needs to work on
+      multiple matrices simultaneously (and even additional metadata)
+      and the direct use of
+      <ext-link ext-link-type="uri" xlink:href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.memmap.html">numpy.memmap</ext-link>
+      is particularly challenging in this situation.</p>
+    </list-item>
+    <list-item>
+      <p>The use of
+      <ext-link ext-link-type="uri" xlink:href="https://github.com/numpy/numpy/blob/8d5bdd1/numpy/lib/format.py#L696">numpy.lib.format.open_memmap</ext-link>
+      (<xref alt="Numpy source code: numpy/lib/format.py, n.d." rid="ref-numpyopenmemmap" ref-type="bibr"><italic><named-content content-type="nocase">Numpy
+      source code: numpy/lib/format.py</named-content></italic>,
+      n.d.</xref>), which is not documented in the numpy main
+      documentation. It is a wrapper to
+      <ext-link ext-link-type="uri" xlink:href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.memmap.html">numpy.memmap</ext-link>,
+      which uses the standard npy file format (hence storing the shape
+      and the datatype). It still has the limitation that only one array
+      can be stored per file, and it requires specifying an explicit
+      file access mode. This is an inconvenience, because a wrong choice
+      of access mode can result in overwriting the file, resulting in
+      data loss.</p>
+    </list-item>
+  </list>
+  <p>Mmappickle exhibits similar performance as these alternative
+  solutions, as the underlying array access technique is similar.
+  Mmappickle is also the only approach capable of handling arrays with
+  masked values (i.e. missing data).</p>
+  <p>This library is currently used for storing and processing
+  hyperspectral imaging data. For such application, the ability to
+  modify the dictionary to add data is crucial: as an example, it
+  enables to store a timelapse incrementally to a file (adding new
+  images as new dictionary entries), while simultaneously monitoring the
+  file from a viewer program.</p>
+</sec>
+<sec id="limitation-and-further-work">
+  <title>Limitation and further work</title>
+  <p>As this library relies on Python Pickle format, which is
+  <ext-link ext-link-type="uri" xlink:href="https://docs.python.org/3/library/pickle.html">not
+  secure</ext-link>
+  (<xref alt="pickle — Python object serialization - Python 3.6.4 documentation, n.d." rid="ref-pythonpickle" ref-type="bibr"><italic><named-content content-type="nocase">pickle
+  — Python object serialization - Python 3.6.4
+  documentation</named-content></italic>, n.d.</xref>), it should not be
+  used with files from untrusted sources.</p>
+  <p>Further work is ongoing to allow it to load data directly when
+  needed from a (trusted) HTTP server, in order to simplify data
+  distribution.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-pytables">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Alted</surname><given-names>Francesc</given-names></name>
+          <name><surname>Vilata</surname><given-names>Ivan</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>PyTables: Hierarchical Datasets in Python</article-title>
+        <year iso-8601-date="2002">2002</year>
+        <uri>http://www.pytables.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-collette_python_hdf5_2014">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Collette</surname><given-names>Andrew</given-names></name>
+        </person-group>
+        <source>Python and HDF5</source>
+        <publisher-name>O’Reilly</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-numpymemmap">
+      <element-citation>
+        <article-title>numpy.memmap - NumPy v1.14 Manual</article-title>
+        <uri>https://docs.scipy.org/doc/numpy/reference/generated/numpy.memmap.html</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-joblib">
+      <element-citation>
+        <article-title>Joblib: running Python functions as pipeline jobs</article-title>
+        <uri>https://pythonhosted.org/joblib/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-pythonpickle">
+      <element-citation>
+        <article-title>pickle — Python object serialization - Python 3.6.4 documentation</article-title>
+        <uri>https://docs.python.org/3/library/pickle.html</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-numpyopenmemmap">
+      <element-citation>
+        <article-title>Numpy source code: numpy/lib/format.py</article-title>
+        <uri>https://github.com/numpy/numpy/blob/8d5bdd1/numpy/lib/format.py#L696</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-pythonmultiprocessing">
+      <element-citation>
+        <article-title>multiprocessing — Process-based parallelism — Python 3.6.4 documentation</article-title>
+        <uri>https://docs.python.org/3/library/multiprocessing.html</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

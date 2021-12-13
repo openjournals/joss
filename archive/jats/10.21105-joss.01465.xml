@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1465</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01465</article-id>
+<title-group>
+<article-title>A reproducible Snakemake pipeline to analyse Illumina
+paired-end data from ChiP-Seq experiments</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-3865-896X</contrib-id>
+<string-name>Jihed Chouaref</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-0488-4873</contrib-id>
+<string-name>Mattijs Bliek</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-2161-8689</contrib-id>
+<string-name>Marc Galland</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Swammerdam Institute for Life Sciences, University of
+Amsterdam</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-05-17">
+<day>17</day>
+<month>5</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>38</issue>
+<fpage>1465</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Snakemake</kwd>
+<kwd>ChIP-seq</kwd>
+<kwd>Deeptools</kwd>
+<kwd>Bioconda</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Chromatin immunoprecipitation followed by high-throughput
+  sequencing (ChIP-seq) is a powerful tool for investigation the
+  genome-wide distribution of DNA binding protein and their
+  modifications. Yet, the computational analysis of Next-Generation
+  Sequencing datasets is still a bottleneck for most of the experimental
+  researchers. Most often, this type of analysis require multiple steps
+  <italic>i.e.</italic> read quality control, mapping to a reference
+  genome, peak calling, annotation and functional enrichment analysis
+  that are performed by various tools <italic>e.g.</italic> fastp
+  (<xref alt="Chen et al., 2018" rid="ref-ChenU003A2018" ref-type="bibr">Chen
+  et al., 2018</xref>), bowtie2
+  (<xref alt="Langmead &amp; Salzberg, 2012" rid="ref-LangmeadU003A2012" ref-type="bibr">Langmead
+  &amp; Salzberg, 2012</xref>) or samtools
+  (<xref alt="Li et al., 2009" rid="ref-LiU003A2009" ref-type="bibr">Li
+  et al., 2009</xref>) only to name a few. These various tools require
+  different software dependencies and can have different software
+  versions and/or incompatibilities which might impair the analysis
+  reproducibility. Here we provide a complete, user-friendly and highly
+  customized ChIP-seq analysis pipeline for paired-end (Illumina) data
+  based on the Snakemake workflow manager
+  (<xref alt="Koster &amp; Rahmann, 2012" rid="ref-KosterU003A2012" ref-type="bibr">Koster
+  &amp; Rahmann, 2012</xref>). </p>
+  <p>To make use of the pipeline, only a few modifications are needed.
+  First, software parameters, working and temporary directories as well
+  as genomic references need to be changed in the configuration file
+  (<monospace>config.yaml</monospace>) that is encoded in the human
+  readable YAML format. Secondly, the user needs to adapt the
+  <monospace>units.tsv</monospace> tabular file that links sample
+  information to experimental conditions and paired-end fastq files.
+  When these two files are modified, the ChIP-seq pipeline become
+  suitable for any organism from which the genome has been sequenced and
+  annotated. The scalability and reproducibility of the data analysis is
+  ensured by the use of containerization (a Singularity image) and
+  Snakemake through creation and deployment of one virtual environment
+  per rule to manage different software dependencies
+  (<italic>e.g.</italic> Python 2 or 3) using the Conda package manager
+  (https://conda.io) and the Bioconda software distribution channel
+  (<xref alt="Grüning et al., 2018" rid="ref-GruningU003A2018a" ref-type="bibr">Grüning
+  et al., 2018</xref>). Raw Illumina paired-end data are processed by
+  the pipeline and are subsequently trimmed, mapped and processed
+  automatically according to the parameters set in the configuration
+  file. A complete Directed Acyclic Graph (DAG) of the different tasks
+  accomplished can be seen in [Figure 1]. If the
+  <monospace>singularity</monospace> software is available on your
+  machine and you want to use 10 CPUs
+  (<monospace>--cores 10</monospace>), then run
+  <monospace>snakemake --use-conda --use-singularity --cores 10</monospace>.
+  Otherwise, run <monospace>snakemake --use-conda --cores 10</monospace>
+  </p>
+  <p>The outputs delivered by the pipeline are:
+  1. Quality controls files to check for the quality of the reads. Reads
+  are processed by programs such as <monospace>fastp</monospace> and
+  <monospace>deeptools</monospace>
+  (<xref alt="Ramírez et al., 2016" rid="ref-RamirezU003A2016" ref-type="bibr">Ramírez
+  et al., 2016</xref>) in order to produce graph that are easily
+  readable and inform quickly about the quality of the experiment. 2.
+  Portable visualization files (bigwig) for the observation of the read
+  coverage on the genome using genome viewer <bold>Figure 2</bold>. 3.
+  Peaks informations files, these <monospace>bed</monospace> files
+  gather the information about the peak calling produced by the MACS2
+  algorithm. This files can be potentially used for annotation and
+  functional enrichment analysis. 4. The deeptools suite used by the
+  pipeline produces beautiful visualization of the read coverage over
+  genomic features provided by the user and a series of quality control
+  tools <bold>Figure 3 and 4</bold>. </p>
+  <p>This Snakemake ChIP-seq analysis pipeline provides an easy to use
+  command-line pipeline requiring minimum modifications with high
+  modularity for domain knowledge input from the user. The source code
+  of this pipeline has been archived to Zenodo with the following linked
+  DOI doi.141444770
+  (<xref alt="Chouaref et al., 2018" rid="ref-zenodo" ref-type="bibr">Chouaref
+  et al., 2018</xref>).</p>
+  <p>This pipeline also provides a small subsample of sequencing reads
+  generated from random selection of tomato ChIP-seq data, which could
+  be used to quickly modify and test the pipeline to suit specific
+  requirement from the user.</p>
+</sec>
+<sec id="figures">
+  <title>Figures</title>
+  <list list-type="bullet">
+    <list-item>
+      <p><bold>Figure 1</bold>: A Directed Acyclic Graph (DAG) of the
+      Snakemake ChIP-seq PE pipeline. This graph has been produced with
+      the command:
+      <monospace>snakemake --rulegraph |dot -Tpng &gt; dag.png</monospace>.
+      <inline-graphic mimetype="image" mime-subtype="png" xlink:href="dag.png" /></p>
+    </list-item>
+    <list-item>
+      <p><bold>Figure 2</bold>: ChIP-seq tracks generated using the
+      pipeline and visualized using JBrowse
+      (<xref alt="Buels et al., 2016" rid="ref-BuelsU003A2016" ref-type="bibr">Buels
+      et al., 2016</xref>).
+      <inline-graphic mimetype="image" mime-subtype="png" xlink:href="genome_viewer.png" />.</p>
+    </list-item>
+    <list-item>
+      <p><bold>Figure 3</bold>: A pearson correlation plot generated by
+      the pipeline using Deeptools to control for the quality of the
+      experiment.
+      <inline-graphic mimetype="image" mime-subtype="png" xlink:href="correlationplot.png" />.
+      </p>
+    </list-item>
+    <list-item>
+      <p><bold>Figure 4</bold>: A profile plot showing the distribution
+      of the reads over a selected genomic feature, here genes are
+      displayed.
+      <inline-graphic mimetype="image" mime-subtype="png" xlink:href="profileplot.png" />.</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We acknowledge contributions from Ming Tang and Johannes Köster for
+  their inspired scripts. We would also like to thank the group of RNA
+  biology and applied bioinformatics of the Swammerdam institute for
+  Life sciences for providing the computational ressources, especially
+  Wim de Leeuw and Han Rauwerda. This project has been funded by the
+  People Programme (Marie Curie Actions) of the European Union¹s Seventh
+  Framework Programme FP7/2007-2013/ under REA grant agreement
+  n°[606956]13.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-zenodo">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Chouaref</surname><given-names>Jihed</given-names></name>
+          <name><surname>Galland</surname><given-names>Marc</given-names></name>
+          <name><surname>Bliek</surname><given-names>Tijs</given-names></name>
+        </person-group>
+        <article-title>KoesGroup/Snakemake_ChIPseq_PE: Clean first release</article-title>
+        <year iso-8601-date="2018-12">2018</year><month>12</month>
+        <uri>https://doi.org/10.5281/zenodo.2025836</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.2025836</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-KosterU003A2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Koster</surname><given-names>J.</given-names></name>
+          <name><surname>Rahmann</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>Snakemake–a scalable bioinformatics workflow engine</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2012-10">2012</year><month>10</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2018-12-18">2018</year><month>12</month><day>18</day></date-in-citation>
+        <volume>28</volume>
+        <issue>19</issue>
+        <issn>1367-4803, 1460-2059</issn>
+        <uri>https://academic.oup.com/bioinformatics/article-lookup/doi/10.1093/bioinformatics/bts480</uri>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/bts480</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ChenU003A2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Chen</surname><given-names>Shifu</given-names></name>
+          <name><surname>Zhou</surname><given-names>Yanqing</given-names></name>
+          <name><surname>Chen</surname><given-names>Yaru</given-names></name>
+          <name><surname>Gu</surname><given-names>Jia</given-names></name>
+        </person-group>
+        <article-title>Fastp: An ultra-fast all-in-one FASTQ preprocessor</article-title>
+        <source>Bioinformatics (Oxford, England)</source>
+        <year iso-8601-date="2018-09">2018</year><month>09</month>
+        <volume>34</volume>
+        <issue>17</issue>
+        <issn>1367-4811</issn>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/bty560</pub-id>
+        <pub-id pub-id-type="pmid">30423086</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LangmeadU003A2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Langmead</surname><given-names>Ben</given-names></name>
+          <name><surname>Salzberg</surname><given-names>Steven L.</given-names></name>
+        </person-group>
+        <article-title>Fast gapped-read alignment with Bowtie 2</article-title>
+        <source>Nature Methods</source>
+        <year iso-8601-date="2012-03">2012</year><month>03</month>
+        <volume>9</volume>
+        <issue>4</issue>
+        <issn>1548-7105</issn>
+        <pub-id pub-id-type="doi">10.1038/nmeth.1923</pub-id>
+        <pub-id pub-id-type="pmid">22388286</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LiU003A2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Li</surname><given-names>Heng</given-names></name>
+          <name><surname>Handsaker</surname><given-names>Bob</given-names></name>
+          <name><surname>Wysoker</surname><given-names>Alec</given-names></name>
+          <name><surname>Fennell</surname><given-names>Tim</given-names></name>
+          <name><surname>Ruan</surname><given-names>Jue</given-names></name>
+          <name><surname>Homer</surname><given-names>Nils</given-names></name>
+          <name><surname>Marth</surname><given-names>Gabor</given-names></name>
+          <name><surname>Abecasis</surname><given-names>Goncalo</given-names></name>
+          <name><surname>Durbin</surname><given-names>Richard</given-names></name>
+          <string-name>1000 Genome Project Data Processing Subgroup</string-name>
+        </person-group>
+        <article-title>The Sequence Alignment/Map format and SAMtools</article-title>
+        <source>Bioinformatics (Oxford, England)</source>
+        <year iso-8601-date="2009-08">2009</year><month>08</month>
+        <volume>25</volume>
+        <issue>16</issue>
+        <issn>1367-4811</issn>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btp352</pub-id>
+        <pub-id pub-id-type="pmid">19505943</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-GruningU003A2018a">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Grüning</surname><given-names>Björn</given-names></name>
+          <name><surname>Dale</surname><given-names>Ryan</given-names></name>
+          <name><surname>Sjödin</surname><given-names>Andreas</given-names></name>
+          <name><surname>Chapman</surname><given-names>Brad A.</given-names></name>
+          <name><surname>Rowe</surname><given-names>Jillian</given-names></name>
+          <name><surname>Tomkins-Tinch</surname><given-names>Christopher H.</given-names></name>
+          <name><surname>Valieris</surname><given-names>Renan</given-names></name>
+          <name><surname>Köster</surname><given-names>Johannes</given-names></name>
+          <string-name>Bioconda Team</string-name>
+        </person-group>
+        <article-title>Bioconda: Sustainable and comprehensive software distribution for the life sciences</article-title>
+        <source>Nature Methods</source>
+        <year iso-8601-date="2018-07">2018</year><month>07</month>
+        <volume>15</volume>
+        <issue>7</issue>
+        <issn>1548-7105</issn>
+        <pub-id pub-id-type="doi">10.1038/s41592-018-0046-7</pub-id>
+        <pub-id pub-id-type="pmid">29967506</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-RamirezU003A2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ramírez</surname><given-names>Fidel</given-names></name>
+          <name><surname>Ryan</surname><given-names>Devon P.</given-names></name>
+          <name><surname>Grüning</surname><given-names>Björn</given-names></name>
+          <name><surname>Bhardwaj</surname><given-names>Vivek</given-names></name>
+          <name><surname>Kilpert</surname><given-names>Fabian</given-names></name>
+          <name><surname>Richter</surname><given-names>Andreas S.</given-names></name>
+          <name><surname>Heyne</surname><given-names>Steffen</given-names></name>
+          <name><surname>Dündar</surname><given-names>Friederike</given-names></name>
+          <name><surname>Manke</surname><given-names>Thomas</given-names></name>
+        </person-group>
+        <article-title>deepTools2: A next generation web server for deep-sequencing data analysis</article-title>
+        <source>Nucleic Acids Research</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>44</volume>
+        <issue>W1</issue>
+        <issn>1362-4962</issn>
+        <pub-id pub-id-type="doi">10.1093/nar/gkw257</pub-id>
+        <pub-id pub-id-type="pmid">27079975</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-BuelsU003A2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Buels</surname><given-names>Robert</given-names></name>
+          <name><surname>Yao</surname><given-names>Eric</given-names></name>
+          <name><surname>Diesh</surname><given-names>Colin M.</given-names></name>
+          <name><surname>Hayes</surname><given-names>Richard D.</given-names></name>
+          <name><surname>Munoz-Torres</surname><given-names>Monica</given-names></name>
+          <name><surname>Helt</surname><given-names>Gregg</given-names></name>
+          <name><surname>Goodstein</surname><given-names>David M.</given-names></name>
+          <name><surname>Elsik</surname><given-names>Christine G.</given-names></name>
+          <name><surname>Lewis</surname><given-names>Suzanna E.</given-names></name>
+          <name><surname>Stein</surname><given-names>Lincoln</given-names></name>
+          <name><surname>Holmes</surname><given-names>Ian H.</given-names></name>
+        </person-group>
+        <article-title>JBrowse: A dynamic web platform for genome visualization and analysis</article-title>
+        <source>Genome Biology</source>
+        <year iso-8601-date="2016-04-12">2016</year><month>04</month><day>12</day>
+        <volume>17</volume>
+        <issue>1</issue>
+        <issn>1474-760X</issn>
+        <uri>https://doi.org/10.1186/s13059-016-0924-1</uri>
+        <pub-id pub-id-type="doi">10.1186/s13059-016-0924-1</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

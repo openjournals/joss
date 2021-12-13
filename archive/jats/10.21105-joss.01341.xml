@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1341</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01341</article-id>
+<title-group>
+<article-title>Capytaine: a Python-based linear potential flow
+solver</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-0316-3230</contrib-id>
+<string-name>Matthieu Ancellin</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-5123-4929</contrib-id>
+<string-name>Frédéric Dias</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>UCD School of Mathematics and Statistics, University
+College Dublin, MaREI Centre, Ireland</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-03-19">
+<day>19</day>
+<month>3</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>36</issue>
+<fpage>1341</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>python</kwd>
+<kwd>fortran</kwd>
+<kwd>hydrodynamics</kwd>
+<kwd>potential flow</kwd>
+<kwd>water wave</kwd>
+<kwd>wave energy</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="context">
+  <title>Context</title>
+  <p>One of the first phases of the design of any ship or floating
+  structure is its simulation with a linear potential flow model. This
+  model gives a description of the interaction between the ocean waves
+  and the floating body
+  (<xref alt="Newman, 1977" rid="ref-newman_marine_1977" ref-type="bibr">Newman,
+  1977</xref>).</p>
+  <p>Assuming an incompressible, inviscid and irrotational flow, the
+  fluid motion can be modeled by a scalar field
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϕ</mml:mi></mml:math></alternatives></inline-formula>,
+  called velocity potential and such that <inline-formula><alternatives>
+  <tex-math><![CDATA[u = \nabla \phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>u</mml:mi><mml:mo>=</mml:mo><mml:mi>∇</mml:mi><mml:mi>ϕ</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.
+  The conservation of the mass of the fluid can be written as a Laplace
+  problem <inline-formula><alternatives>
+  <tex-math><![CDATA[\nabla^2 \phi = 0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mi>∇</mml:mi><mml:mn>2</mml:mn></mml:msup><mml:mi>ϕ</mml:mi><mml:mo>=</mml:mo><mml:mn>0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  . Assuming small motions of the floating body and small wave heights,
+  the boundary condition at the free surface can be linearized. The
+  resulting problem is fully linear and can be solved in the frequency
+  domain.</p>
+  <p>The problem can be formulated as a boundary integral problem and
+  solved by the Boundary Element Method (BEM). In contrast with other
+  BEM problems, the linear potential flow solvers use an expression of
+  the Green’s function which accounts for the boundary conditions at the
+  free surface and the sea bottom. Thus, only the wet surface of the
+  floating body needs to be discretized. The Green’s function can be
+  computed in several ways
+  (<xref alt="Xie et al., 2018" rid="ref-xie_comparison_2018" ref-type="bibr">Xie
+  et al., 2018</xref>), which are implemented in several software, most
+  of them commercial and closed-source.</p>
+  <p>In 2014, the École Centrale de Nantes (ECN) released the code
+  <italic>Nemoh</italic> as an open-source software
+  (<xref alt="Babarit &amp; Delhommeau, 2015" rid="ref-babarit_theoretical_2015" ref-type="bibr">Babarit
+  &amp; Delhommeau, 2015</xref>). This solver is based on in-house and
+  commercial codes developed in the ECN since the 1970’s
+  (<xref alt="Delhommeau, 1987" rid="ref-delhommeau_problemes_1987" ref-type="bibr">Delhommeau,
+  1987</xref>,
+  <xref alt="1989" rid="ref-delhommeau_amelioration_1989" ref-type="bibr">1989</xref>,
+  <xref alt="1993" rid="ref-delhommeau_seakeeping_1993" ref-type="bibr">1993</xref>).
+  Since its open-source release, it has been used in numerous
+  applications, in particular by the community of marine renewable
+  energies
+  (<xref alt="Penalba Retes et al., 2017" rid="ref-penalbaretes_using_2017" ref-type="bibr">Penalba
+  Retes et al., 2017</xref>).</p>
+  <p>However, the capabilities of the code are limited in comparison
+  with its commercial counterparts. Developing new features is difficult
+  since the core of the implementation dating back from the 1970’s is
+  poorly readable and the documentation is scarce. The goal of the
+  present work is the modernization of this code in order to have an
+  open-source linear potential flow solver that is easier to maintain
+  and develop.</p>
+</sec>
+<sec id="the-capytaine-python-package">
+  <title>The <monospace>capytaine</monospace> Python package</title>
+  <p>The present work is a complete modernization of the Nemoh code,
+  including a refactoring of the core routines and a Python user
+  interface.</p>
+  <p>The core routines have been kept in Fortran, although a more modern
+  coding style has been used. Dead code has been removed, no global
+  variables are used anymore, more meaningful names have been used for
+  functions and variables and a lot of comments have been added.</p>
+  <p>This new version is meant to be used within the scientific Python
+  ecosystem. The integration of the Fortran core with Python has been
+  done with F2PY
+  (<xref alt="Peterson, 2009" rid="ref-f2py" ref-type="bibr">Peterson,
+  2009</xref>). The naive linear solver included in Nemoh has been
+  replaced by a call to the state-of-the-art solvers from the Numpy and
+  Scipy libraries
+  (<xref alt="Jones et al., 2001" rid="ref-scipy" ref-type="bibr">Jones
+  et al., 2001</xref>;
+  <xref alt="Oliphant, 2006" rid="ref-numpy" ref-type="bibr">Oliphant,
+  2006</xref>). The Intel MKL library can thus be used to solve the
+  linear system in parallel with OpenMP. The rest of the code is the
+  independent computation of the coefficients of a matrix and has been
+  straightforwardly parallelized with OpenMP, making most of the code
+  parallel.</p>
+  <p>The code has also been integrated with other Python libraries.
+  Reading, writing and transforming meshes is done by the integration of
+  the <monospace>meshmagick</monospace>
+  (<xref alt="Rongère, 2017" rid="ref-meshmagick" ref-type="bibr">Rongère,
+  2017</xref>) library. The default output format is a
+  <monospace>xarray.Dataset</monospace>
+  (<xref alt="Hoyer &amp; Hamman, 2017" rid="ref-hoyer_xarray_2017" ref-type="bibr">Hoyer
+  &amp; Hamman, 2017</xref>) that can be saved in the standard NetCDF
+  format. <monospace>VTK</monospace>
+  (<xref alt="Schroeder et al., 2006" rid="ref-vtk" ref-type="bibr">Schroeder
+  et al., 2006</xref>) is used for the 3D visualization of the meshes
+  and the results. Testing of the code is done with the
+  <monospace>pytest</monospace>
+  (<xref alt="Krekel et al., 2004" rid="ref-pytest" ref-type="bibr">Krekel
+  et al., 2004</xref>) library.</p>
+  <p>Efforts have been made to follow best practices for the development
+  of scientific software. For instance, the default output object
+  includes the inputs and the settings of the solver in order to ease
+  the reproducibility of the results. However, the present version is a
+  step back with respect to Nemoh regarding the durability of the code.
+  Indeed, the original code is a single Fortran project with no
+  dependency. Thus it requires far less maintenance than the present
+  code which is built on top of several layers of fast evolving
+  languages and software.</p>
+  <p>This more modular version of the code allows the experimentation of
+  new techniques to improve its performance. Hierarchical matrices have
+  been implemented in the code and their combination with the use of
+  local symmetries of the mesh is being tested
+  (<xref alt="Ancellin &amp; Dias, 2018" rid="ref-ancellin_using_2018" ref-type="bibr">Ancellin
+  &amp; Dias, 2018</xref>,
+  <xref alt="2019" rid="ref-ancellin_hierarchical_2019" ref-type="bibr">2019</xref>).
+  It might have been more efficient to try to merge the code into an
+  existing BEM solver instead of redeveloping advanced BEM techniques.
+  The present work is nonetheless a step towards a fully modular code,
+  in which the current Green’s function evaluation routines could be
+  used in another BEM solver (e.g.
+  (<xref alt="Alouges &amp; Aussal, 2018" rid="ref-alouges_fem_2018" ref-type="bibr">Alouges
+  &amp; Aussal, 2018</xref>)), and conversely other methods for the
+  computation of the Green’s function
+  (<xref alt="Xie et al., 2018" rid="ref-xie_comparison_2018" ref-type="bibr">Xie
+  et al., 2018</xref>) could be plugged in to the present user
+  interface.</p>
+</sec>
+<sec id="acknowledgment">
+  <title>Acknowledgment</title>
+  <p>This work is funded by Science Foundation Ireland (SFI) under
+  Marine Renewable Energy Ireland (MaREI), the SFI Centre for Marine
+  Renewable Energy Research (grant 12/RC/2302).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-alouges_fem_2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Alouges</surname><given-names>F.</given-names></name>
+          <name><surname>Aussal</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>FEM and BEM simulations with the Gypsilab framework</article-title>
+        <source>SMAI-Journal of computational mathematics</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>4</volume>
+        <pub-id pub-id-type="doi">10.5802/smai-jcm.36</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ancellin_hierarchical_2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ancellin</surname><given-names>M.</given-names></name>
+          <name><surname>Dias</surname><given-names>F.</given-names></name>
+        </person-group>
+        <article-title>Hierarchical Toeplitz matrices for the linear potential flow simulation of wave energy converters with local regularities</article-title>
+        <source>in preparation</source>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-ancellin_using_2018">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Ancellin</surname><given-names>M.</given-names></name>
+          <name><surname>Dias</surname><given-names>F.</given-names></name>
+        </person-group>
+        <article-title>Using the floating body symmetries to speed up the numerical computation of hydrodynamics coefficients with Nemoh</article-title>
+        <source>ASME 2018 37th International Conference on Ocean, Offshore and Arctic Engineering (OMAE2018)</source>
+        <year iso-8601-date="2018">2018</year>
+        <pub-id pub-id-type="doi">10.1115/OMAE2018-77924</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-babarit_ocean_2017">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Babarit</surname><given-names>A.</given-names></name>
+        </person-group>
+        <source>Ocean wave energy conversion: Resource, technologies and performance</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-babarit_theoretical_2015">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Babarit</surname><given-names>A.</given-names></name>
+          <name><surname>Delhommeau</surname><given-names>G.</given-names></name>
+        </person-group>
+        <article-title>Theoretical and numerical aspects of the open source BEM solver NEMOH</article-title>
+        <source>Proceedings of the eleventh European Wave and Tidal Energy Conference (EWTEC2015)</source>
+        <year iso-8601-date="2015">2015</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-delhommeau_problemes_1987">
+      <element-citation publication-type="thesis">
+        <person-group person-group-type="author">
+          <name><surname>Delhommeau</surname><given-names>G.</given-names></name>
+        </person-group>
+        <article-title>Problèmes de diffraction-radiation et de résistance des vagues : Étude théorique et résolution numérique par la méthode des singularités</article-title>
+        <publisher-name>École Nationale Supérieure de Mécanique de Nantes</publisher-name>
+        <publisher-loc>Nantes</publisher-loc>
+        <year iso-8601-date="1987">1987</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-delhommeau_amelioration_1989">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Delhommeau</surname><given-names>G.</given-names></name>
+        </person-group>
+        <article-title>Amélioration des codes de calcul de diffraction-radiation au premier ordre</article-title>
+        <source>Actes des 2émes journées de l’hydrodynamique</source>
+        <year iso-8601-date="1989">1989</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-delhommeau_seakeeping_1993">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Delhommeau</surname><given-names>G.</given-names></name>
+        </person-group>
+        <article-title>The seakeeping codes Aquadyn and Aquaplus</article-title>
+        <source>19th WEGEMT school, numerical simulation of hydrodynamics: Ships and offshore structures</source>
+        <year iso-8601-date="1993">1993</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-f2py">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Peterson</surname><given-names>P.</given-names></name>
+        </person-group>
+        <article-title>F2PY: A tool for connecting fortran and python programs</article-title>
+        <source>Int. J. Comput. Sci. Eng.</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume>4</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1504/IJCSE.2009.029165</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-folley_numerical_2016">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Folley</surname><given-names>M.</given-names></name>
+        </person-group>
+        <source>Numerical modelling of wave energy converters: State-of-the-art techniques for single devices and arrays</source>
+        <publisher-name>Academic Press</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-hoyer_xarray_2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hoyer</surname><given-names>S.</given-names></name>
+          <name><surname>Hamman</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>Xarray: N-D labeled arrays and datasets in Python</article-title>
+        <source>Journal of Open Research Software</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>5</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.5334/jors.148</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-matplotlib">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hunter</surname><given-names>J. D.</given-names></name>
+        </person-group>
+        <article-title>Matplotlib: A 2D graphics environment</article-title>
+        <source>Computing In Science &amp; Engineering</source>
+        <publisher-name>IEEE COMPUTER SOC</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>9</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2007.55</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-meshmagick">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Rongère</surname><given-names>F.</given-names></name>
+        </person-group>
+        <article-title>Meshmagick</article-title>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://github.com/LHEEA/meshmagick</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-newman_marine_1977">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Newman</surname><given-names>J. N.</given-names></name>
+        </person-group>
+        <source>Marine hydrodynamics</source>
+        <publisher-name>MIT Press</publisher-name>
+        <year iso-8601-date="1977">1977</year>
+        <isbn>9780262140263</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-numpy">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Oliphant</surname><given-names>Travis</given-names></name>
+        </person-group>
+        <source>NumPy: A guide to NumPy</source>
+        <publisher-name>Trelgol Publishing</publisher-name>
+        <year iso-8601-date="2006">2006</year>
+        <uri>http://www.numpy.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-penalbaretes_using_2017">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Penalba Retes</surname><given-names>M.</given-names></name>
+          <name><surname>Kelly</surname><given-names>T.</given-names></name>
+          <name><surname>Ringwood</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>Using NEMOH for modelling wave energy converters: A comparative study with WAMIT</article-title>
+        <source>Proceedings of the twelfth European Wave and Tidal Energy Conference (EWTEC2017)</source>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-pytest">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Krekel</surname><given-names>H.</given-names></name>
+          <name><surname>Oliveira</surname><given-names>B.</given-names></name>
+          <name><surname>Pfannschmidt</surname><given-names>R.</given-names></name>
+          <name><surname>Bruynooghe</surname><given-names>F.</given-names></name>
+          <name><surname>Laugher</surname><given-names>B.</given-names></name>
+          <name><surname>Bruhin</surname><given-names>F.</given-names></name>
+        </person-group>
+        <article-title>Pytest 4.3</article-title>
+        <year iso-8601-date="2004">2004</year>
+        <uri>https://github.com/pytest-dev/pytest</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-scipy">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Jones</surname><given-names>E.</given-names></name>
+          <name><surname>Oliphant</surname><given-names>T.</given-names></name>
+          <name><surname>Peterson</surname><given-names>P.</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>SciPy: Open source scientific tools for Python</article-title>
+        <year iso-8601-date="2001">2001</year>
+        <uri>http://www.scipy.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-vtk">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Schroeder</surname><given-names>W.</given-names></name>
+          <name><surname>Martin</surname><given-names>K.</given-names></name>
+          <name><surname>Lorensen</surname><given-names>B.</given-names></name>
+        </person-group>
+        <source>The visualization toolkit (4th ed.)</source>
+        <publisher-name>Kitware</publisher-name>
+        <year iso-8601-date="2006">2006</year>
+        <isbn>978-1-930934-19-1</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-xie_comparison_2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Xie</surname><given-names>C.</given-names></name>
+          <name><surname>Choi</surname><given-names>Y.</given-names></name>
+          <name><surname>Rongère</surname><given-names>F.</given-names></name>
+          <name><surname>Clément</surname><given-names>A.</given-names></name>
+          <name><surname>Delhommeau</surname><given-names>G.</given-names></name>
+          <name><surname>Babarit</surname><given-names>A.</given-names></name>
+        </person-group>
+        <article-title>Comparison of existing methods for the calculation of the infinite water depth free-surface green function for the wave–structure interaction problem</article-title>
+        <source>Applied Ocean Research</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>81</volume>
+        <pub-id pub-id-type="doi">10.1016/j.apor.2018.10.007</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

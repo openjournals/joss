@@ -1,0 +1,496 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2172</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02172</article-id>
+<title-group>
+<article-title>DetecTree: Tree detection from aerial imagery in
+Python</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-8735-9144</contrib-id>
+<string-name>Martí Bosch</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Urban and Regional Planning Community, École Polytechnique
+Fédérale de Lausanne, Switzerland</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-03-04">
+<day>4</day>
+<month>3</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>50</issue>
+<fpage>2172</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>tree detection</kwd>
+<kwd>image segmentation</kwd>
+<kwd>remote sensing images</kwd>
+<kwd>GIS</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Urban tree canopy datasets are important to a wide variety of
+  social and environmental studies in cities. Surveys to collect such
+  information manually are costly and hard to maintain, which has
+  motivated a growing interest in automated approaches to tree detection
+  in recent years. To that end, LIDAR point clouds are a very
+  appropriate data source, especially given its capability to represent
+  spatial features in three dimensions. However, collecting LIDAR data
+  requires expensive equipment and raw datasets are rarely made openly
+  available. On the other hand, aerial imagery is another major source
+  of data that is able to capture a wide range of objects on Earth,
+  including trees. Although aerial imagery depicts the spatial features
+  in only two dimensions, its main advantage with respect to LIDAR is
+  its greater availability.</p>
+  <p>The aim of DetecTree is therefore to provide an open source library
+  that performs a binary classification of tree/non-tree pixels from
+  aerial imagery. The target audience is researchers and practitioners
+  in GIS that are interested in two-dimensional aspects of trees, such
+  as their proportional abundance and spatial distribution throughout a
+  region of study. These measurements can be used to assess important
+  aspects of urban planning such as the provision of urban ecosystem
+  services. The approach is of special relevance when LIDAR data is not
+  available or it is too costly in monetary or computational terms.</p>
+</sec>
+<sec id="methodology">
+  <title>Methodology</title>
+  <p>DetecTree is based on the supervised learning approach of Yang et
+  al.
+  (<xref alt="2009" rid="ref-yang2009tree" ref-type="bibr">2009</xref>),
+  which requires an RGB aerial imagery dataset as the only input, and
+  consists of the following steps:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p><bold>Step 0</bold>: split of the dataset into image tiles.
+      Since aerial imagery datasets often already come as a mosaic of
+      image tiles, this step might not be necessary. In any case,
+      DetecTree provides a <monospace>split_into_tiles</monospace>
+      function that can be used to divide a large image into a mosaic of
+      tiles of a specified dimension.</p>
+    </list-item>
+    <list-item>
+      <p><bold>Step 1</bold>: selection of the tiles to be used for
+      training a classifier. As a supervised learning task, the
+      ground-truth maps must be provided for some subset of the dataset.
+      Since this part is likely to involve manual work, it is crucial
+      that the training set has as few tiles as possible. At the same
+      time, to enhance the classifier’s ability to detect trees in the
+      diverse scenes of the dataset, the training set should contain as
+      many of the diverse geographic features as possible. Thus, in
+      order to optimize the representativity of the training set, the
+      training tiles are selected according to their GIST descriptor
+      (<xref alt="Oliva &amp; Torralba, 2001" rid="ref-oliva2001modeling" ref-type="bibr">Oliva
+      &amp; Torralba, 2001</xref>), <italic>i.e.</italic>, a vector
+      describing the key semantics of the tile’s scene. More precisely,
+      <italic>k</italic>-means clustering is applied to the GIST
+      descriptors of all the tiles, with the number of clusters
+      <italic>k</italic> set to the number of tiles of the training set
+      (by default, one percent of the tiles is used). Then, for each
+      cluster, the tile whose GIST descriptor is closest to the
+      cluster’s centroid is added to the training set. In DetecTree,
+      this is done by the <monospace>train_test_split</monospace> method
+      of the <monospace>TrainingSelector</monospace> class.</p>
+    </list-item>
+    <list-item>
+      <p><bold>Step 2</bold>: provision of the ground truth
+      tree/non-tree masks for the training tiles. For each tile of the
+      training set, the ground-truth tree/non-tree masks must be
+      provided to get the pixel-level responses that will be used to
+      train the classifier. To that end, an image editing software such
+      as GIMP or Adobe Photoshop might be used. Alternatively, if LIDAR
+      data for the training tiles is available, it might also be
+      exploited to create the ground truth masks.</p>
+    </list-item>
+    <list-item>
+      <p><bold>Step 3</bold>: train a binary pixel-level classifier. For
+      each pixel of the training tiles, a vector of 27 features is
+      computed, where 6, 18 and 3 features capture characteristics of
+      color, texture and entropy respectively. A binary AdaBoost
+      classifier
+      (<xref alt="Freund &amp; Schapire, 1995" rid="ref-freund1995desicion" ref-type="bibr">Freund
+      &amp; Schapire, 1995</xref>) is then trained by mapping the
+      feature vector of each pixel to its class in the ground truth
+      masks (<italic>i.e.</italic>, tree or non-tree).</p>
+    </list-item>
+    <list-item>
+      <p><bold>Step 4</bold>: tree detection in the testing tiles. Given
+      a trained classifier, the <monospace>classify_img</monospace> and
+      <monospace>classify_imgs</monospace> methods of the
+      <monospace>Classifier</monospace> class can respectively be used
+      to classify the tree pixels of a single image tile or of multiple
+      image tiles at scale. For each image tile, the pixel-level
+      classification is refined by means of a graph cuts algorithm
+      (<xref alt="Boykov &amp; Kolmogorov, 2004" rid="ref-boykov2004experimental" ref-type="bibr">Boykov
+      &amp; Kolmogorov, 2004</xref>) to avoid sparse pixels classified
+      as trees by enforcing consistency between adjacent tree pixels. An
+      example of an image tile, its pre-refinement pixel-level
+      classification and the final refined result is displayed
+      below:</p>
+    </list-item>
+  </list>
+  <fig>
+    <caption><p>Example of an image tile (left), its pre-refinement
+    pixel-level classification (center) and the final refined result
+    (right).</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="figure.png" xlink:title="" />
+  </fig>
+  <p>Similar methods of tree classification from aerial imagery include
+  the work of Jain et al.
+  (<xref alt="2019" rid="ref-jain2019efficient" ref-type="bibr">2019</xref>),
+  who follow the train/test split method based on GIST descriptors as
+  proposed by Yang et al.
+  (<xref alt="2009" rid="ref-yang2009tree" ref-type="bibr">2009</xref>)
+  but rely on the Mask R-CNN framework
+  (<xref alt="He et al., 2017" rid="ref-he2017mask" ref-type="bibr">He
+  et al., 2017</xref>) instead of the AdaBoost classifier. Another
+  approach by Tianyang et al.
+  (<xref alt="2018" rid="ref-tianyang2018single" ref-type="bibr">2018</xref>)
+  employs a cascade neural network over texture and color features which
+  detects single trees in a variety of forest images. Nonetheless, since
+  the former approaches ultimately aim at single tree detection, the
+  accuracy evaluation metrics that they provide are hard to compare with
+  the pixel-level classification accuracy of DetecTree. The experiments
+  performed by Yang et al.
+  (<xref alt="2009" rid="ref-yang2009tree" ref-type="bibr">2009</xref>)
+  in New York achieve a pixel classification accuracy of 91.7%, whereas
+  the example applications of DetecTree in Zurich and Lausanne achieve
+  accuracies of 85.98% and 91.75% respectively.</p>
+  <p>The code of DetecTree is organized following an object-oriented
+  approach, and relies on NumPy
+  (<xref alt="Van Der Walt et al., 2011" rid="ref-van2011numpy" ref-type="bibr">Van
+  Der Walt et al., 2011</xref>) to represent most data structures and
+  perform operations upon them in a vectorized manner. The Scikit-learn
+  library
+  (<xref alt="Pedregosa et al., 2011" rid="ref-pedregosa2011scikit" ref-type="bibr">Pedregosa
+  et al., 2011</xref>) is used to implement the AdaBoost pixel-level
+  classifier as well as to perform the <italic>k</italic>-means
+  clustering to select the training tiles. The computation of
+  pixel-level features and GIST descriptors makes use of various
+  features provided by the Scikit-image
+  (<xref alt="Van der Walt et al., 2014" rid="ref-van2014scikit" ref-type="bibr">Van
+  der Walt et al., 2014</xref>) and SciPy
+  (<xref alt="Virtanen et al., 2020" rid="ref-virtanen2020scipy" ref-type="bibr">Virtanen
+  et al., 2020</xref>) libraries. On the other hand, the classification
+  refinement employs the graph cuts algorithm implementation provided by
+  the library
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/pmneila/PyMaxflow">PyMaxFlow</ext-link>.
+  Finally, when possible, DetecTree uses the Dask library
+  (<xref alt="Rocklin, 2015" rid="ref-rocklin2015dask" ref-type="bibr">Rocklin,
+  2015</xref>) to perform various computations in parallel.</p>
+  <p>The features of DetecTree are implemented in a manner that enhances
+  the flexibility of the library so that the user can integrate it into
+  complex computational workflows, and also provide custom arguments for
+  the technical aspects. Furthermore, the functionalities of DetecTree
+  can be used through its Python API as well as through its command-line
+  interface (CLI), which is implemented by means of the Click Python
+  package.</p>
+</sec>
+<sec id="availability">
+  <title>Availability</title>
+  <p>The source code of DetecTree is fully available at
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/martibosch/detectree">a
+  GitHub repository</ext-link>. A dedicated Python package has been
+  created and is hosted at the
+  <ext-link ext-link-type="uri" xlink:href="https://pypi.org/project/detectree/">Python
+  Package Index (PyPI)</ext-link>. The documentation site is hosted at
+  <ext-link ext-link-type="uri" xlink:href="https://detectree.readthedocs.io/">Read
+  the Docs</ext-link>, and an example repository with Jupyter notebooks
+  of an example application to an openly-available orthophoto of Zurich
+  is provided at a
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/martibosch/detectree-example">dedicated
+  GitHub repository</ext-link>, which can be executed interactively
+  online by means of the Binder web service
+  (<xref alt="Bussonnier et al., 2018" rid="ref-jupyter2018binder" ref-type="bibr">Bussonnier
+  et al., 2018</xref>). An additional example use of DetecTree can be
+  found at a
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/martibosch/lausanne-tree-canopy">dedicated
+  GitHub repository</ext-link> with the materials to obtain a tree
+  canopy map for the urban agglomeration of Lausanne from the SWISSIMAGE
+  2016 orthophoto
+  (<xref alt="Federal Office of Topography, 2019" rid="ref-swisstopo2019swissimage" ref-type="bibr">Federal
+  Office of Topography, 2019</xref>).</p>
+  <p>Unit tests are run within the
+  <ext-link ext-link-type="uri" xlink:href="https://travis-ci.org/martibosch/detectree">Travis
+  CI</ext-link> platform every time that new commits are pushed to the
+  GitHub repository. Additionally, test coverage
+  <ext-link ext-link-type="uri" xlink:href="https://coveralls.io/github/martibosch/detectree?branch=master">is
+  reported on Coveralls</ext-link>.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>This research has been supported by the École Polytechnique
+  Fédérale de Lausanne.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-freund1995desicion">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Freund</surname><given-names>Yoav</given-names></name>
+          <name><surname>Schapire</surname><given-names>Robert E</given-names></name>
+        </person-group>
+        <article-title>A desicion-theoretic generalization of on-line learning and an application to boosting</article-title>
+        <source>European conference on computational learning theory</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="1995">1995</year>
+        <pub-id pub-id-type="doi">10.1007/3-540-59119-2_166</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-oliva2001modeling">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Oliva</surname><given-names>Aude</given-names></name>
+          <name><surname>Torralba</surname><given-names>Antonio</given-names></name>
+        </person-group>
+        <article-title>Modeling the shape of the scene: A holistic representation of the spatial envelope</article-title>
+        <source>International journal of computer vision</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2001">2001</year>
+        <volume>42</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1023/A:1011139631724</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-boykov2004experimental">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Boykov</surname><given-names>Yuri</given-names></name>
+          <name><surname>Kolmogorov</surname><given-names>Vladimir</given-names></name>
+        </person-group>
+        <article-title>An experimental comparison of min-cut/max-flow algorithms for energy minimization in vision</article-title>
+        <source>IEEE transactions on pattern analysis and machine intelligence</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2004">2004</year>
+        <volume>26</volume>
+        <issue>9</issue>
+        <pub-id pub-id-type="doi">10.1109/TPAMI.2004.60</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-yang2009tree">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Yang</surname><given-names>Lin</given-names></name>
+          <name><surname>Wu</surname><given-names>Xiaqing</given-names></name>
+          <name><surname>Praun</surname><given-names>Emil</given-names></name>
+          <name><surname>Ma</surname><given-names>Xiaoxu</given-names></name>
+        </person-group>
+        <article-title>Tree detection from aerial imagery</article-title>
+        <source>Proceedings of the 17th ACM SIGSPATIAL international conference on advances in geographic information systems</source>
+        <year iso-8601-date="2009">2009</year>
+        <pub-id pub-id-type="doi">10.1145/1653771.1653792</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pedregosa2011scikit">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pedregosa</surname><given-names>Fabian</given-names></name>
+          <name><surname>Varoquaux</surname><given-names>Gaël</given-names></name>
+          <name><surname>Gramfort</surname><given-names>Alexandre</given-names></name>
+          <name><surname>Michel</surname><given-names>Vincent</given-names></name>
+          <name><surname>Thirion</surname><given-names>Bertrand</given-names></name>
+          <name><surname>Grisel</surname><given-names>Olivier</given-names></name>
+          <name><surname>Blondel</surname><given-names>Mathieu</given-names></name>
+          <name><surname>Prettenhofer</surname><given-names>Peter</given-names></name>
+          <name><surname>Weiss</surname><given-names>Ron</given-names></name>
+          <name><surname>Dubourg</surname><given-names>Vincent</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Scikit-learn: Machine learning in Python</article-title>
+        <source>Journal of machine learning research</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>12</volume>
+        <issue>Oct</issue>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3696718</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-van2011numpy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Van Der Walt</surname><given-names>Stefan</given-names></name>
+          <name><surname>Colbert</surname><given-names>S Chris</given-names></name>
+          <name><surname>Varoquaux</surname><given-names>Gael</given-names></name>
+        </person-group>
+        <article-title>The NumPy array: A structure for efficient numerical computation</article-title>
+        <source>Computing in Science &amp; Engineering</source>
+        <publisher-name>IEEE Computer Society</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <volume>13</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2011.37</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-van2014scikit">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Van der Walt</surname><given-names>Stefan</given-names></name>
+          <name><surname>Schönberger</surname><given-names>Johannes L</given-names></name>
+          <name><surname>Nunez-Iglesias</surname><given-names>Juan</given-names></name>
+          <name><surname>Boulogne</surname><given-names>François</given-names></name>
+          <name><surname>Warner</surname><given-names>Joshua D</given-names></name>
+          <name><surname>Yager</surname><given-names>Neil</given-names></name>
+          <name><surname>Gouillart</surname><given-names>Emmanuelle</given-names></name>
+          <name><surname>Yu</surname><given-names>Tony</given-names></name>
+        </person-group>
+        <article-title>Scikit-image: Image processing in Python</article-title>
+        <source>PeerJ</source>
+        <publisher-name>PeerJ Inc.</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>2</volume>
+        <pub-id pub-id-type="doi">10.7717/peerj.453</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-rocklin2015dask">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Rocklin</surname><given-names>Matthew</given-names></name>
+        </person-group>
+        <article-title>Dask: Parallel computation with blocked algorithms and task scheduling</article-title>
+        <source>Proceedings of the 14th python in science conference</source>
+        <year iso-8601-date="2015">2015</year>
+        <pub-id pub-id-type="doi">10.25080/Majora-7b98e3ed-013</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-he2017mask">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>He</surname><given-names>Kaiming</given-names></name>
+          <name><surname>Gkioxari</surname><given-names>Georgia</given-names></name>
+          <name><surname>Dollár</surname><given-names>Piotr</given-names></name>
+          <name><surname>Girshick</surname><given-names>Ross</given-names></name>
+        </person-group>
+        <article-title>Mask R-CNN</article-title>
+        <source>Proceedings of the IEEE international conference on computer vision</source>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-jupyter2018binder">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Bussonnier</surname></name>
+          <name><surname>Forde</surname></name>
+          <name><surname>Freeman</surname></name>
+          <name><surname>Granger</surname></name>
+          <name><surname>Head</surname></name>
+          <name><surname>Holdgraf</surname></name>
+          <name><surname>Kelley</surname></name>
+          <name><surname>Nalvarte</surname></name>
+          <name><surname>Osheroff</surname></name>
+          <name><surname>Pacer</surname><given-names>M</given-names></name>
+          <name><surname>Panda</surname></name>
+          <name><surname>Perez</surname></name>
+          <name><surname>Ragan-Kelley</surname></name>
+          <name><surname>Willing</surname></name>
+        </person-group>
+        <article-title>Binder 2.0 - Reproducible, interactive, sharable environments for science at scale</article-title>
+        <source>Proceedings of the 17th python in science conference</source>
+        <year iso-8601-date="2018">2018</year>
+        <pub-id pub-id-type="doi">10.25080/Majora-4af1f417-011</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-tianyang2018single">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tianyang</surname><given-names>Dong</given-names></name>
+          <name><surname>Jian</surname><given-names>Zhang</given-names></name>
+          <name><surname>Sibin</surname><given-names>Gao</given-names></name>
+          <name><surname>Ying</surname><given-names>Shen</given-names></name>
+          <name><surname>Jing</surname><given-names>Fan</given-names></name>
+        </person-group>
+        <article-title>Single-tree detection in high-resolution remote-sensing images based on a cascade neural network</article-title>
+        <source>ISPRS International Journal of Geo-Information</source>
+        <publisher-name>Multidisciplinary Digital Publishing Institute</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>7</volume>
+        <issue>9</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-jain2019efficient">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Jain</surname><given-names>Suchit</given-names></name>
+          <name><surname>Mittal</surname><given-names>Rohan</given-names></name>
+          <name><surname>Jain</surname><given-names>Arpan</given-names></name>
+          <name><surname>Sinha</surname><given-names>Aakash</given-names></name>
+        </person-group>
+        <article-title>An efficient framework for monitoring tree cover in an area through aerial images</article-title>
+        <source>Applications of machine learning</source>
+        <publisher-name>International Society for Optics; Photonics</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>11139</volume>
+        <pub-id pub-id-type="doi">10.1117/12.2529442</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-swisstopo2019swissimage">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>Federal Office of Topography</string-name>
+        </person-group>
+        <article-title>SWISSIMAGE la mosaïque d’ortophotos de la Suisse</article-title>
+        <publisher-name>Available from (in French) https://shop.swisstopo.admin.ch/fr/products/images/ortho_images/SWISSIMAGE. Accessed: 3 March 2020</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-virtanen2020scipy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E</given-names></name>
+          <name><surname>Haberland</surname><given-names>Matt</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Burovski</surname><given-names>Evgeni</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Bright</surname><given-names>Jonathan</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>SciPy 1.0: Fundamental algorithms for scientific computing in Python</article-title>
+        <source>Nature Methods</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <pub-id pub-id-type="doi">10.1038/s41592-019-0686-2</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

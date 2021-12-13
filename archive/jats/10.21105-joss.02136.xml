@@ -1,0 +1,567 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2136</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02136</article-id>
+<title-group>
+<article-title>niacin: A Python package for text data
+enrichment</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9995-4378</contrib-id>
+<string-name>Dillon Niederhut</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Novi Labs</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-02-14">
+<day>14</day>
+<month>2</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>50</issue>
+<fpage>2136</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>data augmentation</kwd>
+<kwd>natural language processing</kwd>
+<kwd>machine learning</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>A common component of frameworks for building robust and accurate
+  learning models is a utility for performing sets of perturbations on
+  the input data. In machine vision, for example, rotating, cropping,
+  stretching, warping, and flipping training images have all been shown
+  to increase model accuracy, and reduce certain kinds of overfitting
+  (<xref alt="Chen et al., 2019" rid="ref-chen2019invariance" ref-type="bibr">Chen
+  et al., 2019</xref>). Popular machine vision libraries like PyTorch,
+  Tensorflow, and FastAI all have built-in utilities for performing
+  these transformations
+  (<xref alt="Abadi et al., 2015" rid="ref-tensorflow2015" ref-type="bibr">Abadi
+  et al., 2015</xref>;
+  <xref alt="Howard &amp; Gugger, 2020" rid="ref-howard2020fastai" ref-type="bibr">Howard
+  &amp; Gugger, 2020</xref>;
+  <xref alt="Paszke et al., 2019" rid="ref-NEURIPS2019_9015" ref-type="bibr">Paszke
+  et al., 2019</xref>).</p>
+  <p>In the domain of natural language processing (NLP), there is an
+  analogous set of transformations that have been shown to increase
+  model accuracy. Common transformations include adding superfluous
+  whitespace, swapping an individual word for a synonym, replacing a
+  word with a misspelled version, and round-tripping a sentence through
+  a translation model into another language and back again
+  (<xref alt="Coulombe, 2018" rid="ref-coulombe2018text" ref-type="bibr">Coulombe,
+  2018</xref>;
+  <xref alt="Zhang et al., 2015" rid="ref-zhang2015characterlevel" ref-type="bibr">Zhang
+  et al., 2015</xref>). Some transforms, like misspellings or synonyms,
+  attempt to directly model an unobserved but common change in the input
+  features. Others, like adding a space in the middle of a word, act
+  similarly to dropout for word-level models, in that they effectively
+  remove the word as an input (e.g., the two halves of the word are
+  unlikely to be present in the vocabulary).</p>
+  <p>For specific tasks in NLP, principally in language modeling, model
+  improvement can be effected with incorrect examples of input data, so
+  that the model learns not to produce them. This practice is called
+  negative sampling, and was used in the development of both word2vec
+  (<xref alt="Mikolov et al., 2013" rid="ref-mikolov2013distributed" ref-type="bibr">Mikolov
+  et al., 2013</xref>) and GLoVE
+  (<xref alt="Pennington et al., 2014" rid="ref-pennington2014glove" ref-type="bibr">Pennington
+  et al., 2014</xref>). This can be done with words sampled from the
+  whole vocabulary, or in a more targeted fashion by including related,
+  but inappropriate tokens. For example, in English, “I ate pizza for
+  lunch” is a valid sentence. Replacing “pizza” and “lunch” with a
+  higher level category (these are called hypernyms), produces – “I ate
+  <italic>dish</italic> for <italic>meal</italic>” an output that is
+  technically well-formed, but violates the Gricean expectation of
+  utility.</p>
+  <p>There are also sets of transforms whose aim is to make models more
+  robust in the face of adversarial inputs. These transforms include
+  replacing letters with symbols that are visually similar, adding
+  nuisance characters around words, adding random characters at the end
+  of the document, and appending the word “love” to the end of a
+  sentence
+  (<xref alt="Gröndahl et al., 2018" rid="ref-grndahl2018need" ref-type="bibr">Gröndahl
+  et al., 2018</xref>). Adding nuisance characters, or replacing
+  characters with symbols, disrupts the behavior of vocabulary-based
+  models, in that they will not know how to encode an input like
+  “sch00l”, although it is visually clear to an experienced reader of
+  English that this is the word “school”. Adding words with very
+  positive or very negative connotations have been shown to be an
+  effective way to disrupt sentiment classifiers, which often rely on
+  counting the number of times such words appear.</p>
+  <p>Here, we introduce niacin, a python library for performing a large
+  set of these commonly-used text transformations on a given input, with
+  some probability. For example, a commonly used text augmentation
+  technique is to replace individual words in a sentence with ones that
+  are closely related. The idea here is that the sentences “I am
+  unhappy” and “I am sad” convey a similar semantic value, even though
+  the individual words are different. In niacin, you can use a function
+  called <monospace>add_synonyms</monospace> for this, which, at a
+  replacement probability of 1.0:</p>
+  <preformat>&gt;&gt;&gt; add_synonyms(&quot;this is the song that never ends and it goes on
+and on my friends&quot;, p=1.0)</preformat>
+  <p>produces outputs like this:</p>
+  <disp-quote>
+    <p>this is the <italic>vocal</italic> that <italic>ne’er
+    terminate</italic> and it <italic>go away</italic> on and on my
+    friend</p>
+  </disp-quote>
+  <p>There are also functions for replacing words with common
+  misspellings:</p>
+  <preformat>&gt;&gt;&gt; add_misspelling(&quot;There are also functions for replacing words with
+their common misspellings&quot;, 1.0)</preformat>
+  <disp-quote>
+    <p>There are <italic>aslo</italic> functions for replacing words
+    <italic>withh</italic> <italic>thier</italic> common
+    misspellings</p>
+  </disp-quote>
+  <p>replacing contractions:</p>
+  <preformat>&gt;&gt;&gt; add_contractions('You are rad', 1.0)</preformat>
+  <disp-quote>
+    <p><italic>you’re</italic> rad</p>
+  </disp-quote>
+  <p>and substituting numbers and symbols for letters they resemble:</p>
+  <preformat>&gt;&gt;&gt; add_leet(&quot;Hello, how are you?&quot;, 1.0)</preformat>
+  <disp-quote>
+    <p><italic>H3110</italic>, <italic>h0w</italic> <italic>r</italic>
+    <italic>u</italic>?</p>
+  </disp-quote>
+  <p>When possible, function documentation links back to the paper which
+  originally suggested or implemented the transformation, should a user
+  want more information about how to apply the function in practice. For
+  example, replacing every single character in your text input will
+  render it useless, but there is empirical work suggesting that no more
+  than a 10% probability of replacement should be used. Data sources
+  (principally WordNet
+  (<xref alt="Miller, 1995" rid="ref-wordnet" ref-type="bibr">Miller,
+  1995</xref>), but also Wikipedia) are always cited.</p>
+  <p>In 2018, when niacin was first published online, there were a small
+  number of libraries that contain text augmentation functions, for
+  example
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/noisemix/noisemix">noisemix</ext-link>
+  and
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/jasonwei20/eda_nlp">EDA</ext-link>
+  (<xref alt="Wei &amp; Zou, 2019" rid="ref-wei2019eda" ref-type="bibr">Wei
+  &amp; Zou, 2019</xref>). In general, these were published only as a
+  part of a conference paper, and were not actively maintained. EDA, for
+  example, contains the warning “The code is not documented”. They also
+  tended to be limited to the scope of the transformations included in
+  the initial paper. There is not an exact one-to-one correspondence
+  between all the capabilities of these libraries, but this table shows
+  an approximation of comparing features across them:</p>
+  <table-wrap>
+    <table>
+      <thead>
+        <tr>
+          <th>transformation</th>
+          <th>niacin</th>
+          <th>noisemix</th>
+          <th>eda</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>synonym replacement</td>
+          <td>x</td>
+          <td>x</td>
+          <td>x</td>
+        </tr>
+        <tr>
+          <td>hypernym replacement</td>
+          <td>x</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>hyponym replacement</td>
+          <td>x</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>swap word order</td>
+          <td>x</td>
+          <td>x</td>
+          <td>x</td>
+        </tr>
+        <tr>
+          <td>swap character order</td>
+          <td>x</td>
+          <td>x</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>remove articles</td>
+          <td>x</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>contract/expand word</td>
+          <td>x</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>remove punctuation</td>
+          <td>x</td>
+          <td>x</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>add/delete space</td>
+          <td>x</td>
+          <td>x</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>add/delete letter</td>
+          <td>x</td>
+          <td>x</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>add typo</td>
+          <td>x</td>
+          <td>x</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>add misspelling</td>
+          <td>x</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>wrap in parens</td>
+          <td>x</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>add applause emoji</td>
+          <td>x</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>add ‘love’</td>
+          <td>x</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>add random characters</td>
+          <td>x</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>add backtranslation</td>
+          <td>x</td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>More recently, other software tools have been published that cover
+  some parts of niacin’s functionality, and extend further in other
+  areas. <monospace>nlpaug</monospace>, for example, includes large
+  language models like BERT that can perform synonym replacement in a
+  way that is context-dependent – something that wordnet cannot do
+  (<xref alt="Ma, 2019" rid="ref-ma2019nlpaug" ref-type="bibr">Ma,
+  2019</xref>). However, it does not include some of the character-based
+  transformations, nor the adversarial ones.
+  <monospace>TextAttack</monospace> implements several recently
+  published methods in model-based adversarial attacks on language
+  models, in both the white-box and black-box domain, and includes a
+  small number of augmentation techniques in addition
+  (<xref alt="Morris et al., 2020" rid="ref-Morris2020TextAttack" ref-type="bibr">Morris
+  et al., 2020</xref>).</p>
+  <p>It is our hope that having a collection of already-implemented
+  transformations with a uniform interface will make it easy for
+  researchers to include them in their own data processing
+  pipelines.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-wei2019eda">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Wei</surname><given-names>Jason</given-names></name>
+          <name><surname>Zou</surname><given-names>Kai</given-names></name>
+        </person-group>
+        <article-title>EDA: Easy data augmentation techniques for boosting performance on text classification tasks</article-title>
+        <source>Proceedings of the 2019 conference on empirical methods in natural language processing and the 9th international joint conference on natural language processing (EMNLP-IJCNLP)</source>
+        <publisher-name>Association for Computational Linguistics</publisher-name>
+        <publisher-loc>Hong Kong, China</publisher-loc>
+        <year iso-8601-date="2019-11">2019</year><month>11</month>
+        <uri>https://www.aclweb.org/anthology/D19-1670</uri>
+        <pub-id pub-id-type="doi">10.18653/v1/D19-1670</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-howard2020fastai">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Howard</surname><given-names>Jeremy</given-names></name>
+          <name><surname>Gugger</surname><given-names>Sylvain</given-names></name>
+        </person-group>
+        <article-title>Fastai: A layered API for deep learning</article-title>
+        <source>Information</source>
+        <publisher-name>MDPI AG</publisher-name>
+        <year iso-8601-date="2020-02">2020</year><month>02</month>
+        <volume>11</volume>
+        <issue>2</issue>
+        <issn>2078-2489</issn>
+        <uri>http://dx.doi.org/10.3390/info11020108</uri>
+        <pub-id pub-id-type="doi">10.3390/info11020108</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-chen2019invariance">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Chen</surname><given-names>Shuxiao</given-names></name>
+          <name><surname>Dobriban</surname><given-names>Edgar</given-names></name>
+          <name><surname>Lee</surname><given-names>Jane H</given-names></name>
+        </person-group>
+        <article-title>Invariance reduces variance: Understanding data augmentation in deep learning and beyond</article-title>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://arxiv.org/abs/1907.10905</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-NEURIPS2019_9015">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Paszke</surname><given-names>Adam</given-names></name>
+          <name><surname>Gross</surname><given-names>Sam</given-names></name>
+          <name><surname>Massa</surname><given-names>Francisco</given-names></name>
+          <name><surname>Lerer</surname><given-names>Adam</given-names></name>
+          <name><surname>Bradbury</surname><given-names>James</given-names></name>
+          <name><surname>Chanan</surname><given-names>Gregory</given-names></name>
+          <name><surname>Killeen</surname><given-names>Trevor</given-names></name>
+          <name><surname>Lin</surname><given-names>Zeming</given-names></name>
+          <name><surname>Gimelshein</surname><given-names>Natalia</given-names></name>
+          <name><surname>Antiga</surname><given-names>Luca</given-names></name>
+          <name><surname>Desmaison</surname><given-names>Alban</given-names></name>
+          <name><surname>Kopf</surname><given-names>Andreas</given-names></name>
+          <name><surname>Yang</surname><given-names>Edward</given-names></name>
+          <name><surname>DeVito</surname><given-names>Zachary</given-names></name>
+          <name><surname>Raison</surname><given-names>Martin</given-names></name>
+          <name><surname>Tejani</surname><given-names>Alykhan</given-names></name>
+          <name><surname>Chilamkurthy</surname><given-names>Sasank</given-names></name>
+          <name><surname>Steiner</surname><given-names>Benoit</given-names></name>
+          <name><surname>Fang</surname><given-names>Lu</given-names></name>
+          <name><surname>Bai</surname><given-names>Junjie</given-names></name>
+          <name><surname>Chintala</surname><given-names>Soumith</given-names></name>
+        </person-group>
+        <article-title>PyTorch: An imperative style, high-performance deep learning library</article-title>
+        <source>Advances in neural information processing systems 32</source>
+        <person-group person-group-type="editor">
+          <name><surname>Wallach</surname><given-names>H.</given-names></name>
+          <name><surname>Larochelle</surname><given-names>H.</given-names></name>
+          <name><surname>Beygelzimer</surname><given-names>A.</given-names></name>
+          <name><surname>dAlché-Buc</surname><given-names>F.</given-names></name>
+          <name><surname>Fox</surname><given-names>E.</given-names></name>
+          <name><surname>Garnett</surname><given-names>R.</given-names></name>
+        </person-group>
+        <publisher-name>Curran Associates, Inc.</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <uri>http://papers.neurips.cc/paper/9015-pytorch-an-imperative-style-high-performance-deep-learning-library.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-tensorflow2015">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Abadi</surname><given-names>Martı́n</given-names></name>
+          <name><surname>Agarwal</surname><given-names>Ashish</given-names></name>
+          <name><surname>Barham</surname><given-names>Paul</given-names></name>
+          <name><surname>Brevdo</surname><given-names>Eugene</given-names></name>
+          <name><surname>Chen</surname><given-names>Zhifeng</given-names></name>
+          <name><surname>Citro</surname><given-names>Craig</given-names></name>
+          <name><surname>Corrado</surname><given-names>Greg S.</given-names></name>
+          <name><surname>Davis</surname><given-names>Andy</given-names></name>
+          <name><surname>Dean</surname><given-names>Jeffrey</given-names></name>
+          <name><surname>Devin</surname><given-names>Matthieu</given-names></name>
+          <name><surname>Ghemawat</surname><given-names>Sanjay</given-names></name>
+          <name><surname>Goodfellow</surname><given-names>Ian</given-names></name>
+          <name><surname>Harp</surname><given-names>Andrew</given-names></name>
+          <name><surname>Irving</surname><given-names>Geoffrey</given-names></name>
+          <name><surname>Isard</surname><given-names>Michael</given-names></name>
+          <name><surname>Jia</surname><given-names>Yangqing</given-names></name>
+          <name><surname>Jozefowicz</surname><given-names>Rafal</given-names></name>
+          <name><surname>Kaiser</surname><given-names>Lukasz</given-names></name>
+          <name><surname>Kudlur</surname><given-names>Manjunath</given-names></name>
+          <name><surname>Levenberg</surname><given-names>Josh</given-names></name>
+          <name><surname>Mané</surname><given-names>Dandelion</given-names></name>
+          <name><surname>Monga</surname><given-names>Rajat</given-names></name>
+          <name><surname>Moore</surname><given-names>Sherry</given-names></name>
+          <name><surname>Murray</surname><given-names>Derek</given-names></name>
+          <name><surname>Olah</surname><given-names>Chris</given-names></name>
+          <name><surname>Schuster</surname><given-names>Mike</given-names></name>
+          <name><surname>Shlens</surname><given-names>Jonathon</given-names></name>
+          <name><surname>Steiner</surname><given-names>Benoit</given-names></name>
+          <name><surname>Sutskever</surname><given-names>Ilya</given-names></name>
+          <name><surname>Talwar</surname><given-names>Kunal</given-names></name>
+          <name><surname>Tucker</surname><given-names>Paul</given-names></name>
+          <name><surname>Vanhoucke</surname><given-names>Vincent</given-names></name>
+          <name><surname>Vasudevan</surname><given-names>Vijay</given-names></name>
+          <name><surname>Viégas</surname><given-names>Fernanda</given-names></name>
+          <name><surname>Vinyals</surname><given-names>Oriol</given-names></name>
+          <name><surname>Warden</surname><given-names>Pete</given-names></name>
+          <name><surname>Wattenberg</surname><given-names>Martin</given-names></name>
+          <name><surname>Wicke</surname><given-names>Martin</given-names></name>
+          <name><surname>Yu</surname><given-names>Yuan</given-names></name>
+          <name><surname>Zheng</surname><given-names>Xiaoqiang</given-names></name>
+        </person-group>
+        <article-title>TensorFlow: Large-scale machine learning on heterogeneous systems</article-title>
+        <year iso-8601-date="2015">2015</year>
+        <uri>https://www.tensorflow.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-zhang2015characterlevel">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Zhang</surname><given-names>Xiang</given-names></name>
+          <name><surname>Zhao</surname><given-names>Junbo</given-names></name>
+          <name><surname>LeCun</surname><given-names>Yann</given-names></name>
+        </person-group>
+        <article-title>Character-level convolutional networks for text classification</article-title>
+        <year iso-8601-date="2015">2015</year>
+        <uri>https://arxiv.org/abs/1509.01626</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-coulombe2018text">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Coulombe</surname><given-names>Claude</given-names></name>
+        </person-group>
+        <article-title>Text data augmentation made simple by leveraging NLP cloud APIs</article-title>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://arxiv.org/abs/1812.04718</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-grndahl2018need">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Gröndahl</surname><given-names>Tommi</given-names></name>
+          <name><surname>Pajola</surname><given-names>Luca</given-names></name>
+          <name><surname>Juuti</surname><given-names>Mika</given-names></name>
+          <name><surname>Conti</surname><given-names>Mauro</given-names></name>
+          <name><surname>Asokan</surname><given-names>N.</given-names></name>
+        </person-group>
+        <article-title>All you need is &quot;love&quot;: Evading hate-speech detection</article-title>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://arxiv.org/abs/1808.09115</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-pennington2014glove">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Pennington</surname><given-names>Jeffrey</given-names></name>
+          <name><surname>Socher</surname><given-names>Richard</given-names></name>
+          <name><surname>Manning</surname><given-names>Christopher D.</given-names></name>
+        </person-group>
+        <article-title>GloVe: Global vectors for word representation</article-title>
+        <source>Proceedings of the 2014 conference on empirical methods in natural language processing (EMNLP)</source>
+        <publisher-name>Association for Computational Linguistics</publisher-name>
+        <publisher-loc>Doha, Qatar</publisher-loc>
+        <year iso-8601-date="2014">2014</year>
+        <uri>https://www.aclweb.org/anthology/D14-1162</uri>
+        <pub-id pub-id-type="doi">10.3115/v1/D14-1162</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mikolov2013distributed">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Mikolov</surname><given-names>Tomas</given-names></name>
+          <name><surname>Sutskever</surname><given-names>Ilya</given-names></name>
+          <name><surname>Chen</surname><given-names>Kai</given-names></name>
+          <name><surname>Corrado</surname><given-names>Greg</given-names></name>
+          <name><surname>Dean</surname><given-names>Jeffrey</given-names></name>
+        </person-group>
+        <article-title>Distributed representations of words and phrases and their compositionality</article-title>
+        <year iso-8601-date="2013">2013</year>
+        <uri>https://arxiv.org/abs/1310.4546</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-wordnet">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Miller</surname><given-names>George A.</given-names></name>
+        </person-group>
+        <article-title>WordNet: A lexical database for English</article-title>
+        <source>Commun. ACM</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="1995-11">1995</year><month>11</month>
+        <volume>38</volume>
+        <issue>11</issue>
+        <issn>0001-0782</issn>
+        <uri>https://doi.org/10.1145/219717.219748</uri>
+        <pub-id pub-id-type="doi">10.1145/219717.219748</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ma2019nlpaug">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Ma</surname><given-names>Edward</given-names></name>
+        </person-group>
+        <article-title>NLP augmentation</article-title>
+        <publisher-name>https://github.com/makcedward/nlpaug</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Morris2020TextAttack">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Morris</surname><given-names>John X.</given-names></name>
+          <name><surname>Lifland</surname><given-names>Eli</given-names></name>
+          <name><surname>Yoo</surname><given-names>Jin Yong</given-names></name>
+          <name><surname>Qi</surname><given-names>Yanjun</given-names></name>
+        </person-group>
+        <article-title>TextAttack: A framework for adversarial attacks in natural language processing</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://arxiv.org/abs/2005.05909</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

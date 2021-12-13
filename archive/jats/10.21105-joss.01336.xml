@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1336</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01336</article-id>
+<title-group>
+<article-title>rrcf: Implementation of the Robust Random Cut Forest
+algorithm for anomaly detection on streams</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-6421-222X</contrib-id>
+<string-name>Matthew D. Bartos</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-8141-3621</contrib-id>
+<string-name>Abhiram Mullapudi</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-6809-7959</contrib-id>
+<string-name>Sara C. Troutman</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Civil and Environmental Engineering,
+University of Michigan</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-03-04">
+<day>4</day>
+<month>3</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>35</issue>
+<fpage>1336</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>outlier detection</kwd>
+<kwd>machine learning</kwd>
+<kwd>ensemble methods</kwd>
+<kwd>random forests</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>In this paper, we present the first open-source implementation of
+  the <italic>robust random cut forest</italic> (RRCF) algorithm—an
+  unsupervised ensemble method for anomaly detection on streaming data
+  (<xref alt="Guha et al., 2016" rid="ref-guha_2016_robust" ref-type="bibr">Guha
+  et al., 2016</xref>). RRCF offers a number of features that many
+  competing anomaly detection algorithms lack. Specifically, RRCF:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Is designed to handle large volumes of streaming data.</p>
+    </list-item>
+    <list-item>
+      <p>Is well-suited to data of high dimension.</p>
+    </list-item>
+    <list-item>
+      <p>Reduces the influence of irrelevant dimensions in the input
+      data.</p>
+    </list-item>
+    <list-item>
+      <p>Gracefully handles duplicates and near-duplicates that could
+      otherwise mask the presence of outliers.</p>
+    </list-item>
+    <list-item>
+      <p>Features an anomaly-scoring metric with a clear underlying
+      statistical meaning.</p>
+    </list-item>
+  </list>
+  <p>The RRCF algorithm is currently used for anomaly detection in the
+  <italic>Amazon Kinesis</italic> real-time analytics engine. The goal
+  of our repository is to provide an open-source implementation of the
+  RRCF algorithm and its core data structures for the purposes of
+  facilitating experimentation and enabling future extensions.</p>
+</sec>
+<sec id="background">
+  <title>Background</title>
+  <p>Anomaly detection is an important unsupervised learning problem
+  with economic and social implications in a variety of fields. In
+  finance, online anomaly detection algorithms are used to alert
+  customers to potentially fraudulent credit card transactions
+  (<xref alt="Aleskerov et al., 1997" rid="ref-aleskerov_1997_cardwatch" ref-type="bibr">Aleskerov
+  et al., 1997</xref>). In web infrastructure, anomaly detection
+  algorithms facilitate improved intrusion detection
+  (<xref alt="Lazarevic et al., 2003" rid="ref-lazarevic_2003_comparative" ref-type="bibr">Lazarevic
+  et al., 2003</xref>), and can be used to flag and deflect malicious
+  IPs during distributed denial of service (DDoS) attacks
+  (<xref alt="Mirkovic &amp; Reiher, 2004" rid="ref-mirkovic_2004_taxonomy" ref-type="bibr">Mirkovic
+  &amp; Reiher, 2004</xref>). With respect to monitoring of industrial
+  and infrastructure control systems, outlier monitoring can be used to
+  identify malfunctioning industrial equipment, flag quality assurance
+  problems, and alert supervisors to hazardous conditions
+  (<xref alt="Filev et al., 2010" rid="ref-filev_2010_industrial" ref-type="bibr">Filev
+  et al., 2010</xref>). These application areas demand powerful but
+  flexible approaches that can process large volumes of streaming data
+  while at the same time adapting to non-stationary conditions.</p>
+  <p>Existing anomaly detection approaches typically suffer from a few
+  key limitations that hinder their usefulness in real-time
+  applications. First, many conventional methods are not suited for
+  streaming data
+  (<xref alt="Guha et al., 2016" rid="ref-guha_2016_robust" ref-type="bibr">Guha
+  et al., 2016</xref>). Methods such as isolation forest
+  (<xref alt="Liu et al., 2012" rid="ref-liu_2012_isolation" ref-type="bibr">Liu
+  et al., 2012</xref>) and local outlier factor detection
+  (<xref alt="Breunig et al., 2000" rid="ref-breunig_2000_lof" ref-type="bibr">Breunig
+  et al., 2000</xref>) must reconstruct the entire model when a new data
+  point is added, while methods such as replicator neural networks
+  (<xref alt="Williams et al., 2002" rid="ref-williams_2002_comparative" ref-type="bibr">Williams
+  et al., 2002</xref>) and one-class support vector machines
+  (<xref alt="Tax &amp; Duin, 2004" rid="ref-tax_2004_support" ref-type="bibr">Tax
+  &amp; Duin, 2004</xref>) must be retrained if the distribution of the
+  input data changes over time. Second, many existing algorithms fail to
+  detect anomalies in the presence of duplicates or near-duplicates—a
+  phenomenon known as “outlier masking”
+  (<xref alt="Guha et al., 2016" rid="ref-guha_2016_robust" ref-type="bibr">Guha
+  et al., 2016</xref>). Finally, existing algorithms often struggle to
+  detect outliers in high-dimensional data, especially in the presence
+  of “irrelevant dimensions” that offer little relevant information to
+  the outlier detection problem
+  (<xref alt="Guha et al., 2016" rid="ref-guha_2016_robust" ref-type="bibr">Guha
+  et al., 2016</xref>). The <italic>robust random cut forest</italic>
+  algorithm addresses these problems by using a novel sketching
+  algorithm to construct a real-time summary of the data
+  (<xref alt="Guha et al., 2016" rid="ref-guha_2016_robust" ref-type="bibr">Guha
+  et al., 2016</xref>). This sketching algorithm works by (i)
+  constructing an ensemble of space-partitioning binary trees on the
+  point set, and then (ii) generating an anomaly score based on the
+  conditional change in model complexity imposed by the insertion or
+  deletion of each point. This method efficiently detects anomalies on
+  streaming data while at the same time adapting to changing input
+  signals and handling “collusive” outliers.</p>
+</sec>
+<sec id="example-applications">
+  <title>Example applications</title>
+  <sec id="test-1-detection-in-the-presence-of-collusive-outliers-and-irrelevant-dimensions">
+    <title>Test 1: Detection in the presence of collusive outliers and
+    irrelevant dimensions</title>
+    <p>Here, we validate a test case from the original RRCF paper
+    involving two dense clusters of 3-dimensional points in which almost
+    all the variation occurs in the first dimension
+    (<xref alt="Guha et al., 2016" rid="ref-guha_2016_robust" ref-type="bibr">Guha
+    et al., 2016</xref>). Consider two clusters consisting of 1000
+    points each distributed according to <inline-formula><alternatives>
+    <tex-math><![CDATA[x_i \sim \mathcal{N}([5 \ 0 \ 0]^T, 0.01 \cdot I)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>∼</mml:mo><mml:mstyle mathvariant="script"><mml:mi>𝒩</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mn>5</mml:mn><mml:mspace width="0.222em"></mml:mspace><mml:mn>0</mml:mn><mml:mspace width="0.222em"></mml:mspace><mml:mn>0</mml:mn><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mi>T</mml:mi></mml:msup><mml:mo>,</mml:mo><mml:mn>0.01</mml:mn><mml:mo>⋅</mml:mo><mml:mi>I</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    for the first class and <inline-formula><alternatives>
+    <tex-math><![CDATA[x_i \sim \mathcal{N}([-5 \ 0 \ 0]^T, 0.01 \cdot I)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>∼</mml:mo><mml:mstyle mathvariant="script"><mml:mi>𝒩</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mo>−</mml:mo><mml:mn>5</mml:mn><mml:mspace width="0.222em"></mml:mspace><mml:mn>0</mml:mn><mml:mspace width="0.222em"></mml:mspace><mml:mn>0</mml:mn><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mi>T</mml:mi></mml:msup><mml:mo>,</mml:mo><mml:mn>0.01</mml:mn><mml:mo>⋅</mml:mo><mml:mi>I</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    for the second class. Add to this point set 10 collusive outlier
+    points distributed according to <inline-formula><alternatives>
+    <tex-math><![CDATA[x_i \sim \mathcal{N}([0 \ 0 \ 0]^T, 0.01 \cdot I)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>∼</mml:mo><mml:mstyle mathvariant="script"><mml:mi>𝒩</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mn>0</mml:mn><mml:mspace width="0.222em"></mml:mspace><mml:mn>0</mml:mn><mml:mspace width="0.222em"></mml:mspace><mml:mn>0</mml:mn><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mi>T</mml:mi></mml:msup><mml:mo>,</mml:mo><mml:mn>0.01</mml:mn><mml:mo>⋅</mml:mo><mml:mi>I</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.
+    The goal of this test case is to detect the 10 collusive outlier
+    points in the center. From Figure 1, it can be seen that RRCF
+    successfully detects the outliers, while One-Class SVM and Isolation
+    Forest do not.</p>
+    <fig>
+      <caption><p>Figure 1: Detecting collusive outliers using One-Class
+      SVM, Isolation Forest and RRCF (left to right).</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="figure_1.png" xlink:title="" />
+    </fig>
+  </sec>
+  <sec id="test-2-detection-of-event-onset">
+    <title>Test 2: Detection of event onset</title>
+    <p>We validate another result from the original paper by showing
+    that RRCF can effectively detect both the onset and offset of
+    anomalies on streaming time series data
+    (<xref alt="Guha et al., 2016" rid="ref-guha_2016_robust" ref-type="bibr">Guha
+    et al., 2016</xref>). As in the original paper, we generate a sine
+    wave from time <inline-formula><alternatives>
+    <tex-math><![CDATA[t \in [0, 730]]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>t</mml:mi><mml:mo>∈</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:mn>730</mml:mn><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>,
+    with period <inline-formula><alternatives>
+    <tex-math><![CDATA[T = \pi / 50]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>T</mml:mi><mml:mo>=</mml:mo><mml:mi>π</mml:mi><mml:mi>/</mml:mi><mml:mn>50</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+    and a phase offset of <inline-formula><alternatives>
+    <tex-math><![CDATA[\phi = 30]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>ϕ</mml:mi><mml:mo>=</mml:mo><mml:mn>30</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>.
+    An anomaly is then injected into the sine wave along the interval
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[t \in [235, 255]]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>t</mml:mi><mml:mo>∈</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mn>235</mml:mn><mml:mo>,</mml:mo><mml:mn>255</mml:mn><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.
+    Using a technique recommended by the original paper, we sample the
+    data using a “shingling” approach. In this approach, a window of
+    length <inline-formula><alternatives>
+    <tex-math><![CDATA[\ell]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ℓ</mml:mi></mml:math></alternatives></inline-formula>
+    is passed over the data, and each consecutive windowed sequence is
+    treated as an <inline-formula><alternatives>
+    <tex-math><![CDATA[\ell-]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>ℓ</mml:mi><mml:mo>−</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>dimensional
+    point (e.g. for a shingle of length 4, the sampled point at time
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[t]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>t</mml:mi></mml:math></alternatives></inline-formula>
+    will be <inline-formula><alternatives>
+    <tex-math><![CDATA[[x_{t-3}, \ x_{t-2}, \ x_{t-1}, \ x_t]^T]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mrow><mml:mi>t</mml:mi><mml:mo>−</mml:mo><mml:mn>3</mml:mn></mml:mrow></mml:msub><mml:mo>,</mml:mo><mml:mspace width="0.222em"></mml:mspace><mml:msub><mml:mi>x</mml:mi><mml:mrow><mml:mi>t</mml:mi><mml:mo>−</mml:mo><mml:mn>2</mml:mn></mml:mrow></mml:msub><mml:mo>,</mml:mo><mml:mspace width="0.222em"></mml:mspace><mml:msub><mml:mi>x</mml:mi><mml:mrow><mml:mi>t</mml:mi><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msub><mml:mo>,</mml:mo><mml:mspace width="0.222em"></mml:mspace><mml:msub><mml:mi>x</mml:mi><mml:mi>t</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mi>T</mml:mi></mml:msup></mml:math></alternatives></inline-formula>).
+    We apply both Isolation Forest and RRCF with a forest size of 100
+    trees, and a tree size of 256 points. From Figure 2, it can be seen
+    that RRCF performs better than Isolation Forest at detecting the
+    onset of the anomaly.</p>
+    <fig>
+      <caption><p>Figure 2: Detecting event onset using Isolation Forest
+      (center) and RRCF (bottom).</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="figure_2.png" xlink:title="" />
+    </fig>
+  </sec>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We thank Dr. Alfred Hero for bringing the RRCF algorithm to our
+  attention, and Dr. Branko Kerkez for his invaluable support.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-guha_2016_robust">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Guha</surname><given-names>Sudipto</given-names></name>
+          <name><surname>Mishra</surname><given-names>Nina</given-names></name>
+          <name><surname>Roy</surname><given-names>Gourav</given-names></name>
+          <name><surname>Schrijvers</surname><given-names>Okke</given-names></name>
+        </person-group>
+        <article-title>Robust random cut forest based anomaly detection on streams</article-title>
+        <source>International conference on machine learning</source>
+        <year iso-8601-date="2016">2016</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-aleskerov_1997_cardwatch">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Aleskerov</surname><given-names>E.</given-names></name>
+          <name><surname>Freisleben</surname><given-names>B.</given-names></name>
+          <name><surname>Rao</surname><given-names>B.</given-names></name>
+        </person-group>
+        <article-title>CARDWATCH: A neural network based database mining system for credit card fraud detection</article-title>
+        <source>Proceedings of the IEEE/IAFE 1997 computational intelligence for financial engineering (CIFEr)</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="1997">1997</year>
+        <pub-id pub-id-type="doi">10.1109/cifer.1997.618940</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-breunig_2000_lof">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Breunig</surname><given-names>Markus M.</given-names></name>
+          <name><surname>Kriegel</surname><given-names>Hans-Peter</given-names></name>
+          <name><surname>Ng</surname><given-names>Raymond T.</given-names></name>
+          <name><surname>Sander</surname><given-names>Jörg</given-names></name>
+        </person-group>
+        <article-title>LOF: Identifying density-based local outliers</article-title>
+        <source>SIGMOD Rec.</source>
+        <publisher-name>ACM</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="2000-05">2000</year><month>05</month>
+        <volume>29</volume>
+        <issue>2</issue>
+        <issn>0163-5808</issn>
+        <pub-id pub-id-type="doi">10.1145/335191.335388</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lazarevic_2003_comparative">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Lazarevic</surname><given-names>Aleksandar</given-names></name>
+          <name><surname>Ertoz</surname><given-names>Levent</given-names></name>
+          <name><surname>Kumar</surname><given-names>Vipin</given-names></name>
+          <name><surname>Ozgur</surname><given-names>Aysel</given-names></name>
+          <name><surname>Srivastava</surname><given-names>Jaideep</given-names></name>
+        </person-group>
+        <article-title>A comparative study of anomaly detection schemes in network intrusion detection</article-title>
+        <source>Proceedings of the 2003 SIAM international conference on data mining</source>
+        <publisher-name>Society for Industrial; Applied Mathematics</publisher-name>
+        <year iso-8601-date="2003-05">2003</year><month>05</month>
+        <pub-id pub-id-type="doi">10.1137/1.9781611972733.3</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-liu_2012_isolation">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Liu</surname><given-names>Fei Tony</given-names></name>
+          <name><surname>Ting</surname><given-names>Kai Ming</given-names></name>
+          <name><surname>Zhou</surname><given-names>Zhi-Hua</given-names></name>
+        </person-group>
+        <article-title>Isolation-based anomaly detection</article-title>
+        <source>ACM Transactions on Knowledge Discovery from Data</source>
+        <publisher-name>Association for Computing Machinery (ACM)</publisher-name>
+        <year iso-8601-date="2012-03">2012</year><month>03</month>
+        <volume>6</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1145/2133360.2133363</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-filev_2010_industrial">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Filev</surname><given-names>Dimitar P.</given-names></name>
+          <name><surname>Chinnam</surname><given-names>Ratna Babu</given-names></name>
+          <name><surname>Tseng</surname><given-names>Finn</given-names></name>
+          <name><surname>Baruah</surname><given-names>Pundarikaksha</given-names></name>
+        </person-group>
+        <article-title>An industrial strength novelty detection framework for autonomous equipment monitoring and diagnostics</article-title>
+        <source>IEEE Transactions on Industrial Informatics</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <pub-id pub-id-type="doi">10.1109/TII.2010.2060732</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mirkovic_2004_taxonomy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mirkovic</surname><given-names>Jelena</given-names></name>
+          <name><surname>Reiher</surname><given-names>Peter</given-names></name>
+        </person-group>
+        <article-title>A taxonomy of DDoS attack and DDoS defense mechanisms</article-title>
+        <source>ACM SIGCOMM Computer Communications Review</source>
+        <publisher-name>ACM</publisher-name>
+        <year iso-8601-date="2004">2004</year>
+        <pub-id pub-id-type="doi">10.1145/997150.997156</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-williams_2002_comparative">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Williams</surname><given-names>Graham</given-names></name>
+          <name><surname>Baxter</surname><given-names>Rohan</given-names></name>
+          <name><surname>He</surname><given-names>Hongxing</given-names></name>
+          <name><surname>Hawkins</surname><given-names>Simon</given-names></name>
+          <name><surname>Gu</surname><given-names>Lifang</given-names></name>
+        </person-group>
+        <article-title>A comparative study of RNN for outlier detection in data mining</article-title>
+        <source>Data mining, 2002. ICDM 2003. Proceedings. 2002 IEEE international conference on</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2002">2002</year>
+        <pub-id pub-id-type="doi">10.1109/ICDM.2002.1184035</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-tax_2004_support">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tax</surname><given-names>David MJ</given-names></name>
+          <name><surname>Duin</surname><given-names>Robert PW</given-names></name>
+        </person-group>
+        <article-title>Support vector data description</article-title>
+        <source>Machine learning</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2004">2004</year>
+        <volume>54</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1023/B:MACH.0000008084.60811.49</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

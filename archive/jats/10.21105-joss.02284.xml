@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2284</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02284</article-id>
+<title-group>
+<article-title>GridTest: testing and metrics collection for
+Python</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-4387-3819</contrib-id>
+<string-name>Vanessa Sochat</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Stanford University Research Computing</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-05-12">
+<day>12</day>
+<month>5</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>51</issue>
+<fpage>2284</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>testing</kwd>
+<kwd>metrics</kwd>
+<kwd>continuous integration</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Creating reproducible testing and parameterization is a consistent
+  challenge in research because it is hard to do
+  (<xref alt="Koteska et al., 2015" rid="ref-Koteska2015ScientificST" ref-type="bibr">Koteska
+  et al., 2015</xref>). Researchers often don’t have the bandwidth to
+  think about tests, and consequently, creating tools for this use case
+  is often overlooked. GridTest
+  (<xref alt="GridTest on GitHub, 2020" rid="ref-gridtest" ref-type="bibr"><italic><named-content content-type="nocase">GridTest
+  on GitHub</named-content></italic>, 2020</xref>) is a library that
+  specializes in generating parameter grids. The grids are most
+  obviously used for testing, but can extend to other use cases. In the
+  context of testing, GridTest makes it easy to discover functions,
+  classes, and arguments for Python scripts or modules, and then
+  generate a template to easily populate. Outside of testing, grids can
+  be created that are version controlled, programatically defined with
+  functions, and easy to interact with from the command line or Python
+  interpreter. Grids can be used with tests that can further be
+  parameterized and configured to collect metrics for each case run.
+  Both grid and test specifications are stored in a simple YAML
+  configuration that the library helps to generate, and features include
+  interactive debugging, interactive report generation, and provided
+  metrics (Python decorators) that can assist with research.</p>
+</sec>
+<sec id="background">
+  <title>Background</title>
+  <p>While several scientific libraries
+  (<xref alt="Beilsten-Edmands et al., 2020" rid="ref-gridregular" ref-type="bibr">Beilsten-Edmands
+  et al., 2020</xref>;
+  <xref alt="Pedregosa et al., 2011" rid="ref-sklearn" ref-type="bibr">Pedregosa
+  et al., 2011</xref>) make it possible to generate parameter grids
+  within code, they require a substantial list of numerical library
+  dependencies that might be overkill for the user’s needs, and further,
+  they don’t allow for representation of grids outside of the code.
+  Additionally, these libraries do not natively allow for interactive
+  debugging, collection of metrics around grids, or report generation.
+  Another subset of grid generation libraries are specifically intended
+  for hyperparameter tuning
+  (<xref alt="Chollet et al., 2015" rid="ref-keras" ref-type="bibr">Chollet
+  et al., 2015</xref>;
+  <xref alt="Grid (Hyperparameter) Search — H2o 3.30.0.5 Documentation, 2020" rid="ref-h2o" ref-type="bibr"><italic>Grid
+  (Hyperparameter) Search — H2o 3.30.0.5 Documentation</italic>,
+  2020</xref>;
+  <xref alt="Koehrsen, 2018" rid="ref-Willkoehrsen2018-hm" ref-type="bibr">Koehrsen,
+  2018</xref>), and are thus packaged alongside machine learning
+  libraries. While these libraries are rich and hugely useful for their
+  intended purposes, none of them present a domain-agnostic, simple grid
+  definition that can be defined outside of the programming language
+  (e.g., R, Python) code that uses it. The landscape is missing a
+  library that places grids alongside code, and can define them without
+  needing it. GridTest offers this ability, and further, introduces a
+  new paradigm that grids might be shared between code bases as their
+  own entity, and are not required to be embedded within it.</p>
+  <sec id="grids-as-first-class-citizens">
+    <title>Grids as First Class Citizens</title>
+    <p>Parameters always come as a second thought when writing tests,
+    and this is why they are commonly applied as decorators. The author
+    of this software realized that she might want to define just sets of
+    parameters that expand into matrices that can be useful across many
+    use cases. This makes the grids “first class citizens.” For example,
+    instead of a top to bottom script that loops over some set of
+    datasets, parameters, and algorithms, the user could define grids to
+    generate each in a modular fashion. This is explained in detail for
+    the
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/vsoch/gridtest/tree/master/examples/clustering-grids">clustering
+    grids</ext-link> example derived from scikit-learn. As another
+    example, the user might just want to parameterize some set of inputs
+    to randomly generate a cohort. This example is detailed
+    <ext-link ext-link-type="uri" xlink:href="https://vsoch.github.io/gridtest/tutorials/samplegrid/">in
+    another tutorial here</ext-link>. The overall idea is simple. The
+    current practice is generally to write parameterizations alongside
+    code, whether that means nested for loops or decorators for testing.
+    GridTest allows for this same kind of functionality, but storing the
+    parameterization alongside the code and not embedded with it. This
+    makes it easy to change grids or tests without touching the
+    code.</p>
+  </sec>
+</sec>
+<sec id="concepts">
+  <title>Concepts</title>
+  <sec id="testing">
+    <title>Testing</title>
+    <p>A <bold>gridtest</bold>: is one that is run over a grid of
+    parameter settings. Each test can include a set of argument
+    specifications, and optionally mapping these arguments to functions
+    so they can be programatically defined. A grid can be inline to the
+    test (if not used elsewhere) or defined globally and shared. For an
+    example of command line usage, the reader is directed to the
+    <ext-link ext-link-type="uri" xlink:href="https://vsoch.github.io/gridtest/getting-started/index.html">“How
+    does it work”</ext-link> section in the Getting Started guide.</p>
+  </sec>
+  <sec id="parameterization">
+    <title>Parameterization</title>
+    <p>A <bold>grid</bold> is a global definition of a parameter matrix.
+    A user can define arguments, and optionally functions to run to be
+    mapped to arguments. Grids are generated on demand, meaning when the
+    user iterates over a Grid object, so that no large lists are stored
+    in memory. Grids can be put to many uses. The user might share a
+    repository that only defines grids that people can use across many
+    different kinds of machine learning models, possibly to collect
+    metrics and compare different analysis strategies being used. An
+    introduction to grids is available
+    <ext-link ext-link-type="uri" xlink:href="https://vsoch.github.io/gridtest/getting-started/grids/">here</ext-link>.</p>
+  </sec>
+  <sec id="metrics">
+    <title>Metrics</title>
+    <p>A <bold>metric</bold> is a Python decorator that is paired with a
+    test that will measure some attribute of a test. For example: - the
+    user might run a function across a grid of arguments, and then
+    measure the time that each combination takes (the metric), and
+    generate a report for inspection. - the user might be doing text
+    processing and having functions to parse text. Each function might
+    be run over a grid of sentences and counts, and for each result, the
+    number of unique and total words is counted (metrics).</p>
+    <p>Metrics are fully described in the
+    <ext-link ext-link-type="uri" xlink:href="https://vsoch.github.io/gridtest/getting-started/metrics/">metrics</ext-link>
+    section of the documentation.</p>
+  </sec>
+</sec>
+<sec id="use-cases">
+  <title>Use Cases</title>
+  <p>GridTest has use cases well beyond testing, because
+  parameterization is used widely across data science, and version
+  control for reproducibility of those parameters is essential for
+  reproducible, sustainable science. The following set of examples are
+  good use cases.</p>
+  <sec id="parameter-grids">
+    <title>1. Parameter Grids</title>
+    <p>GridTest extends the traditional definition
+    (<xref alt="sklearn.model_selection.ParameterGrid — Scikit-Learn 0.23.1 Documentation, 2020" rid="ref-sklearn-tutorial" ref-type="bibr"><italic><named-content content-type="nocase">sklearn.model_selection.ParameterGrid</named-content>
+    — Scikit-Learn 0.23.1 Documentation</italic>, 2020</xref>) of a grid
+    to include:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p><ext-link ext-link-type="uri" xlink:href="https://vsoch.github.io/gridtest/tutorials/samplegrid/">generating
+        random samples</ext-link></p>
+      </list-item>
+      <list-item>
+        <p><ext-link ext-link-type="uri" xlink:href="https://vsoch.github.io/gridtest/getting-started/grids/index.html">loading
+        grids via a GridRunner</ext-link> class separate from the
+        application’s Python code.</p>
+      </list-item>
+      <list-item>
+        <p>generating grids as they are needed (meaning as an
+        iterator)</p>
+      </list-item>
+      <list-item>
+        <p>previewing grids on the command line before using them</p>
+      </list-item>
+      <list-item>
+        <p>generating content of grids via external functions, and
+        optionally unwrapping list values</p>
+      </list-item>
+    </list>
+    <p>Grids are generated on demand for more efficient memory
+    allocation, and can be extended to any use case that requires some
+    combination of arguments, and optionally functions to run to be
+    mapped to arguments. See the section on the concept of a grid for
+    more detail.</p>
+  </sec>
+  <sec id="capturing-metrics">
+    <title>2. Capturing Metrics</title>
+    <p>How long does a function take to run when provided parameter X as
+    one value, versus another? By way of allowing the user to specify
+    one or more metrics alongside tests, they can easily capture metrics
+    (Python decorators to functions to test) to output in an interactive
+    report. For example, if the user writes a test that runs a machine
+    learning algorithm across a grid of datasets and algorithms, they
+    can easily add a metric to record the time that each takes, and save
+    this result to a file. GridTest provides a standard set of
+    <ext-link ext-link-type="uri" xlink:href="https://vsoch.github.io/gridtest/tutorials/decorators/index.html">decorators</ext-link>
+    for ease of use, and the user is also free to write their own
+    functions to collect metrics.</p>
+  </sec>
+  <sec id="generating-reports">
+    <title>3. Generating Reports</title>
+    <p>It can be handy to save results to a data file (e.g.,
+    results.json) or generate an interactive report for GitHub pages.
+    GridTest allows for this by way of the <monospace>--save</monospace>
+    or <monospace>--save-web</monospace> flags. An example web report is
+    shown in Figure 1. Any grid can also be exported to JSON for
+    archiving in a repository or extension to other custom
+    visualizations.</p>
+    <fig>
+      <caption><p>Figure 1. An example GridTest web report</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="report.png" xlink:title="" />
+    </fig>
+    <p>An interactive, live report is available to view
+    <ext-link ext-link-type="uri" xlink:href="https://vsoch.github.io/gridtest/templates/report/">here</ext-link>,
+    and more information about reports and export formats is provided
+    <ext-link ext-link-type="uri" xlink:href="https://vsoch.github.io/gridtest/getting-started/results/index.html">here</ext-link>.
+    More domain-specific reports can be developed as requested.</p>
+  </sec>
+  <sec id="debugging">
+    <title>4. Debugging</title>
+    <p>What programmer hasn’t been in the scenario of running a group of
+    tests, and then having some fail? What can be done? The user might
+    start an interactive shell, import what is needed, and try to
+    reproduce, or they can turn up verbosity and add a bunch of print
+    statements to figure out what is going on. GridTest makes this much
+    easier with its <monospace>--interactive</monospace> mode, which
+    allows the user to shell into an interactive session right before
+    the function is run to allow for debugging. A detailed walkthrough
+    of debugging is provided
+    <ext-link ext-link-type="uri" xlink:href="https://vsoch.github.io/gridtest/getting-started/debugging/">here</ext-link>.</p>
+  </sec>
+  <sec id="running-reproducible-tests">
+    <title>5. Running Reproducible Tests</title>
+    <p>When the user writes tests for a file, local, or system module,
+    they store them in a YAML file that is stored alongside the code,
+    and can be tested with CI. The YAML file can have grids of
+    parameters defined so the user can easily test many different
+    combinations.</p>
+  </sec>
+  <sec id="knowing-the-tests-to-write">
+    <title>6. Knowing the tests to write</title>
+    <p>Whether tests are written during development or at the end of it,
+    the user typically needs to look through files to know the function
+    names and arguments that need to be tested. GridTest solves this
+    problem by way of discovery - the user can give it a module name, a
+    file name, or an entire directory with Python files, and it will
+    generate a template to fill in that already includes arguments and
+    functions.
+    Once tests are written, the user can run GridTest with the
+    <monospace>--check</monospace> feature to find newly added functions
+    in the code. For more details about creating, checking, and updating
+    tests, see the
+    <ext-link ext-link-type="uri" xlink:href="https://vsoch.github.io/gridtest/getting-started/testing/index.html">testing</ext-link>
+    documentation.</p>
+    <p>In summary, GridTest:</p>
+    <list list-type="order">
+      <list-item>
+        <p>Lets the user define grids to be generated programatically,
+        version controlled, and used for multiple purposes</p>
+      </list-item>
+      <list-item>
+        <p>Allows measuring metrics alongside tests</p>
+      </list-item>
+      <list-item>
+        <p>Stores tests in a YAML file that can be stored in version
+        control</p>
+      </list-item>
+      <list-item>
+        <p>Generates data exports and interactive reports for
+        results</p>
+      </list-item>
+      <list-item>
+        <p>Provides an easy way to interactively debug</p>
+      </list-item>
+      <list-item>
+        <p>Helps to discover the tests that need to be written, and
+        creates a template to fill in</p>
+      </list-item>
+      <list-item>
+        <p>Makes it easy to define and interact with expanded parameter
+        grids</p>
+      </list-item>
+    </list>
+  </sec>
+</sec>
+<sec id="conclusion">
+  <title>Conclusion</title>
+  <p>GridTest aims to be a general tool for data scientists and research
+  software engineers alike. If there is a need to create a collection of
+  grids, regardless of being used for testing or another use case,
+  GridTest can solve this problem. By way of saving to YAML, GridTest
+  can represent grids separately from code. By way of providing JSON
+  export with interactive web reports, GridTest can be used in a
+  continuous integration setup to generate a report for some tests or
+  metrics of interest. The author had amazing fun creating this library,
+  and is excited for its potential generalizability to support many
+  different kinds of research tasks. For more examples, tutorials, and
+  details, see the official documentation at
+  https://vsoch.github.io/gridtest
+  (<xref alt="GridTest, 2020" rid="ref-gridtest-docs" ref-type="bibr"><italic>GridTest</italic>,
+  2020</xref>).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-gridtest">
+      <element-citation>
+        <article-title>GridTest on GitHub</article-title>
+        <publisher-name>https://github.com/vsoch/gridtest/</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-gridtest-docs">
+      <element-citation>
+        <article-title>GridTest</article-title>
+        <publisher-name>https://vsoch.github.io/gridtest</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Koteska2015ScientificST">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Koteska</surname><given-names>Bojana</given-names></name>
+          <name><surname>Pejov</surname><given-names>Ljupco</given-names></name>
+          <name><surname>Mishev</surname><given-names>Anastas</given-names></name>
+        </person-group>
+        <article-title>Scientific software testing: A practical example</article-title>
+        <source>SQAMIA</source>
+        <year iso-8601-date="2015">2015</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-sklearn-tutorial">
+      <element-citation>
+        <article-title>sklearn.model_selection.ParameterGrid — scikit-learn 0.23.1 documentation</article-title>
+        <publisher-name>https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.ParameterGrid.html</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-sklearn">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pedregosa</surname><given-names>F.</given-names></name>
+          <name><surname>Varoquaux</surname><given-names>G.</given-names></name>
+          <name><surname>Gramfort</surname><given-names>A.</given-names></name>
+          <name><surname>Michel</surname><given-names>V.</given-names></name>
+          <name><surname>Thirion</surname><given-names>B.</given-names></name>
+          <name><surname>Grisel</surname><given-names>O.</given-names></name>
+          <name><surname>Blondel</surname><given-names>M.</given-names></name>
+          <name><surname>Prettenhofer</surname><given-names>P.</given-names></name>
+          <name><surname>Weiss</surname><given-names>R.</given-names></name>
+          <name><surname>Dubourg</surname><given-names>V.</given-names></name>
+          <name><surname>Vanderplas</surname><given-names>J.</given-names></name>
+          <name><surname>Passos</surname><given-names>A.</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>D.</given-names></name>
+          <name><surname>Brucher</surname><given-names>M.</given-names></name>
+          <name><surname>Perrot</surname><given-names>M.</given-names></name>
+          <name><surname>Duchesnay</surname><given-names>E.</given-names></name>
+        </person-group>
+        <article-title>Scikit-learn: Machine learning in Python</article-title>
+        <source>Journal of Machine Learning Research</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>12</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-gridregular">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Beilsten-Edmands</surname><given-names>James</given-names></name>
+          <name><surname>Winter</surname><given-names>Graeme</given-names></name>
+          <name><surname>Gildea</surname><given-names>Richard</given-names></name>
+          <name><surname>Parkhurst</surname><given-names>James</given-names></name>
+          <name><surname>Waterman</surname><given-names>David</given-names></name>
+          <name><surname>Evans</surname><given-names>Gwyndaf</given-names></name>
+        </person-group>
+        <article-title>Scaling diffraction data in the DIALS software package: algorithms and new approaches for multi-crystal scaling</article-title>
+        <source>Acta Crystallographica Section D</source>
+        <year iso-8601-date="2020-04">2020</year><month>04</month>
+        <volume>76</volume>
+        <issue>4</issue>
+        <uri>https://doi.org/10.1107/S2059798320003198</uri>
+        <pub-id pub-id-type="doi">10.1107/S2059798320003198</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-keras">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <name><surname>Chollet</surname><given-names>Francois</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Keras</article-title>
+        <publisher-name>GitHub</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <uri>https://github.com/fchollet/keras</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-h2o">
+      <element-citation>
+        <article-title>Grid (hyperparameter) search — H2O 3.30.0.5 documentation</article-title>
+        <publisher-name>https://docs.h2o.ai/h2o/latest-stable/h2o-docs/grid-search.html</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Willkoehrsen2018-hm">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Koehrsen</surname><given-names>W.</given-names></name>
+        </person-group>
+        <article-title>Intro to model tuning: Grid and random search</article-title>
+        <publisher-name>https://kaggle.com/willkoehrsen/intro-to-model-tuning-grid-and-random-search</publisher-name>
+        <year iso-8601-date="2018-07">2018</year><month>07</month>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

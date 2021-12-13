@@ -1,0 +1,1321 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3314</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03314</article-id>
+<title-group>
+<article-title>The MOOSE geochemistry module</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-6472-9560</contrib-id>
+<string-name>Andy Wilkins</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-7315-6597</contrib-id>
+<string-name>Christopher P. Green</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-1192-9328</contrib-id>
+<string-name>Logan Harbour</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-4354-4967</contrib-id>
+<string-name>Robert Podgorney</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>CSIRO (Commonwealth Scientific and Industrial Research
+Organisation)</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Idaho National Laboratory</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-01-14">
+<day>14</day>
+<month>1</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>68</issue>
+<fpage>3314</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>geochemistry</kwd>
+<kwd>reactive transport</kwd>
+<kwd>THMC</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Geochemical models are used to understand the chemistry of natural
+  waters and other aqueous solutions and their interaction with minerals
+  in many areas of practical interest, for example, geothermal wells and
+  reservoirs, contaminant flow through aquifers, ore creation and mining
+  techniques, petroleum and gas exploitation, and rock diagenesis. The
+  models are frequently extremely complicated, with thousands of
+  interacting chemical species, and often require computer software to
+  find the chemical concentrations.</p>
+  <p>Reactive transport simulations involve predicting the transport of
+  chemical-species and temperature in a spatial domain (such as an
+  aquifer) in addition to solving a chemical model at each point, at
+  each time, in the domain. Such models are used to explore
+  spatio-temporal dependence of concentration, precipitation,
+  dissolution, sorption, etc., and often require significant
+  computational resources. The complexity of simulations is greatly
+  increased when deformation of the subsurface is also modelled:
+  deformation may occur through flow processes (e.g., via thermal
+  expansion) or chemical changes (e.g., via dissolution weakening the
+  rock).</p>
+  <p>The MOOSE geochemistry module enables users to solve such
+  models.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Numerical modeling is essential to solve increasingly complicated
+  problems, where the interplay between different physics, perhaps
+  acting at different scales, is important. For instance, understanding
+  the impact of subsurface CO<inline-formula><alternatives>
+  <tex-math><![CDATA[_{2}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi></mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+  injection (in carbon sequestration projects) can involve assessing the
+  water-chemistry and rock-mineral changes resulting from temperature
+  changes and the presence of CO<inline-formula><alternatives>
+  <tex-math><![CDATA[_{2}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi></mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>,
+  how these changes impact the porosity and permeability of the
+  subsurface, and how the subsurface deforms and possibly fractures due
+  to the injection. Another example is understanding ore deposition,
+  which commonly involves assessing how fluid and heat flows interact
+  with geochemistry and tectonic features (e.g., faults) within the
+  Earth’s crust. Similar remarks hold for hydraulic fracturing, aquifer
+  thermal energy storage, in-situ leaching, and fossil fuel extraction
+  using enhanced recovery techniques.</p>
+  <p>Researchers typically answer such questions using separate models
+  for subsets of the physical processes, or loosely-coupled models
+  solved using multiple software packages, or by employing a single
+  software package such as
+  <ext-link ext-link-type="uri" xlink:href="https://www.pflotran.org/">PFLOTRAN</ext-link>
+  (<xref alt="Hammond et al., 2014" rid="ref-pflotran-paper" ref-type="bibr">Hammond
+  et al., 2014</xref>;
+  <xref alt="Lichtner et al., 2020" rid="ref-pflotran-user-ref" ref-type="bibr">Lichtner
+  et al., 2020</xref>) that contains all the desired features. The MOOSE
+  geochemistry module introduced here allows researchers to perform
+  stand-alone geochemical modelling within the MOOSE framework, but also
+  to draw upon the power of other MOOSE modules to solve complicated
+  coupled transport, geomechanical and geochemical models using a single
+  code.</p>
+</sec>
+<sec id="existing-software">
+  <title>Existing software</title>
+  <p>A number of commercial and free (open or closed source) packages
+  can solve reactive-transport models. Some of these are:
+  <ext-link ext-link-type="uri" xlink:href="https://www.netl.doe.gov/sites/default/files/netl-file/CrunchFlow-Manual.pdf">CrunchFlow</ext-link>
+  (<xref alt="Beisman et al., 2015" rid="ref-beisman2015" ref-type="bibr">Beisman
+  et al., 2015</xref>;
+  <xref alt="Steefel et al., 2015" rid="ref-steefel2015" ref-type="bibr">Steefel
+  et al., 2015</xref>); the
+  <ext-link ext-link-type="uri" xlink:href="https://www.gwb.com/">Geochemist’s
+  Workbench</ext-link>
+  (<xref alt="Bethke, 2007" rid="ref-bethke_2007" ref-type="bibr">Bethke,
+  2007</xref>);
+  <ext-link ext-link-type="uri" xlink:href="https://www.min3p.com/">MIN3P</ext-link>
+  (<xref alt="Maher &amp; Mayer, 2019" rid="ref-maher2019" ref-type="bibr">Maher
+  &amp; Mayer, 2019</xref>;
+  <xref alt="Su et al., 2020" rid="ref-su2020" ref-type="bibr">Su et
+  al., 2020</xref>);
+  <ext-link ext-link-type="uri" xlink:href="https://www.pflotran.org/">PFLOTRAN</ext-link>
+  (<xref alt="Hammond et al., 2014" rid="ref-pflotran-paper" ref-type="bibr">Hammond
+  et al., 2014</xref>;
+  <xref alt="Lichtner et al., 2020" rid="ref-pflotran-user-ref" ref-type="bibr">Lichtner
+  et al., 2020</xref>) and
+  <ext-link ext-link-type="uri" xlink:href="https://tough.lbl.gov/software/toughreact/">TOUGHREACT</ext-link>
+  (<xref alt="T. Xu et al., 2004" rid="ref-xu2004" ref-type="bibr">T. Xu
+  et al., 2004</xref>). Others, such as
+  <ext-link ext-link-type="uri" xlink:href="https://www.usgs.gov/software/phreeqc-version-3/">PHREEQC</ext-link>
+  (<xref alt="Pankhurst, 1995" rid="ref-pankhurst1995" ref-type="bibr">Pankhurst,
+  1995</xref>;
+  <xref alt="Pankhurst &amp; Appelo, 1999" rid="ref-pankhurst1999" ref-type="bibr">Pankhurst
+  &amp; Appelo, 1999</xref>) and
+  <ext-link ext-link-type="uri" xlink:href="https://reaktoro.org/">Reaktoro</ext-link>
+  (<xref alt="Leal, 2020" rid="ref-leal" ref-type="bibr">Leal,
+  2020</xref>), have more limited transport capabilities, focussing
+  instead on reactions. Other initiatives, such as
+  <ext-link ext-link-type="uri" xlink:href="https://www.opengeosys.org/">OpenGeoSys</ext-link>
+  (<xref alt="Bilke et al., 2019" rid="ref-bilke2019" ref-type="bibr">Bilke
+  et al., 2019</xref>;
+  <xref alt="Kolditz et al., 2012" rid="ref-kolditz2012" ref-type="bibr">Kolditz
+  et al., 2012</xref>) and
+  <ext-link ext-link-type="uri" xlink:href="https://www.usgs.gov/software/phast-a-computer-program-simulating-groundwater-flow-solute-transport-and-multicomponent">PHAST</ext-link>
+  (<xref alt="Pankhurst et al., 2010" rid="ref-pankhurst2010" ref-type="bibr">Pankhurst
+  et al., 2010</xref>) focus on transport, and use external codes such
+  as PHREEQC to perform the geochemical solve, while other codes such as
+  <ext-link ext-link-type="uri" xlink:href="https://www.pc-progress.com/en/Default.aspx?h3d2-lib-hp2">HP2</ext-link>
+  (<xref alt="Šimůnek et al., 2012" rid="ref-simunek2012" ref-type="bibr">Šimůnek
+  et al., 2012</xref>) couple together existing transport and reaction
+  solvers. Steefel et al.
+  (<xref alt="2015" rid="ref-steefel2015" ref-type="bibr">2015</xref>)
+  provides further code comparisons. Many of these codes have been
+  developed over decades by teams of researchers, and have sophisticated
+  reaction-modelling capabilities, along with well-established GUIs to
+  assist in model creation and the analysis of results. Many of them
+  have been used in hundreds of studies by thousands of researchers.</p>
+</sec>
+<sec id="overview-and-comparisons-with-other-software">
+  <title>Overview and comparisons with other software</title>
+  <p>The geochemistry module is built upon, and provided as part of, the
+  open-source, massively parallel, fully implicit multiphysics
+  simulation framework MOOSE (Multiphysics Object-Oriented Simulation
+  Environment)
+  (<xref alt="Permann et al., 2020" rid="ref-permann2020moose" ref-type="bibr">Permann
+  et al., 2020</xref>). MOOSE is an open-source library from Idaho
+  National Laboratory that provides a high-level interface to the
+  libMesh finite element library
+  (<xref alt="Kirk et al., 2006" rid="ref-libmesh" ref-type="bibr">Kirk
+  et al., 2006</xref>) and PETSc nonlinear solvers
+  (<xref alt="Balay et al., 1997" rid="ref-petsc-efficient" ref-type="bibr">Balay
+  et al., 1997</xref>,
+  <xref alt="2020" rid="ref-petsc-user-ref" ref-type="bibr">2020</xref>,
+  <xref alt="2021" rid="ref-petsc-web-page" ref-type="bibr">2021</xref>).
+  MOOSE and the geochemistry module follow
+  <ext-link ext-link-type="uri" xlink:href="https://mooseframework.org/sqa/index.html">strict
+  quality controls</ext-link>. The geochemistry module’s
+  <ext-link ext-link-type="uri" xlink:href="https://mooseframework.inl.gov/application_development/test_system.html">test
+  suite</ext-link> contains over 350 tests, ranging from simple unit
+  tests to fully-fledged benchmarks against the commercial
+  <ext-link ext-link-type="uri" xlink:href="https://www.gwb.com/">Geochemist’s
+  Workbench</ext-link> software.</p>
+  <p>As outlined in this article, the MOOSE geochemistry module can
+  solve models involving aqueous geochemistry, including aqueous
+  equilibrium, kinetics, oxidation-reduction, sorption and surface
+  complexation, dissolution-precipitation and gas buffering. One aspect
+  that makes the geochemistry module different to the codes mentioned
+  above is the ease of coupling additional physics to the geochemical
+  functionality. In particular, when used in conjuction with the MOOSE
+  PorousFlow module
+  (<xref alt="Wilkins, Green, et al., 2020" rid="ref-Wilkins2020" ref-type="bibr">Wilkins,
+  Green, et al., 2020</xref>), sophisticated reactive-transport
+  simulations may be performed, including multi-phase and unsaturated
+  fluid flows, high-precision equations of state for fluids, dynamic
+  porosity and permeability distributions, and sophisticated numerical
+  stabilization. Geomechanics may also be incorporated by using MOOSE’s
+  TensorMechanics module, to explore the interplay between geomechanical
+  stresses and strains, and fluids, heat and reactions. Fracturing of
+  the skeleton material may also be included using MOOSE’s XFEM module
+  (<xref alt="Jiang et al., 2020" rid="ref-jiang2020ceramic" ref-type="bibr">Jiang
+  et al., 2020</xref>;
+  <xref alt="Zhang et al., 2018" rid="ref-zhang2018modified" ref-type="bibr">Zhang
+  et al., 2018</xref>). An additional advantage of MOOSE is that its
+  APIs allow for easy modification of existing physics, or the addition
+  of new physics.</p>
+  <p>Harnessing the power of MOOSE means that geochemistry simulations
+  efficiently use multiprocessors and automatically utilize
+  threading/OpenMP, without developers or users having to worry about
+  the software technicalities (MOOSE scales well to over 100,000 cores).
+  From the user’s perspective, a variety of integration schemes and
+  unstructured meshes may be used. Various time-stepping schemes may be
+  employed. A variety of I/O formats are available, such as Exodus and
+  VTK files as well as CSV plaintext. Users may utilize the “MultiApp”
+  system that allows simulations to be embedded inside other
+  simulations, which enables intuitive coupling of different physics at
+  different spatio-temporal scales. A generic GUI helps users create,
+  run and analyse models.</p>
+  <p>Having said this, the aforementioned codes offer advantages too.
+  Some offer specialist features not available in the geochemistry
+  module, while some of them include preprocessing and postprocessing
+  capabilities that are far superior to the generic GUI offered by
+  MOOSE. Their learning curve may also be easier.</p>
+  <p>The geochemistry module’s functionality is a subset of that
+  described in the authoratative, pedagogical textbook by Bethke
+  (<xref alt="2007" rid="ref-bethke_2007" ref-type="bibr">2007</xref>).
+  It is not possible to describe all geochemical-modelling concepts in
+  this short article, so the reader is referred to Bethke
+  (<xref alt="2007" rid="ref-bethke_2007" ref-type="bibr">2007</xref>)
+  for further information.</p>
+  <p>For convenience, the source code for the geochemistry module is
+  bundled within the MOOSE framework. Detailed documentation of the
+  module, its capability, and an extensive suite of examples can be
+  found at
+  https://mooseframework.org/modules/geochemistry/index.html.</p>
+</sec>
+<sec id="reaction-functionality">
+  <title>Reaction functionality</title>
+  <p>This section describes the types of geochemical reactions that the
+  geochemistry module can solve. Both equilibrium and kinetic reactions
+  may be used in models solved by the geochemistry module.</p>
+  <sec id="database">
+    <title>Database</title>
+    <p>The geochemical database defines the possible scope of
+    geochemical models and includes information about all components and
+    reactions. The geochemistry module uses a database in a specific
+    <ext-link ext-link-type="uri" xlink:href="https://www.json.org">JSON
+    format</ext-link>. The default database used in all geochemistry
+    module examples and tests is a JSON version of the freely available
+    January 2019
+    <ext-link ext-link-type="uri" xlink:href="https://www.gwb.com/thermo.php">LLNL
+    thermodynamic database</ext-link>. For convenience, a python script
+    is provided to convert the popular
+    <ext-link ext-link-type="uri" xlink:href="https://www.gwb.com/">Geochemist’s
+    Workbench</ext-link> and EQ3/6
+    (<xref alt="Wolery, 1992" rid="ref-eq36" ref-type="bibr">Wolery,
+    1992</xref>) database formats to the required JSON format.</p>
+  </sec>
+  <sec id="types-of-species-and-reactions">
+    <title>Types of species and reactions</title>
+    <p>The user may select from the database a subset of chemical
+    components and reactions that are relevant for their particular
+    model. These are:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p>aqueous species in equilibrium;</p>
+      </list-item>
+      <list-item>
+        <p>minerals in equilibrium with the aqueous solution that may
+        precipitate or dissolve (a subset of all possible minerals may
+        be chosen, and a user-supplied list of minerals may be prevented
+        from precipitating);</p>
+      </list-item>
+      <list-item>
+        <p>dissolved gases and gases in equilibrium with an external
+        buffer such as the atmosphere (a subset of all possible gases
+        may be used);</p>
+      </list-item>
+      <list-item>
+        <p>species in alternative oxidation states (redox couples), and
+        the user may set individual couples to be in equilibrium or
+        disequilibrium with the aqueous solution;</p>
+      </list-item>
+      <list-item>
+        <p>sorbed species in equilibrium with the aqueous solution,
+        which are governed by a Langmuir approach or a
+        surface-complexation approach that accounts for the electrical
+        state of the porous-skeleton surface and how it varies with pH,
+        ionic strength and solution composition;</p>
+      </list-item>
+      <list-item>
+        <p>minerals, redox species and sorbed species whose dynamics are
+        governed by kinetic rates. Rates are sums of terms that may be
+        dependent on the mass of kinetic species, a specific surface
+        area, molality or activity of any promoting species, a
+        temperature-dependent Arrhenius term, and the activity-product
+        and equilibrium constant of the kinetic species. The approach
+        allows acid-neutral-alkali promotion as listed in the
+        correlations prepared by Palandri &amp; Kharaka
+        (<xref alt="2004" rid="ref-palandri" ref-type="bibr">2004</xref>)
+        to be used in geochemistry models, as well as many other types
+        of rates.</p>
+      </list-item>
+    </list>
+  </sec>
+  <sec id="activity-and-fugacity-models">
+    <title>Activity and fugacity models</title>
+    <p>Only the Debye-Huckel B-dot model along with the related formulae
+    for neutral species and water are coded into the geochemistry
+    module. The virial Pitzer/HMW models are not included. The activity
+    of all mineral species is assumed to be unity. The Spycher-Reed
+    (<xref alt="Spycher &amp; Reed, 1988" rid="ref-spycher1988" ref-type="bibr">Spycher
+    &amp; Reed, 1988</xref>) fugacity formula
+    (<xref alt="Prausnitz et al., 1998" rid="ref-prausnitz" ref-type="bibr">Prausnitz
+    et al., 1998</xref>;
+    <xref alt="Tianfu Xu et al., 2014" rid="ref-toughreact" ref-type="bibr">Tianfu
+    Xu et al., 2014</xref>) is used in the geochemistry module.</p>
+  </sec>
+  <sec id="constraints">
+    <title>Constraints</title>
+    <p>A constraint must be supplied by the user for each member of the
+    equilibrium basis in order that the geochemical system has a unique
+    mathematical solution. The following types of constraints are
+    possible in the geochemistry module:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p>For water: the mass of solvent water, or the total bulk mole
+        number, or the activity;</p>
+      </list-item>
+      <list-item>
+        <p>For aqueous basis species: the free molality, the total bulk
+        number, or the activity (so that pH may be controlled, for
+        instance);</p>
+      </list-item>
+      <list-item>
+        <p>For precipitated minerals: the free (precipitated) mole
+        number, or the total bulk mole number;</p>
+      </list-item>
+      <list-item>
+        <p>For gases with fixed fugacity: fugacity</p>
+      </list-item>
+      <list-item>
+        <p>For sorbing sites: the free molality of unoccupied sites, or
+        the total bulk mole number.</p>
+      </list-item>
+    </list>
+    <p>In addition, all kinetic species must be provided with an initial
+    mole number.</p>
+  </sec>
+  <sec id="reaction-paths">
+    <title>Reaction paths</title>
+    <p>The following reaction paths are available in the geochemistry
+    module:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p>Adding reactants at user-defined rates. These reactants may
+        be basis species, secondary species, minerals, etc.</p>
+      </list-item>
+      <list-item>
+        <p>Controlling temperature with a user-defined function.</p>
+      </list-item>
+      <list-item>
+        <p>Changing temperature and altering the composition by adding
+        cooler/hotter reactants at user-defined rates.</p>
+      </list-item>
+      <list-item>
+        <p>Removing activity constraints on one or more species, or
+        removing gas fugacity constraints, at user-supplied times.</p>
+      </list-item>
+      <list-item>
+        <p>Controlling the activity of species (such as the pH) or gas
+        fugacity with user-supplied functions.</p>
+      </list-item>
+      <list-item>
+        <p>Discarding masses of any minerals present in the equilibrium
+        solution (called a “dump” by Bethke
+        (<xref alt="2007" rid="ref-bethke_2007" ref-type="bibr">2007</xref>)).</p>
+      </list-item>
+      <list-item>
+        <p>Removing mineral masses at the end of each time-step (called
+        “flow-through” by Bethke
+        (<xref alt="2007" rid="ref-bethke_2007" ref-type="bibr">2007</xref>))</p>
+      </list-item>
+      <list-item>
+        <p>Adding pure H<inline-formula><alternatives>
+        <tex-math><![CDATA[_{2}]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi></mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>O
+        and removing an equal mass of water components and solutes it
+        contains (called “flush” by Bethke
+        (<xref alt="2007" rid="ref-bethke_2007" ref-type="bibr">2007</xref>)).</p>
+      </list-item>
+    </list>
+    <p>Combinations of these may be used. For instance, changing
+    temperature while controlling the activity of species.</p>
+  </sec>
+  <sec id="mathematical-solution-strategy">
+    <title>Mathematical solution strategy</title>
+    <p>At each time-step, the geochemistry module calculates: the mass
+    of solvent water; the molality of all aqueous species and dissolved
+    gases; the mineral activity products and saturation indices; the
+    mole number of precipitated minerals; the molality of unoccupied
+    surface sites; the surface potentials; the molality of sorbed
+    species; the mole number of kinetic species; and all activities and
+    activity coefficients. To achieve this, a fully-implicit,
+    under-relaxed, iterative Newton-Raphson procedure is used. Further
+    information can be found
+    <ext-link ext-link-type="uri" xlink:href="https://mooseframework.inl.gov/modules/geochemistry/theory/index.html">here</ext-link>.</p>
+    <p>During this procedure, care is taken to avoid numerical overflows
+    or underflows. Multiple sub-steps may be performed in each time-step
+    to ensure good convergence. Minerals are allowed to precipitate or
+    dissolve during the procedure, with rates re-calculated at the
+    beginning of every Newton-Raphson step. Charge neutrality is
+    enforced.</p>
+  </sec>
+  <sec id="features-not-yet-implemented">
+    <title>Features not yet implemented</title>
+    <p>The geochemistry module’s functionality allows it to handle most
+    common modelling tasks, but a number of features have not yet been
+    implemented. These include the virial Pitzer/HMW activity models;
+    certain kinetic rate forms used in biogeochemical modelling such as
+    Michaelis–Menten and monod; the K<inline-formula><alternatives>
+    <tex-math><![CDATA[_{d}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi></mml:mi><mml:mi>d</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    and Freundlich approaches to sorption; and isotopic fractionation.
+    The geochemistry module does not include a dedicated GUI to help
+    with model creation and analysis.</p>
+  </sec>
+</sec>
+<sec id="reactive-transport">
+  <title>Reactive transport</title>
+  <p>One of the notable features of the MOOSE framework is the ability
+  to couple different physics together. Different types of couplings are
+  available: tight (full) coupling; operator-splitting; etc. To perform
+  reactive-transport simulations using the geochemistry module, an
+  operator-splitting approach must be used, in a sequential iterative or
+  non-iterative approach (SIA or SNIA). Users must therefore be careful
+  with time-step sizes
+  (<xref alt="Steefel et al., 2015" rid="ref-steefel2015" ref-type="bibr">Steefel
+  et al., 2015</xref>). Usually, MOOSE’s PorousFlow module
+  (<xref alt="Wilkins, Green, et al., 2020" rid="ref-Wilkins2020" ref-type="bibr">Wilkins,
+  Green, et al., 2020</xref>) will be employed to simulate the transport
+  (and any other non-geochemistry physics such as mechanics). This means
+  that each time-step involves a two-step process:</p>
+  <list list-type="order">
+    <list-item>
+      <p>The PorousFlow module transports the solutes in the aqueous
+      phase, as well as the temperature distribution. A fully-implicit
+      approach is used to solve the transport, but note that the
+      chemical reactions are held fixed during this stage. The result
+      provides the temperature and extra chemical source terms (to be
+      added to the geochemical equations) at each point in the spatial
+      domain. The extra source terms are the total component
+      concentrations of the transporting species.</p>
+    </list-item>
+    <list-item>
+      <p>With these sources, the geochemistry module solves for the mole
+      numbers of each species at each point in the spatial domain, using
+      the Newton-Raphson method mentioned in the previous section.
+      During this stage, the non-geochemistry physics (transport,
+      mechanics, etc.) is held fixed.</p>
+    </list-item>
+  </list>
+  <p>It is easy to use multiple sub-steps within (1) and/or (2), which
+  may be necessary if the time-scales of the transport and chemical
+  reactions are very different. It is also possible to iterate (1) and
+  (2) in a “SIA” approach
+  (<xref alt="Steefel et al., 2015" rid="ref-steefel2015" ref-type="bibr">Steefel
+  et al., 2015</xref>). The operator-split approach is also used by
+  other reactive-transport solvers, such as the
+  <ext-link ext-link-type="uri" xlink:href="https://www.gwb.com/">Geochemist’s
+  Workbench</ext-link>.</p>
+  <p>The PorousFlow module is a sophisticated multi-component,
+  multi-phase transport code, and employing it means:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>pressure and temperature are tightly coupled with fluid
+      flows</p>
+    </list-item>
+    <list-item>
+      <p>densities, viscosities, etc., may depend on solute
+      concentrations, temperature and pressure</p>
+    </list-item>
+    <list-item>
+      <p>porosity and permeability can change with precipitation and
+      dissolution</p>
+    </list-item>
+    <list-item>
+      <p>multiphase flows can be used</p>
+    </list-item>
+    <list-item>
+      <p>coupling with sophisticated geomechanics (including plasticity
+      (<xref alt="Adhikary et al., 2016" rid="ref-adhikary2016robust" ref-type="bibr">Adhikary
+      et al., 2016</xref>;
+      <xref alt="Wilkins, Spencer, et al., 2020" rid="ref-wilkins2020method" ref-type="bibr">Wilkins,
+      Spencer, et al., 2020</xref>), fracture and large strains) is
+      straightforward</p>
+    </list-item>
+    <list-item>
+      <p>sophisticated numerical stabilization is available.</p>
+    </list-item>
+  </list>
+  <p>For users not wishing to employ the PorousFlow module, a
+  rudimentary transport capability has been included in the geochemistry
+  module, which models advective-diffusive transport of the mobile
+  concentrations, with hydrodynamic dispersion. It is assumed that
+  precipitated minerals, sorbed species and sorption sites are immobile.
+  The temperature, porosity, Darcy flux vector and dispersion tensor are
+  fixed by the user. All of these may vary spatially and temporally, but
+  the geochemistry module provides them with no dynamics (in contrast
+  with the PorousFlow module, where temperature evolution is governed by
+  an advection-diffusion equation, for instance). An operator-splitting
+  method provides the mathematical solution, as described above.</p>
+</sec>
+<sec id="computational-aspects">
+  <title>Computational aspects</title>
+  <p>Spatially-varying geochemistry simulations use a large amount of
+  memory since they store information about a complete geochemical
+  system at each finite-element node (irrespective of the finite-element
+  type). On the other hand, ignoring transport, they are almost
+  embarrasingly parallel, and can be solved efficiently using a large
+  number of processors. Even reactive-transport models scale well with
+  multiple processors, since multi-component flow in porous media is
+  essentially multiple coupled diffusion equations.
+  <xref alt="Figure 1" rid="figU003Ascaling_eg">Figure 1</xref> shows an
+  example of scaling in which an operator-split model of fixed size and
+  fixed number of time-steps is run on multiple processors. Further
+  experiments involving memory usage, solver choices and cpu-scaling can
+  be found in the
+  <ext-link ext-link-type="uri" xlink:href="https://mooseframework.org/modules/geochemistry/theory/compute_efficiencies.html">online
+  documentation</ext-link>.</p>
+  <fig>
+    <caption><p>CPU time required to solve a reactive-transport
+    simulation using the PorousFlow and geochemistry
+    modules.<styled-content id="figU003Ascaling_eg"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="joss_paper_scaling.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="building-and-using-the-code">
+  <title>Building and using the code</title>
+  <p>Building the geochemistry module is a two-step process:</p>
+  <list list-type="order">
+    <list-item>
+      <p>Download and install the entire MOOSE package. Detailed
+      instructions are at the
+      <ext-link ext-link-type="uri" xlink:href="https://mooseframework.inl.gov/getting_started/installation/index.html">MOOSE
+      website</ext-link>. Even if only geochemistry is of interest
+      (without transport, solid mechanics, etc.) MOOSE comes as a
+      complete package, so needs to be installed in its entirety.
+      Depending on the computer setup, this can be straightfoward (on a
+      personal Mac computer) or complicated (on an administered
+      supercomputer).</p>
+    </list-item>
+    <list-item>
+      <p>During the installation of MOOSE in part 1, only the
+      “framework” will have been compiled. To compile any of the physics
+      modules, including the geochemistry module, use the following
+      instructions run from the command line:</p>
+    </list-item>
+  </list>
+  <preformat>cd ~/projects/moose/modules
+make
+cd ~/projects/moose/modules/geochemistry
+make
+cd ~/projects/moose/modules/geochemistry/unit
+make</preformat>
+  <p>(If your computer has <inline-formula><alternatives>
+  <tex-math><![CDATA[N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
+  cores, the <monospace>make</monospace> process may be sped up by using
+  the command
+  <monospace>make -j</monospace><inline-formula><alternatives>
+  <tex-math><![CDATA[N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
+  instead of simply <monospace>make</monospace>.)</p>
+  <p>Check that the geochemistry module is correctly compiled using the
+  following instructions:</p>
+  <preformat>cd ~/projects/moose/modules/geochemistry/unit
+./run_tests
+cd ~/projects/moose/modules/geochemistry
+./run_tests</preformat>
+  <p>Virtually all the tests should run and pass. Some may be “skipped”
+  due to a particular computer setup (for instance, not enough threads).
+  (If your computer has <inline-formula><alternatives>
+  <tex-math><![CDATA[N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
+  cores, the <monospace>run_tests</monospace> command may be sped up by
+  using the command
+  <monospace>./run_tests -j</monospace><inline-formula><alternatives>
+  <tex-math><![CDATA[N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
+  instead of simply <monospace>./run_tests</monospace>.)</p>
+  <p>The geochemistry executable is called
+  <monospace>geochemistry-opt</monospace> and is found at
+  <monospace>~/projects/moose/modules/geochemistry</monospace>. This may
+  be used to run pure geochemistry simulations. For example, to run the
+  <ext-link ext-link-type="uri" xlink:href="https://mooseframework.inl.gov/modules/geochemistry/tests_and_examples/cooling_feldspar.html">cooling
+  a solution in contact with feldspars example</ext-link> from the
+  command line, use:</p>
+  <preformat>cd ~/projects/moose/modules/geochemistry/test/tests/time_dependent_reactions
+../../../geochemistry-opt -i cooling.i</preformat>
+  <p>For coupled reactive-transport simulations using the PorousFlow
+  module, the <monospace>combined-opt</monospace> executable must be
+  used. For example, to run the
+  <ext-link ext-link-type="uri" xlink:href="https://mooseframework.org/modules/geochemistry/tests_and_examples/geotes_weber_tensleep.html">Weber-Tensleep
+  GeoTES example</ext-link> from the command line, use:</p>
+  <preformat>cd ~/projects/moose/modules/combined/examples/geochem-porous_flow/geotes_weber_tensleep
+../../../combined-opt -i exchanger.i</preformat>
+</sec>
+<sec id="tests-and-examples">
+  <title>Tests and examples</title>
+  <p>The geochemistry module’s
+  <ext-link ext-link-type="uri" xlink:href="https://mooseframework.inl.gov/docs/coverage/geochemistry/index.html">code
+  coverage</ext-link> currently exceeds 96%. Many of the more
+  complicated benchmark tests against the Geochemist’s Workbench code
+  and the examples are
+  <ext-link ext-link-type="uri" xlink:href="https://mooseframework.inl.gov/modules/geochemistry/tests_and_examples/index.html">comprehensively
+  documented</ext-link>. The sections below present one benchmark study
+  and one example by way of illustration.</p>
+</sec>
+<sec id="benchmark-cooling-with-feldspars">
+  <title>Benchmark: cooling with feldspars</title>
+  <p>One of the geochemistry tests and examples involves slowly cooling
+  an aqueous solution from 300<inline-formula><alternatives>
+  <tex-math><![CDATA[^{\circ}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi></mml:mi><mml:mo>∘</mml:mo></mml:msup></mml:math></alternatives></inline-formula>C
+  to 25<inline-formula><alternatives>
+  <tex-math><![CDATA[^{\circ}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi></mml:mi><mml:mo>∘</mml:mo></mml:msup></mml:math></alternatives></inline-formula>C,
+  and details can be found
+  <ext-link ext-link-type="uri" xlink:href="https://mooseframework.inl.gov/modules/geochemistry/tests_and_examples/cooling_feldspar.html">here</ext-link>.
+  The aqueous solution is in equilibrium contact with albite, maximum
+  microcline, muscovite and quartz. This example is documented in
+  Section 14.1 of Bethke
+  (<xref alt="2007" rid="ref-bethke_2007" ref-type="bibr">2007</xref>).
+  <xref alt="Figure 2" rid="figU003Afeldspar_eg">Figure 2</xref> shows
+  the comparison of the results from MOOSE’s geochemistry module and the
+  Geochemist’s Workbench.</p>
+  <fig>
+    <caption><p>Precipitated volumes as a function of temperature when
+    an aqueous solution in contact with feldspars is
+    cooled.<styled-content id="figU003Afeldspar_eg"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="joss_paper_feldspar.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="example-reactive-transport-in-an-aquifer-thermal-energy-storage-scenario">
+  <title>Example: reactive transport in an aquifer thermal energy
+  storage scenario</title>
+  <p>The Weber-Tensleep Formation in the USA has been proposed to store
+  renewably-generated, high-temperature water, for later use in
+  electricity generation
+  (<xref alt="McLing et al., 2019" rid="ref-seedling" ref-type="bibr">McLing
+  et al., 2019</xref>;
+  <xref alt="Wendt et al., 2019" rid="ref-osti_1524048" ref-type="bibr">Wendt
+  et al., 2019</xref>). During the storage phase, formation water from
+  the reservoir is produced, heated to 160<inline-formula><alternatives>
+  <tex-math><![CDATA[^{\circ}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi></mml:mi><mml:mo>∘</mml:mo></mml:msup></mml:math></alternatives></inline-formula>C
+  under pressure, and re-injected. The cycle is reversed during
+  electricity generation. A
+  <ext-link ext-link-type="uri" xlink:href="https://mooseframework.org/modules/geochemistry/tests_and_examples/geotes_weber_tensleep.html">3D
+  reactive transport study</ext-link> assessing potential precipitates
+  in the engineering equipment, and mineralogy changes around the
+  hot-water injection well in the deep reservoir, is provided as one of
+  the geochemistry module examples.</p>
+  <p>The major ions in the Weber-Tensleep Formation water are
+  Cl<inline-formula><alternatives>
+  <tex-math><![CDATA[^{-}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi></mml:mi><mml:mo>−</mml:mo></mml:msup></mml:math></alternatives></inline-formula>,
+  Na<inline-formula><alternatives>
+  <tex-math><![CDATA[^{+}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi></mml:mi><mml:mo>+</mml:mo></mml:msup></mml:math></alternatives></inline-formula>,
+  SO<inline-formula><alternatives>
+  <tex-math><![CDATA[_{4}^{2-}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mi></mml:mi><mml:mn>4</mml:mn><mml:mrow><mml:mn>2</mml:mn><mml:mo>−</mml:mo></mml:mrow></mml:msubsup></mml:math></alternatives></inline-formula>,
+  HCO<inline-formula><alternatives>
+  <tex-math><![CDATA[_{3}^{-}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mi></mml:mi><mml:mn>3</mml:mn><mml:mo>−</mml:mo></mml:msubsup></mml:math></alternatives></inline-formula>,
+  K<inline-formula><alternatives>
+  <tex-math><![CDATA[^{+}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi></mml:mi><mml:mo>+</mml:mo></mml:msup></mml:math></alternatives></inline-formula>,
+  Ca<inline-formula><alternatives>
+  <tex-math><![CDATA[^{2+}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi></mml:mi><mml:mrow><mml:mn>2</mml:mn><mml:mo>+</mml:mo></mml:mrow></mml:msup></mml:math></alternatives></inline-formula>
+  and HS<inline-formula><alternatives>
+  <tex-math><![CDATA[^{-}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi></mml:mi><mml:mo>−</mml:mo></mml:msup></mml:math></alternatives></inline-formula>,
+  with a host of additional minor ions. The pH is around 6.5, the ionic
+  strength is around 1.7<inline-formula><alternatives>
+  <tex-math><![CDATA[\,]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mspace width="0.167em"></mml:mspace></mml:math></alternatives></inline-formula>mol.kg<inline-formula><alternatives>
+  <tex-math><![CDATA[^{-1}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi></mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:math></alternatives></inline-formula>
+  (which is close to the limit of 3<inline-formula><alternatives>
+  <tex-math><![CDATA[\,]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mspace width="0.167em"></mml:mspace></mml:math></alternatives></inline-formula>mol.kg<inline-formula><alternatives>
+  <tex-math><![CDATA[^{-1}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi></mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:math></alternatives></inline-formula>
+  for the Debye-Huckel activity model
+  (<xref alt="Bethke, 2007" rid="ref-bethke_2007" ref-type="bibr">Bethke,
+  2007</xref>)), and the temperature around
+  90<inline-formula><alternatives>
+  <tex-math><![CDATA[^{\circ}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi></mml:mi><mml:mo>∘</mml:mo></mml:msup></mml:math></alternatives></inline-formula>C.
+  The observed mineralogy involves quartz (80%), K-feldspar (8%),
+  Calcite (5%), Siderite and Dolomite (each 2%), Fe-chlorite and Illite
+  (each 1%) and a host of trace minerals.</p>
+  <p>The 3D MOOSE model involves coupling 3 models representing: (1) the
+  heat exchanger; (2) injection, production and transport of water
+  through the formation; (3) a geochemical model of the reservoir. These
+  three models are loosely coupled using MOOSE’s “multiapp” approach,
+  using the geochemistry (for chemistry) and PorousFlow (for transport)
+  modules. The coupled modelling reveals that anhydrite is the main
+  precipitate in the heat exchanger, that illite and kaolinite dissolve
+  around the injection well, and that K-feldspar and quartz precipitate
+  around the injection well.
+  <xref alt="Figure 3" rid="figU003Aweber_tensleep_eg">Figure 3</xref>
+  illustrates the results. (These results are derived using a higher
+  resolution than the example included in the test suite, since the
+  latter must be small enough to rapidly pass MOOSE’s automatic
+  regression testing.)</p>
+  <fig>
+    <caption><p>Temperature, free volume of Quartz, and porosity after
+    90 days of hot water injection in the Weber-Tensleep aquifer. The
+    gray areas represent low-permeability cap rocks above and below the
+    aquifer.<styled-content id="figU003Aweber_tensleep_eg"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="joss_paper_weber_tensleep.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>The authors thank the MOOSE framework team, past and present, for
+  providing the MOOSE framework and auxiliary functionality (quality
+  control, test harnesses, documentation scaffolds, build scripts,
+  etc.). The manuscript review provided by Ghanashyam (Hari) Neupane and
+  the two CSIRO internal reviewers is also greatly appreciated.</p>
+  <p>This research made use of the resources of the High Performance
+  Computing Center at Idaho National Laboratory, which is supported by
+  the Office of Nuclear Energy of the U.S. Department of Energy and the
+  Nuclear Science User Facilities under Contract
+  No. DE-AC07-05ID14517.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-su2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Su</surname><given-names>D.</given-names></name>
+          <name><surname>Mayer</surname><given-names>K. U.</given-names></name>
+          <name><surname>MacQuarrie</surname><given-names>K. T. B.</given-names></name>
+        </person-group>
+        <article-title>MIN3P-HPC: A high-performance unstructured grid code for subsurface flow and reactive transport simulation</article-title>
+        <source>Mathematical Geosciences</source>
+        <year iso-8601-date="2020">2020</year>
+        <pub-id pub-id-type="doi">10.1007/s11004-020-09898-7</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-simunek2012">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Šimůnek</surname><given-names>J.</given-names></name>
+          <name><surname>Jacques</surname><given-names>D.</given-names></name>
+          <name><surname>Šejna</surname><given-names>M.</given-names></name>
+          <name><surname>Genuchten</surname><given-names>M. Th. van</given-names></name>
+        </person-group>
+        <source>The HP2 Program for HYDRUS (2D/3D), A Coupled Code for Simulating Two-Dimensional Variably-Saturated Water Flow, Head Transport, Solute Transport and Biogeochemistry in Porous Media, (HYDRUS + PHREEQC + 2D), Version 1.0</source>
+        <publisher-name>PC Progress</publisher-name>
+        <publisher-loc>Prague, Czech Republic</publisher-loc>
+        <year iso-8601-date="2012">2012</year>
+        <uri>https://www.pc-progress.com/Documents/HYDRUS3D_HP2_Manual.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-maher2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Maher</surname><given-names>K</given-names></name>
+          <name><surname>Mayer</surname><given-names>K. U.</given-names></name>
+        </person-group>
+        <article-title>The art of reactive transport model building</article-title>
+        <source>Elements</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>15</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.2138/gselements.15.2.117</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-beisman2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Beisman</surname><given-names>J. J.</given-names></name>
+          <name><surname>Maxwell</surname><given-names>R. M.</given-names></name>
+          <name><surname>Navarre-Sitchler</surname><given-names>A. K.</given-names></name>
+          <name><surname>Steefel</surname><given-names>C. I.</given-names></name>
+          <name><surname>Molins</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>ParCrunchFlow: An efficient, parallel reactive transport simulation tool for physically and chemically heterogeneous saturated subsurface environments</article-title>
+        <source>Computational Geosciences</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>19</volume>
+        <pub-id pub-id-type="doi">10.1007/s10596-015-9475-x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-steefel2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Steefel</surname><given-names>C. I.</given-names></name>
+          <name><surname>Appelo</surname><given-names>C. A. J.</given-names></name>
+          <name><surname>Arora</surname><given-names>B.</given-names></name>
+          <name><surname>Jacques</surname><given-names>D.</given-names></name>
+          <name><surname>Kalbacher</surname><given-names>T.</given-names></name>
+          <name><surname>Kolditz</surname><given-names>O.</given-names></name>
+          <name><surname>Lagneau</surname><given-names>V.</given-names></name>
+          <name><surname>Lichtner</surname><given-names>P. C.</given-names></name>
+          <name><surname>Mayer</surname><given-names>K. U.</given-names></name>
+          <name><surname>Meeussen</surname></name>
+          <name><surname>L.</surname><given-names>J. C.</given-names></name>
+          <name><surname>Molins</surname><given-names>S.</given-names></name>
+          <name><surname>Moulton</surname><given-names>D.</given-names></name>
+          <name><surname>Shao</surname><given-names>H.</given-names></name>
+          <name><surname>Šimůnek</surname><given-names>J.</given-names></name>
+          <name><surname>Spycher</surname><given-names>N.</given-names></name>
+          <name><surname>B.</surname><given-names>Yabusaki S.</given-names></name>
+          <name><surname>T.</surname><given-names>Yeh G.</given-names></name>
+        </person-group>
+        <article-title>Reactive transport codes for subsurface environmental simulation</article-title>
+        <source>Computational Geosciences</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>19</volume>
+        <pub-id pub-id-type="doi">10.1007/s10596-014-9443-x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pankhurst1995">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Pankhurst</surname><given-names>D. L.</given-names></name>
+        </person-group>
+        <article-title>User’s Guide to PHREEQC, a computer model for speciation, reaction-path, advective-transport and inverse geochemical calculations</article-title>
+        <publisher-name>U.S. Geological Survey Water</publisher-name>
+        <year iso-8601-date="1995">1995</year>
+        <uri>https://pubs.er.usgs.gov/publication/wri954227</uri>
+        <pub-id pub-id-type="doi">10.3133/wri954227</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pankhurst1999">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Pankhurst</surname><given-names>D. L.</given-names></name>
+          <name><surname>Appelo</surname><given-names>C. A. J.</given-names></name>
+        </person-group>
+        <article-title>User’s Guide to PHREEQC (version 2), a computer program for speciation, batch-reaction, one-dimensional transport and inverse geochemical calculations</article-title>
+        <publisher-name>U.S. Geological Survey</publisher-name>
+        <year iso-8601-date="1999">1999</year>
+        <uri>https://pubs.er.usgs.gov/publication/wri994259</uri>
+        <pub-id pub-id-type="doi">10.3133/wri994259</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pankhurst2010">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Pankhurst</surname><given-names>D. L.</given-names></name>
+          <name><surname>Kipp</surname><given-names>K. L.</given-names></name>
+          <name><surname>Chalton</surname><given-names>S. R.</given-names></name>
+        </person-group>
+        <article-title>PHAST Version 2 — A program for simulating groundwater flow, solute transport, and multicomponent geochemical reactions</article-title>
+        <publisher-name>U.S. Geological Survey</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <uri>https://pubs.usgs.gov/tm/06A35/pdf/TM6-A35.pdf</uri>
+        <pub-id pub-id-type="doi">10.3133/tm6A35</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-leal">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Leal</surname><given-names>A. M. M.</given-names></name>
+        </person-group>
+        <article-title>Reaktoro, a unified, open-source framework for modeling chemically reactive systems</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://github.com/reaktoro/reaktoro</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-xu2004">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Xu</surname><given-names>T.</given-names></name>
+          <name><surname>Sonnenthal</surname><given-names>E. L.</given-names></name>
+          <name><surname>Spycher</surname><given-names>N.</given-names></name>
+          <name><surname>Pruess</surname><given-names>K.</given-names></name>
+        </person-group>
+        <article-title>TOUGHREACT user’s guide: A simulation program for non-isothermal multiphase reactive geochemical transport in variably saturated geologic media</article-title>
+        <publisher-name>Lawrence Berkeley National Laboratory</publisher-name>
+        <year iso-8601-date="2004">2004</year>
+        <uri>https://www.osti.gov/servlets/purl/834237</uri>
+        <pub-id pub-id-type="doi">10.2172/834237</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kolditz2012">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Kolditz</surname><given-names>O.</given-names></name>
+          <name><surname>Görke</surname><given-names>U.-J.</given-names></name>
+          <name><surname>Shao</surname><given-names>H.</given-names></name>
+          <name><surname>Wang</surname><given-names>W.</given-names></name>
+        </person-group>
+        <source>Thermo-hydro-mechanical-chemical processes in porous media — benchmarks and examples.</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <isbn>978-3-642-27176-2</isbn>
+        <pub-id pub-id-type="doi">10.1007/978-3-642-27177-9</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bilke2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bilke</surname><given-names>L.</given-names></name>
+          <name><surname>Flemisch</surname><given-names>B.</given-names></name>
+          <name><surname>Kalbacher</surname><given-names>T.</given-names></name>
+          <name><surname>Kolditz</surname><given-names>O.</given-names></name>
+          <name><surname>Helmig</surname><given-names>R.</given-names></name>
+          <name><surname>Nagel</surname><given-names>T.</given-names></name>
+        </person-group>
+        <article-title>Development of open-source porous media simulators: Principles and experiences</article-title>
+        <source>Transport in Porous Media</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>130</volume>
+        <pub-id pub-id-type="doi">10.1007/s11242-019-01310-1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Wilkins2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wilkins</surname><given-names>Andy</given-names></name>
+          <name><surname>Green</surname><given-names>Christopher P.</given-names></name>
+          <name><surname>Ennis-King</surname><given-names>Jonathan</given-names></name>
+        </person-group>
+        <article-title>PorousFlow: A multiphysics simulation code for coupled problems in porous media</article-title>
+        <source>Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>5</volume>
+        <issue>55</issue>
+        <uri>https://doi.org/10.21105/joss.02176</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.02176</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-adhikary2016robust">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Adhikary</surname><given-names>Deepak P.</given-names></name>
+          <name><surname>Jayasundara</surname><given-names>Chandana</given-names></name>
+          <name><surname>Podgorney</surname><given-names>Robert K.</given-names></name>
+          <name><surname>Wilkins</surname><given-names>Andy H.</given-names></name>
+        </person-group>
+        <article-title>A robust return-map algorithm for general multisurface plasticity</article-title>
+        <source>International Journal for Numerical Methods in Engineering</source>
+        <year iso-8601-date="2016-01">2016</year><month>01</month>
+        <volume>109</volume>
+        <pub-id pub-id-type="doi">10.1002/nme.5284</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-wilkins2020method">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wilkins</surname><given-names>Andy</given-names></name>
+          <name><surname>Spencer</surname><given-names>Benjamin W.</given-names></name>
+          <name><surname>Jain</surname><given-names>Amit</given-names></name>
+          <name><surname>Gencturk</surname><given-names>Bora</given-names></name>
+        </person-group>
+        <article-title>A method for smoothing multiple yield functions</article-title>
+        <source>International Journal for Numerical Methods in Engineering</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>121</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1002/nme.6215</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-permann2020moose">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Permann</surname><given-names>Cody J.</given-names></name>
+          <name><surname>Gaston</surname><given-names>Derek R.</given-names></name>
+          <name><surname>Andrš</surname><given-names>David</given-names></name>
+          <name><surname>Carlsen</surname><given-names>Robert W.</given-names></name>
+          <name><surname>Kong</surname><given-names>Fande</given-names></name>
+          <name><surname>Lindsay</surname><given-names>Alexander D.</given-names></name>
+          <name><surname>Miller</surname><given-names>Jason M.</given-names></name>
+          <name><surname>Peterson</surname><given-names>John W.</given-names></name>
+          <name><surname>Slaughter</surname><given-names>Andrew E.</given-names></name>
+          <name><surname>Stogner</surname><given-names>Roy H.</given-names></name>
+          <name><surname>Martineau</surname><given-names>Richard C.</given-names></name>
+        </person-group>
+        <article-title>MOOSE: Enabling massively parallel multiphysics simulation</article-title>
+        <source>SoftwareX</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>11</volume>
+        <issn>2352-7110</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S2352711019302973</uri>
+        <pub-id pub-id-type="doi">10.1016/j.softx.2020.100430</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-libmesh">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kirk</surname><given-names>Benjamin S</given-names></name>
+          <name><surname>Peterson</surname><given-names>John W</given-names></name>
+          <name><surname>Stogner</surname><given-names>Roy H</given-names></name>
+          <name><surname>Carey</surname><given-names>Graham F</given-names></name>
+        </person-group>
+        <article-title>libMesh: a C++ library for parallel adaptive mesh refinement/coarsening simulations</article-title>
+        <source>Engineering with Computers</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2006">2006</year>
+        <volume>22</volume>
+        <issue>3-4</issue>
+        <pub-id pub-id-type="doi">10.1007/s00366-006-0049-3</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-petsc-web-page">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Balay</surname><given-names>Satish</given-names></name>
+          <name><surname>Abhyankar</surname><given-names>Shrirang</given-names></name>
+          <name><surname>Adams</surname><given-names>Mark F.</given-names></name>
+          <name><surname>Brown</surname><given-names>Jed</given-names></name>
+          <name><surname>Brune</surname><given-names>Peter</given-names></name>
+          <name><surname>Buschelman</surname><given-names>Kris</given-names></name>
+          <name><surname>Dalcin</surname><given-names>Lisandro</given-names></name>
+          <name><surname>Dener</surname><given-names>Alp</given-names></name>
+          <name><surname>Eijkhout</surname><given-names>Victor</given-names></name>
+          <name><surname>Gropp</surname><given-names>William D.</given-names></name>
+          <name><surname>Karpeyev</surname><given-names>Dmitry</given-names></name>
+          <name><surname>Kaushik</surname><given-names>Dinesh</given-names></name>
+          <name><surname>Knepley</surname><given-names>Matthew G.</given-names></name>
+          <name><surname>May</surname><given-names>Dave A.</given-names></name>
+          <name><surname>McInnes</surname><given-names>Lois Curfman</given-names></name>
+          <name><surname>Mills</surname><given-names>Richard Tran</given-names></name>
+          <name><surname>Munson</surname><given-names>Todd</given-names></name>
+          <name><surname>Rupp</surname><given-names>Karl</given-names></name>
+          <name><surname>Sanan</surname><given-names>Patrick</given-names></name>
+          <name><surname>Smith</surname><given-names>Barry F.</given-names></name>
+          <name><surname>Zampini</surname><given-names>Stefano</given-names></name>
+          <name><surname>Zhang</surname><given-names>Hong</given-names></name>
+          <name><surname>Zhang</surname><given-names>Hong</given-names></name>
+        </person-group>
+        <article-title>PETSc Web page</article-title>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://petsc.org</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-petsc-user-ref">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Balay</surname><given-names>Satish</given-names></name>
+          <name><surname>Abhyankar</surname><given-names>Shrirang</given-names></name>
+          <name><surname>Adams</surname><given-names>Mark F.</given-names></name>
+          <name><surname>Brown</surname><given-names>Jed</given-names></name>
+          <name><surname>Brune</surname><given-names>Peter</given-names></name>
+          <name><surname>Buschelman</surname><given-names>Kris</given-names></name>
+          <name><surname>Dalcin</surname><given-names>Lisandro</given-names></name>
+          <name><surname>Dener</surname><given-names>Alp</given-names></name>
+          <name><surname>Eijkhout</surname><given-names>Victor</given-names></name>
+          <name><surname>Gropp</surname><given-names>William D.</given-names></name>
+          <name><surname>Karpeyev</surname><given-names>Dmitry</given-names></name>
+          <name><surname>Kaushik</surname><given-names>Dinesh</given-names></name>
+          <name><surname>Knepley</surname><given-names>Matthew G.</given-names></name>
+          <name><surname>May</surname><given-names>Dave A.</given-names></name>
+          <name><surname>McInnes</surname><given-names>Lois Curfman</given-names></name>
+          <name><surname>Mills</surname><given-names>Richard Tran</given-names></name>
+          <name><surname>Munson</surname><given-names>Todd</given-names></name>
+          <name><surname>Rupp</surname><given-names>Karl</given-names></name>
+          <name><surname>Sanan</surname><given-names>Patrick</given-names></name>
+          <name><surname>Smith</surname><given-names>Barry F.</given-names></name>
+          <name><surname>Zampini</surname><given-names>Stefano</given-names></name>
+          <name><surname>Zhang</surname><given-names>Hong</given-names></name>
+          <name><surname>Zhang</surname><given-names>Hong</given-names></name>
+        </person-group>
+        <article-title>PETSc users manual</article-title>
+        <publisher-name>Argonne National Laboratory</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://www.mcs.anl.gov/petsc</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-petsc-efficient">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Balay</surname><given-names>Satish</given-names></name>
+          <name><surname>Gropp</surname><given-names>William D.</given-names></name>
+          <name><surname>McInnes</surname><given-names>Lois Curfman</given-names></name>
+          <name><surname>Smith</surname><given-names>Barry F.</given-names></name>
+        </person-group>
+        <article-title>Efficient management of parallelism in object oriented numerical software libraries</article-title>
+        <source>Modern software tools in scientific computing</source>
+        <person-group person-group-type="editor">
+          <name><surname>Arge</surname><given-names>E.</given-names></name>
+          <name><surname>Bruaset</surname><given-names>A. M.</given-names></name>
+          <name><surname>Langtangen</surname><given-names>H. P.</given-names></name>
+        </person-group>
+        <publisher-name>Birkhäuser Press</publisher-name>
+        <year iso-8601-date="1997">1997</year>
+        <pub-id pub-id-type="doi">10.1007/978-1-4612-1986-6_8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-jiang2020ceramic">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jiang</surname><given-names>Wen</given-names></name>
+          <name><surname>Spencer</surname><given-names>Benjamin W.</given-names></name>
+          <name><surname>Dolbow</surname><given-names>John E.</given-names></name>
+        </person-group>
+        <article-title>Ceramic nuclear fuel fracture modeling with the extended finite element method</article-title>
+        <source>Engineering Fracture Mechanics</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>223</volume>
+        <pub-id pub-id-type="doi">10.1016/j.engfracmech.2019.106713</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-zhang2018modified">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zhang</surname><given-names>Ziyu</given-names></name>
+          <name><surname>Jiang</surname><given-names>Wen</given-names></name>
+          <name><surname>Dolbow</surname><given-names>John E.</given-names></name>
+          <name><surname>Spencer</surname><given-names>Benjamin W.</given-names></name>
+        </person-group>
+        <article-title>A modified moment-fitted integration scheme for X-FEM applications with history-dependent material data</article-title>
+        <source>Computational Mechanics</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>62</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1007/s00466-018-1544-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bethke_2007">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Bethke</surname><given-names>Craig M.</given-names></name>
+        </person-group>
+        <source>Geochemical and biogeochemical reaction modeling</source>
+        <publisher-name>Cambridge University Press</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <pub-id pub-id-type="doi">10.1017/CBO9780511619670</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-eq36">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Wolery</surname><given-names>T. J.</given-names></name>
+        </person-group>
+        <article-title>EQ3/6, a software package for geochemical modeling of aqueous systems: Package overview and installation guide (version 7.0)</article-title>
+        <publisher-name>Lawrence Livermore National Laboratory</publisher-name>
+        <year iso-8601-date="1992">1992</year>
+        <uri>https://www.osti.gov//servlets/purl/138894</uri>
+        <pub-id pub-id-type="doi">10.2172/138894</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-palandri">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Palandri</surname><given-names>J. L.</given-names></name>
+          <name><surname>Kharaka</surname><given-names>Y. K.</given-names></name>
+        </person-group>
+        <article-title>A compilation of rate parameters of water-mineral interaction kinetics for application to geochemical modeling</article-title>
+        <publisher-name>U.S. Geological Survey</publisher-name>
+        <year iso-8601-date="2004">2004</year>
+        <pub-id pub-id-type="doi">10.3133/ofr20041068</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-prausnitz">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Prausnitz</surname><given-names>John M.</given-names></name>
+          <name><surname>Lichtenthaler</surname><given-names>Rudiger N.</given-names></name>
+          <name><surname>Azevedo</surname><given-names>Edmundo Gomes de</given-names></name>
+        </person-group>
+        <source>Molecular Thermodynamics of Fluid-Phase Equilibria</source>
+        <publisher-name>Pearson</publisher-name>
+        <year iso-8601-date="1998">1998</year>
+        <isbn>9780139777455</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-spycher1988">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Spycher</surname><given-names>Nicolas F.</given-names></name>
+          <name><surname>Reed</surname><given-names>Mark H.</given-names></name>
+        </person-group>
+        <article-title>Fugacity coefficients of H2, CO2, CH4, H2 and of H2–CO2–CH4 mixutres: A virial equation treatment for moderate pressures and temperatures applicable to calculations of hydrothermal boiling</article-title>
+        <source>Geochemica et Cosmochimica Acta</source>
+        <year iso-8601-date="1988">1988</year>
+        <volume>52</volume>
+        <uri>http://www.sciencedirect.com/science/article/pii/0016703788903341</uri>
+        <pub-id pub-id-type="doi">10.1016/0016-7037(88)90334-1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-toughreact">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Xu</surname><given-names>Tianfu</given-names></name>
+          <name><surname>Sonnenthal</surname><given-names>Eric</given-names></name>
+          <name><surname>Spycher</surname><given-names>Nicolas</given-names></name>
+          <name><surname>Zhen</surname><given-names>Liang</given-names></name>
+          <name><surname>Millar</surname><given-names>Norman</given-names></name>
+          <name><surname>Pruess</surname><given-names>Karsten</given-names></name>
+        </person-group>
+        <article-title>TOUGHREACT V3.0-OMP Reference Manual: A Parallel Simulation Program for Non-Isothermal Multiphase Geochemical Reactive Transport</article-title>
+        <publisher-name>Lawrence Berkeley National Laboratory</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <uri>https://tough.lbl.gov/assets/docs/TOUGHREACT_V3-OMP_RefManual.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-seedling">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>McLing</surname><given-names>Travis L.</given-names></name>
+          <name><surname>Wendt</surname><given-names>Dan</given-names></name>
+          <name><surname>Dobson</surname><given-names>Patrick</given-names></name>
+          <name><surname>Doughty</surname><given-names>Christine</given-names></name>
+          <name><surname>Spycher</surname><given-names>Nic</given-names></name>
+          <name><surname>Roberson</surname><given-names>Dakota</given-names></name>
+          <name><surname>McLaughlin</surname><given-names>J. Fred</given-names></name>
+        </person-group>
+        <article-title>Dynamic Earth Energy Storage: Terawatt-Year, Grid-Scale Energy Storage using Planet Earth as a Thermal Battery (GeoTES): Seedling Project Final Report</article-title>
+        <publisher-name>Idaho National Laboratory</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <pub-id pub-id-type="doi">10.15121/1638710</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-osti_1524048">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Wendt</surname><given-names>Daniel S</given-names></name>
+          <name><surname>Huang</surname><given-names>Hai</given-names></name>
+          <name><surname>Zhu</surname><given-names>Guangdong</given-names></name>
+          <name><surname>Sharan</surname><given-names>Prashant</given-names></name>
+          <name><surname>McTigue</surname><given-names>Joshua</given-names></name>
+          <name><surname>Kitz</surname><given-names>Kevin</given-names></name>
+          <name><surname>Green</surname><given-names>Sidney</given-names></name>
+          <name><surname>McLennan</surname><given-names>John</given-names></name>
+          <name><surname>Neupane</surname><given-names>Ghanashyam Hari</given-names></name>
+        </person-group>
+        <article-title>Flexible geothermal power generation utilizing geologic thermal energy storage: Final seedling project report</article-title>
+        <publisher-name>Idaho National Laboratory</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://www.osti.gov/biblio/1524048</uri>
+        <pub-id pub-id-type="doi">10.2172/1524048</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pflotran-paper">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hammond</surname><given-names>Glenn E.</given-names></name>
+          <name><surname>Lichtner</surname><given-names>Peter C.</given-names></name>
+          <name><surname>Mills</surname><given-names>Richard T.</given-names></name>
+        </person-group>
+        <article-title>Evaluating the performance of parallel subsurface simulators: An illustrative example with PFLOTRAN</article-title>
+        <source>Water Resources Research</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>50</volume>
+        <pub-id pub-id-type="doi">10.1002/2012WR013483</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pflotran-user-ref">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Lichtner</surname><given-names>Peter C.</given-names></name>
+          <name><surname>Hammond</surname><given-names>Glenn E.</given-names></name>
+          <name><surname>Lu</surname><given-names>Chuan</given-names></name>
+          <name><surname>Karra</surname><given-names>Satish</given-names></name>
+          <name><surname>Bisht</surname><given-names>Gautam</given-names></name>
+          <name><surname>Andre</surname><given-names>Benjamin</given-names></name>
+          <name><surname>Mills</surname><given-names>Richard T.</given-names></name>
+          <name><surname>Kumar</surname><given-names>Jitendra</given-names></name>
+          <name><surname>Frederick</surname><given-names>Jennifer M.</given-names></name>
+        </person-group>
+        <article-title>PFLOTRAN user manual</article-title>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

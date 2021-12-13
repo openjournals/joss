@@ -1,0 +1,617 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3439</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03439</article-id>
+<title-group>
+<article-title>torchquad: Numerical Integration in Arbitrary Dimensions
+with PyTorch</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-5631-8240</contrib-id>
+<string-name>Pablo Gómez</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="corresp" rid="cor-1"><sup>*</sup></xref>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-4692-5722</contrib-id>
+<string-name>Håvard Hem Toftevaag</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-9311-6392</contrib-id>
+<string-name>Gabriele Meoni</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Advanced Concepts Team, European Space Agency, Noordwijk,
+The Netherlands</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<author-notes>
+<corresp id="cor-1">* E-mail: <email></email></corresp>
+</author-notes>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-06-15">
+<day>15</day>
+<month>6</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>64</issue>
+<fpage>3439</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>n-dimensional</kwd>
+<kwd>numerical integration</kwd>
+<kwd>GPU</kwd>
+<kwd>automatic differentiation</kwd>
+<kwd>PyTorch</kwd>
+<kwd>high-performance computing</kwd>
+<kwd>machine learning</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p> is a module for <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>-dimensional
+  numerical integration optimized for graphics processing units (GPUs).
+  Various deterministic and stochastic integration methods, such as
+  formulas and integration methods like
+  (<xref alt="Lepage, 2020" rid="ref-VegasEnhanced-paper" ref-type="bibr">Lepage,
+  2020</xref>), are available for computationally efficient integration
+  for arbitrary dimensionality <inline-formula><alternatives>
+  <tex-math><![CDATA[n_{\mathrm{d}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>n</mml:mi><mml:mstyle mathvariant="normal"><mml:mi>d</mml:mi></mml:mstyle></mml:msub></mml:math></alternatives></inline-formula>.
+  As it is implemented using
+  (<xref alt="Paszke et al., 2019" rid="ref-PyTorch2019" ref-type="bibr">Paszke
+  et al., 2019</xref>), one of the most popular machine learning
+  frameworks, provides fully automatic differentiation throughout the
+  integration, which is essential for many machine learning
+  applications.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>Multidimensional integration is needed in many fields, such as
+  physics (ranging from particle physics
+  (<xref alt="Kersevan &amp; Richter-Was, 2013" rid="ref-ParticlePhysics-Paper" ref-type="bibr">Kersevan
+  &amp; Richter-Was, 2013</xref>) to astrophysics
+  (<xref alt="Izzo &amp; Gómez, 2021" rid="ref-izzo2021geodesy" ref-type="bibr">Izzo
+  &amp; Gómez, 2021</xref>)), applied finance
+  (<xref alt="Campolieti &amp; Makarov, 2007" rid="ref-AppliedFinance-Paper" ref-type="bibr">Campolieti
+  &amp; Makarov, 2007</xref>), medical statistics
+  (<xref alt="Ray et al., 2011" rid="ref-MedicalStatistics-Paper" ref-type="bibr">Ray
+  et al., 2011</xref>), and machine learning
+  (<xref alt="Atay &amp; Hutt, 2006" rid="ref-VEGASinMachineLearning-Paper" ref-type="bibr">Atay
+  &amp; Hutt, 2006</xref>). Most of the conventional packages for
+  multidimensional integration, such as
+  (<xref alt="Schlömer et al., 2021" rid="ref-quadpy" ref-type="bibr">Schlömer
+  et al., 2021</xref>) and
+  (<xref alt="Virtanen et al., 2020" rid="ref-scipy" ref-type="bibr">Virtanen
+  et al., 2020</xref>), only target and are optimized for central
+  processing units (CPUs). However, as many numerical integration
+  methods are embarrassingly parallel, GPUs can offer superior
+  computational performance in their computation. Furthermore, numerical
+  integration methods typically suffer from the so-called
+  (<xref alt="Wu et al., 2020" rid="ref-ZMCintegral" ref-type="bibr">Wu
+  et al., 2020</xref>). This phenomenon refers to the fact that the
+  computational complexity of the integration grows exponentially with
+  the number of dimensions
+  (<xref alt="Bellman, 2003" rid="ref-CurseOfDim-Book" ref-type="bibr">Bellman,
+  2003</xref>). Reducing the error of the integration value requires
+  increasing the number of function evaluation points
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
+  exponentially, which significantly increases the runtime of the
+  computation, especially for higher dimensions. Previous work has
+  demonstrated that this problem can be mitigated by leveraging the
+  parallelization of GPUs
+  (<xref alt="Wu et al., 2020" rid="ref-ZMCintegral" ref-type="bibr">Wu
+  et al., 2020</xref>).</p>
+  <p>Although GPU-based implementations for multidimensional numerical
+  integration in exist, some of these packages do not allow fully
+  automatic differentiation
+  (<xref alt="Borowka et al., 2019" rid="ref-borowka2019gpu" ref-type="bibr">Borowka
+  et al., 2019</xref>), which is crucial for many machine learning
+  applications
+  (<xref alt="Baydin et al., 2018" rid="ref-Baydin2018autodiffinML" ref-type="bibr">Baydin
+  et al., 2018</xref>). Recently, to fill this gap, the packages
+  (<xref alt="Carrazza &amp; Cruz-Martinez, 2020" rid="ref-VegasFlow-Paper" ref-type="bibr">Carrazza
+  &amp; Cruz-Martinez, 2020</xref>) and
+  (<xref alt="Wu et al., 2020" rid="ref-ZMCintegral" ref-type="bibr">Wu
+  et al., 2020</xref>) were developed. Both of these implementations
+  are, however, based on
+  (<xref alt="Abadi et al., 2016" rid="ref-Tensorflow" ref-type="bibr">Abadi
+  et al., 2016</xref>), and there are currently no packages available
+  that enable more than one-dimensional integration in . Additionally,
+  the available GPU-based packages that allow fully automatic
+  differentiation rely solely on methods
+  (<xref alt="Carrazza &amp; Cruz-Martinez, 2020" rid="ref-VegasFlow-Paper" ref-type="bibr">Carrazza
+  &amp; Cruz-Martinez, 2020</xref>;
+  <xref alt="Wu et al., 2020" rid="ref-ZMCintegral" ref-type="bibr">Wu
+  et al., 2020</xref>). Even though such methods offer good
+  speedaccuracy trade-offs for problems of high dimensionality
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[n_{\mathrm{d}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>n</mml:mi><mml:mstyle mathvariant="normal"><mml:mi>d</mml:mi></mml:mstyle></mml:msub></mml:math></alternatives></inline-formula>,
+  the efficiency of deterministic methods, such as the formulas, is
+  often superior for lower dimensionality
+  (<xref alt="Lepage, 1978" rid="ref-Vegas-paper" ref-type="bibr">Lepage,
+  1978</xref>).</p>
+  <p>In summary, to the authors’ knowledge, is the first -based module
+  for <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>-dimensional
+  numerical integration. Furthermore, it incorporates several
+  deterministic and stochastic methods, including formulas and , which
+  allow obtaining high-accuracy estimates for varying dimensionality at
+  configurable computational cost as controlled by the maximum number of
+  function evaluations <inline-formula><alternatives>
+  <tex-math><![CDATA[N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>.
+  It is, to the authors’ knowledge, also the first GPU-capable
+  implementation of
+  (<xref alt="Lepage, 2020" rid="ref-VegasEnhanced-paper" ref-type="bibr">Lepage,
+  2020</xref>), which improves on its predecessor by introducing an
+  adaptive stratified sampling strategy.</p>
+  <p>Finally, being -based, is fully differentiable, extending its
+  applicability to use cases such as those in machine learning. In these
+  applications, it is typically necessary to compute the gradient of
+  some parameters with regard to input variables to perform updates of
+  the trainable parameters in the machine learning model. With , e.g.,
+  the employed loss function can contain integrals without breaking the
+  automatic differentiation required for training.</p>
+</sec>
+<sec id="implemented-integration-methods">
+  <title>Implemented Integration Methods</title>
+  <p> features fully vectorized implementations of various deterministic
+  and stochastic methods to perform <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>-dimensional
+  integration over cubical domains. In particular, the following
+  deterministic integration methods are available in (version
+  0.2.1):</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>
+      (<xref alt="Sag &amp; Szekeres, 1964" rid="ref-sag1964numerical" ref-type="bibr">Sag
+      &amp; Szekeres, 1964</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>
+      (<xref alt="Sag &amp; Szekeres, 1964" rid="ref-sag1964numerical" ref-type="bibr">Sag
+      &amp; Szekeres, 1964</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>
+      (<xref alt="Ubale, 2012" rid="ref-ubale2012numerical" ref-type="bibr">Ubale,
+      2012</xref>)</p>
+    </list-item>
+  </list>
+  <p>The stochastic integration methods implemented in so far are:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>
+      (<xref alt="Caflisch, 1998" rid="ref-caflisch1998monte" ref-type="bibr">Caflisch,
+      1998</xref>)</p>
+    </list-item>
+    <list-item>
+      <p> () integration method
+      (<xref alt="Lepage, 2020" rid="ref-VegasEnhanced-paper" ref-type="bibr">Lepage,
+      2020</xref>)</p>
+    </list-item>
+  </list>
+  <p>The functionality and the convergence of all the methods are
+  ensured through automatic unit testing, which relies on an extensible
+  set of different test functions. Both single and double precision are
+  supported to allow different trade-offs between accuracy and memory
+  utilization. Even though it is optimized for GPUs, can also be
+  employed without a GPU without any functional limitations.</p>
+</sec>
+<sec id="installation-contribution">
+  <title>Installation &amp; Contribution</title>
+  <p>The package is implemented in and is openly available under a GPL-3
+  license. Installation with either () or is available. Our public
+  repository provides users with direct access to the main development
+  branch. Users wishing to contribute to can submit issues or pull
+  requests to our repository following the contribution guidelines
+  outlined there.</p>
+</sec>
+<sec id="tutorials">
+  <title>Tutorials</title>
+  <p>The documentation, hosted on , provides some examples of the use of
+  for one-dimensional and multidimensional integration utilizing a
+  variety of the implemented methods.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-VegasFlow-Paper">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Carrazza</surname><given-names>Stefano</given-names></name>
+          <name><surname>Cruz-Martinez</surname><given-names>Juan M.</given-names></name>
+        </person-group>
+        <article-title>VegasFlow: accelerating Monte Carlo simulation across multiple hardware platforms</article-title>
+        <source>Computer Physics Communications</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>254</volume>
+        <uri>https://arxiv.org/abs/2002.12921</uri>
+        <pub-id pub-id-type="doi">10.1016/j.cpc.2020.107376</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-izzo2021geodesy">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Izzo</surname><given-names>Dario</given-names></name>
+          <name><surname>Gómez</surname><given-names>Pablo</given-names></name>
+        </person-group>
+        <article-title>Geodesy of irregular small bodies via neural density fields: geodesyNets</article-title>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://arxiv.org/abs/2105.13031</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-caflisch1998monte">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Caflisch</surname><given-names>Russel E.</given-names></name>
+        </person-group>
+        <article-title>Monte Carlo and quasi-Monte Carlo methods</article-title>
+        <source>Acta Numerica</source>
+        <publisher-name>Cambridge University Press</publisher-name>
+        <year iso-8601-date="1998-01">1998</year><month>01</month>
+        <volume>7</volume>
+        <pub-id pub-id-type="doi">10.1017/S0962492900002804</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ubale2012numerical">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ubale</surname><given-names>P. V.</given-names></name>
+        </person-group>
+        <article-title>Numerical Solution of Boole’s rule in Numerical Integration By Using General Quadrature Formula</article-title>
+        <source>Bulletin of Society for Mathematical Services and Standards</source>
+        <year iso-8601-date="2012-06">2012</year><month>06</month>
+        <volume>2</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.18052/www.scipress.com/BSMaSS.2.1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sag1964numerical">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sag</surname><given-names>Tom W.</given-names></name>
+          <name><surname>Szekeres</surname><given-names>George</given-names></name>
+        </person-group>
+        <article-title>Numerical Evaluation of High-Dimensional Integrals</article-title>
+        <source>Mathematics of Computation</source>
+        <year iso-8601-date="1964">1964</year>
+        <volume>18</volume>
+        <issue>86</issue>
+        <pub-id pub-id-type="doi">10.2307/2003298</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-borowka2019gpu">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Borowka</surname><given-names>Sophia</given-names></name>
+          <name><surname>Heinrich</surname><given-names>Gudrun</given-names></name>
+          <name><surname>Jahn</surname><given-names>S.</given-names></name>
+          <name><surname>Jones</surname><given-names>S. P.</given-names></name>
+          <name><surname>Kerner</surname><given-names>M.</given-names></name>
+          <name><surname>Schlenk</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>A GPU compatible quasi-Monte Carlo integrator interfaced to pySecDec</article-title>
+        <source>Computer Physics Communications</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>240</volume>
+        <pub-id pub-id-type="doi">10.1016/j.cpc.2019.02.015</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Baydin2018autodiffinML">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Baydin</surname><given-names>Atilim Gunes</given-names></name>
+          <name><surname>Pearlmutter</surname><given-names>Barak A.</given-names></name>
+          <name><surname>Radul</surname><given-names>Alexey Andreyevich</given-names></name>
+          <name><surname>Siskind</surname><given-names>Jeffrey Mark</given-names></name>
+        </person-group>
+        <article-title>Automatic Differentiation in Machine Learning: a Survey</article-title>
+        <source>Journal of Machine Learning Research</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>18</volume>
+        <issue>153</issue>
+        <uri>http://jmlr.org/papers/v18/17-468.html</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Vegas-paper">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lepage</surname><given-names>G. Peter</given-names></name>
+        </person-group>
+        <article-title>A new algorithm for adaptive multidimensional integration</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="1978">1978</year>
+        <volume>27</volume>
+        <issue>2</issue>
+        <issn>0021-9991</issn>
+        <uri>https://www.sciencedirect.com/science/article/pii/0021999178900049</uri>
+        <pub-id pub-id-type="doi">10.1016/0021-9991(78)90004-9</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-VegasEnhanced-paper">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Lepage</surname><given-names>G. Peter</given-names></name>
+        </person-group>
+        <article-title>Adaptive Multidimensional Integration: VEGAS Enhanced</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://arxiv.org/abs/2009.05112</uri>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2021.110386</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-PyTorch2019">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Paszke</surname><given-names>Adam</given-names></name>
+          <name><surname>Gross</surname><given-names>Sam</given-names></name>
+          <name><surname>Massa</surname><given-names>Francisco</given-names></name>
+          <name><surname>Lerer</surname><given-names>Adam</given-names></name>
+          <name><surname>Bradbury</surname><given-names>James</given-names></name>
+          <name><surname>Chanan</surname><given-names>Gregory</given-names></name>
+          <name><surname>Killeen</surname><given-names>Trevor</given-names></name>
+          <name><surname>Lin</surname><given-names>Zeming</given-names></name>
+          <name><surname>Gimelshein</surname><given-names>Natalia</given-names></name>
+          <name><surname>Antiga</surname><given-names>Luca</given-names></name>
+          <name><surname>Desmaison</surname><given-names>Alban</given-names></name>
+          <name><surname>Kopf</surname><given-names>Andreas</given-names></name>
+          <name><surname>Yang</surname><given-names>Edward</given-names></name>
+          <name><surname>DeVito</surname><given-names>Zachary</given-names></name>
+          <name><surname>Raison</surname><given-names>Martin</given-names></name>
+          <name><surname>Tejani</surname><given-names>Alykhan</given-names></name>
+          <name><surname>Chilamkurthy</surname><given-names>Sasank</given-names></name>
+          <name><surname>Steiner</surname><given-names>Benoit</given-names></name>
+          <name><surname>Fang</surname><given-names>Lu</given-names></name>
+          <name><surname>Bai</surname><given-names>Junjie</given-names></name>
+          <name><surname>Chintala</surname><given-names>Soumith</given-names></name>
+        </person-group>
+        <article-title>PyTorch: An Imperative Style, High-Performance Deep Learning Library</article-title>
+        <source>Advances in neural information processing systems 32</source>
+        <person-group person-group-type="editor">
+          <name><surname>Wallach</surname><given-names>H.</given-names></name>
+          <name><surname>Larochelle</surname><given-names>H.</given-names></name>
+          <name><surname>Beygelzimer</surname><given-names>A.</given-names></name>
+          <name><surname>d’Alché-Buc</surname><given-names>F.</given-names></name>
+          <name><surname>Fox</surname><given-names>E.</given-names></name>
+          <name><surname>Garnett</surname><given-names>R.</given-names></name>
+        </person-group>
+        <publisher-name>Curran Associates, Inc.</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <uri>http://papers.neurips.cc/paper/9015-pytorch-an-imperative-style-high-performance-deep-learning-library.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-quadpy">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Schlömer</surname><given-names>Nico</given-names></name>
+          <name><surname>Papior</surname><given-names>Nick</given-names></name>
+          <name><surname>Arnold</surname><given-names>Darius</given-names></name>
+          <name><surname>Zetter</surname><given-names>Rasmus</given-names></name>
+        </person-group>
+        <source>Nschloe/quadpy v0.16.6</source>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2021-02">2021</year><month>02</month>
+        <uri>https://doi.org/10.5281/zenodo.4519699</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.4519699</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-scipy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+          <name><surname>Haberland</surname><given-names>Matt</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Burovski</surname><given-names>Evgeni</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Bright</surname><given-names>Jonathan</given-names></name>
+          <name><surname>van der Walt</surname><given-names>Stéfan J.</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Wilson</surname><given-names>Joshua</given-names></name>
+          <name><surname>Millman</surname><given-names>K. Jarrod</given-names></name>
+          <name><surname>Mayorov</surname><given-names>Nikolay</given-names></name>
+          <name><surname>Nelson</surname><given-names>Andrew R. J.</given-names></name>
+          <name><surname>Jones</surname><given-names>Eric</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Larson</surname><given-names>Eric</given-names></name>
+          <name><surname>Carey</surname><given-names>C J</given-names></name>
+          <name><surname>Polat</surname><given-names>İlhan</given-names></name>
+          <name><surname>Feng</surname><given-names>Yu</given-names></name>
+          <name><surname>Moore</surname><given-names>Eric W.</given-names></name>
+          <name><surname>VanderPlas</surname><given-names>Jake</given-names></name>
+          <name><surname>Laxalde</surname><given-names>Denis</given-names></name>
+          <name><surname>Perktold</surname><given-names>Josef</given-names></name>
+          <name><surname>Cimrman</surname><given-names>Robert</given-names></name>
+          <name><surname>Henriksen</surname><given-names>Ian</given-names></name>
+          <name><surname>Quintero</surname><given-names>E. A.</given-names></name>
+          <name><surname>Harris</surname><given-names>Charles R.</given-names></name>
+          <name><surname>Archibald</surname><given-names>Anne M.</given-names></name>
+          <name><surname>Ribeiro</surname><given-names>Antônio H.</given-names></name>
+          <name><surname>Pedregosa</surname><given-names>Fabian</given-names></name>
+          <name><surname>van Mulbregt</surname><given-names>Paul</given-names></name>
+          <string-name>SciPy 1.0 Contributors</string-name>
+        </person-group>
+        <article-title>SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python</article-title>
+        <source>Nature Methods</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>17</volume>
+        <pub-id pub-id-type="doi">10.1038/s41592-019-0686-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ZMCintegral">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wu</surname><given-names>Hong-Zhong</given-names></name>
+          <name><surname>Zhang</surname><given-names>Jun-Jie</given-names></name>
+          <name><surname>Pang</surname><given-names>Long-Gang</given-names></name>
+          <name><surname>Wang</surname><given-names>Qun</given-names></name>
+        </person-group>
+        <article-title>ZMCintegral: A package for multi-dimensional Monte Carlo integration on multi-GPUs</article-title>
+        <source>Computer Physics Communications</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>248</volume>
+        <issn>0010-4655</issn>
+        <uri>https://www.sciencedirect.com/science/article/pii/S0010465519303121</uri>
+        <pub-id pub-id-type="doi">10.1016/j.cpc.2019.106962</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Tensorflow">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Abadi</surname><given-names>Martín</given-names></name>
+          <name><surname>Barham</surname><given-names>Paul</given-names></name>
+          <name><surname>Chen</surname><given-names>Jianmin</given-names></name>
+          <name><surname>Chen</surname><given-names>Zhifeng</given-names></name>
+          <name><surname>Davis</surname><given-names>Andy</given-names></name>
+          <name><surname>Dean</surname><given-names>Jeffrey</given-names></name>
+          <name><surname>Devin</surname><given-names>Matthieu</given-names></name>
+          <name><surname>Ghemawat</surname><given-names>Sanjay</given-names></name>
+          <name><surname>Irving</surname><given-names>Geoffrey</given-names></name>
+          <name><surname>Isard</surname><given-names>Michael</given-names></name>
+          <name><surname>Kudlur</surname><given-names>Manjunath</given-names></name>
+          <name><surname>Levenberg</surname><given-names>Josh</given-names></name>
+          <name><surname>Monga</surname><given-names>Rajat</given-names></name>
+          <name><surname>Moore</surname><given-names>Sherry</given-names></name>
+          <name><surname>Murray</surname><given-names>Derek G.</given-names></name>
+          <name><surname>Steiner</surname><given-names>Benoit</given-names></name>
+          <name><surname>Tucker</surname><given-names>Paul</given-names></name>
+          <name><surname>Vasudevan</surname><given-names>Vijay</given-names></name>
+          <name><surname>Warden</surname><given-names>Pete</given-names></name>
+          <name><surname>Wicke</surname><given-names>Martin</given-names></name>
+          <name><surname>Yu</surname><given-names>Yuan</given-names></name>
+          <name><surname>Zheng</surname><given-names>Xiaoqiang</given-names></name>
+        </person-group>
+        <article-title>TensorFlow: A System for Large-Scale Machine Learning</article-title>
+        <source>Proceedings of the 12th USENIX conference on operating systems design and implementation</source>
+        <publisher-name>USENIX Association</publisher-name>
+        <publisher-loc>Savannah, GA, USA</publisher-loc>
+        <year iso-8601-date="2016">2016</year>
+        <isbn>9781931971331</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-ParticlePhysics-Paper">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kersevan</surname><given-names>Borut Paul</given-names></name>
+          <name><surname>Richter-Was</surname><given-names>Elzbieta</given-names></name>
+        </person-group>
+        <article-title>The Monte Carlo event generator AcerMC versions 2.0 to 3.8 with interfaces to PYTHIA 6.4, HERWIG 6.5 and ARIADNE 4.1</article-title>
+        <source>Computer Physics Communications</source>
+        <year iso-8601-date="2013">2013</year>
+        <volume>184</volume>
+        <issue>3</issue>
+        <issn>0010-4655</issn>
+        <uri>https://www.sciencedirect.com/science/article/pii/S001046551200375X</uri>
+        <pub-id pub-id-type="doi">10.1016/j.cpc.2012.10.032</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-AppliedFinance-Paper">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Campolieti</surname><given-names>Giuseppe</given-names></name>
+          <name><surname>Makarov</surname><given-names>Roman</given-names></name>
+        </person-group>
+        <article-title>Pricing path-dependent options on state dependent volatility models with a Bessel bridge</article-title>
+        <source>International Journal of Theoretical and Applied Finance</source>
+        <publisher-name>World Scientific Publishing Co Pte Ltd</publisher-name>
+        <year iso-8601-date="2007-02">2007</year><month>02</month>
+        <volume>10</volume>
+        <issue>01</issue>
+        <uri>https://doi.org/10.1142/s0219024907004081</uri>
+        <pub-id pub-id-type="doi">10.1142/s0219024907004081</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MedicalStatistics-Paper">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ray</surname><given-names>J.</given-names></name>
+          <name><surname>Marzouk</surname><given-names>Y. M.</given-names></name>
+          <name><surname>Najm</surname><given-names>H. N.</given-names></name>
+        </person-group>
+        <article-title>A Bayesian approach for estimating bioterror attacks from patient data</article-title>
+        <source>Statistics in Medicine</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>30</volume>
+        <issue>2</issue>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.4090</uri>
+        <pub-id pub-id-type="doi">10.1002/sim.4090</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-VEGASinMachineLearning-Paper">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Atay</surname><given-names>Fatihcan M.</given-names></name>
+          <name><surname>Hutt</surname><given-names>Axel</given-names></name>
+        </person-group>
+        <article-title>Neural Fields with Distributed Transmission Speeds and Long-Range Feedback Delays</article-title>
+        <source>SIAM Journal on Applied Dynamical Systems</source>
+        <publisher-name>Society for Industrial &amp; Applied Mathematics (SIAM)</publisher-name>
+        <year iso-8601-date="2006-01">2006</year><month>01</month>
+        <volume>5</volume>
+        <issue>4</issue>
+        <uri>https://doi.org/10.1137/050629367</uri>
+        <pub-id pub-id-type="doi">10.1137/050629367</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-CurseOfDim-Book">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Bellman</surname><given-names>Richard Ernest</given-names></name>
+        </person-group>
+        <source>Dynamic Programming (Dover Books on Computer Science)</source>
+        <publisher-name>Dover Publications</publisher-name>
+        <year iso-8601-date="2003-03">2003</year><month>03</month>
+        <isbn>0486428095</isbn>
+        <uri>https://www.xarg.org/ref/a/0486428095/</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

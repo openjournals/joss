@@ -1,0 +1,799 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3618</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03618</article-id>
+<title-group>
+<article-title>ESVM: an open-source finite volume Electrostatic
+Vlasov-Maxwell code</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-7590-0941</contrib-id>
+<string-name>Michaël J. Touati</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Electrical Engineering, University of
+California Los Angeles, Los Angeles, CA 90095, USA</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Group of Lasers and Plasmas, IPFN, IST, Universidade de
+Lisboa, Lisbon, Portugal</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Centro de Láseres Pulsados de Salamanca (CLPU), Edificio
+M5, Parque Cientfico, C/ Adaja 8, 37185 Villamayor, Salamanca, Spain
+(current affiliation)</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-08-05">
+<day>5</day>
+<month>8</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>67</issue>
+<fpage>3618</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>OpenMP</kwd>
+<kwd>Electrostatic</kwd>
+<kwd>Collisionless</kwd>
+<kwd>Plasma</kwd>
+<kwd>Poisson</kwd>
+<kwd>Maxwell-Gauss</kwd>
+<kwd>Maxwell-Ampere</kwd>
+<kwd>Vlasov</kwd>
+<kwd>Advection</kwd>
+<kwd>Finite volume</kwd>
+<kwd>Donor-cell</kwd>
+<kwd>Lax-Wendroff</kwd>
+<kwd>Beam-Warming</kwd>
+<kwd>Fromm</kwd>
+<kwd>minmod</kwd>
+<kwd>superbee</kwd>
+<kwd>Van Leer</kwd>
+<kwd>MUSCL</kwd>
+<kwd>Landau damping</kwd>
+<kwd>Two-stream instability</kwd>
+<kwd>Electrostatic wakefield</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>A plasma is a set of charged particles consisting of electrons and
+  ionized atoms whose quantity is sufficiently large to behave
+  collectively through the long-distance electromagnetic fields they
+  produce. It is thought that more than 99.9% of visible matter in the
+  universe is in the plasma state. In a collisionless plasma consisting
+  in an ionized gas composed of electrons moving inbetween much heavier
+  ions, any electrostatic field is rapidly screened by the plasma
+  electrons over the Debye screening distance
+  (<xref alt="Debye &amp; Hückel, 1923" rid="ref-DebyeHuckelU003A1923" ref-type="bibr">Debye
+  &amp; Hückel, 1923</xref>). When the number of electrons in these
+  Debye spheres can be assumed to be infinite, the plasma electron
+  population is correctly described by the Vlasov equation
+  (<xref alt="Vlasov, 1938" rid="ref-VlasovU003A1938" ref-type="bibr">Vlasov,
+  1938</xref>) that neglects all correlations between particles such as
+  the binary Coulomb collisions between them. In addition to being
+  simple, the resulting Vlasov-Maxwell set of equations is extremely
+  rich in physics and has many applications ranging from astrophysics
+  and theoretical plasma physics to intense laser-matter interaction
+  experiments.
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/michaeltouati/ESVM">ESVM</ext-link>
+  (ElectroStatic Vlasov-Maxwell) is a Vlasov-Maxwell Fortran 95
+  standard-compliant code, parallelized with OpenMP and using Python 3
+  for post-processing, that allows for the study of these collisionless
+  plasmas. Many finite volume advection schemes
+  (<xref alt="Godunov, 1959" rid="ref-GodunovU003A1959" ref-type="bibr">Godunov,
+  1959</xref>) are implemented in order to discretize the Vlasov
+  equation, namely:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>the donor-cell scheme, i.e., the downwind / upwind scheme
+      (<xref alt="Courant et al., 1952" rid="ref-CourantU003A1952" ref-type="bibr">Courant
+      et al., 1952</xref>) depending on the advection direction in each
+      phase-space cell,</p>
+    </list-item>
+    <list-item>
+      <p>the Lax-Wendroff scheme
+      (<xref alt="Lax &amp; Wendroff, 1960" rid="ref-LaxWendroffU003A1960" ref-type="bibr">Lax
+      &amp; Wendroff, 1960</xref>),</p>
+    </list-item>
+    <list-item>
+      <p>the Fromm scheme
+      (<xref alt="Fromm, 1968" rid="ref-FrommU003A1968" ref-type="bibr">Fromm,
+      1968</xref>),</p>
+    </list-item>
+    <list-item>
+      <p>the Beam-Warming scheme
+      (<xref alt="Beam &amp; Warming, 1976" rid="ref-BeamWarmingU003A1976" ref-type="bibr">Beam
+      &amp; Warming, 1976</xref>),</p>
+    </list-item>
+    <list-item>
+      <p>the Van Leer scheme
+      (<xref alt="Van Leer, 1977" rid="ref-VanLeerIIIU003A1977" ref-type="bibr">Van
+      Leer, 1977</xref>),</p>
+    </list-item>
+    <list-item>
+      <p>the minmod scheme
+      (<xref alt="Roe, 1986" rid="ref-RoeU003A1986" ref-type="bibr">Roe,
+      1986</xref>),</p>
+    </list-item>
+    <list-item>
+      <p>the superbee scheme
+      (<xref alt="Roe, 1986" rid="ref-RoeU003A1986" ref-type="bibr">Roe,
+      1986</xref>), and</p>
+    </list-item>
+    <list-item>
+      <p>two Monotonic Upwind-centered Scheme for Conservation Laws
+      (MUSCL)
+      (<xref alt="van Leer, 1979" rid="ref-VanLeerVU003A1977" ref-type="bibr">van
+      Leer, 1979</xref>) schemes MUSCL2
+      (<xref alt="Crouseilles &amp; Filbet, 2004" rid="ref-CrouseillesU003A2004" ref-type="bibr">Crouseilles
+      &amp; Filbet, 2004</xref>) and MUSCL1
+      (<xref alt="Duclous et al., 2009" rid="ref-DuclousU003A2009" ref-type="bibr">Duclous
+      et al., 2009</xref>).</p>
+    </list-item>
+  </list>
+  <p>Unlike the linear second order Lax-Wendroff, Fromm, and
+  Beam-Warming schemes, the non-linear second order minmod, superbee,
+  Van Leer, and MUSCL schemes make use of a Total Variation Diminishing
+  (TVD) non-linear flux limiter with the price of becoming a first order
+  scheme in some phase-space cells to limit the numerical oscillations.
+  The donor-cell scheme is a first order method and has the pros of
+  limiting such eventual oscillations but the cons of being numerically
+  less consistent and more diffusive. In ESVM, the discretized Vlasov
+  equation is coupled with the self-consistent Maxwell-Gauss equation or
+  equivalently with the Maxwell-Ampere equation with Maxwell-Gauss
+  equation computed at the first time step, only. While the second order
+  Maxwell-Gauss solver needs a computationally expensive inversion of a
+  tridiagonal matrix for the computation of the Poisson equation, the
+  Maxwell-Ampere equation solver makes use of a faster first order
+  numerical scheme (in time). Both absorbing and periodic boundary
+  conditions for both the particles and the fields are implemented.
+  Python scripts, using the Matplotlib and Numpy packages, are provided
+  to automatically extract and plot the stored simulation results. The
+  simulation parameters are described in the
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/michaeltouati/ESVM/blob/master/input-deck">input
+  deck</ext-link> and they can be modified without having to recompile
+  the code. Compilation rules can be modified in the
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/michaeltouati/ESVM/blob/master/makefile">makefile</ext-link>
+  depending on the user’s compiler preferences. Classical plasma physics
+  academic case simulations that need less than one
+  CPU<inline-formula><alternatives>
+  <tex-math><![CDATA[\times]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>×</mml:mo></mml:math></alternatives></inline-formula>hour
+  each, tools for testing the compilation of the code, and tools for
+  checking the simulation parameters are provided.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p><ext-link ext-link-type="uri" xlink:href="https://github.com/michaeltouati/ESVM">ESVM</ext-link>
+  has been developed in order to adapt simulations to specific plasma
+  physics problems by chosing the more adequate finite volume numerical
+  advection scheme in order to compute the Vlasov equation phase-space
+  advection derivatives and to chose between computing the Maxwell-Gauss
+  equation or the Maxwell-Ampere equation with Maxwell-Gauss equation
+  computed at the first time step, only. The code aims at beeing used by
+  the open-source highly parallel computing (HPC) plasma physics
+  community, ranging from under or post-graduate students to teachers
+  and researchers who usually use Particle-In-Cell (PIC) codes
+  (<xref alt="Dawson, 1962" rid="ref-DawsonU003A1962" ref-type="bibr">Dawson,
+  1962</xref>) to study collisionless plasmas. Indeed, the PIC method
+  may prohibit the study of plasma physical processes on large time
+  scales and/or for very dense collisionless plasmas due to the
+  statistical and numerical fluctuations of the computed quantities
+  imposed by the use of a finite number of particles. Also, plasma
+  instabilities naturally develop in PIC codes, seeded by the available
+  fluctuations spatial spectrum k-vector for which the instability
+  growth rate is maximum and some small amplitude plasma physical
+  processes may be hidden under the fluctuactions level. Compared to the
+  many open source PIC codes such as
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/SmileiPIC/Smilei">Smilei</ext-link>
+  (<xref alt="Derouillat et al., 2018" rid="ref-DerouillatU003A2018" ref-type="bibr">Derouillat
+  et al., 2018</xref>) and semi-Lagrangian codes such as
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/pdebuyl/vmf90">vmf90</ext-link>
+  (<xref alt="de Buyl, 2014" rid="ref-DebuylU003A2014" ref-type="bibr">de
+  Buyl, 2014</xref>), there are no open source finite volume
+  Vlasov-Maxwell codes in the literature that are not based on an
+  expansion method such as
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/UCLA-Plasma-Simulation-Group/OSHUN">OSHUN</ext-link>
+  (<xref alt="Tzoufras et al., 2011" rid="ref-TzoufrasU003A2011" ref-type="bibr">Tzoufras
+  et al., 2011</xref>),
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/michaeltouati/AMoRE">AMoRE</ext-link>
+  (<xref alt="Touati et al., 2014" rid="ref-TouatiU003A2014" ref-type="bibr">Touati
+  et al., 2014</xref>), or
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/joglekara/VlaPy">Vlapy</ext-link>
+  (<xref alt="Joglekar &amp; Levy, 2020" rid="ref-JoglekarU003A2020" ref-type="bibr">Joglekar
+  &amp; Levy, 2020</xref>). Finally, since the Vlasov equation is a
+  conservation equation of the probable number of particles in the
+  phase-space, using a finite volume method in order to compute the
+  Vlasov equation has the advantage of allowing for the use of numerical
+  schemes that are numerically flux conserving and/or that ensure the
+  distribution function positivity compared to other numerical methods.
+  ESVM has already been used during courses for under and post-graduate
+  students about the “numerical tools for laser-plasma interaction
+  Physics” and it is currently used for theoretical Plasma Physics
+  investigations.</p>
+</sec>
+<sec id="future-work">
+  <title>Future work</title>
+  <p>The author plans, in the near future, to:</p>
+  <list list-type="order">
+    <list-item>
+      <p>provide another plasma physics academic simulation about one
+      non-linear BGK electron plasma wave, from the name of its finder
+      I. B. Bernstein, J. M. Greene, and M. D. Kruskal
+      (<xref alt="Bernstein et al., 1957" rid="ref-BernsteinGreenKruskalU003A1957" ref-type="bibr">Bernstein
+      et al., 1957</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>provide another plasma physics academic simulation about the
+      echo of two plasma electron waves
+      (<xref alt="Gould et al., 1967" rid="ref-GouldU003A1967" ref-type="bibr">Gould
+      et al., 1967</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>implement non-equally spaced phase-space cells</p>
+    </list-item>
+    <list-item>
+      <p>implement high order Weighted Essentially Non-Oscillatory
+      (WENO) advection schemes
+      (<xref alt="Liu et al., 1994" rid="ref-LiuU003A1994" ref-type="bibr">Liu
+      et al., 1994</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>compute the plasma ion Vlasov equation to allow for the ions to
+      be mobile</p>
+    </list-item>
+    <list-item>
+      <p>store the simulation results in hdf5 files instead of text
+      files</p>
+    </list-item>
+    <list-item>
+      <p>implement MPI parallelization</p>
+    </list-item>
+    <list-item>
+      <p>implement vectorization</p>
+    </list-item>
+    <list-item>
+      <p>extend the code to the relativistic regime: ESVM
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[\Rightarrow]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>⇒</mml:mo></mml:math></alternatives></inline-formula>
+      RESVM for open source Relativistic ElectroStatic Vlasov-Maxwell
+      code</p>
+    </list-item>
+    <list-item>
+      <p>implement a BGK collision operator, from the name of its finder
+      P. L. Bhatnagar, E. P. Gross, and M. Krook
+      (<xref alt="Bhatnagar et al., 1954" rid="ref-BhatnagarGrossKrookU003A1954" ref-type="bibr">Bhatnagar
+      et al., 1954</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>extend the code to 1D-2V and 1D-3V phase-space electrostatic
+      plasma simulations</p>
+    </list-item>
+    <list-item>
+      <p>implement the Landau
+      (<xref alt="Landau, 1937" rid="ref-LandauU003A1936" ref-type="bibr">Landau,
+      1937</xref>) and Belaiev-Budker
+      (<xref alt="Belaiev &amp; Budker, 1956" rid="ref-BelaievBudkerU003A1957" ref-type="bibr">Belaiev
+      &amp; Budker, 1956</xref>) relativistic collision operators using
+      the Rosenbluth potentials
+      (<xref alt="Rosenbluth et al., 1957" rid="ref-RosenbluthU003A1957" ref-type="bibr">Rosenbluth
+      et al., 1957</xref>) and their relativistic Braams-Karney
+      extension
+      (<xref alt="Braams &amp; Karney, 1987" rid="ref-BraamsKarneyU003A1987" ref-type="bibr">Braams
+      &amp; Karney, 1987</xref>): (R)ESVM <inline-formula><alternatives>
+      <tex-math><![CDATA[\Rightarrow]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>⇒</mml:mo></mml:math></alternatives></inline-formula>
+      (R)ESVFPM for open source (Relativistic) ElectroStatic
+      Vlasov-Fokker-Planck-Maxwell code</p>
+    </list-item>
+    <list-item>
+      <p>extend the code to electrostatic 2D-1V, 2D-2V, and 2D-3V
+      phase-space plasma simulations: (R)ESV(FP)M
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[\Rightarrow]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>⇒</mml:mo></mml:math></alternatives></inline-formula>
+      (R)ESV(FP)M2 for open source (Relativistic) ElectroStatic
+      Vlasov-(Fokker-Planck-)Maxwell in 2D</p>
+    </list-item>
+    <list-item>
+      <p>extend the code with the second order finite difference Yee
+      scheme
+      (<xref alt="Yee, 1966" rid="ref-YeeU003A1966" ref-type="bibr">Yee,
+      1966</xref>) to electromagnetic 2D-1V, 2D-2V, and 2D-3V
+      phase-space plasma simulations: (R)ESV(FP)M(2)
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[\Rightarrow]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>⇒</mml:mo></mml:math></alternatives></inline-formula>
+      (R)EMV(FP)M(2) for open source (Relativistic) ElectroMagnetic
+      Vlasov-(Fokker-Planck)-Maxwell (in 2D)</p>
+    </list-item>
+    <list-item>
+      <p>implement the Perfectly Matched Layer (PML) technique
+      (<xref alt="Berenger, 1994" rid="ref-BerengerU003A1994" ref-type="bibr">Berenger,
+      1994</xref>) to absorb the electromagnetic fields at the spatial
+      simulation box boundaries</p>
+    </list-item>
+    <list-item>
+      <p>deploy the code to GPU architectures.</p>
+    </list-item>
+  </list>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-DebyeHuckelU003A1923">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Debye</surname><given-names>P.</given-names></name>
+          <name><surname>Hückel</surname><given-names>E.</given-names></name>
+        </person-group>
+        <article-title>Zur theorie der elektrolyte. I. Gefrierpunktserniedrigung und verwandte erscheinungen</article-title>
+        <source>Zeitschrift für Physik</source>
+        <year iso-8601-date="1923">1923</year>
+        <volume>24</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-LandauU003A1936">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Landau</surname><given-names>L. D.</given-names></name>
+        </person-group>
+        <source>Journal of Experimental and Theoretical Physics</source>
+        <year iso-8601-date="1937">1937</year>
+        <volume>7</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-VlasovU003A1938">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Vlasov</surname><given-names>A. A.;</given-names></name>
+        </person-group>
+        <source>Journal of Experimental and Theoretical Physics</source>
+        <year iso-8601-date="1938">1938</year>
+        <volume>8</volume>
+        <issue>3</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-CourantU003A1952">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Courant</surname><given-names>R</given-names></name>
+          <name><surname>Isaacson</surname><given-names>E</given-names></name>
+          <name><surname>Rees</surname><given-names>M</given-names></name>
+        </person-group>
+        <article-title>On the solution of nonlinear hyperbolic differential equations by finite differences</article-title>
+        <source>Communications on Pure and Applied Mathematics</source>
+        <year iso-8601-date="1952">1952</year>
+        <volume>5</volume>
+        <issue>3</issue>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1002/cpa.3160050303</uri>
+        <pub-id pub-id-type="doi">10.1002/cpa.3160050303</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-BhatnagarGrossKrookU003A1954">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bhatnagar</surname><given-names>P. L.</given-names></name>
+          <name><surname>Gross</surname><given-names>E. P.</given-names></name>
+          <name><surname>Krook</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>A model for collision processes in gases. I. Small amplitude processes in charged and neutral one-component systems</article-title>
+        <source>Physical Review</source>
+        <publisher-name>American Physical Society</publisher-name>
+        <year iso-8601-date="1954-05">1954</year><month>05</month>
+        <volume>94</volume>
+        <uri>https://link.aps.org/doi/10.1103/PhysRev.94.511</uri>
+        <pub-id pub-id-type="doi">10.1103/PhysRev.94.511</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-RosenbluthU003A1957">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rosenbluth</surname><given-names>Marshall N.</given-names></name>
+          <name><surname>MacDonald</surname><given-names>William M.</given-names></name>
+          <name><surname>Judd</surname><given-names>David L.</given-names></name>
+        </person-group>
+        <article-title>Fokker-planck equation for an inverse-square force</article-title>
+        <source>Physical Review</source>
+        <publisher-name>American Physical Society</publisher-name>
+        <year iso-8601-date="1957-07">1957</year><month>07</month>
+        <volume>107</volume>
+        <uri>https://link.aps.org/doi/10.1103/PhysRev.107.1</uri>
+        <pub-id pub-id-type="doi">10.1103/PhysRev.107.1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-BelaievBudkerU003A1957">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Belaiev</surname><given-names>S. T.</given-names></name>
+          <name><surname>Budker</surname><given-names>G. I.</given-names></name>
+        </person-group>
+        <source>Doklady Akademii Nauk SSSR</source>
+        <year iso-8601-date="1956">1956</year>
+        <volume>107</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-BernsteinGreenKruskalU003A1957">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bernstein</surname><given-names>Ira B.</given-names></name>
+          <name><surname>Greene</surname><given-names>John M.</given-names></name>
+          <name><surname>Kruskal</surname><given-names>Martin D.</given-names></name>
+        </person-group>
+        <article-title>Exact nonlinear plasma oscillations</article-title>
+        <source>Physical Review</source>
+        <publisher-name>American Physical Society</publisher-name>
+        <year iso-8601-date="1957-11">1957</year><month>11</month>
+        <volume>108</volume>
+        <uri>https://link.aps.org/doi/10.1103/PhysRev.108.546</uri>
+        <pub-id pub-id-type="doi">10.1103/PhysRev.108.546</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-GodunovU003A1959">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Godunov</surname><given-names>S. K.</given-names></name>
+        </person-group>
+        <article-title>Eine differenzenmethode für die näherungsberechnung unstetiger lösungen der hydrodynamischen gleichungen</article-title>
+        <source>Matematicheskiı̆ Sbornik. Novaya Seriya</source>
+        <publisher-name>Izdatel’stvo Nauka, Moskva</publisher-name>
+        <year iso-8601-date="1959">1959</year>
+        <volume>47</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-LaxWendroffU003A1960">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lax</surname><given-names>Peter</given-names></name>
+          <name><surname>Wendroff</surname><given-names>Burton</given-names></name>
+        </person-group>
+        <article-title>Systems of conservation laws</article-title>
+        <source>Communications on Pure and Applied Mathematics</source>
+        <year iso-8601-date="1960">1960</year>
+        <volume>13</volume>
+        <issue>2</issue>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1002/cpa.3160130205</uri>
+        <pub-id pub-id-type="doi">10.1002/cpa.3160130205</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-DawsonU003A1962">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dawson</surname><given-names>John</given-names></name>
+        </person-group>
+        <article-title>One‐dimensional plasma model</article-title>
+        <source>The Physics of Fluids</source>
+        <year iso-8601-date="1962">1962</year>
+        <volume>5</volume>
+        <issue>4</issue>
+        <uri>https://aip.scitation.org/doi/abs/10.1063/1.1706638</uri>
+        <pub-id pub-id-type="doi">10.1063/1.1706638</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-YeeU003A1966">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yee</surname><given-names>Kane</given-names></name>
+        </person-group>
+        <source>IEEE Transactions on Antennas and Propagation</source>
+        <year iso-8601-date="1966-05">1966</year><month>05</month>
+        <volume>14</volume>
+        <issue>3</issue>
+        <issn>0018-926X</issn>
+        <pub-id pub-id-type="doi">10.1109/TAP.1966.1138693</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-GouldU003A1967">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gould</surname><given-names>R. W.</given-names></name>
+          <name><surname>O’Neil</surname><given-names>T. M.</given-names></name>
+          <name><surname>Malmberg</surname><given-names>J. H.</given-names></name>
+        </person-group>
+        <article-title>Plasma wave echo</article-title>
+        <source>Physical Review Letter</source>
+        <publisher-name>American Physical Society</publisher-name>
+        <year iso-8601-date="1967-07">1967</year><month>07</month>
+        <volume>19</volume>
+        <uri>https://link.aps.org/doi/10.1103/PhysRevLett.19.219</uri>
+        <pub-id pub-id-type="doi">10.1103/PhysRevLett.19.219</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-FrommU003A1968">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fromm</surname><given-names>J. E.</given-names></name>
+        </person-group>
+        <article-title>A method for reducing dispersion in convective difference schemes</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="1968">1968</year>
+        <volume>3</volume>
+        <issue>2</issue>
+        <issn>0021-9991</issn>
+        <uri>https://www.sciencedirect.com/science/article/pii/0021999168900156</uri>
+        <pub-id pub-id-type="doi">10.1016/0021-9991(68)90015-6</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-BeamWarmingU003A1976">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Beam</surname><given-names>R. M.</given-names></name>
+          <name><surname>Warming</surname><given-names>R. F</given-names></name>
+        </person-group>
+        <article-title>An implicit finite-difference algorithm for hyperbolic systems in conservation-law form</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="1976">1976</year>
+        <volume>22</volume>
+        <issue>1</issue>
+        <issn>0021-9991</issn>
+        <uri>https://www.sciencedirect.com/science/article/pii/0021999176901108</uri>
+        <pub-id pub-id-type="doi">10.1016/0021-9991(76)90110-8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-VanLeerIIIU003A1977">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Van Leer</surname><given-names>B.</given-names></name>
+        </person-group>
+        <article-title>Towards the ultimate conservative difference scheme III. Upstream-centered finite-difference schemes for ideal compressible flow</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="1977">1977</year>
+        <volume>23</volume>
+        <issue>3</issue>
+        <issn>0021-9991</issn>
+        <uri>https://www.sciencedirect.com/science/article/pii/0021999177900948</uri>
+        <pub-id pub-id-type="doi">10.1016/0021-9991(77)90094-8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-VanLeerVU003A1977">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>van Leer</surname><given-names>Bram</given-names></name>
+        </person-group>
+        <article-title>Towards the ultimate conservative difference scheme. V. A second-order sequel to godunov’s method</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="1979">1979</year>
+        <volume>32</volume>
+        <issue>1</issue>
+        <issn>0021-9991</issn>
+        <uri>https://www.sciencedirect.com/science/article/pii/0021999179901451</uri>
+        <pub-id pub-id-type="doi">10.1016/0021-9991(79)90145-1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-RoeU003A1986">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Roe</surname><given-names>P L</given-names></name>
+        </person-group>
+        <article-title>Characteristic-based schemes for the euler equations</article-title>
+        <source>Annual Review of Fluid Mechanics</source>
+        <year iso-8601-date="1986">1986</year>
+        <volume>18</volume>
+        <issue>1</issue>
+        <uri>10.1146/annurev.fl.18.010186.002005</uri>
+        <pub-id pub-id-type="doi">10.1146/annurev.fl.18.010186.002005</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-BraamsKarneyU003A1987">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Braams</surname><given-names>Bastiaan J.</given-names></name>
+          <name><surname>Karney</surname><given-names>Charles F. F.</given-names></name>
+        </person-group>
+        <article-title>Differential form of the collision integral for a relativistic plasma</article-title>
+        <source>Physical Review Letter</source>
+        <publisher-name>American Physical Society</publisher-name>
+        <year iso-8601-date="1987-10">1987</year><month>10</month>
+        <volume>59</volume>
+        <uri>https://link.aps.org/doi/10.1103/PhysRevLett.59.1817</uri>
+        <pub-id pub-id-type="doi">10.1103/PhysRevLett.59.1817</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-BerengerU003A1994">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Berenger</surname><given-names>J.-P.</given-names></name>
+        </person-group>
+        <article-title>A perfectly matched layer for the absorption of electromagnetic waves</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="1994">1994</year>
+        <volume>114</volume>
+        <issue>2</issue>
+        <issn>0021-9991</issn>
+        <uri>https://www.sciencedirect.com/science/article/pii/S0021999184711594</uri>
+        <pub-id pub-id-type="doi">10.1006/jcph.1994.1159</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LiuU003A1994">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Liu</surname><given-names>Xu-Dong</given-names></name>
+          <name><surname>Osher</surname><given-names>Stanley</given-names></name>
+          <name><surname>Chan</surname><given-names>Tony</given-names></name>
+        </person-group>
+        <article-title>Weighted essentially non-oscillatory schemes</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="1994">1994</year>
+        <volume>115</volume>
+        <issue>1</issue>
+        <issn>0021-9991</issn>
+        <uri>https://www.sciencedirect.com/science/article/pii/S0021999184711879</uri>
+        <pub-id pub-id-type="doi">10.1006/jcph.1994.1187</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-CrouseillesU003A2004">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Crouseilles</surname><given-names>Nicolas</given-names></name>
+          <name><surname>Filbet</surname><given-names>Francis</given-names></name>
+        </person-group>
+        <article-title>Numerical approximation of collisional plasmas by high order methods</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="2004">2004</year>
+        <volume>201</volume>
+        <issue>2</issue>
+        <issn>0021-9991</issn>
+        <uri>https://www.sciencedirect.com/science/article/pii/S0021999104002426</uri>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2004.06.007</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-DuclousU003A2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Duclous</surname><given-names>Roland</given-names></name>
+          <name><surname>Dubroca</surname><given-names>Bruno</given-names></name>
+          <name><surname>Filbet</surname><given-names>Francis</given-names></name>
+          <name><surname>Tikhonchuk</surname><given-names>Vladimir</given-names></name>
+        </person-group>
+        <article-title>High order resolution of the maxwell–fokker–planck–landau model intended for ICF applications</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume>228</volume>
+        <issue>14</issue>
+        <issn>0021-9991</issn>
+        <uri>https://www.sciencedirect.com/science/article/pii/S0021999109001879</uri>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2009.04.005</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-TzoufrasU003A2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tzoufras</surname><given-names>M.</given-names></name>
+          <name><surname>Bell</surname><given-names>A. R.</given-names></name>
+          <name><surname>Norreys</surname><given-names>P. A.</given-names></name>
+          <name><surname>Tsung</surname><given-names>F. S.</given-names></name>
+        </person-group>
+        <article-title>A vlasov–fokker–planck code for high energy density physics</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>230</volume>
+        <issue>17</issue>
+        <issn>0021-9991</issn>
+        <uri>https://www.sciencedirect.com/science/article/pii/S0021999111002828</uri>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2011.04.034</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-TouatiU003A2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Touati</surname><given-names>M</given-names></name>
+          <name><surname>Feugeas</surname><given-names>J-L</given-names></name>
+          <name><surname>Nicolaï</surname><given-names>Ph</given-names></name>
+          <name><surname>Santos</surname><given-names>J J</given-names></name>
+          <name><surname>Gremillet</surname><given-names>L</given-names></name>
+          <name><surname>Tikhonchuk</surname><given-names>V T</given-names></name>
+        </person-group>
+        <article-title>A reduced model for relativistic electron beam transport in solids and dense plasmas</article-title>
+        <source>New Journal of Physics</source>
+        <publisher-name>IOP Publishing</publisher-name>
+        <year iso-8601-date="2014-07">2014</year><month>07</month>
+        <volume>16</volume>
+        <issue>7</issue>
+        <uri>10.1088/1367-2630/16/7/073014</uri>
+        <pub-id pub-id-type="doi">10.1088/1367-2630/16/7/073014</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-DebuylU003A2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>de Buyl</surname><given-names>Pierre</given-names></name>
+        </person-group>
+        <article-title>The vmf90 program for the numerical resolution of the vlasov equation for mean-field systems</article-title>
+        <source>Computer Physics Communications</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>185</volume>
+        <issue>6</issue>
+        <issn>0010-4655</issn>
+        <uri>https://www.sciencedirect.com/science/article/pii/S0010465514000848</uri>
+        <pub-id pub-id-type="doi">10.1016/j.cpc.2014.03.004</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-DerouillatU003A2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Derouillat</surname><given-names>J.</given-names></name>
+          <name><surname>Beck</surname><given-names>A.</given-names></name>
+          <name><surname>Pérez</surname><given-names>F.</given-names></name>
+          <name><surname>Vinci</surname><given-names>T.</given-names></name>
+          <name><surname>Chiaramello</surname><given-names>M.</given-names></name>
+          <name><surname>Grassi</surname><given-names>A.</given-names></name>
+          <name><surname>Flé</surname><given-names>M.</given-names></name>
+          <name><surname>Bouchard</surname><given-names>G.</given-names></name>
+          <name><surname>Plotnikov</surname><given-names>I.</given-names></name>
+          <name><surname>Aunai</surname><given-names>N.</given-names></name>
+          <name><surname>Dargent</surname><given-names>J.</given-names></name>
+          <name><surname>Riconda</surname><given-names>C.</given-names></name>
+          <name><surname>Grech</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>Smilei : A collaborative, open-source, multi-purpose particle-in-cell code for plasma simulation</article-title>
+        <source>Computer Physics Communications</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>222</volume>
+        <issn>0010-4655</issn>
+        <uri>https://www.sciencedirect.com/science/article/pii/S0010465517303314</uri>
+        <pub-id pub-id-type="doi">10.1016/j.cpc.2017.09.024</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-JoglekarU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Joglekar</surname><given-names>Archis S.</given-names></name>
+          <name><surname>Levy</surname><given-names>Matthew C.</given-names></name>
+        </person-group>
+        <article-title>VlaPy: A python package for eulerian vlasov-poisson-fokker-planck simulations</article-title>
+        <source>Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>5</volume>
+        <issue>53</issue>
+        <uri>10.21105/joss.02182</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.02182</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

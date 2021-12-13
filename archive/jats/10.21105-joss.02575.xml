@@ -1,0 +1,517 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2575</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02575</article-id>
+<title-group>
+<article-title>DYCO: A Python package to dynamically detect and
+compensate for time lags in ecosystem time series</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-5569-0761</contrib-id>
+<string-name>Lukas Hörtnagl</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>ETH Zurich, Department of Environmental Systems Science,
+ETH Zurich, CH-8092, Switzerland</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-07-31">
+<day>31</day>
+<month>7</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>62</issue>
+<fpage>2575</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>eddy covariance</kwd>
+<kwd>flux</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>In ecosystem research, the eddy covariance (EC) method is widely
+  used to quantify the biosphere-atmosphere exchange of greenhouse gases
+  (GHGs) and energy
+  (<xref alt="Aubinet et al., 2012" rid="ref-Aubinet2012" ref-type="bibr">Aubinet
+  et al., 2012</xref>;
+  <xref alt="Baldocchi et al., 1988" rid="ref-Baldocchi1988" ref-type="bibr">Baldocchi
+  et al., 1988</xref>). The raw ecosystem flux (i.e., net exchange) is
+  calculated by the covariance between the turbulent vertical wind
+  component measured by a sonic anemometer and the entity of interest,
+  e.g., CO<sub>2</sub>, measured by a gas analyzer. Due to the
+  application of two different instruments, wind and gas are not
+  recorded at exactly the same time, resulting in a time lag between the
+  two time series. For the calculation of ecosystem fluxes this time
+  delay has to be quantified and corrected for, otherwise fluxes are
+  systematically biased. Time lags for each averaging interval can be
+  estimated by finding the maximum absolute covariance between the two
+  turbulent time series at different time steps in a pre-defined time
+  window of physically possible time-lags (e.g.,
+  <xref alt="McMillen, 1988" rid="ref-McMillen1988" ref-type="bibr">McMillen,
+  1988</xref>;
+  <xref alt="Moncrieff et al., 1997" rid="ref-Moncrieff1997" ref-type="bibr">Moncrieff
+  et al., 1997</xref>). Lag detection works well when processing fluxes
+  for compounds with high signal-to-noise ratio (SNR), which is
+  typically the case for e.g. CO<sub>2</sub>. In contrast, for compounds
+  with low SNR (e.g., N<sub>2</sub>O, CH<sub>4</sub>) the
+  cross-covariance function with the turbulent wind component yields
+  noisier results and calculated fluxes are biased towards larger
+  absolute flux values
+  (<xref alt="Langford et al., 2015" rid="ref-Langford2015" ref-type="bibr">Langford
+  et al., 2015</xref>), which in turn renders the accurate calculation
+  of yearly ecosystem GHG budgets more difficult and results may be
+  inaccurate.</p>
+  <p>One method to adequately calculate fluxes for compounds with low
+  SNR is to first calculate the time lag for a
+  <italic>reference</italic> compound with high SNR (e.g.,
+  CO<sub>2</sub>) and then to apply the same time lag to the
+  <italic>target</italic> compound of interest (e.g., N<sub>2</sub>O),
+  with both compounds being recorded by the same analyzer
+  (<xref alt="Nemitz et al., 2018" rid="ref-Nemitz2018" ref-type="bibr">Nemitz
+  et al., 2018</xref>). <monospace>DYCO</monospace> uses this method by
+  facilitating the dynamic lag-detection between the turbulent wind data
+  and a <italic>reference</italic> compound and the subsequent
+  application of found <italic>reference</italic> time lags to one or
+  more <italic>target</italic> compounds.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Lag detection between the turbulent departures of measured wind and
+  the scalar of interest is a central step in the calculation of EC
+  ecosystem fluxes. If the covariance maximization fails to detect a
+  clear peak in the covariance function between the wind and the scalar,
+  current flux calculation software can apply a constant default
+  (nominal) time lag to the respective scalar. However, both the
+  detection of clear covariance peaks in a pre-defined time window and
+  the definition of a reliable default time lag is challenging for
+  compounds that are often characterized by low SNR, such as
+  N<sub>2</sub>O. In addition, the application of one static default
+  time lag may produce inaccurate results when systematic time shifts
+  are present in the raw data.</p>
+  <p><monospace>DYCO</monospace> is meant to assist current flux
+  processing software in the calculation of fluxes for compounds with
+  low SNR. In the context of current flux processing schemes, the unique
+  features offered as part of the <monospace>DYCO</monospace> package
+  include:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>the dynamic application of progressively smaller time windows
+      during lag search for a <italic>reference</italic> compound (e.g.,
+      CO<sub>2</sub>),</p>
+    </list-item>
+    <list-item>
+      <p>the calculation of default time lags on a daily scale for the
+      <italic>reference</italic> compound,</p>
+    </list-item>
+    <list-item>
+      <p>the application of daily default <italic>reference</italic>
+      time lags to one or more <italic>target</italic> compounds (e.g.,
+      N<sub>2</sub>O)</p>
+    </list-item>
+    <list-item>
+      <p>the dynamic normalization of time lags across raw data
+      files,</p>
+    </list-item>
+    <list-item>
+      <p>the automatic correction of systematic time shifts in
+      <italic>target</italic> raw data time series, e.g., due to failed
+      synchronization of instrument clocks, and</p>
+    </list-item>
+    <list-item>
+      <p>the application of instantaneous <italic>reference</italic>
+      time lags, calculated from lag-normalized files, to one or more
+      <italic>target</italic> compounds.</p>
+    </list-item>
+  </list>
+  <p><monospace>DYCO</monospace> aims to complement current flux
+  processing schemes. <monospace>DYCO</monospace> uses EC raw data files
+  as input and produces final lag-removed files that can be directly
+  used in current flux calculation software.</p>
+</sec>
+<sec id="processing-chain">
+  <title>Processing chain</title>
+  <graphic mimetype="image" mime-subtype="png" xlink:href="dyco_processing_chain.png" />
+  <p><bold>Figure 1.</bold> <italic>The DYCO processing
+  chain.</italic></p>
+  <p><monospace>DYCO</monospace> uses eddy covariance raw data files as
+  input and produces lag-compensated raw data files as output.</p>
+  <p>The full <monospace>DYCO</monospace> processing chain comprises
+  four phases and several iterations during which
+  <italic>reference</italic> lags are iteratively refined in
+  progressively smaller search windows (Figure 1). Generally, the
+  <italic>reference</italic> lag search is facilitated by prior
+  normalization of default (nominal) time lags across files. This is
+  achieved by compensating <italic>reference</italic> and
+  <italic>target</italic> time series data for daily default
+  <italic>reference</italic> lags, calculated from high-quality
+  <italic>reference</italic> lags available around the respective date
+  (Figure 2). Due to this normalization, <italic>reference</italic> lags
+  fall into a specific, pre-defined, and therefore known time range,
+  which in turn allows the application of increasingly narrower time
+  windows during lag search. This approach has the advantage that
+  <italic>reference</italic> lags can be calculated from a
+  <italic>reference</italic> signal that shows clear peaks in the
+  cross-covariance analysis with the wind data and thus yields
+  unambiguous time lags due to its high SNR. In case the lag search
+  failed to detect a clear time delay for the <italic>reference</italic>
+  variable (e.g., during the night), the respective daily default
+  <italic>reference</italic> lag is used instead.
+  <italic>Reference</italic> lags can then be used to compensate
+  <italic>target</italic> variables with low SNR for detected
+  <italic>reference</italic> time delays.</p>
+  <p><bold>Phase 1</bold> uses eddy covariance raw data files as input
+  and removes the daily default <italic>reference</italic> lag from
+  <italic>reference</italic> and <italic>target</italic> variables,
+  producing lag-normalized raw data files. This is achieved by first
+  calculating the time lag between the turbulent fluctuations of the
+  vertical wind and the turbulent measurements of the
+  <italic>reference</italic> variable (e.g., atmospheric CO<sub>2</sub>)
+  by covariance maximization. The time window for this lag search is
+  iteratively narrowed down (default 3 iterations). Detected time lags
+  are analyzed and daily default <italic>reference</italic> lags are
+  calculated from a selection of high-quality covariance peaks found
+  around the respective date. The <italic>reference</italic> variable
+  and <italic>target</italic> variables are then compensated for found
+  daily default <italic>reference</italic> lags by shifting time series
+  data accordingly. At the same time <monospace>DYCO</monospace> removes
+  systematic shifts from the data, i.e., after normalization all lags
+  are found in the same time range (Figure 2). Finally, the shifted data
+  are saved to new files.</p>
+  <p><bold>Phase 2</bold> comprises the exact same processing steps as
+  Phase 1, with the difference that instead of the original eddy
+  covariance raw data files the lag-normalized files produced during
+  Phase 1 are used as input. In essence, Phase 2 refines
+  <italic>reference</italic> results from Phase 1. Since the
+  <italic>reference</italic> time series data were already compensated
+  for daily default <italic>reference</italic> lags during the previous
+  phase, Phase 2 can apply a much narrower time window during
+  <italic>reference</italic> lag search.</p>
+  <p><bold>Phase 3</bold> detects the final instantaneous lags between
+  the turbulent wind and the <italic>reference</italic> variable, using
+  the lag-normalized files from Phase 2 as input. Due to the
+  compensation for daily default time lags in preceding Phases,
+  instantaneous lags for each time period are now found close to zero.
+  Therefore, a narrow time window of +/- 100 records is applied for the
+  final lag search. Lags found within the acceptance limit of +/- 50
+  records are selected as the final instantaneous
+  <italic>reference</italic> lag for the respective time period. For
+  time periods with lags outside the acceptance limits, the final
+  instantaneous <italic>reference</italic> lag is set to zero. Final
+  instantaneous <italic>reference</italic> time lags are then applied to
+  the <italic>target</italic> variables and final lag-compensated files
+  are produced.</p>
+  <p><bold>Phase 4</bold> finalizes the processing chain by producing
+  additional plots.</p>
+  <graphic mimetype="image" mime-subtype="png" xlink:href="fig_PHASE-1_ITERATION-3_TIMESERIES-PLOT_segment_lag_times_iteration-1612269182193.png" />
+  <p><bold>Figure 2</bold>. <italic>Example showing the normalization of
+  default reference time lags across raw data files recorded at the
+  forest site
+  <ext-link ext-link-type="uri" xlink:href="https://www.swissfluxnet.ethz.ch/index.php/sites/ch-dav-davos/site-info-ch-dav/">Davos</ext-link>
+  in Switzerland. Shown are found instantaneous time lags (red) between
+  turbulent wind data and turbulent CO<sub>2</sub> mixing ratios,
+  calculated daily reference default lags (yellow bars), normalization
+  correction (blue arrows) and the daily default reference lag after
+  normalization (green bar). Negative lag values mean that the
+  CO<sub>2</sub> signal was lagged behind the wind data, e.g., -400
+  means that the instantaneous CO<sub>2</sub> records arrived 400
+  records (corresponds to 20s in this example) later at the analyzer
+  than the wind data. Daily default reference lags were calculated as
+  the 3-day median time lag from a selection of high-quality time lags,
+  i.e., when cross-covariance analyses yielded a clear covariance peak.
+  The normalization correction is applied dynamically to shift the
+  CO<sub>2</sub> data so that the default time lag is found close to
+  zero across files. Note the systematic shift in time lags starting
+  after 27 Oct 2016.</italic></p>
+</sec>
+<sec id="real-world-examples">
+  <title>Real-world examples</title>
+  <p>The
+  <ext-link ext-link-type="uri" xlink:href="https://www.icos-cp.eu/">ICOS</ext-link>
+  Class 1 site
+  <ext-link ext-link-type="uri" xlink:href="https://www.swissfluxnet.ethz.ch/index.php/sites/ch-dav-davos/site-info-ch-dav/">Davos</ext-link>
+  (CH-Dav), a subalpine forest ecosystem station in the east of
+  Switzerland, provides one of the longest continuous time series (24
+  years and running) of ecosystem fluxes globally. Since 2016,
+  measurements of the strong GHG N<sub>2</sub>O are recorded by a
+  closed-path gas analyzer that also records CO<sub>2</sub>. To
+  calculate fluxes using the EC method, wind data from the sonic
+  anemometer is combined with instantaneous gas measurements from the
+  gas analyzer. However, the air sampled by the gas analyzer needs a
+  certain amount of time to travel from the tube inlet to the
+  measurement cell in the analyzer and is thus lagged behind the wind
+  signal. The lag between the two signals needs to be compensated for by
+  detecting and then removing the time lag at which the cross-covariance
+  between the turbulent wind and the turbulent gas signal reaches the
+  maximum absolute value. This works generally well when using
+  CO<sub>2</sub> (high SNR) but is challenging for N<sub>2</sub>O (low
+  SNR). Using covariance maximization to search for the lag between wind
+  and N<sub>2</sub>O mostly fails to accurately detect time lags between
+  the two variables (noisy cross-correlation function), resulting in
+  relatively noisy fluxes. However, since N<sub>2</sub>O has similar
+  adsorption / desorption characteristics as CO<sub>2</sub>, it is valid
+  to assume that both compounds need approximately the same time to
+  travel through the tube to the analyzer, i.e., the time lag for both
+  compounds in relation to the wind is similar. Therefore,
+  <monospace>DYCO</monospace> can be applied (i) to calculate time lags
+  across files for CO<sub>2</sub> (<italic>reference</italic> compound),
+  and then (ii) to remove found CO<sub>2</sub> time delays from the
+  N<sub>2</sub>O signal (<italic>target</italic> compound). The
+  lag-compensated files produced by <monospace>DYCO</monospace> can then
+  be used to calculate N<sub>2</sub>O fluxes. Since
+  <monospace>DYCO</monospace> normalizes time lags across files and
+  compensates the N<sub>2</sub>O signal for instantaneous CO<sub>2</sub>
+  lags, the <italic>true</italic> lag between wind and N<sub>2</sub>O
+  can be found close to zero, which in turn facilitates the application
+  of a small time window for the final lag search during flux
+  calculations.</p>
+  <p>Another application example are managed grasslands where the
+  biosphere-atmosphere exchange of N<sub>2</sub>O is often characterized
+  by sporadic high-emission events (e.g.,
+  <xref alt="Hörtnagl et al., 2018" rid="ref-Hoertnagl2018" ref-type="bibr">Hörtnagl
+  et al., 2018</xref>;
+  <xref alt="Merbold et al., 2014" rid="ref-Merbold2014" ref-type="bibr">Merbold
+  et al., 2014</xref>). While high N<sub>2</sub>O quantities can be
+  emitted during and after management events such as fertilizer
+  application and ploughing, fluxes in between those events typically
+  remain low and often below the limit-of-detection of the applied
+  analyzer. In this case, calculating N<sub>2</sub>O fluxes works well
+  during the high-emission periods (high SNR) but is challenging during
+  the rest of the year (low SNR). Here, <monospace>DYCO</monospace> can
+  be used to first calculate time lags for a <italic>reference</italic>
+  gas measured in the same analyzer (e.g., CO<sub>2</sub>, CO,
+  CH<sub>4</sub>) and then remove <italic>reference</italic> time lags
+  from the N<sub>2</sub>O data.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This work was supported by the Swiss National Science Foundation
+  SNF (ICOS CH, grant nos. 20FI21_148992, 20FI20_173691) and the EU
+  project Readiness of ICOS for Necessities of integrated Global
+  Observations RINGO (grant no. 730944).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Baldocchi1988">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Baldocchi</surname><given-names>Dennis D.</given-names></name>
+          <name><surname>Hincks</surname><given-names>Bruce B.</given-names></name>
+          <name><surname>Meyers</surname><given-names>Tilden P.</given-names></name>
+        </person-group>
+        <article-title>Measuring Biosphere-Atmosphere Exchanges of Biologically Related Gases with Micrometeorological Methods</article-title>
+        <source>Ecology</source>
+        <year iso-8601-date="1988-10">1988</year><month>10</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-01-02">2020</year><month>01</month><day>02</day></date-in-citation>
+        <volume>69</volume>
+        <issue>5</issue>
+        <issn>00129658</issn>
+        <uri>http://doi.wiley.com/10.2307/1941631</uri>
+        <pub-id pub-id-type="doi">10.2307/1941631</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Langford2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Langford</surname><given-names>B.</given-names></name>
+          <name><surname>Acton</surname><given-names>W.</given-names></name>
+          <name><surname>Ammann</surname><given-names>C.</given-names></name>
+          <name><surname>Valach</surname><given-names>A.</given-names></name>
+          <name><surname>Nemitz</surname><given-names>E.</given-names></name>
+        </person-group>
+        <article-title>Eddy-covariance data with low signal-to-noise ratio: Time-lag determination, uncertainties and limit of detection</article-title>
+        <source>Atmospheric Measurement Techniques</source>
+        <year iso-8601-date="2015-10">2015</year><month>10</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-01-02">2020</year><month>01</month><day>02</day></date-in-citation>
+        <volume>8</volume>
+        <issue>10</issue>
+        <issn>1867-8548</issn>
+        <uri>https://www.atmos-meas-tech.net/8/4197/2015/</uri>
+        <pub-id pub-id-type="doi">10.5194/amt-8-4197-2015</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Moncrieff1997">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Moncrieff</surname><given-names>J. B.</given-names></name>
+          <name><surname>Massheder</surname><given-names>J. M.</given-names></name>
+          <name><surname>Bruin</surname><given-names>H. de</given-names></name>
+          <name><surname>Elbers</surname><given-names>J.</given-names></name>
+          <name><surname>Friborg</surname><given-names>T.</given-names></name>
+          <name><surname>Heusinkveld</surname><given-names>B.</given-names></name>
+          <name><surname>Kabat</surname><given-names>P.</given-names></name>
+          <name><surname>Scott</surname><given-names>S.</given-names></name>
+          <name><surname>Soegaard</surname><given-names>H.</given-names></name>
+          <name><surname>Verhoef</surname><given-names>A.</given-names></name>
+        </person-group>
+        <article-title>A system to measure surface fluxes of momentum, sensible heat, water vapour and carbon dioxide</article-title>
+        <source>Journal of Hydrology</source>
+        <year iso-8601-date="1997-02">1997</year><month>02</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-01-02">2020</year><month>01</month><day>02</day></date-in-citation>
+        <volume>188-189</volume>
+        <issn>00221694</issn>
+        <uri>https://linkinghub.elsevier.com/retrieve/pii/S0022169496031940</uri>
+        <pub-id pub-id-type="doi">10.1016/S0022-1694(96)03194-0</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Merbold2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Merbold</surname><given-names>Lutz</given-names></name>
+          <name><surname>Eugster</surname><given-names>Werner</given-names></name>
+          <name><surname>Stieger</surname><given-names>Jacqueline</given-names></name>
+          <name><surname>Zahniser</surname><given-names>Mark</given-names></name>
+          <name><surname>Nelson</surname><given-names>David</given-names></name>
+          <name><surname>Buchmann</surname><given-names>Nina</given-names></name>
+        </person-group>
+        <article-title>Greenhouse gas budget (CO _{\textrm{2}} , CH _{\textrm{4}} and N _{\textrm{2}} O) of intensively managed grassland following restoration</article-title>
+        <source>Global Change Biology</source>
+        <year iso-8601-date="2014-06">2014</year><month>06</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-01-02">2020</year><month>01</month><day>02</day></date-in-citation>
+        <volume>20</volume>
+        <issue>6</issue>
+        <issn>13541013</issn>
+        <uri>http://doi.wiley.com/10.1111/gcb.12518</uri>
+        <pub-id pub-id-type="doi">10.1111/gcb.12518</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-McMillen1988">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>McMillen</surname><given-names>Robert T.</given-names></name>
+        </person-group>
+        <article-title>An eddy correlation technique with extended applicability to non-simple terrain</article-title>
+        <source>Boundary-Layer Meteorology</source>
+        <year iso-8601-date="1988-05">1988</year><month>05</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-01-02">2020</year><month>01</month><day>02</day></date-in-citation>
+        <volume>43</volume>
+        <issue>3</issue>
+        <issn>0006-8314, 1573-1472</issn>
+        <uri>http://link.springer.com/10.1007/BF00128405</uri>
+        <pub-id pub-id-type="doi">10.1007/BF00128405</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Nemitz2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Nemitz</surname><given-names>Eiko</given-names></name>
+          <name><surname>Mammarella</surname><given-names>Ivan</given-names></name>
+          <name><surname>Ibrom</surname><given-names>Andreas</given-names></name>
+          <name><surname>Aurela</surname><given-names>Mika</given-names></name>
+          <name><surname>Burba</surname><given-names>George G.</given-names></name>
+          <name><surname>Dengel</surname><given-names>Sigrid</given-names></name>
+          <name><surname>Gielen</surname><given-names>Bert</given-names></name>
+          <name><surname>Grelle</surname><given-names>Achim</given-names></name>
+          <name><surname>Heinesch</surname><given-names>Bernard</given-names></name>
+          <name><surname>Herbst</surname><given-names>Mathias</given-names></name>
+          <name><surname>Hörtnagl</surname><given-names>Lukas</given-names></name>
+          <name><surname>Klemedtsson</surname><given-names>Leif</given-names></name>
+          <name><surname>Lindroth</surname><given-names>Anders</given-names></name>
+          <name><surname>Lohila</surname><given-names>Annalea</given-names></name>
+          <name><surname>McDermitt</surname><given-names>Dayle K.</given-names></name>
+          <name><surname>Meier</surname><given-names>Philip</given-names></name>
+          <name><surname>Merbold</surname><given-names>Lutz</given-names></name>
+          <name><surname>Nelson</surname><given-names>David</given-names></name>
+          <name><surname>Nicolini</surname><given-names>Giacomo</given-names></name>
+          <name><surname>Nilsson</surname><given-names>Mats B.</given-names></name>
+          <name><surname>Peltola</surname><given-names>Olli</given-names></name>
+          <name><surname>Rinne</surname><given-names>Janne</given-names></name>
+          <name><surname>Zahniser</surname><given-names>Mark</given-names></name>
+        </person-group>
+        <article-title>Standardisation of eddy-covariance flux measurements of methane and nitrous oxide</article-title>
+        <source>International Agrophysics</source>
+        <year iso-8601-date="2018-12">2018</year><month>12</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-04-16">2020</year><month>04</month><day>16</day></date-in-citation>
+        <volume>32</volume>
+        <issue>4</issue>
+        <issn>2300-8725</issn>
+        <uri>http://archive.sciendo.com/INTAG/intag.2017.32.issue-4/intag-2017-0042/intag-2017-0042.pdf</uri>
+        <pub-id pub-id-type="doi">10.1515/intag-2017-0042</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hoertnagl2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hörtnagl</surname><given-names>Lukas</given-names></name>
+          <name><surname>Barthel</surname><given-names>Matti</given-names></name>
+          <name><surname>Buchmann</surname><given-names>Nina</given-names></name>
+          <name><surname>Eugster</surname><given-names>Werner</given-names></name>
+          <name><surname>Butterbach-Bahl</surname><given-names>Klaus</given-names></name>
+          <name><surname>Díaz-Pinés</surname><given-names>Eugenio</given-names></name>
+          <name><surname>Zeeman</surname><given-names>Matthias</given-names></name>
+          <name><surname>Klumpp</surname><given-names>Katja</given-names></name>
+          <name><surname>Kiese</surname><given-names>Ralf</given-names></name>
+          <name><surname>Bahn</surname><given-names>Michael</given-names></name>
+          <name><surname>Hammerle</surname><given-names>Albin</given-names></name>
+          <name><surname>Lu</surname><given-names>Haiyan</given-names></name>
+          <name><surname>Ladreiter-Knauss</surname><given-names>Thomas</given-names></name>
+          <name><surname>Burri</surname><given-names>Susanne</given-names></name>
+          <name><surname>Merbold</surname><given-names>Lutz</given-names></name>
+        </person-group>
+        <article-title>Greenhouse gas fluxes over managed grasslands in Central Europe</article-title>
+        <source>Global Change Biology</source>
+        <year iso-8601-date="2018-05">2018</year><month>05</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-04-16">2020</year><month>04</month><day>16</day></date-in-citation>
+        <volume>24</volume>
+        <issue>5</issue>
+        <issn>13541013</issn>
+        <uri>http://doi.wiley.com/10.1111/gcb.14079</uri>
+        <pub-id pub-id-type="doi">10.1111/gcb.14079</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Aubinet2012">
+      <element-citation publication-type="book">
+        <source>Eddy Covariance: A Practical Guide to Measurement and Data Analysis</source>
+        <person-group person-group-type="editor">
+          <name><surname>Aubinet</surname><given-names>Marc</given-names></name>
+          <name><surname>Vesala</surname><given-names>Timo</given-names></name>
+          <name><surname>Papale</surname><given-names>Dario</given-names></name>
+        </person-group>
+        <publisher-name>Springer Netherlands</publisher-name>
+        <publisher-loc>Dordrecht</publisher-loc>
+        <year iso-8601-date="2012">2012</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-07-09">2020</year><month>07</month><day>09</day></date-in-citation>
+        <isbn>978-94-007-2350-4 978-94-007-2351-1</isbn>
+        <uri>http://link.springer.com/10.1007/978-94-007-2351-1</uri>
+        <pub-id pub-id-type="doi">10.1007/978-94-007-2351-1</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

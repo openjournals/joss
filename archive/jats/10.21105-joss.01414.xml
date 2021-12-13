@@ -1,0 +1,580 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1414</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01414</article-id>
+<title-group>
+<article-title>anesthetic: nested sampling visualisation</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-5866-0445</contrib-id>
+<string-name>Will Handley</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Astrophysics Group, Cavendish Laboratory, J.J.Thomson
+Avenue, Cambridge, CB3 0HE, UK</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Kavli Institute for Cosmology, Madingley Road, Cambridge,
+CB3 0HA, UK</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Gonville &amp; Caius College, Trinity Street, Cambridge,
+CB2 1TA, UK</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-04-19">
+<day>19</day>
+<month>4</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>37</issue>
+<fpage>1414</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Statistics</kwd>
+<kwd>Bayesian inference</kwd>
+<kwd>Nested sampling</kwd>
+<kwd>Astronomy</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>anesthetic</monospace> is a Python package for
+  processing nested sampling runs, and will be useful for any scientist
+  or statistician who uses nested sampling software.
+  <monospace>anesthetic</monospace> unifies many existing tools and
+  techniques in an extensible framework that is intuitive for users
+  familiar with the standard Python packages, namely
+  <ext-link ext-link-type="uri" xlink:href="https://www.numpy.org/">NumPy</ext-link>,
+  <ext-link ext-link-type="uri" xlink:href="https://www.scipy.org/">SciPy</ext-link>,
+  <ext-link ext-link-type="uri" xlink:href="https://matplotlib.org/">Matplotlib</ext-link>
+  and
+  <ext-link ext-link-type="uri" xlink:href="https://pandas.pydata.org/">pandas</ext-link>.
+  It has been extensively used in recent cosmological papers
+  (<xref alt="W. Handley &amp; Lemos, 2019a" rid="ref-tension" ref-type="bibr">W.
+  Handley &amp; Lemos, 2019a</xref>,
+  <xref alt="2019b" rid="ref-dimensionality" ref-type="bibr">2019b</xref>).</p>
+</sec>
+<sec id="nested-sampling">
+  <title>Nested sampling</title>
+  <p>Nested sampling
+  (<xref alt="Skilling, 2006" rid="ref-skilling" ref-type="bibr">Skilling,
+  2006</xref>) is an alternative to Markov-Chain-Monte-Carlo techniques
+  (<xref alt="Hastings, 1970" rid="ref-mcmc" ref-type="bibr">Hastings,
+  1970</xref>). Given some data <inline-formula><alternatives>
+  <tex-math><![CDATA[D]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>D</mml:mi></mml:math></alternatives></inline-formula>,
+  for a scientific model <inline-formula><alternatives>
+  <tex-math><![CDATA[M]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>M</mml:mi></mml:math></alternatives></inline-formula>
+  with free parameters <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>,
+  Bayes theorem states:</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[ P(\theta|D) = \frac{P(D|\theta) P(\theta)}{P(D)}. ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>P</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:mi>D</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mfrac><mml:mrow><mml:mi>P</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>D</mml:mi><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>P</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow><mml:mrow><mml:mi>P</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>D</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:mfrac><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>Traditional MCMC approaches ignore the Bayesian evidence
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[P(D)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>P</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>D</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  and instead focus on the problem of generating samples from the
+  posterior <inline-formula><alternatives>
+  <tex-math><![CDATA[P(\theta|D)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>P</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:mi>D</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  using knowledge of the prior <inline-formula><alternatives>
+  <tex-math><![CDATA[P(\theta)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>P</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  and likelihood <inline-formula><alternatives>
+  <tex-math><![CDATA[P(D|\theta)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>P</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>D</mml:mi><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.
+  Nested sampling reverses this priority, and instead computes the
+  evidence <inline-formula><alternatives>
+  <tex-math><![CDATA[P(D)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>P</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>D</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  (the critical quantity in Bayesian model comparison
+  (<xref alt="Trotta, 2008" rid="ref-trotta" ref-type="bibr">Trotta,
+  2008</xref>)), producing posterior samples as a by-product. Nested
+  sampling does this by evolving a set of live points drawn from the
+  prior under a hard likelihood constraint which steadily increases,
+  causing the live points to contract around the peak(s) of the
+  likelihood. The history of the live-point evolution can be used to
+  reconstruct both the evidence and posterior samples, as well as the
+  density of states and consequently the full partition function.</p>
+  <p>Current publicly available implementations of nested sampling
+  include MultiNest
+  (<xref alt="Feroz et al., 2009" rid="ref-multinest" ref-type="bibr">Feroz
+  et al., 2009</xref>), PolyChord
+  (<xref alt="W. J. Handley et al., 2015a" rid="ref-polychord0" ref-type="bibr">W.
+  J. Handley et al., 2015a</xref>,
+  <xref alt="2015b" rid="ref-polychord1" ref-type="bibr">2015b</xref>;
+  <xref alt="Higson, 2018" rid="ref-dypolychord" ref-type="bibr">Higson,
+  2018</xref>), DNest
+  (<xref alt="Brewer &amp; Foreman-Mackey, 2018" rid="ref-dnest" ref-type="bibr">Brewer
+  &amp; Foreman-Mackey, 2018</xref>) and dynesty
+  (<xref alt="Speagle, 2019" rid="ref-dynesty" ref-type="bibr">Speagle,
+  2019</xref>), all of which have been incorporated into a wide range of
+  cosmological
+  (<xref alt="Brinckmann &amp; Lesgourgues, 2019" rid="ref-montepython" ref-type="bibr">Brinckmann
+  &amp; Lesgourgues, 2019</xref>;
+  <xref alt="Antony Lewis &amp; Bridle, 2002" rid="ref-cosmomc" ref-type="bibr">Antony
+  Lewis &amp; Bridle, 2002</xref>;
+  <xref alt="Zuntz et al., 2015" rid="ref-cosmosis" ref-type="bibr">Zuntz
+  et al., 2015</xref>) and particle physics
+  (<xref alt="The GAMBIT Scanner Workgroup:, 2017" rid="ref-gambit" ref-type="bibr">The
+  GAMBIT Scanner Workgroup:, 2017</xref>) codes.</p>
+  <fig>
+    <caption><p>Marginalised posterior plots produced by
+    <monospace>anesthetic</monospace>. The x axes indicate the fraction
+    of normal matter, dark matter and dark energy respectively, whilst
+    the y-axis is the amplitude of mass fluctuation in our late-time
+    universe. The three measurements were performed using measurements
+    of baryonic acoustic oscillations, large scale structure and the
+    cosmic microwave background
+    (<xref alt="W. Handley &amp; Lemos, 2019a" rid="ref-tension" ref-type="bibr">W.
+    Handley &amp; Lemos, 2019a</xref>). It is an open cosmological and
+    statistical questions whether the LSS and CMB are consistent with
+    one another.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="2d.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="anesthetic">
+  <title>aNESThetic</title>
+  <p><monospace>anesthetic</monospace> acts on outputs of nested
+  sampling software packages. It can:</p>
+  <list list-type="order">
+    <list-item>
+      <p>Compute inferences of the Bayesian evidence
+      (<xref alt="Trotta, 2008" rid="ref-trotta" ref-type="bibr">Trotta,
+      2008</xref>), the Kullback-Leibler divergence
+      (<xref alt="Kullback &amp; Leibler, 1951" rid="ref-KL" ref-type="bibr">Kullback
+      &amp; Leibler, 1951</xref>) of the distribution, the Bayesian
+      model dimensionality
+      (<xref alt="W. Handley &amp; Lemos, 2019b" rid="ref-dimensionality" ref-type="bibr">W.
+      Handley &amp; Lemos, 2019b</xref>) and the full partition
+      function.</p>
+    </list-item>
+    <list-item>
+      <p>Dynamically replay nested sampling runs.</p>
+    </list-item>
+    <list-item>
+      <p>Produce one- and two-dimensional marginalised posterior plots
+      (Figure 1).</p>
+    </list-item>
+  </list>
+  <p>A subset of computations from item 1 is provided by many of the
+  nested sampling software packages. <monospace>anesthetic</monospace>
+  allows you to compute these independently and more accurately,
+  providing a unified set of outputs and separating these computations
+  from the generation of nested samples.</p>
+  <p>Item 2 is useful for users that have experienced the phenomenon of
+  ‘live point watching’ – the process of continually examining the
+  evolution of the live points as the run progresses in an attempt to
+  diagnose problems in likelihood and/or sampling implementations. The
+  GUI provided allows users to fully reconstruct the run at any
+  iteration, and examine the effect of dynamically adjusting the
+  thermodynamic temperature.</p>
+  <p>Finally, it is important to recognise that the functionality from
+  item 3 is also provided by many other high-quality software packages,
+  such as getdist
+  (<xref alt="Anthony Lewis, 2015" rid="ref-getdist" ref-type="bibr">Anthony
+  Lewis, 2015</xref>),
+  <ext-link ext-link-type="uri" xlink:href="https://corner.readthedocs.io/en/latest/">corner</ext-link>
+  (<xref alt="Foreman-Mackey, 2016" rid="ref-corner" ref-type="bibr">Foreman-Mackey,
+  2016</xref>),
+  <ext-link ext-link-type="uri" xlink:href="https://pygtc.readthedocs.io/en/latest/">pygtc</ext-link>
+  (<xref alt="Bocquet &amp; Carter, 2016" rid="ref-pygtc" ref-type="bibr">Bocquet
+  &amp; Carter, 2016</xref>),
+  <ext-link ext-link-type="uri" xlink:href="https://dynesty.readthedocs.io">dynesty</ext-link>
+  (<xref alt="Speagle, 2019" rid="ref-dynesty" ref-type="bibr">Speagle,
+  2019</xref>) and
+  <ext-link ext-link-type="uri" xlink:href="http://baudren.github.io/montepython.html">MontePython</ext-link>
+  (<xref alt="Brinckmann &amp; Lesgourgues, 2019" rid="ref-montepython" ref-type="bibr">Brinckmann
+  &amp; Lesgourgues, 2019</xref>). <monospace>anesthetic</monospace>
+  adds to this functionality by:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Performing kernel density estimation using the state-of-the-art
+      <ext-link ext-link-type="uri" xlink:href="https://pypi.org/project/fastkde/">fastkde</ext-link>
+      (<xref alt="O’Brien et al., 2016" rid="ref-fastkde" ref-type="bibr">O’Brien
+      et al., 2016</xref>) algorithm.</p>
+    </list-item>
+    <list-item>
+      <p>Storing samples and plotting grids as a weighted
+      <monospace>pandas.DataFrame</monospace>, which is more consistent
+      with the scientific Python canon, allows for unambiguous access to
+      samples and plots via their reference names, and easy definition
+      of new parameters.</p>
+    </list-item>
+    <list-item>
+      <p>Using a contour colour scheme that is better suited to plotting
+      distributions with uniform probability, which is important if one
+      wishes to plot priors along with posteriors.</p>
+    </list-item>
+  </list>
+  <p>The source code for <monospace>anesthetic</monospace> is available
+  on GitHub, with its automatically generated documentation at
+  <ext-link ext-link-type="uri" xlink:href="https://anesthetic.readthedocs.io/">ReadTheDocs</ext-link>
+  and a pip-installable package on
+  <ext-link ext-link-type="uri" xlink:href="https://pypi.org/project/anesthetic/">PyPi</ext-link>.
+  An example interactive Jupyter notebook is given using
+  <ext-link ext-link-type="uri" xlink:href="https://mybinder.org/v2/gh/williamjameshandley/anesthetic/master?filepath=demo.ipynb">Binder</ext-link>
+  (<xref alt="Jupyter et al., 2018" rid="ref-binder" ref-type="bibr">Jupyter
+  et al., 2018</xref>). Continuous integration is implemented with
+  <ext-link ext-link-type="uri" xlink:href="https://travis-ci.org/williamjameshandley/anesthetic">Travis</ext-link>
+  and
+  <ext-link ext-link-type="uri" xlink:href="https://circleci.com/gh/williamjameshandley/anesthetic">Circle</ext-link>.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>Bug-testing was provided by Pablo Lemos.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-tension">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Handley</surname><given-names>Will</given-names></name>
+          <name><surname>Lemos</surname><given-names>Pablo</given-names></name>
+        </person-group>
+        <article-title>Quantifying tension: interpreting the DES evidence ratio</article-title>
+        <source>arXiv e-prints</source>
+        <year iso-8601-date="2019-02">2019</year><month>02</month>
+        <uri>https://arxiv.org/abs/1902.04029</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-dimensionality">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Handley</surname><given-names>Will</given-names></name>
+          <name><surname>Lemos</surname><given-names>Pablo</given-names></name>
+        </person-group>
+        <article-title>Quantifying dimensionality: Bayesian cosmological model complexities</article-title>
+        <source>arXiv e-prints</source>
+        <year iso-8601-date="2019-03">2019</year><month>03</month>
+        <uri>https://arxiv.org/abs/1903.06682</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-skilling">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Skilling</surname><given-names>John</given-names></name>
+        </person-group>
+        <article-title>Nested sampling for general bayesian computation</article-title>
+        <source>Bayesian Analysis.</source>
+        <publisher-name>International Society for Bayesian Analysis</publisher-name>
+        <year iso-8601-date="2006-12">2006</year><month>12</month>
+        <volume>1</volume>
+        <issue>4</issue>
+        <uri>https://doi.org/10.1214/06-BA127</uri>
+        <pub-id pub-id-type="doi">10.1214/06-BA127</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-trotta">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Trotta</surname><given-names>R.</given-names></name>
+        </person-group>
+        <article-title>Bayes in the sky: Bayesian inference and model selection in cosmology</article-title>
+        <source>Contemporary Physics</source>
+        <year iso-8601-date="2008-03">2008</year><month>03</month>
+        <volume>49</volume>
+        <uri>https://arxiv.org/abs/0803.4089</uri>
+        <pub-id pub-id-type="doi">10.1080/00107510802066753</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-multinest">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Feroz</surname><given-names>F.</given-names></name>
+          <name><surname>Hobson</surname><given-names>M. P.</given-names></name>
+          <name><surname>Bridges</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>MULTINEST: an efficient and robust Bayesian inference tool for cosmology and particle physics</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <year iso-8601-date="2009-10">2009</year><month>10</month>
+        <volume>398</volume>
+        <uri>https://arxiv.org/abs/0809.3437</uri>
+        <pub-id pub-id-type="doi">10.1111/j.1365-2966.2009.14548.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-polychord0">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Handley</surname><given-names>W. J.</given-names></name>
+          <name><surname>Hobson</surname><given-names>M. P.</given-names></name>
+          <name><surname>Lasenby</surname><given-names>A. N.</given-names></name>
+        </person-group>
+        <article-title>POLYCHORD: nested sampling for cosmology</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <year iso-8601-date="2015-06">2015</year><month>06</month>
+        <volume>450</volume>
+        <uri>https://arxiv.org/abs/1502.01856</uri>
+        <pub-id pub-id-type="doi">10.1093/mnrasl/slv047</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-polychord1">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Handley</surname><given-names>W. J.</given-names></name>
+          <name><surname>Hobson</surname><given-names>M. P.</given-names></name>
+          <name><surname>Lasenby</surname><given-names>A. N.</given-names></name>
+        </person-group>
+        <article-title>POLYCHORD: next-generation nested sampling</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <year iso-8601-date="2015-11">2015</year><month>11</month>
+        <volume>453</volume>
+        <uri>https://arxiv.org/abs/1506.00171</uri>
+        <pub-id pub-id-type="doi">10.1093/mnras/stv1911</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mcmc">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hastings</surname><given-names>W. K.</given-names></name>
+        </person-group>
+        <article-title>Monte Carlo sampling methods using Markov chains and their applications</article-title>
+        <source>Biometrika</source>
+        <publisher-name>[Oxford University Press, Biometrika Trust]</publisher-name>
+        <year iso-8601-date="1970">1970</year>
+        <volume>57</volume>
+        <issue>1</issue>
+        <issn>00063444</issn>
+        <uri>http://www.jstor.org/stable/2334940</uri>
+        <pub-id pub-id-type="doi">10.2307/2334940</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-dnest">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Brewer</surname><given-names>Brendon</given-names></name>
+          <name><surname>Foreman-Mackey</surname><given-names>Daniel</given-names></name>
+        </person-group>
+        <article-title>DNest4: Diffusive nested sampling in c++ and python</article-title>
+        <source>Journal of Statistical Software, Articles</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>86</volume>
+        <issue>7</issue>
+        <issn>1548-7660</issn>
+        <uri>https://www.jstatsoft.org/v086/i07</uri>
+        <pub-id pub-id-type="doi">10.18637/jss.v086.i07</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gambit">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>The GAMBIT Scanner Workgroup: </string-name>
+        </person-group>
+        <article-title>Comparison of statistical sampling methods with ScannerBit, the GAMBIT scanning module</article-title>
+        <source>The European Physical Journal C</source>
+        <year iso-8601-date="2017-11-13">2017</year><month>11</month><day>13</day>
+        <volume>77</volume>
+        <issue>11</issue>
+        <issn>1434-6052</issn>
+        <uri>https://doi.org/10.1140/epjc/s10052-017-5274-y</uri>
+        <pub-id pub-id-type="doi">10.1140/epjc/s10052-017-5274-y</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-dynesty">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Speagle</surname><given-names>Joshua S</given-names></name>
+        </person-group>
+        <article-title>dynesty: A Dynamic Nested Sampling Package for Estimating Bayesian Posteriors and Evidences</article-title>
+        <source>arXiv e-prints</source>
+        <year iso-8601-date="2019-04">2019</year><month>04</month>
+        <uri>https://arxiv.org/abs/1904.02180</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-dypolychord">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Higson</surname><given-names>Edward</given-names></name>
+        </person-group>
+        <article-title>dyPolyChord: Dynamic nested sampling with PolyChord</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>3</volume>
+        <issue>29</issue>
+        <uri>http://joss.theoj.org/papers/10.21105/joss.00965</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.00965</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pygtc">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bocquet</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Carter</surname><given-names>Faustin W.</given-names></name>
+        </person-group>
+        <article-title>Pygtc: Beautiful parameter covariance plots (aka. Giant triangle confusograms)</article-title>
+        <source>The Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2016-10">2016</year><month>10</month>
+        <volume>1</volume>
+        <issue>6</issue>
+        <uri>http://dx.doi.org/10.21105/joss.00046</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.00046</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-getdist">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Lewis</surname><given-names>Anthony</given-names></name>
+        </person-group>
+        <article-title>Getdist github repository</article-title>
+        <year iso-8601-date="2015">2015</year>
+        <uri>https://github.com/cmbant/getdist</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-corner">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Foreman-Mackey</surname><given-names>Daniel</given-names></name>
+        </person-group>
+        <article-title>Corner.py: Scatterplot matrices in python</article-title>
+        <source>The Journal of Open Source Software</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>24</volume>
+        <uri>http://dx.doi.org/10.5281/zenodo.45906</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.00024</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-KL">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kullback</surname><given-names>S.</given-names></name>
+          <name><surname>Leibler</surname><given-names>R. A.</given-names></name>
+        </person-group>
+        <article-title>On information and sufficiency</article-title>
+        <source>Ann. Math. Statist.</source>
+        <publisher-name>The Institute of Mathematical Statistics</publisher-name>
+        <year iso-8601-date="1951-03">1951</year><month>03</month>
+        <volume>22</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1214/aoms/1177729694</uri>
+        <pub-id pub-id-type="doi">10.1214/aoms/1177729694</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-cosmosis">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zuntz</surname><given-names>J.</given-names></name>
+          <name><surname>Paterno</surname><given-names>M.</given-names></name>
+          <name><surname>Jennings</surname><given-names>E.</given-names></name>
+          <name><surname>Rudd</surname><given-names>D.</given-names></name>
+          <name><surname>Manzotti</surname><given-names>A.</given-names></name>
+          <name><surname>Dodelson</surname><given-names>S.</given-names></name>
+          <name><surname>Bridle</surname><given-names>S.</given-names></name>
+          <name><surname>Sehrish</surname><given-names>S.</given-names></name>
+          <name><surname>Kowalkowski</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>CosmoSIS: Modular cosmological parameter estimation</article-title>
+        <source>Astronomy and Computing</source>
+        <year iso-8601-date="2015-09">2015</year><month>09</month>
+        <volume>12</volume>
+        <uri>https://arxiv.org/abs/1409.3409</uri>
+        <pub-id pub-id-type="doi">10.1016/j.ascom.2015.05.005</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-montepython">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Brinckmann</surname><given-names>Thejs</given-names></name>
+          <name><surname>Lesgourgues</surname><given-names>Julien</given-names></name>
+        </person-group>
+        <article-title>MontePython 3: Boosted MCMC sampler and other features</article-title>
+        <source>Physics of the Dark Universe</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>24</volume>
+        <issn>2212-6864</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S2212686418302309</uri>
+        <pub-id pub-id-type="doi">10.1016/j.dark.2018.100260</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-cosmomc">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lewis</surname><given-names>Antony</given-names></name>
+          <name><surname>Bridle</surname><given-names>Sarah</given-names></name>
+        </person-group>
+        <article-title>Cosmological parameters from CMB and other data: A Monte Carlo approach</article-title>
+        <source>Phys. Rev.</source>
+        <year iso-8601-date="2002">2002</year>
+        <volume>D66</volume>
+        <uri>https://arxiv.org/abs/astro-ph/0205436</uri>
+        <pub-id pub-id-type="doi">10.1103/PhysRevD.66.103511</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-fastkde">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>O’Brien</surname><given-names>Travis A.</given-names></name>
+          <name><surname>Kashinath</surname><given-names>Karthik</given-names></name>
+          <name><surname>Cavanaugh</surname><given-names>Nicholas R.</given-names></name>
+          <name><surname>Collins</surname><given-names>William D.</given-names></name>
+          <name><surname>O’Brien</surname><given-names>John P.</given-names></name>
+        </person-group>
+        <article-title>A fast and objective multidimensional kernel density estimation method: fastKDE</article-title>
+        <source>Computational Statistics &amp; Data Analysis</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>101</volume>
+        <issn>0167-9473</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S0167947316300408</uri>
+        <pub-id pub-id-type="doi">10.1016/j.csda.2016.02.014</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-binder">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <string-name>Jupyter et al.</string-name>
+        </person-group>
+        <article-title>Binder 2.0 - Reproducible, Interactive, Sharable Environments for Science at Scale.</article-title>
+        <year iso-8601-date="2018">2018</year>
+        <pub-id pub-id-type="doi">10.25080/Majora-4af1f417-011</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3641</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03641</article-id>
+<title-group>
+<article-title>A Fast Iterative Method Python package</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<string-name>Thomas Grandits</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Institute of Computer Graphics and Vision, TU
+Graz</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<volume>6</volume>
+<issue>66</issue>
+<fpage>3641</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>eikonal</kwd>
+<kwd>partial differential equations</kwd>
+<kwd>cuda</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The anisotropic eikonal equation is a non-linear partial
+  differential equation, given by In practice, this problem is often
+  associated with computing the earliest arrival times
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϕ</mml:mi></mml:math></alternatives></inline-formula>
+  of a wave from a set of given starting points
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{x}_0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mn>0</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+  through a heterogeneous medium (i.e. different velocities are assigned
+  throughout the medium). This equation yields infinitely many weak
+  solutions
+  (<xref alt="Evans, 2010" rid="ref-evans_partial_2010" ref-type="bibr">Evans,
+  2010</xref>) and can thus not be straight-forwardly solved using
+  standard Finite Element approaches.</p>
+  <p><monospace>fim-python</monospace> implements the Fast Iterative
+  Method (FIM), proposed in
+  (<xref alt="Fu et al., 2013" rid="ref-fu_fast_2013" ref-type="bibr">Fu
+  et al., 2013</xref>), purely in Python to solve the anisotropic
+  eikonal equation by finding its unique viscosity solution. In this
+  scenario, we compute <inline-formula><alternatives>
+  <tex-math><![CDATA[\phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϕ</mml:mi></mml:math></alternatives></inline-formula>
+  on tetrahedral/triangular meshes or line networks for a given
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[D]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>D</mml:mi></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{x}_0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mn>0</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[g]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>g</mml:mi></mml:math></alternatives></inline-formula>.
+  The method is implemented both on the CPU using
+  <ext-link ext-link-type="uri" xlink:href="https://numba.pydata.org/"><monospace>numba</monospace></ext-link>
+  and
+  <ext-link ext-link-type="uri" xlink:href="https://numpy.org/"><monospace>numpy</monospace></ext-link>,
+  as well as the GPU with the help of
+  <ext-link ext-link-type="uri" xlink:href="https://cupy.dev/"><monospace>cupy</monospace></ext-link>
+  (depends on
+  <ext-link ext-link-type="uri" xlink:href="https://developer.nvidia.com/cuda-toolkit">CUDA</ext-link>).
+  The library is meant to be easily and rapidly used for repeated
+  evaluations on a mesh.</p>
+  <p>The FIM locally computes an update rule to find the path the
+  wavefront will take through a single element. Since the algorithm is
+  restricted to linear elements, the path through an element will also
+  be a straight line. In the case of tetrahedral domains, the FIM thus
+  tries to find the path of the linear update from a face spanned by
+  three vertices <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{v}_1, \mathbf{v}_2, \mathbf{v}_3]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐯</mml:mi></mml:mstyle><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐯</mml:mi></mml:mstyle><mml:mn>2</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐯</mml:mi></mml:mstyle><mml:mn>3</mml:mn></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+  to the opposite vertex <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{v}_4]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐯</mml:mi></mml:mstyle><mml:mn>4</mml:mn></mml:msub></mml:math></alternatives></inline-formula>.
+  <xref alt="Figure 1" rid="figU003Aupdate">Figure 1</xref> visualizes
+  the update. For triangles and lines, the algorithm behaves similarly
+  but the update origin is limited to a side or vertex respectively. The
+  exact equations used to solve this problem in this repository were
+  previously described (among others) in
+  (<xref alt="Grandits et al., 2020" rid="ref-grandits_inverse_2020" ref-type="bibr">Grandits
+  et al., 2020</xref>).</p>
+  <fig>
+    <caption><p>Update inside a single
+    tetrahedron<styled-content id="figU003Aupdate"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="jpeg" xlink:href="docs/figs/update_fig.jpg" xlink:title="Update inside a single tetrahedron" />
+  </fig>
+  <p>Two different methods are implemented in
+  <monospace>fim-python</monospace>: In the <italic>Jacobi</italic>
+  method, the above local update rule is computed for all elements in
+  each iteration until the change between two subsequent iterations is
+  smaller than a chosen <inline-formula><alternatives>
+  <tex-math><![CDATA[\varepsilon]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ε</mml:mi></mml:math></alternatives></inline-formula>.
+  This version of the algorithm is bested suited for the GPU, since it
+  is optimal for a SIMD (single instruction multiple data) architecture.
+  The <italic>active list</italic> method is more closely related to the
+  method presented in
+  (<xref alt="Fu et al., 2013" rid="ref-fu_fast_2013" ref-type="bibr">Fu
+  et al., 2013</xref>): We keep track of all vertices that require a
+  recomputation in the current iteration on a so-called active list
+  which we keep up-to-date.</p>
+</sec>
+<sec id="comparison-to-other-tools">
+  <title>Comparison to other tools</title>
+  <p>There are other tools available to solve variants of the eikonal
+  equation, but they differ in functionality to
+  <monospace>fim-python</monospace>.</p>
+  <p><ext-link ext-link-type="uri" xlink:href="https://pypi.org/project/scikit-fmm/"><monospace>scikit-fmm</monospace></ext-link>
+  implements the Fast Marching Method (FMM)
+  (<xref alt="Sethian, 1996" rid="ref-sethian_fast_1996" ref-type="bibr">Sethian,
+  1996</xref>), which was designed to solve the isotropic eikonal
+  equation (<inline-formula><alternatives>
+  <tex-math><![CDATA[D = c I]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>D</mml:mi><mml:mo>=</mml:mo><mml:mi>c</mml:mi><mml:mi>I</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  for <inline-formula><alternatives>
+  <tex-math><![CDATA[c \in \mathbb{R}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>c</mml:mi><mml:mo>∈</mml:mo><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle></mml:mrow></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[I]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>I</mml:mi></mml:math></alternatives></inline-formula>
+  being the identity matrix). The library works on uniform grids, rather
+  than meshes.</p>
+  <p><ext-link ext-link-type="uri" xlink:href="https://github.com/SCIInstitute/SCI-Solver_Eikonal"><monospace>GPUTUM: Unstructured Eikonal</monospace></ext-link>
+  implements the FIM in CUDA for triangulated surfaces and tetrahedral
+  meshes, but has no Python bindings and is designed as a command line
+  tool for single evaluations.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>The eikonal equation has many practical applications, including
+  cardiac electrophysiology, image processing and geoscience, to
+  approximate wave propagation through a medium. In the example of
+  cardiac electrophysiology
+  (<xref alt="Franzone et al., 2014" rid="ref-franzone2014mathematical" ref-type="bibr">Franzone
+  et al., 2014</xref>), the electrical activation times
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϕ</mml:mi></mml:math></alternatives></inline-formula>
+  are computed throughout the anisotropic heart muscle with varying
+  conduction velocities <inline-formula><alternatives>
+  <tex-math><![CDATA[D]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>D</mml:mi></mml:math></alternatives></inline-formula>.</p>
+  <p><monospace>fim-python</monospace> tries to wrap the FIM for CPU and
+  GPU into an easy-to-use Python package for multiple evaluations with a
+  straight-forward installation over
+  <ext-link ext-link-type="uri" xlink:href="https://pypi.org/">PyPI</ext-link>.
+  This should provide engineers and researchers alike with an accessible
+  tool that allows evaluations of the eikonal equation for general
+  scenarios.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-evans_partial_2010">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Evans</surname><given-names>Lawrence C.</given-names></name>
+        </person-group>
+        <source>Partial differential equations</source>
+        <publisher-name>American Mathematical Society, Providence, RI</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <volume>19</volume>
+        <isbn>978-0-8218-4974-3</isbn>
+        <uri>https://doi.org/10.1090/gsm/019</uri>
+        <pub-id pub-id-type="doi">10.1090/gsm/019</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-fu_fast_2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fu</surname><given-names>Z.</given-names></name>
+          <name><surname>Kirby</surname><given-names>R.</given-names></name>
+          <name><surname>Whitaker</surname><given-names>R.</given-names></name>
+        </person-group>
+        <article-title>A Fast Iterative Method for Solving the Eikonal Equation on Tetrahedral Domains</article-title>
+        <source>SIAM Journal on Scientific Computing</source>
+        <year iso-8601-date="2013-01">2013</year><month>01</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2018-07-26">2018</year><month>07</month><day>26</day></date-in-citation>
+        <volume>35</volume>
+        <issue>5</issue>
+        <issn>1064-8275</issn>
+        <uri>https://epubs.siam.org/doi/abs/10.1137/120881956</uri>
+        <pub-id pub-id-type="doi">10.1137/120881956</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sethian_fast_1996">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sethian</surname><given-names>James A</given-names></name>
+        </person-group>
+        <article-title>A fast marching level set method for monotonically advancing fronts</article-title>
+        <source>Proceedings of the National Academy of Sciences</source>
+        <publisher-name>National Acad. Sciences</publisher-name>
+        <year iso-8601-date="1996">1996</year>
+        <volume>93</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1073/pnas.93.4.1591</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-franzone2014mathematical">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Franzone</surname><given-names>Piero Colli</given-names></name>
+          <name><surname>Pavarino</surname><given-names>Luca Franco</given-names></name>
+          <name><surname>Scacchi</surname><given-names>Simone</given-names></name>
+        </person-group>
+        <source>Mathematical cardiac electrophysiology</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>13</volume>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-04801-7</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-grandits_inverse_2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Grandits</surname><given-names>Thomas</given-names></name>
+          <name><surname>Gillette</surname><given-names>Karli</given-names></name>
+          <name><surname>Neic</surname><given-names>Aurel</given-names></name>
+          <name><surname>Bayer</surname><given-names>Jason</given-names></name>
+          <name><surname>Vigmond</surname><given-names>Edward</given-names></name>
+          <name><surname>Pock</surname><given-names>Thomas</given-names></name>
+          <name><surname>Plank</surname><given-names>Gernot</given-names></name>
+        </person-group>
+        <article-title>An inverse Eikonal method for identifying ventricular activation sequences from epicardial activation maps</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="2020-10">2020</year><month>10</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-07-21">2020</year><month>07</month><day>21</day></date-in-citation>
+        <volume>419</volume>
+        <issn>0021-9991</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S0021999120304745</uri>
+        <pub-id pub-id-type="doi">10.1016/j.jcp.2020.109700</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

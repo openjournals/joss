@@ -1,0 +1,643 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2849</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02849</article-id>
+<title-group>
+<article-title>BetaML: The Beta Machine Learning Toolkit, a
+self-contained repository of Machine Learning algorithms in
+Julia</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1534-8697</contrib-id>
+<string-name>Antonello Lobianco</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-3"/>
+<xref ref-type="aff" rid="aff-4"/>
+<xref ref-type="aff" rid="aff-5"/>
+<xref ref-type="aff" rid="aff-6"/>
+<xref ref-type="corresp" rid="cor-1"><sup>*</sup></xref>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Université de Lorraine</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Université de Strasbourg</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Institut des sciences et industries du vivant et de
+l’environnement (AgroParisTech)</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-4">
+<institution-wrap>
+<institution>Centre national de la recherche scientifique
+(CNRS)</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-5">
+<institution-wrap>
+<institution>Institut national de recherche pour l’agriculture,
+l’alimentation et l’environnement (INRAE)</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-6">
+<institution-wrap>
+<institution>Bureau d’économie théorique et appliquée
+(BETA)</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<author-notes>
+<corresp id="cor-1">* E-mail: <email></email></corresp>
+</author-notes>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-04-19">
+<day>19</day>
+<month>4</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>60</issue>
+<fpage>2849</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>machine learning</kwd>
+<kwd>neural networks</kwd>
+<kwd>deep learning</kwd>
+<kwd>clustering</kwd>
+<kwd>decision trees</kwd>
+<kwd>random forest</kwd>
+<kwd>perceptron</kwd>
+<kwd>data science</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>A series of <italic>machine learning</italic> algorithms has been
+  implemented and bundled together with several “utility” functions in a
+  single package for the Julia programming language. Currently,
+  algorithms are available in the areas of classification (perceptron,
+  kernel perceptron, pegasos), neural networks (feed-forward),
+  clustering (kmeans, kmenoids, gmm, missing values imputation) and
+  decision trees/random forests. Development of these algorithms started
+  following the theoretical notes of the MOOC class “Machine Learning
+  with Python: from Linear Models to Deep Learning” from MITx/edX.</p>
+  <p>This paper presents the motivations and the general approach of the
+  package and gives an overview of its organisation. We refer the reader
+  to the
+  <ext-link ext-link-type="uri" xlink:href="https://sylvaticus.github.io/BetaML.jl/stable">package
+  documentation</ext-link> for instructions on how to use the various
+  algorithms provided or to the MOOC notes available on GitHub
+  (<xref alt="Lobianco, 2020" rid="ref-LobiancoU003A2020" ref-type="bibr">Lobianco,
+  2020</xref>) for their mathematical backgrounds.</p>
+</sec>
+<sec id="motivations-and-objectives">
+  <title>Motivations and objectives</title>
+  <p><monospace>BetaML</monospace> provides one of the simplest way to
+  run ML algorithms in Julia. While many packages already implement
+  specific ML algorithms in Julia, these are fragmented across different
+  packages and often value performances more than usability. For example
+  the popular Deep Learning library Flux
+  (<xref alt="Mike Innes, 2018" rid="ref-InnesU003A2018" ref-type="bibr">Mike
+  Innes, 2018</xref>), while extremely performant and flexible, adopts
+  some designing choices that for a beginner could appear odd, like
+  avoiding the neural network object from the training process, or
+  requiring all parameters to be explicitly defined. In
+  <monospace>BetaML</monospace> we made the choice to allow the user to
+  experiment with the hyper-parameters of the algorithms, learning them
+  one step at the time. Hence for most functions we provide reasonable
+  default parameters that can be overridden when needed. For example,
+  modelling, training and collecting predictions from a feed-forward
+  artificial neural network with one hidden layer can be as simple
+  as:</p>
+  <code language="julia">using BetaML.Nn
+mynn   = buildNetwork([DenseLayer(nIn,nHidden),
+                       DenseLayer(nHidden,nOut)],
+                       squaredCost)
+train!(mynn,xtrain,ytrain)
+ytrain_est = predict(mynn,xtrain)           
+ytest_est  = predict(mynn,xtest)</code>
+  <p>While much better results can be obtained (in general) by scaling
+  the variables and/or tuning their activation functions, the training
+  parameters or the optimisation algorithm, this code snippet already
+  runs the model using common practices like random mini-batches.</p>
+  <p>Still BetaML offers a fair level of flexibility. As we didn’t aim
+  for heavy optimisation, we were able to keep the API (Application
+  Programming Interface) both beginner-friendly and flexible.</p>
+  <p>If a great level of flexibility can already be achieved by just
+  employing the full set of model parameters, the greatest flexibility
+  is obtained by customising BetaML and writing, for example, its own
+  neural network layer type (by subclassing
+  <monospace>AbstractLayer</monospace>), its own sampler (by subclassing
+  <monospace>AbstractDataSampler</monospace>) or its own mixture
+  component (by subclassing <monospace>AbstractMixture</monospace>).
+  While the library is designed for Julia users, the documentation
+  provides examples for using the package from R or Python (thanks to
+  JuliaCall
+  (<xref alt="Li, 2019" rid="ref-LiU003A2019" ref-type="bibr">Li,
+  2019</xref>) and PyJulia
+  (<xref alt="Arakaki et al., 2020" rid="ref-ArakakiU003A2020" ref-type="bibr">Arakaki
+  et al., 2020</xref>) respectively).</p>
+  <p>A few packages try to provide a common Julia framework of the
+  various ML algorithms available in Julia, like ScikitLearn.jl
+  (<xref alt="St-Jean &amp; Okon, 2020" rid="ref-St-JeanU003A2020" ref-type="bibr">St-Jean
+  &amp; Okon, 2020</xref>), AutoMLPipeline.jl
+  (<xref alt="Palmes, 2020" rid="ref-PaulitoU003A2020" ref-type="bibr">Palmes,
+  2020</xref>) or MLJ.jl
+  (<xref alt="Blaom et al., 2019" rid="ref-BlaomU003A2019" ref-type="bibr">Blaom
+  et al., 2019</xref>). They build up on existing Julia (and/or Python)
+  ML specialised packages. While avoiding the problem of “reinventing
+  the wheel”, the wrapping level may unintentionally introduces
+  complications for the end-user, like the need to load the models and
+  learn framework-specific concepts as <italic>model</italic> or
+  <italic>machine</italic> in MLJ or <monospace>@pipeline</monospace>
+  and <monospace>fit_transform!</monospace> in AutoMLPipeline.</p>
+  <p>We chose instead to bundle the main ML algorithms directly within
+  the package. This offers a complementary approach that we feel it is
+  more beginner-friendly.</p>
+  <p>We believe that the BetaML flexibility and simplicity, together
+  with the efficiency and usability of a Just in Time compiled language
+  like Julia and the convenience of having several ML algorithms and
+  data-science utilities all in the same package, will support the needs
+  of that community of students and researchers that, contrary to
+  industrial practitioners or computer science specialists, don’t
+  necessarily need to work with very large datasets that don’t fit in
+  memory or algorithms that require distributed computation.</p>
+</sec>
+<sec id="package-organisation">
+  <title>Package organisation</title>
+  <p>The BetaML toolkit is currently composed of 5 modules:
+  <monospace>Utils</monospace> provides common data-science utility
+  functions to be used in the other modules,
+  <monospace>Perceptron</monospace> supplies linear and non-linear
+  classifiers based on the classical Perceptron algorithm,
+  <monospace>Nn</monospace> allows implementing and training artificial
+  neural networks, <monospace>Clustering</monospace> includes several
+  clustering algorithms and missing value attribution / collaborative
+  filtering algorithms based on clustering and finally
+  <monospace>Trees</monospace> implements decision trees
+  classifiers/regressors together with their most common ensemble
+  method, random forests.</p>
+  <p>All sub-module functionalities are re-exported at the root level,
+  so the user doesn’t need to deal with the sub-modules, but just load
+  the main <monospace>BetaML</monospace> module.</p>
+  <sec id="the-utils-module">
+    <title>The <monospace>Utils</monospace> module</title>
+    <p>The <monospace>Utils</monospace> module is intended to provide
+    functionalities that are either: (a) used in other modules but are
+    not strictly part of that specific module’s logic (for example
+    activation functions would be most likely used in neural networks,
+    but could be of more general usage); (b) general methods that are
+    used alongside the ML algorithms, e.g. to improve their predictions
+    capabilities; or (c) general methods to assess the goodness of fits
+    of ML algorithms.</p>
+    <p>Concerning the fist category <monospace>Utils</monospace>
+    provides “classical” activation functions (and their respective
+    derivatives) like <monospace>relu</monospace>,
+    <monospace>sigmoid</monospace>, <monospace>softmax</monospace>, but
+    also more recent implementations like <monospace>elu</monospace>
+    (<xref alt="Clevert et al., 2015" rid="ref-ClevertU003A2015" ref-type="bibr">Clevert
+    et al., 2015</xref>), <monospace>celu</monospace>
+    (<xref alt="Barron, 2017" rid="ref-BarronU003A2017" ref-type="bibr">Barron,
+    2017</xref>), <monospace>plu</monospace>
+    (<xref alt="Nicolae, 2018" rid="ref-NicolaeU003A2018" ref-type="bibr">Nicolae,
+    2018</xref>), <monospace>softplus</monospace>
+    (<xref alt="Glorot et al., 2011" rid="ref-GlorotU003A2011" ref-type="bibr">Glorot
+    et al., 2011</xref>) and <monospace>mish</monospace>
+    (<xref alt="Misra, 2019" rid="ref-MisraU003A2019" ref-type="bibr">Misra,
+    2019</xref>). Kernel functions (<monospace>radialKernel</monospace>
+    - aka “KBF”, <monospace>polynomialKernel</monospace>), distance
+    metrics (<monospace>l1_distance</monospace> - aka “Manhattan”,
+    <monospace>l2_distance</monospace>,
+    <monospace>l2²_distance</monospace>,
+    <monospace>cosine_distance</monospace>), and functions typically
+    used to improve numerical stability (<monospace>lse</monospace>) are
+    also provided with the intention to be available in the different ML
+    algorithms.</p>
+    <p>Often ML algorithms work better if the data is normalised or
+    dimensions are reduced to those explaining the greatest extent of
+    data variability. This is the purpose of the functions
+    <monospace>scale</monospace> and <monospace>pca</monospace>
+    respectively. <monospace>scale</monospace> scales the data to
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\mu=0]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>μ</mml:mi><mml:mo>=</mml:mo><mml:mn>0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[\sigma=1]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>σ</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>,
+    optionally skipping dimensions that don’t need to be normalised
+    (like categorical ones). The related function
+    <monospace>getScaleFactors</monospace> saves the scaling factors so
+    that inverse scaling (typically for the predictions of the ML
+    algorithm) can be applied. <monospace>pca</monospace> performs
+    Principal Component Analysis, where the user can specify either the
+    number of dimensions to retain or the maximum approximation error
+    that she/he is willing to accept, either <italic>ex-ante</italic> or
+    <italic>ex-post</italic>, after having analysed the distribution of
+    the explained variance by number of dimensions. Other “general
+    support” functions provided are
+    <monospace>oneHotEncoder</monospace>, <monospace>batch</monospace>,
+    <monospace>partition</monospace> and
+    <monospace>crossValidation</monospace>.</p>
+    <p>Concerning the last category, several functions are provided to
+    assess the goodness of fit of a single datapoint or of the whole
+    dataset, whether the output of the ML algorithm is in
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[R^n]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>R</mml:mi><mml:mi>n</mml:mi></mml:msup></mml:math></alternatives></inline-formula>
+    or categorical. Notably, <monospace>accuracy</monospace> provides
+    categorical accuracy given a probabilistic prediction (as PMF) of a
+    datapoint and <monospace>ConfusionMatrix</monospace> allows a
+    detailed analysis of categorical predictions.</p>
+    <p>Finally, the Bayesian Information Criterion
+    <monospace>bic</monospace> and Akaike Information Criterion
+    <monospace>aic</monospace> functions can be used for
+    regularisation.</p>
+  </sec>
+  <sec id="the-perceptron-module">
+    <title>The <monospace>Perceptron</monospace> module</title>
+    <p>It provides the classical Perceptron linear classifier, a
+    <italic>kernelised</italic> version of it and “Pegasos”
+    (<xref alt="Shalev-Shwartz et al., 2011" rid="ref-Shalev-ShwartzU003A2011" ref-type="bibr">Shalev-Shwartz
+    et al., 2011</xref>), a gradient-descent based implementation.</p>
+    <p>The basic Perceptron classifier is implemented in the
+    <monospace>perceptron</monospace> function, where the user can
+    provide the initial weights and retrieve both the final and the
+    average parameters of the classifier. In
+    <monospace>kernelPerceptron</monospace> the user can either pass one
+    of the kernel implemented in <monospace>Utils</monospace> or
+    implement its own kernel function. <monospace>pegasos</monospace>
+    performs the classification using a basic stochastic descent
+    method<xref ref-type="fn" rid="fn1">1</xref>. Finally
+    <monospace>predict</monospace> predicts the binary label given the
+    feature vector and the linear coefficients or the error distribution
+    as obtained by the kernel Perceptron algorithm.</p>
+  </sec>
+  <sec id="the-nn-module">
+    <title>The <monospace>Nn</monospace> module</title>
+    <p>Artificial neural networks can be implemented using the functions
+    provided by the <monospace>Nn</monospace> module. Currently only
+    feed-forward networks for regression or classification tasks are
+    fully provided, but more complex layers (convolutional, pooling,
+    recursive, …) can be eventually defined and implemented directly by
+    the user. The instantiation of the layers required by the network
+    can be done indeed either using one of the layer provided
+    (<monospace>DenseLayer</monospace>,
+    <monospace>DenseNoBiasLayer</monospace> or
+    <monospace>VectorFunctionLayer</monospace>, the latter one being a
+    parameterless layer whose activation function, like
+    <monospace>softMax</monospace> or <monospace>pool1d</monospace>, is
+    applied to the ensemble of the neurons rather than individually on
+    each of them) or by creating a user-defined layer by subclassing the
+    <monospace>AbstractLayer</monospace> type and implementing the
+    functions <monospace>forward</monospace>,
+    <monospace>backward</monospace>, <monospace>getParams</monospace>,
+    <monospace>getGradient</monospace>, <monospace>setParams</monospace>
+    and <monospace>size</monospace>.</p>
+    <p>While in the provided layers the computation of the derivatives
+    for <monospace>backward</monospace> and
+    <monospace>getParams</monospace> is coded
+    manually<xref ref-type="fn" rid="fn2">2</xref>, for complex
+    user-defined layers the two functions can benefit of automatic
+    differentiation packages like
+    <monospace>Zygote</monospace>(<xref alt="Michael Innes, 2018" rid="ref-InnesU003A2018b" ref-type="bibr">Michael
+    Innes, 2018</xref>), eventually wrapped in the function
+    <monospace>autoJacobian</monospace> defined in
+    <monospace>Utils</monospace>.</p>
+    <p>Once the layers are defined, the neural network is modelled by
+    setting the layers in an array, giving the network a cost function
+    and a name. The <monospace>show</monospace> function can be employ
+    to print the structure of the network.</p>
+    <p>The training of the model is done with the highly parametrisable
+    <monospace>train!</monospace> function. In a similar way than for
+    the definition of the layers, one can use for training one of the
+    “standard” optimisation algorithms provided
+    (<monospace>SGD</monospace> and <monospace>ADAM</monospace>, Kingma
+    &amp; Ba
+    (<xref alt="2014" rid="ref-KingmaU003A2014" ref-type="bibr">2014</xref>)),
+    either using their default values or by fine-tuning their
+    parameters, or by defining the optimisation algorithm by subclassing
+    the <monospace>AbstractOptimisationAlgorithm</monospace> type and
+    implementing the <monospace>singleUpdate!</monospace> and eventually
+    <monospace>initOptAlg!</monospace> methods. Note that the
+    <monospace>singleUpdate!</monospace> function provides the algorithm
+    with quite a large set of information from the training process,
+    allowing a wide class of optimisation algorithms to be
+    implemented.</p>
+  </sec>
+</sec>
+<sec id="the-clustering-module">
+  <title>The <monospace>Clustering</monospace> module</title>
+  <p>Both the classical <monospace>kmeans</monospace> and
+  <monospace>kmedoids</monospace> algorithms are provided (with the
+  difference being that the clusters “representatives” can be in any
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[R^n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>R</mml:mi><mml:mi>n</mml:mi></mml:msup></mml:math></alternatives></inline-formula>
+  point in <monospace>kmeans</monospace>, while are restricted to be one
+  of the data point in <monospace>kmedoids</monospace>), where different
+  measure metrics can be provided (either those defined in
+  <monospace>Utils</monospace> or user-provided ones) as well as
+  different initialisation strategies (<monospace>random</monospace>,
+  <monospace>grid</monospace>, <monospace>shuffle</monospace> or
+  <monospace>given</monospace>).</p>
+  <p>Alongside these “hard clustering” algorithms, the
+  <monospace>Clustering</monospace> module provides
+  <monospace>gmm</monospace>, an implementation of the
+  Expectation-Maximisation algorithm to estimate a generative mixture
+  model, with variance-free and variance-constrained Gaussian mixture
+  components already provided (and again, one can write his own mixture
+  component by subclassing <monospace>Mixture</monospace> and
+  implementing <monospace>initMixtures!</monospace>,
+  <monospace>lpdf</monospace>, <monospace>updateParameters!</monospace>
+  and <monospace>npar</monospace>).</p>
+  <p>Notably the <monospace>gmm</monospace> function works also with
+  missing input data either in one or all dimensions (and in the former
+  case parameter estimation will be based using only the available
+  dimensions).</p>
+  <p>This, together with the probabilistic assignment nature of the em
+  algorithm, allows it to be used as base for missing values assignment
+  or even collaborative filtering/recommandation systems in the
+  <monospace>predictMissing</monospace> function.</p>
+</sec>
+<sec id="the-trees-module">
+  <title>The <monospace>Trees</monospace> module</title>
+  <p>Like for the other modules the two algorithms provided by the
+  <monospace>Trees</monospace> module (decision trees and random
+  forests) have an API that tries to maximise the flexibility and
+  user-friendliness: users can train a tree (forest) by just using
+  <monospace>buildTree(xtrain,ytrain)</monospace>
+  (<monospace>buildForest(xtrain,ytrain)</monospace>) and then obtain
+  the predictions with
+  <monospace>predict([trained tree or forest object],ytrain)</monospace>.</p>
+  <p>The nature of the task (classification or regression) is
+  automatically determined by the numerical nature of the training
+  labels but it can be overridden by the user, together with many other
+  parameters. Support for missing data and the direct usage of mixed
+  categorical and numerical dimensions in the data (without the need to
+  encode the categories) make the algorithms of the
+  <monospace>Trees</monospace> module very convenient to use.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This work was supported by a grant overseen by the French National
+  Research Agency (ANR) as part of the “Investissements d’Avenir”
+  program (ANR-11-LABX-0002-01, Lab of Excellence ARBRE).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Shalev-ShwartzU003A2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Shalev-Shwartz</surname><given-names>Shai</given-names></name>
+          <name><surname>Singer</surname><given-names>Yoram</given-names></name>
+          <name><surname>Srebro</surname><given-names>Nathan</given-names></name>
+          <name><surname>Cotter</surname><given-names>Andrew</given-names></name>
+        </person-group>
+        <article-title>Pegasos: Primal estimated sub-gradient solver for SVM</article-title>
+        <source>Mathematical Programming</source>
+        <year iso-8601-date="2011-03-01">2011</year><month>03</month><day>01</day>
+        <volume>127</volume>
+        <issue>1</issue>
+        <issn>1436-4646</issn>
+        <pub-id pub-id-type="doi">10.1007/s10107-010-0420-4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LobiancoU003A2020">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Lobianco</surname><given-names>Antonello</given-names></name>
+        </person-group>
+        <article-title>Student’s notes (2020 run) of the MITx 6.86x course</article-title>
+        <publisher-name>GitHub repository</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://github.com/sylvaticus/MITx_6.86x</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-BlaomU003A2019">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Blaom</surname><given-names>Anthony</given-names></name>
+          <name><surname>Kiraly</surname><given-names>Franz</given-names></name>
+          <name><surname>Lienart</surname><given-names>Thibaut</given-names></name>
+          <name><surname>Vollmer</surname><given-names>Sebastian</given-names></name>
+        </person-group>
+        <source>MLJ, a machine learning framework for julia</source>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3541505</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-InnesU003A2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Innes</surname><given-names>Mike</given-names></name>
+        </person-group>
+        <article-title>Flux: Elegant machine learning with julia</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2018">2018</year>
+        <pub-id pub-id-type="doi">10.21105/joss.00602</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ClevertU003A2015">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Clevert</surname><given-names>Djork-Arné</given-names></name>
+          <name><surname>Unterthiner</surname><given-names>Thomas</given-names></name>
+          <name><surname>Hochreiter</surname><given-names>Sepp</given-names></name>
+        </person-group>
+        <article-title>Fast and accurate deep network learning by exponential linear units (ELUs)</article-title>
+        <year iso-8601-date="2015">2015</year>
+        <uri>https://arxiv.org/abs/1511.07289v5</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-BarronU003A2017">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Barron</surname><given-names>Jonathan T.</given-names></name>
+        </person-group>
+        <article-title>Continuously differentiable exponential linear units</article-title>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://arxiv.org/abs/1704.07483https://arxiv.org/abs/1704.07483</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-NicolaeU003A2018">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Nicolae</surname><given-names>Andrei</given-names></name>
+        </person-group>
+        <article-title>PLU: The piecewise linear unit activation function</article-title>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://arxiv.org/abs/1809.09534</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-GlorotU003A2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Glorot</surname><given-names>Xavier</given-names></name>
+          <name><surname>Bordes</surname><given-names>Antoine</given-names></name>
+          <name><surname>Bengio</surname><given-names>Yoshua</given-names></name>
+        </person-group>
+        <article-title>Deep sparse rectifier neural networks</article-title>
+        <source>Proceedings of Machine Learning Research</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>15</volume>
+        <uri>http://proceedings.mlr.press/v15/glorot11a/glorot11a.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-MisraU003A2019">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Misra</surname><given-names>Diganta</given-names></name>
+        </person-group>
+        <article-title>Mish: A self regularized non-monotonic neural activation function</article-title>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://arxiv.org/abs/1908.08681</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-InnesU003A2018b">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Innes</surname><given-names>Michael</given-names></name>
+        </person-group>
+        <article-title>Don’t unroll adjoint: Differentiating SSA-form programs</article-title>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://arxiv.org/abs/1810.07951</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-KingmaU003A2014">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Kingma</surname><given-names>Diederik P.</given-names></name>
+          <name><surname>Ba</surname><given-names>Jimmy</given-names></name>
+        </person-group>
+        <article-title>Adam: A method for stochastic optimization</article-title>
+        <year iso-8601-date="2014">2014</year>
+        <uri>https://arxiv.org/abs/1412.6980</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-St-JeanU003A2020">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>St-Jean</surname><given-names>Cédric</given-names></name>
+          <name><surname>Okon</surname><given-names>Samuel</given-names></name>
+        </person-group>
+        <article-title>ScikitLearn.jl: Julia implementation of the scikit-learn API</article-title>
+        <publisher-name>GitHub repository</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://github.com/cstjean/ScikitLearn.jl</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-PaulitoU003A2020">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Palmes</surname><given-names>Paulito</given-names></name>
+        </person-group>
+        <article-title>AutoMLPipeline.jl: A package that makes it trivial to create and evaluate machine learning pipeline architectures.</article-title>
+        <publisher-name>GitHub repository</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://github.com/IBM/AutoMLPipeline.jl</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-LiU003A2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Li</surname><given-names>Changcheng</given-names></name>
+        </person-group>
+        <article-title>JuliaCall: An R package for seamless integration between R and Julia</article-title>
+        <source>The Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>4</volume>
+        <issue>35</issue>
+        <pub-id pub-id-type="doi">10.21105/joss.01284</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ArakakiU003A2020">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Arakaki</surname><given-names>Takafumi</given-names></name>
+          <name><surname>Bolewski</surname><given-names>Jake</given-names></name>
+          <name><surname>Deits</surname><given-names>Robin</given-names></name>
+          <name><surname>Fischer</surname><given-names>Keno</given-names></name>
+          <name><surname>Johnson</surname><given-names>Steven G.</given-names></name>
+          <name><surname>Bussonnier</surname><given-names>Matthias</given-names></name>
+          <name><surname>Norton</surname><given-names>Isaiah</given-names></name>
+          <name><surname>Haraldsson</surname><given-names>Páll</given-names></name>
+          <name><surname>Rocklin</surname><given-names>Matthew</given-names></name>
+          <name><surname>Tsur</surname></name>
+          <name><surname>Shah</surname><given-names>Viral B.</given-names></name>
+          <name><surname>Soto</surname><given-names>Daniel</given-names></name>
+          <name><surname>eslgastal</surname></name>
+          <name><surname>Kuthe</surname><given-names>Elias</given-names></name>
+          <name><surname>jakirkham</surname></name>
+          <name><surname>Millea</surname><given-names>Marius</given-names></name>
+          <name><surname>grahamgill</surname></name>
+          <name><surname>fnmdx111</surname></name>
+          <name><surname>Arslan</surname><given-names>Alex</given-names></name>
+          <name><surname>Lukas</surname><given-names>Darren Christopher</given-names></name>
+          <name><surname>Nadlinger</surname><given-names>David</given-names></name>
+          <name><surname>Besson</surname><given-names>Lilian</given-names></name>
+          <name><surname>Olver</surname><given-names>Sheehan</given-names></name>
+          <name><surname>Zhao</surname><given-names>Taine</given-names></name>
+          <name><surname>scls19fr</surname></name>
+        </person-group>
+        <source>JuliaPy/pyjulia: PyJulia</source>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2020-11">2020</year><month>11</month>
+        <pub-id pub-id-type="doi">10.5281/zenodo.4294939</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+<fn-group>
+  <fn id="fn1">
+    <label>1</label><p>We plan to generalise the Pegasos algorithm to
+    use the optimisation algorithms implemented for neural networks.</p>
+  </fn>
+  <fn id="fn2">
+    <label>2</label><p>For the derivatives of the activation function
+    the user can (a) provide one of the derivative functions defined in
+    <monospace>Utils</monospace>, (b) implement it by himself, or (c)
+    just leave the library use automatic differentiation (using Zygote)
+    to compute it.</p>
+  </fn>
+</fn-group>
+</back>
+</article>

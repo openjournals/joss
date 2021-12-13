@@ -1,0 +1,619 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3495</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03495</article-id>
+<title-group>
+<article-title>lhorizon: geometry and targeting via JPL
+Horizons</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-7877-3148</contrib-id>
+<string-name>Michael St. Clair</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Matthew Siegler</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Chief Technical Officer, Million Concepts</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Research Scientist, Planetary Science
+Institute</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-06-25">
+<day>25</day>
+<month>6</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>65</issue>
+<fpage>3495</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>planetary science</kwd>
+<kwd>ephemerides</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>lhorizon</monospace> helps you locate natural and
+  artificial bodies and features in the Solar System. It is built around
+  a thick Python wrapper for the Jet Propulsion Laboratory (JPL) Solar
+  System Dynamics Group <italic>Horizons</italic> service
+  (<xref alt="Jon D. Giorgini, 2015" rid="ref-Giorgini_2015" ref-type="bibr">Jon
+  D. Giorgini, 2015</xref>). <italic>Horizons</italic> is one of the
+  only providers of ready-to-go, no-assembly-required geometry data for
+  almost every object in the Solar System. Other interfaces to
+  <italic>Horizons</italic> exist (see ‘Other Related Work’ below for
+  several examples), but <monospace>lhorizon</monospace> is particularly
+  optimized for stability and time-to-value for large queries and for
+  processing results with reference to arbitrary topocentric coordinate
+  systems.</p>
+  <p><monospace>lhorizon</monospace> offers a flexible, idiomatic,
+  highly performant pseudo-API to <italic>Horizons</italic> that returns
+  data as standard scientific Python objects (<italic>NumPy</italic>,
+  Harris et al.
+  (<xref alt="2020" rid="ref-harris2020array" ref-type="bibr">2020</xref>)
+  <monospace>ndarrays</monospace> and <italic>pandas</italic>
+  DataFrames, The pandas development team
+  (<xref alt="2020" rid="ref-reback2020pandas" ref-type="bibr">2020</xref>)).
+  It provides special handling functions for bulk, chunked, and
+  body-listing queries; it also includes an ancillary module,
+  <monospace>lhorizon.targeter</monospace>, for finding the footprint of
+  an observer’s boresight or field of view in topocentric coordinates on
+  target bodies.</p>
+  <p>We wrote <monospace>lhorizon</monospace> in support of a research
+  effort to use Earth-based radio telescopes, including Arecibo and the
+  Very Large Array (VLA), to perform heat flow mapping of the Moon. We
+  needed to coregister these data with existing models, so we were
+  specifically interested in answering questions like: “in lunar
+  latitude and longitude, where is Arecibo pointing?”. As Earth-based
+  radio telescopes are not primarily designed to answer questions about
+  nearby bodies, their processing pipelines aren’t readily suited for
+  goals like producing lunar maps. Using these instruments in unusual
+  ways also resulted in additional measurement uncertainties
+  (<italic>e.g.</italic>, geometric uncertainty) that we wanted to
+  minimize. <italic>Horizons</italic> was an appealing data source due
+  to its high precision (up to microarcseconds for Moon positions
+  relative to Earth in the relevant time frame, well above the limits of
+  precision introduced by our other constraints) and its ability to
+  deliver tables of positions relative to arbitrary topocentric points,
+  natively referenced to the geodetic datums of their host bodies
+  (<italic>e.g.</italic>, WGS84 for Earth), with robust corrections for
+  light-time, gravitational delays, and aberration.</p>
+  <p>However, with millions of data points widely dispersed across times
+  and observing locations, we needed a highly performant programmatic
+  interface to achieve our task. We were pleased to discover that the
+  <italic>astroquery</italic>
+  (<xref alt="Ginsburg et al., 2019" rid="ref-Ginsburg_2019" ref-type="bibr">Ginsburg
+  et al., 2019</xref>) project included a module for querying
+  <italic>Horizons</italic> called <monospace>jplhorizons</monospace>.
+  This module, written primarily by Michael Mommert around 2016, is
+  tightly integrated with <italic>astroquery</italic>. It uses
+  <italic>astroquery</italic>’s session handlers and parsing system, and
+  returns results in <italic>astropy</italic> tables. Unfortunately, we
+  discovered that due to changes in the behavior of the Horizons CGI
+  endpoint, parts of <monospace>jplhorizons</monospace> that probably
+  worked very well in 2016 no longer worked in 2019. We implemented
+  workarounds, but discovered that the performance of
+  <monospace>jplhorizons</monospace> was inadequate for our use case.
+  <italic>astroquery</italic>’s parsers and <italic>astropy</italic>
+  tables are powerful, but this power comes at a performance cost. The
+  cost is irrelevant for many applications but quite relevant for use
+  cases with tens to hundreds of thousands of data points per analysis.
+  We wrote an entirely new response parser using only builtins,
+  <italic>NumPy</italic>, and <italic>pandas</italic>, resulting in
+  performance improvements of a factor of 10-100x. (Since then, there
+  have been significant backend improvements in <italic>astropy</italic>
+  tables, and <monospace>lhorizon</monospace> typically offers only
+  about 10x speed and 50% memory reduction over the latest version of
+  <monospace>jplhorizons</monospace>. Benchmark notebooks are available
+  in our GitHub repository.)</p>
+  <p>We submitted minimal workarounds for the API issues to
+  <italic>astroquery</italic>, but the changes we made in our fork were
+  too extensive to be folded into <italic>astroquery</italic> via a PR –
+  especially because removing <italic>astropy</italic> objects and
+  idioms was one of our major design goals. We named this fork
+  <monospace>lhorizon</monospace> and have continued developing it as a
+  distinct project.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>JPL’s geometry products are essential elements of academic and
+  industrial projects related to planetary science, astronomy,
+  geosciences, and many other fields. They are useful for any
+  application involving artificial satellites (from data analysis to
+  mission design) or the position of Solar System bodies (even “simple”
+  quantities like solar angles at arbitrary Earth locations). They are
+  thus invaluable public resources. Unfortunately, they are not always
+  easy to use.</p>
+  <p>JPL offers two automated interfaces to its geometry products: the
+  SPICE toolkit
+  (<xref alt="NASA NAIF, 2021" rid="ref-naif_spice_data" ref-type="bibr">NASA
+  NAIF, 2021</xref>), developed by NAIF, NASA’s Navigation and Ancillary
+  Information Facility, and <italic>Horizons</italic>. SPICE is very
+  powerful but presents a high barrier to entry. Using SPICE requires
+  not only acquiring and configuring software, but also collecting the
+  appropriate data files, called “kernels”. There is no central
+  repository for kernels – NAIF’s website comes closest, but crucial
+  kernels are scattered across hundreds of other Planetary Data System
+  (PDS) archives. Loading a consistent kernel pool is challenging and
+  requires scripting in a domain-specific markup language. Learning the
+  SPICE toolkit can be challenging for both specialists and for general
+  users who need quick access to geometry data. SPICE implementations
+  exist in several languages, and excellent wrappers exist (notably the
+  idiomatic Python wrapper <italic>SpiceyPy</italic>
+  (<xref alt="Annex et al., 2020" rid="ref-Annex_2020" ref-type="bibr">Annex
+  et al., 2020</xref>)), but they do not solve the conceptual and data
+  access difficulties of SPICE.</p>
+  <p><italic>Horizons</italic> is, by comparison, user-friendly. While
+  it does not implement all of the utilities of the SPICE toolkit, it
+  offers flexibility SPICE does not and contains state information for
+  many sites and bodies for which no SPICE kernels exist.
+  <italic>Horizons</italic> offers several interface methods:
+  interactive web, telnet, email, and web CGI. Because bulk queries to
+  the CGI endpoint are not easy to compose and parsing its responses is
+  not straightforward, simply building URLs for this interface and
+  parsing the returned text significantly improves access to Solar
+  System geometry data – <monospace>lhorizon</monospace> does that and
+  more. Some likely use cases include calculating solar angles on Mars,
+  determining the precise distance from the Solar System barycenter to
+  an artificial satellite, and finding selenodetic coordinates for
+  pixels within the field of view of a terrestrial telescope pointed at
+  the Moon. We include Jupyter Notebooks in our repository that
+  illustrate these uses.</p>
+  <p>An official REST API to <italic>Horizons</italic> is forthcoming
+  but not yet available, and the details of its capabilities have not
+  been publicly released
+  (<xref alt="J. D. Giorgini, 2020" rid="ref-Giorgini_2020" ref-type="bibr">J.
+  D. Giorgini, 2020</xref>). It is likely that high-level wrappers for
+  this API will be useful, and we plan to update
+  <monospace>lhorizon</monospace> to fill this role.</p>
+</sec>
+<sec id="other-related-work">
+  <title>Other Related Work</title>
+  <p>Many wrappers, helpers, and interfaces for
+  <italic>Horizons</italic> have been developed, though most are
+  incomplete, defunct, or encapsulated in other applications. They
+  include:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p><italic>py-NASA-horizons</italic>, a vectors query wrapper;
+      abandoned since 2013 and no longer functional
+      (<xref alt="tpltnt (pseudonymous), 2013" rid="ref-py_nasa_horizons_repo" ref-type="bibr">tpltnt
+      (pseudonymous), 2013</xref>).</p>
+    </list-item>
+    <list-item>
+      <p>Mihok’s <italic>HORIZON-JPL</italic>, a REST API; abandoned
+      since 2014 and no longer functional
+      (<xref alt="Mihok, 2014" rid="ref-horizon_jpl_repo" ref-type="bibr">Mihok,
+      2014</xref>).</p>
+    </list-item>
+    <list-item>
+      <p>Fejes’ <italic>JS-HORIZONS</italic>, a JavaScript library
+      focused on physical rather than geometry data
+      (<xref alt="Fejes, 2020" rid="ref-js_horizons_repo" ref-type="bibr">Fejes,
+      2020</xref>).</p>
+    </list-item>
+  </list>
+  <p>More broadly, libraries like
+  <monospace>astropy.coordinates</monospace>
+  (<xref alt="A. M. Price-Whelan et al., 2018" rid="ref-astropy_2018" ref-type="bibr">A.
+  M. Price-Whelan et al., 2018</xref>) and <italic>Skyfield</italic>
+  (<xref alt="Rhodes, 2019" rid="ref-skyfield_2019" ref-type="bibr">Rhodes,
+  2019</xref>) that perform calculations based on JPL ephemerides are
+  similar in application to <monospace>lhorizon</monospace> and should
+  be considered by potential users.</p>
+  <p>This application space also includes lower-level ephemeris toolkits
+  other than SPICE that may be preferable for some applications. For
+  instance, the CALCEPH
+  (<xref alt="M. Gastineau, 2021" rid="ref-calceph" ref-type="bibr">M.
+  Gastineau, 2021</xref>) library, developed by the IMCCE of the
+  Observatoire de Paris, offers interfaces to many programming languages
+  and is compatible with a wider variety of ephemeris formats than
+  SPICE.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This work was supported by a NASA Solar System Workings grant,
+  #NNX16AQ10G, and a NASA Solar System Observations grant,
+  #NNX17AF12G.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Giorgini_2015">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Giorgini</surname><given-names>Jon D.</given-names></name>
+        </person-group>
+        <article-title>Status of the JPL Horizons Ephemeris System</article-title>
+        <source>IAU general assembly</source>
+        <year iso-8601-date="2015-08">2015</year><month>08</month>
+        <volume>29</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-Ginsburg_2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ginsburg</surname><given-names>Adam</given-names></name>
+          <name><surname>Sipőcz</surname><given-names>Brigitta M.</given-names></name>
+          <name><surname>Brasseur</surname><given-names>C. E.</given-names></name>
+          <name><surname>Cowperthwaite</surname><given-names>Philip S.</given-names></name>
+          <name><surname>Craig</surname><given-names>Matthew W.</given-names></name>
+          <name><surname>Deil</surname><given-names>Christoph</given-names></name>
+          <name><surname>Guillochon</surname><given-names>James</given-names></name>
+          <name><surname>Guzman</surname><given-names>Giannina</given-names></name>
+          <name><surname>Liedtke</surname><given-names>Simon</given-names></name>
+          <name><surname>Lim</surname><given-names>Pey Lian</given-names></name>
+          <name><surname>Lockhart</surname><given-names>Kelly E.</given-names></name>
+          <name><surname>Mommert</surname><given-names>Michael</given-names></name>
+          <name><surname>Morris</surname><given-names>Brett M.</given-names></name>
+          <name><surname>Norman</surname><given-names>Henrik</given-names></name>
+          <name><surname>Parikh</surname><given-names>Madhura</given-names></name>
+          <name><surname>Persson</surname><given-names>Magnus V.</given-names></name>
+          <name><surname>Robitaille</surname><given-names>Thomas P.</given-names></name>
+          <name><surname>Segovia</surname><given-names>Juan-Carlos</given-names></name>
+          <name><surname>Singer</surname><given-names>Leo P.</given-names></name>
+          <name><surname>Tollerud</surname><given-names>Erik J.</given-names></name>
+          <name><surname>Val-Borro</surname><given-names>Miguel de</given-names></name>
+          <name><surname>Valtchanov</surname><given-names>Ivan</given-names></name>
+          <name><surname>and</surname><given-names>Julien Woillez</given-names></name>
+        </person-group>
+        <article-title>Astroquery: An astronomical web-querying package in python</article-title>
+        <source>The Astronomical Journal</source>
+        <publisher-name>American Astronomical Society</publisher-name>
+        <year iso-8601-date="2019-02">2019</year><month>02</month>
+        <volume>157</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.3847/1538-3881/aafc33</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-horizon_jpl_repo">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Mihok</surname><given-names>Matthew</given-names></name>
+        </person-group>
+        <article-title>Horizon-jpl</article-title>
+        <publisher-name>GitHub</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <uri>https://github.com/mihok/horizon-jpl</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Annex_2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Annex</surname><given-names>Andrew</given-names></name>
+          <name><surname>Pearson</surname><given-names>Ben</given-names></name>
+          <name><surname>Seignovert</surname><given-names>Benoı̂t</given-names></name>
+          <name><surname>Carcich</surname><given-names>Brian</given-names></name>
+          <name><surname>Eichhorn</surname><given-names>Helge</given-names></name>
+          <name><surname>Mapel</surname><given-names>Jesse</given-names></name>
+          <name><surname>Forstner</surname><given-names>Johan von</given-names></name>
+          <name><surname>McAuliffe</surname><given-names>Jonathan</given-names></name>
+          <name><surname>Rio</surname><given-names>Jorge del</given-names></name>
+          <name><surname>Berry</surname><given-names>Kristin</given-names></name>
+          <name><surname>Aye</surname><given-names>K.-Michael</given-names></name>
+          <name><surname>Stefko</surname><given-names>Marcel</given-names></name>
+          <name><surname>Val-Borro</surname><given-names>Miguel de</given-names></name>
+          <name><surname>Kulumani</surname><given-names>Shankar</given-names></name>
+          <name><surname>Murakami</surname><given-names>Shin-ya</given-names></name>
+        </person-group>
+        <article-title>SpiceyPy: A pythonic wrapper for the SPICE toolkit</article-title>
+        <source>Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2020-02">2020</year><month>02</month>
+        <volume>5</volume>
+        <issue>46</issue>
+        <pub-id pub-id-type="doi">10.21105/joss.02050</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Giorgini_2020">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <name><surname>Giorgini</surname><given-names>J. D.</given-names></name>
+        </person-group>
+        <article-title>JPL horizons overview and future plans</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://lsst-sssc.github.io/Sprint2020/talks/Day-2_Giorgini_Horizons_LSST20200617.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-js_horizons_repo">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Fejes</surname><given-names>Zachary</given-names></name>
+        </person-group>
+        <article-title>JS-HORIZONS</article-title>
+        <publisher-name>GitHub</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://github.com/zachfejes/js-horizons</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-naif_spice_data">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>NASA NAIF</string-name>
+        </person-group>
+        <article-title>NAIF spice data</article-title>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://naif.jpl.nasa.gov/naif/data.html</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-py_nasa_horizons_repo">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>tpltnt (pseudonymous)</string-name>
+        </person-group>
+        <article-title>Py-NASA-horizons</article-title>
+        <publisher-name>GitHub</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <uri>https://github.com/tpltnt/py-NASA-horizons</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-astropy_2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>A. M. Price-Whelan</surname></name>
+          <name><surname>Sipőcz</surname><given-names>B. M.</given-names></name>
+          <name><surname>Günther</surname><given-names>H. M.</given-names></name>
+          <name><surname>Lim</surname><given-names>P. L.</given-names></name>
+          <name><surname>Crawford</surname><given-names>S. M.</given-names></name>
+          <name><surname>Conseil</surname><given-names>S.</given-names></name>
+          <name><surname>Shupe</surname><given-names>D. L.</given-names></name>
+          <name><surname>Craig</surname><given-names>M. W.</given-names></name>
+          <name><surname>Dencheva</surname><given-names>N.</given-names></name>
+          <name><surname>Ginsburg</surname><given-names>A.</given-names></name>
+          <name><surname>VanderPlas</surname><given-names>J. T.</given-names></name>
+          <name><surname>Bradley</surname><given-names>L. D.</given-names></name>
+          <name><surname>Pérez-Suárez</surname><given-names>D.</given-names></name>
+          <name><surname>Val-Borro</surname><given-names>M. de</given-names></name>
+          <name><surname>Aldcroft</surname><given-names>T. L.</given-names></name>
+          <name><surname>Cruz</surname><given-names>K. L.</given-names></name>
+          <name><surname>Robitaille</surname><given-names>T. P.</given-names></name>
+          <name><surname>Tollerud</surname><given-names>E. J.</given-names></name>
+          <name><surname>Ardelean</surname><given-names>C.</given-names></name>
+          <name><surname>Babej</surname><given-names>T.</given-names></name>
+          <name><surname>Bach</surname><given-names>Y. P.</given-names></name>
+          <name><surname>Bachetti</surname><given-names>M.</given-names></name>
+          <name><surname>Bakanov</surname><given-names>A. V.</given-names></name>
+          <name><surname>Bamford</surname><given-names>S. P.</given-names></name>
+          <name><surname>Barentsen</surname><given-names>G.</given-names></name>
+          <name><surname>Barmby</surname><given-names>P.</given-names></name>
+          <name><surname>Baumbach</surname><given-names>A.</given-names></name>
+          <name><surname>Berry</surname><given-names>K. L.</given-names></name>
+          <name><surname>Biscani</surname><given-names>F.</given-names></name>
+          <name><surname>Boquien</surname><given-names>M.</given-names></name>
+          <name><surname>Bostroem</surname><given-names>K. A.</given-names></name>
+          <name><surname>Bouma</surname><given-names>L. G.</given-names></name>
+          <name><surname>Brammer</surname><given-names>G. B.</given-names></name>
+          <name><surname>Bray</surname><given-names>E. M.</given-names></name>
+          <name><surname>Breytenbach</surname><given-names>H.</given-names></name>
+          <name><surname>Buddelmeijer</surname><given-names>H.</given-names></name>
+          <name><surname>Burke</surname><given-names>D. J.</given-names></name>
+          <name><surname>Calderone</surname><given-names>G.</given-names></name>
+          <name><surname>Rodrı́guez</surname><given-names>J. L. Cano</given-names></name>
+          <name><surname>Cara</surname><given-names>M.</given-names></name>
+          <name><surname>Cardoso</surname><given-names>J. V. M.</given-names></name>
+          <name><surname>Cheedella</surname><given-names>S.</given-names></name>
+          <name><surname>Copin</surname><given-names>Y.</given-names></name>
+          <name><surname>Corrales</surname><given-names>L.</given-names></name>
+          <name><surname>Crichton</surname><given-names>D.</given-names></name>
+          <name><surname>D’Avella</surname><given-names>D.</given-names></name>
+          <name><surname>Deil</surname><given-names>C.</given-names></name>
+          <name><surname>Depagne</surname></name>
+          <name><surname>Dietrich</surname><given-names>J. P.</given-names></name>
+          <name><surname>Donath</surname><given-names>A.</given-names></name>
+          <name><surname>Droettboom</surname><given-names>M.</given-names></name>
+          <name><surname>Earl</surname><given-names>N.</given-names></name>
+          <name><surname>Erben</surname><given-names>T.</given-names></name>
+          <name><surname>Fabbro</surname><given-names>S.</given-names></name>
+          <name><surname>Ferreira</surname><given-names>L. A.</given-names></name>
+          <name><surname>Finethy</surname><given-names>T.</given-names></name>
+          <name><surname>Fox</surname><given-names>R. T.</given-names></name>
+          <name><surname>Garrison</surname><given-names>L. H.</given-names></name>
+          <name><surname>Gibbons</surname><given-names>S. L. J.</given-names></name>
+          <name><surname>Goldstein</surname><given-names>D. A.</given-names></name>
+          <name><surname>Gommers</surname><given-names>R.</given-names></name>
+          <name><surname>Greco</surname><given-names>J. P.</given-names></name>
+          <name><surname>Greenfield</surname><given-names>P.</given-names></name>
+          <name><surname>Groener</surname><given-names>A. M.</given-names></name>
+          <name><surname>Grollier</surname><given-names>F.</given-names></name>
+          <name><surname>Hagen</surname><given-names>A.</given-names></name>
+          <name><surname>Hirst</surname><given-names>P.</given-names></name>
+          <name><surname>Homeier</surname><given-names>D.</given-names></name>
+          <name><surname>Horton</surname><given-names>A. J.</given-names></name>
+          <name><surname>Hosseinzadeh</surname><given-names>G.</given-names></name>
+          <name><surname>Hu</surname><given-names>L.</given-names></name>
+          <name><surname>Hunkeler</surname><given-names>J. S.</given-names></name>
+          <name><surname>Ivezić</surname></name>
+          <name><surname>Jain</surname><given-names>A.</given-names></name>
+          <name><surname>Jenness</surname><given-names>T.</given-names></name>
+          <name><surname>Kanarek</surname><given-names>G.</given-names></name>
+          <name><surname>Kendrew</surname><given-names>S.</given-names></name>
+          <name><surname>Kern</surname><given-names>N. S.</given-names></name>
+          <name><surname>Kerzendorf</surname><given-names>W. E.</given-names></name>
+          <name><surname>Khvalko</surname><given-names>A.</given-names></name>
+          <name><surname>King</surname><given-names>J.</given-names></name>
+          <name><surname>Kirkby</surname><given-names>D.</given-names></name>
+          <name><surname>Kulkarni</surname><given-names>A. M.</given-names></name>
+          <name><surname>Kumar</surname><given-names>A.</given-names></name>
+          <name><surname>Lee</surname><given-names>A.</given-names></name>
+          <name><surname>Lenz</surname><given-names>D.</given-names></name>
+          <name><surname>Littlefair</surname><given-names>S. P.</given-names></name>
+          <name><surname>Ma</surname><given-names>Z.</given-names></name>
+          <name><surname>Macleod</surname><given-names>D. M.</given-names></name>
+          <name><surname>Mastropietro</surname><given-names>M.</given-names></name>
+          <name><surname>McCully</surname><given-names>C.</given-names></name>
+          <name><surname>Montagnac</surname><given-names>S.</given-names></name>
+          <name><surname>Morris</surname><given-names>B. M.</given-names></name>
+          <name><surname>Mueller</surname><given-names>M.</given-names></name>
+          <name><surname>Mumford</surname><given-names>S. J.</given-names></name>
+          <name><surname>Muna</surname><given-names>D.</given-names></name>
+          <name><surname>Murphy</surname><given-names>N. A.</given-names></name>
+          <name><surname>Nelson</surname><given-names>S.</given-names></name>
+          <name><surname>Nguyen</surname><given-names>G. H.</given-names></name>
+          <name><surname>Ninan</surname><given-names>J. P.</given-names></name>
+          <name><surname>Nöthe</surname><given-names>M.</given-names></name>
+          <name><surname>Ogaz</surname><given-names>S.</given-names></name>
+          <name><surname>Oh</surname><given-names>S.</given-names></name>
+          <name><surname>Parejko</surname><given-names>J. K.</given-names></name>
+          <name><surname>Parley</surname><given-names>N.</given-names></name>
+          <name><surname>Pascual</surname><given-names>S.</given-names></name>
+          <name><surname>Patil</surname><given-names>R.</given-names></name>
+          <name><surname>Patil</surname><given-names>A. A.</given-names></name>
+          <name><surname>Plunkett</surname><given-names>A. L.</given-names></name>
+          <name><surname>Prochaska</surname><given-names>J. X.</given-names></name>
+          <name><surname>Rastogi</surname><given-names>T.</given-names></name>
+          <name><surname>Janga</surname><given-names>V. Reddy</given-names></name>
+          <name><surname>Sabater</surname><given-names>J.</given-names></name>
+          <name><surname>Sakurikar</surname><given-names>P.</given-names></name>
+          <name><surname>Seifert</surname><given-names>M.</given-names></name>
+          <name><surname>Sherbert</surname><given-names>L. E.</given-names></name>
+          <name><surname>Sherwood-Taylor</surname><given-names>H.</given-names></name>
+          <name><surname>Shih</surname><given-names>A. Y.</given-names></name>
+          <name><surname>Sick</surname><given-names>J.</given-names></name>
+          <name><surname>Silbiger</surname><given-names>M. T.</given-names></name>
+          <name><surname>Singanamalla</surname><given-names>S.</given-names></name>
+          <name><surname>Singer</surname><given-names>L. P.</given-names></name>
+          <name><surname>Sladen</surname><given-names>P. H.</given-names></name>
+          <name><surname>Sooley</surname><given-names>K. A.</given-names></name>
+          <name><surname>Sornarajah</surname><given-names>S.</given-names></name>
+          <name><surname>Streicher</surname><given-names>O.</given-names></name>
+          <name><surname>Teuben</surname><given-names>P.</given-names></name>
+          <name><surname>Thomas</surname><given-names>S. W.</given-names></name>
+          <name><surname>Tremblay</surname><given-names>G. R.</given-names></name>
+          <name><surname>Turner</surname><given-names>J. E. H.</given-names></name>
+          <name><surname>Terrón</surname><given-names>V.</given-names></name>
+          <name><surname>Kerkwijk</surname><given-names>M. H. van</given-names></name>
+          <name><surname>Vega</surname><given-names>A. de la</given-names></name>
+          <name><surname>Watkins</surname><given-names>L. L.</given-names></name>
+          <name><surname>Weaver</surname><given-names>B. A.</given-names></name>
+          <name><surname>Whitmore</surname><given-names>J. B.</given-names></name>
+          <name><surname>Woillez</surname><given-names>J.</given-names></name>
+          <name><surname>Zabalza</surname><given-names>V.</given-names></name>
+          <name><surname>and</surname></name>
+        </person-group>
+        <article-title>The astropy project: Building an open-science project and status of the v2.0 core package</article-title>
+        <source>The Astronomical Journal</source>
+        <publisher-name>American Astronomical Society</publisher-name>
+        <year iso-8601-date="2018-08">2018</year><month>08</month>
+        <volume>156</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.3847/1538-3881/aabc4f</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-skyfield_2019">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Rhodes</surname><given-names>Brandon</given-names></name>
+        </person-group>
+        <article-title>Skyfield: High precision research-grade positions for planets and earth satellites generator</article-title>
+        <publisher-name>Astrophysics Source Code Library</publisher-name>
+        <year iso-8601-date="2019-07">2019</year><month>07</month>
+        <uri>https://ui.adsabs.harvard.edu/abs/2019ascl.soft07024R/abstract</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-harris2020array">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Harris</surname><given-names>Charles R.</given-names></name>
+          <name><surname>Millman</surname><given-names>K. Jarrod</given-names></name>
+          <name><surname>Walt</surname><given-names>Stéfan J. van der</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Wieser</surname><given-names>Eric</given-names></name>
+          <name><surname>Taylor</surname><given-names>Julian</given-names></name>
+          <name><surname>Berg</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Smith</surname><given-names>Nathaniel J.</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Picus</surname><given-names>Matti</given-names></name>
+          <name><surname>Hoyer</surname><given-names>Stephan</given-names></name>
+          <name><surname>Kerkwijk</surname><given-names>Marten H. van</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Haldane</surname><given-names>Allan</given-names></name>
+          <name><surname>Río</surname><given-names>Jaime Fernández del</given-names></name>
+          <name><surname>Wiebe</surname><given-names>Mark</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Gérard-Marchant</surname><given-names>Pierre</given-names></name>
+          <name><surname>Sheppard</surname><given-names>Kevin</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Abbasi</surname><given-names>Hameer</given-names></name>
+          <name><surname>Gohlke</surname><given-names>Christoph</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+        </person-group>
+        <article-title>Array programming with NumPy</article-title>
+        <source>Nature</source>
+        <publisher-name>Springer Science; Business Media LLC</publisher-name>
+        <year iso-8601-date="2020-09">2020</year><month>09</month>
+        <volume>585</volume>
+        <issue>7825</issue>
+        <uri>https://doi.org/10.1038/s41586-020-2649-2</uri>
+        <pub-id pub-id-type="doi">10.1038/s41586-020-2649-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-reback2020pandas">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>The pandas development team</string-name>
+        </person-group>
+        <source>Pandas-dev/pandas: pandas</source>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2020-02">2020</year><month>02</month>
+        <uri>https://doi.org/10.5281/zenodo.3509134</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3509134</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-calceph">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>M. Gastineau</surname><given-names>A. Fienga</given-names><suffix>J. Laskar</suffix></name>
+        </person-group>
+        <source>CALCEPH</source>
+        <publisher-name>Institut de mécanique céleste et de calcul des éphémérides</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://www.imcce.fr/inpop/calceph/</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

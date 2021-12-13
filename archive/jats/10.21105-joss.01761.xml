@@ -1,0 +1,486 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1761</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01761</article-id>
+<title-group>
+<article-title>xrnet: Hierarchical Regularized Regression to Incorporate
+External Data</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9918-8386</contrib-id>
+<string-name>Garrett M Weaver</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Juan Pablo Lewinger</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Preventive Medicine, University of Southern
+California</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-09-07">
+<day>7</day>
+<month>9</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>44</issue>
+<fpage>1761</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>regularized regression</kwd>
+<kwd>lasso regression</kwd>
+<kwd>ridge regression</kwd>
+<kwd>elastic net regression</kwd>
+<kwd>hierarchical regression</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Regularized regression is an essential tool for both feature
+  selection and prediction with high-dimensional data. A number of R
+  (<xref alt="R Core Team, 2019" rid="ref-R" ref-type="bibr">R Core
+  Team, 2019</xref>) packages have been developed to fit regularized
+  regression models, including <monospace>glmnet</monospace>
+  (<xref alt="Friedman et al., 2010" rid="ref-friedman2010" ref-type="bibr">Friedman
+  et al., 2010</xref>), <monospace>biglasso</monospace>
+  (<xref alt="Zeng &amp; Breheny, 2017" rid="ref-zeng2017" ref-type="bibr">Zeng
+  &amp; Breheny, 2017</xref>), and <monospace>ncvreg</monospace>
+  (<xref alt="Breheny &amp; Huang, 2011" rid="ref-breheny2011" ref-type="bibr">Breheny
+  &amp; Huang, 2011</xref>). These packages can fit multiple model types
+  including linear, multivariate linear, logistic, and Cox regression
+  with different regularization penalties. The penalties control the
+  complexity of the models by shrinking the coefficients toward zero,
+  with the degree of shrinkage controlled by a tuning parameter that is
+  typically selected by cross-validation. In addition to shrinkage,
+  penalties like the lasso, elastic-net, SCAD
+  (<xref alt="Fan &amp; Li, 2001" rid="ref-fan2001" ref-type="bibr">Fan
+  &amp; Li, 2001</xref>), and MCP
+  (<xref alt="Zhang, 2010" rid="ref-zhang2010" ref-type="bibr">Zhang,
+  2010</xref>) also perform feature selection by shrinking some
+  coefficients to exactly zero.</p>
+  <p>In statistical genetics and bioinformatics, there has been an
+  increased interest in extending regularized regression methods to
+  integrate external data that may be informative for the association of
+  high-dimensional genomic features (i.e., gene expression, methylation,
+  genotypes) with a health-related outcome (i.e., cancer recurrence).
+  Potential sources of external information within these domains include
+  genomic annotations that describe the underlying functions of a
+  genomic region, and summary statistics derived from external data
+  sources or previous studies. The primary interest is to exploit the
+  external data to both improve the estimation of the regression
+  coefficients and increase the overall predictive performance of the
+  fitted model.</p>
+  <p>The <monospace>xrnet</monospace> R package implements a novel
+  extension of regularized regression that enables the integration of
+  meta-features, a particular type of external data. Meta-features, also
+  known as meta-variables or co-data, refer to characteristics of the
+  predictor variables. For example, meta-features of a gene expression
+  variable can be the known function/s of the particular gene.
+  Meta-features of a single nucleotide polymorphism (SNP) genotype
+  variable could be information about whether the SNP is within a
+  regulatory region. Let <inline-formula><alternatives>
+  <tex-math><![CDATA[y]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>y</mml:mi></mml:math></alternatives></inline-formula>
+  be an <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>-dimensional
+  outcome vector, <inline-formula><alternatives>
+  <tex-math><![CDATA[X]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>X</mml:mi></mml:math></alternatives></inline-formula>
+  be a set of <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+  potential predictors measured for the <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>
+  observations, and <inline-formula><alternatives>
+  <tex-math><![CDATA[Z]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>Z</mml:mi></mml:math></alternatives></inline-formula>
+  be a set of <inline-formula><alternatives>
+  <tex-math><![CDATA[q]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>q</mml:mi></mml:math></alternatives></inline-formula>
+  meta-features available for the <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+  predictors. Our model is related to a standard two-level hierarchical
+  regression model, where the mean effects of the predictors,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\beta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>β</mml:mi></mml:math></alternatives></inline-formula>,
+  on a outcome are assumed to be dependent on the set of meta-features,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[Z]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>Z</mml:mi></mml:math></alternatives></inline-formula>,
+  through a second set of regression coefficients,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\alpha]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>α</mml:mi></mml:math></alternatives></inline-formula>.</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[y = X\beta + \epsilon]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>y</mml:mi><mml:mo>=</mml:mo><mml:mi>X</mml:mi><mml:mi>β</mml:mi><mml:mo>+</mml:mo><mml:mi>ϵ</mml:mi></mml:mrow></mml:math></alternatives></disp-formula>
+  <disp-formula><alternatives>
+  <tex-math><![CDATA[\beta = \alpha_0 1_p + Z\alpha + \gamma]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>β</mml:mi><mml:mo>=</mml:mo><mml:msub><mml:mi>α</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:msub><mml:mn>1</mml:mn><mml:mi>p</mml:mi></mml:msub><mml:mo>+</mml:mo><mml:mi>Z</mml:mi><mml:mi>α</mml:mi><mml:mo>+</mml:mo><mml:mi>γ</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>where <inline-formula><alternatives>
+  <tex-math><![CDATA[\epsilon]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϵ</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\gamma]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>γ</mml:mi></mml:math></alternatives></inline-formula>
+  are error terms and <inline-formula><alternatives>
+  <tex-math><![CDATA[1_p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mn>1</mml:mn><mml:mi>p</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  denotes a vector of ones of dimension <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>.
+  As a concrete example, assume that <inline-formula><alternatives>
+  <tex-math><![CDATA[X]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>X</mml:mi></mml:math></alternatives></inline-formula>
+  is a set of gene expression features measured on
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>
+  subjects and that <inline-formula><alternatives>
+  <tex-math><![CDATA[Z]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>Z</mml:mi></mml:math></alternatives></inline-formula>
+  is a single meta-feature, <inline-formula><alternatives>
+  <tex-math><![CDATA[Z_1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>Z</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>,
+  consisting of a 0-1 indicator variable for whether each gene in
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[X]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>X</mml:mi></mml:math></alternatives></inline-formula>
+  has function “A”. In this simple case, the hierarchical model assumes
+  that the mean effect of expression on the outcome among genes with
+  function “A” is <inline-formula><alternatives>
+  <tex-math><![CDATA[\alpha_0 +\alpha_1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>α</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mo>+</mml:mo><mml:msub><mml:mi>α</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+  and the effect among genes that do not have function “A” is
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\alpha_0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>α</mml:mi><mml:mn>0</mml:mn></mml:msub></mml:math></alternatives></inline-formula>.</p>
+  <p>The general form of our model extends this two level hierarchy to a
+  high-dimensional setting by jointly modeling
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[X]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>X</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[Z]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>Z</mml:mi></mml:math></alternatives></inline-formula>
+  in a regularized regression framework that accounts for the
+  hierarchical nature of the data. In the case of a continuous outcome,
+  the model can be expressed by the following convex optimization
+  problem.</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[ \displaystyle\min_{\beta, \alpha_0, \alpha}\ \dfrac{1}{2}||y - X\beta||_2^2 + \dfrac{\lambda_1}{r}\sum_{j=1}^p|\beta_j - \alpha_0 - Z^T_j\alpha|^r + \dfrac{\lambda_2}{s}\sum_{k=1}^q|\alpha_k|^s]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:munder><mml:mo>min</mml:mo><mml:mrow><mml:mi>β</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>α</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:mi>α</mml:mi></mml:mrow></mml:munder><mml:mspace width="0.222em"></mml:mspace><mml:mstyle displaystyle="true"><mml:mfrac><mml:mn>1</mml:mn><mml:mn>2</mml:mn></mml:mfrac></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mi>y</mml:mi><mml:mo>−</mml:mo><mml:mi>X</mml:mi><mml:mi>β</mml:mi><mml:msubsup><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mn>2</mml:mn><mml:mn>2</mml:mn></mml:msubsup><mml:mo>+</mml:mo><mml:mstyle displaystyle="true"><mml:mfrac><mml:msub><mml:mi>λ</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mi>r</mml:mi></mml:mfrac></mml:mstyle><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>p</mml:mi></mml:munderover><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:msub><mml:mi>β</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mi>α</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mo>−</mml:mo><mml:msubsup><mml:mi>Z</mml:mi><mml:mi>j</mml:mi><mml:mi>T</mml:mi></mml:msubsup><mml:mi>α</mml:mi><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mi>r</mml:mi></mml:msup><mml:mo>+</mml:mo><mml:mstyle displaystyle="true"><mml:mfrac><mml:msub><mml:mi>λ</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mi>s</mml:mi></mml:mfrac></mml:mstyle><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>k</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>q</mml:mi></mml:munderover><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:msub><mml:mi>α</mml:mi><mml:mi>k</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mi>s</mml:mi></mml:msup></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>In the joint minimization above, <inline-formula><alternatives>
+  <tex-math><![CDATA[\lambda_1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>λ</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\lambda_2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>λ</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+  are hyperparameters and <inline-formula><alternatives>
+  <tex-math><![CDATA[r, s = 1 (lasso), 2(ridge)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>r</mml:mi><mml:mo>,</mml:mo><mml:mi>s</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>l</mml:mi><mml:mi>a</mml:mi><mml:mi>s</mml:mi><mml:mi>s</mml:mi><mml:mi>o</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mn>2</mml:mn><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>r</mml:mi><mml:mi>i</mml:mi><mml:mi>d</mml:mi><mml:mi>g</mml:mi><mml:mi>e</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  determine the type of regularization at each level.
+  <monospace>xrnet</monospace> can also penalize either level with an
+  elastic-net penalty as well. Unlike standard regularized regression,
+  the predictor coefficients, <inline-formula><alternatives>
+  <tex-math><![CDATA[\beta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>β</mml:mi></mml:math></alternatives></inline-formula>,
+  are not shrunk towards zero, but rather towards
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\alpha_01_p + Z\alpha]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>α</mml:mi><mml:msub><mml:mn>01</mml:mn><mml:mi>p</mml:mi></mml:msub></mml:msub><mml:mo>+</mml:mo><mml:mi>Z</mml:mi><mml:mi>α</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  as <inline-formula><alternatives>
+  <tex-math><![CDATA[\lambda_1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>λ</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+  increases. The third term in the model allows for variable selection
+  of the ‘meta-features’ and can shrink <inline-formula><alternatives>
+  <tex-math><![CDATA[\alpha]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>α</mml:mi></mml:math></alternatives></inline-formula>
+  towards zero. To efficiently solve this convex optimization problem
+  for various hyperparameter combinations, the variable substitution
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\gamma = \beta - \alpha_0I_p - Z\alpha]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>γ</mml:mi><mml:mo>=</mml:mo><mml:mi>β</mml:mi><mml:mo>−</mml:mo><mml:msub><mml:mi>α</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:msub><mml:mi>I</mml:mi><mml:mi>p</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:mi>Z</mml:mi><mml:mi>α</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  is used to re-express the problem. The objective function is then a
+  standard regularized regression where the type of regularization and
+  hyperparameter values are variable-specific.</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[\displaystyle\min_{\gamma, \alpha_0, \alpha}\ \dfrac{1}{2}||y - X\gamma - \alpha_0 X 1_p + XZ\alpha)||_2^2 + \dfrac{\lambda_1}{r}\sum_{j=1}^p|\gamma_j|^r + \dfrac{\lambda_2}{s}\sum_{k=1}^q|\alpha_k|^s]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:munder><mml:mo>min</mml:mo><mml:mrow><mml:mi>γ</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>α</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:mi>α</mml:mi></mml:mrow></mml:munder><mml:mspace width="0.222em"></mml:mspace><mml:mstyle displaystyle="true"><mml:mfrac><mml:mn>1</mml:mn><mml:mn>2</mml:mn></mml:mfrac></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mi>y</mml:mi><mml:mo>−</mml:mo><mml:mi>X</mml:mi><mml:mi>γ</mml:mi><mml:mo>−</mml:mo><mml:msub><mml:mi>α</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mi>X</mml:mi><mml:msub><mml:mn>1</mml:mn><mml:mi>p</mml:mi></mml:msub><mml:mo>+</mml:mo><mml:mi>X</mml:mi><mml:mi>Z</mml:mi><mml:mi>α</mml:mi><mml:mo stretchy="false" form="postfix">)</mml:mo><mml:msubsup><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mn>2</mml:mn><mml:mn>2</mml:mn></mml:msubsup><mml:mo>+</mml:mo><mml:mstyle displaystyle="true"><mml:mfrac><mml:msub><mml:mi>λ</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mi>r</mml:mi></mml:mfrac></mml:mstyle><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>p</mml:mi></mml:munderover><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:msub><mml:mi>γ</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mi>r</mml:mi></mml:msup><mml:mo>+</mml:mo><mml:mstyle displaystyle="true"><mml:mfrac><mml:msub><mml:mi>λ</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mi>s</mml:mi></mml:mfrac></mml:mstyle><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>k</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>q</mml:mi></mml:munderover><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:msub><mml:mi>α</mml:mi><mml:mi>k</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mi>s</mml:mi></mml:msup></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>This package extends the coordinate descent algorithm of Friedman
+  (<xref alt="Friedman et al., 2010" rid="ref-friedman2010" ref-type="bibr">Friedman
+  et al., 2010</xref>) to allow for this variable-specific penalization
+  in order to fit the model described above.</p>
+  <p>Along with this extension, <monospace>xrnet</monospace> can fit
+  standard regularized regression models and integrates popular features
+  from the R packages <monospace>glmnet</monospace> and
+  <monospace>biglasso</monospace>. Below is a comparison of features
+  that are available in <monospace>xrnet</monospace>,
+  <monospace>glmnet</monospace>, and <monospace>biglasso</monospace>. In
+  addition to continuous and binary outcomes, there is active
+  development to extend <monospace>xrnet</monospace> to survival
+  outcomes, including Cox regression and accelerated failure time
+  models.</p>
+  <table-wrap>
+    <table>
+      <colgroup>
+        <col width="26%" />
+        <col width="21%" />
+        <col width="24%" />
+        <col width="29%" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>xrnet</th>
+          <th>glmnet</th>
+          <th>biglasso</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Matrix types supported</td>
+          <td>Dense (In-Memory), Sparse (In-Memory), Memory-mapped</td>
+          <td>Dense (In-Memory), Sparse (In-Memory)</td>
+          <td>Memory-mapped</td>
+        </tr>
+        <tr>
+          <td>Outcome types supported</td>
+          <td>Gaussian, Binomial</td>
+          <td>Gaussian, Multiresponse Gaussian, Binomial, Poisson,
+          Cox</td>
+          <td>Gaussian, Binomial</td>
+        </tr>
+        <tr>
+          <td>Feature-specific penalty scaling</td>
+          <td>yes</td>
+          <td>yes</td>
+          <td>yes</td>
+        </tr>
+        <tr>
+          <td>Feature-specific penalty types</td>
+          <td>yes</td>
+          <td>no</td>
+          <td>no</td>
+        </tr>
+        <tr>
+          <td>User controls feature standardization</td>
+          <td>yes</td>
+          <td>yes</td>
+          <td>no</td>
+        </tr>
+        <tr>
+          <td>User controls inclusion of intercept</td>
+          <td>yes</td>
+          <td>yes</td>
+          <td>no</td>
+        </tr>
+        <tr>
+          <td>Box (upper/lower constrains on) estimates</td>
+          <td>yes</td>
+          <td>yes</td>
+          <td>no</td>
+        </tr>
+        <tr>
+          <td>Enhanced feature screening</td>
+          <td>no</td>
+          <td>no</td>
+          <td>yes</td>
+        </tr>
+        <tr>
+          <td>Integration of external data</td>
+          <td>yes</td>
+          <td>no</td>
+          <td>no</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>The core functionality of the package is written in C++ with
+  integration to R by using the Rcpp R package
+  (<xref alt="Eddelbuettel &amp; François, 2011" rid="ref-rcpp" ref-type="bibr">Eddelbuettel
+  &amp; François, 2011</xref>). The Eigen linear algebra library
+  (<xref alt="Guennebaud et al., 2010" rid="ref-eigenweb" ref-type="bibr">Guennebaud
+  et al., 2010</xref>) and RcppEigen
+  (<xref alt="Bates &amp; Eddelbuettel, 2013" rid="ref-rcppEigen" ref-type="bibr">Bates
+  &amp; Eddelbuettel, 2013</xref>) R package are utilized to handle the
+  dense and sparse data structures. Overall, this R package aims to
+  provide a set of functions to fit and tune hierarchical regularized
+  regression models and unifies some of the best features from currently
+  available R packages for regularized regression into a single easy to
+  use interface.</p>
+</sec>
+<sec id="funding-and-support">
+  <title>Funding and Support</title>
+  <p>This work is supported by the National Institute of Health (NIH)
+  Grant P01CA196569.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-R">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>R Core Team</string-name>
+        </person-group>
+        <source>R: A language and environment for statistical computing</source>
+        <publisher-name>R Foundation for Statistical Computing</publisher-name>
+        <publisher-loc>Vienna, Austria</publisher-loc>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://www.R-project.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-friedman2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Friedman</surname><given-names>Jerome</given-names></name>
+          <name><surname>Hastie</surname><given-names>Trevor</given-names></name>
+          <name><surname>Tibshirani</surname><given-names>Robert</given-names></name>
+        </person-group>
+        <article-title>Regularization paths for generalized linear models via coordinate descent</article-title>
+        <source>Journal of Statistical Software</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>33</volume>
+        <issue>1</issue>
+        <uri>http://www.jstatsoft.org/v33/i01/</uri>
+        <pub-id pub-id-type="doi">10.18637/jss.v033.i01</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-zeng2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zeng</surname><given-names>Yaohui</given-names></name>
+          <name><surname>Breheny</surname><given-names>Patrick</given-names></name>
+        </person-group>
+        <article-title>The biglasso package: A memory- and computation-efficient solver for lasso model fitting with big data in R</article-title>
+        <source>ArXiv e-prints</source>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://arxiv.org/abs/1701.05936</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-breheny2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Breheny</surname><given-names>Patrick</given-names></name>
+          <name><surname>Huang</surname><given-names>Jian</given-names></name>
+        </person-group>
+        <article-title>Coordinate descent algorithms for nonconvex penalized regression, with applications to biological feature selection</article-title>
+        <source>Annals of Applied Statistics</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>5</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">doi:10.1214/10-AOAS388</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-fan2001">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fan</surname><given-names>Jianqing</given-names></name>
+          <name><surname>Li</surname><given-names>Runze</given-names></name>
+        </person-group>
+        <article-title>Variable selection via nonconcave penalized likelihood and its oracle properties</article-title>
+        <source>Journal of the American Statistical Association</source>
+        <year iso-8601-date="2001">2001</year>
+        <volume>96</volume>
+        <issue>456</issue>
+        <pub-id pub-id-type="doi">10.1198/016214501753382273</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-zhang2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zhang</surname><given-names>Cun-Hui</given-names></name>
+        </person-group>
+        <article-title>Nearly unbiased variable selection under minimax concave penalty</article-title>
+        <source>The Annals of Statistics</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>38</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1214/09-AOS729</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-eigenweb">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Guennebaud</surname><given-names>Gaël</given-names></name>
+          <name><surname>Jacob</surname><given-names>Benoît</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Eigen v3</article-title>
+        <publisher-name>http://eigen.tuxfamily.org</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-rcppEigen">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bates</surname><given-names>Douglas</given-names></name>
+          <name><surname>Eddelbuettel</surname><given-names>Dirk</given-names></name>
+        </person-group>
+        <article-title>Fast and elegant numerical linear algebra using the RcppEigen package</article-title>
+        <source>Journal of Statistical Software</source>
+        <year iso-8601-date="2013">2013</year>
+        <volume>52</volume>
+        <issue>5</issue>
+        <uri>http://www.jstatsoft.org/v52/i05/</uri>
+        <pub-id pub-id-type="doi">10.18637/jss.v052.i05</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-rcpp">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Eddelbuettel</surname><given-names>Dirk</given-names></name>
+          <name><surname>François</surname><given-names>Romain</given-names></name>
+        </person-group>
+        <article-title>Rcpp: Seamless R and C++ integration</article-title>
+        <source>Journal of Statistical Software</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>40</volume>
+        <issue>8</issue>
+        <uri>http://www.jstatsoft.org/v40/i08/</uri>
+        <pub-id pub-id-type="doi">10.18637/jss.v040.i08</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

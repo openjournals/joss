@@ -1,0 +1,536 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1651</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01651</article-id>
+<title-group>
+<article-title>deepCR: Cosmic Ray Rejection with Deep
+Learning</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9870-5695</contrib-id>
+<string-name>Keming Zhang</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-7777-216X</contrib-id>
+<string-name>Joshua S. Bloom</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Astronomy, University of California,
+Berkeley</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Lawrence Berkeley National Laboratory</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-08-15">
+<day>15</day>
+<month>8</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>41</issue>
+<fpage>1651</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Pytorch</kwd>
+<kwd>astronomy</kwd>
+<kwd>image processing</kwd>
+<kwd>cosmic ray</kwd>
+<kwd>deep learning</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Astronomical imaging and spectroscopy data are frequently corrupted
+  by “cosmic rays” (CR) which are high energy charged particles that are
+  instrumental, terrestrial, or cosmic in origin. When such particles
+  pass through solid state detectors, such as charged coupled devices
+  (CCDs), they create excess flux in the pixels hit which lead to
+  artifacts in images. These artifacts must be identified and either
+  masked or replaced, before further scientific analysis could be done
+  on the image data. It is straightforward to identify these artifacts
+  when multiple exposures of the same field are taken. In such cases, a
+  median image could be calculated from aligned single exposures,
+  effectively creating a CR-free image. Each one of the exposures is
+  then compared with the median image to identify the cosmic rays.
+  However, when CCD read-out times are non-negligible, or when sources
+  of interest are transient or variable, cosmic ray rejection with
+  multiple exposures can be sub-optimal or infeasible. These cases would
+  require specialized algorithms to detect cosmic rays in single
+  images.</p>
+  <fig>
+    <caption><p>Neural network architecture of
+    <monospace>deepCR</monospace>. Feature maps are represented by gray
+    boxes while the number of channels and example feature map
+    dimensions are indicated on the top of and to the left of each
+    feature map, respectively. Different computational operations are
+    marked in the legend to the lower left. Unfilled boxes to the right
+    of blue arrows represent feature maps directly copied from the left,
+    which are to be concatenated with the adjacent feature map. To apply
+    the inpainting model, the predicted mask (dotted box at left) is
+    concatenated with the original image as the input.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/network.png" xlink:title="" />
+  </fig>
+  <p><monospace>deepCR</monospace> is a Python package for single frame
+  cosmic ray rejection which is based on deep learning and written with
+  the Pytorch framework
+  (<xref alt="Paszke et al., 2017" rid="ref-pytorch" ref-type="bibr">Paszke
+  et al., 2017</xref>). Since <monospace>deepCR</monospace> is based on
+  deep learning, different models trained on data taken with different
+  instrument configurations are required, when applied to different
+  data. The current version of <monospace>deepCR</monospace> is
+  prepackaged with model for Hubble Space Telescope ACS/WFC imaging
+  data, and we expect models available to grow with contribution from
+  the community. We plan to host a “model zoo” which enables
+  <monospace>deepCR</monospace> to work across different instrument
+  configurations.</p>
+  <p>The API of <monospace>deepCR</monospace> includes functionality for
+  both applying models and training models. To apply an available model,
+  <monospace>deepCR</monospace> takes in an input image and produces a
+  cosmic ray mask and an “inpainted” image, with the artifact pixels
+  replaced with <monospace>deepCR</monospace> predictions. To train a
+  new model, users would feed in custom dataset to the training API,
+  which is automated. <monospace>deepCR</monospace> works with both CPU,
+  which is well-threaded at application time, and GPU. On GPU, training
+  a new model takes as short as 20 minutes, while applying
+  <monospace>deepCR</monospace> on a 10 Mpix image requires less than
+  0.2 second, orders of magnitude faster than current state of the art
+  <monospace>LACosmic</monospace>
+  (<xref alt="van Dokkum, 2001" rid="ref-lacosmic" ref-type="bibr">van
+  Dokkum, 2001</xref>).</p>
+  <fig>
+    <caption><p>Examples of cosmic ray contaminated image cutouts (first
+    row), deepCR cosmic ray mask predictions (middle row), and images
+    with artifact pixels replaced with deepCR predictions (last
+    row).</p></caption>
+    <graphic mimetype="image" mime-subtype="jpeg" xlink:href="https://raw.githubusercontent.com/profjsb/deepCR/master/imgs/postage-sm.jpg" xlink:title="" />
+  </fig>
+  <p>In the paper accompanying <monospace>deepCR</monospace>
+  (<xref alt="Zhang &amp; Bloom, 2019" rid="ref-deepcr" ref-type="bibr">Zhang
+  &amp; Bloom, 2019</xref>), the authors showed that on Hubble Space
+  Telescope (HST) ACS/WFC data, <monospace>deepCR</monospace> is more
+  robust, and at least as fast as the current state-of-the-art single
+  frame cosmic ray rejection package, <monospace>LACosmic</monospace>.
+  The API of <monospace>deepCR</monospace> serve as a drop in
+  replacement for <monospace>LACosmic</monospace>, so that users may
+  experiment with different packages easily. At reasonable false
+  detection rates, <monospace>deepCR</monospace> achieved near perfect
+  cosmic ray detection in extragalactic and globular cluster fields, and
+  above 90% in more difficult dense stellar fields in nearby resolved
+  galaxies. Since HST imaging is among the hardest cosmic ray rejection
+  to be solved, <monospace>deepCR</monospace> would work well across
+  many different instrument set-ups, including ground based imaging and
+  spectroscopy. The combination of speed and accuracy of
+  <monospace>deepCR</monospace> allows astronomers to potentially save
+  large amounts of precious observational and computational
+  resources.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This work was supported by a Gordon and Betty Moore Foundation
+  Data-Driven Discovery grant, and has made use of the following
+  software:</p>
+  <p>astropy
+  (<xref alt="Astropy Collaboration et al., 2018" rid="ref-astropy" ref-type="bibr">Astropy
+  Collaboration et al., 2018</xref>); astrodrizzle
+  (<xref alt="Hack et al., 2012" rid="ref-astrodrizzle" ref-type="bibr">Hack
+  et al., 2012</xref>); numpy
+  (<xref alt="van der Walt et al., 2011" rid="ref-vdw11" ref-type="bibr">van
+  der Walt et al., 2011</xref>); scipy
+  (<xref alt="Jones et al., 2001" rid="ref-scipy" ref-type="bibr">Jones
+  et al., 2001</xref>); matplotlib
+  (<xref alt="Hunter, 2007" rid="ref-matplotlib" ref-type="bibr">Hunter,
+  2007</xref>); astroscrappy
+  (<xref alt="McCully et al., 2018" rid="ref-astroscrappy" ref-type="bibr">McCully
+  et al., 2018</xref>); pytorch
+  (<xref alt="Paszke et al., 2017" rid="ref-pytorch" ref-type="bibr">Paszke
+  et al., 2017</xref>); Jupyter
+  (<xref alt="Kluyver et al., 2016" rid="ref-jupyter" ref-type="bibr">Kluyver
+  et al., 2016</xref>); Scikit-image
+  (<xref alt="Walt et al., 2014" rid="ref-scikit-image" ref-type="bibr">Walt
+  et al., 2014</xref>)</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-deepcr">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zhang</surname><given-names>K.</given-names></name>
+          <name><surname>Bloom</surname><given-names>J. S.</given-names></name>
+        </person-group>
+        <article-title>deepCR: Cosmic Ray Rejection with Deep Learning</article-title>
+        <source>arXiv e-prints</source>
+        <year iso-8601-date="2019-07">2019</year><month>07</month>
+        <uri>https://arxiv.org/abs/1907.09500</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-lacosmic">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>van Dokkum</surname><given-names>P. G.</given-names></name>
+        </person-group>
+        <article-title>Cosmic-Ray Rejection by Laplacian Edge Detection</article-title>
+        <source></source>
+        <year iso-8601-date="2001-11">2001</year><month>11</month>
+        <volume>113</volume>
+        <pub-id pub-id-type="doi">10.1086/323894</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pytorch">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Paszke</surname><given-names>Adam</given-names></name>
+          <name><surname>Gross</surname><given-names>Sam</given-names></name>
+          <name><surname>Chintala</surname><given-names>Soumith</given-names></name>
+          <name><surname>Chanan</surname><given-names>Gregory</given-names></name>
+          <name><surname>Yang</surname><given-names>Edward</given-names></name>
+          <name><surname>DeVito</surname><given-names>Zachary</given-names></name>
+          <name><surname>Lin</surname><given-names>Zeming</given-names></name>
+          <name><surname>Desmaison</surname><given-names>Alban</given-names></name>
+          <name><surname>Antiga</surname><given-names>Luca</given-names></name>
+          <name><surname>Lerer</surname><given-names>Adam</given-names></name>
+        </person-group>
+        <article-title>Automatic differentiation in PyTorch</article-title>
+        <source>NIPS-workshop</source>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-vdw11">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>van der Walt</surname><given-names>S.</given-names></name>
+          <name><surname>Colbert</surname><given-names>S. C.</given-names></name>
+          <name><surname>Varoquaux</surname><given-names>G.</given-names></name>
+        </person-group>
+        <article-title>The NumPy array: A structure for efficient numerical computation</article-title>
+        <source>Computing in Science Engineering</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>13</volume>
+        <issue>2</issue>
+        <issn>1521-9615</issn>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2011.37</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-astrodrizzle">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Hack</surname><given-names>W. J.</given-names></name>
+          <name><surname>Dencheva</surname><given-names>N.</given-names></name>
+          <name><surname>Fruchter</surname><given-names>A. S.</given-names></name>
+          <name><surname>Armstrong</surname><given-names>A.</given-names></name>
+          <name><surname>Avila</surname><given-names>R.</given-names></name>
+          <name><surname>Baggett</surname><given-names>S.</given-names></name>
+          <name><surname>Bray</surname><given-names>E.</given-names></name>
+          <name><surname>Droettboom</surname><given-names>M.</given-names></name>
+          <name><surname>Dulude</surname><given-names>M.</given-names></name>
+          <name><surname>Gonzaga</surname><given-names>S.</given-names></name>
+          <name><surname>Grogin</surname><given-names>N. A.</given-names></name>
+          <name><surname>Kozhurina-Platais</surname><given-names>V.</given-names></name>
+          <name><surname>Lucas</surname><given-names>R. A.</given-names></name>
+          <name><surname>Mack</surname><given-names>J.</given-names></name>
+          <name><surname>MacKenty</surname><given-names>J.</given-names></name>
+          <name><surname>Petro</surname><given-names>L.</given-names></name>
+          <name><surname>Pirzkal</surname><given-names>N.</given-names></name>
+          <name><surname>Rajan</surname><given-names>A.</given-names></name>
+          <name><surname>Smith</surname><given-names>L. J.</given-names></name>
+          <name><surname>Sontag</surname><given-names>C.</given-names></name>
+          <name><surname>Ubeda</surname><given-names>L.</given-names></name>
+        </person-group>
+        <article-title>AstroDrizzle: More than a New MultiDrizzle</article-title>
+        <source>American astronomical society meeting abstracts #220</source>
+        <year iso-8601-date="2012-05">2012</year><month>05</month>
+        <volume>220</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-scipy">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Jones</surname><given-names>Eric</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>SciPy: Open source scientific tools for Python</article-title>
+        <publisher-name>http://www.scipy.org/</publisher-name>
+        <year iso-8601-date="2001">2001</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-matplotlib">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hunter</surname><given-names>J. D.</given-names></name>
+        </person-group>
+        <article-title>Matplotlib: A 2D Graphics Environment</article-title>
+        <source>Computing in Science and Engineering</source>
+        <year iso-8601-date="2007-05">2007</year><month>05</month>
+        <volume>9</volume>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2007.55</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-astroscrappy">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>McCully</surname><given-names>Curtis</given-names></name>
+          <name><surname>Crawford</surname><given-names>Steve</given-names></name>
+          <name><surname>Kovacs</surname><given-names>Gabor</given-names></name>
+          <name><surname>Tollerud</surname><given-names>Erik</given-names></name>
+          <name><surname>Betts</surname><given-names>Edward</given-names></name>
+          <name><surname>Bradley</surname><given-names>Larry</given-names></name>
+          <name><surname>Craig</surname><given-names>Matt</given-names></name>
+          <name><surname>Turner</surname><given-names>James</given-names></name>
+          <name><surname>Streicher</surname><given-names>Ole</given-names></name>
+          <name><surname>Sipocz</surname><given-names>Brigitta</given-names></name>
+          <name><surname>Robitaille</surname><given-names>Thomas</given-names></name>
+          <name><surname>Deil</surname><given-names>Christoph</given-names></name>
+        </person-group>
+        <article-title>Astropy/astroscrappy: v1.0.5 zenodo release</article-title>
+        <year iso-8601-date="2018-11">2018</year><month>11</month>
+        <uri>https://doi.org/10.5281/zenodo.1482019</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.1482019</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-jupyter">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Kluyver</surname><given-names>Thomas</given-names></name>
+          <name><surname>Ragan-Kelley</surname><given-names>Benjamin</given-names></name>
+          <name><surname>Pérez</surname><given-names>Fernando</given-names></name>
+          <name><surname>Granger</surname><given-names>Brian</given-names></name>
+          <name><surname>Bussonnier</surname><given-names>Matthias</given-names></name>
+          <name><surname>Frederic</surname><given-names>Jonathan</given-names></name>
+          <name><surname>Kelley</surname><given-names>Kyle</given-names></name>
+          <name><surname>Hamrick</surname><given-names>Jessica</given-names></name>
+          <name><surname>Grout</surname><given-names>Jason</given-names></name>
+          <name><surname>Corlay</surname><given-names>Sylvain</given-names></name>
+          <name><surname>Ivanov</surname><given-names>Paul</given-names></name>
+          <name><surname>Avila</surname><given-names>Damián</given-names></name>
+          <name><surname>Abdalla</surname><given-names>Safia</given-names></name>
+          <name><surname>Willing</surname><given-names>Carol</given-names></name>
+        </person-group>
+        <article-title>Jupyter notebooks – a publishing format for reproducible computational workflows</article-title>
+        <person-group person-group-type="editor">
+          <name><surname>Loizides</surname><given-names>F.</given-names></name>
+          <name><surname>Schmidt</surname><given-names>B.</given-names></name>
+        </person-group>
+        <publisher-name>IOS Press</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-scikit-image">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Walt</surname><given-names>Stéfan van der</given-names></name>
+          <name><surname>Schönberger</surname><given-names>Johannes L.</given-names></name>
+          <name><surname>Nunez-Iglesias</surname><given-names>Juan</given-names></name>
+          <name><surname>Boulogne</surname><given-names>François</given-names></name>
+          <name><surname>Warner</surname><given-names>Joshua D.</given-names></name>
+          <name><surname>Yager</surname><given-names>Neil</given-names></name>
+          <name><surname>Gouillart</surname><given-names>Emmanuelle</given-names></name>
+          <name><surname>Yu</surname><given-names>Tony</given-names></name>
+        </person-group>
+        <article-title>Scikit-image: Image processing in Python</article-title>
+        <source>PeerJ</source>
+        <year iso-8601-date="2014-06">2014</year><month>06</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-07-19">2019</year><month>07</month><day>19</day></date-in-citation>
+        <volume>2</volume>
+        <issn>2167-8359</issn>
+        <uri>https://peerj.com/articles/453</uri>
+        <pub-id pub-id-type="doi">10.7717/peerj.453</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-astropy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>Astropy Collaboration</string-name>
+          <name><surname>Price-Whelan</surname><given-names>A. M.</given-names></name>
+          <name><surname>Sipőcz</surname><given-names>B. M.</given-names></name>
+          <name><surname>Günther</surname><given-names>H. M.</given-names></name>
+          <name><surname>Lim</surname><given-names>P. L.</given-names></name>
+          <name><surname>Crawford</surname><given-names>S. M.</given-names></name>
+          <name><surname>Conseil</surname><given-names>S.</given-names></name>
+          <name><surname>Shupe</surname><given-names>D. L.</given-names></name>
+          <name><surname>Craig</surname><given-names>M. W.</given-names></name>
+          <name><surname>Dencheva</surname><given-names>N.</given-names></name>
+          <name><surname>Ginsburg</surname><given-names>A.</given-names></name>
+          <name><surname>VanderPlas</surname><given-names>J. T.</given-names></name>
+          <name><surname>Bradley</surname><given-names>L. D.</given-names></name>
+          <name><surname>Pérez-Suárez</surname><given-names>D.</given-names></name>
+          <name><surname>Val-Borro</surname><given-names>M. de</given-names></name>
+          <name><surname>Aldcroft</surname><given-names>T. L.</given-names></name>
+          <name><surname>Cruz</surname><given-names>K. L.</given-names></name>
+          <name><surname>Robitaille</surname><given-names>T. P.</given-names></name>
+          <name><surname>Tollerud</surname><given-names>E. J.</given-names></name>
+          <name><surname>Ardelean</surname><given-names>C.</given-names></name>
+          <name><surname>Babej</surname><given-names>T.</given-names></name>
+          <name><surname>Bach</surname><given-names>Y. P.</given-names></name>
+          <name><surname>Bachetti</surname><given-names>M.</given-names></name>
+          <name><surname>Bakanov</surname><given-names>A. V.</given-names></name>
+          <name><surname>Bamford</surname><given-names>S. P.</given-names></name>
+          <name><surname>Barentsen</surname><given-names>G.</given-names></name>
+          <name><surname>Barmby</surname><given-names>P.</given-names></name>
+          <name><surname>Baumbach</surname><given-names>A.</given-names></name>
+          <name><surname>Berry</surname><given-names>K. L.</given-names></name>
+          <name><surname>Biscani</surname><given-names>F.</given-names></name>
+          <name><surname>Boquien</surname><given-names>M.</given-names></name>
+          <name><surname>Bostroem</surname><given-names>K. A.</given-names></name>
+          <name><surname>Bouma</surname><given-names>L. G.</given-names></name>
+          <name><surname>Brammer</surname><given-names>G. B.</given-names></name>
+          <name><surname>Bray</surname><given-names>E. M.</given-names></name>
+          <name><surname>Breytenbach</surname><given-names>H.</given-names></name>
+          <name><surname>Buddelmeijer</surname><given-names>H.</given-names></name>
+          <name><surname>Burke</surname><given-names>D. J.</given-names></name>
+          <name><surname>Calderone</surname><given-names>G.</given-names></name>
+          <name><surname>Rodrı́guez</surname><given-names>J. L. Cano</given-names></name>
+          <name><surname>Cara</surname><given-names>M.</given-names></name>
+          <name><surname>Cardoso</surname><given-names>J. V. M.</given-names></name>
+          <name><surname>Cheedella</surname><given-names>S.</given-names></name>
+          <name><surname>Copin</surname><given-names>Y.</given-names></name>
+          <name><surname>Corrales</surname><given-names>L.</given-names></name>
+          <name><surname>Crichton</surname><given-names>D.</given-names></name>
+          <name><surname>D’Avella</surname><given-names>D.</given-names></name>
+          <name><surname>Deil</surname><given-names>C.</given-names></name>
+          <name><surname>Depagne</surname></name>
+          <name><surname>Dietrich</surname><given-names>J. P.</given-names></name>
+          <name><surname>Donath</surname><given-names>A.</given-names></name>
+          <name><surname>Droettboom</surname><given-names>M.</given-names></name>
+          <name><surname>Earl</surname><given-names>N.</given-names></name>
+          <name><surname>Erben</surname><given-names>T.</given-names></name>
+          <name><surname>Fabbro</surname><given-names>S.</given-names></name>
+          <name><surname>Ferreira</surname><given-names>L. A.</given-names></name>
+          <name><surname>Finethy</surname><given-names>T.</given-names></name>
+          <name><surname>Fox</surname><given-names>R. T.</given-names></name>
+          <name><surname>Garrison</surname><given-names>L. H.</given-names></name>
+          <name><surname>Gibbons</surname><given-names>S. L. J.</given-names></name>
+          <name><surname>Goldstein</surname><given-names>D. A.</given-names></name>
+          <name><surname>Gommers</surname><given-names>R.</given-names></name>
+          <name><surname>Greco</surname><given-names>J. P.</given-names></name>
+          <name><surname>Greenfield</surname><given-names>P.</given-names></name>
+          <name><surname>Groener</surname><given-names>A. M.</given-names></name>
+          <name><surname>Grollier</surname><given-names>F.</given-names></name>
+          <name><surname>Hagen</surname><given-names>A.</given-names></name>
+          <name><surname>Hirst</surname><given-names>P.</given-names></name>
+          <name><surname>Homeier</surname><given-names>D.</given-names></name>
+          <name><surname>Horton</surname><given-names>A. J.</given-names></name>
+          <name><surname>Hosseinzadeh</surname><given-names>G.</given-names></name>
+          <name><surname>Hu</surname><given-names>L.</given-names></name>
+          <name><surname>Hunkeler</surname><given-names>J. S.</given-names></name>
+          <name><surname>Ivezić</surname></name>
+          <name><surname>Jain</surname><given-names>A.</given-names></name>
+          <name><surname>Jenness</surname><given-names>T.</given-names></name>
+          <name><surname>Kanarek</surname><given-names>G.</given-names></name>
+          <name><surname>Kendrew</surname><given-names>S.</given-names></name>
+          <name><surname>Kern</surname><given-names>N. S.</given-names></name>
+          <name><surname>Kerzendorf</surname><given-names>W. E.</given-names></name>
+          <name><surname>Khvalko</surname><given-names>A.</given-names></name>
+          <name><surname>King</surname><given-names>J.</given-names></name>
+          <name><surname>Kirkby</surname><given-names>D.</given-names></name>
+          <name><surname>Kulkarni</surname><given-names>A. M.</given-names></name>
+          <name><surname>Kumar</surname><given-names>A.</given-names></name>
+          <name><surname>Lee</surname><given-names>A.</given-names></name>
+          <name><surname>Lenz</surname><given-names>D.</given-names></name>
+          <name><surname>Littlefair</surname><given-names>S. P.</given-names></name>
+          <name><surname>Ma</surname><given-names>Z.</given-names></name>
+          <name><surname>Macleod</surname><given-names>D. M.</given-names></name>
+          <name><surname>Mastropietro</surname><given-names>M.</given-names></name>
+          <name><surname>McCully</surname><given-names>C.</given-names></name>
+          <name><surname>Montagnac</surname><given-names>S.</given-names></name>
+          <name><surname>Morris</surname><given-names>B. M.</given-names></name>
+          <name><surname>Mueller</surname><given-names>M.</given-names></name>
+          <name><surname>Mumford</surname><given-names>S. J.</given-names></name>
+          <name><surname>Muna</surname><given-names>D.</given-names></name>
+          <name><surname>Murphy</surname><given-names>N. A.</given-names></name>
+          <name><surname>Nelson</surname><given-names>S.</given-names></name>
+          <name><surname>Nguyen</surname><given-names>G. H.</given-names></name>
+          <name><surname>Ninan</surname><given-names>J. P.</given-names></name>
+          <name><surname>Nöthe</surname><given-names>M.</given-names></name>
+          <name><surname>Ogaz</surname><given-names>S.</given-names></name>
+          <name><surname>Oh</surname><given-names>S.</given-names></name>
+          <name><surname>Parejko</surname><given-names>J. K.</given-names></name>
+          <name><surname>Parley</surname><given-names>N.</given-names></name>
+          <name><surname>Pascual</surname><given-names>S.</given-names></name>
+          <name><surname>Patil</surname><given-names>R.</given-names></name>
+          <name><surname>Patil</surname><given-names>A. A.</given-names></name>
+          <name><surname>Plunkett</surname><given-names>A. L.</given-names></name>
+          <name><surname>Prochaska</surname><given-names>J. X.</given-names></name>
+          <name><surname>Rastogi</surname><given-names>T.</given-names></name>
+          <name><surname>Janga</surname><given-names>V. Reddy</given-names></name>
+          <name><surname>Sabater</surname><given-names>J.</given-names></name>
+          <name><surname>Sakurikar</surname><given-names>P.</given-names></name>
+          <name><surname>Seifert</surname><given-names>M.</given-names></name>
+          <name><surname>Sherbert</surname><given-names>L. E.</given-names></name>
+          <name><surname>Sherwood-Taylor</surname><given-names>H.</given-names></name>
+          <name><surname>Shih</surname><given-names>A. Y.</given-names></name>
+          <name><surname>Sick</surname><given-names>J.</given-names></name>
+          <name><surname>Silbiger</surname><given-names>M. T.</given-names></name>
+          <name><surname>Singanamalla</surname><given-names>S.</given-names></name>
+          <name><surname>Singer</surname><given-names>L. P.</given-names></name>
+          <name><surname>Sladen</surname><given-names>P. H.</given-names></name>
+          <name><surname>Sooley</surname><given-names>K. A.</given-names></name>
+          <name><surname>Sornarajah</surname><given-names>S.</given-names></name>
+          <name><surname>Streicher</surname><given-names>O.</given-names></name>
+          <name><surname>Teuben</surname><given-names>P.</given-names></name>
+          <name><surname>Thomas</surname><given-names>S. W.</given-names></name>
+          <name><surname>Tremblay</surname><given-names>G. R.</given-names></name>
+          <name><surname>Turner</surname><given-names>J. E. H.</given-names></name>
+          <name><surname>Terrón</surname><given-names>V.</given-names></name>
+          <name><surname>Kerkwijk</surname><given-names>M. H. van</given-names></name>
+          <name><surname>Vega</surname><given-names>A. de la</given-names></name>
+          <name><surname>Watkins</surname><given-names>L. L.</given-names></name>
+          <name><surname>Weaver</surname><given-names>B. A.</given-names></name>
+          <name><surname>Whitmore</surname><given-names>J. B.</given-names></name>
+          <name><surname>Woillez</surname><given-names>J.</given-names></name>
+          <name><surname>Zabalza</surname><given-names>V.</given-names></name>
+          <name><surname>and</surname></name>
+        </person-group>
+        <article-title>The astropy project: Building an open-science project and status of the v2.0 core package</article-title>
+        <source>The Astronomical Journal</source>
+        <publisher-name>American Astronomical Society</publisher-name>
+        <year iso-8601-date="2018-08">2018</year><month>08</month>
+        <volume>156</volume>
+        <issue>3</issue>
+        <uri>https://doi.org/10.3847/1538-3881/aabc4f</uri>
+        <pub-id pub-id-type="doi">10.3847/1538-3881/aabc4f</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

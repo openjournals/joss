@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2964</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02964</article-id>
+<title-group>
+<article-title>registr 2.0: Incomplete Curve Registration for
+Exponential Family Functional Data</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-6783-1421</contrib-id>
+<string-name>Julia Wrobel</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-3495-5131</contrib-id>
+<string-name>Alexander Bauer</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Biostatistics and Informatics, University of
+Colorado Denver, USA</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Department of Statistics, LMU Munich, Germany</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-12-15">
+<day>15</day>
+<month>12</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>61</issue>
+<fpage>2964</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Statistical analysis</kwd>
+<kwd>Functional data</kwd>
+<kwd>Partially observed curves</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>Functional data are observed in many different fields. Typical
+  examples are longer-term panel studies where a sequence of
+  measurements is observed for each subject. Compared to classical
+  longitudinal studies, functional data analysis focuses more on the
+  shapes of the (time-dependent) processes by analyzing the observed
+  curve per subject. E.g., one can analyze the speed of growth of
+  children until adulthood in the Berkeley child growth study (see left
+  pane of
+  <xref alt="Figure 1" rid="figU003Aregistration">Figure 1</xref>).</p>
+  <p>Functional data comprise different modes of variation. In the
+  Berkeley study, not only can growth spurts be more or less pronounced
+  regarding the actual growth (i.e., <italic>amplitude
+  variation</italic> along the y-axis), but each spurt can also be
+  shifted for some months / years for individual subjects (i.e.,
+  <italic>phase variation</italic> along the x-axis). Observed curves
+  often have to be preprocessed with a <italic>registration
+  method</italic> in order to separate phase and amplitude variation
+  before analysis.</p>
+  <p>Most registration methods can only handle continuous data or data
+  with a Gaussian structure. However, functional data are often
+  non-Gaussian or even categorical. E.g., function values could be
+  binary indicators representing physical (in)activity of patients over
+  time
+  (<xref alt="Wrobel et al., 2019" rid="ref-wrobel2019" ref-type="bibr">Wrobel
+  et al., 2019</xref>). Moreover, most registration approaches are only
+  applicable to completely observed curves that comprise the underlying
+  process from its very start to its very end.</p>
+  <p>Basic routines for registering (Gaussian) data are implemented in R
+  package Ramsay et al.
+  (<xref alt="2020" rid="ref-R_fda" ref-type="bibr">2020</xref>).
+  Performing joint registration and clustering is possible with Parodi
+  et al.
+  (<xref alt="2015" rid="ref-R_fdakma" ref-type="bibr">2015</xref>). The
+  popular square-root velocity function (SRVF) framework for curve
+  registration is implemented in Tucker
+  (<xref alt="2020" rid="ref-R_fdasrvf" ref-type="bibr">2020</xref>) for
+  completely observed curves on a regular grid. Similar to our approach
+  the package allows for registering all curves to similar shapes which
+  can be well represented by some low-rank basis.</p>
+</sec>
+<sec id="exponential-family-based-registration">
+  <title>Exponential Family-based Registration</title>
+  <p>The <monospace>registr</monospace> package is based on the methods
+  outlined in Wrobel et al.
+  (<xref alt="2019" rid="ref-wrobel2019" ref-type="bibr">2019</xref>).
+  Registration is performed using a likelihood-based approach and
+  estimates <italic>inverse warping functions</italic>
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[{h_i^{-1}: t_i^* \mapsto t}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup><mml:mo>:</mml:mo><mml:msubsup><mml:mi>t</mml:mi><mml:mi>i</mml:mi><mml:mo>*</mml:mo></mml:msubsup><mml:mo>↦</mml:mo><mml:mi>t</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  that map the observed time domain <inline-formula><alternatives>
+  <tex-math><![CDATA[t_i^*]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mi>t</mml:mi><mml:mi>i</mml:mi><mml:mo>*</mml:mo></mml:msubsup></mml:math></alternatives></inline-formula>
+  for subject <inline-formula><alternatives>
+  <tex-math><![CDATA[i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>
+  to the common time domain <inline-formula><alternatives>
+  <tex-math><![CDATA[t]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>t</mml:mi></mml:math></alternatives></inline-formula>.
+  The overall model is</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[
+  \begin{aligned}
+  E\left[Y_i\left(h_i^{-1}(t_i^*)\right) | h_i^{-1}, \alpha(t), \boldsymbol{c}_i, \boldsymbol{\psi}(t) \right] &= \mu_i(t), \\
+  g\left[\mu_i(t)\right] &= \alpha(t) + \sum_{k = 1}^K c_{ik}\psi_k(t),
+  \end{aligned}
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtable><mml:mtr><mml:mtd columnalign="right"><mml:mi>E</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:msub><mml:mi>Y</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mi>t</mml:mi><mml:mi>i</mml:mi><mml:mo>*</mml:mo></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:msubsup><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup><mml:mo>,</mml:mo><mml:mi>α</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐜</mml:mi></mml:mstyle><mml:mi>i</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛙</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:msub><mml:mi>μ</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"><mml:mi>g</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:msub><mml:mi>μ</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:mi>α</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>k</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>K</mml:mi></mml:munderover><mml:msub><mml:mi>c</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msub><mml:msub><mml:mi>ψ</mml:mi><mml:mi>k</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo></mml:mtd></mml:mtr></mml:mtable></mml:math></alternatives></disp-formula></p>
+  <p>with <inline-formula><alternatives>
+  <tex-math><![CDATA[Y_i\left(t_i^*\right)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>Y</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mi>t</mml:mi><mml:mi>i</mml:mi><mml:mo>*</mml:mo></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[Y_i\left(h_i^{-1}(t_i^*)\right)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>Y</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mi>t</mml:mi><mml:mi>i</mml:mi><mml:mo>*</mml:mo></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  the unregistered and registered curves, respectively, and
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mu_i(t)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>μ</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  the estimated subject-specific means serving as template functions,
+  i.e., the target for the registration. The assumed distribution with
+  link function <inline-formula><alternatives>
+  <tex-math><![CDATA[g(\cdot)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>g</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mo>⋅</mml:mo><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  and this conditional expectation allow us to define a log-likelihood
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\ell(i)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>ℓ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>i</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  for each observed function (see
+  <xref alt="Wrobel et al., 2019" rid="ref-wrobel2019" ref-type="bibr">Wrobel
+  et al., 2019</xref>). The subject-specific means
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mu_i(t)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>μ</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  are expressed through a low-rank representation based on a
+  population-level mean <inline-formula><alternatives>
+  <tex-math><![CDATA[\alpha(t)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>α</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  and a linear combination of population-level basis functions
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\psi_k(t)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>ψ</mml:mi><mml:mi>k</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  and subject-specific scores <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{c}_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐜</mml:mi></mml:mstyle><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+  composed with a fixed link function <inline-formula><alternatives>
+  <tex-math><![CDATA[g(\cdot)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>g</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mo>⋅</mml:mo><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.
+  We estimate this representation using a likelihood-based approach for
+  generalized functional principal component analysis (GFPCA).</p>
+  <p>The overall model is estimated with function
+  <monospace>register_fpca()</monospace>, which iterates between the
+  estimation of warping functions (implemented in function
+  <monospace>registr()</monospace>) and GFPCA estimation (functions
+  <monospace>fpca_gauss()</monospace> or <monospace>bfpca()</monospace>
+  for Gaussian or binomial data, respectively). This approach is
+  consistent with earlier versions of the <monospace>registr</monospace>
+  package (compare
+  <xref alt="Wrobel, 2018" rid="ref-wrobel2018" ref-type="bibr">Wrobel,
+  2018</xref>).</p>
+  <p>In version 2.0, the package now includes the <italic>two-step
+  GFPCA</italic> approach of Gertheiss et al.
+  (<xref alt="2017" rid="ref-gertheiss2017" ref-type="bibr">2017</xref>)
+  to handle further exponential family distributions. The respective
+  implementation is based on the <monospace>gfpca</monospace> package of
+  Goldsmith
+  (<xref alt="2016" rid="ref-goldsmith2016" ref-type="bibr">2016</xref>).
+  New distributions are supported both for registration and GFPCA.
+  Furthermore, for the registration step, the individual template
+  functions (to which each curve is mapped) can now be flexibly defined
+  by the user with the argument <monospace>Y_template</monospace> in
+  <monospace>registr()</monospace> and
+  <monospace>register_fpca()</monospace>. This is of relevance since in
+  many settings the overall mean of the unregistered curves is no
+  reasonable template.</p>
+</sec>
+<sec id="incomplete-curve-registration">
+  <title>Incomplete Curve Registration</title>
+  <p>We extend the approach of Wrobel et al.
+  (<xref alt="2019" rid="ref-wrobel2019" ref-type="bibr">2019</xref>) to
+  incomplete curves where the underlying process was either not observed
+  from its very beginning (i.e., <italic>leading
+  incompleteness</italic>) or until its very end (<italic>trailing
+  incompleteness</italic>), or both (<italic>full
+  incompleteness</italic>).</p>
+  <p>Since the underlying process is fully contained in the observed
+  interval for complete curves, the first and last value of
+  complete-curve warping functions lie on the diagonal line so that they
+  preserve the overall domain. For incomplete curves, warping functions
+  are estimated without this starting point and / or endpoint
+  constraint.</p>
+  <p>However, fully removing these constraints can lead to extreme
+  distortions of the time domain. We include a regularization term
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\lambda]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>λ</mml:mi></mml:math></alternatives></inline-formula>
+  that penalizes the amount of domain dilation or compression performed
+  by the inverse warping functions. Mathematically speaking, we add a
+  penalization term to the log likelihood <inline-formula><alternatives>
+  <tex-math><![CDATA[\ell(i)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>ℓ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>i</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  for curve <inline-formula><alternatives>
+  <tex-math><![CDATA[i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>.
+  For a setting with full incompleteness this results in</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[
+  \begin{aligned}
+  \ell_{\text{pen}}(i) &= \ell(i) - \lambda \cdot n_i \cdot \text{pen}(i), \\
+  \text{with} \ \ \ 
+  \text{pen}(i) &= \left( [\hat{h}_i^{-1}(t_{max,i}^*) - \hat{h}_i^{-1}(t_{min,i}^*)] - [t_{max,i}^* - t_{min,i}^*] \right)^2,
+  \end{aligned}
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtable><mml:mtr><mml:mtd columnalign="right"><mml:msub><mml:mi>ℓ</mml:mi><mml:mtext mathvariant="normal">pen</mml:mtext></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>i</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:mi>ℓ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>i</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:mi>λ</mml:mi><mml:mo>⋅</mml:mo><mml:msub><mml:mi>n</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>⋅</mml:mo><mml:mtext mathvariant="normal">pen</mml:mtext><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>i</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"><mml:mtext mathvariant="normal">with</mml:mtext><mml:mspace width="0.222em"></mml:mspace><mml:mspace width="0.222em"></mml:mspace><mml:mspace width="0.222em"></mml:mspace><mml:mtext mathvariant="normal">pen</mml:mtext><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>i</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:msubsup><mml:mover><mml:mi>h</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>i</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mi>t</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>a</mml:mi><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>i</mml:mi></mml:mrow><mml:mo>*</mml:mo></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:msubsup><mml:mover><mml:mi>h</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>i</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mi>t</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mo>,</mml:mo><mml:mi>i</mml:mi></mml:mrow><mml:mo>*</mml:mo></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:msubsup><mml:mi>t</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>a</mml:mi><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>i</mml:mi></mml:mrow><mml:mo>*</mml:mo></mml:msubsup><mml:mo>−</mml:mo><mml:msubsup><mml:mi>t</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mo>,</mml:mo><mml:mi>i</mml:mi></mml:mrow><mml:mo>*</mml:mo></mml:msubsup><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup><mml:mo>,</mml:mo></mml:mtd></mml:mtr></mml:mtable></mml:math></alternatives></disp-formula></p>
+  <p>where <inline-formula><alternatives>
+  <tex-math><![CDATA[t^*_{min,i},t^*_{max,i}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mi>t</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mo>,</mml:mo><mml:mi>i</mml:mi></mml:mrow><mml:mo>*</mml:mo></mml:msubsup><mml:mo>,</mml:mo><mml:msubsup><mml:mi>t</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>a</mml:mi><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>i</mml:mi></mml:mrow><mml:mo>*</mml:mo></mml:msubsup></mml:mrow></mml:math></alternatives></inline-formula>
+  are the minimum / maximum of the observed time domain of curve
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\hat{h}^{-1}_i(t^*_{min,i}), \hat{h}^{-1}_i(t^*_{max,i})]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mover><mml:mi>h</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>i</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mi>t</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mo>,</mml:mo><mml:mi>i</mml:mi></mml:mrow><mml:mo>*</mml:mo></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:msubsup><mml:mover><mml:mi>h</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>i</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mi>t</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>a</mml:mi><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>i</mml:mi></mml:mrow><mml:mo>*</mml:mo></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  the inverse warping function evaluated at this minimum / maximum. For
+  leading incompleteness with <inline-formula><alternatives>
+  <tex-math><![CDATA[h_i^{-1}(t_{max,i}^*) = t_{max,i}^* \forall i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mi>t</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>a</mml:mi><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>i</mml:mi></mml:mrow><mml:mo>*</mml:mo></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msubsup><mml:mi>t</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>a</mml:mi><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>i</mml:mi></mml:mrow><mml:mo>*</mml:mo></mml:msubsup><mml:mo>∀</mml:mo><mml:mi>i</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  this simplifies to <inline-formula><alternatives>
+  <tex-math><![CDATA[\text{pen}(i) = \left(\hat{h}_i^{-1}(t_{min,i}^*) - t_{min,i}^*\right)^2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mtext mathvariant="normal">pen</mml:mtext><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>i</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mover><mml:mi>h</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>i</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mi>t</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mo>,</mml:mo><mml:mi>i</mml:mi></mml:mrow><mml:mo>*</mml:mo></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:msubsup><mml:mi>t</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mo>,</mml:mo><mml:mi>i</mml:mi></mml:mrow><mml:mo>*</mml:mo></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>,
+  and for trailing incompleteness with <inline-formula><alternatives>
+  <tex-math><![CDATA[h_i^{-1}(t_{min,i}^*) = t_{min,i}^* \forall i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mi>h</mml:mi><mml:mi>i</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mi>t</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mo>,</mml:mo><mml:mi>i</mml:mi></mml:mrow><mml:mo>*</mml:mo></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msubsup><mml:mi>t</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mo>,</mml:mo><mml:mi>i</mml:mi></mml:mrow><mml:mo>*</mml:mo></mml:msubsup><mml:mo>∀</mml:mo><mml:mi>i</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  to <inline-formula><alternatives>
+  <tex-math><![CDATA[\text{pen}(i) = \left(\hat{h}_i^{-1}(t_{max,i}^*) - t_{max,i}^*\right)^2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mtext mathvariant="normal">pen</mml:mtext><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>i</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mover><mml:mi>h</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>i</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msubsup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mi>t</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>a</mml:mi><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>i</mml:mi></mml:mrow><mml:mo>*</mml:mo></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:msubsup><mml:mi>t</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>a</mml:mi><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>i</mml:mi></mml:mrow><mml:mo>*</mml:mo></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>.
+  The penalization term is scaled by the number of measurements
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[n_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>n</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  of curve <inline-formula><alternatives>
+  <tex-math><![CDATA[i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>
+  to ensure a similar impact of the penalization for curves with
+  different numbers of measurements. In practical settings,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\lambda]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>λ</mml:mi></mml:math></alternatives></inline-formula>
+  has to be set manually to specify which kinds of warpings are deemed
+  unrealistic and should be prevented. The choice of
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\lambda]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>λ</mml:mi></mml:math></alternatives></inline-formula>
+  should be based on subject knowledge by comparing the registration
+  results given different <inline-formula><alternatives>
+  <tex-math><![CDATA[\lambda]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>λ</mml:mi></mml:math></alternatives></inline-formula>
+  values.</p>
+  <p>In <monospace>registr()</monospace> and
+  <monospace>register_fpca()</monospace> the type of incompleteness can
+  be defined by argument <monospace>incompleteness</monospace>. Further
+  details are given in the package vignette
+  <italic>incomplete_curves</italic>. When applied to the Berkeley data
+  with simulated full incompleteness, our approach leads to a reasonable
+  registration as shown in
+  <xref alt="Figure 1" rid="figU003Aregistration">Figure 1</xref>.</p>
+  <fig>
+    <caption><p>Left pane: Berkeley child growth data with simulated
+    incompleteness; center: curves after registration; right: estimated
+    inverse warping
+    functions.<styled-content id="figU003Aregistration"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="figures/2_registration.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We thank Fabian Scheipl and Helmut Küchenhoff for valuable
+  methodological contributions.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-gertheiss2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gertheiss</surname><given-names>Jan</given-names></name>
+          <name><surname>Goldsmith</surname><given-names>Jeff</given-names></name>
+          <name><surname>Staicu</surname><given-names>Ana-Maria</given-names></name>
+        </person-group>
+        <article-title>A note on modeling sparse exponential-family functional response curves</article-title>
+        <source>Computational statistics &amp; data analysis</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>105</volume>
+        <pub-id pub-id-type="doi">10.1016/j.csda.2016.07.010</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-goldsmith2016">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Goldsmith</surname><given-names>Jeff</given-names></name>
+        </person-group>
+        <source>gfpca: Generalized functional principal components analysis</source>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://github.com/jeff-goldsmith/gfpca</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-wrobel2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wrobel</surname><given-names>J</given-names></name>
+        </person-group>
+        <article-title>Register: Registration for exponential family functional data</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>3</volume>
+        <issue>22</issue>
+        <pub-id pub-id-type="doi">10.21105/joss.00557</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-wrobel2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wrobel</surname><given-names>J</given-names></name>
+          <name><surname>Zipunnikov</surname><given-names>Vadim</given-names></name>
+          <name><surname>Schrack</surname><given-names>Jennifer</given-names></name>
+          <name><surname>Goldsmith</surname><given-names>Jeff</given-names></name>
+        </person-group>
+        <article-title>Registration for exponential family functional data</article-title>
+        <source>Biometrics</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>75</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1111/biom.12963</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-R_fda">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Ramsay</surname><given-names>J. O.</given-names></name>
+          <name><surname>Graves</surname><given-names>Spencer</given-names></name>
+          <name><surname>Hooker</surname><given-names>Giles</given-names></name>
+        </person-group>
+        <source>fda: Functional data analysis</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://CRAN.R-project.org/package=fda</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-R_fdakma">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Parodi</surname><given-names>Alice</given-names></name>
+          <name><surname>Patriarca</surname><given-names>Mirco</given-names></name>
+          <name><surname>Sangalli</surname><given-names>Laura</given-names></name>
+          <name><surname>Secchi</surname><given-names>Piercesare</given-names></name>
+          <name><surname>Vantini</surname><given-names>Simone</given-names></name>
+          <name><surname>Vitelli</surname><given-names>Valeria</given-names></name>
+        </person-group>
+        <source>fdakma: Functional data analysis: K-mean alignment</source>
+        <year iso-8601-date="2015">2015</year>
+        <uri>https://CRAN.R-project.org/package=fdakma</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-R_fdasrvf">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Tucker</surname><given-names>J. Derek</given-names></name>
+        </person-group>
+        <source>fdasrvf: Elastic functional data analysis</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://CRAN.R-project.org/package=fdasrvf</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

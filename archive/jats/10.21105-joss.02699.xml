@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2699</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02699</article-id>
+<title-group>
+<article-title>hawen: time-harmonic wave modeling and inversion using
+hybridizable discontinuous Galerkin discretization</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-4958-7511</contrib-id>
+<string-name>Florian Faucher</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Faculty of Mathematics, University of Vienna,
+Oskar-Morgenstern-Platz 1, A-1090 Vienna, Austria.</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<volume>6</volume>
+<issue>57</issue>
+<fpage>2699</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>wave equations</kwd>
+<kwd>inverse problems</kwd>
+<kwd>geophysics</kwd>
+<kwd>helioseismology</kwd>
+<kwd>Hybridizable Discontinuous Galerkin method</kwd>
+<kwd>viscoelasticity</kwd>
+<kwd>MPI and OpenMP parallelism</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Many applications such as seismic and medical imaging, material
+  sciences, or helioseismology and planetary science, aim to reconstruct
+  properties of a non directly accessible or non-visible interior. For
+  this purpose, they rely on waves whose propagation through a medium
+  interrelates with the physical properties (density, sound speed, etc.)
+  of this medium. The methodology for imaging with waves comprises of
+  two main stages illustrated in
+  <xref alt="Figure 1" rid="figU003Asetup">Figure 1</xref>. In the data
+  acquisition stage
+  (<xref alt="Figure 1" rid="figU003Asetup">Figure 1</xref>a), the
+  medium response to probing waves is recorded (e.g., seismic waves from
+  Earthquakes recorded by ground network). In the second stage, we rely
+  on a reconstruction procedure which iteratively updates an initial
+  model of physical parameters, so that numerical simulations approach
+  the measurements
+  (<xref alt="Figure 1" rid="figU003Asetup">Figure 1</xref>b). This
+  procedure is employed, for instance, for seismic (reconstruction of
+  subsurface layers) and medical (disease diagnostic) imaging, see the
+  introduction of Faucher &amp; Scherzer
+  (<xref alt="2020" rid="ref-Faucher2020adjoint" ref-type="bibr">2020</xref>)
+  and the references therein.</p>
+  <fig>
+    <caption><p>Illustration of inverse wave problems. Acquisition
+    stage: probing waves are sent though the medium, and the medium’s
+    response is recorded by devices positioned on a portion of the
+    domain. The reconstruction algorithm starts from initial properties
+    and compares simulations of wave propagation with the measurements,
+    then iteratively updates those properties. The green block
+    corresponds to the forward problem (modeling the propagation of
+    waves) and the orange ones to the iterative correction.
+    <monospace>hawen</monospace> solves both the forward and inverse
+    problems associated with time-harmonic waves.
+    <styled-content id="figU003Asetup"></styled-content></p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="figures/setup_global.pdf" xlink:title="" />
+  </fig>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p><monospace>hawen</monospace> is designed to address large-scale
+  inverse wave problems, and includes</p>
+  <p>It combines MPI and OpenMP parallelism, it is deployed on
+  supercomputers and has been used in studies on seismic imaging
+  (<xref alt="Faucher, Alessandrini, et al., 2020" rid="ref-Faucher2020FRgWIacoustic" ref-type="bibr">Faucher,
+  Alessandrini, et al., 2020</xref>;
+  <xref alt="Faucher, De Hoop, et al., 2020" rid="ref-Faucher2020DAS" ref-type="bibr">Faucher,
+  De Hoop, et al., 2020</xref>;
+  <xref alt="Faucher &amp; Scherzer, 2020" rid="ref-Faucher2020adjoint" ref-type="bibr">Faucher
+  &amp; Scherzer, 2020</xref>), as well as in helioseismology
+  (<xref alt="Barucq et al., 2019" rid="ref-Pham2019RR" ref-type="bibr">Barucq
+  et al., 2019</xref>,
+  <xref alt="2020" rid="ref-Pham2019Esaim" ref-type="bibr">2020</xref>;
+  <xref alt="Barucq, Faucher, Fournier, et al., 2020a" rid="ref-Pham2020Siam" ref-type="bibr">Barucq,
+  Faucher, Fournier, et al., 2020a</xref>,
+  <xref alt="2020b" rid="ref-Pham2020RRscalar" ref-type="bibr">2020b</xref>).
+  The software works with an input : a text file listing the problem
+  configuration (dimension, choice of viscous model, etc.), such that
+  the computational details are transparent for the users.
+  <monospace>hawen</monospace> has its dedicated
+  (<xref alt="Faucher, 2020" rid="ref-HawenUserGuide" ref-type="bibr">Faucher,
+  2020</xref>) that details its utilization and all the available
+  functionalities, it is available on the software dedicated , which
+  contains illustrations, installation guide and tutorials.</p>
+  <p>One specificity of <monospace>hawen</monospace> is to implement the
+  hybridizable discontinuous Galerkin (HDG) method
+  (<xref alt="Arnold et al., 2002" rid="ref-Arnold2002" ref-type="bibr">Arnold
+  et al., 2002</xref>;
+  <xref alt="Cockburn et al., 2009" rid="ref-Cockburn2009" ref-type="bibr">Cockburn
+  et al., 2009</xref>) for the discretization of the wave equations. It
+  helps reduce the cost of the computations by providing smaller linear
+  systems compared to, e.g., finite elements, depending on the order of
+  approximation
+  (<xref alt="Faucher &amp; Scherzer, 2020" rid="ref-Faucher2020adjoint" ref-type="bibr">Faucher
+  &amp; Scherzer, 2020</xref>;
+  <xref alt="Kirby et al., 2012" rid="ref-Kirby2012" ref-type="bibr">Kirby
+  et al., 2012</xref>). For seismic applications, current software
+  mostly relies on the spectral element method
+  (<xref alt="Komatitsch &amp; Tromp, 1999" rid="ref-Komatitsch1999" ref-type="bibr">Komatitsch
+  &amp; Tromp, 1999</xref>;
+  <xref alt="Komatitsch &amp; Vilotte, 1998" rid="ref-Komatitsch1998" ref-type="bibr">Komatitsch
+  &amp; Vilotte, 1998</xref>), such as , or on finite differences
+  discretization.</p>
+  <p>The software handles unstructured domains (allowing input meshes of
+  different formats) and thus accounts for complex geometry. In
+  addition, <monospace>hawen</monospace> relies on the massively
+  parallel sparse direct solver MUMPS
+  (<xref alt="Amestoy et al., 2001" rid="ref-Amestoy2001" ref-type="bibr">Amestoy
+  et al., 2001</xref>,
+  <xref alt="2006" rid="ref-Amestoy2006" ref-type="bibr">2006</xref>)
+  for the matrix factorization, hence handles problems with many
+  right-hand sides. Despite the technicality of the underlying methods,
+  the purpose of <monospace>hawen</monospace> is to provide a unified
+  and evolutive framework to address large-scale visco-elastic and
+  visco-acoustic inverse problems, with a user-friendly interface using
+  the input parameter files.</p>
+</sec>
+<sec id="modeling-the-propagation-of-waves">
+  <title>Modeling the propagation of waves</title>
+  <p>The first feature of <monospace>hawen</monospace> is to simulate
+  the propagation of time-harmonic waves in different types of medium:
+  this is the forward problem in
+  <xref alt="Figure 1" rid="figU003Asetup">Figure 1</xref>. The
+  propagation of waves is characterized by a Partial Differential
+  Equation which depends on the type of the waves (e.g., mechanical or
+  electromagnetic), and on the type of medium considered (e.g., fluid or
+  solid)
+  (<xref alt="Carcione, 2007" rid="ref-Carcione2007" ref-type="bibr">Carcione,
+  2007</xref>;
+  <xref alt="Faucher, 2017" rid="ref-Faucher2017" ref-type="bibr">Faucher,
+  2017</xref>;
+  <xref alt="Slawinski, 2010" rid="ref-Slawinski2010" ref-type="bibr">Slawinski,
+  2010</xref>). <monospace>hawen</monospace> handles visco-acoustic and
+  visco-elastic propagation, as well as waves propagation for
+  helioseismology, these are described in the
+  (<xref alt="Faucher, 2020" rid="ref-HawenUserGuide" ref-type="bibr">Faucher,
+  2020</xref>). Our implementation is based upon the HDG method and the
+  computational steps are illustrated in
+  <xref alt="Figure 2" rid="figU003Aforward">Figure 2</xref>.</p>
+  <fig>
+    <caption><p>Illustration of the computational steps for the
+    numerical resolution of the forward problem. For simplicity, we
+    illustrate with an homogeneous medium.
+    <styled-content id="figU003Aforward"></styled-content></p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="figures/forward.pdf" xlink:title="" />
+  </fig>
+</sec>
+<sec id="inverse-problem-via-iterative-minimization">
+  <title>Inverse problem via iterative minimization</title>
+  <p>In the forward problem, the objective is to simulate the
+  propagation of waves, given the medium physical properties.
+  Conversely, the objective of the inverse problem is to recover the
+  physical properties, given some observations of waves, see
+  <xref alt="Figure 1" rid="figU003Asetup">Figure 1</xref>. To address
+  the inverse problem, <monospace>hawen</monospace> solves the
+  minimization problem:
+  <named-content id="eqU003Amisfit_generic" content-type="equation"><disp-formula><alternatives>
+  <tex-math><![CDATA[\label{eq:misfit_generic}
+    \min_{\boldsymbol{m}} \mathcal{J}(\boldsymbol{m}) \, \qquad \text{with} \quad
+    \mathcal{J}(\boldsymbol{m}) \,=\, \mathrm{dist}\big(\mathcal{F}(\boldsymbol{m}), \, \boldsymbol{d}\big) \, .]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:munder><mml:mo>min</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐦</mml:mi></mml:mstyle></mml:munder><mml:mstyle mathvariant="script"><mml:mi>𝒥</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐦</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mspace width="0.167em"></mml:mspace><mml:mspace width="2.0em"></mml:mspace><mml:mtext mathvariant="normal">with</mml:mtext><mml:mspace width="1.0em"></mml:mspace><mml:mstyle mathvariant="script"><mml:mi>𝒥</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐦</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mspace width="0.167em"></mml:mspace><mml:mo>=</mml:mo><mml:mspace width="0.167em"></mml:mspace><mml:mstyle mathvariant="normal"><mml:mi>d</mml:mi><mml:mi>i</mml:mi><mml:mi>s</mml:mi><mml:mi>t</mml:mi></mml:mstyle><mml:mo minsize="1.2" maxsize="1.2" stretchy="false" form="prefix">(</mml:mo><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐦</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mspace width="0.167em"></mml:mspace><mml:mstyle mathvariant="bold"><mml:mi>𝐝</mml:mi></mml:mstyle><mml:mo minsize="1.2" maxsize="1.2" stretchy="false" form="postfix">)</mml:mo><mml:mspace width="0.167em"></mml:mspace><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></named-content>
+  The misfit function <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{J}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>𝒥</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  is defined to evaluate a distance function comparing the observed data
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{d}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐝</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  with simulations of wave propagation restricted to the position of the
+  measurements: <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{F}(\boldsymbol{m})]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐦</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>,
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{m}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐦</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  represents the physical properties. The iterative minimization scheme
+  successively updates the physical properties used for the simulations
+  (<xref alt="Figure 1" rid="figU003Asetup">Figure 1</xref>b), and
+  follows a Newton-type method
+  (<xref alt="Nocedal &amp; Wright, 2006" rid="ref-Nocedal2006" ref-type="bibr">Nocedal
+  &amp; Wright, 2006</xref>). In the context of seismic imaging, it is
+  the Full Waveform Inversion method, cf. Virieux &amp; Operto
+  (<xref alt="2009" rid="ref-Virieux2009" ref-type="bibr">2009</xref>).</p>
+  <p><monospace>hawen</monospace> offers several options to conduct the
+  iterative minimization, such as the choice of misfit function and
+  method to conduct the minimization. These are further listed and
+  detailed in the
+  (<xref alt="Faucher, 2020" rid="ref-HawenUserGuide" ref-type="bibr">Faucher,
+  2020</xref>).</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>The research of FF is supported by the Austrian Science Fund (FWF)
+  under the Lise Meitner fellowship M 2791-N. We acknowledge the use of
+  the for the numerical applications, as well as with the TGCC cluster
+  via the GENCI resource allocation project AP010411013.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-HawenUserGuide">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Faucher</surname><given-names>Florian</given-names></name>
+        </person-group>
+        <source>Hawen (time-HArmonic wave modEling and INversion using hybridizable discontinuous galerkin discretization) user’s guide</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://ffaucher.gitlab.io/hawen-website/download/hawen_users-guide_documentation.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Pham2019Esaim">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Barucq</surname><given-names>Hélène</given-names></name>
+          <name><surname>Faucher</surname><given-names>Florian</given-names></name>
+          <name><surname>Pham</surname><given-names>Ha</given-names></name>
+        </person-group>
+        <article-title>Outgoing solutions and radiation boundary conditions for the ideal atmospheric scalar wave equation in helioseismology</article-title>
+        <source>ESAIM: Mathematical Modelling and Numerical Analysis</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>54</volume>
+        <pub-id pub-id-type="doi">10.1051/m2an/2019088</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Faucher2020FRgWIacoustic">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Faucher</surname><given-names>Florian</given-names></name>
+          <name><surname>Alessandrini</surname><given-names>Giovanni</given-names></name>
+          <name><surname>Barucq</surname><given-names>Hélène</given-names></name>
+          <name><surname>Hoop</surname><given-names>Maarten de</given-names></name>
+          <name><surname>Gaburro</surname><given-names>Romina</given-names></name>
+          <name><surname>Sincich</surname><given-names>Eva</given-names></name>
+        </person-group>
+        <article-title>Full reciprocity-gap waveform inversion, enabling sparse-source acquisition</article-title>
+        <source>Geophysics</source>
+        <publisher-name>Society of Exploration Geophysicists</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>85</volume>
+        <issue>6</issue>
+        <pub-id pub-id-type="doi">10.1190/geo2019-0527.1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Faucher2020adjoint">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Faucher</surname><given-names>Florian</given-names></name>
+          <name><surname>Scherzer</surname><given-names>Otmar</given-names></name>
+        </person-group>
+        <article-title>Adjoint-state method for Hybridizable Discontinuous Galerkin discretization: Application to the inverse acoustic wave problem</article-title>
+        <source>Computer methods in applied mechanics and engineering</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>372</volume>
+        <pub-id pub-id-type="doi">10.1016/j.cma.2020.113406</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Faucher2020DAS">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Faucher</surname><given-names>Florian</given-names></name>
+          <name><surname>De Hoop</surname><given-names>Maarten V</given-names></name>
+          <name><surname>Scherzer</surname><given-names>Otmar</given-names></name>
+        </person-group>
+        <article-title>Reciprocity-gap misfit functional for distributed acoustic sensing, combining data from passive and active sources</article-title>
+        <source>Geophysics</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>86</volume>
+        <issn>0016-8033</issn>
+        <pub-id pub-id-type="doi">10.1190/geo2020-0305.1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Pham2020RRscalar">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Barucq</surname><given-names>Hélène</given-names></name>
+          <name><surname>Faucher</surname><given-names>Florian</given-names></name>
+          <name><surname>Fournier</surname><given-names>Damien</given-names></name>
+          <name><surname>Gizon</surname><given-names>Laurent</given-names></name>
+          <name><surname>Pham</surname><given-names>Ha</given-names></name>
+        </person-group>
+        <article-title>Efficient computation of the modal outgoing Green’s kernel for the scalar wave equation in helioseismology</article-title>
+        <publisher-name>Inria Bordeaux Sud-Ouest; Magique 3D; Max-Planck Institute for Solar System Research</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://hal.archives-ouvertes.fr/hal-02544701</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Pham2020Siam">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Barucq</surname><given-names>Hélène</given-names></name>
+          <name><surname>Faucher</surname><given-names>Florian</given-names></name>
+          <name><surname>Fournier</surname><given-names>Damien</given-names></name>
+          <name><surname>Gizon</surname><given-names>Laurent</given-names></name>
+          <name><surname>Pham</surname><given-names>Ha</given-names></name>
+        </person-group>
+        <article-title>Efficient and accurate algorithm for the full modal Green’s kernel of the scalar wave equation in helioseismology</article-title>
+        <source>SIAM Journal on Applied Mathematics</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>80</volume>
+        <pub-id pub-id-type="doi">10.1137/20M1336709</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Pham2019RR">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Barucq</surname><given-names>Hélène</given-names></name>
+          <name><surname>Faucher</surname><given-names>Florian</given-names></name>
+          <name><surname>Pham</surname><given-names>Ha</given-names></name>
+        </person-group>
+        <article-title>Outgoing solutions to the scalar wave equation in helioseismology</article-title>
+        <publisher-name>Inria Bordeaux Sud-Ouest ; Project-Team Magique3D</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://hal.archives-ouvertes.fr/hal-02168467</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Faucher2017">
+      <element-citation publication-type="thesis">
+        <person-group person-group-type="author">
+          <name><surname>Faucher</surname><given-names>Florian</given-names></name>
+        </person-group>
+        <article-title>Contributions to seismic full waveform inversion for time harmonic wave equations: Stability estimates, convergence analysis, numerical experiments involving large scale optimization algorithms</article-title>
+        <publisher-name>Université de Pau et Pays de l’Ardour</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://hal.archives-ouvertes.fr/tel-01807861</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Arnold2002">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Arnold</surname><given-names>Douglas N</given-names></name>
+          <name><surname>Brezzi</surname><given-names>Franco</given-names></name>
+          <name><surname>Cockburn</surname><given-names>Bernardo</given-names></name>
+          <name><surname>Marini</surname><given-names>L Donatella</given-names></name>
+        </person-group>
+        <article-title>Unified analysis of discontinuous Galerkin methods for elliptic problems</article-title>
+        <source>SIAM journal on numerical analysis</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2002">2002</year>
+        <volume>39</volume>
+        <issue>5</issue>
+        <pub-id pub-id-type="doi">10.1137/S0036142901384162</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Cockburn2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cockburn</surname><given-names>Bernardo</given-names></name>
+          <name><surname>Gopalakrishnan</surname><given-names>Jayadeep</given-names></name>
+          <name><surname>Lazarov</surname><given-names>Raytcho</given-names></name>
+        </person-group>
+        <article-title>Unified hybridization of discontinuous galerkin, mixed, and continuous galerkin methods for second order elliptic problems</article-title>
+        <source>SIAM Journal on Numerical Analysis</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <volume>47</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1137/070706616</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Kirby2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kirby</surname><given-names>Robert M</given-names></name>
+          <name><surname>Sherwin</surname><given-names>Spencer J</given-names></name>
+          <name><surname>Cockburn</surname><given-names>Bernardo</given-names></name>
+        </person-group>
+        <article-title>To CG or to HDG: A comparative study</article-title>
+        <source>Journal of Scientific Computing</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>51</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1007/s10915-011-9501-7</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Amestoy2001">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Amestoy</surname><given-names>Patrick R</given-names></name>
+          <name><surname>Duff</surname><given-names>Iain S</given-names></name>
+          <name><surname>L’Excellent</surname><given-names>Jean-Yves</given-names></name>
+          <name><surname>Koster</surname><given-names>Jacko</given-names></name>
+        </person-group>
+        <article-title>A fully asynchronous multifrontal solver using distributed dynamic scheduling</article-title>
+        <source>SIAM Journal on Matrix Analysis and Applications</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2001">2001</year>
+        <volume>23</volume>
+        <issue>1, 1</issue>
+        <pub-id pub-id-type="doi">10.1137/S0895479899358194</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Amestoy2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Amestoy</surname><given-names>Patrick R</given-names></name>
+          <name><surname>Guermouche</surname><given-names>Abdou</given-names></name>
+          <name><surname>L’Excellent</surname><given-names>Jean-Yves</given-names></name>
+          <name><surname>Pralet</surname><given-names>Stéphane</given-names></name>
+        </person-group>
+        <article-title>Hybrid scheduling for the parallel solution of linear systems</article-title>
+        <source>Parallel computing</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2006">2006</year>
+        <volume>32</volume>
+        <issue>2, 2</issue>
+        <pub-id pub-id-type="doi">10.1016/j.parco.2005.07.004</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Nocedal2006">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Nocedal</surname><given-names>Jorge</given-names></name>
+          <name><surname>Wright</surname><given-names>Stephen J.</given-names></name>
+        </person-group>
+        <source>Numerical optimization</source>
+        <publisher-name>Springer Series in Operations Research</publisher-name>
+        <year iso-8601-date="2006">2006</year>
+        <pub-id pub-id-type="doi">10.1007/b98874</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Virieux2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Virieux</surname><given-names>Jean</given-names></name>
+          <name><surname>Operto</surname><given-names>Stéphane</given-names></name>
+        </person-group>
+        <article-title>An overview of full-waveform inversion in exploration geophysics</article-title>
+        <source>Geophysics</source>
+        <publisher-name>Society of Exploration Geophysicists</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <volume>74</volume>
+        <issue>6</issue>
+        <pub-id pub-id-type="doi">10.1190/1.3238367</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Carcione2007">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Carcione</surname><given-names>J. M.</given-names></name>
+        </person-group>
+        <source>Wave fields in real media: Wave propagation in anisotropic, anelastic, porous and electromagnetic media</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Slawinski2010">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Slawinski</surname><given-names>Michael A</given-names></name>
+        </person-group>
+        <source>Waves and rays in elastic continua</source>
+        <publisher-name>World Scientific</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <pub-id pub-id-type="doi">10.1142/7486</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Komatitsch1998">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Komatitsch</surname><given-names>Dimitri</given-names></name>
+          <name><surname>Vilotte</surname><given-names>Jean-Pierre</given-names></name>
+        </person-group>
+        <article-title>The spectral element method: An efficient tool to simulate the seismic response of 2D and 3D geological structures</article-title>
+        <source>Bulletin of the seismological society of America</source>
+        <publisher-name>The Seismological Society of America</publisher-name>
+        <year iso-8601-date="1998">1998</year>
+        <volume>88</volume>
+        <issue>2</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-Komatitsch1999">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Komatitsch</surname><given-names>Dimitri</given-names></name>
+          <name><surname>Tromp</surname><given-names>Jeroen</given-names></name>
+        </person-group>
+        <article-title>Introduction to the spectral element method for three-dimensional seismic wave propagation</article-title>
+        <source>Geophysical journal international</source>
+        <publisher-name>Blackwell Publishing Ltd Oxford, UK</publisher-name>
+        <year iso-8601-date="1999">1999</year>
+        <volume>139</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1046/j.1365-246x.1999.00967.x</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

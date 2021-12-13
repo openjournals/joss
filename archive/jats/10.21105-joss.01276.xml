@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1276</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01276</article-id>
+<title-group>
+<article-title>Ecological Metadata as Linked Data</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1642-628X</contrib-id>
+<string-name>Carl Boettiger</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>University of California, Berkeley</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-01-25">
+<day>25</day>
+<month>1</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>34</issue>
+<fpage>1276</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>linked data</kwd>
+<kwd>EML</kwd>
+<kwd>JSON-LD</kwd>
+<kwd>RDF</kwd>
+<kwd>Ecology</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<p>The Ecological Metadata Language, (EML), is a widely used metadata
+standard in the ecological and environmental sciences [Michener et al.
+(<xref alt="1997" rid="ref-Michener1997" ref-type="bibr">1997</xref>);
+Jones et al.
+(<xref alt="2006" rid="ref-Jones2006" ref-type="bibr">2006</xref>);
+Leinfelder et al.
+(<xref alt="2010" rid="ref-Leinfelder2010" ref-type="bibr">2010</xref>)].
+Efforts such as the Long Term Ecological Research (LTER) and the
+National Center for Ecological Analysis and Synthesis (NCEAS) have used
+and driven the development of EML over the past two decades, and now
+major efforts such as the NSF-sponsored National Ecological Observatory
+Network (NEON), the DataONE Network, are making an unprecedented amount
+of ecological data available with rich, machine-readable metadata
+descriptions using EML [Battelle
+(<xref alt="2016" rid="ref-NEON" ref-type="bibr">2016</xref>); Keller et
+al. (<xref alt="2008" rid="ref-Keller2008" ref-type="bibr">2008</xref>);
+Overpeck et al.
+(<xref alt="2011" rid="ref-Overpeck2011" ref-type="bibr">2011</xref>)].
+EML defines a strict XML schema that ensures metadata are machine
+readable and inter-operable through an XML-schema validation
+process.</p>
+<p>While this provides a predictable but extensible format, it also
+poses a significant technical barrier to many researchers seeking to
+analyze existing EML documents or create their own. The creation of EML
+in the late 1990s also pre-dated the advent of more developer-friendly
+and user-friendly technologies such as the popular JSON serialization,
+as well as the advent of semantic or linked data model and it’s
+application in ecoinformatics [Michener &amp; Jones
+(<xref alt="2012" rid="ref-Michener2012" ref-type="bibr">2012</xref>)].
+More recently still, the creation of the W3C JSON-LD [Sporny et al.
+(<xref alt="2017" rid="ref-jsonld-w3c" ref-type="bibr">2017</xref>)] has
+brought combined the developer-friendly JSON format with the powerful
+semantics of the Resource Description Format (RDF) popular in
+informatics [Schreiber &amp; Raimond
+(<xref alt="2014" rid="ref-rdf-w3c" ref-type="bibr">2014</xref>)]. This
+package seeks to bring both of these advantages to bear on the
+rich-but-clunky XML structure used by EML. By automatically mapping EML
+into JSON-LD, we are able to realize the benefits easier creation and
+manipulation of EML structures as JSON objects or R list objects, while
+relying on the power of JSON-LD semantics (in particular, context,
+compaction and framing, [Ooms
+(<xref alt="2017" rid="ref-jsonld" ref-type="bibr">2017</xref>)]) to
+transform that data to and from EML-schema-compliant XML. This approach
+opens numerous research applications, ranging from the simple parsing or
+creation of EML files as R list objects to complex queries and semantic
+reasoning over large numbers of EML documents with semantic SPARQL
+queries [Prud’hommeaux &amp; Seaborne
+(<xref alt="2008" rid="ref-sparql-w3c" ref-type="bibr">2008</xref>)].
+The package vignette provides scripted examples of each of these.</p>
+<code language="r script">library(emld)
+library(jsonlite)
+library(magrittr) # for pipes
+library(jqr)      # for JQ examples only
+library(rdflib)   # for RDf examples only</code>
+<sec id="reading-eml">
+  <title>Reading EML</title>
+  <p>The <monospace>EML</monospace> package can get particularly
+  cumbersome when it comes to extracting and manipulating existing
+  metadata in highly nested EML files. The <monospace>emld</monospace>
+  approach can leverage a rich array of tools for reading, extracting,
+  and manipulating existing EML files.</p>
+  <p>We can parse a simple example and manipulate is as a familiar list
+  object (S3 object):</p>
+  <code language="r script">f &lt;- system.file(&quot;extdata/example.xml&quot;, package=&quot;emld&quot;)
+eml &lt;- as_emld(f)
+
+cat(eml$dataset$title)</code>
+  <preformat>## Data from Cedar Creek LTER on productivity and species richness
+##   for use in a workshop titled &quot;An Analysis of the Relationship between
+##   Productivity and Diversity using Experimental Results from the Long-Term
+##   Ecological Research Network&quot; held at NCEAS in September 1996.</preformat>
+</sec>
+<sec id="writing-eml">
+  <title>Writing EML</title>
+  <p>Because <monospace>emld</monospace> objects are just nested lists,
+  we can create EML just by writing lists:</p>
+  <code language="r script">me &lt;- list(individualName = list(givenName = &quot;Carl&quot;, surName = &quot;Boettiger&quot;))
+
+eml &lt;- list(dataset = list(
+              title = &quot;dataset title&quot;,
+              contact = me,
+              creator = me),
+              system = &quot;doi&quot;,
+              packageId = &quot;10.xxx&quot;)
+
+as_xml(eml, &quot;ex.xml&quot;)
+testthat::expect_true(eml_validate(&quot;ex.xml&quot;) )</code>
+  <p>Note that we don’t have to worry about the order of the elements
+  here, <monospace>as_xml</monospace> will re-order if necessary to
+  validate. (For instance, in valid EML the
+  <monospace>creator</monospace> becomes listed before
+  <monospace>contact</monospace>. Of course this is a very low-level
+  interface that does not help the user know what an EML looks like.
+  Creating EML from scratch without knowledge of the schema is a job for
+  the <monospace>EML</monospace> package and beyond the scope of the
+  lightweight <monospace>emld</monospace>.</p>
+</sec>
+<sec id="working-with-eml-as-json-ld">
+  <title>Working with EML as JSON-LD</title>
+  <p>For many applications, it is useful to merely treat EML as a list
+  object, as seen above, allowing the R user to leverage a standard
+  tools and intuition in working with these files. However,
+  <monospace>emld</monospace> also opens the door to new possible
+  directions by thinking of EML data in terms of a JSON-LD serialization
+  rather than an XML serialization. First, owing to it’s comparative
+  simplicity and native data typing (e.g. of Boolean/string/numeric
+  data), JSON is often easier for many developers to work with than
+  EML’s native XML format.</p>
+  <sec id="as-json-query-with-jq">
+    <title>As JSON: Query with JQ</title>
+    <p>For example, JSON can be queried with with JQ, a
+    <ext-link ext-link-type="uri" xlink:href="https://stedolan.github.io/jq/manual/">simple
+    and powerful query language</ext-link> that also gives us a lot of
+    flexibility over the return structure of our results. JQ syntax is
+    both intuitive and well documented, and often easier than the
+    typical munging of JSON/list data using
+    <monospace>purrr</monospace>. Here’s an example query that turns EML
+    to JSON and then extracts the north and south bounding
+    coordinates:</p>
+    <code language="r script">hf205 &lt;- system.file(&quot;extdata/hf205.xml&quot;, package=&quot;emld&quot;)
+
+as_emld(hf205) %&gt;% 
+  as_json() %&gt;% 
+  jq('.dataset.coverage.geographicCoverage.boundingCoordinates | 
+       { northLat: .northBoundingCoordinate, 
+         southLat: .southBoundingCoordinate }') %&gt;%
+  fromJSON()</code>
+    <preformat>## $northLat
+## [1] &quot;+42.55&quot;
+## 
+## $southLat
+## [1] &quot;+42.42&quot;</preformat>
+    <p>Nice features of JQ include the ability to do recursive descent
+    (common to XPATH but not possible in <monospace>purrr</monospace>)
+    and specify the shape and names of the return object (e.g. as a list
+    with elements named <monospace>northLat</monospace> and
+    <monospace>southLat</monospace> in this case.)</p>
+  </sec>
+  <sec id="as-semantic-data-sparql-queries">
+    <title>As semantic data: SPARQL queries</title>
+    <p>Another side-effect of the JSON-LD representation is that we can
+    treat EML as <italic>semantic</italic> data. This can provide a way
+    to integrate EML records with other data sources, and means we can
+    query the EML using semantic SPARQL queries. One nice thing about
+    SPARQL queries is that, in contrast to XPATH, JQ, or other graph
+    queries, SPARQL always returns a <monospace>data.frame</monospace> –
+    a particularly convenient and familiar format for R users.</p>
+    <p>First, we render the EML XML document into JSON-LD file:</p>
+    <code language="r script">f &lt;- system.file(&quot;extdata/hf205.xml&quot;, package=&quot;emld&quot;)
+as_emld(f) %&gt;%
+  as_json(&quot;hf205.json&quot;)</code>
+    <p>We can now construct a SPARQL query. SPARQL queries look like SQL
+    queries in that we name the columns we want with a
+    <monospace>SELECT</monospace> command. Unlike SQL, SPARQL allows us
+    to walk the graph by treating these names as variables, indicated by
+    prefixing a <monospace>?</monospace> to the variable name. We then
+    use a WHERE block to define how these variables relate to each
+    other. In this case, we ask for the genus and species name and
+    bounding box found in the EML file.</p>
+    <code language="r script">sparql &lt;- 
+  'PREFIX eml: &lt;eml://ecoinformatics.org/eml-2.2.0/&gt;
+
+  SELECT ?genus ?species ?northLat ?southLat ?eastLong ?westLong 
+
+  WHERE { 
+    ?y eml:taxonRankName &quot;genus&quot; .
+    ?y eml:taxonRankValue ?genus .
+    ?y eml:taxonomicClassification ?s .
+    ?s eml:taxonRankName &quot;species&quot; .
+    ?s eml:taxonRankValue ?species .
+    ?x eml:northBoundingCoordinate ?northLat .
+    ?x eml:southBoundingCoordinate ?southLat .
+    ?x eml:eastBoundingCoordinate ?eastLong .
+    ?x eml:westBoundingCoordinate ?westLong .
+  }
+'</code>
+    <p>We can now use the <monospace>rdflib</monospace> library to
+    execute this SPARQL query on the EML document and display the
+    resulting <monospace>data.frame</monospace>:</p>
+    <code language="r script">rdf &lt;- rdf_parse(&quot;hf205.json&quot;, &quot;jsonld&quot;)
+df &lt;- rdf_query(rdf, sparql)
+df</code>
+    <preformat>## # A tibble: 1 x 6
+##   genus      species  northLat southLat eastLong westLong
+##   &lt;chr&gt;      &lt;chr&gt;       &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1 Sarracenia purpurea     42.6     42.4    -72.1    -72.3</preformat>
+  </sec>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Jones2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jones</surname><given-names>Matthew B</given-names></name>
+          <name><surname>Schildhauer</surname><given-names>Mark P.</given-names></name>
+          <name><surname>Reichman</surname><given-names>O. J.</given-names></name>
+          <name><surname>Bowers</surname><given-names>Shawn</given-names></name>
+        </person-group>
+        <article-title>The New Bioinformatics: Integrating Ecological Data from the Gene to the Biosphere</article-title>
+        <source>Annual Review of Ecology, Evolution, and Systematics</source>
+        <year iso-8601-date="2006-12">2006</year><month>12</month>
+        <volume>37</volume>
+        <issue>1</issue>
+        <issn>1543-592X</issn>
+        <uri>http://arjournals.annualreviews.org/doi/abs/10.1146/annurev.ecolsys.37.091305.110031</uri>
+        <pub-id pub-id-type="doi">10.1146/annurev.ecolsys.37.091305.110031</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-NEON">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Battelle</surname></name>
+        </person-group>
+        <article-title>National Ecological Observatory Network.</article-title>
+        <year iso-8601-date="2016">2016</year>
+        <uri>http://data.neonscience.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Michener1997">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Michener</surname><given-names>William K.</given-names></name>
+          <name><surname>Brunt</surname><given-names>JW</given-names></name>
+          <name><surname>Helly</surname><given-names>John J</given-names></name>
+          <name><surname>Kirchner</surname><given-names>Thomas B</given-names></name>
+          <name><surname>Stafford</surname><given-names>Susan G</given-names></name>
+        </person-group>
+        <article-title>Nongeospatial metadata for the ecological sciences</article-title>
+        <source>Ecological …</source>
+        <year iso-8601-date="1997">1997</year>
+        <uri>http://www.esajournals.org/doi/abs/10.1890/1051-0761(1997)007{\%}5B0330:NMFTES{\%}5D2.0.CO{\%}3B2</uri>
+        <pub-id pub-id-type="doi">10.1890/1051-0761%281997%29007%5B0330%3ANMFTES%5D2.0.CO%3B2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Overpeck2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Overpeck</surname><given-names>Jonathan T</given-names></name>
+          <name><surname>Meehl</surname><given-names>G. A.</given-names></name>
+          <name><surname>Bony</surname><given-names>S.</given-names></name>
+          <name><surname>Easterling</surname><given-names>D. R.</given-names></name>
+        </person-group>
+        <article-title>Climate Data Challenges in the 21st Century</article-title>
+        <source>Science (New York, N.Y.)</source>
+        <year iso-8601-date="2011-02">2011</year><month>02</month>
+        <volume>331</volume>
+        <issue>6018</issue>
+        <issn>0036-8075</issn>
+        <uri>http://www.sciencemag.org/cgi/doi/10.1126/science.1197869</uri>
+        <pub-id pub-id-type="doi">10.1126/science.1197869</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Keller2008">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Keller</surname><given-names>Michael</given-names></name>
+          <name><surname>Schimel</surname><given-names>David S</given-names></name>
+          <name><surname>Hargrove</surname><given-names>William W</given-names></name>
+          <name><surname>Hoffman</surname><given-names>Forrest M</given-names></name>
+        </person-group>
+        <article-title>A continental strategy for the National Ecological Observatory Network</article-title>
+        <source>Frontiers in Ecology and the Environment</source>
+        <year iso-8601-date="2008-06">2008</year><month>06</month>
+        <volume>6</volume>
+        <issue>5</issue>
+        <issn>1540-9295</issn>
+        <uri>http://www.esajournals.org/doi/abs/10.1890/1540-9295(2008)6[282:ACSFTN]2.0.CO;2</uri>
+        <pub-id pub-id-type="doi">10.1890/1540-9295(2008)6[282:ACSFTN]2.0.CO;2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Michener2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Michener</surname><given-names>William K.</given-names></name>
+          <name><surname>Jones</surname><given-names>Matthew B</given-names></name>
+        </person-group>
+        <article-title>Ecoinformatics: supporting ecology as a data-intensive science</article-title>
+        <source>Trends in Ecology &amp; Evolution</source>
+        <publisher-name>Elsevier Ltd</publisher-name>
+        <year iso-8601-date="2012-01">2012</year><month>01</month>
+        <volume>27</volume>
+        <issue>2</issue>
+        <issn>01695347</issn>
+        <uri>http://linkinghub.elsevier.com/retrieve/pii/S0169534711003399</uri>
+        <pub-id pub-id-type="doi">10.1016/j.tree.2011.11.016</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Leinfelder2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Leinfelder</surname><given-names>Ben</given-names></name>
+          <name><surname>Tao</surname><given-names>Jing</given-names></name>
+          <name><surname>Costa</surname><given-names>Duane</given-names></name>
+          <name><surname>Jones</surname><given-names>Matthew B</given-names></name>
+          <name><surname>Servilla</surname><given-names>Mark</given-names></name>
+          <name><surname>O’Brien</surname><given-names>Margaret</given-names></name>
+          <name><surname>Burt</surname><given-names>Chad</given-names></name>
+        </person-group>
+        <article-title>A metadata-driven approach to loading and querying heterogeneous scientific data</article-title>
+        <source>Ecological Informatics</source>
+        <publisher-name>Elsevier B.V.</publisher-name>
+        <year iso-8601-date="2010-01">2010</year><month>01</month>
+        <volume>5</volume>
+        <issue>1</issue>
+        <issn>15749541</issn>
+        <uri>http://linkinghub.elsevier.com/retrieve/pii/S1574954109000685</uri>
+        <pub-id pub-id-type="doi">10.1016/j.ecoinf.2009.08.006</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-jsonld-w3c">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Sporny</surname><given-names>Manu</given-names></name>
+          <name><surname>Longley</surname><given-names>Dave</given-names></name>
+          <name><surname>Kellogg</surname><given-names>Gregg</given-names></name>
+          <name><surname>Lanthaler</surname><given-names>Markus</given-names></name>
+          <name><surname>Lindström</surname><given-names>Niklas</given-names></name>
+        </person-group>
+        <article-title>JSON-LD 1.0: A JSON-based Serialization for Linked Data</article-title>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://www.w3.org/TR/json-ld/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-rdf-w3c">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Schreiber</surname><given-names>Guss</given-names></name>
+          <name><surname>Raimond</surname><given-names>Yves</given-names></name>
+        </person-group>
+        <article-title>RDF 1.1 Primer</article-title>
+        <year iso-8601-date="2014">2014</year>
+        <uri>https://www.w3.org/TR/rdf11-primer/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-sparql-w3c">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Prud’hommeaux</surname><given-names>Eric</given-names></name>
+          <name><surname>Seaborne</surname><given-names>Andy</given-names></name>
+        </person-group>
+        <article-title>SPARQL Query Language for RDF</article-title>
+        <year iso-8601-date="2008">2008</year>
+        <uri>https://www.w3.org/TR/rdf-sparql-query/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-jsonld">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Ooms</surname><given-names>Jeroen</given-names></name>
+        </person-group>
+        <source>jsonld: JSON for Linking Data</source>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://CRAN.R-project.org/package=jsonld</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

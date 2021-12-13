@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1278</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01278</article-id>
+<title-group>
+<article-title>A Julia package for bilevel optimization
+problems</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-6284-3033</contrib-id>
+<string-name>Mathieu Besançon</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>École Polytechnique de Montréal, QC, Canada</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>GERAD, QC, Canada</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>INOCS, INRIA Lille Nord-Europe, France</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-01-29">
+<day>29</day>
+<month>1</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>39</issue>
+<fpage>1278</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>JuMP</kwd>
+<kwd>optimization</kwd>
+<kwd>game theory</kwd>
+<kwd>bilevel optimization</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Mathematical optimization is the discipline dealing with the
+  determination of the best (or almost best) decision with respect to a
+  specific cost function and to a set of constraints on the decision.
+  Bilevel optimization is a class of mathematical optimization problems
+  with the optimality conditions of a lower-level problem embedded in
+  the constraints. BilevelOptimization.jl is a toolbox built on top of
+  the JuMP.jl ecosystem for mathematical optimization
+  (<xref alt="Dunning et al., 2017" rid="ref-dunning2017jump" ref-type="bibr">Dunning
+  et al., 2017</xref>). Bilevel optimization is used to tackle various
+  problems in areas such as power systems, security applications,
+  network design or market equilibria. See Dempe
+  (<xref alt="2018" rid="ref-dempe2018bilevel" ref-type="bibr">2018</xref>)
+  for an overview of applications and recent formulations and
+  theoretical progress.</p>
+  <p>The computation of an optimal solution to a bilevel problem is in
+  general hard. Even with all the constraints and the objectives at the
+  two levels being linear, the resulting problem is non-convex and
+  NP-hard, with a possibly disjoint feasible set. Optimization
+  practitioners often rely on problem-specific properties and modeling
+  techniques or heuristics. The goal of this package is to offer a both
+  flexible model of a general class of bilevel problems and a solver
+  which is compatible with the JuMP workflow.</p>
+</sec>
+<sec id="bilevel-optimization">
+  <title>Bilevel optimization</title>
+  <p>A generic formulation for a bilevel problem is:</p>
+  <code language="julia">min_x F(x,y)
+s.t.  G_k(x,y) &lt;= 0 for k in {1..mu}
+      y in arg min_y {f(x,y)
+               s.t.
+               g_i(x,y) &lt;= 0 for i in {1..ml}
+              }</code>
+  <p>If the lower-level problem is convex, i.e., if the functions
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[f(x,y)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>y</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[g_i(x,\cdot)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>g</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mo>⋅</mml:mo><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  are convex and if Slater’s qualification constraints hold, the
+  Karush-Kuhn-Tucker conditions can be used to characterize the
+  optimality at the lower-level.</p>
+  <p>For most lower-level problems, there are several optimal solutions
+  (different solutions yielding the same optimal value of the
+  objective). Several methodologies have been developed for such cases,
+  the two primary approaches being the optimistic and pessimistic
+  bilevel formulations
+  (<xref alt="Dempe, 2018" rid="ref-dempe2018bilevel" ref-type="bibr">Dempe,
+  2018</xref>), regularizing the set-valued problem by guaranteeing the
+  uniqueness of the lower-level solution. The approach used in
+  <italic>BilevelOptimization.jl</italic> is the optimistic one.</p>
+  <p>This package is initially designed for a problem of the form:</p>
+  <code language="julia">min_x cx^T x + cy^T y
+s.t. G x + H y &lt;= q
+     x &gt;= 0
+     x[j] integer for j in Jx
+     y in arg min_y {d^T y + x^T F y
+           s.t. A x + B y &lt;= b
+                y &gt;= 0
+                }</code>
+  <p>The single-level reduction of the optimistic version of this
+  problem is:</p>
+  <code language="julia">min_{x,y,lambda} cx^T x + cy^T y
+s.t. G x + H y &lt;= q
+     A x + B y &lt;= b
+     x, y &gt;= 0
+     x[j] integer for j in Jx
+     d + F^T x + B^T * lambda = 0
+     lambda[i] * (b - A x - B y)[i] = 0 for i in {1..ml}</code>
+  <p>The last equation is a complementarity constraint, corresponding to
+  the fact that at least one of <inline-formula><alternatives>
+  <tex-math><![CDATA[(\lambda_i, s_i)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>λ</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>s</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+  has to be equal to zero, where <inline-formula><alternatives>
+  <tex-math><![CDATA[s_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>s</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  is the slack variable associated with constraint
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>.
+  This non-convex, non-linear constraint cannot be tackled efficiently
+  by common optimization solvers and needs to be re-formulated. The two
+  common approaches are linearization using a binary variable and
+  “big-M” primal and dual upper bounds and Special Ordered Sets of type
+  1 (SOS1)
+  (<xref alt="Pineda &amp; Morales, 2019" rid="ref-pineda19" ref-type="bibr">Pineda
+  &amp; Morales, 2019</xref>). A special ordered set 1 is a group of two
+  or more variables, of which at most one can be non-zero. Mixed-Integer
+  Linear solvers use this information for branching directly on the two
+  variables. In the case of the bilevel problem presented above, the
+  sets contain the slack variable and dual variable associated with each
+  lower-level constraint, forcing at least one of them to zero.</p>
+</sec>
+<sec id="types-and-methods-for-bilevel-optimization">
+  <title>Types and methods for bilevel optimization</title>
+  <p>The data for a bilevel linear problems are stored in the
+  <monospace>BilevelLP</monospace> structure, with the same notation as
+  used above. A <monospace>JuMP.Model</monospace> can be built from
+  scratch from these data or passed on to the
+  <monospace>build_blp_model</monospace> function which adds the
+  lower-level feasibility and optimality constraints. This function
+  supports different signatures through multiple dispatch. To build the
+  model from scratch using the data from
+  <monospace>BilevelLP</monospace>, the function is called as
+  follows:</p>
+  <code language="julia">build_blp_model(bp::BilevelLP, solver; [comp_method])</code>
+  <p>It returns a tuple <monospace>(m, x, y, lambda, s)</monospace>
+  with:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p><monospace>m</monospace>: the JuMP model,</p>
+    </list-item>
+    <list-item>
+      <p><monospace>x</monospace>: the upper-level vector of
+      variables,</p>
+    </list-item>
+    <list-item>
+      <p><monospace>y</monospace>: the lower-level vector of
+      variables,</p>
+    </list-item>
+    <list-item>
+      <p><monospace>lambda</monospace>: the lower-level dual variables,
+      and</p>
+    </list-item>
+    <list-item>
+      <p><monospace>s</monospace>: the lower-level slack variables.</p>
+    </list-item>
+  </list>
+  <p>Other signatures allow users to modify an already-existing JuMP
+  model without storing every constraint or variable into a
+  <monospace>BilevelLP</monospace> structure.</p>
+  <p>All signatures of the <monospace>build_blp_model</monospace>
+  function include a keyword argument <monospace>comp_method</monospace>
+  for the choice of method to tackle complementarity constraints. The
+  two methods mentioned in the previous section are represented as
+  types, <monospace>SOS1Complementarity</monospace> and
+  <monospace>BoundComplementarity</monospace>. For the second option,
+  primal and dual bounds can either be scalars or vectors to use bounds
+  adapted to each constraint. Some problem-specific methods are often
+  used in the literature to handle complementarity constraints in an
+  efficient way. Users of the package can define a new type, optionally
+  sub-typed from <monospace>ComplementarityMethod</monospace>, and
+  define the following function:</p>
+  <preformat>add_complementarity_constraint(m, cm::CM, s, lambda, y, sigma)</preformat>
+  <p>where CM is the complementarity constraint type.</p>
+</sec>
+<sec id="application-to-toll-setting-problems">
+  <title>Application to toll-setting problems</title>
+  <p>The toll-setting problem is a class of bilevel optimization where
+  the two levels of decision are taken on a graph
+  (<xref alt="Brotcorne et al., 2001" rid="ref-brotcorne2001bilevel" ref-type="bibr">Brotcorne
+  et al., 2001</xref>). It belongs to the more general framework of
+  network pricing problems with applications in road management
+  (<xref alt="Harks et al., 2019" rid="ref-harks2018toll" ref-type="bibr">Harks
+  et al., 2019</xref>) or telecommunication network reliability
+  (<xref alt="Hayrapetyan et al., 2007" rid="ref-Hayrapetyan2007" ref-type="bibr">Hayrapetyan
+  et al., 2007</xref>).</p>
+  <p>In this problem, the upper level decides on a toll to apply on some
+  arcs of a directed graph. Each arc has an initial cost and a cost
+  resulting from an upper-level decision. The lower-level problem then
+  consists in finding the minimum-cost flow from a source to a sink with
+  a minimum circulating flow. This problem can be entirely modeled using
+  the framework presented above, using a composite datatype defined in
+  the package for holding all required data, and allowing users to
+  bypass the re-formulation of the model from its algebraic JuMP form to
+  a standard form. Users can describe their problem using the
+  <monospace>BilevelFlowProblem</monospace> struct containing:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>The initial matrix of arc costs
+      <monospace>init_cost</monospace>,</p>
+    </list-item>
+    <list-item>
+      <p>A boolean matrix indicating which edges are taxable
+      <monospace>taxable_edges</monospace>,</p>
+    </list-item>
+    <list-item>
+      <p>The capacity matrix <monospace>capacities</monospace>,</p>
+    </list-item>
+    <list-item>
+      <p>The different levels of tax that can be applied to each arc
+      <monospace>tax_options</monospace>, and</p>
+    </list-item>
+    <list-item>
+      <p>The minimum amount of flow that the follower needs to pass from
+      source to sink <monospace>minflow</monospace></p>
+    </list-item>
+  </list>
+  <p>Building the <monospace>JuMP.Model</monospace> is done similarly to
+  the generic bilevel problem, using the following signature:</p>
+  <code language="julia">build_blp_model(bfp::BilevelFlowProblem, solver; [comp_method])</code>
+</sec>
+<sec id="more-general-problem-formulations">
+  <title>More general problem formulations</title>
+  <p>Even though BilevelOptimization.jl is designed for linear-linear
+  bilevel problems which can be described by the
+  <monospace>BilevelLP</monospace> type, the API allows users to bypass
+  the upper-level problem specification. They can provide a pre-built
+  <monospace>JuMP.Model</monospace> with the upper-level objective and
+  constraints already set, for instance for quadratic or conic upper
+  level formulations. The only requirement is that the solver must
+  support both the type of constraints specified in the model and in the
+  <monospace>comp_method</monospace>. This flexibility allows users to
+  leverage some recent advances on mixed-integer convex optimization and
+  solvers tackling these problems
+  (<xref alt="Lubin et al., 2016" rid="ref-LubinYamangilBentVielma2016" ref-type="bibr">Lubin
+  et al., 2016</xref>). As of the current state of
+  BilevelOptimization.jl, the only restricted part of the model is the
+  linear-quadratic lower-level, which is required to exploit
+  Karush-Kuhn-Tucker conditions.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-dempe2018bilevel">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Dempe</surname><given-names>Stephan</given-names></name>
+        </person-group>
+        <source>Bilevel optimization: Theory, algorithms and applications</source>
+        <publisher-name>TU Bergakademie Freiberg, Fakultät für Mathematik und Informatik</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-dunning2017jump">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dunning</surname><given-names>Iain</given-names></name>
+          <name><surname>Huchette</surname><given-names>Joey</given-names></name>
+          <name><surname>Lubin</surname><given-names>Miles</given-names></name>
+        </person-group>
+        <article-title>JuMP: A modeling language for mathematical optimization</article-title>
+        <source>SIAM Review</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>59</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1137/15m1020575</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-brotcorne2001bilevel">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Brotcorne</surname><given-names>Luce</given-names></name>
+          <name><surname>Labbé</surname><given-names>Martine</given-names></name>
+          <name><surname>Marcotte</surname><given-names>Patrice</given-names></name>
+          <name><surname>Savard</surname><given-names>Gilles</given-names></name>
+        </person-group>
+        <article-title>A bilevel model for toll optimization on a multicommodity transportation network</article-title>
+        <source>Transportation science</source>
+        <publisher-name>INFORMS</publisher-name>
+        <year iso-8601-date="2001">2001</year>
+        <volume>35</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1287/trsc.35.4.345.10433</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hayrapetyan2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hayrapetyan</surname><given-names>Ara</given-names></name>
+          <name><surname>Tardos</surname><given-names>Éva</given-names></name>
+          <name><surname>Wexler</surname><given-names>Tom</given-names></name>
+        </person-group>
+        <article-title>A network pricing game for selfish traffic</article-title>
+        <source>Distributed Computing</source>
+        <year iso-8601-date="2007-03-01">2007</year><month>03</month><day>01</day>
+        <volume>19</volume>
+        <issue>4</issue>
+        <issn>1432-0452</issn>
+        <uri>https://doi.org/10.1007/s00446-006-0020-y</uri>
+        <pub-id pub-id-type="doi">10.1007/s00446-006-0020-y</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-harks2018toll">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Harks</surname><given-names>Tobias</given-names></name>
+          <name><surname>Schröder</surname><given-names>Marc</given-names></name>
+          <name><surname>Vermeulen</surname><given-names>Dries</given-names></name>
+        </person-group>
+        <article-title>Toll caps in privatized road networks</article-title>
+        <source>European Journal of Operational Research</source>
+        <year iso-8601-date="2019">2019</year>
+        <issn>0377-2217</issn>
+        <pub-id pub-id-type="doi">10.1016/j.ejor.2019.01.059</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pineda19">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pineda</surname><given-names>S.</given-names></name>
+          <name><surname>Morales</surname><given-names>J. M.</given-names></name>
+        </person-group>
+        <article-title>Solving linear bilevel problems using big-ms: Not all that glitters is gold</article-title>
+        <source>IEEE Transactions on Power Systems</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume></volume>
+        <issue></issue>
+        <issn>0885-8950</issn>
+        <pub-id pub-id-type="doi">10.1109/TPWRS.2019.2892607</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LubinYamangilBentVielma2016">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Lubin</surname><given-names>Miles</given-names></name>
+          <name><surname>Yamangil</surname><given-names>Emre</given-names></name>
+          <name><surname>Bent</surname><given-names>Russell</given-names></name>
+          <name><surname>Vielma</surname><given-names>Juan Pablo</given-names></name>
+        </person-group>
+        <article-title>Extended formulations in mixed-integer convex programming</article-title>
+        <source>Integer Programming and Combinatorial Optimization: 18th International Conference, IPCO 2016, Liège, Belgium, June 1-3, 2016, Proceedings</source>
+        <person-group person-group-type="editor">
+          <name><surname>Louveaux</surname><given-names>Quentin</given-names></name>
+          <name><surname>Skutella</surname><given-names>Martin</given-names></name>
+        </person-group>
+        <publisher-name>Springer International Publishing</publisher-name>
+        <publisher-loc>Cham</publisher-loc>
+        <year iso-8601-date="2016">2016</year>
+        <isbn>978-3-319-33461-5</isbn>
+        <uri>http://dx.doi.org/10.1007/978-3-319-33461-5_9</uri>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-33461-5_9</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

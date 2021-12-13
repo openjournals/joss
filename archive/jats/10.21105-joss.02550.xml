@@ -1,0 +1,778 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2550</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02550</article-id>
+<title-group>
+<article-title>PyAutoFit: A Classy Probabilistic Programming Language
+for Model Composition and Fitting</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-8987-7401</contrib-id>
+<string-name>James. W. Nightingale</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Richard G. Hayes</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-2553-2447</contrib-id>
+<string-name>Matthew Griffiths</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Institute for Computational Cosmology, Stockton Rd, Durham,
+United Kingdom, DH1 3LE</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>ConcR Ltd, London, UK</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-07-17">
+<day>17</day>
+<month>7</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>58</issue>
+<fpage>2550</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>statistics</kwd>
+<kwd>Bayesian inference</kwd>
+<kwd>probabilistic programming</kwd>
+<kwd>model fitting</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>A major trend in academia and data science is the rapid adoption of
+  Bayesian statistics for data analysis and modeling, leading to the
+  development of probabilistic programming languages (PPL). A PPL
+  provides a framework that allows users to easily specify a
+  probabilistic model and perform inference automatically.
+  <monospace>PyAutoFit</monospace> is a Python-based PPL which
+  interfaces with all aspects of the modeling (e.g., the model, data,
+  fitting procedure, visualization, results) and therefore provides
+  complete management of every aspect of modeling. This includes
+  composing high-dimensionality models from individual model components,
+  customizing the fitting procedure and performing data augmentation
+  before a model-fit. Advanced features include database tools for
+  analysing large suites of modeling results and exploiting
+  domain-specific knowledge of a problem via non-linear search chaining.
+  Accompanying <monospace>PyAutoFit</monospace> is the
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/Jammy2211/autofit_workspace">autofit
+  workspace</ext-link>, which includes example scripts and the
+  <monospace>HowToFit</monospace> lecture series which introduces
+  non-experts to model-fitting and provides a guide on how to begin a
+  project using <monospace>PyAutoFit</monospace>. Readers can try
+  <monospace>PyAutoFit</monospace> right now by going to
+  <ext-link ext-link-type="uri" xlink:href="https://mybinder.org/v2/gh/Jammy2211/autofit_workspace/HEAD">the
+  introduction Jupyter notebook on Binder</ext-link> or checkout our
+  <ext-link ext-link-type="uri" xlink:href="https://pyautofit.readthedocs.io/en/latest/">readthedocs</ext-link>
+  for a complete overview of <bold>PyAutoFit</bold>’s features.</p>
+</sec>
+<sec id="background-of-probabilistic-programming">
+  <title>Background of Probabilistic Programming</title>
+  <p>Probabilistic programming languages (PPLs) have enabled
+  contemporary statistical inference techniques to be applied to a
+  diverse range of problems across academia and industry. Packages such
+  as PyMC3
+  (<xref alt="Salvatier et al., 2016" rid="ref-Salvatier2016" ref-type="bibr">Salvatier
+  et al., 2016</xref>), Pyro
+  (<xref alt="Bingham et al., 2019" rid="ref-Bingham2019" ref-type="bibr">Bingham
+  et al., 2019</xref>) and STAN
+  (<xref alt="Carpenter et al., 2017" rid="ref-Carpenter2017" ref-type="bibr">Carpenter
+  et al., 2017</xref>) offer general-purpose frameworks where users can
+  specify a generative model and fit it to data using a variety of
+  non-linear fitting techniques. Each package is specialized to problems
+  of a certain nature, with many focused on problems like generalized
+  linear modeling or determining the distribution(s) from which the data
+  was drawn. For these problems the model is typically composed of the
+  equations and distributions that are fitted to the data, which are
+  easily expressed syntactically such that the PPL API offers an
+  expressive way to define the model and extensions can be implemented
+  in an intuitive and straightforward way.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p><monospace>PyAutoFit</monospace> is a PPL whose core design is
+  providing a direct interface with the model, data, fitting procedure
+  and results, allowing it to provide comprehensive management of many
+  different aspects of model-fitting. <bold>PyAutoFit</bold> began as an
+  Astronomy project for fitting large imaging datasets of galaxies,
+  after the developers found that existing PPLs were not suited to the
+  type of model fitting problems Astronomers faced. This includes
+  efficiently analysing large and homogenous datasets with an identical
+  model fitting procedure, making it straight forward to fit many models
+  to large datasets with streamlined model comparison and massively
+  parallel support for problems where an expensive likelihood function
+  means run-times can be of order days or longer. More recent
+  development has generalized <monospace>PyAutoFit</monospace>, making
+  it suitable to a broader range of model-fitting problems.</p>
+</sec>
+<sec id="software-description">
+  <title>Software Description</title>
+  <p>To compose a model with <monospace>PyAutoFit</monospace> model
+  components are written as Python classes, allowing
+  <monospace>PyAutoFit</monospace> to define the model and associated
+  parameters in an expressive way that is tied to the modeling
+  software’s API. A model fit then requires that a
+  <monospace>PyAutoFit</monospace> <monospace>Analysis</monospace> class
+  is written, which combines the data, model and likelihood function and
+  defines how the model-fit is performed using a
+  <monospace>NonLinearSearch</monospace>. The
+  <monospace>NonLinearSearch</monospace> procedure is defined using an
+  external inference library such as <monospace>dynesty</monospace>
+  (<xref alt="Speagle, 2020" rid="ref-dynesty" ref-type="bibr">Speagle,
+  2020</xref>), <monospace>emcee</monospace>
+  (<xref alt="Foreman-Mackey et al., 2013" rid="ref-emcee" ref-type="bibr">Foreman-Mackey
+  et al., 2013</xref>) or <monospace>PySwarms</monospace>
+  (<xref alt="Miranda, 2018" rid="ref-pyswarms" ref-type="bibr">Miranda,
+  2018</xref>).</p>
+  <p>The <monospace>Analysis</monospace> class provides a model specific
+  interface between <monospace>PyAutoFit</monospace> and the modeling
+  software, allowing it to handle the ‘heavy lifting’ that comes with
+  writing model-fitting software. This includes interfacing with the
+  non-linear search, outputting results in a structured path format and
+  model-specific visualization during and after the non-linear search.
+  Results are output in a database structure that allows the
+  <monospace>Aggregator</monospace> tool to load results post-analysis
+  via a Python script or Jupyter notebook. This includes methods for
+  summarizing the results of every fit, filtering results to inspect
+  subsets of model fits and visualizing results. Results are loaded as
+  <monospace>Python</monospace> generators, ensuring the
+  <monospace>Aggregator</monospace> can be used to interpret large files
+  in a memory efficient way. <monospace>PyAutoFit</monospace> is
+  therefore suited to ‘big data’ problems where independent fits to
+  large homogeneous data-sets using an identical model-fitting procedure
+  are performed.</p>
+</sec>
+<sec id="model-abstraction-and-composition">
+  <title>Model Abstraction and Composition</title>
+  <p>For many modeling problems the model comprises abstract model
+  components representing objects or processes in a physical system. For
+  example, galaxy morphology studies in astrophysics where model
+  components represent the light profile of stars
+  (<xref alt="Häußler et al., 2013" rid="ref-Haussler2013" ref-type="bibr">Häußler
+  et al., 2013</xref>;
+  <xref alt="Nightingale et al., 2019" rid="ref-Nightingale2019" ref-type="bibr">Nightingale
+  et al., 2019</xref>). For these problems the likelihood function is
+  typically a sequence of numerical processes (e.g., convolutions,
+  Fourier transforms, linear algebra) and extensions to the model often
+  requires the addition of new model components in a way that is
+  non-trivially included in the fitting process and likelihood function.
+  Existing PPLs have tools for these problems, for example ‘black-box’
+  likelihood functions in PyMC3. However, these solutions decouple model
+  composition from the data and fitting procedure, making the model less
+  expressive, restricting model customization and reducing flexibility
+  in how the model-fit is performed.</p>
+  <p>By writing model components as Python classes, the model and its
+  associated parameters are defined in an expressive way that is tied to
+  the modeling software’s API. Model composition with
+  <monospace>PyAutoFit</monospace> allows complex models to be built
+  from these individual components, abstracting the details of how they
+  change model-fitting procedure from the user. Models can be fully
+  customized, allowing adjustment of individual parameter priors, the
+  fixing or coupling of parameters between model components and removing
+  regions of parameter space via parameter assertions. Adding new model
+  components to a <monospace>PyAutoFit</monospace> project is
+  straightforward, whereby adding a new Python class means it works
+  within the entire modeling framework. <monospace>PyAutoFit</monospace>
+  is therefore ideal for problems where there is a desire to compose,
+  fit and compare many similar (but slightly different) models to a
+  single dataset, with the <monospace>Aggregator</monospace> including
+  tools to facilitate this.</p>
+  <p>For many model fitting problems, domain specific knowledge of the
+  model can be exploited to speed up the non-linear search and ensure it
+  locates the global maximum likelihood solution. For example, initial
+  fits can be performed using simplified model parameterizations,
+  augmented datasets and faster non-linear fitting techniques. Through
+  experience users may know that certain model components share minimal
+  covariance, meaning that separate fits to each model component (in
+  parameter spaces of reduced dimensionality) can be performed before
+  fitting them simultaneously. The results of these simplified fits can
+  then be used to initialize fits using a higher dimensionality model.
+  Breaking down a model-fit in this way uses
+  <monospace>PyAutoFit</monospace>’s non-linear search chaining, which
+  granularizes the non-linear fitting procedure into a series of linked
+  non-linear searches. Initial model-fits are followed by fits that
+  gradually increase the model complexity, using the information gained
+  throughout the pipeline to guide each
+  <monospace>NonLinearSearch</monospace> and thus enable accurate
+  fitting of models of arbitrary complexity.</p>
+</sec>
+<sec id="history">
+  <title>History</title>
+  <p><monospace>PyAutoFit</monospace> is a generalization of
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/Jammy2211/PyAutoLens">PyAutoLens</ext-link>,
+  an Astronomy package developed to analyse images of gravitationally
+  lensed galaxies. Modeling gravitational lenses historically requires
+  large amounts of human time and supervision, an approach which does
+  not scale to the incoming samples of 100000 objects. Domain
+  exploitation enabled full automation of the lens modeling procedure
+  (<xref alt="Nightingale et al., 2018" rid="ref-Nightingale2018" ref-type="bibr">Nightingale
+  et al., 2018</xref>;
+  <xref alt="Nightingale &amp; Dye, 2015" rid="ref-Nightingale2015" ref-type="bibr">Nightingale
+  &amp; Dye, 2015</xref>), with model customization and the aggregator
+  enabling one to fit large datasets with many different models. More
+  recently, <monospace>PyAutoFit</monospace> has been applied to
+  calibrating radiation damage to charge coupled imaging devices and a
+  model of cancer tumour growth.</p>
+</sec>
+<sec id="workspace-and-howtofit-tutorials">
+  <title>Workspace and HowToFit Tutorials</title>
+  <p><monospace>PyAutoFit</monospace> is distributed with the
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/Jammy2211/autofit_workspace">autofit
+  workspace</ext-link>, which contains example scripts for composing a
+  model, performing a fit, using the <monospace>Aggregator</monospace>
+  and <monospace>PyAutoFit</monospace>’s advanced statistical inference
+  methods. Also included are the <monospace>HowToFit</monospace>
+  tutorials, a series of Jupyter notebooks aimed at non-experts,
+  introducing them to model-fitting and Bayesian inference. They teach
+  users how to write model-components and
+  <monospace>Analysis</monospace> classes in
+  <monospace>PyAutoFit</monospace>, use these to fit a dataset and
+  interpret the model-fitting results. The lectures are available on our
+  <ext-link ext-link-type="uri" xlink:href="https://mybinder.org/v2/gh/Jammy2211/autofit_workspace/HEAD">Binder</ext-link>
+  and may therefore be taken without a local
+  <monospace>PyAutoFit</monospace> installation.</p>
+</sec>
+<sec id="software-citations">
+  <title>Software Citations</title>
+  <p><monospace>PyAutoFit</monospace> is written in Python 3.6+
+  (<xref alt="Van Rossum &amp; Drake, 2009" rid="ref-python" ref-type="bibr">Van
+  Rossum &amp; Drake, 2009</xref>) and uses the following software
+  packages:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p><monospace>corner.py</monospace>
+      https://github.com/dfm/corner.py
+      (<xref alt="Foreman-Mackey, 2016" rid="ref-corner" ref-type="bibr">Foreman-Mackey,
+      2016</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>dynesty</monospace>
+      https://github.com/joshspeagle/dynesty
+      (<xref alt="Speagle, 2020" rid="ref-dynesty" ref-type="bibr">Speagle,
+      2020</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>emcee</monospace> https://github.com/dfm/emcee
+      (<xref alt="Foreman-Mackey et al., 2013" rid="ref-emcee" ref-type="bibr">Foreman-Mackey
+      et al., 2013</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>matplotlib</monospace>
+      https://github.com/matplotlib/matplotlib
+      (<xref alt="Hunter, 2007" rid="ref-matplotlib" ref-type="bibr">Hunter,
+      2007</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>NumPy</monospace> https://github.com/numpy/numpy
+      (<xref alt="Harris et al., 2020" rid="ref-numpy" ref-type="bibr">Harris
+      et al., 2020</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>PyMultiNest</monospace>
+      https://github.com/JohannesBuchner/PyMultiNest
+      (<xref alt="Feroz et al., 2009" rid="ref-multinest" ref-type="bibr">Feroz
+      et al., 2009</xref>)
+      (<xref alt="Buchner et al., 2014" rid="ref-pymultinest" ref-type="bibr">Buchner
+      et al., 2014</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>PySwarms</monospace>
+      https://github.com/ljvmiranda921/pyswarms
+      (<xref alt="Miranda, 2018" rid="ref-pyswarms" ref-type="bibr">Miranda,
+      2018</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>Scipy</monospace> https://github.com/scipy/scipy
+      (<xref alt="Virtanen et al., 2020" rid="ref-scipy" ref-type="bibr">Virtanen
+      et al., 2020</xref>)</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="related-probabilistic-programming-languages">
+  <title>Related Probabilistic Programming Languages</title>
+  <list list-type="bullet">
+    <list-item>
+      <p><monospace>PyMC3</monospace> https://github.com/pymc-devs/pymc3
+      (<xref alt="Salvatier et al., 2016" rid="ref-Salvatier2016" ref-type="bibr">Salvatier
+      et al., 2016</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>Pyro</monospace> https://github.com/pyro-ppl/pyro
+      (<xref alt="Bingham et al., 2019" rid="ref-Bingham2019" ref-type="bibr">Bingham
+      et al., 2019</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>STAN</monospace> https://github.com/stan-dev/stan
+      (<xref alt="Carpenter et al., 2017" rid="ref-Carpenter2017" ref-type="bibr">Carpenter
+      et al., 2017</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>TensorFlow Probability</monospace>
+      https://github.com/tensorflow/probability
+      (<xref alt="Dillon et al., 2017" rid="ref-tensorflow" ref-type="bibr">Dillon
+      et al., 2017</xref>)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>uravu</monospace> https://github.com/arm61/uravu
+      (<xref alt="McCluskey &amp; Snow, 2020" rid="ref-uravu" ref-type="bibr">McCluskey
+      &amp; Snow, 2020</xref>)</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>JWN and RJM are supported by the UK Space Agency, through grant
+  ST/V001582/1, and by InnovateUK through grant TS/V002856/1. RGH is
+  supported by STFC Opportunities grant ST/T002565/1. This work used the
+  DiRAC@Durham facility managed by the Institute for Computational
+  Cosmology on behalf of the STFC DiRAC HPC Facility (www.dirac.ac.uk).
+  The equipment was funded by BEIS capital funding via STFC capital
+  grants ST/K00042X/1, ST/P002293/1, ST/R002371/1 and ST/S002502/1,
+  Durham University and STFC operations grant ST/R000832/1. DiRAC is
+  part of the National e-Infrastructure.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-numpy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Harris</surname><given-names>Charles R.</given-names></name>
+          <name><surname>Millman</surname><given-names>K. Jarrod</given-names></name>
+          <name><surname>Walt</surname><given-names>St’efan J. van der</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Wieser</surname><given-names>Eric</given-names></name>
+          <name><surname>Taylor</surname><given-names>Julian</given-names></name>
+          <name><surname>Berg</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Smith</surname><given-names>Nathaniel J.</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Picus</surname><given-names>Matti</given-names></name>
+          <name><surname>Hoyer</surname><given-names>Stephan</given-names></name>
+          <name><surname>Kerkwijk</surname><given-names>Marten H. van</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Haldane</surname><given-names>Allan</given-names></name>
+          <name><surname>R’ıo</surname><given-names>Jaime Fern’andez del</given-names></name>
+          <name><surname>Wiebe</surname><given-names>Mark</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>G’erard-Marchant</surname><given-names>Pierre</given-names></name>
+          <name><surname>Sheppard</surname><given-names>Kevin</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Abbasi</surname><given-names>Hameer</given-names></name>
+          <name><surname>Gohlke</surname><given-names>Christoph</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+        </person-group>
+        <article-title>Array2D programming with NumPy</article-title>
+        <source>Nature</source>
+        <publisher-name>Springer Science; Business Media LLC</publisher-name>
+        <year iso-8601-date="2020-09">2020</year><month>09</month>
+        <volume>585</volume>
+        <issue>7825</issue>
+        <uri>https://doi.org/10.1038/s41586-020-2649-2</uri>
+        <pub-id pub-id-type="doi">10.1038/s41586-020-2649-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-corner">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Foreman-Mackey</surname><given-names>Daniel</given-names></name>
+        </person-group>
+        <article-title>Corner.py: Scatterplot matrices in python</article-title>
+        <source>The Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2016-06">2016</year><month>06</month>
+        <volume>1</volume>
+        <issue>2</issue>
+        <uri>https://doi.org/10.21105/joss.00024</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.00024</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pyswarms">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Miranda</surname><given-names>Lester James V.</given-names></name>
+        </person-group>
+        <article-title>PySwarms, a research-toolkit for Particle Swarm Optimization in Python</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>3</volume>
+        <uri>https://doi.org/10.21105/joss.00433</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.00433</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-dynesty">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Speagle</surname><given-names>Joshua S</given-names></name>
+        </person-group>
+        <article-title>dynesty: a dynamic nested sampling package for estimating Bayesian posteriors and evidences</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <year iso-8601-date="2020-02">2020</year><month>02</month>
+        <volume>493</volume>
+        <issue>3</issue>
+        <issn>0035-8711</issn>
+        <uri>https://doi.org/10.1093/mnras/staa278</uri>
+        <pub-id pub-id-type="doi">10.1093/mnras/staa278</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-emcee">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Foreman-Mackey</surname><given-names>Daniel</given-names></name>
+          <name><surname>Hogg</surname><given-names>David W.</given-names></name>
+          <name><surname>Lang</surname><given-names>Dustin</given-names></name>
+          <name><surname>Goodman</surname><given-names>Jonathan</given-names></name>
+        </person-group>
+        <article-title>emcee: The MCMC Hammer</article-title>
+        <source>Publications of the Astronomical Society of the Pacific</source>
+        <year iso-8601-date="2013-03">2013</year><month>03</month>
+        <volume>125</volume>
+        <issue>925</issue>
+        <uri>https://arxiv.org/abs/1202.3665</uri>
+        <pub-id pub-id-type="doi">10.1086/670067</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-matplotlib">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hunter</surname><given-names>J. D.</given-names></name>
+        </person-group>
+        <article-title>Matplotlib: A 2D graphics environment</article-title>
+        <source>Computing in Science &amp; Engineering</source>
+        <publisher-name>IEEE COMPUTER SOC</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>9</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2007.55</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-scipy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+          <name><surname>Haberland</surname><given-names>Matt</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Burovski</surname><given-names>Evgeni</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Bright</surname><given-names>Jonathan</given-names></name>
+          <name><surname>van der Walt</surname><given-names>Stéfan J.</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Wilson</surname><given-names>Joshua</given-names></name>
+          <name><surname>Jarrod Millman</surname><given-names>K.</given-names></name>
+          <name><surname>Mayorov</surname><given-names>Nikolay</given-names></name>
+          <name><surname>Nelson</surname><given-names>Andrew R. J.</given-names></name>
+          <name><surname>Jones</surname><given-names>Eric</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Larson</surname><given-names>Eric</given-names></name>
+          <name><surname>Carey</surname><given-names>CJ</given-names></name>
+          <name><surname>Polat</surname><given-names>İlhan</given-names></name>
+          <name><surname>Feng</surname><given-names>Yu</given-names></name>
+          <name><surname>Moore</surname><given-names>Eric W.</given-names></name>
+          <name><surname>Vand erPlas</surname><given-names>Jake</given-names></name>
+          <name><surname>Laxalde</surname><given-names>Denis</given-names></name>
+          <name><surname>Perktold</surname><given-names>Josef</given-names></name>
+          <name><surname>Cimrman</surname><given-names>Robert</given-names></name>
+          <name><surname>Henriksen</surname><given-names>Ian</given-names></name>
+          <name><surname>Quintero</surname><given-names>E. A.</given-names></name>
+          <name><surname>Harris</surname><given-names>Charles R</given-names></name>
+          <name><surname>Archibald</surname><given-names>Anne M.</given-names></name>
+          <name><surname>Ribeiro</surname><given-names>Antônio H.</given-names></name>
+          <name><surname>Pedregosa</surname><given-names>Fabian</given-names></name>
+          <name><surname>van Mulbregt</surname><given-names>Paul</given-names></name>
+          <name><surname>Contributors</surname><given-names>SciPy 1. 0</given-names></name>
+        </person-group>
+        <article-title>SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python</article-title>
+        <source>Nature Methods</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>17</volume>
+        <pub-id pub-id-type="doi">10.1038/s41592-019-0686-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Haussler2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Häußler</surname><given-names>Boris</given-names></name>
+          <name><surname>Bamford</surname><given-names>Steven P.</given-names></name>
+          <name><surname>Vika</surname><given-names>Marina</given-names></name>
+          <name><surname>Rojas</surname><given-names>Alex L.</given-names></name>
+          <name><surname>Barden</surname><given-names>Marco</given-names></name>
+          <name><surname>Kelvin</surname><given-names>Lee S.</given-names></name>
+          <name><surname>Alpaslan</surname><given-names>Mehmet</given-names></name>
+          <name><surname>Robotham</surname><given-names>Aaron S. G.</given-names></name>
+          <name><surname>Driver</surname><given-names>Simon P.</given-names></name>
+          <name><surname>Baldry</surname><given-names>I. K.</given-names></name>
+          <name><surname>Brough</surname><given-names>Sarah</given-names></name>
+          <name><surname>Hopkins</surname><given-names>Andrew M.</given-names></name>
+          <name><surname>Liske</surname><given-names>Jochen</given-names></name>
+          <name><surname>Nichol</surname><given-names>Robert C.</given-names></name>
+          <name><surname>Popescu</surname><given-names>Cristina C.</given-names></name>
+          <name><surname>Tuffs</surname><given-names>Richard J.</given-names></name>
+        </person-group>
+        <article-title>Megamorph - multiwavelength measurement of galaxy structure: Complete Sérsic profile information from modern surveys</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <year iso-8601-date="2013-03">2013</year><month>03</month>
+        <volume>430</volume>
+        <issue>1</issue>
+        <issn>00358711</issn>
+        <uri>https://arxiv.org/abs/1212.3332</uri>
+        <pub-id pub-id-type="doi">10.1093/mnras/sts633</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Nightingale2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Nightingale</surname><given-names>J. W.</given-names></name>
+          <name><surname>Dye</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>Adaptive semi-linear inversion of strong gravitational lens imaging</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <year iso-8601-date="2015-09">2015</year><month>09</month>
+        <volume>452</volume>
+        <issue>3</issue>
+        <issn>13652966</issn>
+        <uri>https://arxiv.org/abs/1412.7436</uri>
+        <pub-id pub-id-type="doi">10.1093/mnras/stv1455</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Nightingale2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Nightingale</surname><given-names>J. W.</given-names></name>
+          <name><surname>Dye</surname><given-names>S.</given-names></name>
+          <name><surname>Massey</surname><given-names>Richard J.</given-names></name>
+        </person-group>
+        <article-title>AutoLens: Automated modeling of a strong lens’s light, mass, and source</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>478</volume>
+        <issue>4</issue>
+        <issn>13652966</issn>
+        <uri>https://academic.oup.com/mnras/article/478/4/4738/5001434</uri>
+        <pub-id pub-id-type="doi">10.1093/mnras/sty1264</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Nightingale2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Nightingale</surname><given-names>J. W.</given-names></name>
+          <name><surname>Massey</surname><given-names>Richard J.</given-names></name>
+          <name><surname>Harvey</surname><given-names>David R.</given-names></name>
+          <name><surname>Cooper</surname><given-names>Andrew P.</given-names></name>
+          <name><surname>Etherington</surname><given-names>Amy</given-names></name>
+          <name><surname>Tam</surname><given-names>Sut Ieng</given-names></name>
+          <name><surname>Hayes</surname><given-names>Richard G.</given-names></name>
+        </person-group>
+        <article-title>Galaxy structure with strong gravitational lensing: Decomposing the internal mass distribution of massive elliptical galaxies</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>489</volume>
+        <issue>2</issue>
+        <issn>13652966</issn>
+        <uri>http://arxiv.org/abs/1901.07801</uri>
+        <pub-id pub-id-type="doi">10.1093/mnras/stz2220</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Salvatier2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Salvatier</surname><given-names>John</given-names></name>
+          <name><surname>Wiecki</surname><given-names>Thomas V.</given-names></name>
+          <name><surname>Fonnesbeck</surname><given-names>Christopher</given-names></name>
+        </person-group>
+        <article-title>Probabilistic programming in Python using PyMC3</article-title>
+        <source>PeerJ Computer Science</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>2016</volume>
+        <issue>4</issue>
+        <issn>23765992</issn>
+        <uri>https://arxiv.org/abs/1507.08050</uri>
+        <pub-id pub-id-type="doi">10.7717/peerj-cs.55</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Carpenter2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Carpenter</surname><given-names>Bob</given-names></name>
+          <name><surname>Gelman</surname><given-names>Andrew</given-names></name>
+          <name><surname>Hoffman</surname><given-names>Matthew D.</given-names></name>
+          <name><surname>Lee</surname><given-names>Daniel</given-names></name>
+          <name><surname>Goodrich</surname><given-names>Ben</given-names></name>
+          <name><surname>Betancourt</surname><given-names>Michael</given-names></name>
+          <name><surname>Brubaker</surname><given-names>Marcus A.</given-names></name>
+          <name><surname>Guo</surname><given-names>Jiqiang</given-names></name>
+          <name><surname>Li</surname><given-names>Peter</given-names></name>
+          <name><surname>Riddell</surname><given-names>Allen</given-names></name>
+        </person-group>
+        <article-title>Stan: A probabilistic programming language</article-title>
+        <source>Journal of Statistical Software</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>76</volume>
+        <issue>1</issue>
+        <issn>15487660</issn>
+        <pub-id pub-id-type="doi">10.18637/jss.v076.i01</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Bingham2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bingham</surname><given-names>Eli</given-names></name>
+          <name><surname>Chen</surname><given-names>Jonathan P.</given-names></name>
+          <name><surname>Jankowiak</surname><given-names>Martin</given-names></name>
+          <name><surname>Obermeyer</surname><given-names>F.</given-names></name>
+          <name><surname>Pradhan</surname><given-names>Neeraj</given-names></name>
+          <name><surname>Karaletsos</surname><given-names>Theofanis</given-names></name>
+          <name><surname>Singh</surname><given-names>Rohit</given-names></name>
+          <name><surname>Szerlip</surname><given-names>Paul</given-names></name>
+          <name><surname>Horsfall</surname><given-names>Paul</given-names></name>
+          <name><surname>Goodman</surname><given-names>Noah D.</given-names></name>
+        </person-group>
+        <article-title>Pyro: Deep universal probabilistic programming</article-title>
+        <source>Journal of Machine Learning Research</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>20</volume>
+        <issue>Xxxx</issue>
+        <issn>15337928</issn>
+        <uri>https://arxiv.org/abs/1810.09538</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-tensorflow">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dillon</surname><given-names>Joshua V.</given-names></name>
+          <name><surname>Langmore</surname><given-names>Ian</given-names></name>
+          <name><surname>Tran</surname><given-names>Dustin</given-names></name>
+          <name><surname>Brevdo</surname><given-names>Eugene</given-names></name>
+          <name><surname>Vasudevan</surname><given-names>Srinivas</given-names></name>
+          <name><surname>Moore</surname><given-names>Dave</given-names></name>
+          <name><surname>Patton</surname><given-names>Brian</given-names></name>
+          <name><surname>Alemi</surname><given-names>Alex</given-names></name>
+          <name><surname>Hoffman</surname><given-names>Matt</given-names></name>
+          <name><surname>Saurous</surname><given-names>Rif A.</given-names></name>
+        </person-group>
+        <article-title>TensorFlow Distributions</article-title>
+        <source>arXiv e-prints</source>
+        <year iso-8601-date="2017-11">2017</year><month>11</month>
+        <uri>https://arxiv.org/abs/1711.10604</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-pymultinest">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Buchner</surname><given-names>J.</given-names></name>
+          <name><surname>Georgakakis</surname><given-names>A.</given-names></name>
+          <name><surname>Nandra</surname><given-names>K.</given-names></name>
+          <name><surname>Hsu</surname><given-names>L.</given-names></name>
+          <name><surname>Rangel</surname><given-names>C.</given-names></name>
+          <name><surname>Brightman</surname><given-names>M.</given-names></name>
+          <name><surname>Merloni</surname><given-names>A.</given-names></name>
+          <name><surname>Salvato</surname><given-names>M.</given-names></name>
+          <name><surname>Donley</surname><given-names>J.</given-names></name>
+          <name><surname>Kocevski</surname><given-names>D.</given-names></name>
+        </person-group>
+        <article-title>X-ray spectral modelling of the AGN obscuring region in the CDFS: Bayesian model selection and catalogue</article-title>
+        <source>Astronomy and Astrophysics</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>564</volume>
+        <issn>14320746</issn>
+        <uri>https://arxiv.org/abs/1402.0004</uri>
+        <pub-id pub-id-type="doi">10.1051/0004-6361/201322971</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-multinest">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Feroz</surname><given-names>F.</given-names></name>
+          <name><surname>Hobson</surname><given-names>M. P.</given-names></name>
+          <name><surname>Bridges</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>MultiNest: An efficient and robust Bayesian inference tool for cosmology and particle physics</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume>398</volume>
+        <issue>4</issue>
+        <isbn>0035-8711</isbn>
+        <issn>00358711</issn>
+        <uri>https://arxiv.org/abs/0809.3437</uri>
+        <pub-id pub-id-type="doi">10.1111/j.1365-2966.2009.14548.x</pub-id>
+        <pub-id pub-id-type="pmid">29176</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-python">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Van Rossum</surname><given-names>Guido</given-names></name>
+          <name><surname>Drake</surname><given-names>Fred L.</given-names></name>
+        </person-group>
+        <source>Python 3 reference manual</source>
+        <publisher-name>CreateSpace</publisher-name>
+        <publisher-loc>Scotts Valley, CA</publisher-loc>
+        <year iso-8601-date="2009">2009</year>
+        <isbn>1441412697</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-uravu">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>McCluskey</surname><given-names>Andrew R.</given-names></name>
+          <name><surname>Snow</surname><given-names>Tim</given-names></name>
+        </person-group>
+        <article-title>Uravu: Making bayesian modelling easy(er)</article-title>
+        <source>Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>5</volume>
+        <issue>50</issue>
+        <uri>https://doi.org/10.21105/joss.02214</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.02214</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

@@ -1,0 +1,1055 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2892</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02892</article-id>
+<title-group>
+<article-title>LinRegOutliers: A Julia package for detecting outliers in
+linear regression</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9402-1982</contrib-id>
+<string-name>Mehmet Hakan Satman</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1818-6961</contrib-id>
+<string-name>Shreesh Adiga</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-4950-3990</contrib-id>
+<string-name>Guillermo Angeris</string-name>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-6817-0127</contrib-id>
+<string-name>Emre Akadal</string-name>
+<xref ref-type="aff" rid="aff-4"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Econometrics, Istanbul University, Istanbul,
+Turkey</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Department of Electronics and Communication Engineering, RV
+College of Engineering, Bengaluru, India</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Department of Electrical Engineering, Stanford University,
+Stanford, California, USA</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-4">
+<institution-wrap>
+<institution>Department of Informatics, Istanbul University, Istanbul,
+Turkey</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-11-26">
+<day>26</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>57</issue>
+<fpage>2892</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>linear regression</kwd>
+<kwd>outlier detection</kwd>
+<kwd>robust statistics</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>LinRegOutliers</monospace> is a Julia package that
+  implements a number of outlier detection algorithms for linear
+  regression. The package also implements robust covariance matrix
+  estimation and graphing functions which can be used to visualize the
+  regression residuals and distances between observations, with many
+  possible metrics (<italic>e.g.</italic>, the Euclidean or Mahalanobis
+  distances with either given or estimated covariance matrices). Our
+  package implements many algorithms and diagnostics for model fitting
+  with outliers under a single interface, which allows users to quickly
+  try many different methods with reasonable default settings, while
+  also providing a good starting framework for researchers who may want
+  to extend the package with novel methods.</p>
+</sec>
+<sec id="state-of-the-field">
+  <title>State of the field</title>
+  <p>In linear regression, we are given a number of data points (say,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>)
+  where each data point is represented by a vector
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[x_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+  with <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+  entries, and a dependent variable that corresponds to each of these
+  data points, represented by the scalar <inline-formula><alternatives>
+  <tex-math><![CDATA[y_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>y</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+  for <inline-formula><alternatives>
+  <tex-math><![CDATA[i=1, 2, \dots, n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mn>2</mml:mn><mml:mo>,</mml:mo><mml:mi>…</mml:mi><mml:mo>,</mml:mo><mml:mi>n</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.
+  We then seek to find a linear model which best describes the data (up
+  to some error term, <inline-formula><alternatives>
+  <tex-math><![CDATA[\epsilon_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>ϵ</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>):</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[
+  y_i = \beta_1 (x_{i})_1+ \dots + \beta_{p} (x_i)_p +  \epsilon_i,
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>y</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:msub><mml:mi>β</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>1</mml:mn></mml:msub><mml:mo>+</mml:mo><mml:mi>…</mml:mi><mml:mo>+</mml:mo><mml:msub><mml:mi>β</mml:mi><mml:mi>p</mml:mi></mml:msub><mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>p</mml:mi></mml:msub><mml:mo>+</mml:mo><mml:msub><mml:mi>ϵ</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>where <inline-formula><alternatives>
+  <tex-math><![CDATA[\beta_1, \dots, \beta_p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>β</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:mi>…</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>β</mml:mi><mml:mi>p</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+  are the <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+  unknown parameters. We will assume that the
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\epsilon_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>ϵ</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  are independent and identically-distributed (i.i.d.) error terms with
+  zero mean. Note that, if <inline-formula><alternatives>
+  <tex-math><![CDATA[(x_i)_1 = 1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>1</mml:mn></mml:msub><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  for all <inline-formula><alternatives>
+  <tex-math><![CDATA[i=1, \dots, n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>…</mml:mi><mml:mo>,</mml:mo><mml:mi>n</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>,
+  this is equivalent to having an intercept term given by
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\beta_1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>β</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>.</p>
+  <p>We can write this more conveniently by letting
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[X]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>X</mml:mi></mml:math></alternatives></inline-formula>
+  be the <italic>design matrix</italic> of size
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[n\times p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>n</mml:mi><mml:mo>×</mml:mo><mml:mi>p</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>,
+  whose <inline-formula><alternatives>
+  <tex-math><![CDATA[i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>i</mml:mi></mml:math></alternatives></inline-formula>th
+  row is given by the vectors <inline-formula><alternatives>
+  <tex-math><![CDATA[x_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  (where <inline-formula><alternatives>
+  <tex-math><![CDATA[(x_i)_1=1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>1</mml:mn></mml:msub><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  if the model has an intercept), while <inline-formula><alternatives>
+  <tex-math><![CDATA[y]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>y</mml:mi></mml:math></alternatives></inline-formula>
+  is an <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>-vector
+  of observations, whose entries are <inline-formula><alternatives>
+  <tex-math><![CDATA[y_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>y</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+  and similarly for <inline-formula><alternatives>
+  <tex-math><![CDATA[\epsilon]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϵ</mml:mi></mml:math></alternatives></inline-formula>:
+  <disp-formula><alternatives>
+  <tex-math><![CDATA[
+  y = X\beta + \epsilon.
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>y</mml:mi><mml:mo>=</mml:mo><mml:mi>X</mml:mi><mml:mi>β</mml:mi><mml:mo>+</mml:mo><mml:mi>ϵ</mml:mi><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula>
+  The usual approach to finding an estimate for
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\beta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>β</mml:mi></mml:math></alternatives></inline-formula>,
+  which we call <inline-formula><alternatives>
+  <tex-math><![CDATA[\hat \beta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>β</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:math></alternatives></inline-formula>,
+  is the Ordinary Least Squares (OLS) estimator given by
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\hat{\beta} = (X^TX)^{-1}X^Ty]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>β</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msup><mml:mi>X</mml:mi><mml:mi>T</mml:mi></mml:msup><mml:mi>X</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup><mml:msup><mml:mi>X</mml:mi><mml:mi>T</mml:mi></mml:msup><mml:mi>y</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>,
+  which is efficient and has good statistical properties when the error
+  terms are all of roughly the same magnitude (<italic>i.e.</italic>,
+  there are no outliers). On the other hand, the OLS estimator is very
+  sensitive to outliers: even if a single observation lies far from the
+  regression hyperplane, OLS will often fail to find a good estimate for
+  the parameters, <inline-formula><alternatives>
+  <tex-math><![CDATA[\beta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>β</mml:mi></mml:math></alternatives></inline-formula>.</p>
+  <p>To solve this problem, a number of methods have been developed in
+  the literature. These methods can be roughly placed in one or more of
+  the five following categories: diagnostics, direct methods, robust
+  methods, multivariate methods, and visual methods.
+  <italic>Diagnostics</italic> are methods which attempt to find points
+  that significantly affect the fit of a model (often, such points can
+  be labeled as outliers). Diagnostics can then be used to initialize
+  <italic>direct methods</italic>, which fit a (usually non-robust)
+  model to a subset of points suspected to be clear of outliers;
+  remaining points which are not outliers with respect to this fit are
+  continually added to this subset until all points not in the subset
+  are deemed outliers. <italic>Robust methods</italic>, on the other
+  hand, find a best-fit model by approximately minimizing a loss
+  function that is resistant to outliers. Some of the proposed methods
+  are also <italic>multivariate methods</italic>, which can accommodate
+  obtaining robust location and scale measures of multivariate data.
+  <italic>Visual methods</italic> generally work on the principle of
+  visualizing the statistics obtained from these mentioned methods. As
+  an example, the method <monospace>mveltsplot</monospace> constructs a
+  2-D plot using robust distances and scaled residuals obtained from
+  <monospace>mve</monospace> and <monospace>lts</monospace> which are
+  multivariate data and robust regression methods, respectively. Many
+  direct and robust methods for regression select an initial basic or
+  clean subset of observations using the results of diagnostics and
+  methods for multivariate data. This is why methods that are not
+  directly related to regression are included in the package.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>In practice, many of the proposed methods have reasonable
+  performance and yield similar results for most datasets, but sometimes
+  differ widely in specific circumstances by means of masking and
+  swamping ratios. Additionally, some of the methods are relatively
+  complicated and, if canonical implementations are available, they are
+  often out of date or only found in specific languages of the author’s
+  choice, making it difficult for researchers to compare the performance
+  of these algorithms on their datasets.</p>
+  <p>We have reimplemented many of the algorithms available in the
+  literature in Julia
+  (<xref alt="Bezanson et al., 2017" rid="ref-julia" ref-type="bibr">Bezanson
+  et al., 2017</xref>), an open-source, high performance programming
+  language designed primarily for scientific computing. Our package,
+  <monospace>LinRegOutliers</monospace>, is a comprehensive and
+  simple-to-use Julia package that includes many of the algorithms in
+  the literature for detecting outliers in linear regression. The
+  implemented <monospace>Julia</monospace> methods for diagnostics,
+  direct methods, robust methods, multivariate methods, and visual
+  diagnostics are shown in <bold>Table 1</bold>, <bold>Table 2</bold>,
+  <bold>Table 3</bold>, <bold>Table 4</bold>, and <bold>Table 5</bold>,
+  respectively.</p>
+  <table-wrap>
+    <caption>
+      <p>Regression Diagnostics</p>
+    </caption>
+    <table>
+      <thead>
+        <tr>
+          <th align="left">Algorithm</th>
+          <th align="left">Reference</th>
+          <th align="left">Method</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="left">Hadi Measure</td>
+          <td align="left">(<xref alt="Chatterjee &amp; Hadi, 2015" rid="ref-hadimeasure" ref-type="bibr">Chatterjee
+          &amp; Hadi, 2015</xref>)</td>
+          <td align="left"><monospace>hadimeasure</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">Covariance Ratio</td>
+          <td align="left">(<xref alt="Belsley et al., 2005" rid="ref-diagnostics" ref-type="bibr">Belsley
+          et al., 2005</xref>)</td>
+          <td align="left"><monospace>covratio</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">DFBETA</td>
+          <td align="left">(<xref alt="Belsley et al., 2005" rid="ref-diagnostics" ref-type="bibr">Belsley
+          et al., 2005</xref>)</td>
+          <td align="left"><monospace>dfbeta</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">DFFIT</td>
+          <td align="left">(<xref alt="Belsley et al., 2005" rid="ref-diagnostics" ref-type="bibr">Belsley
+          et al., 2005</xref>)</td>
+          <td align="left"><monospace>dffit</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">Mahalanobis Distances</td>
+          <td align="left">(<xref alt="Mahalanobis, 1930" rid="ref-mahalanobis" ref-type="bibr">Mahalanobis,
+          1930</xref>)</td>
+          <td align="left"><monospace>mahalanobisSquaredMatrix</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">Cook Distances</td>
+          <td align="left">(<xref alt="Cook, 1977" rid="ref-cooks" ref-type="bibr">Cook,
+          1977</xref>)</td>
+          <td align="left"><monospace>cooks</monospace></td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <table-wrap>
+    <caption>
+      <p>Direct Methods</p>
+    </caption>
+    <table>
+      <thead>
+        <tr>
+          <th align="left">Algorithm</th>
+          <th align="left">Reference</th>
+          <th align="left">Method</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="left">Ransac</td>
+          <td align="left">(<xref alt="Fischler &amp; Bolles, 1987" rid="ref-ransac" ref-type="bibr">Fischler
+          &amp; Bolles, 1987</xref>)</td>
+          <td align="left"><monospace>ransac</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">KS-89</td>
+          <td align="left">(<xref alt="Kianifard &amp; Swallow, 1989" rid="ref-ks89" ref-type="bibr">Kianifard
+          &amp; Swallow, 1989</xref>)</td>
+          <td align="left"><monospace>ks89</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">HS-93</td>
+          <td align="left">(<xref alt="Hadi &amp; Simonoff, 1993" rid="ref-hs93" ref-type="bibr">Hadi
+          &amp; Simonoff, 1993</xref>)</td>
+          <td align="left"><monospace>hs93</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">Atkinson-94</td>
+          <td align="left">(<xref alt="Atkinson, 1994" rid="ref-atkinson94" ref-type="bibr">Atkinson,
+          1994</xref>)</td>
+          <td align="left"><monospace>atkinson94</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">PY-95</td>
+          <td align="left">(<xref alt="Peña &amp; Yohai, 1995" rid="ref-py95" ref-type="bibr">Peña
+          &amp; Yohai, 1995</xref>)</td>
+          <td align="left"><monospace>py95</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">SMR-98</td>
+          <td align="left">(<xref alt="Sebert et al., 1998" rid="ref-smr98" ref-type="bibr">Sebert
+          et al., 1998</xref>)</td>
+          <td align="left"><monospace>smr98</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">ASM-2000</td>
+          <td align="left">(<xref alt="Adnan et al., 2000" rid="ref-asm2000" ref-type="bibr">Adnan
+          et al., 2000</xref>)</td>
+          <td align="left"><monospace>asm2000</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">BACON</td>
+          <td align="left">(<xref alt="Billor et al., 2000" rid="ref-bacon" ref-type="bibr">Billor
+          et al., 2000</xref>)</td>
+          <td align="left"><monospace>bacon</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">Imon-2005</td>
+          <td align="left">(<xref alt="Imon, 2005" rid="ref-imon2005" ref-type="bibr">Imon,
+          2005</xref>)</td>
+          <td align="left"><monospace>imon2005</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">bch</td>
+          <td align="left">(<xref alt="Billor et al., 2006" rid="ref-bch" ref-type="bibr">Billor
+          et al., 2006</xref>)</td>
+          <td align="left"><monospace>bch</monospace></td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <table-wrap>
+    <caption>
+      <p>Robust Methods</p>
+    </caption>
+    <table>
+      <thead>
+        <tr>
+          <th align="left">Algorithm</th>
+          <th align="left">Reference</th>
+          <th align="left">Method</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="left">Least Absolute Deviations</td>
+          <td align="left">(<xref alt="Nobakhti et al., 2009" rid="ref-lad" ref-type="bibr">Nobakhti
+          et al., 2009</xref>)</td>
+          <td align="left"><monospace>lad</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">Least Absolute Trimmed Deviations</td>
+          <td align="left">(<xref alt="Hawkins &amp; Olive, 1999" rid="ref-lta" ref-type="bibr">Hawkins
+          &amp; Olive, 1999</xref>)</td>
+          <td align="left"><monospace>lta</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">Least Median of Squares</td>
+          <td align="left">(<xref alt="Rousseeuw, 1984" rid="ref-lms" ref-type="bibr">Rousseeuw,
+          1984</xref>)</td>
+          <td align="left"><monospace>lms</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">Least Trimmed Squares</td>
+          <td align="left">(<xref alt="Rousseeuw &amp; Van Driessen, 2000" rid="ref-lts" ref-type="bibr">Rousseeuw
+          &amp; Van Driessen, 2000</xref>)</td>
+          <td align="left"><monospace>lts</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">CM-97</td>
+          <td align="left">(<xref alt="Chatterjee &amp; Mächler, 1997" rid="ref-cm97" ref-type="bibr">Chatterjee
+          &amp; Mächler, 1997</xref>)</td>
+          <td align="left"><monospace>cm97</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">ga-lts</td>
+          <td align="left">(<xref alt="Satman, 2012" rid="ref-galts" ref-type="bibr">Satman,
+          2012</xref>)</td>
+          <td align="left"><monospace>galts</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">Satman-2013</td>
+          <td align="left">(<xref alt="Satman, 2013" rid="ref-satman2013" ref-type="bibr">Satman,
+          2013</xref>)</td>
+          <td align="left"><monospace>satman2013</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">Satman-2015</td>
+          <td align="left">(<xref alt="Satman, 2015" rid="ref-satman2015" ref-type="bibr">Satman,
+          2015</xref>)</td>
+          <td align="left"><monospace>satman2015</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">CCF</td>
+          <td align="left">(<xref alt="Barratt et al., 2020" rid="ref-ccf" ref-type="bibr">Barratt
+          et al., 2020</xref>)</td>
+          <td align="left"><monospace>ccf</monospace></td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <table-wrap>
+    <caption>
+      <p>Multivariate Methods</p>
+    </caption>
+    <table>
+      <thead>
+        <tr>
+          <th align="left">Algorithm</th>
+          <th align="left">Reference</th>
+          <th align="left">Method</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="left">Hadi-1992</td>
+          <td align="left">(<xref alt="Hadi, 1992" rid="ref-hadi1992" ref-type="bibr">Hadi,
+          1992</xref>)</td>
+          <td align="left"><monospace>hadi1992</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">Hadi-1994</td>
+          <td align="left">(<xref alt="Hadi, 1994" rid="ref-hadi1994" ref-type="bibr">Hadi,
+          1994</xref>)</td>
+          <td align="left"><monospace>hadi1994</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">Minimum Volume Ellipsoid</td>
+          <td align="left">(<xref alt="Van Aelst &amp; Rousseeuw, 2009" rid="ref-mve" ref-type="bibr">Van
+          Aelst &amp; Rousseeuw, 2009</xref>)</td>
+          <td align="left"><monospace>mve</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">Minimum Covariance Determinant</td>
+          <td align="left">(<xref alt="Rousseeuw &amp; Driessen, 1999" rid="ref-mcd" ref-type="bibr">Rousseeuw
+          &amp; Driessen, 1999</xref>)</td>
+          <td align="left"><monospace>mcd</monospace></td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <table-wrap>
+    <caption>
+      <p>Visual Methods</p>
+    </caption>
+    <table>
+      <thead>
+        <tr>
+          <th align="left">Algorithm</th>
+          <th align="left">Reference</th>
+          <th align="left">Method</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="left">BCH Plot</td>
+          <td align="left">(<xref alt="Billor et al., 2006" rid="ref-bch" ref-type="bibr">Billor
+          et al., 2006</xref>)</td>
+          <td align="left"><monospace>bchplot</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">MVE-LTS Plot</td>
+          <td align="left">(<xref alt="Van Aelst &amp; Rousseeuw, 2009" rid="ref-mve" ref-type="bibr">Van
+          Aelst &amp; Rousseeuw, 2009</xref>)</td>
+          <td align="left"><monospace>mveltsplot</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">Data Images</td>
+          <td align="left">(<xref alt="Marchette &amp; Solka, 2003" rid="ref-dataimage" ref-type="bibr">Marchette
+          &amp; Solka, 2003</xref>)</td>
+          <td align="left"><monospace>dataimage</monospace></td>
+        </tr>
+        <tr>
+          <td align="left">Stalactite Plot</td>
+          <td align="left">(<xref alt="Atkinson, 1994" rid="ref-atkinson94" ref-type="bibr">Atkinson,
+          1994</xref>)</td>
+          <td align="left"><monospace>atkinsonstalactiteplot</monospace></td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+</sec>
+<sec id="installation-and-basic-usage">
+  <title>Installation and basic usage</title>
+  <p><monospace>LinRegOutliers</monospace> can be downloaded and
+  installed using the Julia package manager by typing</p>
+  <code language="julia">julia&gt; using Pkg
+julia&gt; Pkg.add(&quot;LinRegOutliers&quot;)</code>
+  <p>in the Julia console. The regression methods follow a uniform call
+  convention. For instance, a user can type</p>
+  <code language="julia">julia&gt; setting = createRegressionSetting(@formula(calls ~ year), phones);
+julia&gt; smr98(setting)
+Dict{String,Array{Int64,1}} with 1 entry:
+  &quot;outliers&quot; =&gt; [15, 16, 17, 18, 19, 20, 21, 22, 23, 24]</code>
+  <p>or</p>
+  <code language="julia">julia&gt; X = hcat(ones(24), phones[:, &quot;year&quot;]);
+julia&gt; y = phones[:, &quot;calls&quot;];
+julia&gt; smr98(X, y)
+Dict{String,Array{Int64,1}} with 1 entry:
+  &quot;outliers&quot; =&gt; [15, 16, 17, 18, 19, 20, 21, 22, 23, 24]</code>
+  <p>to apply <italic>smr98</italic>
+  (<xref alt="Sebert et al., 1998" rid="ref-smr98" ref-type="bibr">Sebert
+  et al., 1998</xref>) on the Telephone dataset
+  (<xref alt="Rousseeuw, 1984" rid="ref-lms" ref-type="bibr">Rousseeuw,
+  1984</xref>), where <inline-formula><alternatives>
+  <tex-math><![CDATA[X]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>X</mml:mi></mml:math></alternatives></inline-formula>
+  is the design matrix with ones in its first column. In this case,
+  observations 15 to 24 are reported as outliers by the method. Some
+  methods may also return additional information specific to the method
+  which is passed back in a <monospace>Dict</monospace> object. For
+  example, the <italic>ccf</italic> function returns a
+  <monospace>Dict</monospace> object containing <italic>betas</italic>,
+  <italic>outliers</italic>, <italic>lambdas</italic>, and
+  <italic>residuals</italic>:</p>
+  <code language="julia">julia&gt; ccf(X, y)
+Dict{Any,Any} with 4 entries:
+  &quot;betas&quot;     =&gt; [-63.4816, 1.30406]
+  &quot;outliers&quot;  =&gt; [15, 16, 17, 18, 19, 20]
+  &quot;lambdas&quot;   =&gt; [1.0, 1.0, 1.0, 1.0, 1.0, ...
+  &quot;residuals&quot; =&gt; [-2.67878, -1.67473, -0.37067, -0.266613, …</code>
+  <p>Indices of outliers can be accessed using standard
+  <monospace>Dict</monospace> operations like</p>
+  <code language="julia">julia&gt; result = ccf(X, y)
+julia&gt; result[&quot;outliers&quot;]
+6-element Array{Int64,1}:
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20</code>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>Guillermo Angeris is supported by the National Science Foundation
+  Graduate Research Fellowship under Grant No. DGE-1656518.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-ransac">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Fischler</surname><given-names>Martin A.</given-names></name>
+          <name><surname>Bolles</surname><given-names>Robert C.</given-names></name>
+        </person-group>
+        <article-title>Random sample consensus: A paradigm for model fitting with applications to image analysis and automated cartography</article-title>
+        <source>Readings in computer vision</source>
+        <person-group person-group-type="editor">
+          <name><surname>Fischler</surname><given-names>Martin A.</given-names></name>
+          <name><surname>Firschein</surname><given-names>Oscar</given-names></name>
+        </person-group>
+        <publisher-name>Morgan Kaufmann</publisher-name>
+        <publisher-loc>San Francisco (CA)</publisher-loc>
+        <year iso-8601-date="1987">1987</year>
+        <isbn>978-0-08-051581-6</isbn>
+        <uri>http://www.sciencedirect.com/science/article/pii/B9780080515816500702</uri>
+        <pub-id pub-id-type="doi">10.1016/B978-0-08-051581-6.50070-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-julia">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bezanson</surname><given-names>Jeff</given-names></name>
+          <name><surname>Edelman</surname><given-names>Alan</given-names></name>
+          <name><surname>Karpinski</surname><given-names>Stefan</given-names></name>
+          <name><surname>Shah</surname><given-names>Viral B</given-names></name>
+        </person-group>
+        <article-title>Julia: A fresh approach to numerical computing</article-title>
+        <source>SIAM review</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>59</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1137/141000671</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ks89">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kianifard</surname><given-names>Farid</given-names></name>
+          <name><surname>Swallow</surname><given-names>William H.</given-names></name>
+        </person-group>
+        <article-title>Using recursive residuals, calculated on adaptively-ordered observations, to identify outliers in linear regression</article-title>
+        <source>Biometrics</source>
+        <publisher-name>[Wiley, International Biometric Society]</publisher-name>
+        <year iso-8601-date="1989">1989</year>
+        <volume>45</volume>
+        <issue>2</issue>
+        <issn>0006341X, 15410420</issn>
+        <uri>http://www.jstor.org/stable/2531498</uri>
+        <pub-id pub-id-type="doi">10.2307/2531498</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hadi1992">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hadi</surname><given-names>Ali S.</given-names></name>
+        </person-group>
+        <article-title>Identifying multiple outliers in multivariate data</article-title>
+        <source>Journal of the Royal Statistical Society: Series B (Methodological)</source>
+        <year iso-8601-date="1992">1992</year>
+        <volume>54</volume>
+        <issue>3</issue>
+        <uri>https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/j.2517-6161.1992.tb01449.x</uri>
+        <pub-id pub-id-type="doi">10.1111/j.2517-6161.1992.tb01449.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hs93">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hadi</surname><given-names>Ali S.</given-names></name>
+          <name><surname>Simonoff</surname><given-names>Jeffrey S.</given-names></name>
+        </person-group>
+        <article-title>Procedures for the identification of multiple outliers in linear models</article-title>
+        <source>Journal of the American Statistical Association</source>
+        <publisher-name>Taylor &amp; Francis</publisher-name>
+        <year iso-8601-date="1993">1993</year>
+        <volume>88</volume>
+        <issue>424</issue>
+        <uri> 
+                https://www.tandfonline.com/doi/abs/10.1080/01621459.1993.10476407
+            
+        </uri>
+        <pub-id pub-id-type="doi">10.1080/01621459.1993.10476407</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-atkinson94">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Atkinson</surname><given-names>A. C.</given-names></name>
+        </person-group>
+        <article-title>Fast very robust methods for the detection of multiple outliers</article-title>
+        <source>Journal of the American Statistical Association</source>
+        <publisher-name>Taylor &amp; Francis</publisher-name>
+        <year iso-8601-date="1994">1994</year>
+        <volume>89</volume>
+        <issue>428</issue>
+        <pub-id pub-id-type="doi">10.1080/01621459.1994.10476872</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hadi1994">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hadi</surname><given-names>Ali S.</given-names></name>
+        </person-group>
+        <article-title>A modification of a method for the detection of outliers in multivariate samples</article-title>
+        <source>Journal of the Royal Statistical Society: Series B (Methodological)</source>
+        <year iso-8601-date="1994">1994</year>
+        <volume>56</volume>
+        <issue>2</issue>
+        <uri>https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/j.2517-6161.1994.tb01988.x</uri>
+        <pub-id pub-id-type="doi">10.1111/j.2517-6161.1994.tb01988.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-py95">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Peña</surname><given-names>Daniel</given-names></name>
+          <name><surname>Yohai</surname><given-names>Victor J.</given-names></name>
+        </person-group>
+        <article-title>The detection of influential subsets in linear regression by using an influence matrix</article-title>
+        <source>Journal of the Royal Statistical Society: Series B (Methodological)</source>
+        <year iso-8601-date="1995">1995</year>
+        <volume>57</volume>
+        <issue>3</issue>
+        <uri>https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/j.2517-6161.1995.tb02051.x</uri>
+        <pub-id pub-id-type="doi">10.1111/j.2517-6161.1995.tb02051.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-cm97">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Chatterjee</surname><given-names>Samprit</given-names></name>
+          <name><surname>Mächler</surname><given-names>Martin</given-names></name>
+        </person-group>
+        <article-title>Robust regression:a weighted least squares approach</article-title>
+        <source>Communications in Statistics - Theory and Methods</source>
+        <publisher-name>Taylor &amp; Francis</publisher-name>
+        <year iso-8601-date="1997">1997</year>
+        <volume>26</volume>
+        <issue>6</issue>
+        <pub-id pub-id-type="doi">10.1080/03610929708831988</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-smr98">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sebert</surname><given-names>David M.</given-names></name>
+          <name><surname>Montgomery</surname><given-names>Douglas C.</given-names></name>
+          <name><surname>Rollier</surname><given-names>Dwayne A.</given-names></name>
+        </person-group>
+        <article-title>A clustering algorithm for identifying multiple outliers in linear regression</article-title>
+        <source>Computational Statistics &amp; Data Analysis</source>
+        <publisher-name>Elsevier BV</publisher-name>
+        <year iso-8601-date="1998-06">1998</year><month>06</month>
+        <volume>27</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1016/s0167-9473(98)00021-8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-asm2000">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Adnan</surname><given-names>Robiah</given-names></name>
+          <name><surname>Setan</surname><given-names>Halim</given-names></name>
+          <name><surname>Mohamad</surname><given-names>Mohd Nor</given-names></name>
+        </person-group>
+        <source>Identifying multiple outliers in linear regression: Robust fit and clustering approach</source>
+        <year iso-8601-date="2000">2000</year>
+        <volume></volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-bacon">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Billor</surname><given-names>Nedret</given-names></name>
+          <name><surname>Hadi</surname><given-names>Ali S.</given-names></name>
+          <name><surname>Velleman</surname><given-names>Paul F.</given-names></name>
+        </person-group>
+        <article-title>BACON: Blocked adaptive computationally efficient outlier nominators</article-title>
+        <source>Computational Statistics &amp; Data Analysis</source>
+        <year iso-8601-date="2000">2000</year>
+        <volume>34</volume>
+        <issue>3</issue>
+        <issn>0167-9473</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S0167947399001012</uri>
+        <pub-id pub-id-type="doi">10.1016/S0167-9473(99)00101-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-dataimage">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Marchette</surname><given-names>David J.</given-names></name>
+          <name><surname>Solka</surname><given-names>Jeffrey L.</given-names></name>
+        </person-group>
+        <article-title>Using data images for outlier detection</article-title>
+        <source>Computational Statistics &amp; Data Analysis</source>
+        <year iso-8601-date="2003">2003</year>
+        <volume>43</volume>
+        <issue>4</issue>
+        <issn>0167-9473</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S0167947302002918</uri>
+        <pub-id pub-id-type="doi">10.1016/S0167-9473(02)00291-8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-imon2005">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Imon</surname><given-names>A. H. M. Rahmatullah</given-names></name>
+        </person-group>
+        <article-title>Identifying multiple influential observations in linear regression</article-title>
+        <source>Journal of Applied Statistics</source>
+        <publisher-name>Taylor &amp; Francis</publisher-name>
+        <year iso-8601-date="2005">2005</year>
+        <volume>32</volume>
+        <issue>9</issue>
+        <pub-id pub-id-type="doi">10.1080/02664760500163599</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bch">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Billor</surname><given-names>Nedret</given-names></name>
+          <name><surname>Chatterjee</surname><given-names>Samprit</given-names></name>
+          <name><surname>Hadi</surname><given-names>Ali S.</given-names></name>
+        </person-group>
+        <article-title>A re-weighted least squares method for robust regression estimation</article-title>
+        <source>American Journal of Mathematical and Management Sciences</source>
+        <publisher-name>Taylor &amp; Francis</publisher-name>
+        <year iso-8601-date="2006">2006</year>
+        <volume>26</volume>
+        <issue>3-4</issue>
+        <pub-id pub-id-type="doi">10.1080/01966324.2006.10737673</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lad">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Nobakhti</surname><given-names>A.</given-names></name>
+          <name><surname>Wang</surname><given-names>H.</given-names></name>
+          <string-name>Tianyou Chai</string-name>
+        </person-group>
+        <article-title>Algorithm for very fast computation of least absolute value regression</article-title>
+        <source>2009 american control conference</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume></volume>
+        <pub-id pub-id-type="doi">10.1109/ACC.2009.5160229</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lta">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hawkins</surname><given-names>Douglas M</given-names></name>
+          <name><surname>Olive</surname><given-names>David</given-names></name>
+        </person-group>
+        <article-title>Applications and algorithms for least trimmed sum of absolute deviations regression</article-title>
+        <source>Computational Statistics &amp; Data Analysis</source>
+        <year iso-8601-date="1999">1999</year>
+        <volume>32</volume>
+        <issue>2</issue>
+        <issn>0167-9473</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S0167947399000298</uri>
+        <pub-id pub-id-type="doi">10.1016/S0167-9473(99)00029-8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lms">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rousseeuw</surname><given-names>Peter J.</given-names></name>
+        </person-group>
+        <article-title>Least median of squares regression</article-title>
+        <source>Journal of the American Statistical Association</source>
+        <publisher-name>Taylor &amp; Francis</publisher-name>
+        <year iso-8601-date="1984">1984</year>
+        <volume>79</volume>
+        <issue>388</issue>
+        <uri> 
+                https://www.tandfonline.com/doi/abs/10.1080/01621459.1984.10477105
+            
+        </uri>
+        <pub-id pub-id-type="doi">10.1080/01621459.1984.10477105</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lts">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Rousseeuw</surname><given-names>Peter J.</given-names></name>
+          <name><surname>Van Driessen</surname><given-names>Katrien</given-names></name>
+        </person-group>
+        <article-title>An algorithm for positive-breakdown regression based on concentration steps</article-title>
+        <source>Data analysis: Scientific modeling and practical application</source>
+        <person-group person-group-type="editor">
+          <name><surname>Gaul</surname><given-names>Wolfgang</given-names></name>
+          <name><surname>Opitz</surname><given-names>Otto</given-names></name>
+          <name><surname>Schader</surname><given-names>Martin</given-names></name>
+        </person-group>
+        <publisher-name>Springer Berlin Heidelberg</publisher-name>
+        <publisher-loc>Berlin, Heidelberg</publisher-loc>
+        <year iso-8601-date="2000">2000</year>
+        <isbn>978-3-642-58250-9</isbn>
+        <pub-id pub-id-type="doi">10.1007/978-3-642-58250-9_27</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mve">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Van Aelst</surname><given-names>Stefan</given-names></name>
+          <name><surname>Rousseeuw</surname><given-names>Peter</given-names></name>
+        </person-group>
+        <article-title>Minimum volume ellipsoid</article-title>
+        <source>WIREs Computational Statistics</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume>1</volume>
+        <issue>1</issue>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1002/wics.19</uri>
+        <pub-id pub-id-type="doi">10.1002/wics.19</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mcd">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rousseeuw</surname><given-names>Peter J.</given-names></name>
+          <name><surname>Driessen</surname><given-names>Katrien Van</given-names></name>
+        </person-group>
+        <article-title>A fast algorithm for the minimum covariance determinant estimator</article-title>
+        <source>Technometrics</source>
+        <publisher-name>Taylor &amp; Francis</publisher-name>
+        <year iso-8601-date="1999">1999</year>
+        <volume>41</volume>
+        <issue>3</issue>
+        <uri> 
+                https://www.tandfonline.com/doi/abs/10.1080/00401706.1999.10485670
+            
+        </uri>
+        <pub-id pub-id-type="doi">10.1080/00401706.1999.10485670</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-satman2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Satman</surname><given-names>Mehmet Hakan</given-names></name>
+        </person-group>
+        <article-title>A new algorithm for detecting outliers in linear regression</article-title>
+        <source>International Journal of Statistics and Probability</source>
+        <publisher-name>Canadian Center of Science; Education</publisher-name>
+        <year iso-8601-date="2013-07">2013</year><month>07</month>
+        <volume>2</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.5539/ijsp.v2n3p101</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-satman2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Satman</surname><given-names>Mehmet Hakan</given-names></name>
+        </person-group>
+        <article-title>Fast online detection of outliers using least-trimmed squares regression with non-dominated sorting based initial subsets</article-title>
+        <source>International Journal of Advanced Statistics and Probability</source>
+        <publisher-name>Science Publishing Corporation</publisher-name>
+        <year iso-8601-date="2015-04">2015</year><month>04</month>
+        <volume>3</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.14419/ijasp.v3i1.4439</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ccf">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Barratt</surname><given-names>Shane</given-names></name>
+          <name><surname>Angeris</surname><given-names>Guillermo</given-names></name>
+          <name><surname>Boyd</surname><given-names>Stephen</given-names></name>
+        </person-group>
+        <article-title>Minimizing a sum of clipped convex functions</article-title>
+        <source>Optim Lett</source>
+        <publisher-name>Taylor &amp; Francis</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume></volume>
+        <issue>14</issue>
+        <pub-id pub-id-type="doi">10.1007/s11590-020-01565-4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hadimeasure">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Chatterjee</surname><given-names>Samprit</given-names></name>
+          <name><surname>Hadi</surname><given-names>Ali S</given-names></name>
+        </person-group>
+        <source>Regression analysis by example</source>
+        <publisher-name>John Wiley &amp; Sons</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-cooks">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cook</surname><given-names>R. Dennis</given-names></name>
+        </person-group>
+        <article-title>Detection of influential observation in linear regression</article-title>
+        <source>Technometrics</source>
+        <publisher-name>[Taylor &amp; Francis, Ltd., American Statistical Association, American Society for Quality]</publisher-name>
+        <year iso-8601-date="1977">1977</year>
+        <volume>19</volume>
+        <issue>1</issue>
+        <issn>00401706</issn>
+        <uri>http://www.jstor.org/stable/1268249</uri>
+        <pub-id pub-id-type="doi">10.2307/1268249</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-diagnostics">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Belsley</surname><given-names>David A</given-names></name>
+          <name><surname>Kuh</surname><given-names>Edwin</given-names></name>
+          <name><surname>Welsch</surname><given-names>Roy E</given-names></name>
+        </person-group>
+        <source>Regression diagnostics: Identifying influential data and sources of collinearity</source>
+        <publisher-name>John Wiley &amp; Sons</publisher-name>
+        <year iso-8601-date="2005">2005</year>
+        <volume>571</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-galts">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Satman</surname><given-names>Mehmet Hakan</given-names></name>
+        </person-group>
+        <article-title>A genetic algorithm based modification on the LTS algorithm for large data sets</article-title>
+        <source>Communications in Statistics - Simulation and Computation</source>
+        <publisher-name>Taylor &amp; Francis</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>41</volume>
+        <issue>5</issue>
+        <pub-id pub-id-type="doi">10.1080/03610918.2011.598989</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mahalanobis">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Mahalanobis</surname><given-names>P. C.</given-names></name>
+        </person-group>
+        <article-title>On tests and measures of group divergence. Part 1: Theoretical formulae</article-title>
+        <publisher-name>Journal &amp; Proceedings Asiatic Society of Bengal (New Series)</publisher-name>
+        <year iso-8601-date="1930">1930</year>
+        <volume>26</volume>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

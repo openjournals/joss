@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3389</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03389</article-id>
+<title-group>
+<article-title>model-traits: Model attribute definitions for scientific
+simulations in C++</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-6813-6532</contrib-id>
+<string-name>Jacob Merson</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Mark S. Shephard</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Rensselaer Polytechnic Institute, Troy NY,
+USA</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-05-12">
+<day>12</day>
+<month>5</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>64</issue>
+<fpage>3389</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>scientific computing</kwd>
+<kwd>model definitions</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>model-traits</monospace> is a C++ library for setting up
+  scientific models and computational analysis. It provides a minimal
+  API for applying boundary conditions (or other attributes) to the
+  geometry of a model. <monospace>model-traits</monospace> can either be
+  used directly as a library, or can be used to generate input files for
+  an existing analysis code. The library design is optimized to make
+  adding new input and output file formats easy and maintainable without
+  patching the core library.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Setting up scientific simulations is often a time consuming process
+  that typically requires hand crafting input files. Most analysis codes
+  take a mesh-first approach to model setup, and mesh storage. When
+  setting up a model for analysis this typically means that the user
+  will have to recreate the input deck for any change in the mesh even
+  if the desired boundary conditions are identical. This problem also
+  exists with many commercial FEM codes such as Abaqus and LS-Dyna
+  (<xref alt="Hallquist, 2006" rid="ref-hallquistLSDYNATheoryManual2006" ref-type="bibr">Hallquist,
+  2006</xref>;
+  <xref alt="Smith, 2009" rid="ref-smithAbaqusTheoryGuide2009" ref-type="bibr">Smith,
+  2009</xref>).</p>
+  <p>The essence of the problem is that the mesh is the wrong level of
+  abstraction to apply boundary conditions. This problem also exists
+  with respect to using a mesh-first approach to mesh databases. Many
+  modern meshing databases such as PUMI
+  (<xref alt="Ibanez et al., 2016" rid="ref-ibanezPUMIParallelUnstructured2016" ref-type="bibr">Ibanez
+  et al., 2016</xref>) and MeshSim
+  (<xref alt="Simmetrix Inc. - Mesh Generation, Geometry Access, n.d." rid="ref-SimmetrixIncMesh" ref-type="bibr"><italic>Simmetrix
+  Inc. - Mesh Generation, Geometry Access</italic>, n.d.</xref>) have
+  shown that for many operations model geometry is a preferable level of
+  abstraction and therefore they store the relationship between a mesh’s
+  entities and the geometric model topology
+  (<xref alt="Beall &amp; Shephard, 1997" rid="ref-beallGeneralTopologybasedMesh1997" ref-type="bibr">Beall
+  &amp; Shephard, 1997</xref>). This relationship allows for much more
+  robust mesh adaption that can correctly refine the mesh to better
+  approximate the geometric model.</p>
+  <p><monospace>model-traits</monospace> takes this geometry-first
+  approach to applying various traits on the model such as boundary
+  conditions, solver settings, and other data that is necessary to run
+  an analysis. It is designed as an open source alternative to the model
+  attribute definition provided in the Simmetrix GeomSim package
+  (<xref alt="O’bara et al., 2002" rid="ref-obaraAttributeManagementSystem2002" ref-type="bibr">O’bara
+  et al., 2002</xref>). Kitware also develops an open source tool for
+  model attribute definition called the Simulation Modeling Toolkit
+  (SMTK)
+  (<xref alt="O’Bara, 2015" rid="ref-obaraComputationalModelBuilder2015" ref-type="bibr">O’Bara,
+  2015</xref>;
+  <xref alt="O’Leary, 2014" rid="ref-olearyOpensourceIntegratedDesignanalysis2014" ref-type="bibr">O’Leary,
+  2014</xref>). The design of SMTK uses a deep inheritance hierarchy
+  which makes its use challenging for users who have limited experience
+  with the SMTK codebase. The goal for SMTK’s design is also broader,
+  encompassing GUI model setup and a general interface for 3rd party CAD
+  kernels. The <monospace>model-traits</monospace> library is more
+  narrowly focused on the association between a given model trait and a
+  geometric model topological entity. Although
+  <monospace>model-traits</monospace> does not provide an interface for
+  any CAD kernels, CAD types, such as a pointer to a CAD kernel’s face
+  topological object, can pass through the library without modification
+  through a templated interface. A typical use case is to use two
+  integral types to denote a geometric entities dimension and unique ID
+  rather than explicitly using a CAD kernel in the analysis code.</p>
+  <p>In <monospace>model-traits</monospace> templates and type erasure
+  are used to help limit class inheritance. This allows for a relatively
+  simple API, but also affords extension without modification of the
+  core library. For example, readers and writers of third party model
+  attribute data can be written without any library modifications,
+  generic geometry types can be used through the templated interface,
+  and any serializable expression types can be used through type
+  erasure.</p>
+</sec>
+<sec id="features">
+  <title>Features</title>
+  <p>The goal of the software design is to maintain a simple-to-use API
+  while providing user extensibility. This is accomplished by using only
+  two conceptual types of data and two means of interaction. Thinking of
+  the model attributes as being stored in a directed acyclic graph
+  (DAG), this means there are two types of nodes and two graph
+  representations. The nodes of the graph can either be a category, or a
+  model trait (attribute). Category nodes can have a name (string) and a
+  type (string) and can point to other categories and model traits. For
+  example, an analysis may have multiple cases. Each case is represented
+  by a category node where the type is “case” and the name is anything
+  that is useful for the analyst such as “uniaxial extension”. Model
+  traits appear at the leaves of the graph and are the data that is
+  associated with a given geometric type. These two node types can be
+  seen in figure
+  <xref alt="Figure 1" rid="figU003Aunassociated">Figure 1</xref> and
+  <xref alt="Figure 2" rid="figU003Aassociated">Figure 2</xref>.</p>
+  <p>The first graph representation, shown in
+  <xref alt="Figure 1" rid="figU003Aunassociated">Figure 1</xref> and
+  also called the unassociated graph, is optimized for building a model
+  where it is important to be able to add a single attribute definition
+  to multiple geometric entities at a time. The associated
+  representation of the graph, shown in
+  <xref alt="Figure 2" rid="figU003Aassociated">Figure 2</xref>, is
+  optimized for geometric entity lookup, which is typically done during
+  the setup phase of an analysis case to be executed by a selected
+  code.</p>
+  <fig>
+    <caption><p>Unassociated graph representation of an example
+    multiscale finite element simulation. Node types are listed on all
+    nodes. If a node has an optional name it is surrounded in
+    quotations.<styled-content id="figU003Aunassociated"></styled-content></p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="unassociated_graph.pdf" xlink:title="" />
+  </fig>
+  <fig>
+    <caption><p>Associated Graph representation of the “uniaxial
+    compression” analysis case. Node types are listed on all nodes. If a
+    node has an optional name it is surrounded in
+    quotations.<styled-content id="figU003Aassociated"></styled-content></p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="associated_graph.pdf" xlink:title="" />
+  </fig>
+  <p><monospace>model-traits</monospace> currently provides two types of
+  readers (YAML and smd) and one type of writer (YAML). However, the
+  library is designed to allow new IO formats to easily be added. YAML
+  is a text-based data serialization language similar to JSON that is
+  designed to be human readable
+  (<xref alt="Ben-Kiki et al., n.d." rid="ref-ben-kikiYAMLAinMarkup" ref-type="bibr">Ben-Kiki
+  et al., n.d.</xref>). The YAML input files use keywords to define
+  nodes in the model graph, examples of which can be found in the
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/jacobmerson/model-traits/tree/main/examples/inputs"><monospace>model-traits</monospace>
+  examples</ext-link>. The the smd reader can read the proprietary
+  attribute file format that the Simmetrix Simulation Modeling Suite™
+  writes
+  (<xref alt="Simmetrix Inc. - Mesh Generation, Geometry Access, n.d." rid="ref-SimmetrixIncMesh" ref-type="bibr"><italic>Simmetrix
+  Inc. - Mesh Generation, Geometry Access</italic>, n.d.</xref>).</p>
+  <p>The implementations of these readers and writer use the extensible
+  IO interface and can be used as an example for alternative IO formats.
+  To add an IO format, the user only needs to provide template
+  specializations for the <monospace>Read</monospace> and
+  <monospace>Write</monospace> functions that are visible in the
+  <monospace>mt</monospace> namespace. Additionally,
+  <monospace>model-traits</monospace> supports the use of arbitrary
+  geometric entity types that do not require wrapper classes or any
+  class inheritance.</p>
+  <p>During the design phase, a tradeoff between having an open set of
+  IO backends or an open set of model trait types and shapes had to be
+  made. Based on the authors’ modeling experience, there is a finite set
+  of model trait types and shapes that are used in practice, whereas
+  there is an unbounded set of analysis code input file formats.
+  Therefore, the following data shapes are supported: scalar,
+  dynamic-sized vector, and dynamic-sized dense matrix. Each of these
+  shapes can have any of the following underlying types: double or
+  float, boolean, integer, string, null, and expressions.</p>
+  <p>Expressions can be any invocable type that returns a double and
+  takes up to 4 double arguments and can be converted to a string
+  through <monospace>to_string</monospace> for serialization. This
+  interface is enabled by the <monospace>NamedFunction</monospace>
+  class, which uses type erasure (similar to
+  <monospace>std::function</monospace>) to provide a single interface
+  type that does not require inheritance. It is constructible by any
+  invocable that can be converted to a string through
+  <monospace>to_string</monospace>. Additional constructors are provided
+  that can be used to name an invocable that does not provide a
+  <monospace>to_string</monospace> method such as a lambda or function
+  pointer. For string based expressions, the exprtk library is used for
+  parsing and evaluation
+  (<xref alt="Partow, 2021" rid="ref-partowExprtk2021" ref-type="bibr">Partow,
+  2021</xref>). The <monospace>ExprtkFunction</monospace> class is a
+  functor that wraps the exprtk interface and is compatible with
+  <monospace>NamedFunction</monospace>.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>This work was supported in part by the National Institutes of
+  Health (NIH) through Grant No. U01 AT010326-06. This material is based
+  in part upon work supported by the National Science Foundation
+  Graduate Research Fellowship under Grant No. DGE-1744655.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-beallGeneralTopologybasedMesh1997">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Beall</surname><given-names>Mark W</given-names></name>
+          <name><surname>Shephard</surname><given-names>Mark S</given-names></name>
+        </person-group>
+        <article-title>A general topology-based mesh data structure</article-title>
+        <source>International Journal for Numerical Methods in Engineering</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="1997">1997</year>
+        <volume>40</volume>
+        <issue>9</issue>
+        <pub-id pub-id-type="doi">10.1002/(SICI)1097-0207(19970515)40:9&lt;1573::AID-NME128&gt;3.0.CO;2-9</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hallquistLSDYNATheoryManual2006">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Hallquist</surname><given-names>John O.</given-names></name>
+        </person-group>
+        <article-title>LS-DYNA Theory Manual - March 2006</article-title>
+        <publisher-name>Livermore Software Technology Corperation</publisher-name>
+        <year iso-8601-date="2006-03">2006</year><month>03</month>
+      </element-citation>
+    </ref>
+    <ref id="ref-ibanezPUMIParallelUnstructured2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ibanez</surname><given-names>Daniel A.</given-names></name>
+          <name><surname>Seol</surname><given-names>E. Seegyoung</given-names></name>
+          <name><surname>Smith</surname><given-names>Cameron W.</given-names></name>
+          <name><surname>Shephard</surname><given-names>Mark S.</given-names></name>
+        </person-group>
+        <article-title>PUMI: Parallel Unstructured Mesh Infrastructure</article-title>
+        <source>ACM Transactions on Mathematical Software</source>
+        <year iso-8601-date="2016-05">2016</year><month>05</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-04-26">2019</year><month>04</month><day>26</day></date-in-citation>
+        <volume>42</volume>
+        <issue>3</issue>
+        <issn>00983500</issn>
+        <uri>http://dl.acm.org/citation.cfm?doid=2935754.2814935</uri>
+        <pub-id pub-id-type="doi">10.1145/2814935</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-obaraAttributeManagementSystem2002">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>O’bara</surname><given-names>Robert M</given-names></name>
+          <name><surname>Beall</surname><given-names>Mark W</given-names></name>
+          <name><surname>Shephard</surname><given-names>Mark S</given-names></name>
+        </person-group>
+        <article-title>Attribute management system for engineering analysis</article-title>
+        <source>Engineering with computers</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2002">2002</year>
+        <volume>18</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1007/s003660200030</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-obaraComputationalModelBuilder2015">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>O’Bara</surname><given-names>Robert</given-names></name>
+        </person-group>
+        <article-title>Computational model builder for multi-dimensional models</article-title>
+        <publisher-name>KITWARE INC CLIFTON PARK NY</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-olearyOpensourceIntegratedDesignanalysis2014">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>O’Leary</surname><given-names>Patrick</given-names></name>
+        </person-group>
+        <article-title>Open-source integrated design-analysis environment for nuclear energy advanced modeling &amp; simulation phase I final report</article-title>
+        <publisher-name>Kitware, Inc., Clifton Park, NY (United States)</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <pub-id pub-id-type="doi">10.2172/1349054</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-partowExprtk2021">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Partow</surname><given-names>Arash</given-names></name>
+        </person-group>
+        <article-title>Exprtk</article-title>
+        <year iso-8601-date="2021-05">2021</year><month>05</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2021-05-15">2021</year><month>05</month><day>15</day></date-in-citation>
+        <uri>https://github.com/ArashPartow/exprtk</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-SimmetrixIncMesh">
+      <element-citation>
+        <article-title>Simmetrix Inc. - Mesh Generation, Geometry Access</article-title>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2018-12-07">2018</year><month>12</month><day>07</day></date-in-citation>
+        <uri>http://simmetrix.com/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-smithAbaqusTheoryGuide2009">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Smith</surname><given-names>Michael</given-names></name>
+        </person-group>
+        <source>Abaqus Theory Guide, Version 6.9</source>
+        <publisher-name>Simulia</publisher-name>
+        <publisher-loc>Providence, RI, USA</publisher-loc>
+        <year iso-8601-date="2009">2009</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-ben-kikiYAMLAinMarkup">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Ben-Kiki</surname><given-names>Oren</given-names></name>
+          <name><surname>Evans</surname><given-names>Clark</given-names></name>
+          <name><surname>döt Net</surname><given-names>Ingy</given-names></name>
+        </person-group>
+        <article-title>YAML Ain’t Markup Language (YAML) Version 1.2</article-title>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

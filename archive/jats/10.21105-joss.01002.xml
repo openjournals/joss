@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1002</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01002</article-id>
+<title-group>
+<article-title>TensorFlow.jl: An Idiomatic Julia Front End for
+TensorFlow</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-5352-2086</contrib-id>
+<string-name>Jonathan Malmaud</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-1386-1646</contrib-id>
+<string-name>Lyndon White</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Massachusetts Institute of Technology</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>The University of Western Australia</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2018-09-23">
+<day>23</day>
+<month>9</month>
+<year>2018</year>
+</pub-date>
+<volume>3</volume>
+<issue>31</issue>
+<fpage>1002</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>julialang</kwd>
+<kwd>tensorflow</kwd>
+<kwd>machine learning</kwd>
+<kwd>neural networks</kwd>
+<kwd>deep learning</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>TensorFlow.jl is a Julia
+  (<xref alt="Bezanson et al., 2017" rid="ref-Julia" ref-type="bibr">Bezanson
+  et al., 2017</xref>) client library for the TensorFlow deep-learning
+  framework
+  (<xref alt="Abadi et al., 2015" rid="ref-tensorflow2015" ref-type="bibr">Abadi
+  et al.,
+  2015</xref>),(<xref alt="Abadi et al., 2016" rid="ref-tensorflow2016" ref-type="bibr">Abadi
+  et al., 2016</xref>). It allows users to define TensorFlow graphs
+  using Julia syntax, which are interchangeable with the graphs produced
+  by Google’s first-party Python TensorFlow client and can be used to
+  perform training or inference on machine-learning models.</p>
+  <p>Graphs are primarily defined by overloading native Julia functions
+  to operate on a TensorFlow.jl <monospace>Tensor</monospace> type,
+  which represents a node in a TensorFlow computational graph. This
+  overloading is powered by Julia’s powerful multiple-dispatch system,
+  which in turn allows allows the vast majority of Julia’s existing
+  array-processing functionality to work as well on the new
+  <monospace>Tensor</monospace> type as they do on native Julia arrays.
+  User code is often unaware and thereby reusable with respect to
+  whether its inputs are TensorFlow tensors or native Julia arrays by
+  utilizing <italic>duck-typing</italic>.</p>
+  <p>TensorFlow.jl has an elegant, idiomatic Julia syntax. It allows all
+  the usual infix operators such as <monospace>+</monospace>,
+  <monospace>-</monospace>, <monospace>*</monospace> etc. It works
+  seamlessly with Julia’s broadcast syntax as well, such as the
+  <monospace>.*</monospace> operator. Thus <monospace>*</monospace> can
+  correspond to matrix multiplication while <monospace>.*</monospace>
+  corresponds to element-wise multiplication, while Python clients needs
+  distinct <monospace>@</monospace> (or <monospace>matmul</monospace>)
+  and <monospace>*</monospace> (or <monospace>multiply</monospace>)
+  functions. It also allows Julia-style indexing
+  (e.g. <monospace>x[:, ii + end÷2]</monospace>), and concatenation
+  (e.g. <monospace>[A B]</monospace>, <monospace>[x; y; 1]</monospace>).
+  Its goal is to be idiomatic for Julia users while still preserving all
+  the power and maturity of the TensorFlow computational engine.</p>
+  <p>TensorFlow.jl aims to carefully balance between matching the Python
+  TensorFlow API and Julia conventions. In turn, the Python TensorFlow
+  client is itself designed to closely mirror numpy. Some examples are
+  shown in the table below.</p>
+  <table-wrap>
+    <table>
+      <colgroup>
+        <col width="24%" />
+        <col width="28%" />
+        <col width="48%" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th><bold>Julia</bold></th>
+          <th><bold>Python TensorFlow</bold></th>
+          <th><bold>TensorFlow.jl</bold></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1-based indexing</td>
+          <td>0-based indexing</td>
+          <td>1-based indexing</td>
+        </tr>
+        <tr>
+          <td>explicit broadcasting</td>
+          <td>implicit broadcasting</td>
+          <td>implicit or explicit broadcasting</td>
+        </tr>
+        <tr>
+          <td>last index at <monospace>end</monospace>, 2nd last in
+          <monospace>end-1</monospace>, etc.</td>
+          <td>last index at <monospace>-1</monospace> second last in
+          <monospace>-2</monospace></td>
+          <td>last index at <monospace>end</monospace> 2nd last in
+          <monospace>end-1</monospace></td>
+        </tr>
+        <tr>
+          <td>Operations in Julia ecosystem namespaces.
+          (<monospace>SVD</monospace> in
+          <monospace>LinearAlgebra</monospace>,
+          <monospace>erfc</monospace> in
+          <monospace>SpecialFunctions</monospace>,
+          <monospace>cos</monospace> in
+          <monospace>Base</monospace>)</td>
+          <td>All operations in TensorFlow’s namespaces
+          (<monospace>SVD</monospace> in
+          <monospace>tf.linalg</monospace>, <monospace>erfc</monospace>
+          in <monospace>tf.math</monospace>, <monospace>cos</monospace>
+          in <monospace>tf.math</monospace>, and all reexported from
+          <monospace>tf</monospace>)</td>
+          <td>Existing Julia functions overloaded to call TensorFlow
+          equivalents when called with TensorFlow arguments</td>
+        </tr>
+        <tr>
+          <td>Container types are parametrized by number of dimensions
+          and element type</td>
+          <td>N/A: does not have a parametric type system</td>
+          <td>Tensors are parametrized by element type, enabling easy
+          specialization of algorithms for different types.</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>Defining TensorFlow graphs in the Python TensorFlow client can be
+  viewed as metaprogramming, in the sense that a host language (Python)
+  is being used to generate code in a different embedded language (the
+  TensorFlow computational graph)
+  (<xref alt="Innes et al., 2017" rid="ref-MLandPL" ref-type="bibr">Innes
+  et al., 2017</xref>). This often comes with some awkwardness, as the
+  syntax and the semantics of the embedded language by definition do not
+  match the host language or there would be no need for two languages to
+  begin with. Using TensorFlow.jl is similarly a form of
+  meta-programming for the same reason. However, the flexibility and
+  meta-programming facilities offered by Julia’s macro system makes
+  Julia especially well-suited as a host language, as macros implemented
+  in TensorFlow.jl can syntactically transform idiomatic Julia code into
+  Julia code that constructs TensorFlow graphs. This permits users to
+  reuse their knowledge of Julia, while users of the Python TensorFlow
+  client essentially need to learn both Python and TensorFlow.</p>
+  <p>One example of our ability to leverage the increased expressiveness
+  of Julia is using <monospace>@tf</monospace> macro blocks implemented
+  in TensorFlow.jl to automatically name nodes in the TensorFlow
+  computational graph. Nodes in a TensorFlow graph have names; these
+  correspond to variable names in a traditional programming language.
+  Thus every operation, variable and placeholder takes a
+  <monospace>name</monospace> parameter. In most TensorFlow bindings,
+  these must be specified manually resulting in a lot of code that
+  includes duplicate information such as
+  <monospace>x = tf.placeholder(tf.float32, name=&quot;x&quot;)</monospace>
+  or they are defaulted to an uninformative value such as
+  <monospace>Placeholder_1</monospace>. In TensorFlow.jl, prefixing a
+  lexical block (such as a <monospace>function</monospace> or a
+  <monospace>begin</monospace> block) with the
+  <monospace>@tf</monospace> macro will cause the
+  <monospace>name</monospace> parameter on all operations occurring on
+  the right-hand side of an assignment to be filled in using the
+  left-hand side. For example, the TensorFlow.jl equivalent of the above
+  example is <monospace>@tf x = placeholder(Float32)</monospace>. Note
+  how <monospace>x</monospace> is named only once instead of twice, as
+  is redundantly required in the Python example. Since all nodes in the
+  computational graph can automatically be assigned the same name as the
+  corresponding Julia variable with no additional labor from
+  TensorFlow.jl users, users get for free more intuitive debugging and
+  graph visualisation.</p>
+  <p>Another example of the use of Julia’s metaprogramming is in the
+  automatic generation of Julia code for each operation defined by the
+  official TensorFlow C implementation (for example, convolutions of two
+  TensorFlow tensors). The C API can be queried to return definitions of
+  all operations as protocol buffer descriptions, which includes the
+  expected TensorFlow type and arity of its inputs and outputs, as well
+  as documentation. This described the operations at a sufficient level
+  to generate the Julia code to bind to the functions in the C API and
+  automatically generate a useful docstring for the function,. One
+  challenge in this is that such generated code must correct the indices
+  to be 1-based instead of 0-based to accord with Julia convention.
+  Various heuristics are employed by TensorFlow.jl to guess which input
+  arguments represent indices and so should be converted.</p>
+  <p>TensorFlow.jl ships by default with bindings for most operations,
+  but any operation can be dynamically imported at runtime using
+  <monospace>@tfimport OperationName</monospace>, which will generate
+  the binding and load it immediately. Additionally, for operations that
+  correspond to native Julia operations (for example,
+  <monospace>sin</monospace>), we overload the native Julia operation to
+  call the proper binding.</p>
+  <p>We also use Julia’s advanced parametric type system to enable
+  elegant implementations of array operations not easily possible in
+  other client libraries. TensorFlow.jl represents all nodes in the
+  computational graph as parametric <monospace>Tensor</monospace> types
+  which are parameterized by their element type,
+  e.g. <monospace>Tensor{Int}</monospace>,
+  <monospace>Tensor{Float64}</monospace> or
+  <monospace>Tensor{Bool}</monospace>. This allows Julia’s dispatch
+  system to be used to simplify defining some bindings. For example,
+  indexing a <monospace>Tensor</monospace> with an
+  <monospace>Int</monospace>-like Tensor will ultimately create a node
+  corresponding to a TensorFlow “gather” operation, and indexing with a
+  <monospace>Bool</monospace>-like Tensor will correspond to a
+  “boolean_mask” operation. It is also used to cast inputs in various
+  functions to compatible shapes.</p>
+  <sec id="challenges">
+    <title>Challenges</title>
+    <p>The TensorFlow 1.0 C API primarily exposes low-level
+    functionality for manually managing nodes in the computation graph.
+    Gradient descent optimizers, RNNs functionality, and (until
+    recently) shape-inference all required reimplementation on the Julia
+    side. Most challengingly, the symbolic differentiation implemented
+    in the <monospace>gradients</monospace> function is not available
+    from the C API for all operations. To work around this, we currently
+    use Julia’s
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/JuliaPy/PyCall.jl">Python
+    interop</ext-link> library to generate the gradient nodes using the
+    Python client for those operations not supported by the C API. This
+    requires serializing and deserializing TensorFlow graphs on both the
+    Julia and Python side.</p>
+    <p>This has been improving over time, both due to Google moving more
+    functionality from the Python TensorFlow client to the C API which
+    can reused by Julia, and with more reimplementations of other
+    aspects of the Python client from our own volunteer efforts. There
+    nevertheless remains a large number of components from the upstream
+    <monospace>contrib</monospace> submodule that remain unimplemented,
+    including various efforts around probabilistic programming.</p>
+  </sec>
+  <sec id="other-deep-learning-frameworks-in-julia">
+    <title>Other deep learning frameworks in Julia</title>
+    <p>Julia also has bespoke neural network packages such as Mocha
+    (<xref alt="Zhang, 2014" rid="ref-mocha2014" ref-type="bibr">Zhang,
+    2014</xref>), Knet
+    (<xref alt="Yuret, 2016" rid="ref-knet2016" ref-type="bibr">Yuret,
+    2016</xref>) and Flux
+    (<xref alt="Innes, 2018" rid="ref-flux2018" ref-type="bibr">Innes,
+    2018</xref>), as well as bindings to other frameworks such as MxNet
+    (<xref alt="Chen et al., 2015" rid="ref-mxnet2015" ref-type="bibr">Chen
+    et al., 2015</xref>). While not having the full-capacity to directly
+    leverage some of the benefits of the language and its ecosystem
+    present in the pure Julia frameworks such as Flux, TensorFlow.jl
+    provides an interface to one of the most mature and widely deployed
+    deep learning environments. It naturally therefore supports
+    TensorFlow visualization libraries like TensorBoard. It also gains
+    the benefits from any optimisations made in the graph execution
+    engine of the underlying TensorFlow C library, which includes
+    extensive support for automatically distributing computations over
+    multiple host machines which each have multiple GPUs.</p>
+  </sec>
+  <sec id="acknowledgments">
+    <title>Acknowledgments</title>
+    <list list-type="bullet">
+      <list-item>
+        <p>We gratefully acknowledge the 30 contributors to the
+        TensorFlow.jl GitHub repository.</p>
+      </list-item>
+      <list-item>
+        <p>We especially thank Katie Hyatt for contributing tests and
+        documentation.</p>
+      </list-item>
+      <list-item>
+        <p>We thank members of Julia Computing and the broader Julia
+        Community for various discussions, especially Mike Innes and
+        Keno Fischer.</p>
+      </list-item>
+    </list>
+  </sec>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Julia">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bezanson</surname><given-names>J.</given-names></name>
+          <name><surname>Edelman</surname><given-names>A.</given-names></name>
+          <name><surname>Karpinski</surname><given-names>S.</given-names></name>
+          <name><surname>Shah</surname><given-names>V.</given-names></name>
+        </person-group>
+        <article-title>Julia: A fresh approach to numerical computing</article-title>
+        <source>SIAM Review</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>59</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1137/141000671</uri>
+        <pub-id pub-id-type="doi">10.1137/141000671</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MLandPL">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Innes</surname><given-names>Mike</given-names></name>
+          <name><surname>Barber</surname><given-names>David</given-names></name>
+          <name><surname>Besard</surname><given-names>Tim</given-names></name>
+          <name><surname>Bradbury</surname><given-names>James</given-names></name>
+          <name><surname>Churavy</surname><given-names>Valentin</given-names></name>
+          <name><surname>Danisch</surname><given-names>Simon</given-names></name>
+          <name><surname>Edelman</surname><given-names>Alan</given-names></name>
+          <name><surname>Karpinski</surname><given-names>Stefan</given-names></name>
+          <name><surname>Malmaud</surname><given-names>Jon</given-names></name>
+          <name><surname>Revels</surname><given-names>Jarrett</given-names></name>
+          <name><surname>Shah</surname><given-names>Viral</given-names></name>
+          <name><surname>Stenetorp</surname><given-names>Pontus</given-names></name>
+          <name><surname>Yuret</surname><given-names>Deniz</given-names></name>
+        </person-group>
+        <article-title>On machine learning and programming languages</article-title>
+        <source>SysML Conference</source>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://www.sysml.cc/doc/37.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-mxnet2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Chen</surname><given-names>Tianqi</given-names></name>
+          <name><surname>Li</surname><given-names>Mu</given-names></name>
+          <name><surname>Li</surname><given-names>Yutian</given-names></name>
+          <name><surname>Lin</surname><given-names>Min</given-names></name>
+          <name><surname>Wang</surname><given-names>Naiyan</given-names></name>
+          <name><surname>Wang</surname><given-names>Minjie</given-names></name>
+          <name><surname>Xiao</surname><given-names>Tianjun</given-names></name>
+          <name><surname>Xu</surname><given-names>Bing</given-names></name>
+          <name><surname>Zhang</surname><given-names>Chiyuan</given-names></name>
+          <name><surname>Zhang</surname><given-names>Zheng</given-names></name>
+        </person-group>
+        <article-title>Mxnet: A flexible and efficient machine learning library for heterogeneous distributed systems</article-title>
+        <source>arXiv preprint arXiv:1512.01274</source>
+        <year iso-8601-date="2015">2015</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-tensorflow2015">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Abadi</surname><given-names>Martı́n</given-names></name>
+          <name><surname>Agarwal</surname><given-names>Ashish</given-names></name>
+          <name><surname>Barham</surname><given-names>Paul</given-names></name>
+          <name><surname>Brevdo</surname><given-names>Eugene</given-names></name>
+          <name><surname>Chen</surname><given-names>Zhifeng</given-names></name>
+          <name><surname>Citro</surname><given-names>Craig</given-names></name>
+          <name><surname>Corrado</surname><given-names>Greg S.</given-names></name>
+          <name><surname>Davis</surname><given-names>Andy</given-names></name>
+          <name><surname>Dean</surname><given-names>Jeffrey</given-names></name>
+          <name><surname>Devin</surname><given-names>Matthieu</given-names></name>
+          <name><surname>Ghemawat</surname><given-names>Sanjay</given-names></name>
+          <name><surname>Goodfellow</surname><given-names>Ian</given-names></name>
+          <name><surname>Harp</surname><given-names>Andrew</given-names></name>
+          <name><surname>Irving</surname><given-names>Geoffrey</given-names></name>
+          <name><surname>Isard</surname><given-names>Michael</given-names></name>
+          <name><surname>Jia</surname><given-names>Yangqing</given-names></name>
+          <name><surname>Jozefowicz</surname><given-names>Rafal</given-names></name>
+          <name><surname>Kaiser</surname><given-names>Lukasz</given-names></name>
+          <name><surname>Kudlur</surname><given-names>Manjunath</given-names></name>
+          <name><surname>Levenberg</surname><given-names>Josh</given-names></name>
+          <name><surname>Mané</surname><given-names>Dandelion</given-names></name>
+          <name><surname>Monga</surname><given-names>Rajat</given-names></name>
+          <name><surname>Moore</surname><given-names>Sherry</given-names></name>
+          <name><surname>Murray</surname><given-names>Derek</given-names></name>
+          <name><surname>Olah</surname><given-names>Chris</given-names></name>
+          <name><surname>Schuster</surname><given-names>Mike</given-names></name>
+          <name><surname>Shlens</surname><given-names>Jonathon</given-names></name>
+          <name><surname>Steiner</surname><given-names>Benoit</given-names></name>
+          <name><surname>Sutskever</surname><given-names>Ilya</given-names></name>
+          <name><surname>Talwar</surname><given-names>Kunal</given-names></name>
+          <name><surname>Tucker</surname><given-names>Paul</given-names></name>
+          <name><surname>Vanhoucke</surname><given-names>Vincent</given-names></name>
+          <name><surname>Vasudevan</surname><given-names>Vijay</given-names></name>
+          <name><surname>Viégas</surname><given-names>Fernanda</given-names></name>
+          <name><surname>Vinyals</surname><given-names>Oriol</given-names></name>
+          <name><surname>Warden</surname><given-names>Pete</given-names></name>
+          <name><surname>Wattenberg</surname><given-names>Martin</given-names></name>
+          <name><surname>Wicke</surname><given-names>Martin</given-names></name>
+          <name><surname>Yu</surname><given-names>Yuan</given-names></name>
+          <name><surname>Zheng</surname><given-names>Xiaoqiang</given-names></name>
+        </person-group>
+        <article-title>TensorFlow: Large-scale machine learning on heterogeneous systems</article-title>
+        <year iso-8601-date="2015">2015</year>
+        <uri>https://www.tensorflow.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-tensorflow2016">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Abadi</surname><given-names>Martı́n</given-names></name>
+          <name><surname>Barham</surname><given-names>Paul</given-names></name>
+          <name><surname>Chen</surname><given-names>Jianmin</given-names></name>
+          <name><surname>Chen</surname><given-names>Zhifeng</given-names></name>
+          <name><surname>Davis</surname><given-names>Andy</given-names></name>
+          <name><surname>Dean</surname><given-names>Jeffrey</given-names></name>
+          <name><surname>Devin</surname><given-names>Matthieu</given-names></name>
+          <name><surname>Ghemawat</surname><given-names>Sanjay</given-names></name>
+          <name><surname>Irving</surname><given-names>Geoffrey</given-names></name>
+          <name><surname>Isard</surname><given-names>Michael</given-names></name>
+          <name><surname>Kudlur</surname><given-names>Manjunath</given-names></name>
+          <name><surname>Levenberg</surname><given-names>Josh</given-names></name>
+          <name><surname>Monga</surname><given-names>Rajat</given-names></name>
+          <name><surname>Moore</surname><given-names>Sherry</given-names></name>
+          <name><surname>Murray</surname><given-names>Derek G.</given-names></name>
+          <name><surname>Steiner</surname><given-names>Benoit</given-names></name>
+          <name><surname>Tucker</surname><given-names>Paul</given-names></name>
+          <name><surname>Vasudevan</surname><given-names>Vijay</given-names></name>
+          <name><surname>Warden</surname><given-names>Pete</given-names></name>
+          <name><surname>Wicke</surname><given-names>Martin</given-names></name>
+          <name><surname>Yu</surname><given-names>Yuan</given-names></name>
+          <name><surname>Zheng</surname><given-names>Xiaoqiang</given-names></name>
+        </person-group>
+        <article-title>TensorFlow: A system for large-scale machine learning</article-title>
+        <source>Proceedings of the 12th USENIX conference on operating systems design and implementation</source>
+        <publisher-name>USENIX Association</publisher-name>
+        <publisher-loc>Berkeley, CA, USA</publisher-loc>
+        <year iso-8601-date="2016">2016</year>
+        <isbn>978-1-931971-33-1</isbn>
+        <uri>http://dl.acm.org/citation.cfm?id=3026877.3026899</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-knet2016">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Yuret</surname><given-names>Deniz</given-names></name>
+        </person-group>
+        <article-title>Knet: Beginning deep learning with 100 lines of julia</article-title>
+        <source>Machine learning systems workshop at NIPS 2016</source>
+        <year iso-8601-date="2016">2016</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-flux2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Innes</surname><given-names>Mike</given-names></name>
+        </person-group>
+        <article-title>Flux: Elegant machine learning with julia</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2018">2018</year>
+        <pub-id pub-id-type="doi">10.21105/joss.00602</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mocha2014">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <name><surname>Zhang</surname><given-names>Chiyuan</given-names></name>
+        </person-group>
+        <article-title>Mocha.jl: Deep learning framework for julia</article-title>
+        <year iso-8601-date="2014">2014</year>
+        <uri>https://github.com/pluskid/Mocha.jl</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

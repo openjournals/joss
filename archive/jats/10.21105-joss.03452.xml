@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3452</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03452</article-id>
+<title-group>
+<article-title>bmgarch: An R-Package for Bayesian Multivariate GARCH
+models</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-3630-6629</contrib-id>
+<string-name>Philippe Rast</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="corresp" rid="cor-1"><sup>*</sup></xref>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-8085-2390</contrib-id>
+<string-name>Stephen R. Martin</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>University of California, Davis</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Comscore, Inc.</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<author-notes>
+<corresp id="cor-1">* E-mail: <email></email></corresp>
+</author-notes>
+<volume>6</volume>
+<issue>64</issue>
+<fpage>3452</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>stan</kwd>
+<kwd>GARCH</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>Generalized autoregressive conditional heteroskedasticity models
+  (GARCH) and their multivariate extension (MGARCH) are part of the
+  economists’ toolbox ever since their introduction in the early 1980ies
+  (<xref alt="Bollerslev, 1986" rid="ref-Bollerslev1986" ref-type="bibr">Bollerslev,
+  1986</xref>;
+  <xref alt="Engle, 1982" rid="ref-Engle1982" ref-type="bibr">Engle,
+  1982</xref>;
+  <xref alt="Tsay, 2013" rid="ref-Tsay2013" ref-type="bibr">Tsay,
+  2013</xref>). Typically, the goal is to generate forecasts of
+  volatility and covolatility for the next day or the near future in
+  time series of assets or market indices. While GARCH models are
+  primarily used in the econometric context, they can be used to capture
+  and forecast heteroskedasticity in any time series. In fact, Rast et
+  al. (<xref alt="2020" rid="ref-Rast2020" ref-type="bibr">2020</xref>)
+  presented a parameterization for predicting and capturing
+  within-person variability in human behavior in intensive longitudinal
+  designs.</p>
+  <p>The main focus of MGARCH models is the estimation of the
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[p \times p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>×</mml:mo><mml:mi>p</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  conditional covariance matrix <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{H}_t]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐇</mml:mi></mml:mstyle><mml:mi>t</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  that varies over <inline-formula><alternatives>
+  <tex-math><![CDATA[t = 1, ... , N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>t</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:mi>N</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  time points and defines the (co-)volatility of
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+  time series as <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{\epsilon}_t = \mathbf{H}^{1/2}_t \boldsymbol{\eta}_t]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝛜</mml:mi></mml:mstyle><mml:mi>t</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:msubsup><mml:mstyle mathvariant="bold"><mml:mi>𝐇</mml:mi></mml:mstyle><mml:mi>t</mml:mi><mml:mrow><mml:mn>1</mml:mn><mml:mi>/</mml:mi><mml:mn>2</mml:mn></mml:mrow></mml:msubsup><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝛈</mml:mi></mml:mstyle><mml:mi>t</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{\epsilon}_t]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝛜</mml:mi></mml:mstyle><mml:mi>t</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  is a <inline-formula><alternatives>
+  <tex-math><![CDATA[p \times 1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>×</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  vector of returns or residuals, assuming a process with a conditional
+  mean of zero. <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{\eta}_t]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝛈</mml:mi></mml:mstyle><mml:mi>t</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  is a serially independent multivariate white noise process with
+  covariance matrix <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{I}_p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐈</mml:mi></mml:mstyle><mml:mi>p</mml:mi></mml:msub></mml:math></alternatives></inline-formula>.
+  While conceptually straightforward, the crux is to define a model that
+  maintains stationarity of the variances and covariances among the time
+  series for all time points as well as positive definiteness for all
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{H}_t]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐇</mml:mi></mml:mstyle><mml:mi>t</mml:mi></mml:msub></mml:math></alternatives></inline-formula>.
+  As such, a substantial amount of research of the past decades revolved
+  around parameterizations of the conditional covariance matrix that
+  fulfill all those desiderata (for a comparison of some of the most
+  common parameterizations see
+  <xref alt="Almeida et al., 2018" rid="ref-DeAlmeida2018" ref-type="bibr">Almeida
+  et al., 2018</xref>).</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>While there are a number of readily available packages for
+  univariate GARCH models in R, multivariate implementations are
+  scarcely available. Currently, we are aware of only two packages in
+  the Comprehensive R Archive Network (CRAN). One is
+  <monospace>mgarchBEKK</monospace>
+  (<xref alt="Schmidbauer et al., 2016" rid="ref-mgarchBEKK" ref-type="bibr">Schmidbauer
+  et al., 2016</xref>) which implements BEKK as well as a bivariate
+  asymmetric GARCH model. The other is <monospace>rmgarch</monospace>
+  (<xref alt="Ghalanos, 2019" rid="ref-rmgarch" ref-type="bibr">Ghalanos,
+  2019</xref>), which includes DCC, GO-GARCH and Copula-GARCH models.
+  Both packages are based on maximum likelihood methods. Moreover, some
+  MGARCH models are implemented in proprietary software (such as Stata),
+  but their focus is mostly limited to CCC, DCC, and VCC models without
+  the option of estimating the location (e.g. time-varying mean returns)
+  and scale (e.g. time-varying volatility) at the same time
+  (<xref alt="Carnero &amp; Eratalay, 2014" rid="ref-Carnero2014" ref-type="bibr">Carnero
+  &amp; Eratalay, 2014</xref>). Again, these propietary solutions are
+  based on maximum likelihood methods, while in contrast,
+  <monospace>bmgarch</monospace> implements Bayesian methods for
+  parameter estimation and inference.</p>
+  <p>At this current time, <monospace>bmgarch</monospace> implements a
+  CCC
+  (<xref alt="Bollerslev, 1990" rid="ref-Bollerslev1990" ref-type="bibr">Bollerslev,
+  1990</xref>), DCC
+  (<xref alt="Engle, 2002" rid="ref-Engle2002" ref-type="bibr">Engle,
+  2002</xref>), pdBEKK
+  (<xref alt="Rast et al., 2020" rid="ref-Rast2020" ref-type="bibr">Rast
+  et al., 2020</xref>), and a BEKK
+  (<xref alt="Engle &amp; Kroner, 1995" rid="ref-Engle1995" ref-type="bibr">Engle
+  &amp; Kroner, 1995</xref>) model based on either Gaussian or Student-t
+  distributed innovations. All parameterizations allow arbitrary ARCH
+  and GARCH orders. The Bayesian framework is ideally suited to handle
+  the necessary constraints imposed on the MGARCH specifications to both
+  keep the solution stationary and all <inline-formula><alternatives>
+  <tex-math><![CDATA[t]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>t</mml:mi></mml:math></alternatives></inline-formula>
+  conditional covariance matrices <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{H}_t]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐇</mml:mi></mml:mstyle><mml:mi>t</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  positive definite. Moreover, the model allows one to examine the
+  posterior distribution in order to obtain the full range of Bayesian
+  inference.</p>
+  <p>The model parameters are estimated using the probabilistic
+  programming language Stan
+  (<xref alt="Stan Development Team, 2016" rid="ref-stanCppLibrary" ref-type="bibr">Stan
+  Development Team, 2016</xref>), which also allows one to use stan
+  related diagnostics implemented in <monospace>rstan</monospace>
+  (<xref alt="Stan Development Team, 2020" rid="ref-rstan" ref-type="bibr">Stan
+  Development Team, 2020</xref>).</p>
+</sec>
+<sec id="bmgarch">
+  <title>bmgarch</title>
+  <p>The package is designed to take multivariate time series only.
+  Hence, in terms of data, the minimum requirement is a data frame or
+  matrix with at least two columns, representing the time series. Note
+  that <monospace>bmgarch</monospace> currently does not support missing
+  values in time series, nor in the predictor variables.</p>
+  <p>The default behavior in <monospace>bmgarch</monospace> is to
+  estimate a CCC(1,1) parameterized model of order 1 for the ARCH and
+  GARCH components assuming Student-<inline-formula><alternatives>
+  <tex-math><![CDATA[t]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>t</mml:mi></mml:math></alternatives></inline-formula>
+  distributed innovations and a constant means (zero, typically)
+  structure. The model is fit using 4 chains with 2000 iterations each
+  (half of those are warm-up and the other half are sampling). As such,
+  the minimum call will be <monospace>bmgarch( data = X )</monospace>
+  with <monospace>X</monospace> being a matrix or data frame with at
+  least 2 columns.</p>
+  <p>In order to include the effect of an external predictor variable on
+  the unconditional and constant covariance term
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[C]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>C</mml:mi></mml:math></alternatives></inline-formula>,
+  one can include a time-varying predictor <monospace>Y</monospace> of
+  the same dimension as <monospace>X</monospace> by including the
+  preditor with <monospace>xC = Y</monospace>, resulting
+  in<monospace>bmgarch( data = X, xC = Y )</monospace>. Further,
+  <monospace>bmgarch</monospace> takes a number of model related
+  arguments governing the type of parameterization
+  (<monospace>parameterization = {&quot;CCC&quot;, &quot;DCC&quot;, &quot;BEKK&quot;, &quot;pdBEKK&quot;}</monospace>),
+  the order of the GARCH (<monospace>P = {1, ..., t-1}</monospace>) and
+  ARCH (<monospace>Q = {1, ..., t-1}</monospace>) processes, the mean
+  structure
+  (<monospace>meanstructure = {&quot;constant&quot;, &quot;arma&quot;}</monospace>)
+  and the type of distribution
+  (<monospace>distribution = {&quot;Student_t&quot;, &quot;Gaussian&quot;}</monospace>).
+  The function also takes arguments with respect to sampling (number of
+  <monospace>iterations</monospace> and number of
+  <monospace>chains</monospace>) as well as whether data should be
+  z-standardized before sampling
+  (<monospace>standardize_data = {FALSE, TRUE}</monospace>) – this last
+  argument can facilitate the estimation process.</p>
+  <p>Objects of the <monospace>bmgarch</monospace> family can be passed
+  to the <monospace>plot()</monospace> function,
+  <monospace>print()</monospace>, and <monospace>summary()</monospace>
+  for a summary table.</p>
+  <p>Moreover, each estimated model can be passed to the
+  <monospace>forecasting()</monospace> function to generate
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>m</mml:mi></mml:math></alternatives></inline-formula>-ahead
+  forecasts of variances, correlations, and, if the meanstructure is
+  included (such as with ARMA(1,1)), forecasts of means. Moreover,
+  <monospace>bmgarch</monospace> integrates model ensemble techniques to
+  generate model weighted forecasts (and estimates) based on Bayesian
+  model averaging and stacking techniques described by Yao et al.
+  (<xref alt="2018" rid="ref-Yao2018" ref-type="bibr">2018</xref>) and
+  Bürkner et al.
+  (<xref alt="2020" rid="ref-Buerkner2020" ref-type="bibr">2020</xref>).
+  The forecasted objects can again be plotted and summarized via the
+  corresponding generic functions.</p>
+</sec>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The <monospace>bmgarch</monospace> package implements four MGARCH
+  parameterizations and estimates all parameters via a Bayesian
+  framework. Sampling from the posterior distribution is based on HMC
+  and is implemented via stan. The <monospace>bmgarch</monospace>
+  objects can be printed and plotted as well as passed on to a
+  forecasting function that runs either simple or ensemble
+  forecasts.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>The work reported in this publication was supported by the National
+  Institute On Aging of the National Institutes of Health under Award
+  Number R01AG050720 to PR. The content is solely the responsibility of
+  the authors and does not necessarily represent the official views of
+  the funding agencies.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Bollerslev1986">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bollerslev</surname><given-names>Tim</given-names></name>
+        </person-group>
+        <article-title>Generalized autoregressive conditional heteroskedasticity</article-title>
+        <source>Journal of Econometrics</source>
+        <year iso-8601-date="1986">1986</year>
+        <volume>31</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1016/0304-4076(86)90063-1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Bollerslev1990">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bollerslev</surname><given-names>Tim</given-names></name>
+        </person-group>
+        <article-title>Modelling the Coherence in Short-Run Nominal Exchange Rates: A Multivariate Generalized Arch Model</article-title>
+        <source>The Review of Economics and Statistics</source>
+        <year iso-8601-date="1990">1990</year>
+        <volume>72</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.2307/2109358</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Buerkner2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bürkner</surname><given-names>Paul-Christian</given-names></name>
+          <name><surname>Gabry</surname><given-names>Jonah</given-names></name>
+          <name><surname>Vehtari</surname><given-names>Aki</given-names></name>
+        </person-group>
+        <article-title>Approximate leave-future-out cross-validation for Bayesian time series models</article-title>
+        <source>Journal of Statistical Computation and Simulation</source>
+        <year iso-8601-date="2020">2020</year>
+        <pub-id pub-id-type="doi">10.1080/00949655.2020.1783262</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Carnero2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Carnero</surname><given-names>M. Angeles</given-names></name>
+          <name><surname>Eratalay</surname><given-names>M. Hakan</given-names></name>
+        </person-group>
+        <article-title>Estimating VAR-MGARCH models in multiple steps</article-title>
+        <source>Studies in Nonlinear Dynamics &amp; Econometrics</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>18</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1515/snde-2012-0065</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-DeAlmeida2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Almeida</surname><given-names>Daniel de</given-names></name>
+          <name><surname>Hotta</surname><given-names>Luiz K.</given-names></name>
+          <name><surname>Ruiz</surname><given-names>Esther</given-names></name>
+        </person-group>
+        <article-title>MGARCH models: Trade-off between feasibility and flexibility</article-title>
+        <source>International Journal of Forecasting</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>34</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1016/J.IJFORECAST.2017.08.003</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Engle1982">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Engle</surname><given-names>Robert F.</given-names></name>
+        </person-group>
+        <article-title>Autoregressive Conditional Heteroscedasticity with Estimates of the Variance of United Kingdom Inflation</article-title>
+        <source>Econometrica</source>
+        <year iso-8601-date="1982">1982</year>
+        <volume>50</volume>
+        <issue>4</issue>
+        <issn>00129682</issn>
+        <pub-id pub-id-type="doi">10.2307/1912773</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Engle2002">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Engle</surname><given-names>Robert F.</given-names></name>
+        </person-group>
+        <article-title>Dynamic Conditional Correlation</article-title>
+        <source>Journal of Business &amp; Economic Statistics</source>
+        <year iso-8601-date="2002">2002</year>
+        <volume>20</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1198/073500102288618487</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Engle1995">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Engle</surname><given-names>Robert F.</given-names></name>
+          <name><surname>Kroner</surname><given-names>Kenneth F.</given-names></name>
+        </person-group>
+        <article-title>Multivariate simultaneous generalized arch</article-title>
+        <source>Econometric Theory</source>
+        <year iso-8601-date="1995">1995</year>
+        <volume>11</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1017/S0266466600009063</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Rast2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rast</surname><given-names>Philippe</given-names></name>
+          <name><surname>Martin</surname><given-names>Stephen R.</given-names></name>
+          <name><surname>Liu</surname><given-names>Siwei</given-names></name>
+          <name><surname>Williams</surname><given-names>Donald R.</given-names></name>
+        </person-group>
+        <article-title>A New Frontier for Studying Within-Person Variability: Bayesian Multivariate Generalized Autoregressive Conditional Heteroskedasticity Models</article-title>
+        <source>Psychological Methods</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://psyarxiv.com/j57pk/</uri>
+        <pub-id pub-id-type="doi">10.1037/met0000357</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-rmgarch">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Ghalanos</surname><given-names>Alexios</given-names></name>
+        </person-group>
+        <source>Rmgarch: Multivariate GARCH models</source>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-mgarchBEKK">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Schmidbauer</surname><given-names>Harald</given-names></name>
+          <name><surname>Roesch</surname><given-names>Angi</given-names></name>
+          <name><surname>Tunalioglu</surname><given-names>Vehbi Sinan</given-names></name>
+        </person-group>
+        <source>mgarchBEKK: Simulating, estimating and diagnosing MGARCH (BEKK and mGJR) processes</source>
+        <year iso-8601-date="2016">2016</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-rstan">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>Stan Development Team</string-name>
+        </person-group>
+        <article-title>RStan: The R interface to Stan</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>http://mc-stan.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-stanCppLibrary">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>Stan Development Team</string-name>
+        </person-group>
+        <article-title>The Stan C++ Library</article-title>
+        <year iso-8601-date="2016">2016</year>
+        <uri>http://mc-stan.org</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Tsay2013">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Tsay</surname><given-names>Ruey S.</given-names></name>
+        </person-group>
+        <source>An Introduction to Analysis of Financial Data with R</source>
+        <publisher-name>John Wiley &amp; Sons</publisher-name>
+        <publisher-loc>Hoboken, NJ</publisher-loc>
+        <year iso-8601-date="2013">2013</year>
+        <isbn>978-0-470-89081-3</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-Yao2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yao</surname><given-names>Yuling</given-names></name>
+          <name><surname>Vehtari</surname><given-names>Aki</given-names></name>
+          <name><surname>Simpson</surname><given-names>Daniel</given-names></name>
+          <name><surname>Gelman</surname><given-names>Andrew</given-names></name>
+        </person-group>
+        <article-title>Using Stacking to Average Bayesian Predictive Distributions</article-title>
+        <source>Bayesian Analysis</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>13</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1214/17-BA1091</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

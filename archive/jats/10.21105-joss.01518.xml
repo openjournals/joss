@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1518</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01518</article-id>
+<title-group>
+<article-title>traffic, a toolbox for processing and analysing air
+traffic data</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-2335-5774</contrib-id>
+<string-name>Xavier Olive</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>ONERA, Université de Toulouse, France</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-06-15">
+<day>15</day>
+<month>6</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>39</issue>
+<fpage>1518</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>trajectory</kwd>
+<kwd>ADS-B</kwd>
+<kwd>Mode S</kwd>
+<kwd>air traffic management</kwd>
+<kwd>data visualisation</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Problems tackled by researchers and data scientists in aviation and
+  air traffic management (ATM) require manipulating large amounts of
+  data representing trajectories, flight parameters and geographical
+  descriptions of the airspace they fly through.</p>
+  <p>Trajectories are mathematical objects used to describe the
+  evolution of a moving object with a finite list of parameters. The
+  most common features in ATM include latitude, longitude, altitude, all
+  indexed by time, with derived ones such as ground speed, track angle
+  and vertical rate. Aircraft dynamic models may expect pitch, roll and
+  yaw angles, together with indicated, computed or true airspeed, Mach
+  number, and more.</p>
+  <p>Further, airspaces are a key element of aviation: they are
+  regulated by specific rules, whereby navigation is allowed to
+  determined types of aircraft meeting strict requirements. Such
+  volumes, assigned to air traffic controllers to ensure the safety of
+  flights and proper separation between aircraft are most commonly
+  described as a combination of extruded polygons.</p>
+  <p>Common operations relevant to trajectories evolving in controlled
+  airspaces range from basic attributes: time of entry, time of exit,
+  duration, maximum or minimum altitudes or speed; to more complex
+  operations like intersections of trajectories with airspaces,
+  distances between pairs of trajectories and more. Top performance and
+  expressivity are key expectations for common tasks like preprocessing
+  and filtering of data, preparation of trajectory datasets, or
+  computation of key performance indicators.</p>
+  <p>The <monospace>traffic</monospace> library uses the Python language
+  to reach a large base of academics and data scientists users, to serve
+  and benefit its active community and to build on top of a large
+  catalogue of libraries. Trajectories are modelled on top of Pandas
+  dataframe, a natural solution to represent time series, while
+  airspaces leverage Shapely
+  (<xref alt="Gillies et al., 2007" rid="ref-shapely_2007" ref-type="bibr">Gillies
+  et al., 2007</xref>) geometries and operations (intersections,
+  inclusion, cascaded joins among others).</p>
+  <p><monospace>traffic</monospace> provides key operations for
+  analysing trajectories evolving in airspaces. It is particularly
+  useful to programmers and researchers needing to compute statistics,
+  performance indicators and building datasets for common machine
+  learning tasks. Meaningful methods are efficiently written using
+  Pandas and Shapely optimised methods, more obvious operations are
+  directly passed to the underlying dataframes.</p>
+</sec>
+<sec id="core-structure-of-the-library">
+  <title>Core structure of the library</title>
+  <fig>
+    <caption><p>Architecture of the library</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="architecture.png" xlink:title="" />
+  </fig>
+  <p><monospace>traffic</monospace> acts as declarative grammar designed
+  to preprocess collections of trajectories represented as
+  <monospace>core.Traffic</monospace> classes holding a Pandas DataFrame
+  as a single attribute. <monospace>core.Traffic</monospace> provides
+  indexing on <monospace>core.Flight</monospace> structures, unfolds map
+  operations—transforming a <monospace>core.Flight</monospace> into
+  another <monospace>core.Flight</monospace>—, and filtering
+  operations—associating a boolean to a
+  <monospace>core.Flight</monospace>, set to False if the trajectory
+  should be discarded.</p>
+  <p>Methods on <monospace>core.Flight</monospace> are designed to be
+  chained in a similar way Pandas functions. For the sake of
+  expressivity, any method returning a
+  <monospace>core.Flight</monospace> or a boolean can be stacked on
+  <monospace>core.Traffic</monospace> structures, in order to be later
+  lazily executed into one single multiprocessed iteration.</p>
+  <p>Basic navigational data are embedded in the library, together with
+  parsing facilities for most common sources of information, with a main
+  focus on Europe at the time being. A particular attention has been put
+  to a proper binding to ADS-B and Mode S data accessible through the
+  OpenSky
+  (<xref alt="Schäfer et al., 2014" rid="ref-schafer_opensky_2014" ref-type="bibr">Schäfer
+  et al., 2014</xref>) infrastructure, which is openly accessible to
+  academics; decoding capability for stored raw messages is also
+  provided via pyModeS library
+  (<xref alt="Sun et al., 2019" rid="ref-sun_pymodes_2019" ref-type="bibr">Sun
+  et al., 2019</xref>)</p>
+  <p>Finally, <monospace>traffic</monospace> library provides facilities
+  to export data in common popular visualisation tools including
+  Matplotlib/Cartopy
+  (<xref alt="Elson et al., 2018" rid="ref-cartopy_2018" ref-type="bibr">Elson
+  et al., 2018</xref>), Google Earth, Leaflet, Cesium JS for
+  geographical coordinates and altair
+  (<xref alt="VanderPlas et al., 2018" rid="ref-altair_2018" ref-type="bibr">VanderPlas
+  et al., 2018</xref>) for other features. For the time being, any other
+  kind of visualisation can be implemented as a plugin.</p>
+</sec>
+<sec id="related-works">
+  <title>Related works</title>
+  <p><monospace>traffic</monospace> has already been used as a
+  preprocessing tool to prepare data for data analytics
+  (<xref alt="Schäfer et al., 2019" rid="ref-schafer_opensky_2019" ref-type="bibr">Schäfer
+  et al., 2019</xref>) and machine learning methods Olive &amp; Morio
+  (<xref alt="2019" rid="ref-olive_clustering_2019" ref-type="bibr">2019</xref>).</p>
+  <p>Several third party users have already been using and contributing
+  feedback to the library, mostly as bug reports and minor bug
+  fixes.</p>
+  <p>We expect to improve the library with optimisations in processing
+  time, enriched algorithms and more powerful visualisation
+  capabilities.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-olive_runway_2018">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Olive</surname><given-names>Xavier</given-names></name>
+          <name><surname>Bieber</surname><given-names>Pierre</given-names></name>
+        </person-group>
+        <article-title>Quantitative Assessments of Runway Excursion Precursors using Mode S data</article-title>
+        <source>Proceedings of the International Conference for Research in Air Transportation</source>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-olive_clustering_2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Olive</surname><given-names>Xavier</given-names></name>
+          <name><surname>Morio</surname><given-names>Jérôme</given-names></name>
+        </person-group>
+        <article-title>Trajectory clustering of air traffic flows around airports</article-title>
+        <source>Aerospace Science and Technology</source>
+        <year iso-8601-date="2019-01">2019</year><month>01</month>
+        <volume>84</volume>
+        <issn>12709638</issn>
+        <pub-id pub-id-type="doi">10.1016/j.ast.2018.11.031</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-olive_detecting_2018">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Olive</surname><given-names>Xavier</given-names></name>
+          <name><surname>Grignard</surname><given-names>Jeremy</given-names></name>
+          <name><surname>Dubot</surname><given-names>Thomas</given-names></name>
+          <name><surname>Saint-Lot</surname><given-names>Julie</given-names></name>
+        </person-group>
+        <article-title>Detecting Controllers’ Actions in Past Mode S Data by Autoencoder-Based Anomaly Detection</article-title>
+        <source>Proceedings of the SESAR Innovation Days</source>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-olive_identifying_2019">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Olive</surname><given-names>Xavier</given-names></name>
+          <name><surname>Basora</surname><given-names>Luis</given-names></name>
+        </person-group>
+        <article-title>Identifying Anomalies in past en-route Trajectories with Clustering and Anomaly Detection Methods</article-title>
+        <source>Proceedings of the Air Traffic Management Seminar</source>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-schafer_opensky_2019">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Schäfer</surname><given-names>Matthias</given-names></name>
+          <name><surname>Olive</surname><given-names>Xavier</given-names></name>
+          <name><surname>Strohmeier</surname><given-names>Martin</given-names></name>
+          <name><surname>Smith</surname><given-names>Matthew</given-names></name>
+          <name><surname>Martinovic</surname><given-names>Ivan</given-names></name>
+          <name><surname>Lenders</surname><given-names>Vincent</given-names></name>
+        </person-group>
+        <article-title>OpenSky Report 2019: Analysing TCAS in the Real World using Big Data</article-title>
+        <source>Proceedings of the 38th Digital Avionics Systems Conference (DASC)</source>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-schafer_opensky_2014">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Schäfer</surname><given-names>Matthias</given-names></name>
+          <name><surname>Strohmeier</surname><given-names>Martin</given-names></name>
+          <name><surname>Lenders</surname><given-names>Vincent</given-names></name>
+          <name><surname>Martinovic</surname><given-names>Ivan</given-names></name>
+          <name><surname>Wilhelm</surname><given-names>Matthias</given-names></name>
+        </person-group>
+        <article-title>Bringing up OpenSky: A large-scale ADS-B sensor network for research</article-title>
+        <source>Proceedings of the 13th International Symposium on Information Processing in Sensor Networks</source>
+        <year iso-8601-date="2014">2014</year>
+        <pub-id pub-id-type="doi">10.1109/IPSN.2014.6846743</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sun_pymodes_2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sun</surname><given-names>J.</given-names></name>
+          <name><surname>Vû</surname><given-names>H.</given-names></name>
+          <name><surname>Ellerbroek</surname><given-names>J.</given-names></name>
+          <name><surname>Hoekstra</surname><given-names>J. M.</given-names></name>
+        </person-group>
+        <article-title>pyModeS: Decoding Mode S Surveillance Data for Open Air Transportation Research</article-title>
+        <source>IEEE Transactions on Intelligent Transportation Systems</source>
+        <year iso-8601-date="2019">2019</year>
+        <issn>1524-9050</issn>
+        <pub-id pub-id-type="doi">10.1109/TITS.2019.2914770</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-shapely_2007">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Gillies</surname><given-names>Sean</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Shapely: Manipulation and analysis of geometric objects</article-title>
+        <publisher-name>toblerity.org</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <uri>https://github.com/Toblerity/Shapely</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-altair_2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>VanderPlas</surname><given-names>Jacob</given-names></name>
+          <name><surname>Granger</surname><given-names>Brian</given-names></name>
+          <name><surname>Heer</surname><given-names>Jeffrey</given-names></name>
+          <name><surname>Moritz</surname><given-names>Dominik</given-names></name>
+          <name><surname>Wongsuphasawat</surname><given-names>Kanit</given-names></name>
+          <name><surname>Satyanarayan</surname><given-names>Arvind</given-names></name>
+          <name><surname>Lees</surname><given-names>Eitan</given-names></name>
+          <name><surname>Timofeev</surname><given-names>Ilia</given-names></name>
+          <name><surname>Welsh</surname><given-names>Ben</given-names></name>
+          <name><surname>Sievert</surname><given-names>Scott</given-names></name>
+        </person-group>
+        <article-title>Altair: Interactive Statistical Visualizations for Python</article-title>
+        <source>Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2018-12">2018</year><month>12</month>
+        <uri>https://doi.org/10.21105/joss.01057</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.01057</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-cartopy_2018">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Elson</surname><given-names>Phil</given-names></name>
+          <name><surname>Andrade</surname><given-names>Elliott Sales de</given-names></name>
+          <name><surname>Hattersley</surname><given-names>Richard</given-names></name>
+          <name><surname>Campbell</surname><given-names>Ed</given-names></name>
+          <name><surname>Dawson</surname><given-names>Andrew</given-names></name>
+          <name><surname>May</surname><given-names>Ryan</given-names></name>
+          <name><surname>scmc72</surname></name>
+          <name><surname>Little</surname><given-names>Bill</given-names></name>
+          <name><surname>Pelley</surname><given-names>Carwyn</given-names></name>
+          <name><surname>Blay</surname><given-names>Byron</given-names></name>
+          <name><surname>Donkers</surname><given-names>Kevin</given-names></name>
+          <name><surname>Killick</surname><given-names>Peter</given-names></name>
+          <name><surname>marqh</surname></name>
+          <name><surname>lbdreyer</surname></name>
+          <name><surname>Peglar</surname><given-names>Patrick</given-names></name>
+          <name><surname>Wilson</surname><given-names>Nat</given-names></name>
+          <name><surname>Kirkham</surname><given-names>Daniel</given-names></name>
+          <name><surname>Bosley</surname><given-names>Corinne</given-names></name>
+          <name><surname>Signell</surname><given-names>Julia</given-names></name>
+          <name><surname>Filipe</surname></name>
+          <name><surname>Krischer</surname><given-names>Lion</given-names></name>
+          <name><surname>Eriksson</surname><given-names>Daniel</given-names></name>
+          <name><surname>Smith</surname><given-names>Andrea</given-names></name>
+          <name><surname>Carlos</surname></name>
+          <name><surname>McDougall</surname><given-names>Damon</given-names></name>
+          <name><surname>Crosby</surname><given-names>Alex</given-names></name>
+          <name><surname>herzmann</surname></name>
+          <name><surname>scaine1</surname></name>
+          <name><surname>Greg</surname></name>
+          <name><surname>munslowa</surname></name>
+        </person-group>
+        <article-title>SciTools/cartopy: v0.17.0</article-title>
+        <year iso-8601-date="2018-11">2018</year><month>11</month>
+        <uri>https://doi.org/10.5281/zenodo.1490296</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.1490296</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

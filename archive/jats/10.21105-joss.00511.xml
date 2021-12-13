@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">511</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00511</article-id>
+<title-group>
+<article-title>tidyhydat: Extract and Tidy Canadian Hydrometric
+Data</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9270-7884</contrib-id>
+<string-name>Sam J. Albers</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Hydrology and Hydrometric Programs, Ministry of Environment
+and Climate Change Strategy, British Columbia Provincial
+Government</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2017-12-14">
+<day>14</day>
+<month>12</month>
+<year>2017</year>
+</pub-date>
+<volume>2</volume>
+<issue>20</issue>
+<fpage>511</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>tidy data</kwd>
+<kwd>hydrology</kwd>
+<kwd>Canada</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<disp-quote>
+  <p>Tidy datasets are all alike but every messy dataset is messy in its
+  own way - Wickham
+  (<xref alt="2014" rid="ref-wickham2014tidy" ref-type="bibr">2014</xref>)</p>
+</disp-quote>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>Environment and Climate Change Canada (ECCC) through the Water
+  Survey of Canada (WSC) maintains several national hydrometric data
+  sources. These data are partially funded by provincial partners and
+  constitute the main data products of a national integrated hydrometric
+  network. Historical data are stored in the
+  <ext-link ext-link-type="uri" xlink:href="http://collaboration.cmc.ec.gc.ca/cmc/hydrometrics/www/">HYDAT
+  database</ext-link>. HYDAT is the Canadian national Water Data
+  Archive, published quarterly by the Government of Canada’s Department
+  of Environment and Climate Change. It is a relational database that
+  contains daily, monthly and annual data on water flow, water levels
+  and sediment.</p>
+  <p>Real-time data are provided by ECCC over the web. Files are updated
+  to a
+  <ext-link ext-link-type="uri" xlink:href="http://dd.weather.gc.ca/hydrometric/">datamart</ext-link>
+  on an hourly basis though the lag between actual hydrometric
+  measurement and the availability of hydrometric data is approximately
+  2.5 hours. The objective of this document is to outline the usage of
+  <monospace>tidyhydat</monospace>
+  (<xref alt="Albers, 2017" rid="ref-alberstidyhydat" ref-type="bibr">Albers,
+  2017</xref>), an R package that accesses these hydrometric data
+  sources and <italic>tidies</italic> them.
+  <monospace>tidyhydat</monospace> is part of the
+  <ext-link ext-link-type="uri" xlink:href="https://ropensci.org/packages/">rOpenSci</ext-link>
+  suite of packages and resides at
+  https://github.com/ropensci/tidyhydat. The objective of
+  <monospace>tidyhydat</monospace> is to provide a standard method of
+  accessing ECCC data sources using a consistent and easy to use
+  interface that employs tidy data principles developed by Wickham
+  (<xref alt="2014" rid="ref-wickham2014tidy" ref-type="bibr">2014</xref>)
+  within the R project
+  (<xref alt="R Core Team, 2017" rid="ref-RCore" ref-type="bibr">R Core
+  Team, 2017</xref>).</p>
+  <sec id="why-use-r-in-hydrology">
+    <title>Why use R in hydrology?</title>
+    <p>There are many statistical computing projects that offer great
+    functionality for users. For <monospace>tidyhydat</monospace> I have
+    chosen to use R. R is a mature open-source project that provides
+    significant potential for advanced modelling, visualization and data
+    manipulation. For hydrologists considering data analysis tools there
+    are several commonly cited reasons to use R:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p>R is and always will be free to use and modify.</p>
+      </list-item>
+      <list-item>
+        <p>R is easily extensible and comprehensive. It is complimented
+        by a rich suite of packages that implement a vast array of
+        classical and modern statistical methods, exceptionally
+        high-quality graphing capabilities and powerful data
+        manipulation tools to handle a wide variety of data formats.</p>
+      </list-item>
+      <list-item>
+        <p>R facilitates the scientific method by allowing for a fully
+        reproducible data workflow that can be repeated by others when
+        code is shared.
+        </p>
+      </list-item>
+      <list-item>
+        <p>R has a friendly community which is an important
+        infrastructure element of any open source project.</p>
+      </list-item>
+    </list>
+    <p>There have been recent calls to use R more broadly in the field
+    of hydrology
+    (<xref alt="Moore &amp; Hutchinson, 2017" rid="ref-moore2017watershed" ref-type="bibr">Moore
+    &amp; Hutchinson, 2017</xref>). The <monospace>tidyhydat</monospace>
+    package is an effort to push this call forward by being a standard
+    package by which hydrologists and other users interact with WSC data
+    in R. Conducting hydrological analysis in a programming environment
+    like R allows hydrologists the ability to create fully reproducible
+    workflows, automate repetitive tasks and provide the same rigour to
+    the data analysis process that hydrologists apply to field equipment
+    and experimental design
+    (<xref alt="Wilson et al., 2014" rid="ref-wilson2014best" ref-type="bibr">Wilson
+    et al., 2014</xref>).</p>
+  </sec>
+  <sec id="why-use-tidy-data">
+    <title>Why use tidy data?</title>
+    <p>Embedded within <monospace>tidyhydat</monospace> is the principle
+    of <italic>tidy data</italic>. Wickham
+    (<xref alt="2014" rid="ref-wickham2014tidy" ref-type="bibr">2014</xref>)
+    defines tidy data by three principles:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p>Each variable forms a column</p>
+      </list-item>
+      <list-item>
+        <p>Each observation forms a row</p>
+      </list-item>
+      <list-item>
+        <p>Each type of observational unit forms a table</p>
+      </list-item>
+    </list>
+    <p>It is illustrative here to provide an example of the types of
+    data <italic>tidying</italic> processes that
+    <monospace>tidyhydat</monospace> does for you automatically. The raw
+    <monospace>DLY_FLOWS</monospace> table in the HYDAT database returns
+    data that looks like this:</p>
+    <preformat>## # Source:   table&lt;DLY_FLOWS&gt; [?? x 73]
+## # Database: sqlite 3.19.3
+## #   [C:\Users\salbers\R\win-library\3.4\tidyhydat\test_db\tinyhydat.sqlite3]
+##    STATION_NUMBER  YEAR MONTH FULL_MONTH NO_DAYS MONTHLY_MEAN
+##             &lt;chr&gt; &lt;int&gt; &lt;int&gt;      &lt;int&gt;   &lt;int&gt;        &lt;dbl&gt;
+##  1        05AA008  1910     7          0      31           NA
+##  2        05AA008  1910     8          1      31         3.08
+##  3        05AA008  1910     9          1      30         3.18
+##  4        05AA008  1910    10          1      31         5.95
+##  5        05AA008  1911     1          1      31         1.42
+##  6        05AA008  1911     2          1      28         1.31
+##  7        05AA008  1911     3          1      31         1.65
+##  8        05AA008  1911     4          1      30         6.33
+##  9        05AA008  1911     5          1      31        18.20
+## 10        05AA008  1911     6          1      30        24.20
+## # ... with more rows, and 67 more variables: MONTHLY_TOTAL &lt;dbl&gt;,
+## #   FIRST_DAY_MIN &lt;int&gt;, MIN &lt;dbl&gt;, FIRST_DAY_MAX &lt;int&gt;, MAX &lt;dbl&gt;,
+## #   FLOW1 &lt;dbl&gt;, FLOW_SYMBOL1 &lt;chr&gt;, FLOW2 &lt;dbl&gt;, FLOW_SYMBOL2 &lt;chr&gt;,
+## #   FLOW3 &lt;dbl&gt;, FLOW_SYMBOL3 &lt;chr&gt;, FLOW4 &lt;dbl&gt;, FLOW_SYMBOL4 &lt;chr&gt;,
+## #   FLOW5 &lt;dbl&gt;, FLOW_SYMBOL5 &lt;chr&gt;, FLOW6 &lt;dbl&gt;, FLOW_SYMBOL6 &lt;chr&gt;,
+## #   FLOW7 &lt;dbl&gt;, FLOW_SYMBOL7 &lt;chr&gt;, FLOW8 &lt;dbl&gt;, FLOW_SYMBOL8 &lt;chr&gt;,
+## #   FLOW9 &lt;dbl&gt;, FLOW_SYMBOL9 &lt;chr&gt;, FLOW10 &lt;dbl&gt;, FLOW_SYMBOL10 &lt;chr&gt;,
+## #   FLOW11 &lt;dbl&gt;, FLOW_SYMBOL11 &lt;chr&gt;, FLOW12 &lt;dbl&gt;, FLOW_SYMBOL12 &lt;chr&gt;,
+## #   FLOW13 &lt;dbl&gt;, FLOW_SYMBOL13 &lt;chr&gt;, FLOW14 &lt;dbl&gt;, FLOW_SYMBOL14 &lt;chr&gt;,
+## #   FLOW15 &lt;dbl&gt;, FLOW_SYMBOL15 &lt;chr&gt;, FLOW16 &lt;dbl&gt;, FLOW_SYMBOL16 &lt;chr&gt;,
+## #   FLOW17 &lt;dbl&gt;, FLOW_SYMBOL17 &lt;chr&gt;, FLOW18 &lt;dbl&gt;, FLOW_SYMBOL18 &lt;chr&gt;,
+## #   FLOW19 &lt;dbl&gt;, FLOW_SYMBOL19 &lt;chr&gt;, FLOW20 &lt;dbl&gt;, FLOW_SYMBOL20 &lt;chr&gt;,
+## #   FLOW21 &lt;dbl&gt;, FLOW_SYMBOL21 &lt;chr&gt;, FLOW22 &lt;dbl&gt;, FLOW_SYMBOL22 &lt;chr&gt;,
+## #   FLOW23 &lt;dbl&gt;, FLOW_SYMBOL23 &lt;chr&gt;, FLOW24 &lt;dbl&gt;, FLOW_SYMBOL24 &lt;chr&gt;,
+## #   FLOW25 &lt;dbl&gt;, FLOW_SYMBOL25 &lt;chr&gt;, FLOW26 &lt;dbl&gt;, FLOW_SYMBOL26 &lt;chr&gt;,
+## #   FLOW27 &lt;dbl&gt;, FLOW_SYMBOL27 &lt;chr&gt;, FLOW28 &lt;dbl&gt;, FLOW_SYMBOL28 &lt;chr&gt;,
+## #   FLOW29 &lt;dbl&gt;, FLOW_SYMBOL29 &lt;chr&gt;, FLOW30 &lt;dbl&gt;, FLOW_SYMBOL30 &lt;chr&gt;,
+## #   FLOW31 &lt;dbl&gt;, FLOW_SYMBOL31 &lt;chr&gt;</preformat>
+    <p>This data structure clearly violates the principles of tidy data
+    - this is messy data. For example, column headers
+    (e.g. <monospace>FLOW1</monospace>) contain the day number - a
+    value. HYDAT is structured like this for very reasonable historical
+    reasons. It does, however, significantly limit a hydrologists
+    ability to efficiently use hydrometric data.</p>
+    <p><monospace>tidyhydat</monospace> aims to make interacting with
+    WSC data sources simpler. I have applied tidy data principles so
+    that users can avoid thinking about the basic data process of
+    importing and tidying and focus on the iterative process of
+    visualizing and modelling their data
+    (<xref alt="Wickham &amp; Grolemund, 2016" rid="ref-wickham2016r" ref-type="bibr">Wickham
+    &amp; Grolemund, 2016</xref>). After loading
+    <monospace>tidyhydat</monospace> itself, we simply need to supply a
+    <monospace>station_number</monospace> argument to the
+    <monospace>hy_daily_flows()</monospace> function:</p>
+    <code language="r script">library(tidyhydat)
+hy_daily_flows(station_number = &quot;08MF005&quot;)</code>
+    <preformat>## # A tibble: 37,561 x 5
+##    STATION_NUMBER       Date Parameter Value Symbol
+##             &lt;chr&gt;     &lt;date&gt;     &lt;chr&gt; &lt;dbl&gt;  &lt;chr&gt;
+##  1        08MF005 1912-03-01      FLOW   538   &lt;NA&gt;
+##  2        08MF005 1912-03-02      FLOW   538   &lt;NA&gt;
+##  3        08MF005 1912-03-03      FLOW   538   &lt;NA&gt;
+##  4        08MF005 1912-03-04      FLOW   538   &lt;NA&gt;
+##  5        08MF005 1912-03-05      FLOW   538   &lt;NA&gt;
+##  6        08MF005 1912-03-06      FLOW   538   &lt;NA&gt;
+##  7        08MF005 1912-03-07      FLOW   479   &lt;NA&gt;
+##  8        08MF005 1912-03-08      FLOW   479   &lt;NA&gt;
+##  9        08MF005 1912-03-09      FLOW   459   &lt;NA&gt;
+## 10        08MF005 1912-03-10      FLOW   459   &lt;NA&gt;
+## # ... with 37,551 more rows</preformat>
+    <p>As you can see, this is much tidier data and is much easier to
+    work with. In addition to these tidy principles, specific to
+    <monospace>tidyhydat</monospace>, we can also define that
+    <italic>for a common data source, variables should be referred to by
+    a common name</italic>. For example, hydrometric stations are given
+    a unique 7 digit identifier that contains important watershed
+    information. This identifier is variously referred to as
+    <monospace>STATION_NUMBER</monospace> or <monospace>ID</monospace>
+    depending on the exact ECCC data source. To tidy this hydrometric
+    data, we have renamed, where necessary, each instance of the unique
+    identifier as <monospace>STATION_NUMBER</monospace>. This
+    consistency to data formats, and in particular tidy data, situates
+    <monospace>tidyhydat</monospace> well to interact seamlessly with
+    the powerful tools being developed in the
+    <monospace>tidyverse</monospace>
+    (<xref alt="Wickham, 2017" rid="ref-wickham2017tidyverse" ref-type="bibr">Wickham,
+    2017</xref>) and provides a path in R to realize some of the goals
+    outlined by Moore &amp; Hutchinson
+    (<xref alt="2017" rid="ref-moore2017watershed" ref-type="bibr">2017</xref>).</p>
+  </sec>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-moore2017watershed">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Moore</surname><given-names>RD Dan</given-names></name>
+          <name><surname>Hutchinson</surname><given-names>David</given-names></name>
+        </person-group>
+        <article-title>Why watershed analysts should use r for data processing and analysis</article-title>
+        <source>Confluence: Journal of Watershed Science and Management</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>1</volume>
+        <issue>1</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-wickham2014tidy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wickham</surname><given-names>Hadley</given-names></name>
+        </person-group>
+        <article-title>Tidy data</article-title>
+        <source>Journal of Statistical Software</source>
+        <publisher-name>Foundation for Open Access Statistics</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>59</volume>
+        <issue>10</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-wilson2014best">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wilson</surname><given-names>Greg</given-names></name>
+          <name><surname>Aruliah</surname><given-names>Dhavide A</given-names></name>
+          <name><surname>Brown</surname><given-names>C Titus</given-names></name>
+          <name><surname>Hong</surname><given-names>Neil P Chue</given-names></name>
+          <name><surname>Davis</surname><given-names>Matt</given-names></name>
+          <name><surname>Guy</surname><given-names>Richard T</given-names></name>
+          <name><surname>Haddock</surname><given-names>Steven HD</given-names></name>
+          <name><surname>Huff</surname><given-names>Kathryn D</given-names></name>
+          <name><surname>Mitchell</surname><given-names>Ian M</given-names></name>
+          <name><surname>Plumbley</surname><given-names>Mark D</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Best practices for scientific computing</article-title>
+        <source>PLoS biology</source>
+        <publisher-name>Public Library of Science</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>12</volume>
+        <issue>1</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-wickham2016r">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Wickham</surname><given-names>Hadley</given-names></name>
+          <name><surname>Grolemund</surname><given-names>Garrett</given-names></name>
+        </person-group>
+        <article-title>R for data science</article-title>
+        <publisher-name>Sebastopol, CA: O’Reilly. http://r4ds.had.co.nz</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-RCore">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>R Core Team</string-name>
+        </person-group>
+        <source>R: A language and environment for statistical computing</source>
+        <publisher-name>R Foundation for Statistical Computing</publisher-name>
+        <publisher-loc>Vienna, Austria</publisher-loc>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://www.R-project.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-wickham2017tidyverse">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Wickham</surname><given-names>Hadley</given-names></name>
+        </person-group>
+        <source>Tidyverse: Easily install and load ’tidyverse’ packages</source>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://CRAN.R-project.org/package=tidyverse</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-alberstidyhydat">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Albers</surname><given-names>Sam</given-names></name>
+        </person-group>
+        <source>Tidyhydat: Extract and tidy canadian hydrometric data</source>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://github.com/ropensci/tidyhydat</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

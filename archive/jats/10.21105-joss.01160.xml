@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1160</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01160</article-id>
+<title-group>
+<article-title>RSeqAn: Headers and wrappers for the SeqAn library in
+R</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-0872-7098</contrib-id>
+<string-name>August Guang</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Center for Computation and Visualization, Brown University,
+Providence, Rhode Island, United States of America</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Center for Computational Biology of Human Disease, Brown
+University, Providence, Rhode Island, United States of
+America</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-02-05">
+<day>5</day>
+<month>2</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>34</issue>
+<fpage>1160</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>SeqAn</kwd>
+<kwd>bioinformatics</kwd>
+<kwd>Rcpp</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>R is used heavily in the bioinformatics community for processing,
+  analyzing, and visualizing biological sequence data due to the strong
+  support for data exploration and analysis. One common complaint about
+  R is its lack of speed relative to other languages, which have to do
+  with properties of the R kernel
+  (<xref alt="Sridharan, 2015" rid="ref-Sridharan2015" ref-type="bibr">Sridharan,
+  2015</xref>). A solution to this is to rewrite key functions in C++
+  instead, then use Rcpp
+  (<xref alt="Eddelbuettel &amp; Balamuta, 2018" rid="ref-Eddelbuettel2018" ref-type="bibr">Eddelbuettel
+  &amp; Balamuta, 2018</xref>) to interface with R. Many packages in R
+  are sped up with C++ code: as of
+  <ext-link ext-link-type="uri" xlink:href="http://dirk.eddelbuettel.com/blog/2018/11/07/">November
+  2018</ext-link>, out of 13525 packages on CRAN, 1493 of those use
+  Rcpp. On Bioconductor
+  (<xref alt="Huber et al., 2015" rid="ref-Huber2015" ref-type="bibr">Huber
+  et al., 2015</xref>), a repository specifically for bioinformatics
+  packages, there is a similar proportion of packages using Rcpp: 150
+  out of 1649.</p>
+  <p>Writing certain functions in C++ also allows the researcher to take
+  advantage of high-performance C++ libraries. One such library that has
+  proven powerful and popular for bioinformatics applications is SeqAn
+  (<xref alt="Döring et al., 2008" rid="ref-Doring2008" ref-type="bibr">Döring
+  et al., 2008</xref>;
+  <xref alt="Reinert et al., 2017" rid="ref-Reinert2017" ref-type="bibr">Reinert
+  et al., 2017</xref>). SeqAn is an open source C++ library of efficient
+  algorithms and data structures for the analysis of sequences with a
+  focus on biological data. It has been used for many popular
+  bioinformatics tools, including Bowtie2
+  (<xref alt="Langmead &amp; Salzberg, 2012" rid="ref-Langmead2012" ref-type="bibr">Langmead
+  &amp; Salzberg, 2012</xref>) and Tophat
+  (<xref alt="Trapnell et al., 2009" rid="ref-Trapnell2009" ref-type="bibr">Trapnell
+  et al., 2009</xref>). Its capabilities include efficient storage and
+  I/O of sequence data, fast algorithms for pattern matching, and much
+  more.</p>
+  <p>To date, no R package has taken advantage of SeqAn. This is due to
+  two issues. First, R for Windows is built with the mingw compiler,
+  which the SeqAn development team does not offer support for. Second,
+  SeqAn implements several custom data types in order to make the
+  library more efficient. This means that any data type in SeqAn needs
+  to have R to C++ conversion and C++ to R conversion functions written
+  for it before it can be used in R.</p>
+  <p><monospace>RSeqAn</monospace> solves both of these problems, thus
+  allowing any R researcher to use the capabilities of SeqAn in their
+  own work without need for the user to install SeqAn themselves or deal
+  with interfacing between R and C++. <monospace>RSeqAn</monospace> can
+  be installed from Bioconductor, and documentation for it can be found
+  in the package as well as
+  <ext-link ext-link-type="uri" xlink:href="https://compbiocore.github.io/RSeqAn/">online</ext-link>.</p>
+  <sec id="benchmarked-example">
+    <title>Benchmarked Example</title>
+    <p>As a proof of concept for its utility, we have benchmarked a
+    function (searching for adapter contamination) from
+    <monospace>qckitfastq</monospace>, a package that uses RSeqAn for
+    quality control on bioinformatics data compared to
+    <monospace>ShortRead</monospace>
+    (<xref alt="Morgan et al., 2009" rid="ref-Morgan2009" ref-type="bibr">Morgan
+    et al., 2009</xref>), another package on Bioconductor serving the
+    same function that is purely written in R (Table 1). As can be seen,
+    computing adapter content through <monospace>qckitfastq</monospace>
+    is much faster than <monospace>ShortRead</monospace>.</p>
+    <table-wrap>
+      <caption>
+        <p>Benchmark results of qckitfastq, which uses RSeqAn, and
+        ShortRead, which does not against a test file from each
+        package.</p>
+      </caption>
+      <table>
+        <colgroup>
+          <col width="22%" />
+          <col width="16%" />
+          <col width="18%" />
+          <col width="12%" />
+          <col width="13%" />
+          <col width="15%" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th align="center">File</th>
+            <th align="center">Package</th>
+            <th align="left">replications</th>
+            <th align="left">elapsed</th>
+            <th align="right">user.self</th>
+            <th align="center">sys.self</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="center"><bold>E-MTAB-1147</bold></td>
+            <td align="center">ShortRead</td>
+            <td align="left">100</td>
+            <td align="left">13.3</td>
+            <td align="right">11.58</td>
+            <td align="center">1.37</td>
+          </tr>
+          <tr>
+            <td align="center"></td>
+            <td align="center">qckitfastq</td>
+            <td align="left">100</td>
+            <td align="left">5.159</td>
+            <td align="right">4.902</td>
+            <td align="center">0.091</td>
+          </tr>
+          <tr>
+            <td align="center"><bold>test.fq.gz</bold></td>
+            <td align="center">ShortRead</td>
+            <td align="left">100</td>
+            <td align="left">6.612</td>
+            <td align="right">5.739</td>
+            <td align="center">0.567</td>
+          </tr>
+          <tr>
+            <td align="center"></td>
+            <td align="center">qckitfastq</td>
+            <td align="left">100</td>
+            <td align="left">0.195</td>
+            <td align="right">0.105</td>
+            <td align="center">0.019</td>
+          </tr>
+        </tbody>
+      </table>
+    </table-wrap>
+  </sec>
+  <sec id="acknowledgments">
+    <title>Acknowledgments</title>
+    <p>Thanks to Ashok Ragavendran for the concept of using SeqAn in R
+    packages to speed up functions. Thanks to Fernando Gelin for help
+    with the documentation and style. This publication was supported by
+    an Institutional Development Award (IDeA) from the National
+    Institute of General Medical Sciences of the National Institutes of
+    Health under grant number P20GM109035.</p>
+  </sec>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Doring2008">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Döring</surname><given-names>Andreas</given-names></name>
+          <name><surname>Weese</surname><given-names>David</given-names></name>
+          <name><surname>Rausch</surname><given-names>Tobias</given-names></name>
+          <name><surname>Reinert</surname><given-names>Knut</given-names></name>
+        </person-group>
+        <article-title>SeqAn an efficient, generic C++ library for sequence analysis</article-title>
+        <source>BMC Bioinformatics</source>
+        <year iso-8601-date="2008">2008</year>
+        <isbn>1471-2105 (Linking)</isbn>
+        <issn>14712105</issn>
+        <uri>https://arxiv.org/abs/1105.1581</uri>
+        <pub-id pub-id-type="doi">10.1186/1471-2105-9-11</pub-id>
+        <pub-id pub-id-type="pmid">18184432</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Eddelbuettel2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Eddelbuettel</surname><given-names>Dirk</given-names></name>
+          <name><surname>Balamuta</surname><given-names>James Joseph</given-names></name>
+        </person-group>
+        <article-title>Extending R with C++: A Brief Introduction to Rcpp</article-title>
+        <source>American Statistician</source>
+        <year iso-8601-date="2018">2018</year>
+        <isbn>9781479968909</isbn>
+        <issn>15372731</issn>
+        <pub-id pub-id-type="doi">10.1080/00031305.2017.1375990</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Huber2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Huber</surname><given-names>Wolfgang</given-names></name>
+          <name><surname>Carey</surname><given-names>Vincent J.</given-names></name>
+          <name><surname>Gentleman</surname><given-names>Robert</given-names></name>
+          <name><surname>Anders</surname><given-names>Simon</given-names></name>
+          <name><surname>Carlson</surname><given-names>Marc</given-names></name>
+          <name><surname>Carvalho</surname><given-names>Benilton S.</given-names></name>
+          <name><surname>Bravo</surname><given-names>Hector Corrada</given-names></name>
+          <name><surname>Davis</surname><given-names>Sean</given-names></name>
+          <name><surname>Gatto</surname><given-names>Laurent</given-names></name>
+          <name><surname>Girke</surname><given-names>Thomas</given-names></name>
+          <name><surname>Gottardo</surname><given-names>Raphael</given-names></name>
+          <name><surname>Hahne</surname><given-names>Florian</given-names></name>
+          <name><surname>Hansen</surname><given-names>Kasper D.</given-names></name>
+          <name><surname>Irizarry</surname><given-names>Rafael A.</given-names></name>
+          <name><surname>Lawrence</surname><given-names>Michael</given-names></name>
+          <name><surname>Love</surname><given-names>Michael I.</given-names></name>
+          <name><surname>MaCdonald</surname><given-names>James</given-names></name>
+          <name><surname>Obenchain</surname><given-names>Valerie</given-names></name>
+          <name><surname>Oles̈</surname><given-names>Andrzej K.</given-names></name>
+          <name><surname>Pagès</surname><given-names>Hervé</given-names></name>
+          <name><surname>Reyes</surname><given-names>Alejandro</given-names></name>
+          <name><surname>Shannon</surname><given-names>Paul</given-names></name>
+          <name><surname>Smyth</surname><given-names>Gordon K.</given-names></name>
+          <name><surname>Tenenbaum</surname><given-names>Dan</given-names></name>
+          <name><surname>Waldron</surname><given-names>Levi</given-names></name>
+          <name><surname>Morgan</surname><given-names>Martin</given-names></name>
+        </person-group>
+        <article-title>Orchestrating high-throughput genomic analysis with Bioconductor</article-title>
+        <source>Nature Methods</source>
+        <year iso-8601-date="2015">2015</year>
+        <isbn>1548-7091</isbn>
+        <issn>15487105</issn>
+        <uri>https://arxiv.org/abs/9809069v1</uri>
+        <pub-id pub-id-type="doi">10.1038/nmeth.3252</pub-id>
+        <pub-id pub-id-type="pmid">25633503</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Langmead2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Langmead</surname><given-names>Ben</given-names></name>
+          <name><surname>Salzberg</surname><given-names>Steven L</given-names></name>
+        </person-group>
+        <article-title>Fast gapped-read alignment with Bowtie 2.</article-title>
+        <source>Nature methods</source>
+        <year iso-8601-date="2012">2012</year>
+        <isbn>1548-7105 (Electronic) 1548-7091 (Linking)</isbn>
+        <issn>15487091</issn>
+        <uri>https://arxiv.org/abs/{\#}14603</uri>
+        <pub-id pub-id-type="doi">10.1038/nmeth.1923</pub-id>
+        <pub-id pub-id-type="pmid">22388286</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Morgan2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Morgan</surname><given-names>Martin</given-names></name>
+          <name><surname>Anders</surname><given-names>Simon</given-names></name>
+          <name><surname>Lawrence</surname><given-names>Michael</given-names></name>
+          <name><surname>Aboyoun</surname><given-names>Patrick</given-names></name>
+          <name><surname>Pagès</surname><given-names>Hervé</given-names></name>
+          <name><surname>Gentleman</surname><given-names>Robert</given-names></name>
+        </person-group>
+        <article-title>ShortRead: A Bioconductor package for input, quality assessment and exploration of high-throughput sequence data</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume>25</volume>
+        <uri>http://dx.doi.org10.1093/bioinformatics/btp450</uri>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btp450</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Reinert2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Reinert</surname><given-names>Knut</given-names></name>
+          <name><surname>Dadi</surname><given-names>Temesgen Hailemariam</given-names></name>
+          <name><surname>Ehrhardt</surname><given-names>Marcel</given-names></name>
+          <name><surname>Hauswedell</surname><given-names>Hannes</given-names></name>
+          <name><surname>Mehringer</surname><given-names>Svenja</given-names></name>
+          <name><surname>Rahn</surname><given-names>René</given-names></name>
+          <name><surname>Kim</surname><given-names>Jongkyu</given-names></name>
+          <name><surname>Pockrandt</surname><given-names>Christopher</given-names></name>
+          <name><surname>Winkler</surname><given-names>Jörg</given-names></name>
+          <name><surname>Siragusa</surname><given-names>Enrico</given-names></name>
+          <name><surname>Urgese</surname><given-names>Gianvito</given-names></name>
+          <name><surname>Weese</surname><given-names>David</given-names></name>
+        </person-group>
+        <article-title>The SeqAn C++ template library for efficient sequence analysis: A resource for programmers</article-title>
+        <source>Journal of Biotechnology</source>
+        <year iso-8601-date="2017">2017</year>
+        <isbn>0168-1656</isbn>
+        <issn>18734863</issn>
+        <pub-id pub-id-type="doi">10.1016/j.jbiotec.2017.07.017</pub-id>
+        <pub-id pub-id-type="pmid">28888961</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Sridharan2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sridharan</surname><given-names>Shriram</given-names></name>
+        </person-group>
+        <article-title>Profiling R on a Contemporary Processor</article-title>
+        <source>Proceedings of the VLDB Endowment</source>
+        <year iso-8601-date="2015">2015</year>
+        <issn>21508097</issn>
+        <pub-id pub-id-type="doi">10.14778/2735471.2735478</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Trapnell2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Trapnell</surname><given-names>Cole</given-names></name>
+          <name><surname>Pachter</surname><given-names>Lior</given-names></name>
+          <name><surname>Salzberg</surname><given-names>Steven L.</given-names></name>
+        </person-group>
+        <article-title>TopHat: Discovering splice junctions with RNA-Seq</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2009">2009</year>
+        <isbn>1367-4811 (Electronic)$\backslash$r1367-4803 (Linking)</isbn>
+        <issn>13674803</issn>
+        <uri>https://arxiv.org/abs/9605103</uri>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btp120</pub-id>
+        <pub-id pub-id-type="pmid">19289445</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

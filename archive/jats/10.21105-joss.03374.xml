@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3374</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03374</article-id>
+<title-group>
+<article-title>JPhyloRef: a tool for testing and resolving
+phyloreferences</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-0587-0454</contrib-id>
+<string-name>Gaurav Vaidya</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-7157-9414</contrib-id>
+<string-name>Nico Cellinese</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-9107-0714</contrib-id>
+<string-name>Hilmar Lapp</string-name>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Renaissance Computing Institute, University of North
+Carolina, Chapel Hill, NC, USA</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Florida Museum of Natural History, University of Florida,
+Gainesville, FL, USA</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Center for Genomic and Computational Biology, Duke
+University, Durham, NC, USA</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-04-15">
+<day>15</day>
+<month>4</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>64</issue>
+<fpage>3374</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>clade definitions</kwd>
+<kwd>phyloreferences</kwd>
+<kwd>continuous integration testing</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>JPhyloRef is a command line tool as well as a web service for
+  reasoning with ontologies containing logical definitions of clades,
+  called phyloreferences, and their accompanying reference phylogenetic
+  trees. It has two main goals. The primary one is to facilitate
+  automated testing that the semantics of the logical definitions imply
+  (“resolve to”) the correct nodes in the reference tree as clade
+  ancestors. The secondary goal is to enable integration with external
+  tools that need to obtain the clade ancestor node(s) resulting from a
+  given ontology of phyloreferences and reference tree(s). When run as
+  part of an automated testing workflow, JPhyloRef reports test results
+  in the cross-platform Test Anything Protocol (TAP) format. When used
+  to find clade ancestor nodes implied by logical clade definitions,
+  results are returned as a JSON object. JPhyloRef uses the OWL API
+  reference library for reading Web Ontology Language (OWL) ontologies,
+  and for the actual ontology reasoning step it uses an external and
+  configurable OWL reasoner.</p>
+</sec>
+<sec id="background">
+  <title>Background</title>
+  <p>In evolutionary biology, groups of organisms consisting of an
+  ancestor and all of its descendants (“clades”) are a fundamental unit
+  for understanding evolution and describing biodiversity
+  (<xref alt="Queiroz, 2007" rid="ref-De_Queiroz2007-xm" ref-type="bibr">Queiroz,
+  2007</xref>). Clades are defined based on shared ancestry. This
+  provides the theoretical foundation for the semantics of taxon
+  concepts to be defined and reproducibly resolved within a hypothesis
+  of evolutionary relationships, that is, a phylogeny
+  (<xref alt="Queiroz, 1992" rid="ref-De_Queiroz1992-vy" ref-type="bibr">Queiroz,
+  1992</xref>;
+  <xref alt="Queiroz &amp; Gauthier, 1992" rid="ref-De_Queiroz1992-oq" ref-type="bibr">Queiroz
+  &amp; Gauthier, 1992</xref>,
+  <xref alt="1990" rid="ref-De_Queiroz1990-ho" ref-type="bibr">1990</xref>).
+  We have proposed a mechanism, called Phyloreferencing, for
+  representing clade definitions as structured data with fully
+  machine-processable semantics, using the Web Ontology Language (OWL)
+  (<xref alt="W3C OWL Working Group, 2012" rid="ref-W3C_OWL_Working_Group2012-we" ref-type="bibr">W3C
+  OWL Working Group, 2012</xref>). We refer to such
+  machine-interpretable clade definitions as “phyloreferences”
+  (<xref alt="Cellinese et al., 2021" rid="ref-Cellinese2021-gp" ref-type="bibr">Cellinese
+  et al., 2021</xref>).</p>
+  <p>Because phyloreferences have an OWL ontology representation in the
+  form of logically defined classes, combining them with an OWL
+  representation of a phylogenetic tree allows an OWL reasoner to infer,
+  based on their logical definitions, which nodes in the phylogeny, if
+  any, instantiate each phyloreference. We refer to this logical
+  inference as “resolving a phyloreference”.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Clade definitions are normally created and published in the form of
+  natural language text, and in the context of a phylogenetic
+  hypothesis, represented by the so-called reference phylogeny. When
+  digitized to a phyloreference, usually through a process of manual
+  curation, a key question in quality control of the digitization
+  product as well as the involved ontologies and the generated logical
+  expressions arises from one of the founding premises of
+  phyloreferences: given that phyloreferences render the semantics of
+  their represented clades machine-interpretable, can a computational
+  algorithm test whether a phyloreference resolves, and only resolves to
+  the node in the reference phylogeny that the original authors of the
+  published clade definition designate as the expected node? We built
+  JPhyloRef to enable this type of test, and to allow integrating such
+  tests into automated testing frameworks. We also needed other tools to
+  programmatically answer for a given ontology of phyloreferences and an
+  accompanying phylogeny, which phyloreferences resolve to which nodes
+  (as clade ancestors) in the phylogeny.</p>
+</sec>
+<sec id="jphyloref-feature-overview">
+  <title>JPhyloRef feature overview</title>
+  <p>JPhyloRef is a command-line tool written in Java. When run with the
+  <monospace>test</monospace> command with an OWL ontology containing
+  phyloreferences as well as reference phylogenies as input, JPhyloRef
+  identifies all the phyloreferences within this ontology, compares for
+  each one the inferred phylogeny node(s) to the expected one, and
+  determines success (inferred node identical to expected) or failure
+  (no inferred node, or inferred node different from expected). To
+  better facilitate use in automated continuous integration testing,
+  JPhyloRef also allows for phyloreferences to be marked as draft
+  (resulting in an “incomplete” test status), or as to be skipped (by no
+  nodes having been annotated as an expected resolution of a particular
+  phyloreference). These test results are reported in the Test Anything
+  Protocol (TAP) format (https://testanything.org/), a cross-platform
+  format for reporting test results. JPhyloRef will also return an exit
+  code indicating success (0), failure (the number of failed
+  phyloreferences as a positive integer) or an ontology containing no
+  phyloreferences (-1, interpreted as 255 by POSIX-compatible operating
+  systems).</p>
+  <p>Internally, JPhyloRef relies on an external OWL reasoner (which can
+  be configured) to perform the actual OWL inferences, with which it
+  communicates using the OWL API 4.2.7
+  (<xref alt="Horridge &amp; Bechhofer, 2011" rid="ref-Horridge2011-fu" ref-type="bibr">Horridge
+  &amp; Bechhofer, 2011</xref>). We strongly recommend to use ELK
+  (<xref alt="Kazakov et al., 2014" rid="ref-Kazakov2014-uk" ref-type="bibr">Kazakov
+  et al., 2014</xref>), a reasoner for the OWL-EL profile, which is
+  sufficient for the inferences necessary for phyloreference resolution.
+  In our experience, reasoners for more expressive profiles, such as
+  OWL-DL reasoners, do not perform efficiently enough even for modestly
+  sized ontologies of phyloreferences.</p>
+  <p>To support integrating Phyloreferencing with other tools, JPhyloRef
+  includes two additional commands: <monospace>resolve</monospace> and
+  <monospace>webserver</monospace>. Using the
+  <monospace>resolve</monospace> command with an input of an OWL
+  ontology in any of the supported formats will result in a JSON object
+  whose keys are the IRIs of all the phyloreferences in the ontology
+  that resolved to any nodes, and whose values are lists of the IRIs of
+  the phylogeny nodes that they resolved to. Using the
+  <monospace>webserver</monospace> command starts an HTTP server on the
+  hostname and TCP port specified in the command line arguments. This
+  webserver provides a POST endpoint at <monospace>/reason</monospace>
+  that can be used to submit OWL ontologies in JSON-LD format for
+  reasoning, which returns a JSON object in the same format as produced
+  by the <monospace>resolve</monospace> command. Neither of these
+  commands return test statuses for phyloreferences.</p>
+  <p>JPhyloRef is currently in active use for integrating the
+  digitization of clade definitions in the form of phyloreferences into
+  an automated testing framework, as well as for resolving
+  phyloreferences on the command line. For example, we use it in the
+  continuous integration testing infrastructure of the phyx.js
+  JavaScript library (https://github.com/phyloref/phyx.js/actions),
+  where the output from the <monospace>test</monospace> command is
+  interpreted by a JavaScript-based TAP library to ensure that
+  phyloreferences in example OWL ontology files resolve as expected. We
+  also use the <monospace>webserver</monospace> command of JPhyloRef as
+  a backend for the Klados phyloreference curation software
+  (https://github.com/phyloref/klados), allowing the curator to submit
+  phyloreferences created from user input or a publication, along with
+  associated phylogenies, to a backend server running JPhyloRef for
+  resolution. The source code for JPhyloRef has been archived to Zenodo
+  (<xref alt="Vaidya &amp; Lapp, 2021" rid="ref-gaurav_vaidya_2021_4697965" ref-type="bibr">Vaidya
+  &amp; Lapp, 2021</xref>).</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This work was funded by the US National Science Foundation through
+  collaborative grants
+  <ext-link ext-link-type="uri" xlink:href="http://www.nsf.gov/awardsearch/showAward?AWD_ID=1458484">DBI-1458484</ext-link>
+  and
+  <ext-link ext-link-type="uri" xlink:href="http://www.nsf.gov/awardsearch/showAward?AWD_ID=1458604">DBI-1458604</ext-link>
+  to Hilmar Lapp (Duke University) and Nico Cellinese (University of
+  Florida), respectively.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Cellinese2021-gp">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cellinese</surname><given-names>Nico</given-names></name>
+          <name><surname>Conix</surname><given-names>Stijn</given-names></name>
+          <name><surname>Lapp</surname><given-names>Hilmar</given-names></name>
+        </person-group>
+        <article-title>Phyloreferences: Tree-Native, Reproducible, and Machine-Interpretable Taxon Concepts</article-title>
+        <source>Philosophy, Theory and Practice in Biology</source>
+        <year iso-8601-date="2021">2021</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-De_Queiroz1992-oq">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Queiroz</surname><given-names>Kevin de</given-names></name>
+          <name><surname>Gauthier</surname><given-names>Jacques</given-names></name>
+        </person-group>
+        <article-title>Phylogenetic taxonomy</article-title>
+        <source>Annu. Rev. Ecol. Syst.</source>
+        <publisher-name>Annual Reviews</publisher-name>
+        <year iso-8601-date="1992-11">1992</year><month>11</month>
+        <volume>23</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1146/annurev.es.23.110192.002313</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-De_Queiroz1992-vy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Queiroz</surname><given-names>Kevin de</given-names></name>
+        </person-group>
+        <article-title>Phylogenetic definitions and taxonomic philosophy</article-title>
+        <source>Biol. Philos.</source>
+        <year iso-8601-date="1992">1992</year>
+        <volume>7</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1007/BF00129972</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-De_Queiroz1990-ho">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Queiroz</surname><given-names>Kevin de</given-names></name>
+          <name><surname>Gauthier</surname><given-names>Jacques</given-names></name>
+        </person-group>
+        <article-title>Phylogeny as a central principle in taxonomy: Phylogenetic definitions of taxon names</article-title>
+        <source>Syst. Zool.</source>
+        <publisher-name>Oxford University Press (OUP)</publisher-name>
+        <year iso-8601-date="1990-12">1990</year><month>12</month>
+        <volume>39</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.2307/2992353</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Kazakov2014-uk">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kazakov</surname><given-names>Yevgeny</given-names></name>
+          <name><surname>Krötzsch</surname><given-names>Markus</given-names></name>
+          <name><surname>Simančı́k</surname><given-names>František</given-names></name>
+        </person-group>
+        <article-title>The incredible ELK: From polynomial procedures to efficient reasoning with \mathcal{EL} ontologies</article-title>
+        <source>J. Autom. Reasoning</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>53</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1007/s10817-013-9296-3</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-W3C_OWL_Working_Group2012-we">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <string-name>W3C OWL Working Group</string-name>
+        </person-group>
+        <article-title>OWL 2 web ontology language document overview</article-title>
+        <publisher-name>World Wide Web Consortium (W3C)</publisher-name>
+        <year iso-8601-date="2012-12">2012</year><month>12</month>
+        <uri>https://www.w3.org/TR/owl2-overview/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-De_Queiroz2007-xm">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Queiroz</surname><given-names>Kevin de</given-names></name>
+        </person-group>
+        <article-title>Toward an integrated system of clade names</article-title>
+        <source>Syst. Biol.</source>
+        <year iso-8601-date="2007-12">2007</year><month>12</month>
+        <volume>56</volume>
+        <issue>6</issue>
+        <pub-id pub-id-type="doi">10.1080/10635150701656378</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Horridge2011-fu">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Horridge</surname><given-names>Matthew</given-names></name>
+          <name><surname>Bechhofer</surname><given-names>Sean</given-names></name>
+        </person-group>
+        <article-title>The OWL API: A Java API for OWL ontologies</article-title>
+        <source>Semant. Web</source>
+        <publisher-name>IOS Press</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <volume>2</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.3233/SW-2011-0025</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gaurav_vaidya_2021_4697965">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Vaidya</surname><given-names>Gaurav</given-names></name>
+          <name><surname>Lapp</surname><given-names>Hilmar</given-names></name>
+        </person-group>
+        <source>phyloref/jphyloref: JPhyloRef v1.1.1</source>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2021-08">2021</year><month>08</month>
+        <uri>https://doi.org/10.5281/zenodo.5178723</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.5178723</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

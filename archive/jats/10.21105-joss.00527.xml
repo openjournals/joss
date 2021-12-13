@@ -1,0 +1,866 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">527</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00527</article-id>
+<title-group>
+<article-title>reper: Genome-wide identification, classification and
+quantification of repetitive elements without an assembled
+genome</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-8669-0000</contrib-id>
+<string-name>Niklas Terhoeven</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Jörg Schultz</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-0022-320X</contrib-id>
+<string-name>Thomas Hackl</string-name>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Center for Computational and Thoeretical Biology,
+Universität Würzburg</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Lehrstuhl für Bioinformatik, Universität
+Würzburg</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Department of Civil and Environmental Engineering,
+Massachusetts Institute of Technology</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2017-12-07">
+<day>7</day>
+<month>12</month>
+<year>2017</year>
+</pub-date>
+<volume>3</volume>
+<issue>22</issue>
+<fpage>527</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>repeats</kwd>
+<kwd>transposons</kwd>
+<kwd>kmer</kwd>
+<kwd>pipeline</kwd>
+<kwd>repeat landscape</kwd>
+<kwd>NGS</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Repetitive elements constitute a substantial fraction of most
+  eukaryotic genomes. Still, their actual amount differs strongly
+  between species. For example, the genome of <italic>Saccharomyces
+  cervisiae</italic> contains only about 3 % repeats
+  (<xref alt="Kim et al., 1998" rid="ref-kim_transposable_1998" ref-type="bibr">Kim
+  et al., 1998</xref>), <italic>Arabidopsis</italic> harbours 14 %
+  (<xref alt="The Arabidopsis Genome Initiative, 2000" rid="ref-the_arabidopsis_genome_initiative_analysis_2000" ref-type="bibr">The
+  Arabidopsis Genome Initiative, 2000</xref>), human 50 %
+  (<xref alt="Lander et al., 2001" rid="ref-lander_initial_2001" ref-type="bibr">Lander
+  et al., 2001</xref>) and wheat even 90 %
+  (<xref alt="Clavijo et al., 2017" rid="ref-clavijo_improved_2017" ref-type="bibr">Clavijo
+  et al., 2017</xref>).</p>
+  <p>Annotation and Classification of these elements is a pivotal step
+  in the annotation of each genome. Furthermore, tracing their history
+  can give ample insights into the evolution of a genome and thereby, of
+  a species. Accordingly, different methods for repeat annotation have
+  been developed
+  (<xref alt="Benson, 1999" rid="ref-benson_tandem_1999" ref-type="bibr">Benson,
+  1999</xref>;
+  <xref alt="Gymrek et al., 2012" rid="ref-gymrek_lobstrU003A_2012" ref-type="bibr">Gymrek
+  et al., 2012</xref>;
+  <xref alt="Smit et al., 2013" rid="ref-smit_repeatmasker_2013" ref-type="bibr">Smit
+  et al., 2013</xref>). Still, typically they rely on an assembled
+  genome sequence – a prerequisite which can lead to erroneous results.
+  As repetitive elements are highly similar assembly algorithms will
+  collapse repeat variants into a single occurrence or not assemble the
+  repetitive regions at all. Thus, the annotation of repeat regions and
+  thereby the characterization of their content and diversity solely
+  based on an assembled genome sequence can give misleading results.</p>
+  <p>To address this challenge, we developed reper, a kmer based method
+  to detect, classify and quantify repeats in next generation sequencing
+  (NGS) data without the need of a genome assembly. Our pipeline samples
+  reads with high kmer coverage directly from the NGS dataset. The kmer
+  counts are acquired using jellyfish
+  (<xref alt="Marçais &amp; Kingsford, 2011" rid="ref-marcais_fast_2011" ref-type="bibr">Marçais
+  &amp; Kingsford, 2011</xref>). This subset is assembled using the
+  transcriptome assembler Trinity
+  (<xref alt="Grabherr et al., 2011" rid="ref-grabherr_full-length_2011" ref-type="bibr">Grabherr
+  et al., 2011</xref>), allowing reper to recover repeat variants at a
+  high resolution. To create exemplar sequences of each repeat in the
+  genome, the assembled repeats are clustered using cd-hit
+  (<xref alt="Fu et al., 2012" rid="ref-fu_cd-hitU003A_2012" ref-type="bibr">Fu
+  et al., 2012</xref>;
+  <xref alt="W. Li &amp; Godzik, 2006" rid="ref-li_cd-hitU003A_2006" ref-type="bibr">W.
+  Li &amp; Godzik, 2006</xref>). These are further classified based on
+  homology to known repeats using multiple blast
+  (<xref alt="Camacho et al., 2009" rid="ref-camacho_blast" ref-type="bibr">Camacho
+  et al., 2009</xref>) searches. Since reper was developed with a focus
+  on plant data, the default classification libraries are REdat
+  (<xref alt="Nussbaumer et al., 2012" rid="ref-nussbaumer_mips_2012" ref-type="bibr">Nussbaumer
+  et al., 2012</xref>) for repeats, and refseq
+  (<xref alt="O’Leary et al., 2016" rid="ref-oleary_reference_2016" ref-type="bibr">O’Leary
+  et al., 2016</xref>) for chloroplast and mitochondrial sequences. The
+  reference database, however, can easily be customized to the user’s
+  needs. A configuration script for the popular, but proprietary
+  database repbase is provided with the package as well. Next, the
+  repeat content is quantified on sequence, cluster and class level
+  based on read mappings using bowtie2 and samtools
+  (<xref alt="Langmead &amp; Salzberg, 2012" rid="ref-langmead_fast_2012" ref-type="bibr">Langmead
+  &amp; Salzberg, 2012</xref>;
+  <xref alt="H. Li et al., 2009" rid="ref-li_sequence_2009" ref-type="bibr">H.
+  Li et al., 2009</xref>). Finally, the repeat landscape can be analyzed
+  and graphically represented with the R script provided with the
+  pipeline. Currently, reper is specifically customized to work with
+  paired-end Illumina data, but support of long-read technologies such
+  as PacBio and Nanopore is in development.</p>
+  <p>To date, there is only a single software package with a similar
+  functionality to reper, namely dnaPipeTE
+  (<xref alt="Goubert et al., 2015" rid="ref-goubert_novo_2015" ref-type="bibr">Goubert
+  et al., 2015</xref>). Still, it relies on dependencies like
+  RepeatMasker, which has to be installed independently as well as the
+  proprietary repeat database repbase by giri. Contrasting, The reper
+  source code is available on
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/nterhoeven/reper">github</ext-link>
+  under the MIT license. To further ease installation and usage, a
+  Docker container with a complete reper installation is also provided.
+  Since reper is usually run in an HPC environment where users don’t
+  have root or Docker rights, we furthermore made a singularity image
+  available which can be used with standard user permissions.</p>
+  <p>We are currently using reper to analyze the repeat content in
+  different plant genome sequencing projects. An example using
+  <italic>Beta vulgaris</italic> data is given in the tutorial section
+  of the
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/nterhoeven/reper/wiki">reper
+  wiki</ext-link>.</p>
+  <fig>
+    <caption><p>schematic overview of workflow</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="workflow.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We would like to thank Markus Ankenbrand and Frank Förster for
+  valuable discussions and their support and advice on different topics
+  like Docker and pipeline design.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-lander_initial_2001">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lander</surname><given-names>Eric S.</given-names></name>
+          <name><surname>Linton</surname><given-names>Lauren M.</given-names></name>
+          <name><surname>Birren</surname><given-names>Bruce</given-names></name>
+          <name><surname>Nusbaum</surname><given-names>Chad</given-names></name>
+          <name><surname>Zody</surname><given-names>Michael C.</given-names></name>
+          <name><surname>Baldwin</surname><given-names>Jennifer</given-names></name>
+          <name><surname>Devon</surname><given-names>Keri</given-names></name>
+          <name><surname>Dewar</surname><given-names>Ken</given-names></name>
+          <name><surname>Doyle</surname><given-names>Michael</given-names></name>
+          <name><surname>FitzHugh</surname><given-names>William</given-names></name>
+          <name><surname>Funke</surname><given-names>Roel</given-names></name>
+          <name><surname>Gage</surname><given-names>Diane</given-names></name>
+          <name><surname>Harris</surname><given-names>Katrina</given-names></name>
+          <name><surname>Heaford</surname><given-names>Andrew</given-names></name>
+          <name><surname>Howland</surname><given-names>John</given-names></name>
+          <name><surname>Kann</surname><given-names>Lisa</given-names></name>
+          <name><surname>Lehoczky</surname><given-names>Jessica</given-names></name>
+          <name><surname>LeVine</surname><given-names>Rosie</given-names></name>
+          <name><surname>McEwan</surname><given-names>Paul</given-names></name>
+          <name><surname>McKernan</surname><given-names>Kevin</given-names></name>
+          <name><surname>Meldrim</surname><given-names>James</given-names></name>
+          <name><surname>Mesirov</surname><given-names>Jill P.</given-names></name>
+          <name><surname>Miranda</surname><given-names>Cher</given-names></name>
+          <name><surname>Morris</surname><given-names>William</given-names></name>
+          <name><surname>Naylor</surname><given-names>Jerome</given-names></name>
+          <name><surname>Raymond</surname><given-names>Christina</given-names></name>
+          <name><surname>Rosetti</surname><given-names>Mark</given-names></name>
+          <name><surname>Santos</surname><given-names>Ralph</given-names></name>
+          <name><surname>Sheridan</surname><given-names>Andrew</given-names></name>
+          <name><surname>Sougnez</surname><given-names>Carrie</given-names></name>
+          <name><surname>Stange-Thomann</surname><given-names>Nicole</given-names></name>
+          <name><surname>Stojanovic</surname><given-names>Nikola</given-names></name>
+          <name><surname>Subramanian</surname><given-names>Aravind</given-names></name>
+          <name><surname>Wyman</surname><given-names>Dudley</given-names></name>
+          <name><surname>Rogers</surname><given-names>Jane</given-names></name>
+          <name><surname>Sulston</surname><given-names>John</given-names></name>
+          <name><surname>Ainscough</surname><given-names>Rachael</given-names></name>
+          <name><surname>Beck</surname><given-names>Stephan</given-names></name>
+          <name><surname>Bentley</surname><given-names>David</given-names></name>
+          <name><surname>Burton</surname><given-names>John</given-names></name>
+          <name><surname>Clee</surname><given-names>Christopher</given-names></name>
+          <name><surname>Carter</surname><given-names>Nigel</given-names></name>
+          <name><surname>Coulson</surname><given-names>Alan</given-names></name>
+          <name><surname>Deadman</surname><given-names>Rebecca</given-names></name>
+          <name><surname>Deloukas</surname><given-names>Panos</given-names></name>
+          <name><surname>Dunham</surname><given-names>Andrew</given-names></name>
+          <name><surname>Dunham</surname><given-names>Ian</given-names></name>
+          <name><surname>Durbin</surname><given-names>Richard</given-names></name>
+          <name><surname>French</surname><given-names>Lisa</given-names></name>
+          <name><surname>Grafham</surname><given-names>Darren</given-names></name>
+          <name><surname>Gregory</surname><given-names>Simon</given-names></name>
+          <name><surname>Hubbard</surname><given-names>Tim</given-names></name>
+          <name><surname>Humphray</surname><given-names>Sean</given-names></name>
+          <name><surname>Hunt</surname><given-names>Adrienne</given-names></name>
+          <name><surname>Jones</surname><given-names>Matthew</given-names></name>
+          <name><surname>Lloyd</surname><given-names>Christine</given-names></name>
+          <name><surname>McMurray</surname><given-names>Amanda</given-names></name>
+          <name><surname>Matthews</surname><given-names>Lucy</given-names></name>
+          <name><surname>Mercer</surname><given-names>Simon</given-names></name>
+          <name><surname>Milne</surname><given-names>Sarah</given-names></name>
+          <name><surname>Mullikin</surname><given-names>James C.</given-names></name>
+          <name><surname>Mungall</surname><given-names>Andrew</given-names></name>
+          <name><surname>Plumb</surname><given-names>Robert</given-names></name>
+          <name><surname>Ross</surname><given-names>Mark</given-names></name>
+          <name><surname>Shownkeen</surname><given-names>Ratna</given-names></name>
+          <name><surname>Sims</surname><given-names>Sarah</given-names></name>
+          <name><surname>Waterston</surname><given-names>Robert H.</given-names></name>
+          <name><surname>Wilson</surname><given-names>Richard K.</given-names></name>
+          <name><surname>Hillier</surname><given-names>LaDeana W.</given-names></name>
+          <name><surname>McPherson</surname><given-names>John D.</given-names></name>
+          <name><surname>Marra</surname><given-names>Marco A.</given-names></name>
+          <name><surname>Mardis</surname><given-names>Elaine R.</given-names></name>
+          <name><surname>Fulton</surname><given-names>Lucinda A.</given-names></name>
+          <name><surname>Chinwalla</surname><given-names>Asif T.</given-names></name>
+          <name><surname>Pepin</surname><given-names>Kymberlie H.</given-names></name>
+          <name><surname>Gish</surname><given-names>Warren R.</given-names></name>
+          <name><surname>Chissoe</surname><given-names>Stephanie L.</given-names></name>
+          <name><surname>Wendl</surname><given-names>Michael C.</given-names></name>
+          <name><surname>Delehaunty</surname><given-names>Kim D.</given-names></name>
+          <name><surname>Miner</surname><given-names>Tracie L.</given-names></name>
+          <name><surname>Delehaunty</surname><given-names>Andrew</given-names></name>
+          <name><surname>Kramer</surname><given-names>Jason B.</given-names></name>
+          <name><surname>Cook</surname><given-names>Lisa L.</given-names></name>
+          <name><surname>Fulton</surname><given-names>Robert S.</given-names></name>
+          <name><surname>Johnson</surname><given-names>Douglas L.</given-names></name>
+          <name><surname>Minx</surname><given-names>Patrick J.</given-names></name>
+          <name><surname>Clifton</surname><given-names>Sandra W.</given-names></name>
+          <name><surname>Hawkins</surname><given-names>Trevor</given-names></name>
+          <name><surname>Branscomb</surname><given-names>Elbert</given-names></name>
+          <name><surname>Predki</surname><given-names>Paul</given-names></name>
+          <name><surname>Richardson</surname><given-names>Paul</given-names></name>
+          <name><surname>Wenning</surname><given-names>Sarah</given-names></name>
+          <name><surname>Slezak</surname><given-names>Tom</given-names></name>
+          <name><surname>Doggett</surname><given-names>Norman</given-names></name>
+          <name><surname>Cheng</surname><given-names>Jan-Fang</given-names></name>
+          <name><surname>Olsen</surname><given-names>Anne</given-names></name>
+          <name><surname>Lucas</surname><given-names>Susan</given-names></name>
+          <name><surname>Elkin</surname><given-names>Christopher</given-names></name>
+          <name><surname>Uberbacher</surname><given-names>Edward</given-names></name>
+          <name><surname>Frazier</surname><given-names>Marvin</given-names></name>
+          <name><surname>Gibbs</surname><given-names>Richard A.</given-names></name>
+          <name><surname>Muzny</surname><given-names>Donna M.</given-names></name>
+          <name><surname>Scherer</surname><given-names>Steven E.</given-names></name>
+          <name><surname>Bouck</surname><given-names>John B.</given-names></name>
+          <name><surname>Sodergren</surname><given-names>Erica J.</given-names></name>
+          <name><surname>Worley</surname><given-names>Kim C.</given-names></name>
+          <name><surname>Rives</surname><given-names>Catherine M.</given-names></name>
+          <name><surname>Gorrell</surname><given-names>James H.</given-names></name>
+          <name><surname>Metzker</surname><given-names>Michael L.</given-names></name>
+          <name><surname>Naylor</surname><given-names>Susan L.</given-names></name>
+          <name><surname>Kucherlapati</surname><given-names>Raju S.</given-names></name>
+          <name><surname>Nelson</surname><given-names>David L.</given-names></name>
+          <name><surname>Weinstock</surname><given-names>George M.</given-names></name>
+          <name><surname>Sakaki</surname><given-names>Yoshiyuki</given-names></name>
+          <name><surname>Fujiyama</surname><given-names>Asao</given-names></name>
+          <name><surname>Hattori</surname><given-names>Masahira</given-names></name>
+          <name><surname>Yada</surname><given-names>Tetsushi</given-names></name>
+          <name><surname>Toyoda</surname><given-names>Atsushi</given-names></name>
+          <name><surname>Itoh</surname><given-names>Takehiko</given-names></name>
+          <name><surname>Kawagoe</surname><given-names>Chiharu</given-names></name>
+          <name><surname>Watanabe</surname><given-names>Hidemi</given-names></name>
+          <name><surname>Totoki</surname><given-names>Yasushi</given-names></name>
+          <name><surname>Taylor</surname><given-names>Todd</given-names></name>
+          <name><surname>Weissenbach</surname><given-names>Jean</given-names></name>
+          <name><surname>Heilig</surname><given-names>Roland</given-names></name>
+          <name><surname>Saurin</surname><given-names>William</given-names></name>
+          <name><surname>Artiguenave</surname><given-names>Francois</given-names></name>
+          <name><surname>Brottier</surname><given-names>Philippe</given-names></name>
+          <name><surname>Bruls</surname><given-names>Thomas</given-names></name>
+          <name><surname>Pelletier</surname><given-names>Eric</given-names></name>
+          <name><surname>Robert</surname><given-names>Catherine</given-names></name>
+          <name><surname>Wincker</surname><given-names>Patrick</given-names></name>
+          <name><surname>Rosenthal</surname><given-names>André</given-names></name>
+          <name><surname>Platzer</surname><given-names>Matthias</given-names></name>
+          <name><surname>Nyakatura</surname><given-names>Gerald</given-names></name>
+          <name><surname>Taudien</surname><given-names>Stefan</given-names></name>
+          <name><surname>Rump</surname><given-names>Andreas</given-names></name>
+          <name><surname>Smith</surname><given-names>Douglas R.</given-names></name>
+          <name><surname>Doucette-Stamm</surname><given-names>Lynn</given-names></name>
+          <name><surname>Rubenfield</surname><given-names>Marc</given-names></name>
+          <name><surname>Weinstock</surname><given-names>Keith</given-names></name>
+          <name><surname>Lee</surname><given-names>Hong Mei</given-names></name>
+          <name><surname>Dubois</surname><given-names>JoAnn</given-names></name>
+          <name><surname>Yang</surname><given-names>Huanming</given-names></name>
+          <name><surname>Yu</surname><given-names>Jun</given-names></name>
+          <name><surname>Wang</surname><given-names>Jian</given-names></name>
+          <name><surname>Huang</surname><given-names>Guyang</given-names></name>
+          <name><surname>Gu</surname><given-names>Jun</given-names></name>
+          <name><surname>Hood</surname><given-names>Leroy</given-names></name>
+          <name><surname>Rowen</surname><given-names>Lee</given-names></name>
+          <name><surname>Madan</surname><given-names>Anup</given-names></name>
+          <name><surname>Qin</surname><given-names>Shizen</given-names></name>
+          <name><surname>Davis</surname><given-names>Ronald W.</given-names></name>
+          <name><surname>Federspiel</surname><given-names>Nancy A.</given-names></name>
+          <name><surname>Abola</surname><given-names>A. Pia</given-names></name>
+          <name><surname>Proctor</surname><given-names>Michael J.</given-names></name>
+          <name><surname>Roe</surname><given-names>Bruce A.</given-names></name>
+          <name><surname>Chen</surname><given-names>Feng</given-names></name>
+          <name><surname>Pan</surname><given-names>Huaqin</given-names></name>
+          <name><surname>Ramser</surname><given-names>Juliane</given-names></name>
+          <name><surname>Lehrach</surname><given-names>Hans</given-names></name>
+          <name><surname>Reinhardt</surname><given-names>Richard</given-names></name>
+          <name><surname>McCombie</surname><given-names>W. Richard</given-names></name>
+          <name><surname>Bastide</surname><given-names>Melissa de la</given-names></name>
+          <name><surname>Dedhia</surname><given-names>Neilay</given-names></name>
+          <name><surname>Blöcker</surname><given-names>Helmut</given-names></name>
+          <name><surname>Hornischer</surname><given-names>Klaus</given-names></name>
+          <name><surname>Nordsiek</surname><given-names>Gabriele</given-names></name>
+          <name><surname>Agarwala</surname><given-names>Richa</given-names></name>
+          <name><surname>Aravind</surname><given-names>L.</given-names></name>
+          <name><surname>Bailey</surname><given-names>Jeffrey A.</given-names></name>
+          <name><surname>Bateman</surname><given-names>Alex</given-names></name>
+          <name><surname>Batzoglou</surname><given-names>Serafim</given-names></name>
+          <name><surname>Birney</surname><given-names>Ewan</given-names></name>
+          <name><surname>Bork</surname><given-names>Peer</given-names></name>
+          <name><surname>Brown</surname><given-names>Daniel G.</given-names></name>
+          <name><surname>Burge</surname><given-names>Christopher B.</given-names></name>
+          <name><surname>Cerutti</surname><given-names>Lorenzo</given-names></name>
+          <name><surname>Chen</surname><given-names>Hsiu-Chuan</given-names></name>
+          <name><surname>Church</surname><given-names>Deanna</given-names></name>
+          <name><surname>Clamp</surname><given-names>Michele</given-names></name>
+          <name><surname>Copley</surname><given-names>Richard R.</given-names></name>
+          <name><surname>Doerks</surname><given-names>Tobias</given-names></name>
+          <name><surname>Eddy</surname><given-names>Sean R.</given-names></name>
+          <name><surname>Eichler</surname><given-names>Evan E.</given-names></name>
+          <name><surname>Furey</surname><given-names>Terrence S.</given-names></name>
+          <name><surname>Galagan</surname><given-names>James</given-names></name>
+          <name><surname>Gilbert</surname><given-names>James G. R.</given-names></name>
+          <name><surname>Harmon</surname><given-names>Cyrus</given-names></name>
+          <name><surname>Hayashizaki</surname><given-names>Yoshihide</given-names></name>
+          <name><surname>Haussler</surname><given-names>David</given-names></name>
+          <name><surname>Hermjakob</surname><given-names>Henning</given-names></name>
+          <name><surname>Hokamp</surname><given-names>Karsten</given-names></name>
+          <name><surname>Jang</surname><given-names>Wonhee</given-names></name>
+          <name><surname>Johnson</surname><given-names>L. Steven</given-names></name>
+          <name><surname>Jones</surname><given-names>Thomas A.</given-names></name>
+          <name><surname>Kasif</surname><given-names>Simon</given-names></name>
+          <name><surname>Kaspryzk</surname><given-names>Arek</given-names></name>
+          <name><surname>Kennedy</surname><given-names>Scot</given-names></name>
+          <name><surname>Kent</surname><given-names>W. James</given-names></name>
+          <name><surname>Kitts</surname><given-names>Paul</given-names></name>
+          <name><surname>Koonin</surname><given-names>Eugene V.</given-names></name>
+          <name><surname>Korf</surname><given-names>Ian</given-names></name>
+          <name><surname>Kulp</surname><given-names>David</given-names></name>
+          <name><surname>Lancet</surname><given-names>Doron</given-names></name>
+          <name><surname>Lowe</surname><given-names>Todd M.</given-names></name>
+          <name><surname>McLysaght</surname><given-names>Aoife</given-names></name>
+          <name><surname>Mikkelsen</surname><given-names>Tarjei</given-names></name>
+          <name><surname>Moran</surname><given-names>John V.</given-names></name>
+          <name><surname>Mulder</surname><given-names>Nicola</given-names></name>
+          <name><surname>Pollara</surname><given-names>Victor J.</given-names></name>
+          <name><surname>Ponting</surname><given-names>Chris P.</given-names></name>
+          <name><surname>Schuler</surname><given-names>Greg</given-names></name>
+          <name><surname>Schultz</surname><given-names>Jörg</given-names></name>
+          <name><surname>Slater</surname><given-names>Guy</given-names></name>
+          <name><surname>Smit</surname><given-names>Arian F. A.</given-names></name>
+          <name><surname>Stupka</surname><given-names>Elia</given-names></name>
+          <name><surname>Szustakowki</surname><given-names>Joseph</given-names></name>
+          <name><surname>Thierry-Mieg</surname><given-names>Danielle</given-names></name>
+          <name><surname>Thierry-Mieg</surname><given-names>Jean</given-names></name>
+          <name><surname>Wagner</surname><given-names>Lukas</given-names></name>
+          <name><surname>Wallis</surname><given-names>John</given-names></name>
+          <name><surname>Wheeler</surname><given-names>Raymond</given-names></name>
+          <name><surname>Williams</surname><given-names>Alan</given-names></name>
+          <name><surname>Wolf</surname><given-names>Yuri I.</given-names></name>
+          <name><surname>Wolfe</surname><given-names>Kenneth H.</given-names></name>
+          <name><surname>Yang</surname><given-names>Shiaw-Pyng</given-names></name>
+          <name><surname>Yeh</surname><given-names>Ru-Fang</given-names></name>
+          <name><surname>Collins</surname><given-names>Francis</given-names></name>
+          <name><surname>Guyer</surname><given-names>Mark S.</given-names></name>
+          <name><surname>Peterson</surname><given-names>Jane</given-names></name>
+          <name><surname>Felsenfeld</surname><given-names>Adam</given-names></name>
+          <name><surname>Wetterstrand</surname><given-names>Kris A.</given-names></name>
+          <name><surname>Myers</surname><given-names>Richard M.</given-names></name>
+          <name><surname>Schmutz</surname><given-names>Jeremy</given-names></name>
+          <name><surname>Dickson</surname><given-names>Mark</given-names></name>
+          <name><surname>Grimwood</surname><given-names>Jane</given-names></name>
+          <name><surname>Cox</surname><given-names>David R.</given-names></name>
+          <name><surname>Olson</surname><given-names>Maynard V.</given-names></name>
+          <name><surname>Kaul</surname><given-names>Rajinder</given-names></name>
+          <name><surname>Raymond</surname><given-names>Christopher</given-names></name>
+          <name><surname>Shimizu</surname><given-names>Nobuyoshi</given-names></name>
+          <name><surname>Kawasaki</surname><given-names>Kazuhiko</given-names></name>
+          <name><surname>Minoshima</surname><given-names>Shinsei</given-names></name>
+          <name><surname>Evans</surname><given-names>Glen A.</given-names></name>
+          <name><surname>Athanasiou</surname><given-names>Maria</given-names></name>
+          <name><surname>Schultz</surname><given-names>Roger</given-names></name>
+          <name><surname>Patrinos</surname><given-names>Aristides</given-names></name>
+          <name><surname>Morgan</surname><given-names>Michael J.</given-names></name>
+        </person-group>
+        <article-title>Initial sequencing and analysis of the human genome</article-title>
+        <source>Nature</source>
+        <year iso-8601-date="2001-02">2001</year><month>02</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-12-15">2017</year><month>12</month><day>15</day></date-in-citation>
+        <volume>409</volume>
+        <issue>6822</issue>
+        <issn>0028-0836</issn>
+        <uri>http://www.nature.com/doifinder/10.1038/35057062</uri>
+        <pub-id pub-id-type="doi">10.1038/35057062</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-the_arabidopsis_genome_initiative_analysis_2000">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>The Arabidopsis Genome Initiative</string-name>
+        </person-group>
+        <article-title>Analysis of the genome sequence of the flowering plant Arabidopsis thaliana</article-title>
+        <source>Nature</source>
+        <year iso-8601-date="2000-12">2000</year><month>12</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-12-15">2017</year><month>12</month><day>15</day></date-in-citation>
+        <volume>408</volume>
+        <issue>6814</issue>
+        <issn>0028-0836, 1476-4687</issn>
+        <uri>http://www.nature.com/articles/35048692</uri>
+        <pub-id pub-id-type="doi">10.1038/35048692</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-clavijo_improved_2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Clavijo</surname><given-names>Bernardo J.</given-names></name>
+          <name><surname>Venturini</surname><given-names>Luca</given-names></name>
+          <name><surname>Schudoma</surname><given-names>Christian</given-names></name>
+          <name><surname>Accinelli</surname><given-names>Gonzalo Garcia</given-names></name>
+          <name><surname>Kaithakottil</surname><given-names>Gemy</given-names></name>
+          <name><surname>Wright</surname><given-names>Jonathan</given-names></name>
+          <name><surname>Borrill</surname><given-names>Philippa</given-names></name>
+          <name><surname>Kettleborough</surname><given-names>George</given-names></name>
+          <name><surname>Heavens</surname><given-names>Darren</given-names></name>
+          <name><surname>Chapman</surname><given-names>Helen</given-names></name>
+          <name><surname>Lipscombe</surname><given-names>James</given-names></name>
+          <name><surname>Barker</surname><given-names>Tom</given-names></name>
+          <name><surname>Lu</surname><given-names>Fu-Hao</given-names></name>
+          <name><surname>McKenzie</surname><given-names>Neil</given-names></name>
+          <name><surname>Raats</surname><given-names>Dina</given-names></name>
+          <name><surname>Ramirez-Gonzalez</surname><given-names>Ricardo H.</given-names></name>
+          <name><surname>Coince</surname><given-names>Aurore</given-names></name>
+          <name><surname>Peel</surname><given-names>Ned</given-names></name>
+          <name><surname>Percival-Alwyn</surname><given-names>Lawrence</given-names></name>
+          <name><surname>Duncan</surname><given-names>Owen</given-names></name>
+          <name><surname>Trösch</surname><given-names>Josua</given-names></name>
+          <name><surname>Yu</surname><given-names>Guotai</given-names></name>
+          <name><surname>Bolser</surname><given-names>Dan M.</given-names></name>
+          <name><surname>Namaati</surname><given-names>Guy</given-names></name>
+          <name><surname>Kerhornou</surname><given-names>Arnaud</given-names></name>
+          <name><surname>Spannagl</surname><given-names>Manuel</given-names></name>
+          <name><surname>Gundlach</surname><given-names>Heidrun</given-names></name>
+          <name><surname>Haberer</surname><given-names>Georg</given-names></name>
+          <name><surname>Davey</surname><given-names>Robert P.</given-names></name>
+          <name><surname>Fosker</surname><given-names>Christine</given-names></name>
+          <name><surname>Palma</surname><given-names>Federica Di</given-names></name>
+          <name><surname>Phillips</surname><given-names>Andrew L.</given-names></name>
+          <name><surname>Millar</surname><given-names>A. Harvey</given-names></name>
+          <name><surname>Kersey</surname><given-names>Paul J.</given-names></name>
+          <name><surname>Uauy</surname><given-names>Cristobal</given-names></name>
+          <name><surname>Krasileva</surname><given-names>Ksenia V.</given-names></name>
+          <name><surname>Swarbreck</surname><given-names>David</given-names></name>
+          <name><surname>Bevan</surname><given-names>Michael W.</given-names></name>
+          <name><surname>Clark</surname><given-names>Matthew D.</given-names></name>
+        </person-group>
+        <article-title>An improved assembly and annotation of the allohexaploid wheat genome identifies complete families of agronomic genes and provides genomic evidence for chromosomal translocations</article-title>
+        <source>Genome Research</source>
+        <year iso-8601-date="2017-05">2017</year><month>05</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-12-15">2017</year><month>12</month><day>15</day></date-in-citation>
+        <volume>27</volume>
+        <issue>5</issue>
+        <issn>1088-9051, 1549-5469</issn>
+        <uri>http://genome.cshlp.org/lookup/doi/10.1101/gr.217117.116</uri>
+        <pub-id pub-id-type="doi">10.1101/gr.217117.116</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kim_transposable_1998">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kim</surname><given-names>Jin M.</given-names></name>
+          <name><surname>Vanguri</surname><given-names>Swathi</given-names></name>
+          <name><surname>Boeke</surname><given-names>Jef D.</given-names></name>
+          <name><surname>Gabriel</surname><given-names>Abram</given-names></name>
+          <name><surname>Voytas</surname><given-names>Daniel F.</given-names></name>
+        </person-group>
+        <article-title>Transposable Elements and Genome Organization: A Comprehensive Survey of Retrotransposons Revealed by the Complete Saccharomyces cerevisiae Genome Sequence</article-title>
+        <source>Genome Research</source>
+        <year iso-8601-date="1998-05">1998</year><month>05</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-12-15">2017</year><month>12</month><day>15</day></date-in-citation>
+        <volume>8</volume>
+        <issue>5</issue>
+        <issn>1088-9051, 1549-5469</issn>
+        <uri>http://genome.cshlp.org/lookup/doi/10.1101/gr.8.5.464</uri>
+        <pub-id pub-id-type="doi">10.1101/gr.8.5.464</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-marcais_fast_2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Marçais</surname><given-names>Guillaume</given-names></name>
+          <name><surname>Kingsford</surname><given-names>Carl</given-names></name>
+        </person-group>
+        <article-title>A fast, lock-free approach for efficient parallel counting of occurrences of k-mers</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2011-03">2011</year><month>03</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-12-15">2017</year><month>12</month><day>15</day></date-in-citation>
+        <volume>27</volume>
+        <issue>6</issue>
+        <issn>1460-2059, 1367-4803</issn>
+        <uri>https://academic.oup.com/bioinformatics/article-lookup/doi/10.1093/bioinformatics/btr011</uri>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btr011</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-grabherr_full-length_2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Grabherr</surname><given-names>Manfred G</given-names></name>
+          <name><surname>Haas</surname><given-names>Brian J</given-names></name>
+          <name><surname>Yassour</surname><given-names>Moran</given-names></name>
+          <name><surname>Levin</surname><given-names>Joshua Z</given-names></name>
+          <name><surname>Thompson</surname><given-names>Dawn A</given-names></name>
+          <name><surname>Amit</surname><given-names>Ido</given-names></name>
+          <name><surname>Adiconis</surname><given-names>Xian</given-names></name>
+          <name><surname>Fan</surname><given-names>Lin</given-names></name>
+          <name><surname>Raychowdhury</surname><given-names>Raktima</given-names></name>
+          <name><surname>Zeng</surname><given-names>Qiandong</given-names></name>
+          <name><surname>Chen</surname><given-names>Zehua</given-names></name>
+          <name><surname>Mauceli</surname><given-names>Evan</given-names></name>
+          <name><surname>Hacohen</surname><given-names>Nir</given-names></name>
+          <name><surname>Gnirke</surname><given-names>Andreas</given-names></name>
+          <name><surname>Rhind</surname><given-names>Nicholas</given-names></name>
+          <name><surname>Palma</surname><given-names>Federica di</given-names></name>
+          <name><surname>Birren</surname><given-names>Bruce W</given-names></name>
+          <name><surname>Nusbaum</surname><given-names>Chad</given-names></name>
+          <name><surname>Lindblad-Toh</surname><given-names>Kerstin</given-names></name>
+          <name><surname>Friedman</surname><given-names>Nir</given-names></name>
+          <name><surname>Regev</surname><given-names>Aviv</given-names></name>
+        </person-group>
+        <article-title>Full-length transcriptome assembly from RNA-Seq data without a reference genome</article-title>
+        <source>Nature Biotechnology</source>
+        <year iso-8601-date="2011-05">2011</year><month>05</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-12-15">2017</year><month>12</month><day>15</day></date-in-citation>
+        <volume>29</volume>
+        <issue>7</issue>
+        <issn>1087-0156, 1546-1696</issn>
+        <uri>http://www.nature.com/doifinder/10.1038/nbt.1883</uri>
+        <pub-id pub-id-type="doi">10.1038/nbt.1883</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-li_cd-hitU003A_2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Li</surname><given-names>W.</given-names></name>
+          <name><surname>Godzik</surname><given-names>A.</given-names></name>
+        </person-group>
+        <article-title>Cd-hit: A fast program for clustering and comparing large sets of protein or nucleotide sequences</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2006-07">2006</year><month>07</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-12-15">2017</year><month>12</month><day>15</day></date-in-citation>
+        <volume>22</volume>
+        <issue>13</issue>
+        <issn>1367-4803, 1460-2059</issn>
+        <uri>https://academic.oup.com/bioinformatics/article-lookup/doi/10.1093/bioinformatics/btl158</uri>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btl158</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-fu_cd-hitU003A_2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fu</surname><given-names>Limin</given-names></name>
+          <name><surname>Niu</surname><given-names>Beifang</given-names></name>
+          <name><surname>Zhu</surname><given-names>Zhengwei</given-names></name>
+          <name><surname>Wu</surname><given-names>Sitao</given-names></name>
+          <name><surname>Li</surname><given-names>Weizhong</given-names></name>
+        </person-group>
+        <article-title>CD-HIT: Accelerated for clustering the next-generation sequencing data</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2012-12">2012</year><month>12</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-12-15">2017</year><month>12</month><day>15</day></date-in-citation>
+        <volume>28</volume>
+        <issue>23</issue>
+        <issn>1367-4803, 1460-2059</issn>
+        <uri>https://academic.oup.com/bioinformatics/article-lookup/doi/10.1093/bioinformatics/bts565</uri>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/bts565</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-oleary_reference_2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>O’Leary</surname><given-names>Nuala A.</given-names></name>
+          <name><surname>Wright</surname><given-names>Mathew W.</given-names></name>
+          <name><surname>Brister</surname><given-names>J. Rodney</given-names></name>
+          <name><surname>Ciufo</surname><given-names>Stacy</given-names></name>
+          <name><surname>Haddad</surname><given-names>Diana</given-names></name>
+          <name><surname>McVeigh</surname><given-names>Rich</given-names></name>
+          <name><surname>Rajput</surname><given-names>Bhanu</given-names></name>
+          <name><surname>Robbertse</surname><given-names>Barbara</given-names></name>
+          <name><surname>Smith-White</surname><given-names>Brian</given-names></name>
+          <name><surname>Ako-Adjei</surname><given-names>Danso</given-names></name>
+          <name><surname>Astashyn</surname><given-names>Alexander</given-names></name>
+          <name><surname>Badretdin</surname><given-names>Azat</given-names></name>
+          <name><surname>Bao</surname><given-names>Yiming</given-names></name>
+          <name><surname>Blinkova</surname><given-names>Olga</given-names></name>
+          <name><surname>Brover</surname><given-names>Vyacheslav</given-names></name>
+          <name><surname>Chetvernin</surname><given-names>Vyacheslav</given-names></name>
+          <name><surname>Choi</surname><given-names>Jinna</given-names></name>
+          <name><surname>Cox</surname><given-names>Eric</given-names></name>
+          <name><surname>Ermolaeva</surname><given-names>Olga</given-names></name>
+          <name><surname>Farrell</surname><given-names>Catherine M.</given-names></name>
+          <name><surname>Goldfarb</surname><given-names>Tamara</given-names></name>
+          <name><surname>Gupta</surname><given-names>Tripti</given-names></name>
+          <name><surname>Haft</surname><given-names>Daniel</given-names></name>
+          <name><surname>Hatcher</surname><given-names>Eneida</given-names></name>
+          <name><surname>Hlavina</surname><given-names>Wratko</given-names></name>
+          <name><surname>Joardar</surname><given-names>Vinita S.</given-names></name>
+          <name><surname>Kodali</surname><given-names>Vamsi K.</given-names></name>
+          <name><surname>Li</surname><given-names>Wenjun</given-names></name>
+          <name><surname>Maglott</surname><given-names>Donna</given-names></name>
+          <name><surname>Masterson</surname><given-names>Patrick</given-names></name>
+          <name><surname>McGarvey</surname><given-names>Kelly M.</given-names></name>
+          <name><surname>Murphy</surname><given-names>Michael R.</given-names></name>
+          <name><surname>O’Neill</surname><given-names>Kathleen</given-names></name>
+          <name><surname>Pujar</surname><given-names>Shashikant</given-names></name>
+          <name><surname>Rangwala</surname><given-names>Sanjida H.</given-names></name>
+          <name><surname>Rausch</surname><given-names>Daniel</given-names></name>
+          <name><surname>Riddick</surname><given-names>Lillian D.</given-names></name>
+          <name><surname>Schoch</surname><given-names>Conrad</given-names></name>
+          <name><surname>Shkeda</surname><given-names>Andrei</given-names></name>
+          <name><surname>Storz</surname><given-names>Susan S.</given-names></name>
+          <name><surname>Sun</surname><given-names>Hanzhen</given-names></name>
+          <name><surname>Thibaud-Nissen</surname><given-names>Francoise</given-names></name>
+          <name><surname>Tolstoy</surname><given-names>Igor</given-names></name>
+          <name><surname>Tully</surname><given-names>Raymond E.</given-names></name>
+          <name><surname>Vatsan</surname><given-names>Anjana R.</given-names></name>
+          <name><surname>Wallin</surname><given-names>Craig</given-names></name>
+          <name><surname>Webb</surname><given-names>David</given-names></name>
+          <name><surname>Wu</surname><given-names>Wendy</given-names></name>
+          <name><surname>Landrum</surname><given-names>Melissa J.</given-names></name>
+          <name><surname>Kimchi</surname><given-names>Avi</given-names></name>
+          <name><surname>Tatusova</surname><given-names>Tatiana</given-names></name>
+          <name><surname>DiCuccio</surname><given-names>Michael</given-names></name>
+          <name><surname>Kitts</surname><given-names>Paul</given-names></name>
+          <name><surname>Murphy</surname><given-names>Terence D.</given-names></name>
+          <name><surname>Pruitt</surname><given-names>Kim D.</given-names></name>
+        </person-group>
+        <article-title>Reference sequence (RefSeq) database at NCBI: Current status, taxonomic expansion, and functional annotation</article-title>
+        <source>Nucleic Acids Research</source>
+        <year iso-8601-date="2016-01">2016</year><month>01</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-12-15">2017</year><month>12</month><day>15</day></date-in-citation>
+        <volume>44</volume>
+        <issue>D1</issue>
+        <issn>0305-1048, 1362-4962</issn>
+        <uri>https://academic.oup.com/nar/article-lookup/doi/10.1093/nar/gkv1189</uri>
+        <pub-id pub-id-type="doi">10.1093/nar/gkv1189</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-nussbaumer_mips_2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Nussbaumer</surname><given-names>Thomas</given-names></name>
+          <name><surname>Martis</surname><given-names>Mihaela M.</given-names></name>
+          <name><surname>Roessner</surname><given-names>Stephan K.</given-names></name>
+          <name><surname>Pfeifer</surname><given-names>Matthias</given-names></name>
+          <name><surname>Bader</surname><given-names>Kai C.</given-names></name>
+          <name><surname>Sharma</surname><given-names>Sapna</given-names></name>
+          <name><surname>Gundlach</surname><given-names>Heidrun</given-names></name>
+          <name><surname>Spannagl</surname><given-names>Manuel</given-names></name>
+        </person-group>
+        <article-title>MIPS PlantsDB: A database framework for comparative plant genome research</article-title>
+        <source>Nucleic Acids Research</source>
+        <year iso-8601-date="2012-11">2012</year><month>11</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-12-15">2017</year><month>12</month><day>15</day></date-in-citation>
+        <volume>41</volume>
+        <issue>D1</issue>
+        <issn>0305-1048, 1362-4962</issn>
+        <uri>http://academic.oup.com/nar/article/41/D1/D1144/1063372/MIPS-PlantsDB-a-database-framework-for-comparative</uri>
+        <pub-id pub-id-type="doi">10.1093/nar/gks1153</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-langmead_fast_2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Langmead</surname><given-names>Ben</given-names></name>
+          <name><surname>Salzberg</surname><given-names>Steven L</given-names></name>
+        </person-group>
+        <article-title>Fast gapped-read alignment with Bowtie 2</article-title>
+        <source>Nature Methods</source>
+        <year iso-8601-date="2012-03">2012</year><month>03</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-12-15">2017</year><month>12</month><day>15</day></date-in-citation>
+        <volume>9</volume>
+        <issue>4</issue>
+        <issn>1548-7091, 1548-7105</issn>
+        <uri>http://www.nature.com/doifinder/10.1038/nmeth.1923</uri>
+        <pub-id pub-id-type="doi">10.1038/nmeth.1923</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-li_sequence_2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Li</surname><given-names>H.</given-names></name>
+          <name><surname>Handsaker</surname><given-names>B.</given-names></name>
+          <name><surname>Wysoker</surname><given-names>A.</given-names></name>
+          <name><surname>Fennell</surname><given-names>T.</given-names></name>
+          <name><surname>Ruan</surname><given-names>J.</given-names></name>
+          <name><surname>Homer</surname><given-names>N.</given-names></name>
+          <name><surname>Marth</surname><given-names>G.</given-names></name>
+          <name><surname>Abecasis</surname><given-names>G.</given-names></name>
+          <name><surname>Durbin</surname><given-names>R.</given-names></name>
+          <string-name>1000 Genome Project Data Processing Subgroup</string-name>
+        </person-group>
+        <article-title>The Sequence Alignment/Map format and SAMtools</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2009-08">2009</year><month>08</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-12-15">2017</year><month>12</month><day>15</day></date-in-citation>
+        <volume>25</volume>
+        <issue>16</issue>
+        <issn>1367-4803, 1460-2059</issn>
+        <uri>https://academic.oup.com/bioinformatics/article-lookup/doi/10.1093/bioinformatics/btp352</uri>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btp352</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-goubert_novo_2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Goubert</surname><given-names>Clément</given-names></name>
+          <name><surname>Modolo</surname><given-names>Laurent</given-names></name>
+          <name><surname>Vieira</surname><given-names>Cristina</given-names></name>
+          <name><surname>ValienteMoro</surname><given-names>Claire</given-names></name>
+          <name><surname>Mavingui</surname><given-names>Patrick</given-names></name>
+          <name><surname>Boulesteix</surname><given-names>Matthieu</given-names></name>
+        </person-group>
+        <article-title>De Novo Assembly and Annotation of the Asian Tiger Mosquito (Aedes albopictus) Repeatome with dnaPipeTE from Raw Genomic Reads and Comparative Analysis with the Yellow Fever Mosquito (Aedes aegypti)</article-title>
+        <source>Genome Biology and Evolution</source>
+        <year iso-8601-date="2015-04">2015</year><month>04</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-12-15">2017</year><month>12</month><day>15</day></date-in-citation>
+        <volume>7</volume>
+        <issue>4</issue>
+        <issn>1759-6653</issn>
+        <uri>https://academic.oup.com/gbe/article-lookup/doi/10.1093/gbe/evv050</uri>
+        <pub-id pub-id-type="doi">10.1093/gbe/evv050</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-camacho_blast">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Camacho</surname><given-names>Christiam</given-names></name>
+          <name><surname>Coulouris</surname><given-names>George</given-names></name>
+          <name><surname>Avagyan</surname><given-names>Vahram</given-names></name>
+          <name><surname>Ma</surname><given-names>Ning</given-names></name>
+          <name><surname>Papadopoulos</surname><given-names>Jason</given-names></name>
+          <name><surname>Bealer</surname><given-names>Kevin</given-names></name>
+          <name><surname>Madden</surname><given-names>Thomas L</given-names></name>
+        </person-group>
+        <article-title>BLAST+: Architecture and applications</article-title>
+        <source>BMC Bioinformatics</source>
+        <year iso-8601-date="2009">2009</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-12-15">2017</year><month>12</month><day>15</day></date-in-citation>
+        <volume>10</volume>
+        <issue>1</issue>
+        <issn>1471-2105</issn>
+        <uri>http://www.biomedcentral.com/1471-2105/10/421</uri>
+        <pub-id pub-id-type="doi">10.1186/1471-2105-10-421</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-smit_repeatmasker_2013">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Smit</surname><given-names>AFA</given-names></name>
+          <name><surname>Hubley</surname><given-names>R</given-names></name>
+          <name><surname>Green</surname><given-names>P</given-names></name>
+        </person-group>
+        <article-title>RepeatMasker Open-4.0</article-title>
+        <year iso-8601-date="2013">2013</year>
+        <uri>http://www.repeatmasker.org</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-benson_tandem_1999">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Benson</surname><given-names>G.</given-names></name>
+        </person-group>
+        <article-title>Tandem repeats finder: A program to analyze DNA sequences</article-title>
+        <source>Nucleic Acids Research</source>
+        <year iso-8601-date="1999-01">1999</year><month>01</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-12-21">2017</year><month>12</month><day>21</day></date-in-citation>
+        <volume>27</volume>
+        <issue>2</issue>
+        <issn>0305-1048, 1362-4962</issn>
+        <uri>https://academic.oup.com/nar/article-lookup/doi/10.1093/nar/27.2.573</uri>
+        <pub-id pub-id-type="doi">10.1093/nar/27.2.573</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gymrek_lobstrU003A_2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gymrek</surname><given-names>Melissa</given-names></name>
+          <name><surname>Golan</surname><given-names>David</given-names></name>
+          <name><surname>Rosset</surname><given-names>Saharon</given-names></name>
+          <name><surname>Erlich</surname><given-names>Yaniv</given-names></name>
+        </person-group>
+        <article-title>lobSTR: A short tandem repeat profiler for personal genomes</article-title>
+        <source>Genome Research</source>
+        <year iso-8601-date="2012-06">2012</year><month>06</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-12-21">2017</year><month>12</month><day>21</day></date-in-citation>
+        <volume>22</volume>
+        <issue>6</issue>
+        <issn>1088-9051</issn>
+        <uri>http://genome.cshlp.org/lookup/doi/10.1101/gr.135780.111</uri>
+        <pub-id pub-id-type="doi">10.1101/gr.135780.111</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

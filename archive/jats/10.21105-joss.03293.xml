@@ -1,0 +1,972 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3293</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03293</article-id>
+<title-group>
+<article-title>fitgrid: A Python package for multi-channel event-related
+time series regression modeling</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-7993-142X</contrib-id>
+<string-name>Thomas P. Urbach</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="corresp" rid="cor-1"><sup>*</sup></xref>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-9997-9025</contrib-id>
+<string-name>Andrey S. Portnoy</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Cognitive Science, University of California,
+San Diego</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<author-notes>
+<corresp id="cor-1">* E-mail: <email></email></corresp>
+</author-notes>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-02-10">
+<day>10</day>
+<month>2</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>63</issue>
+<fpage>3293</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Python</kwd>
+<kwd>EEG electroencephalography</kwd>
+<kwd>MEG magnetoencephalography</kwd>
+<kwd>ERP rERP</kwd>
+<kwd>linear regression</kwd>
+<kwd>ordinary least squares</kwd>
+<kwd>linear mixed-effects</kwd>
+<kwd>exploratory data analysis EDA</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Electrical brain activity related to external stimulation and
+  internal mental events can be measured at the scalp as tiny
+  time-varying electric potential waveforms (electroencephalogram; EEG),
+  typically a few tens of microvolts peak to peak
+  (<xref alt="Berger, 1930" rid="ref-Berger1930" ref-type="bibr">Berger,
+  1930</xref>). Even tinier brain responses, too small to be seen by
+  naked eye in the EEG, can be detected by repeating the stimulation,
+  aligning the EEG recordings to the triggering event and averaging them
+  at each time point
+  (<xref alt="Dawson, 1951" rid="ref-Dawson1951" ref-type="bibr">Dawson,
+  1951</xref>,
+  <xref alt="1954" rid="ref-Dawson1954" ref-type="bibr">1954</xref>).
+  Under assumptions that the brain response (signal) is the same in each
+  recording and the ongoing background EEG (noise) varies randomly,
+  averaging improves the estimate of the “true” brain response at each
+  time point as the random variation cancels. The average event-related
+  brain potential (ERP) and its counterpart for event-related magnetic
+  fields (ERFs) are cornerstones of experimental brain research in human
+  sensation, perception, and cognition
+  (<xref alt="Luck &amp; Kappenman, 2013" rid="ref-LucKap2013" ref-type="bibr">Luck
+  &amp; Kappenman, 2013</xref>).</p>
+  <p>Smith and Kutas pointed out that the average ERP at each time
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[t]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>t</mml:mi></mml:math></alternatives></inline-formula>
+  is mathematically identical to the estimated constant
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\hat{\beta}_{0}(t)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mover><mml:mi>β</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mn>0</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  for the regression model <inline-formula><alternatives>
+  <tex-math><![CDATA[y(t) = \beta_{0}(t) + \varepsilon(t)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>y</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msub><mml:mi>β</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mi>ε</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>,
+  fit by minimizing squared error
+  (<xref alt="Smith &amp; Kutas, 2015a" rid="ref-SmiKut2015" ref-type="bibr">Smith
+  &amp; Kutas, 2015a</xref>). The average ERP can be viewed as a time
+  series of model parameter estimates. Generalizing to more complex
+  models such as multiple regression <inline-formula><alternatives>
+  <tex-math><![CDATA[y = \beta_{0} + \beta_{1}X_{1} + \ldots + \beta_{p}X_{p} + \varepsilon]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>y</mml:mi><mml:mo>=</mml:mo><mml:msub><mml:mi>β</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mo>+</mml:mo><mml:msub><mml:mi>β</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:msub><mml:mi>X</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>+</mml:mo><mml:mi>…</mml:mi><mml:mo>+</mml:mo><mml:msub><mml:mi>β</mml:mi><mml:mi>p</mml:mi></mml:msub><mml:msub><mml:mi>X</mml:mi><mml:mi>p</mml:mi></mml:msub><mml:mo>+</mml:mo><mml:mi>ε</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>,
+  likewise produces time series of estimates for the constant and each
+  regressor coefficient, the <inline-formula><alternatives>
+  <tex-math><![CDATA[\hat{\beta}_{0}(t), \hat{\beta}_{1}(t), \ldots, \hat{\beta}_{p}(t)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mover><mml:mi>β</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mn>0</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:msub><mml:mover><mml:mi>β</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mn>1</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mi>…</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mover><mml:mi>β</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mi>p</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  dubbed regression ERP (rERP) waveforms (see
+  <xref alt="Smith &amp; Kutas, 2015a" rid="ref-SmiKut2015" ref-type="bibr">Smith
+  &amp; Kutas, 2015a</xref>;
+  <xref alt="Smith &amp; Kutas, 2015b" rid="ref-SmiKut2015b" ref-type="bibr">Smith
+  &amp; Kutas, 2015b</xref> for discussion of related approaches). This
+  holds for straight-line fits (“slope” rERPs) as well as models of
+  curvilinear relationships such as spline regression
+  (<xref alt="Smith &amp; Kutas, 2015b" rid="ref-SmiKut2015b" ref-type="bibr">Smith
+  &amp; Kutas, 2015b</xref>). Besides the estimated coefficient rERPs,
+  the approach also produces time series for all the basic and derived
+  quantities of the fitted model: coefficient standard errors,
+  residuals, likelihood, Akaike information criterion (AIC), and so
+  forth. With the shift from averaging to regression modeling, however,
+  comes a new problem: fitting, diagnosing, comparing, evaluating and
+  interpreting large numbers of regression models.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Interpreting recordings of brain responses and drawing inferences
+  from patterns of systematic variation is based on statistical
+  comparison and evaluation of candidate models. Whereas fitting a
+  regression model is straightforward on current scientific computing
+  platforms, informative modeling, by contrast, is a laborious process
+  that iterates cycles of data quality control, fitting, data diagnosis,
+  model evaluation, comparison, selection, and interpretation with
+  numerous decision points that require thought and judgment.</p>
+  <p>Modeling digitized multichannel EEG data as regression ERPs at each
+  time point and data channel multiplies the iterative cycles in a
+  combinatorial explosion of times <inline-formula><alternatives>
+  <tex-math><![CDATA[\times]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>×</mml:mo></mml:math></alternatives></inline-formula>
+  channels <inline-formula><alternatives>
+  <tex-math><![CDATA[\times]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>×</mml:mo></mml:math></alternatives></inline-formula>
+  models <inline-formula><alternatives>
+  <tex-math><![CDATA[\times]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>×</mml:mo></mml:math></alternatives></inline-formula>
+  comparisons. For instance, at a digital sampling rate of 250 samples
+  per second, in 3 seconds of 32-channel EEG data there are 24,000 data
+  sets (= 3 <inline-formula><alternatives>
+  <tex-math><![CDATA[\times]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>×</mml:mo></mml:math></alternatives></inline-formula>
+  250 <inline-formula><alternatives>
+  <tex-math><![CDATA[\times]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>×</mml:mo></mml:math></alternatives></inline-formula>
+  32). To fit a set of three candidate models requires 72,000 separate
+  model fits, where the size of each data set might range anywhere from
+  a few dozens of observations for a single subject to tens of thousands
+  of observations for a large scale experiment.</p>
+  <p>The combinatorial explosion of model fits is unavoidable;
+  <monospace>fitgrid</monospace> contains it by gathering the rich fit
+  objects in a regular Time x Channel grid that provides users with
+  approachable access to corresponding grids of the fit objects’
+  attributes. There are various Python implementations that use matrix
+  operations operations to efficiently estimate ordinary linear
+  regression coefficients <italic>en masse</italic> for N-D arrays of
+  1-D vectors such as
+  <ext-link ext-link-type="uri" xlink:href="https://numpy.org/doc/stable/reference/generated/numpy.linalg.lstsq.html">numpy.linalg.lstsq</ext-link>
+  (<xref alt="Harris et al., 2020" rid="ref-Harris2020" ref-type="bibr">Harris
+  et al., 2020</xref>) or
+  <ext-link ext-link-type="uri" xlink:href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html">sklearn.linear_model.LinearRegression</ext-link>
+  (<xref alt="Pedregosa et al., 2011" rid="ref-scikit-learn" ref-type="bibr">Pedregosa
+  et al., 2011</xref>). By capturing the
+  <monospace>statsmodels</monospace> and
+  <monospace>pymer4.Lmer</monospace> model fit objects on tidy grids,
+  <monospace>fitgrid</monospace> provides users with equally
+  approachable access to the estimated coefficients and, crucially, the
+  other quantities baked into the fit result objects such as coefficient
+  standard errors, residuals, likelihood, and goodness of fit measures
+  required for evaluating, comparing, and interpreting models and,
+  ultimately, drawing inferences about the estimated coefficients.</p>
+  <p>The rERP approach is attracting growing attention in the field but
+  to date the open-source EEG and magnetoencephalography (MEG) data
+  analysis landscape has been dominated by toolboxes written for MATLAB
+  such as EEGLAB
+  (<xref alt="Delorme &amp; Makeig, 2004" rid="ref-DelMak2004" ref-type="bibr">Delorme
+  &amp; Makeig, 2004</xref>), FieldTrip
+  (<xref alt="Oostenveld et al., 2011" rid="ref-OosEtAl2011" ref-type="bibr">Oostenveld
+  et al., 2011</xref>), and Brainstorm
+  (<xref alt="Tadel et al., 2011" rid="ref-TadEtAl2011" ref-type="bibr">Tadel
+  et al., 2011</xref>), and this holds for rERP modeling (e.g., Ehinger
+  &amp; Dimigen
+  (<xref alt="2019" rid="ref-EhiDim2019" ref-type="bibr">2019</xref>)).
+  Like open-source scientific computing generally, Python and R have
+  been gaining traction for EEG and MEG analysis, as in MNE-Python
+  Gramfort et al.
+  (<xref alt="2013" rid="ref-GramfortEtAl2013" ref-type="bibr">2013</xref>),
+  and for regression ERPs in R Tremblay &amp; Newman
+  (<xref alt="2015" rid="ref-TreNew2015" ref-type="bibr">2015</xref>).
+  Nevertheless, widely accessible implementations for rERP modeling in
+  Python remain limited. Development of N. J. Smith’s promising
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/rerpy/rerpy">rERPy</ext-link>
+  Python package for ERP and rERP analysis appears to have halted in
+  Python 2, which reached its end of life in January 2020. MNE-Python
+  implements a <monospace>linear_regression</monospace> function for
+  computing rERP coefficients on continuous data as described in Smith
+  &amp; Kutas
+  (<xref alt="2015b" rid="ref-SmiKut2015b" ref-type="bibr">2015b</xref>)
+  but not time series of OLS or mixed-effects model fits.
+  <monospace>fitgrid</monospace> is intended to fill this gap in the
+  Python ecosystem.</p>
+</sec>
+<sec id="fitgrid">
+  <title>fitgrid</title>
+  <p><monospace>fitgrid</monospace> makes the rERP modeling described in
+  Smith &amp; Kutas
+  (<xref alt="2015a" rid="ref-SmiKut2015" ref-type="bibr">2015a</xref>)
+  accessible to researchers with a working knowledge of scripted data
+  analysis in Python and the symbolic formulae such as
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathsf{\sim 1 + a + b + a:b}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="sans-serif"><mml:mo>∼</mml:mo><mml:mn>1</mml:mn><mml:mo>+</mml:mo><mml:mi>𝖺</mml:mi><mml:mo>+</mml:mo><mml:mi>𝖻</mml:mi><mml:mo>+</mml:mo><mml:mi>𝖺</mml:mi><mml:mo>:</mml:mo><mml:mi>𝖻</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathsf{\sim 1 + a*b + (a|s) + (a|i) }]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="sans-serif"><mml:mo>∼</mml:mo><mml:mn>1</mml:mn><mml:mo>+</mml:mo><mml:mi>𝖺</mml:mi><mml:mo>*</mml:mo><mml:mi>𝖻</mml:mi><mml:mo>+</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>𝖺</mml:mi><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:mi>𝗌</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>𝖺</mml:mi><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:mi>𝗂</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mstyle></mml:math></alternatives></inline-formula>
+  currently in wide use to specify ordinary and mixed-effects models in
+  Python and R (<monospace>patsy</monospace>
+  <xref alt="Smith, 2011-2015" rid="ref-patsy" ref-type="bibr">Smith,
+  2011-2015</xref>; <monospace>lme4::lmer</monospace>
+  <xref alt="Bates et al., 2015" rid="ref-BatesEtAl2015" ref-type="bibr">Bates
+  et al., 2015</xref>; <monospace>lm</monospace>
+  <xref alt="R Core Team, 2020" rid="ref-Rproject" ref-type="bibr">R
+  Core Team, 2020</xref>).</p>
+  <p>The <monospace>fitgrid</monospace> user interface launches what are
+  routinely hundreds to tens of thousands of model fits with one line of
+  code (computed in parallel if supported by hardware). The fit results
+  across times and channels are available on demand with the same syntax
+  used to access results in a single fit object and the results are
+  returned as tidy indexed <monospace>pandas.DataFrames</monospace>
+  (<xref alt="McKinney, 2010" rid="ref-McKinney2010" ref-type="bibr">McKinney,
+  2010</xref>) for further analysis, visualization, and
+  interpretation.</p>
+  <p><monospace>fitgrid</monospace> provides routines for generating
+  simulated data and downloading sample EEG data from a public Zenodo
+  companion archive
+  (<xref alt="Urbach, 2020" rid="ref-mkpy_data_examples_003" ref-type="bibr">Urbach,
+  2020</xref>). The documentation includes executable Python vignettes
+  that illustrate their use. While the origins of
+  <monospace>fitgrid</monospace> are in EEG data analysis,
+  <monospace>fitgrid</monospace> can also be used with other
+  neuroimaging data such as MEG and more generally with synchronized
+  sensor array time-series data from other domains for which
+  event-related regression modeling is appropriate.
+  <monospace>fitgrid</monospace> enables researchers to conduct this
+  type of computationally-intensive modeling flexibly, efficiently,
+  informatively, and reproducibly with familiar scientific computing
+  tools and minimal programming. These features make
+  <monospace>fitgrid</monospace> well-suited for general use in
+  exploratory data analysis (EDA; e.g., Urbach et al.
+  (<xref alt="2020" rid="ref-UrbDelChaKut2020" ref-type="bibr">2020</xref>)
+  and Troyer et al.
+  (<xref alt="2020" rid="ref-TroUrbKut2020" ref-type="bibr">2020</xref>)).</p>
+  <fig>
+    <caption><p>fitgrid Overview. The left column shows the four basic
+    steps to set up and compute regression models for single-trial data
+    epochs with fitgrid. The right column shows example visualizations
+    of the modeling results.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="fitgrid_overview.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="documentation">
+  <title>Documentation</title>
+  <p>The <monospace>fitgrid</monospace> documentation is available
+  online:
+  <ext-link ext-link-type="uri" xlink:href="https://kutaslab.github.io/fitgrid">https://kutaslab.github.io/fitgrid</ext-link>.</p>
+  <list list-type="bullet">
+    <list-item>
+      <p><ext-link ext-link-type="uri" xlink:href="https://kutaslab.github.io/fitgrid/installation.html">Installation</ext-link>
+      gives instructions, options, and examples for installing and
+      <monospace>fitgrid</monospace> in
+      <ext-link ext-link-type="uri" xlink:href="https://docs.conda.io/projects/conda">conda
+      virtual environments</ext-link>. Installation with pip is not
+      supported because of the numerous R dependencies.</p>
+      <p>Installation of the stable release into a fresh conda virtual
+      environment along with other compatible packages, such as
+      <ext-link ext-link-type="uri" xlink:href="https://jupyter.org/documentation">Jupyter
+      or JupyterLab</ext-link> for running Example Gallery notebooks, is
+      recommended. To install <monospace>fitgrid</monospace> in a conda
+      environment named <monospace>fg_env</monospace> with the
+      additional package dependencies downloaded primarily from the
+      conda-forge channel run this:</p>
+      <p specific-use="wrapper">
+        <code language="bash">$ conda create --name fg_env \
+    fitgrid jupyter \
+    -c kutaslab -c ejolly -c conda-forge \
+    --strict-channel-priority</code>
+      </p>
+      <p>To install <monospace>fitgrid</monospace> with dependencies
+      downloaded primarily from the Anaconda default channels (main, r),
+      run this:</p>
+      <p specific-use="wrapper">
+        <code language="bash">$ conda create --name fg_env \
+    fitgrid jupyter \
+    -c kutaslab -c ejolly -c defaults -c conda-forge</code>
+      </p>
+    </list-item>
+    <list-item>
+      <p><ext-link ext-link-type="uri" xlink:href="https://kutaslab.github.io/fitgrid/auto_gallery/quickstart.html">Quick
+      Start</ext-link> gives an overview of the
+      <monospace>fitgrid</monospace> workflow with notes,
+      <ext-link ext-link-type="uri" xlink:href="https://matplotlib.org">matplotlib</ext-link>
+      figures
+      (<xref alt="Hunter, 2007" rid="ref-Hunter2007" ref-type="bibr">Hunter,
+      2007</xref>), and downloadable and executable code.</p>
+    </list-item>
+    <list-item>
+      <p>The
+      <ext-link ext-link-type="uri" xlink:href="https://kutaslab.github.io/fitgrid/user_guide.html">User
+      Guide</ext-link> provides information about usage and specific
+      topics including how the OLS models are fit in Python
+      <monospace>statsmodels</monospace>
+      (<xref alt="Seabold &amp; Perktold, 2010" rid="ref-SeaPer2010" ref-type="bibr">Seabold
+      &amp; Perktold, 2010</xref>) and the LMER models are fit in R
+      (<monospace>lme4::lmer</monospace>,
+      <monospace>lmerTest</monospace>
+      <xref alt="Kuznetsova et al., 2017" rid="ref-KuzBroChr2017" ref-type="bibr">Kuznetsova
+      et al., 2017</xref>) via <monospace>pymer4</monospace>
+      (<xref alt="Jolly, 2018" rid="ref-Jolly2018" ref-type="bibr">Jolly,
+      2018</xref>) and <monospace>rpy2</monospace>
+      (<xref alt="Gautier, 2021" rid="ref-rpy2" ref-type="bibr">Gautier,
+      2021</xref>).</p>
+    </list-item>
+    <list-item>
+      <p>The
+      <ext-link ext-link-type="uri" xlink:href="https://kutaslab.github.io/fitgrid/api.html">API</ext-link>
+      is a complete listing of <monospace>fitgrid</monospace> classes,
+      methods, attributes, and functions auto-generated with numpy-style
+      docstrings and links to the source code generated by
+      <monospace>sphinx-apidoc</monospace>
+      (<xref alt="Brandl et al., 2007-2021" rid="ref-sphinx" ref-type="bibr">Brandl
+      et al., 2007-2021</xref>).</p>
+    </list-item>
+    <list-item>
+      <p>The
+      <ext-link ext-link-type="uri" xlink:href="https://kutaslab.github.io/fitgrid/gallery.html">Examples
+      Gallery</ext-link> contains annotated
+      <monospace>fitgrid</monospace> vignettes with simulated data,
+      experimental EEG recordings, and NOAA tide and atmospheric
+      observations. The examples illustrate how to prepare data for
+      modeling, fit ordinary least squares and linear mixed-effects
+      models, summarize, and visualize the results. All the examples can
+      be downloaded as executable Python scripts or Jupyter notebooks
+      thanks to
+      <ext-link ext-link-type="uri" xlink:href="https://sphinx-gallery.github.io">Sphinx-Gallery</ext-link>.</p>
+    </list-item>
+  </list>
+  <fig>
+    <caption><p>Examples such as those shown here can be downloaded as
+    Python scripts or Jupyter notebooks and run on the user’s local
+    machine after installing
+    <monospace>fitgrid</monospace>.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="examples_gallery.png" xlink:title="" />
+  </fig>
+  <list list-type="bullet">
+    <list-item>
+      <p>The
+      <ext-link ext-link-type="uri" xlink:href="https://kutaslab.github.io/fitgrid/bibliography.html">Bibliography</ext-link>
+      includes references to relevant experimental and technical
+      literature.</p>
+    </list-item>
+    <list-item>
+      <p>The
+      <ext-link ext-link-type="uri" xlink:href="https://kutaslab.github.io/fitgrid/contributing.html">Contributing</ext-link>
+      section encourages users and developers to post field reports and
+      ideas large and small for improving <monospace>fitgrid</monospace>
+      in the GitHub
+      <ext-link ext-link-type="uri" xlink:href="https://github.com/kutaslab/fitgrid/issues">Issues</ext-link>
+      in accordance with the
+      <ext-link ext-link-type="uri" xlink:href="https://github.com/kutaslab/fitgrid/blob/main/CODE_OF_CONDUCT.md">Code
+      of Conduct</ext-link>. It also gives an overview for developers
+      and instructions for configuring a conda development environment
+      and installing <monospace>fitgrid</monospace> from source for the
+      purpose of modifying the code or documentation.</p>
+    </list-item>
+  </list>
+  <sec id="source-continuous-integration-packaging-and-deployment">
+    <title>Source, Continuous Integration, Packaging and
+    Deployment</title>
+    <p><monospace>fitgrid</monospace> has been developed and tested
+    locally on 48-core x86_64 CentOS 7 and 144-core x86_64 Ubuntu 20.04
+    servers with Intel Xeon CPUs.</p>
+    <p>The source code is hosted in the public GitHub repository
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/kutaslab/fitgrid">github.com/kutaslab/fitgrid</ext-link>.</p>
+    <p>The latest stable release of <monospace>fitgrid</monospace> and
+    the bleeding edge pre-release development version are packaged for
+    Python 3.7, and 3.8 on x86_64 linux and Intel OSX platforms and
+    distributed on
+    <ext-link ext-link-type="uri" xlink:href="https://anaconda.org/kutaslab/fitgrid">anaconda.org/kutaslab</ext-link>.</p>
+    <p>The continuous integration and deployment
+    (<ext-link ext-link-type="uri" xlink:href="https://kutaslab.github.io/fitgrid/contributing.html">CID</ext-link>)
+    is implemented in a single-pass GitHub Action workflow,
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/kutaslab/fitgrid/blob/main/.github/workflows/fitgrid-cid.yml">figrid-cid.yml</ext-link>.
+    The continuous integration builds and installs the conda package in
+    a conda virtual environment, and runs pytests and generates the
+    sphinx documentation with the conda package as installed. The deploy
+    phase automatically uploads the conda packages and documentation for
+    development version pre-releases and stable releases and
+    synchronizes the stable release source code across the
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/kutaslab/fitgrid/releases">GitHub
+    repository</ext-link>, the conda packages at
+    <ext-link ext-link-type="uri" xlink:href="https://anaconda.org/kutaslab/fitgrid/files">anaconda.org/kutaslab/fitgrid</ext-link>,
+    the online sphinx documentation
+    <ext-link ext-link-type="uri" xlink:href="https://kutaslab.github.io/fitgrid">kutaslab/github.io/fitgrid</ext-link>,
+    and the Zenodo source code archive at
+    <ext-link ext-link-type="uri" xlink:href="https://doi.org/10.5281/zenodo.3581496">DOI
+    10.5281/zenodo.3581496</ext-link>.</p>
+    <p>The continuous integration workflow for the latest stable release
+    on the main code branch runs nightly on
+    <ext-link ext-link-type="uri" xlink:href="https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners">GitHub
+    Action hosted runners</ext-link>. Pre-release packages also pass the
+    CI conda build, install, pytest, and document generation phases
+    before deployment to
+    <ext-link ext-link-type="uri" xlink:href="https://anaconda.org/kutaslab/fitgrid/files">anaconda.org/kutaslab/fitgrid/label/pre-release</ext-link>.
+    Python 3.7 and 3.8 64-bit Windows conda packages are also
+    distributed but not routinely tested.</p>
+  </sec>
+  <sec id="implementation">
+    <title>Implementation</title>
+    <p>The core function of <monospace>fitgrid</monospace> is to apply a
+    linear regression or a linear mixed effects model to datasets
+    encapsulated in an input <monospace>Epochs</monospace> object. The
+    output is a <monospace>FitGrid</monospace> which maintains a 2D grid
+    of fit objects, each representing the results of fitting the model
+    on the dataset associated with the grid point.</p>
+    <p>The <monospace>FitGrid</monospace> object exposes the same
+    attributes and methods that the individual fit objects provide.
+    Attribute accesses and method calls are broadcast to each cell in
+    the grid with results returned in a form that mirrors the shape of
+    the original grid, eliminating the need for explicit iteration over
+    the elements. NumPy array slicing syntax is supported for indexing
+    on the grid dimensions (time and channels when applied to EEG data).
+    This functionality is achieved by implementing some of Python’s
+    special methods like <monospace>__getitem__</monospace>,
+    <monospace>__getattr__</monospace>, <monospace>__call__</monospace>,
+    <monospace>__dir__</monospace> in the <monospace>FitGrid</monospace>
+    class.</p>
+    <p>As a result, the cognitive load on the researcher is lightened
+    since the familiar interfaces of a fit object (used to examine model
+    fit characteristics) and of a 2D NumPy array (used to index on the
+    space and time dimensions) are combined in a single entity.</p>
+    <p>When multiple model formulations are used, the resulting
+    <monospace>FitGrid</monospace> objects can be used to compare
+    goodness of fit measures and carry out mass model comparison and
+    selection. This is one of the main applications enabled by the
+    framework described in this section.</p>
+  </sec>
+  <sec id="limitations">
+    <title>Limitations</title>
+    <p>In addition to straight-line fits, the
+    <monospace>fitgrid</monospace> framework can fit OLS models of
+    curvilinear relations between predictors and EEG with model formulas
+    because <monospace>patsy</monospace> supports column variable
+    transformation by arbitrary Python code. Polynomial regression ERPs
+    for U-shaped relations can be computed with, for example,
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\mathsf{x + pow(x, 2)}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="sans-serif"><mml:mi>𝗑</mml:mi><mml:mo>+</mml:mo><mml:mi>𝗉</mml:mi><mml:mi>𝗈</mml:mi><mml:mi>𝗐</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>𝗑</mml:mi><mml:mo>,</mml:mo><mml:mn>2</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mstyle></mml:math></alternatives></inline-formula>
+    if this seems like a good idea. If spline regression as described in
+    Smith &amp; Kutas
+    (<xref alt="2015b" rid="ref-SmiKut2015b" ref-type="bibr">2015b</xref>)
+    seems like a better idea, <monospace>patsy</monospace> also provides
+    built-in functions for generating families of spline bases, although
+    the researcher is responsible for ensuring that the data epochs are
+    appropriately mapped to the spline regression variables which may
+    require additional programming. Smith &amp; Kutas
+    (<xref alt="2015b" rid="ref-SmiKut2015b" ref-type="bibr">2015b</xref>)
+    also generalizes rERP estimation from iteratively fitting
+    fixed-length epochs of length <inline-formula><alternatives>
+    <tex-math><![CDATA[L]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>L</mml:mi></mml:math></alternatives></inline-formula>
+    at each time point to fitting continuous data with a single model.
+    For a design with <inline-formula><alternatives>
+    <tex-math><![CDATA[P]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>P</mml:mi></mml:math></alternatives></inline-formula>
+    predictor variables, this conceptually elegant approach unstacks the
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[L]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>L</mml:mi></mml:math></alternatives></inline-formula>
+    times (rows) of the epoch into <inline-formula><alternatives>
+    <tex-math><![CDATA[\mathsf{L \times P}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="sans-serif"><mml:mi>𝖫</mml:mi><mml:mo>×</mml:mo><mml:mi>𝖯</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+    predictor variables (columns) and codes the observation row values
+    as zeros or non-zeros according to the value of the predictor at the
+    time. The coefficients estimated by a single OLS fit are identical
+    to segmenting the data and fitting models with the
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[P]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>P</mml:mi></mml:math></alternatives></inline-formula>
+    predictors iteratively at each of the <inline-formula><alternatives>
+    <tex-math><![CDATA[L]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>L</mml:mi></mml:math></alternatives></inline-formula>
+    time points. In principle <monospace>fitgrid</monospace> can ingest
+    and fit the continuous data prepared for the wide
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[L \times P]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>L</mml:mi><mml:mo>×</mml:mo><mml:mi>P</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    design matrix as a corner case of single-sample epochs but it is not
+    a natural act and at cross-purposes in some respects. In
+    <monospace>fitgrid</monospace>, models are fit separately at each
+    time and channel in order to track the time course of all the fit
+    attributes, not just the estimated regression coefficients. For
+    fitting the wide <inline-formula><alternatives>
+    <tex-math><![CDATA[\mathsf{L \times P}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="sans-serif"><mml:mi>𝖫</mml:mi><mml:mo>×</mml:mo><mml:mi>𝖯</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+    models to continuous data, implementations specifically designed for
+    that approach such as the rERPy package or the implementation in
+    MNE-Python may be a better choice.</p>
+  </sec>
+</sec>
+<sec id="acknowledgments-and-contributions">
+  <title>Acknowledgments and Contributions</title>
+  <p>This project was developed in the Kutas Cognitive Electrophysiology
+  Laboratory, Department of Cognitive Science, University of California,
+  San Diego. ASP designed, implemented, and named the
+  <monospace>fitgrid</monospace> package, user interface, classes and
+  core routines. TPU initiated the project and contributed prototypes
+  and utility routines. Both authors contributed to this report and
+  <monospace>fitgrid</monospace> documentation. We gratefully
+  acknowledge contributions by Lauren Liao (prototype coding and
+  testing), Nathaniel J. Smith (binary EEG file I/O), and testing and
+  feedback by Wen-Hsuan Chan, Emily Provenzano, Anna Stoermann, and
+  Melissa Troyer. We thank Marta Kutas and Melissa Troyer for valuable
+  comments on the <monospace>fitgrid</monospace> documentation and
+  earlier drafts of this report. This work was supported by grant NICHD
+  5R01HD022614 to Marta Kutas.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-BatesEtAl2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bates</surname><given-names>D.</given-names></name>
+          <name><surname>Mächler</surname><given-names>M.</given-names></name>
+          <name><surname>Bolker</surname><given-names>B.</given-names></name>
+          <name><surname>Walker</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>Fitting Linear Mixed-Effects Models Using lme4</article-title>
+        <source>2015</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>67</volume>
+        <issue>1</issue>
+        <issn>1548-7660</issn>
+        <uri>https://www.jstatsoft.org/v067/i01</uri>
+        <pub-id pub-id-type="doi">10.18637/jss.v067.i01</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Berger1930">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Berger</surname><given-names>Hans</given-names></name>
+        </person-group>
+        <article-title>Electroencephalogram of man</article-title>
+        <source>Hans berger on the electroencephalogram of man. The fourteen original reports on the human electroencephalogram</source>
+        <person-group person-group-type="editor">
+          <name><surname>Gloor</surname><given-names>Pierre</given-names></name>
+        </person-group>
+        <publisher-name>Elsevier</publisher-name>
+        <publisher-loc>New York</publisher-loc>
+        <year iso-8601-date="1930">1930</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Dawson1951">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Dawson</surname><given-names>G. D.</given-names></name>
+        </person-group>
+        <article-title>A summation technique for detecting small signals in a large irregular background</article-title>
+        <source>Journal of Physiology</source>
+        <year iso-8601-date="1951">1951</year>
+        <volume>115</volume>
+        <issn>0022-3751</issn>
+      </element-citation>
+    </ref>
+    <ref id="ref-Dawson1954">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dawson</surname><given-names>G. D.</given-names></name>
+        </person-group>
+        <article-title>A summation technique for the detection of small evoked potentials</article-title>
+        <source>Electroencephalography and Clinical Neurophysiology</source>
+        <year iso-8601-date="1954">1954</year>
+        <volume>6</volume>
+        <issue>1</issue>
+        <issn>0013-4694</issn>
+        <pub-id pub-id-type="doi">10.1016/0013-4694(54)90007-3</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-DelMak2004">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Delorme</surname><given-names>A.</given-names></name>
+          <name><surname>Makeig</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>EEGLAB: An open-source toolbox for analysis of single-trial EEG dynamics including independent component analysis</article-title>
+        <source>Journal of Neuroscience Methods</source>
+        <year iso-8601-date="2004">2004</year>
+        <volume>134</volume>
+        <pub-id pub-id-type="doi">10.1016/j.jneumeth.2003.10.009</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-EhiDim2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ehinger</surname><given-names>B. V.</given-names></name>
+          <name><surname>Dimigen</surname><given-names>O</given-names></name>
+        </person-group>
+        <article-title>Unfold: An integrated toolbox for overlap correction, non-linear modeling, and regression-based EEG analysis</article-title>
+        <source>PeerJ</source>
+        <publisher-name>PeerJ Inc.</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>7</volume>
+        <pub-id pub-id-type="doi">10.7717/peerj.7838</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-GramfortEtAl2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gramfort</surname><given-names>A.</given-names></name>
+          <name><surname>Luessi</surname><given-names>M.</given-names></name>
+          <name><surname>Larson</surname><given-names>E.</given-names></name>
+          <name><surname>Engemann</surname><given-names>D.</given-names></name>
+          <name><surname>Strohmeier</surname><given-names>D.</given-names></name>
+          <name><surname>Brodbeck</surname><given-names>C.</given-names></name>
+          <name><surname>Goj</surname><given-names>R.</given-names></name>
+          <name><surname>Jas</surname><given-names>M.</given-names></name>
+          <name><surname>Brooks</surname><given-names>T.</given-names></name>
+          <name><surname>Parkkonen</surname><given-names>L.</given-names></name>
+          <name><surname>Hämäläinen</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>MEG and EEG data analysis with MNE-Python</article-title>
+        <source>Frontiers in Neuroscience</source>
+        <year iso-8601-date="2013">2013</year>
+        <volume>7</volume>
+        <issn>1662-453X</issn>
+        <uri>https://www.frontiersin.org/article/10.3389/fnins.2013.00267</uri>
+        <pub-id pub-id-type="doi">10.3389/fnins.2013.00267</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Harris2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Harris</surname><given-names>Charles R.</given-names></name>
+          <name><surname>Millman</surname><given-names>K. Jarrod</given-names></name>
+          <name><surname>Walt</surname><given-names>Stéfan J. van der</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Wieser</surname><given-names>Eric</given-names></name>
+          <name><surname>Taylor</surname><given-names>Julian</given-names></name>
+          <name><surname>Berg</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Smith</surname><given-names>Nathaniel J.</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Picus</surname><given-names>Matti</given-names></name>
+          <name><surname>Hoyer</surname><given-names>Stephan</given-names></name>
+          <name><surname>Kerkwijk</surname><given-names>Marten H. van</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Haldane</surname><given-names>Allan</given-names></name>
+          <name><surname>Río</surname><given-names>Jaime Fernández del</given-names></name>
+          <name><surname>Wiebe</surname><given-names>Mark</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Gérard-Marchant</surname><given-names>Pierre</given-names></name>
+          <name><surname>Sheppard</surname><given-names>Kevin</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Abbasi</surname><given-names>Hameer</given-names></name>
+          <name><surname>Gohlke</surname><given-names>Christoph</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+        </person-group>
+        <article-title>Array programming with NumPy</article-title>
+        <source>Nature</source>
+        <publisher-name>Springer Science; Business Media LLC</publisher-name>
+        <year iso-8601-date="2020-09">2020</year><month>09</month>
+        <volume>585</volume>
+        <issue>7825</issue>
+        <uri>https://doi.org/10.1038/s41586-020-2649-2</uri>
+        <pub-id pub-id-type="doi">10.1038/s41586-020-2649-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hunter2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hunter</surname><given-names>J. D.</given-names></name>
+        </person-group>
+        <article-title>Matplotlib: A 2D graphics environment</article-title>
+        <source>Computing in Science &amp; Engineering</source>
+        <publisher-name>IEEE COMPUTER SOC</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>9</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2007.55</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Jolly2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jolly</surname><given-names>E</given-names></name>
+        </person-group>
+        <article-title>Pymer4: Connecting R and Python for Linear Mixed Modeling</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>3</volume>
+        <issue>31</issue>
+        <pub-id pub-id-type="doi">10.21105/joss.00862</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-KuzBroChr2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kuznetsova</surname><given-names>A.</given-names></name>
+          <name><surname>Brockhoff</surname><given-names>P. B.</given-names></name>
+          <name><surname>Christensen</surname><given-names>R. H. B.</given-names></name>
+        </person-group>
+        <article-title>lmerTest Package: Tests in Linear Mixed Effects Models</article-title>
+        <source>Journal of Statistical Software</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>82</volume>
+        <issue>13</issue>
+        <issn>1548-7660</issn>
+        <pub-id pub-id-type="doi">10.18637/jss.v082.i13</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LucKap2013">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Luck</surname><given-names>S. J.</given-names></name>
+          <name><surname>Kappenman</surname><given-names>E. S.</given-names></name>
+        </person-group>
+        <source>The Oxford handbook of event-related potential components</source>
+        <year iso-8601-date="2013">2013</year>
+        <pub-id pub-id-type="doi">10.1093/oxfordhb/9780195374148.001.0001</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-McKinney2010">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>McKinney</surname></name>
+        </person-group>
+        <article-title>Data Structures for Statistical Computing in Python</article-title>
+        <source>Proceedings of the 9th Python in Science Conference</source>
+        <person-group person-group-type="editor">
+          <name><surname>Walt</surname></name>
+          <name><surname>Millman</surname></name>
+        </person-group>
+        <year iso-8601-date="2010">2010</year>
+        <pub-id pub-id-type="doi"> 10.25080/Majora-92bf1922-00a </pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-OosEtAl2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Oostenveld</surname><given-names>R.</given-names></name>
+          <name><surname>Fries</surname><given-names>P.</given-names></name>
+          <name><surname>Maris</surname><given-names>E.</given-names></name>
+          <name><surname>Schoffelen</surname><given-names>J. M.</given-names></name>
+        </person-group>
+        <article-title>FieldTrip: Open Source Software for Advanced Analysis of MEG, EEG, and Invasive Electrophysiological Data</article-title>
+        <source>Computational Intelligence and Neuroscience</source>
+        <year iso-8601-date="2011">2011</year>
+        <issn>1687-5265</issn>
+        <pub-id pub-id-type="doi">10.1155/2011/156869</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Rproject">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>R Core Team</string-name>
+        </person-group>
+        <article-title>R: A Language and Environment for Statistical Computing</article-title>
+        <publisher-name>R Foundation for Statistical Computing</publisher-name>
+        <publisher-loc>Vienna, Austria</publisher-loc>
+        <year iso-8601-date="2020">2020</year>
+        <uri>http://www.R-project.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-SmiKut2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Smith</surname><given-names>N. J.</given-names></name>
+          <name><surname>Kutas</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>Regression-based estimation of ERP waveforms: I. The rERP framework</article-title>
+        <source>Psychophysiology</source>
+        <year iso-8601-date="2015">2015</year>
+        <issn>0048-5772</issn>
+        <pub-id pub-id-type="doi">10.1111/psyp.12317</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SmiKut2015b">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Smith</surname><given-names>N. J.</given-names></name>
+          <name><surname>Kutas</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>Regression-based estimation of ERP waveforms: II. Nonlinear effects, overlap correction, and practical considerations</article-title>
+        <source>Psychophysiology</source>
+        <year iso-8601-date="2015">2015</year>
+        <issn>0048-5772</issn>
+        <pub-id pub-id-type="doi">10.1111/psyp.12320</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-TadEtAl2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tadel</surname><given-names>F.</given-names></name>
+          <name><surname>Baillet</surname><given-names>S.</given-names></name>
+          <name><surname>Mosher</surname><given-names>J. C.</given-names></name>
+          <name><surname>Pantazis</surname><given-names>D.</given-names></name>
+          <name><surname>Leahy</surname><given-names>R. M.</given-names></name>
+        </person-group>
+        <article-title>Brainstorm: A user-friendly application for MEG/EEG analysis</article-title>
+        <source>Computational intelligence and neuroscience</source>
+        <publisher-name>Hindawi</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <volume>2011</volume>
+        <pub-id pub-id-type="doi">10.1155/2011/879716</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-TreNew2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tremblay</surname><given-names>A.</given-names></name>
+          <name><surname>Newman</surname><given-names>A. J.</given-names></name>
+        </person-group>
+        <article-title>Modeling nonlinear relationships in ERP data using mixed-effects regression with R examples</article-title>
+        <source>Psychophysiology</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>52</volume>
+        <issue>1</issue>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1111/psyp.12299</uri>
+        <pub-id pub-id-type="doi">https://doi.org/10.1111/psyp.12299</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-TroUrbKut2020">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Troyer</surname><given-names>M.</given-names></name>
+          <name><surname>Urbach</surname><given-names>T. P.</given-names></name>
+          <name><surname>Kutas</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>Toward dissociating general reading experience and domain-specific knowledge sources during RSVP reading: An exploratory rERP analysis</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <pub-id pub-id-type="doi">10.17605/OSF.IO/YNV9K</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-UrbDelChaKut2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Urbach</surname><given-names>T. P.</given-names></name>
+          <name><surname>DeLong</surname><given-names>K. A.</given-names></name>
+          <name><surname>Chan</surname><given-names>W. H.</given-names></name>
+          <name><surname>Kutas</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>An exploratory data analysis of word form prediction during word-by-word reading</article-title>
+        <source>Proceedings of the National Academy of Sciences</source>
+        <year iso-8601-date="2020">2020</year>
+        <pub-id pub-id-type="doi">10.1073/pnas.1922028117</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-patsy">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Smith</surname><given-names>N. J.</given-names></name>
+        </person-group>
+        <article-title>patsy - Describing statistical models in Python</article-title>
+        <uri>https://patsy.readthedocs.io</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-rpy2">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gautier</surname><given-names>Laurent</given-names></name>
+        </person-group>
+        <article-title>rpy2 - r in python</article-title>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://rpy2.github.io</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-scikit-learn">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pedregosa</surname><given-names>F.</given-names></name>
+          <name><surname>Varoquaux</surname><given-names>G.</given-names></name>
+          <name><surname>Gramfort</surname><given-names>A.</given-names></name>
+          <name><surname>Michel</surname><given-names>V.</given-names></name>
+          <name><surname>Thirion</surname><given-names>B.</given-names></name>
+          <name><surname>Grisel</surname><given-names>O.</given-names></name>
+          <name><surname>Blondel</surname><given-names>M.</given-names></name>
+          <name><surname>Prettenhofer</surname><given-names>P.</given-names></name>
+          <name><surname>Weiss</surname><given-names>R.</given-names></name>
+          <name><surname>Dubourg</surname><given-names>V.</given-names></name>
+          <name><surname>Vanderplas</surname><given-names>J.</given-names></name>
+          <name><surname>Passos</surname><given-names>A.</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>D.</given-names></name>
+          <name><surname>Brucher</surname><given-names>M.</given-names></name>
+          <name><surname>Perrot</surname><given-names>M.</given-names></name>
+          <name><surname>Duchesnay</surname><given-names>E.</given-names></name>
+        </person-group>
+        <article-title>Scikit-learn: Machine learning in Python</article-title>
+        <source>Journal of Machine Learning Research</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>12</volume>
+        <pub-id pub-id-type="doi">10.5555/1953048.2078195</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SeaPer2010">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Seabold</surname></name>
+          <name><surname>Perktold</surname></name>
+        </person-group>
+        <article-title>Statsmodels: Econometric and Statistical Modeling with Python</article-title>
+        <source>Proceedings of the 9th Python in Science Conference</source>
+        <person-group person-group-type="editor">
+          <name><surname>Walt</surname></name>
+          <name><surname>Millman</surname></name>
+        </person-group>
+        <year iso-8601-date="2010">2010</year>
+        <uri>https://conference.scipy.org/proceedings/scipy2010/pdfs/seabold.pdf</uri>
+        <pub-id pub-id-type="doi"> 10.25080/Majora-92bf1922-011 </pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sphinx">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Brandl</surname><given-names>G.</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Sphinx - Python documentation generator</article-title>
+        <uri>https://www.sphinx-doc.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-mkpy_data_examples_003">
+      <element-citation publication-type="dataset">
+        <person-group person-group-type="author">
+          <name><surname>Urbach</surname><given-names>T. P.</given-names></name>
+        </person-group>
+        <article-title>eeg-workshops/mkpy_data_examples/data</article-title>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2020-07">2020</year><month>07</month>
+        <uri>https://doi.org/10.5281/zenodo.3968485</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3968485</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

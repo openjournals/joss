@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">820</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00820</article-id>
+<title-group>
+<article-title>WEdiff: A Python and C++ package for automatic
+differentiation</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-2069-8253</contrib-id>
+<string-name>Christopher T. DeGroot</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Mechanical and Materials Engineering, Western
+University, London, ON, Canada</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2018-06-26">
+<day>26</day>
+<month>6</month>
+<year>2018</year>
+</pub-date>
+<volume>3</volume>
+<issue>31</issue>
+<fpage>820</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Automatic differentiation</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The need to calculate derivatives occurs frequently in the
+  development of codes that do numerical computations. A common example
+  is codes that solve ordinary or partial differential differential
+  equations, where differentiation may be required for linearization or
+  for determining the sensitivity of the solution to input parameters.
+  There are a wide variety of methods available to calculate numerical
+  derivatives, including finite differences. Although finite differences
+  can be useful, they are prone to various errors including truncation
+  error (when the difference between the function values is too large)
+  and cancellation error (when the difference between the function
+  values is too small)
+  (<xref alt="Griewank &amp; Walther, 2008" rid="ref-Griewank2008" ref-type="bibr">Griewank
+  &amp; Walther, 2008</xref>). Automatic differentiation is a technique
+  that is able to calculate derivatives with machine accuracy by
+  systematically propagating derivatives through the code using the
+  chain rule of calculus. Essentially, the algorithm is viewed simply as
+  a large number of differentiable operations on data, i.e., the
+  composition of the functions <inline-formula><alternatives>
+  <tex-math><![CDATA[f_0, f_1, ..., f_n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>f</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mi>n</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+  for which the derivative with respect to the first function value
+  (which may be a constant) is:</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[
+      \frac{\partial f_n}{\partial f_0} =
+      \frac{\partial f_n}{\partial f_{n-1}}
+      \frac{\partial f_{n-1}}{\partial f_{n-2}} \cdots
+      \frac{\partial f_2}{\partial f_1}
+      \frac{\partial f_1}{\partial f_0}
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mfrac><mml:mrow><mml:mi>∂</mml:mi><mml:msub><mml:mi>f</mml:mi><mml:mi>n</mml:mi></mml:msub></mml:mrow><mml:mrow><mml:mi>∂</mml:mi><mml:msub><mml:mi>f</mml:mi><mml:mn>0</mml:mn></mml:msub></mml:mrow></mml:mfrac><mml:mo>=</mml:mo><mml:mfrac><mml:mrow><mml:mi>∂</mml:mi><mml:msub><mml:mi>f</mml:mi><mml:mi>n</mml:mi></mml:msub></mml:mrow><mml:mrow><mml:mi>∂</mml:mi><mml:msub><mml:mi>f</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msub></mml:mrow></mml:mfrac><mml:mfrac><mml:mrow><mml:mi>∂</mml:mi><mml:msub><mml:mi>f</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msub></mml:mrow><mml:mrow><mml:mi>∂</mml:mi><mml:msub><mml:mi>f</mml:mi><mml:mrow><mml:mi>n</mml:mi><mml:mo>−</mml:mo><mml:mn>2</mml:mn></mml:mrow></mml:msub></mml:mrow></mml:mfrac><mml:mi>⋯</mml:mi><mml:mfrac><mml:mrow><mml:mi>∂</mml:mi><mml:msub><mml:mi>f</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mrow><mml:mrow><mml:mi>∂</mml:mi><mml:msub><mml:mi>f</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:mrow></mml:mfrac><mml:mfrac><mml:mrow><mml:mi>∂</mml:mi><mml:msub><mml:mi>f</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:mrow><mml:mrow><mml:mi>∂</mml:mi><mml:msub><mml:mi>f</mml:mi><mml:mn>0</mml:mn></mml:msub></mml:mrow></mml:mfrac></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>The chain rule, expressed in the equation above, can be evaluated
+  in either forward or backwards order. One method for propagating
+  derivatives is source code transformation, where the base code is
+  parsed and a secondary code is produced
+  (<xref alt="Bischof et al., 1996" rid="ref-Bischof1996" ref-type="bibr">Bischof
+  et al., 1996</xref>;
+  <xref alt="Giering &amp; Kaminski, 1998" rid="ref-Giering1998" ref-type="bibr">Giering
+  &amp; Kaminski, 1998</xref>;
+  <xref alt="Hascoet &amp; Pascual, 2013" rid="ref-Hascoet2013" ref-type="bibr">Hascoet
+  &amp; Pascual, 2013</xref>). This method, however, is mainly suitable
+  for procedural programming languages. Another method is based on
+  operator overloading where a class is implemented to hold both the
+  computed value and the accumulated derivative, and implements
+  overloaded operators to propagate the derivatives forwards through the
+  code
+  (<xref alt="Griewank &amp; Walther, 2008" rid="ref-Griewank2008" ref-type="bibr">Griewank
+  &amp; Walther, 2008</xref>;
+  <xref alt="Jemcov, 2009" rid="ref-Jemcov2009" ref-type="bibr">Jemcov,
+  2009</xref>;
+  <xref alt="Jemcov &amp; Mathur, 2004" rid="ref-Jemcov2004" ref-type="bibr">Jemcov
+  &amp; Mathur, 2004</xref>). This method is suitable for
+  object-oriented languages, and just requires that classes and
+  functions be templated to accept the new data type. It is also able to
+  compute derivatives with respect to arbitrary variables, requiring
+  minimal code changes to implement derivative calculations within an
+  existing code.</p>
+  <p><monospace>WEdiff</monospace> implements forward-mode automatic
+  differentiation using a class called <monospace>FwdDiff</monospace>
+  which stores both the numerical value and accumulated derivative. All
+  standard mathematical operators and functions are implemented for this
+  type. The code is implemented in C++ and can be used in a
+  straightforward manner in the development of other C++ codes. It also
+  includes Python wrappers generated using SWIG
+  (<xref alt="SWIG (Simplified Wrapper and Interface Generator), 2018" rid="ref-SWIG" ref-type="bibr"><italic><named-content content-type="nocase">SWIG
+  (Simplified Wrapper and Interface Generator)</named-content></italic>,
+  2018</xref>), enabling it to be used in the development of Python
+  scripts as well.</p>
+  <p><monospace>WEdiff</monospace> has been designed to be used by
+  researchers in any area of study that involves numerical computations
+  where derivatives are required. As an example, it has recently been
+  used to determine the sensitivity of temperature fields to the
+  thermophysical properties of solids using a finite-volume-based
+  numerical code
+  (<xref alt="DeGroot, 2018a" rid="ref-DeGroot2018" ref-type="bibr">DeGroot,
+  2018a</xref>). This work can easily be extended to include
+  finite-volume-based solutions of more complex fluid mechanics
+  problems. <monospace>WEdiff</monospace> could also be used in many
+  other areas, such as solutions of ordinary differential equations,
+  where the derivative of the solution could be obtained with respect to
+  any input parameters. This would enable both optimization and
+  uncertainty analysis to be conducted. The source code for
+  <monospace>WEdiff</monospace>, along with test cases, examples, and
+  documentation, can be found on BitBucket
+  (<xref alt="DeGroot, 2018b" rid="ref-WEdiff" ref-type="bibr">DeGroot,
+  2018b</xref>).</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This work is supported by a research grant from the Natural
+  Sciences and Engineering Research Council of Canada (NSERC) through
+  the Discovery Grants program.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-DeGroot2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>DeGroot</surname><given-names>C. T.</given-names></name>
+        </person-group>
+        <article-title>Automatic Differentiation of a Finite-Volume-Based Transient Heat Conduction Code for Sensitivity Analysis</article-title>
+        <source>Numer. Heat Transf. Part B Fundam.</source>
+        <year iso-8601-date="2018">2018</year>
+        <pub-id pub-id-type="doi">10.1080/10407790.2018.1486648</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hascoet2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hascoet</surname><given-names>L.</given-names></name>
+          <name><surname>Pascual</surname><given-names>V.</given-names></name>
+        </person-group>
+        <article-title>The Tapenade Automatic Differentiation Tool: Principles, Model, and Specification</article-title>
+        <source>ACM Trans. Math. Softw.</source>
+        <year iso-8601-date="2013">2013</year>
+        <volume>39</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1145/2450153.2450158</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Jemcov2009">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Jemcov</surname><given-names>A.</given-names></name>
+        </person-group>
+        <article-title>Arithmetic Parameterization of General Purpose CFD Code</article-title>
+        <source>Proceedings of the 17th annual conference of the CFD society of canada</source>
+        <publisher-loc>Ottawa, Canada</publisher-loc>
+        <year iso-8601-date="2009-05">2009</year><month>05</month>
+      </element-citation>
+    </ref>
+    <ref id="ref-Griewank2008">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Griewank</surname><given-names>A.</given-names></name>
+          <name><surname>Walther</surname><given-names>A.</given-names></name>
+        </person-group>
+        <source>Evaluating Derivatives: Principles and Techniques of Algorithmic Differentiation</source>
+        <publisher-name>SIAM</publisher-name>
+        <publisher-loc>Philadelphia, USA</publisher-loc>
+        <year iso-8601-date="2008">2008</year>
+        <pub-id pub-id-type="doi">10.1137/1.9780898717761</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Jemcov2004">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jemcov</surname><given-names>A.</given-names></name>
+          <name><surname>Mathur</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>Algorithmic Differentiation of General Purpose CFD Code : Implementation and Verification</article-title>
+        <source>Eur. Congr. Comput. Methods Appl. Sci. Eng.</source>
+        <year iso-8601-date="2004">2004</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Giering1998">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Giering</surname><given-names>R.</given-names></name>
+          <name><surname>Kaminski</surname><given-names>T.</given-names></name>
+        </person-group>
+        <article-title>Recipes for Adjoint Code Construction</article-title>
+        <source>ACM Trans. Math. Softw.</source>
+        <year iso-8601-date="1998">1998</year>
+        <volume>24</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1145/293686.293695</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Bischof1996">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bischof</surname><given-names>C.</given-names></name>
+          <name><surname>Khademi</surname><given-names>P.</given-names></name>
+          <name><surname>Mauer</surname><given-names>A.</given-names></name>
+          <name><surname>Carle</surname><given-names>A.</given-names></name>
+        </person-group>
+        <article-title>Adifor 2.0: Automatic Differentiation of Fortran 77 Programs</article-title>
+        <source>IEEE Comput. Sci. Eng.</source>
+        <year iso-8601-date="1996">1996</year>
+        <volume>3</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1109/99.537089</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SWIG">
+      <element-citation>
+        <article-title>SWIG (Simplified Wrapper and Interface Generator)</article-title>
+        <publisher-name>http://swig.org</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-WEdiff">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>DeGroot</surname><given-names>C. T.</given-names></name>
+        </person-group>
+        <article-title>WEdiff: Western Engineering Automatic Differentiation Library</article-title>
+        <publisher-name>https://bitbucket.org/cdegroot/wediff</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

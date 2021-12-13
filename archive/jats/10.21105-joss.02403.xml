@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2403</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02403</article-id>
+<title-group>
+<article-title>Caliban: Docker-based job manager for reproducible
+workflows</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-0545-6360</contrib-id>
+<string-name>Sam Ritchie</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Ambrose Slone</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-0625-3327</contrib-id>
+<string-name>Vinay Ramasesh</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Google, United States of America</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-06-22">
+<day>22</day>
+<month>6</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>53</issue>
+<fpage>2403</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>python</kwd>
+<kwd>docker</kwd>
+<kwd>machine learning</kwd>
+<kwd>reproducibility</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Caliban is a command line tool that helps researchers launch and
+  track their numerical experiments in an isolated, reproducible
+  computing environment. It was developed by machine learning
+  researchers and engineers, and makes it easy to go from a simple
+  prototype running on a workstation to thousands of experimental jobs
+  running in a Cloud environment.</p>
+</sec>
+<sec id="motivation">
+  <title>Motivation</title>
+  <p>Modern machine learning research typically requires a researcher to
+  execute code in multiple computing environments. To investigate some
+  property of a machine learning model, the researcher has to write a
+  script that can accept a path to some dataset, train a model using
+  some set of configurable parameters, and generate measurements or a
+  serialized model for later analysis.</p>
+  <p>Writing and debugging model training code is fastest on a local
+  workstation. Running the script to generate measurements almost always
+  takes place on some much more powerful machine, typically in a Cloud
+  environment. The
+  <ext-link ext-link-type="uri" xlink:href="https://www.tensorflow.org/datasets/catalog/imagenet2012">imagenet
+  dataset</ext-link>
+  (<xref alt="Deng et al., 2009" rid="ref-deng2009imagenet" ref-type="bibr">Deng
+  et al., 2009</xref>) is 144 GiB, for example, far too large to process
+  on a stock laptop.</p>
+  <p>Moving between these environments almost always requires a
+  nontrivial amount of effort on the part of the researcher, unrelated
+  to the original research question. In Python, a common language for
+  machine learning research, the researcher installs their script’s
+  dependencies in a system-wide package registry. The Cloud environment
+  can have different dependencies available, or different versions of
+  the same dependency; different versions of Python itself; or different
+  software drivers, which elicit different behavior from the script that
+  seemed to work locally.</p>
+  <p>This environment mismatch introduces friction into the research
+  process. The only way to debug a script that succeeds locally and
+  fails in a remote Cloud environment is to attempt to interpret the
+  often-cryptic error logs.</p>
+  <sec id="docker">
+    <title>Docker</title>
+    <p>One solution to this problem is Docker
+    (<xref alt="Merkel, 2014" rid="ref-merkel2014docker" ref-type="bibr">Merkel,
+    2014</xref>). A researcher can package their code and dependencies
+    inside of a Docker container and execute this container on different
+    platforms, each with different hardware options available but with a
+    consistent software environment.</p>
+    <p>Many Cloud services (Google’s
+    <ext-link ext-link-type="uri" xlink:href="https://cloud.google.com/ai-platform">Cloud
+    AI Platform</ext-link>,
+    <ext-link ext-link-type="uri" xlink:href="https://aws.amazon.com/sagemaker/">Amazon
+    Sagemaker</ext-link> etc) allow users to submit and execute Docker
+    containers that they’ve built locally.</p>
+    <p>Packaging research code inside of a Docker container has many
+    benefits for reproducibility
+    (<xref alt="Cito &amp; Gall, 2016" rid="ref-cito2016" ref-type="bibr">Cito
+    &amp; Gall, 2016</xref>). But the process of building a Docker
+    container is difficult, error-prone and orthogonal to the skill set
+    of a machine learning researcher. The friction of debugging between
+    local and Cloud environments is solved, but only by accepting a
+    not-insignificant baseline level of toil into the local development
+    experience.</p>
+    <p>Projects like
+    <ext-link ext-link-type="uri" xlink:href="https://mlflow.org/docs/latest/projects.html">MLFlow</ext-link>
+    (<xref alt="Zaharia et al., 2018" rid="ref-zaharia2018accelerating" ref-type="bibr">Zaharia
+    et al., 2018</xref>) attempt to streamline the container creation
+    process, but still force the researcher to absorb much of Docker’s
+    mental model.</p>
+  </sec>
+</sec>
+<sec id="caliban-and-reproducible-research">
+  <title>Caliban and Reproducible Research</title>
+  <p>Caliban is a command line tool that solves this problem by
+  providing execution modes with opinionated, intuitive interfaces for
+  each phase of machine learning research - interactive development,
+  local execution, cloud execution and data analysis in a notebook
+  environment.</p>
+  <p>With Caliban, the researcher executes all code using Caliban’s
+  various subcommands. This process is, for the researcher, identical to
+  the process of executing code directly. To prepare a research
+  environment, all they need to do is specify required packages in a
+  <monospace>requirements.txt</monospace> file and Caliban will
+  automatically make those dependencies available inside the
+  container.</p>
+  <p>Behind the scenes, all software execution has moved inside of a
+  Docker container. This makes it transparent to move that execution
+  from a local environment to Cloud, enabling a research project to grow
+  from a simple prototype running on a workstation to thousands of
+  experimental jobs running on Cloud with little to no cognitive
+  load.</p>
+  <p>This removal of friction allows a researcher the freedom to be
+  creative in ways that their psychology would resist, given the typical
+  pain caused by moves between environments.</p>
+  <p>In addition, Caliban makes it easy to launch multiple jobs with
+  varying command-line arguments with a single command, using experiment
+  configuration files.</p>
+</sec>
+<sec id="impact">
+  <title>Impact</title>
+  <p>Before we introduced Caliban in our lab, researchers reported
+  spending multiple weeks learning how to run their experiments at
+  scale. Caliban allows a new researcher to reach this level of
+  proficiency in under an hour. Multiple papers currently in preparation
+  contain research results generated from thousands of experiments
+  executed using Caliban. Given the limited tenure of a typical machine
+  learning internship and residency, the efficiency boost offered by
+  Caliban can materially change the scope of project that a researcher
+  would be willing to take on.</p>
+  <p>In addition, any research conducted with Caliban that the
+  researcher open sources is trivially executable by any interested
+  party. The Docker environment managed by Caliban guarantees that
+  anyone with access to the shared source code repository will be able
+  to run experiments in an environment identical to the environment used
+  in the original research program.</p>
+</sec>
+<sec id="calibans-execution-environments">
+  <title>Caliban’s Execution Environments</title>
+  <p>Caliban provides a suite of execution engines that can execute the
+  containers built by Caliban.</p>
+  <p><ext-link ext-link-type="uri" xlink:href="https://caliban.readthedocs.io/en/latest/cli/caliban_shell.html"><monospace>caliban shell</monospace></ext-link>
+  generates a Docker image containing any dependencies declared in a
+  <monospace>requirements.txt</monospace> and/or
+  <monospace>setup.py</monospace> in a project’s directory and opens an
+  interactive shell. Any update to code in the project’s folder will be
+  reflected immediately inside the container environment. The
+  <monospace>caliban shell</monospace> environment is identical to the
+  environment available during Cloud execution, up to access to
+  different hardware.</p>
+  <p><ext-link ext-link-type="uri" xlink:href="https://caliban.readthedocs.io/en/latest/cli/caliban_notebook.html"><monospace>caliban notebook</monospace></ext-link>
+  starts a Jupyter notebook or lab instance inside of a Docker image
+  containing the project’s dependencies. As with
+  <monospace>caliban shell</monospace>, the environment available to the
+  notebook is identical to the Cloud environment.</p>
+  <p><ext-link ext-link-type="uri" xlink:href="https://caliban.readthedocs.io/en/latest/cli/caliban_run.html"><monospace>caliban run</monospace></ext-link>
+  packages a project’s code into a Docker container and executes it
+  locally using <monospace>docker run</monospace>. If the local machine
+  has access to a GPU, the instance will attach to it by default, with
+  no need to configure drivers.</p>
+  <p><ext-link ext-link-type="uri" xlink:href="https://caliban.readthedocs.io/en/latest/cli/caliban_cloud.html"><monospace>caliban cloud</monospace></ext-link>
+  allows a researcher to
+  <ext-link ext-link-type="uri" xlink:href="https://caliban.readthedocs.io/en/latest/getting_started/cloud.html">submit
+  a research script to Google’s AI Platform</ext-link>. The code will
+  run inside the same Docker container available with all other
+  subcommands. Researchers can submit hundreds of jobs at once. Any
+  machine type, GPU count, and GPU type combination specified will be
+  validated client side, instead of requiring a round trip to the
+  server.</p>
+  <p><ext-link ext-link-type="uri" xlink:href="https://caliban.readthedocs.io/en/latest/cli/caliban_build.html"><monospace>caliban build</monospace></ext-link>
+  builds the Docker image used in <monospace>caliban cloud</monospace>
+  and <monospace>caliban run</monospace> without actually running the
+  container or submitting any code.</p>
+  <p><ext-link ext-link-type="uri" xlink:href="https://caliban.readthedocs.io/en/latest/cli/caliban_cluster.html"><monospace>caliban cluster</monospace></ext-link>
+  allows a researcher to create and submit jobs to a Kubernetes cluster.
+  This environment is superficially similar to the Cloud environment
+  offered by Google’s AI Platform and
+  <monospace>caliban cloud</monospace>, but a different range of
+  hardware and pricing is available to the researcher.</p>
+  <p><ext-link ext-link-type="uri" xlink:href="https://caliban.readthedocs.io/en/latest/cli/caliban_status.html"><monospace>caliban status</monospace></ext-link>
+  displays information about all jobs submitted by Caliban, and allows a
+  researcher to cancel, inspect or resubmit large groups of
+  experiments.</p>
+</sec>
+<sec id="related-work">
+  <title>Related Work</title>
+  <p><bold>Reproducible Environments</bold>
+  <ext-link ext-link-type="uri" xlink:href="https://mybinder.org/">Binder</ext-link>
+  (<xref alt="Forde et al., 2018" rid="ref-Forde2018ReproducingML" ref-type="bibr">Forde
+  et al., 2018</xref>) is a project that allows a researcher to open up
+  Jupyter notebooks hosted in a git repository in a software environment
+  described by the repository’s <monospace>requirements.txt</monospace>
+  file. The motivation is similar to
+  <monospace>caliban notebook</monospace>, with the added benefit of
+  being able to interact with a notebook in the browser, without any
+  burden of configuring a local machine.
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/jupyter/repo2docker">repo2docker</ext-link>
+  offers the same ability to execute a repository of notebooks in its
+  required environment. This environment can be
+  <ext-link ext-link-type="uri" xlink:href="https://repo2docker.readthedocs.io/en/latest/config_files.html#dockerfile-advanced-environment">customized
+  and configured</ext-link> in similar ways to containers build by
+  Caliban.</p>
+  <p><bold>Scientific Cloud Computing</bold> A related series of
+  approaches to lowering the friction of scientific computing on the
+  Cloud expose primitives to the user that can execute both locally, or
+  in parallel on many Cloud machines. A “pure” Python function is a
+  function depends only on its inputs. If a scientific experiment is
+  built out of pure functions, it becomes possible to write a framework
+  that can execute that function in parallel on a large set of distinct
+  inputs in a Cloud environment.
+  <ext-link ext-link-type="uri" xlink:href="http://pywren.io/">Pywren</ext-link>
+  (<xref alt="Jonas et al., 2017" rid="ref-DBLPU003AjournalsU002FcorrU002FJonasVSR17" ref-type="bibr">Jonas
+  et al., 2017</xref>) is a project that makes this possible on
+  <ext-link ext-link-type="uri" xlink:href="https://aws.amazon.com/lambda/">AWS
+  Lambda</ext-link>.
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/nrdg/cloudknot">Cloudknot</ext-link>
+  (<xref alt="Richie-Halford &amp; Rokem, 2018" rid="ref-adam_richie-halford-proc-scipy-2018" ref-type="bibr">Richie-Halford
+  &amp; Rokem, 2018</xref>) extends this model to functions requiring
+  more computational resources. Cloudknot packages code into a Docker
+  image, providing the same potential level of configurability as
+  Caliban.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-merkel2014docker">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Merkel</surname><given-names>Dirk</given-names></name>
+        </person-group>
+        <article-title>Docker: Lightweight Linux Containers for Consistent Development and Deployment</article-title>
+        <source>Linux J.</source>
+        <publisher-name>Belltown Media</publisher-name>
+        <publisher-loc>Houston, TX</publisher-loc>
+        <year iso-8601-date="2014-03">2014</year><month>03</month>
+        <volume>2014</volume>
+        <issue>239</issue>
+        <issn>1075-3583</issn>
+      </element-citation>
+    </ref>
+    <ref id="ref-cito2016">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Cito</surname><given-names>Jürgen</given-names></name>
+          <name><surname>Gall</surname><given-names>Harald C.</given-names></name>
+        </person-group>
+        <article-title>Using Docker Containers to Improve Reproducibility in Software Engineering Research</article-title>
+        <source>Proceedings of the 38th international conference on software engineering companion</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="2016">2016</year>
+        <isbn>9781450342056</isbn>
+        <uri>https://doi.org/10.1145/2889160.2891057</uri>
+        <pub-id pub-id-type="doi">10.1145/2889160.2891057</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-deng2009imagenet">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Deng</surname><given-names>Jia</given-names></name>
+          <name><surname>Dong</surname><given-names>Wei</given-names></name>
+          <name><surname>Socher</surname><given-names>Richard</given-names></name>
+          <name><surname>Li</surname><given-names>Li-Jia</given-names></name>
+          <name><surname>Li</surname><given-names>Kai</given-names></name>
+          <name><surname>Fei-Fei</surname><given-names>Li</given-names></name>
+        </person-group>
+        <article-title>Imagenet: A large-scale hierarchical image database</article-title>
+        <source>2009 IEEE conference on computer vision and pattern recognition</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <uri>https://doi.org/10.1109/cvpr.2009.5206848</uri>
+        <pub-id pub-id-type="doi">10.1109/cvpr.2009.5206848</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-zaharia2018accelerating">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zaharia</surname><given-names>M.</given-names></name>
+          <name><surname>Chen</surname><given-names>Andrew</given-names></name>
+          <name><surname>Davidson</surname><given-names>A.</given-names></name>
+          <name><surname>Ghodsi</surname><given-names>A.</given-names></name>
+          <name><surname>Hong</surname><given-names>S.</given-names></name>
+          <name><surname>Konwinski</surname><given-names>A.</given-names></name>
+          <name><surname>Murching</surname><given-names>Siddharth</given-names></name>
+          <name><surname>Nykodym</surname><given-names>Tomas</given-names></name>
+          <name><surname>Ogilvie</surname><given-names>P.</given-names></name>
+          <name><surname>Parkhe</surname><given-names>Mani</given-names></name>
+          <name><surname>Xie</surname><given-names>F.</given-names></name>
+          <name><surname>Zumar</surname><given-names>Corey</given-names></name>
+        </person-group>
+        <article-title>Accelerating the Machine Learning Lifecycle with MLflow</article-title>
+        <source>IEEE Data Eng. Bull.</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>41</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-Forde2018ReproducingML">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Forde</surname><given-names>Jessica</given-names></name>
+          <name><surname>Bussonnier</surname><given-names>Matthias</given-names></name>
+          <name><surname>Fortin</surname><given-names>Félix-Antoine</given-names></name>
+          <name><surname>Granger</surname><given-names>Brian</given-names></name>
+          <name><surname>Head</surname><given-names>Tim</given-names></name>
+          <name><surname>Holdgraf</surname><given-names>Chris</given-names></name>
+          <name><surname>Ivanov</surname><given-names>Paul</given-names></name>
+          <name><surname>Kelley</surname><given-names>Kyle</given-names></name>
+          <name><surname>Pacer</surname><given-names>M</given-names></name>
+          <name><surname>Panda</surname><given-names>Yuvi</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Reproducing Machine Learning Research on Binder</article-title>
+        <source>NIPS Workshop on Machine Learning Open Source Software</source>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-DBLPU003AjournalsU002FcorrU002FJonasVSR17">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jonas</surname><given-names>Eric</given-names></name>
+          <name><surname>Venkataraman</surname><given-names>Shivaram</given-names></name>
+          <name><surname>Stoica</surname><given-names>Ion</given-names></name>
+          <name><surname>Recht</surname><given-names>Benjamin</given-names></name>
+        </person-group>
+        <article-title>Occupy the Cloud: Distributed Computing for the 99%</article-title>
+        <source>CoRR</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>abs/1702.04024</volume>
+        <uri>http://arxiv.org/abs/1702.04024</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-adam_richie-halford-proc-scipy-2018">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Richie-Halford</surname></name>
+          <name><surname>Rokem</surname></name>
+        </person-group>
+        <article-title>Cloudknot: A Python Library to Run your Existing Code on AWS Batch</article-title>
+        <source>Proceedings of the 17th Python in Science Conference</source>
+        <person-group person-group-type="editor">
+          <name><surname>Akici</surname></name>
+          <name><surname>Lippa</surname></name>
+          <name><surname>Niederhut</surname></name>
+          <name><surname>Pacer</surname><given-names>M</given-names></name>
+        </person-group>
+        <year iso-8601-date="2018">2018</year>
+        <pub-id pub-id-type="doi"> 10.25080/Majora-4af1f417-001 </pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

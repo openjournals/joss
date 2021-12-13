@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2872</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02872</article-id>
+<title-group>
+<article-title>SimpleSDMLayers.jl and GBIF.jl: A Framework for Species
+Distribution Modeling in Julia</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-2212-3584</contrib-id>
+<string-name>Gabriel Dansereau</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="corresp" rid="cor-1"><sup>*</sup></xref>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-0735-5184</contrib-id>
+<string-name>Timothée Poisot</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Département de sciences biologiques, Université de
+Montréal</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<author-notes>
+<corresp id="cor-1">* E-mail: <email></email></corresp>
+</author-notes>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-11-13">
+<day>13</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>57</issue>
+<fpage>2872</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>ecology</kwd>
+<kwd>biogeography</kwd>
+<kwd>GBIF</kwd>
+<kwd>species distribution modeling</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Predicting where species should be found in space is a common
+  question in ecology and biogeography. Species distribution models
+  (SDMs), for instance, aim to predict where environmental conditions
+  are suitable for a given species, often on continuous geographic
+  scales. Such analyses require the use of geo-referenced data on
+  species distributions coupled with climate or land cover information,
+  hence a tight integration between environmental data, species
+  occurrence data, and spatial coordinates. Thus, it requires an
+  efficient way to access these different data types within the same
+  software, as well as a flexible framework on which to build various
+  analysis workflows. Here we present
+  <monospace>SimpleSDMLayers.jl</monospace> and
+  <monospace>GBIF.jl</monospace>, two packages in the
+  <italic>Julia</italic> language implementing a simple framework and
+  type-system on which to build SDM analyses, as well as providing
+  access to popular data sources for species occurrences and
+  environmental conditions.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Species distribution modeling (SDM) is an increasingly growing
+  field in ecology and biogeography, with many applications in
+  biodiversity assessment, management, and conservation
+  (<xref alt="Araújo et al., 2019" rid="ref-Araujo2019StaDis" ref-type="bibr">Araújo
+  et al., 2019</xref>). Most SDM models aim at predicting a species
+  distribution in space based on environmental data and information on
+  where the species was previously seen. Hence, SDM studies require a
+  tight and efficient integration between geo-referenced environmental
+  and species occurrence data. However, such data are complex to handle
+  and often require different software: climate and land use data are
+  stored as layers in raster files, then visualized and manipulated in
+  specialized GIS (geographic information systems) software, while
+  occurrence data are stored in tables and spreadsheets, then
+  manipulated in data analysis and statistics-oriented tools or
+  programming languages. Therefore, there is a need for efficient tools
+  to manipulate bioclimatic data, specifically oriented towards species
+  distribution modeling.</p>
+  <p>In recent years, <italic>R</italic>
+  (<xref alt="R Core Team, 2020" rid="ref-RCoreTeam2020RLan" ref-type="bibr">R
+  Core Team, 2020</xref>) has become the most widely used programming
+  language in ecology, especially in spatial ecology studies
+  (<xref alt="Lai et al., 2019" rid="ref-Lai2019EvaPop" ref-type="bibr">Lai
+  et al., 2019</xref>). Hence, many efficient packages and tools for
+  species distribution modeling have been developed in
+  <italic>R</italic>. For instance, the package
+  <monospace>raster</monospace>
+  (<xref alt="Hijmans, 2020" rid="ref-Hijmans2020RasGeo" ref-type="bibr">Hijmans,
+  2020</xref>) can be used to manipulate raster format data (for example
+  climatic or land use data), <monospace>dismo</monospace>
+  (<xref alt="Hijmans et al., 2017" rid="ref-Hijmans2017DisSpe" ref-type="bibr">Hijmans
+  et al., 2017</xref>) implements many SDM models and provides access to
+  common climatic data sources, and <monospace>rgbif</monospace>
+  (<xref alt="Chamberlain et al., 2020" rid="ref-Chamberlain2020RgbInt" ref-type="bibr">Chamberlain
+  et al., 2020</xref>) provides access to the GBIF database, a common
+  source of species occurrence data in SDM studies. In comparison, few
+  specific SDM resources currently exist for the <italic>Julia</italic>
+  language
+  (<xref alt="Bezanson et al., 2017" rid="ref-Bezanson2017JulFre" ref-type="bibr">Bezanson
+  et al., 2017</xref>), although SDM models could benefit from its
+  speed, efficiency and ease of writing (removing the need to rewrite
+  functions in other languages for higher performance, as in
+  <italic>R</italic>). There are currently packages such as
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/JuliaGeo/GDAL.jl"><monospace>GDAL.jl</monospace></ext-link>
+  and
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/yeesian/ArchGDAL.jl"><monospace>ArchGDAL.jl</monospace></ext-link>
+  to manipulate raster data; however, these are lower-level
+  implementations than what is typically used by most ecologists, and
+  they lack support for common layer manipulation. generalized linear
+  models
+  (<ext-link ext-link-type="uri" xlink:href="https://github.com/JuliaStats/GLM.jl">GLM.jl</ext-link>),
+  random forests
+  (<ext-link ext-link-type="uri" xlink:href="https://github.com/bensadeghi/DecisionTree.jl">DecisionTrees.jl</ext-link>),
+  neural networks
+  (<ext-link ext-link-type="uri" xlink:href="https://github.com/FluxML/Flux.jl">Flux.jl</ext-link>),
+  and other commonly used models have excellent implementations in
+  <italic>Julia</italic>, although not oriented towards species
+  distribution modeling and raster format data.</p>
+  <p><monospace>SimpleSDMLayers.jl</monospace> is a package to
+  facilitate manipulation of geo-referenced raster data in
+  <italic>Julia</italic>, specifically aimed at species distribution
+  modeling. It is a higher-level implementation, building on
+  <monospace>ArchGDAL.jl</monospace>, that is easier to use and provides
+  support for common SDM operations (see <italic>Feature
+  Overview</italic> section below). The package implements simple type
+  structures to manipulate the input and output data of SDM models, and
+  is meant to be a flexible framework on which to build more complex
+  analyses. While it does not implement SDM models in itself, we believe
+  the package is a step that will make <italic>Julia</italic> more
+  popular for species distribution modeling, and lead to the development
+  of more complete implementations.
+  <monospace>SimpleSDMLayers.jl</monospace> also offers built-in access
+  to some of the most common data sources in SDM studies, such as the
+  WorldClim 2.1 climatic data, which is the most common source of
+  climate data in SDM studies
+  (<xref alt="Booth et al., 2014" rid="ref-Booth2014BioFir" ref-type="bibr">Booth
+  et al., 2014</xref>). The package is also tightly integrated with
+  <monospace>GBIF.jl</monospace>, which allows easy access to the GBIF
+  database, a common data source for species occurrences. Both
+  <monospace>SimpleSDMLayers.jl</monospace> and
+  <monospace>GBIF.jl</monospace> are part of the
+  <italic>EcoJulia</italic> organization, whose aim is to integrate a
+  variety of packages for ecological analyses in
+  <italic>Julia</italic>.</p>
+</sec>
+<sec id="basic-structure">
+  <title>Basic structure</title>
+  <p>The core structure implemented in
+  <monospace>SimpleSDMLayers.jl</monospace> is the
+  <monospace>SimpleSDMLayer</monospace> type, with two variants,
+  <monospace>SimpleSDMPredictor</monospace> and
+  <monospace>SimpleSDMResponse</monospace>, depending if the layer is
+  meant to be mutable or not.</p>
+  <p>A <monospace>SimpleSDMLayer</monospace> element is made of a
+  <monospace>grid</monospace> field, which contains the raster data as a
+  simple <monospace>Array</monospace> (matrix) of any type, easily
+  manipulable. It also contains the fields <monospace>left</monospace>,
+  <monospace>right</monospace>, <monospace>bottom</monospace>, and
+  <monospace>top</monospace>, representing the bounding coordinates of
+  the layer.</p>
+  <p>To illustrate this structure, the following code loads a layer of
+  WorldClim 2.1 climate data, which also shows how easily this can be
+  done in a single call. By default, this will return a layer with the
+  values for the whole world if no bounding coordinates are
+  specified.</p>
+  <code language="julia"># Load package
+using SimpleSDMLayers
+
+# Get world temperature data
+temperature = worldclim(1)</code>
+  <preformat>SimpleSDMLayers.SimpleSDMPredictor{Float32}(Union{Nothing, Float32}[-31.017
+105f0 -31.62153f0 … -32.81253f0 -31.620333f0; -30.391916f0 -31.63478f0 … -3
+2.81005f0 -30.995281f0; … ; nothing nothing … nothing nothing; nothing noth
+ing … nothing nothing], -180.0, 180.0, -90.0, 90.0)</preformat>
+  <p>The raster values can be displayed by calling the
+  <monospace>grid</monospace> field.</p>
+  <code language="julia"># Display data grid
+temperature.grid</code>
+  <preformat>1080×2160 Array{Union{Nothing, Float32},2}:
+ -31.0171    -31.6215    -31.6227    …  -32.8129    -32.8125    -31.6203
+ -30.3919    -31.6348    -31.6341       -32.8092    -32.8101    -30.9953
+ -33.4822    -34.1494    -34.1493       -35.4658    -35.4633    -34.1374
+ -33.6104    -34.2875    -34.2865       -35.596     -35.5931    -34.2528
+ -33.7199    -34.4041    -34.4014       -35.6932    -35.691     -34.3311
+ -33.8224    -34.5184    -34.5162    …  -35.8037    -35.7996    -34.4165
+ -31.6613    -32.3194    -32.3184       -33.5133    -33.5101    -32.2032
+ -31.7635    -32.4307    -33.7036       -34.9522    -33.6282    -32.3038
+ -33.7063    -36.0738    -39.2075       -40.6438    -37.3938    -34.3026
+ -33.9768    -34.7016    -35.8662       -37.2408    -36.0364    -34.5988
+                                                                
+    nothing     nothing     nothing        nothing     nothing     nothing
+    nothing     nothing     nothing        nothing     nothing     nothing
+    nothing     nothing     nothing        nothing     nothing     nothing
+    nothing     nothing     nothing        nothing     nothing     nothing
+    nothing     nothing     nothing  …     nothing     nothing     nothing
+    nothing     nothing     nothing        nothing     nothing     nothing
+    nothing     nothing     nothing        nothing     nothing     nothing
+    nothing     nothing     nothing        nothing     nothing     nothing
+    nothing     nothing     nothing        nothing     nothing     nothing</preformat>
+  <p><monospace>SimpleSDMLayers.jl</monospace> then makes it very simple
+  to plot and visualize the layer as a map using
+  <monospace>Plots.jl</monospace>
+  (<xref alt="Figure 1" rid="figU003Atemp">Figure 1</xref>).</p>
+  <code language="julia">using Plots
+plot(temperature)</code>
+  <fig>
+    <caption><p>Map of the average annual temperature data from
+    WorldClim 2.1, accessed as a layer through
+    SimpleSDMLayers.jl<styled-content id="figU003Atemp"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="figures/paper_temp_1.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="feature-overview">
+  <title>Feature overview</title>
+  <p><monospace>SimpleSDMLayers.jl</monospace> implements the following
+  features:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p><bold>Overloads for common functions</bold>: The
+      <monospace>SimpleSDMLayer</monospace> types are implemented along
+      with overloads for many common functions and operations, such as
+      subsetting, changing values, copying, and iterating. Therefore,
+      the layers and the raster values stored in the
+      <monospace>grid</monospace> field can be manipulated as easily as
+      any <monospace>Array</monospace>, without losing their spatial
+      aspect.</p>
+    </list-item>
+    <list-item>
+      <p><bold>Statistical operations on layer values</bold>: Common
+      operations can be performed directly on the layer values without
+      worrying about the underlying structure (for example, sum,
+      minimum, maximum, mean, median).</p>
+    </list-item>
+    <list-item>
+      <p><bold>Statistical operations on multiple layers</bold>:
+      Operations can also be performed between layers to produce a new
+      layer, just as <monospace>Arrays</monospace>, as long as they
+      share the same coordinates. For instance, two layers can be added
+      or subtracted, and calling <monospace>mean()</monospace> will
+      produce a new layer with the mean value per pixel.</p>
+    </list-item>
+    <list-item>
+      <p><bold>Spatial operations</bold>:
+      <monospace>SimpleSDMLayers.jl</monospace> implements spatial
+      operations such as clipping a layer to given coordinates,
+      coarsening the resolution by grouping values, and performing
+      sliding window operations given a certain radius.</p>
+    </list-item>
+    <list-item>
+      <p><bold>Datasets supported</bold>: The package provides access to
+      climate data at different resolutions from WorldClim 2.1 and
+      CHELSA, as well as land cover data from EarthEnv. Custom raster
+      data can be loaded as well.</p>
+    </list-item>
+    <list-item>
+      <p><bold>Plotting recipes</bold>: Default recipes are implemented
+      for the <monospace>SimpleSDMLayer</monospace> types, allowing to
+      directly map them, view the grid data as histograms and density
+      plots, or compare layers as 2-dimensional histograms.</p>
+    </list-item>
+    <list-item>
+      <p><bold>Integration with GBIF.jl (and DataFrames.jl)</bold>:
+      <monospace>SimpleSDMLayer.jl</monospace> is well integrated with
+      <monospace>GBIF.jl</monospace>, allowing to clip layers based on
+      the occurrence data, as well as to map occurrences by displaying
+      them over the layers. Both packages also offer an integration with
+      <monospace>DataFrames.jl</monospace> to easily convert
+      environmental and occurrence data to a table format.</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="examples">
+  <title>Examples</title>
+  <sec id="spatial-operations">
+    <title>Spatial operations</title>
+    <p>To illustrate a few of the spatial operations supported by
+    <monospace>SimpleSDMLayers.jl</monospace>, the following code reuses
+    the previous <monospace>temperature</monospace> layer, and shows how
+    it is possible to : 1) clip the layer to a region of interest
+    (Europe for instance); 2) coarsen the resolution by averaging groups
+    of cells for large scale analyses; and 3) perform sliding window
+    operations to aggregate values for each site based on a certain
+    radius. Each of these operations can be performed in a single
+    command and returns new layers, which can then be plotted as shown
+    previously.</p>
+    <code language="julia">using Statistics
+# Clip to Europe
+temperature_europe = temperature[left = -11.2, right = 30.6, 
+                                 bottom = 29.1, top = 71.0]
+# Coarsen resolution
+temperature_coarse = coarsen(temperature_europe, Statistics.mean, (4, 4))
+# Sliding window averaging
+temperature_slided = slidingwindow(temperature_europe, Statistics.mean, 100.0)</code>
+  </sec>
+  <sec id="gbif-integration">
+    <title>GBIF integration</title>
+    <p>The following example shows how the integration between
+    <monospace>SimpleSDMLayers.jl</monospace> and
+    <monospace>GBIF.jl</monospace> allows to easily map the occurrences
+    of any species in GBIF. The species represented in this example is
+    the belted kingfisher (<italic>Megaceryle alcyon</italic>).</p>
+    <p><monospace>GBIF.jl</monospace> first allows us to retrieve the
+    latest occurrences from the GBIF database. Note that the element
+    returned here uses the <monospace>GBIFRecords</monospace> format,
+    which contains the metadata associated to each GBIF occurrence.</p>
+    <code language="julia">using GBIF
+kingfisher = GBIF.taxon(&quot;Megaceryle alcyon&quot;, strict=true)
+kf_occurrences = occurrences(kingfisher)
+# Get at least 200 occurrences
+while length(kf_occurrences) &lt; 200
+    occurrences!(kf_occurrences)
+    @info &quot;$(length(kf_occurrences)) occurrences&quot;
+end
+kf_occurrences</code>
+    <preformat>GBIF records: downloaded 200 out of 100000</preformat>
+    <p><monospace>SimpleSDMLayers.jl</monospace> then provides a simple
+    integration between the occurrence data and the environmental
+    layers. The layers can be clipped to the spatial extent of the
+    occurrences in a single call using the <monospace>clip()</monospace>
+    function. The occurrences’ coordinates can also be extracted with
+    <monospace>longitudes()</monospace> and
+    <monospace>latitudes()</monospace>. Using these functions, we can
+    easily create a map of the occurrences by overlaying them on top of
+    the clipped environmental layer
+    (<xref alt="Figure 2" rid="figU003Agbif">Figure 2</xref>).</p>
+    <code language="julia"># Clip layer to occurrences
+temperature_clip = clip(temperature, kf_occurrences)
+
+# Plot occurrences
+contour(temperature_clip, fill = true)
+scatter!(longitudes(kf_occurrences), latitudes(kf_occurrences))</code>
+    <fig>
+      <caption><p>Latest belted kingfisher occurrences from the GBIF
+      database displayed over the temperature data through the
+      integration between SimpleSDMLayers.jl and
+      GBIF.jl<styled-content id="figU003Agbif"></styled-content></p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="figures/paper_gbif_1.png" xlink:title="" />
+    </fig>
+  </sec>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We would like to thank all contributors to the
+  <italic>EcoJulia</italic> organization for their help in developing
+  this series of packages for ecological research. Funding was provided
+  by Fonds de recherche du Québec - Nature et technologies (FRQNT) and
+  the Computational Biodiversity Science and Services (BIOS²) training
+  program.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Araujo2019StaDis">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Araújo</surname><given-names>Miguel B.</given-names></name>
+          <name><surname>Anderson</surname><given-names>Robert P.</given-names></name>
+          <name><surname>Barbosa</surname><given-names>A. Márcia</given-names></name>
+          <name><surname>Beale</surname><given-names>Colin M.</given-names></name>
+          <name><surname>Dormann</surname><given-names>Carsten F.</given-names></name>
+          <name><surname>Early</surname><given-names>Regan</given-names></name>
+          <name><surname>Garcia</surname><given-names>Raquel A.</given-names></name>
+          <name><surname>Guisan</surname><given-names>Antoine</given-names></name>
+          <name><surname>Maiorano</surname><given-names>Luigi</given-names></name>
+          <name><surname>Naimi</surname><given-names>Babak</given-names></name>
+          <name><surname>O’Hara</surname><given-names>Robert B.</given-names></name>
+          <name><surname>Zimmermann</surname><given-names>Niklaus E.</given-names></name>
+          <name><surname>Rahbek</surname><given-names>Carsten</given-names></name>
+        </person-group>
+        <article-title>Standards for distribution models in biodiversity assessments</article-title>
+        <source>Science Advances</source>
+        <publisher-name>American Association for the Advancement of Science</publisher-name>
+        <year iso-8601-date="2019-01">2019</year><month>01</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-03-14">2020</year><month>03</month><day>14</day></date-in-citation>
+        <volume>5</volume>
+        <issue>1</issue>
+        <issn>2375-2548</issn>
+        <uri>https://advances.sciencemag.org/content/5/1/eaat4858</uri>
+        <pub-id pub-id-type="doi">10.1126/sciadv.aat4858</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Bezanson2017JulFre">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bezanson</surname><given-names>Jeff</given-names></name>
+          <name><surname>Edelman</surname><given-names>Alan</given-names></name>
+          <name><surname>Karpinski</surname><given-names>Stefan</given-names></name>
+          <name><surname>Shah</surname><given-names>Viral B.</given-names></name>
+        </person-group>
+        <article-title>Julia: A fresh approach to numerical computing</article-title>
+        <source>SIAM Review</source>
+        <year iso-8601-date="2017-01">2017</year><month>01</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-04-29">2019</year><month>04</month><day>29</day></date-in-citation>
+        <volume>59</volume>
+        <issue>1</issue>
+        <issn>0036-1445, 1095-7200</issn>
+        <uri>https://epubs.siam.org/doi/10.1137/141000671</uri>
+        <pub-id pub-id-type="doi">10.1137/141000671</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Booth2014BioFir">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Booth</surname><given-names>Trevor H.</given-names></name>
+          <name><surname>Nix</surname><given-names>Henry A.</given-names></name>
+          <name><surname>Busby</surname><given-names>John R.</given-names></name>
+          <name><surname>Hutchinson</surname><given-names>Michael F.</given-names></name>
+        </person-group>
+        <article-title>BIOCLIM: The first species distribution modelling package, its early applications and relevance to most current MaxEnt studies</article-title>
+        <source>Diversity and Distributions</source>
+        <year iso-8601-date="2014">2014</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-08-16">2019</year><month>08</month><day>16</day></date-in-citation>
+        <volume>20</volume>
+        <issue>1</issue>
+        <issn>1472-4642</issn>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1111/ddi.12144</uri>
+        <pub-id pub-id-type="doi">10.1111/ddi.12144</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Chamberlain2020RgbInt">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Chamberlain</surname><given-names>Scott</given-names></name>
+          <name><surname>Barve</surname><given-names>Vijay</given-names></name>
+          <name><surname>Mcglinn</surname><given-names>Dan</given-names></name>
+          <name><surname>Oldoni</surname><given-names>Damiano</given-names></name>
+          <name><surname>Desmet</surname><given-names>Peter</given-names></name>
+          <name><surname>Geffert</surname><given-names>Laurens</given-names></name>
+          <name><surname>Ram</surname><given-names>Karthik</given-names></name>
+        </person-group>
+        <article-title>rgbif: Interface to the Global Biodiversity Information Facility API</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://CRAN.R-project.org/package=rgbif</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hijmans2017DisSpe">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Hijmans</surname><given-names>Robert J.</given-names></name>
+          <name><surname>Phillips</surname><given-names>Steven</given-names></name>
+          <name><surname>Leathwick</surname><given-names>John</given-names></name>
+          <name><surname>Elith</surname><given-names>Jane</given-names></name>
+        </person-group>
+        <article-title>dismo: Species distribution modeling</article-title>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://CRAN.R-project.org/package=dismo</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hijmans2020RasGeo">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Hijmans</surname><given-names>Robert J.</given-names></name>
+        </person-group>
+        <article-title>raster: Geographic data analysis and modeling</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://CRAN.R-project.org/package=raster</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Lai2019EvaPop">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lai</surname><given-names>Jiangshan</given-names></name>
+          <name><surname>Lortie</surname><given-names>Christopher J.</given-names></name>
+          <name><surname>Muenchen</surname><given-names>Robert A.</given-names></name>
+          <name><surname>Yang</surname><given-names>Jian</given-names></name>
+          <name><surname>Ma</surname><given-names>Keping</given-names></name>
+        </person-group>
+        <article-title>Evaluating the popularity of R in ecology</article-title>
+        <source>Ecosphere</source>
+        <year iso-8601-date="2019">2019</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-10-16">2020</year><month>10</month><day>16</day></date-in-citation>
+        <volume>10</volume>
+        <issue>1</issue>
+        <issn>2150-8925</issn>
+        <uri>https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1002/ecs2.2567</uri>
+        <pub-id pub-id-type="doi">10.1002/ecs2.2567</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-RCoreTeam2020RLan">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>R Core Team</string-name>
+        </person-group>
+        <source>R: A language and environment for statistical computing</source>
+        <publisher-name>R Foundation for Statistical Computing</publisher-name>
+        <publisher-loc>Vienna, Austria</publisher-loc>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://www.R-project.org/</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

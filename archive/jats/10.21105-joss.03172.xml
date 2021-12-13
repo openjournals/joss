@@ -1,0 +1,782 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3172</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03172</article-id>
+<title-group>
+<article-title>Semi-Automatic Classification Plugin: A Python tool for
+the download and processing of remote sensing images in
+QGIS</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-7283-116X</contrib-id>
+<string-name>Luca Congedo</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Independent Researcher</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-03-08">
+<day>8</day>
+<month>3</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>64</issue>
+<fpage>3172</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Remote sensing</kwd>
+<kwd>Supervised classification</kwd>
+<kwd>Image processing</kwd>
+<kwd>Land cover</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The <monospace>Semi-Automatic Classification Plugin</monospace> is
+  a Python plugin for the software QGIS
+  (<xref alt="QGIS Development Team, 2021" rid="ref-QGIS" ref-type="bibr">QGIS
+  Development Team, 2021</xref>) developed with the overall objective to
+  facilitate land cover monitoring by people whose main field is not
+  strictly remote sensing, but that could benefit from remote sensing
+  analysis. The
+  <monospace>Semi-Automatic Classification Plugin</monospace> provides a
+  set of intertwined tools and a user interface for easing and
+  automating the phases of land cover classification, from the download
+  of remote sensing images, to the preprocessing (i.e. tools for
+  preparing the data to the analysis or other calculations), the
+  processing (i.e. tools for performing the classification of land cover
+  or perform analysis), and postprocessing (i.e. tools for assessing the
+  classification accuracy, refining the classification, or integrating
+  additional data). The processing of remote sensing data can be
+  computationally intensive, therefore most of the developed tools use
+  <ext-link ext-link-type="uri" xlink:href="https://docs.python.org/3/library/multiprocessing.html">Python
+  multiprocessing</ext-link> to exploit the system CPU and RAM by
+  splitting the work among multiple subprocesses. The aim of this paper
+  is to describe the main characteristics of the
+  <monospace>Semi-Automatic Classification Plugin</monospace> for the
+  land cover classification of remote sensing images.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Remote sensing is the measurement, by a sensor installed on board
+  of airplanes or satellites, of the energy that is emanated from the
+  Earth’s surface
+  (<xref alt="Richards &amp; Jia, 2006" rid="ref-RichardsU003A2006" ref-type="bibr">Richards
+  &amp; Jia, 2006</xref>). Remote sensing images are spatial data and
+  require the use of a Geographic Information System (GIS) for
+  visualization and processing. The free availability of satellite data
+  (such as Landsat
+  (<xref alt="United States Geological Survey, 2019" rid="ref-USGSU003A2019" ref-type="bibr">United
+  States Geological Survey, 2019</xref>), and Sentinel-2
+  (<xref alt="European Space Agency, 2018" rid="ref-ESAU003A2018" ref-type="bibr">European
+  Space Agency, 2018</xref>)) extended the use of remote sensing in
+  various fields such as urban planning, agriculture, environmental
+  monitoring, etc.
+  (<xref alt="Nink et al., 2019" rid="ref-NinkU003A2019" ref-type="bibr">Nink
+  et al., 2019</xref>;
+  <xref alt="Pesaresi et al., 2016" rid="ref-PesaresiU003A2016" ref-type="bibr">Pesaresi
+  et al., 2016</xref>;
+  <xref alt="Rogan &amp; Chen, 2004" rid="ref-RoganU003A2004" ref-type="bibr">Rogan
+  &amp; Chen, 2004</xref>;
+  <xref alt="Weiss et al., 2020" rid="ref-WeissU003A2020" ref-type="bibr">Weiss
+  et al., 2020</xref>). Land cover is defined as the material at the
+  Earth’s surface, such as soil, vegetation, water, asphalt, etc.
+  (<xref alt="Fisher &amp; Unwin, 2005" rid="ref-FisherU003A2005" ref-type="bibr">Fisher
+  &amp; Unwin, 2005</xref>). A supervised classification (also known as
+  semi-automatic classification) is an image processing technique that
+  aims at classifying land cover by training an algorithm with samples
+  of material spectral signatures.</p>
+  <p>The development of open source GIS and processing software can
+  foster environmental monitoring, which can be performed with no cost
+  for software and remote sensing images considering the free data
+  availability. QGIS is an open source GIS software which provides
+  several tools for data visualization and analysis; it is mainly
+  written in C++ code, but it also allows to extend the functions
+  thereof through API and plugins written in Python
+  (<xref alt="QGIS Development Team, 2021" rid="ref-QGIS" ref-type="bibr">QGIS
+  Development Team, 2021</xref>). QGIS has a large repository of plugins
+  that improve data analysis and also provide access to several image
+  processing tools included in other open source programs such as GRASS
+  (<xref alt="GRASS Development Team, 2017" rid="ref-GRASS" ref-type="bibr">GRASS
+  Development Team, 2017</xref>), GDAL
+  (<xref alt="GDAL/OGR contributors, 2021" rid="ref-GDAL" ref-type="bibr">GDAL/OGR
+  contributors, 2021</xref>), and Orfeo Toolbox
+  (<xref alt="OTB Development Team, 2020" rid="ref-OTB" ref-type="bibr">OTB
+  Development Team, 2020</xref>). These programs allow for the
+  processing of satellite images, nevertheless their use can be
+  difficult for people interested in land cover classifications but
+  specialized in fields other than remote sensing, because of the
+  several steps required for image processing.</p>
+  <p>The <monospace>Semi-Automatic Classification Plugin</monospace>
+  aims to provide a complete suite of tools for processing remote
+  sensing data, easing the phases related to the download, the
+  preprocessing of images, and the postprocessing of classifications,
+  with built-in algorithms developed in Python and third party
+  algorithms for specific functions (e.g. Sentinel-1 preprocessing
+  through ESA SNAP
+  (<xref alt="European Space Agency, 2021" rid="ref-SNAP" ref-type="bibr">European
+  Space Agency, 2021</xref>)).</p>
+  <p>Several tutorials about the
+  <monospace>Semi-Automatic Classification Plugin</monospace> are freely
+  available on the
+  <ext-link ext-link-type="uri" xlink:href="https://fromgistors.blogspot.com/search/label/Tutorial">official
+  website</ext-link>, and the
+  <ext-link ext-link-type="uri" xlink:href="https://semiautomaticclassificationmanual.readthedocs.io">user
+  manual</ext-link> is being translated into several languages by the
+  user community.</p>
+  <p>The <monospace>Semi-Automatic Classification Plugin</monospace> has
+  been cited in several studies about land cover, urban growth, and
+  image processing
+  (<xref alt="Arekhi et al., 2019" rid="ref-ArekhiU003A2019" ref-type="bibr">Arekhi
+  et al., 2019</xref>;
+  <xref alt="Damtew et al., 2021" rid="ref-DamtewU003A2021" ref-type="bibr">Damtew
+  et al., 2021</xref>;
+  <xref alt="Furukawa et al., 2020" rid="ref-FurukawaU003A2020" ref-type="bibr">Furukawa
+  et al., 2020</xref>;
+  <xref alt="Garilli et al., 2021" rid="ref-GarilliU003A2021" ref-type="bibr">Garilli
+  et al., 2021</xref>;
+  <xref alt="Huq et al., 2019" rid="ref-HuqU003A2019" ref-type="bibr">Huq
+  et al., 2019</xref>;
+  <xref alt="Leroux et al., 2018" rid="ref-LerouxU003A2018" ref-type="bibr">Leroux
+  et al., 2018</xref>;
+  <xref alt="Palafox-Juárez et al., 2021" rid="ref-Palafox-JuarezU003A2021" ref-type="bibr">Palafox-Juárez
+  et al., 2021</xref>;
+  <xref alt="Pelage et al., 2019" rid="ref-PelageU003A2019" ref-type="bibr">Pelage
+  et al., 2019</xref>;
+  <xref alt="Teodoro &amp; Amaral, 2019" rid="ref-TeodoroU003A2019" ref-type="bibr">Teodoro
+  &amp; Amaral, 2019</xref>;
+  <xref alt="Zhang et al., 2018" rid="ref-ZhangU003A2018" ref-type="bibr">Zhang
+  et al., 2018</xref>).</p>
+</sec>
+<sec id="overview-of-the-semi-automatic-classification-plugin">
+  <title>Overview of the Semi-Automatic Classification Plugin</title>
+  <p>The <monospace>Semi-Automatic Classification Plugin</monospace>
+  interfaces is composed of several modules (as illustrated in
+  <xref alt="Figure 1" rid="figU003Aplugin_interface">Figure 1</xref>).
+  A module allows for searching and downloading freely available images
+  (in particular ASTER, GOES, Landsat, MODIS, Sentinel-1, Sentinel-2,
+  and Sentinel-3). It is possible to perform the preprocessing and
+  raster calculations automatically after the download, by setting a few
+  parameters in the user interface.</p>
+  <fig>
+    <caption><p>User interface of the
+    <monospace>Semi-Automatic Classification Plugin</monospace> for
+    QGIS.<styled-content id="figU003Aplugin_interface"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="plugin_interface.png" xlink:title="" />
+  </fig>
+  <p>The interface allows to define an image input (named
+  <monospace>band set</monospace>) which is the set of raster bands to
+  be processed.</p>
+  <p>The following tools are available for
+  <monospace>preprocessing</monospace>:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Conversion to reflectance for ASTER, GOES, Landsat, MODIS,
+      Sentinel-1, Sentinel-2, and Sentinel-3 images;</p>
+    </list-item>
+    <list-item>
+      <p>Clip multiple rasters at once;</p>
+    </list-item>
+    <list-item>
+      <p>Cloud masking based on the values of a raster mask;</p>
+    </list-item>
+    <list-item>
+      <p>Mosaic band sets, merging the corresponding bands of two or
+      more band sets;</p>
+    </list-item>
+    <list-item>
+      <p>Statistic calculation for neighbor pixels;</p>
+    </list-item>
+    <list-item>
+      <p>Reprojection of the coordinates of raster bands;</p>
+    </list-item>
+    <list-item>
+      <p>Splitting or stacking raster bands in a unique file;</p>
+    </list-item>
+    <list-item>
+      <p>Vector to raster conversion.</p>
+    </list-item>
+  </list>
+  <p>The following <monospace>processing</monospace> tools are
+  available:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Band combination to get a raster where each value corresponds
+      to a combination of input values;</p>
+    </list-item>
+    <list-item>
+      <p>Clustering for unsupervised classification (i.e. without
+      training input);</p>
+    </list-item>
+    <list-item>
+      <p>Principal Component Analysis of band set;</p>
+    </list-item>
+    <list-item>
+      <p>Calculation of the spectral distance between every
+      corresponding pixel of two band sets;</p>
+    </list-item>
+    <list-item>
+      <p>Classification using one of the available algorithms, such as
+      Minimum Distance
+      (<xref alt="Richards &amp; Jia, 2006" rid="ref-RichardsU003A2006" ref-type="bibr">Richards
+      &amp; Jia, 2006</xref>), Maximum Likelihood
+      (<xref alt="Richards &amp; Jia, 2006" rid="ref-RichardsU003A2006" ref-type="bibr">Richards
+      &amp; Jia, 2006</xref>), Spectral Angle Mapping
+      (<xref alt="Kruse et al., 1993" rid="ref-KruseU003A1993" ref-type="bibr">Kruse
+      et al., 1993</xref>), and Random Forest
+      (<xref alt="Breiman, 2001" rid="ref-BreimanU003A2001" ref-type="bibr">Breiman,
+      2001</xref>).</p>
+    </list-item>
+  </list>
+  <p>Considering that semi-automatic classification algorithms require
+  training pixels (i.e. spectral signatures), a specific dock interface
+  for training input creation and spectral signature calculation is
+  available, which allows to create polygons interactively (manually or
+  through region growing) and import spectral libraries such as the USGS
+  Spectral Library
+  (<xref alt="Kokaly et al., 2017" rid="ref-KokalyU003A2017" ref-type="bibr">Kokaly
+  et al., 2017</xref>). The interface allows to create classification
+  previews on small portion of the image to assess the results before
+  launching the classification process for the whole image. In addition,
+  the plot of spectral signatures can be visualized in order to assess
+  the spectral separability of signatures.</p>
+  <p>A band calculator is available for performing mathematical and
+  conditional calculation using input rasters, for instance for the
+  calculation of spectral indices.</p>
+  <p>The following <monospace>postprocessing</monospace> tools are
+  available for refining the classification output and further
+  analyses:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Accuracy assessment of the classification;</p>
+    </list-item>
+    <list-item>
+      <p>Classification dilation, erosion, and sieve for refining the
+      patches of the classes;</p>
+    </list-item>
+    <list-item>
+      <p>Classification report for calculation of class statistics such
+      as number of pixels, percentage and area;</p>
+    </list-item>
+    <list-item>
+      <p>Conversion of classification from raster to vector;</p>
+    </list-item>
+    <list-item>
+      <p>Manual editing of raster values;</p>
+    </list-item>
+    <list-item>
+      <p>Assessment of land cover change comparing two
+      classifications;</p>
+    </list-item>
+    <list-item>
+      <p>Statistics related to an input raster for every unique value of
+      a reference vector or raster;</p>
+    </list-item>
+    <list-item>
+      <p>Reclassification of raster values.</p>
+    </list-item>
+  </list>
+  <p>Finally, the tool <monospace>Batch</monospace> allows for
+  performing a series of functions consecutively and automatically
+  through the definition of a script.</p>
+  <p>The <monospace>Semi-Automatic Classification Plugin</monospace> for
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/qgis/QGIS">QGIS</ext-link>
+  is developed with
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/python">Python
+  3</ext-link> and requires the installation of
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/OSGeo/gdal">GDAL</ext-link>,
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/numpy/numpy">NumPy</ext-link>,
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/scipy/scipy">SciPy</ext-link>,
+  and
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/matplotlib/matplotlib">Matplotlib</ext-link>
+  (as illustrated in
+  <xref alt="Figure 2" rid="figU003Aplugin_framework">Figure 2</xref>).
+  The user interface is developed using the
+  <ext-link ext-link-type="uri" xlink:href="https://doc.qt.io">Qt
+  framework</ext-link>. The additional installation of SNAP
+  (<xref alt="European Space Agency, 2021" rid="ref-SNAP" ref-type="bibr">European
+  Space Agency, 2021</xref>) is required for the Sentinel-1
+  preprocessing and random forest classification tools.</p>
+  <fig>
+    <caption><p>Framework of the
+    <monospace>Semi-Automatic Classification Plugin</monospace> main
+    dependencies.<styled-content id="figU003Aplugin_framework"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="plugin_framework.png" xlink:title="" />
+  </fig>
+  <p>A testing tool is available for verifying the correct installation
+  of the required dependencies and check the main functions of the
+  <monospace>Semi-Automatic Classification Plugin</monospace>.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>The first version of the Semi-Automatic Classification Plugin was
+  developed by Luca Congedo in 2012 for the
+  <ext-link ext-link-type="uri" xlink:href="http://www.planning4adaptation.org">ACC
+  Dar Project</ext-link> in order to create a tool for the
+  classification of land cover in an affordable and automatic fashion;
+  following versions 2, 3, 4, and 5 of Semi-Automatic Classification
+  Plugin were developed by Luca Congedo as personal commitment to the
+  remote sensing field and open source philosophy. Semi-Automatic
+  Classification Plugin version 6 was developed in the frame of Luca
+  Congedo’s PhD in Landscape and Environment at Sapienza University of
+  Rome. <monospace>Semi-Automatic Classification Plugin</monospace>
+  version 7 was developed by Luca Congedo as personal commitment to the
+  remote sensing field and open source philosophy.</p>
+  <p>Special thanks to all the users for contributing to the
+  Semi-Automatic Classification Plugin and translating the interface and
+  user manual to other languages.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-FisherU003A2005">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Fisher</surname><given-names>P. F.</given-names></name>
+          <name><surname>Unwin</surname><given-names>D. J.</given-names></name>
+        </person-group>
+        <source>Re-Presenting GIS</source>
+        <person-group person-group-type="editor">
+          <name><surname>Sons</surname><given-names>John Wiley &amp;</given-names></name>
+        </person-group>
+        <publisher-name>John Wiley &amp; Sons</publisher-name>
+        <publisher-loc>Chichester, England</publisher-loc>
+        <year iso-8601-date="2005">2005</year>
+        <isbn>978-0-470-84847-0</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-RichardsU003A2006">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Richards</surname><given-names>John A</given-names></name>
+          <name><surname>Jia</surname><given-names>Xiuping</given-names></name>
+        </person-group>
+        <source>Remote Sensing Digital Image Analysis: An Introduction</source>
+        <person-group person-group-type="editor">
+          <string-name>Springer</string-name>
+        </person-group>
+        <publisher-name>Springer</publisher-name>
+        <publisher-loc>Berlin, Germany</publisher-loc>
+        <year iso-8601-date="2006">2006</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-RoganU003A2004">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rogan</surname><given-names>John</given-names></name>
+          <name><surname>Chen</surname><given-names>DongMei</given-names></name>
+        </person-group>
+        <article-title>Remote sensing technology for mapping and monitoring land-cover and land-use change</article-title>
+        <source>Progress in Planning</source>
+        <year iso-8601-date="2004">2004</year>
+        <volume>61</volume>
+        <issue>4</issue>
+        <issn>0305-9006</issn>
+        <pub-id pub-id-type="doi">10.1016/S0305-9006(03)00066-7</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LerouxU003A2018">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Leroux</surname><given-names>Louise</given-names></name>
+          <name><surname>Congedo</surname><given-names>Luca</given-names></name>
+          <name><surname>Bellón</surname><given-names>Beatriz</given-names></name>
+          <name><surname>Gaetano</surname><given-names>Raffaele</given-names></name>
+          <name><surname>Bégué</surname><given-names>Agnès</given-names></name>
+        </person-group>
+        <article-title>Land Cover Mapping Using Sentinel-2 Images and the Semi-Automatic Classification Plugin: A Northern Burkina Faso Case Study</article-title>
+        <source>QGIS and Applications in Agriculture and Forest</source>
+        <publisher-name>John Wiley &amp; Sons, Ltd</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <isbn>978-1-119-45710-7</isbn>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119457107.ch4</uri>
+        <pub-id pub-id-type="doi">10.1002/9781119457107.ch4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-PesaresiU003A2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pesaresi</surname><given-names>Martino</given-names></name>
+          <name><surname>Corbane</surname><given-names>Christina</given-names></name>
+          <name><surname>Julea</surname><given-names>Andreea</given-names></name>
+          <name><surname>Florczyk</surname><given-names>Aneta J.</given-names></name>
+          <name><surname>Syrris</surname><given-names>Vasileios</given-names></name>
+          <name><surname>Soille</surname><given-names>Pierre</given-names></name>
+        </person-group>
+        <article-title>Assessment of the Added-Value of Sentinel-2 for Detecting Built-up Areas</article-title>
+        <source>Remote Sensing</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>8</volume>
+        <issue>4</issue>
+        <issn>2072-4292</issn>
+        <uri>http://www.mdpi.com/2072-4292/8/4/299</uri>
+        <pub-id pub-id-type="doi">10.3390/rs8040299</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-WeissU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Weiss</surname><given-names>M.</given-names></name>
+          <name><surname>Jacob</surname><given-names>F.</given-names></name>
+          <name><surname>Duveiller</surname><given-names>G.</given-names></name>
+        </person-group>
+        <article-title>Remote sensing for agricultural applications: A meta-review</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <volume>236</volume>
+        <issn>0034-4257</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S0034425719304213</uri>
+        <pub-id pub-id-type="doi">10.1016/j.rse.2019.111402</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-GarilliU003A2021">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Garilli</surname><given-names>Erika</given-names></name>
+          <name><surname>Bruno</surname><given-names>Nazarena</given-names></name>
+          <name><surname>Autelitano</surname><given-names>Federico</given-names></name>
+          <name><surname>Roncella</surname><given-names>Riccardo</given-names></name>
+          <name><surname>Giuliani</surname><given-names>Felice</given-names></name>
+        </person-group>
+        <article-title>Automatic detection of stone pavement’s pattern based on UAV photogrammetry</article-title>
+        <source>Automation in Construction</source>
+        <year iso-8601-date="2021">2021</year>
+        <volume>122</volume>
+        <issn>0926-5805</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S0926580520310578</uri>
+        <pub-id pub-id-type="doi">10.1016/j.autcon.2020.103477</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-PelageU003A2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pelage</surname><given-names>Latifa</given-names></name>
+          <name><surname>Domalain</surname><given-names>Gilles</given-names></name>
+          <name><surname>Lira</surname><given-names>Alex S.</given-names></name>
+          <name><surname>Travassos</surname><given-names>Paulo</given-names></name>
+          <name><surname>Frédou</surname><given-names>Thierry</given-names></name>
+        </person-group>
+        <article-title>Coastal Land Use in Northeast Brazil: Mangrove Coverage Evolution Over Three Decades</article-title>
+        <source>Tropical Conservation Science</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>12</volume>
+        <uri>https://doi.org/10.1177/1940082918822411</uri>
+        <pub-id pub-id-type="doi">10.1177/1940082918822411</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-HuqU003A2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Huq</surname><given-names>Nazmul</given-names></name>
+          <name><surname>Bruns</surname><given-names>Antje</given-names></name>
+          <name><surname>Ribbe</surname><given-names>Lars</given-names></name>
+        </person-group>
+        <article-title>Interactions between freshwater ecosystem services and land cover changes in southern Bangladesh: A perspective from short-term (seasonal) and long-term (1973–2014) scale</article-title>
+        <source>Science of The Total Environment</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>650</volume>
+        <issn>0048-9697</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S0048969718334053</uri>
+        <pub-id pub-id-type="doi">10.1016/j.scitotenv.2018.08.430</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-TeodoroU003A2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Teodoro</surname><given-names>Ana</given-names></name>
+          <name><surname>Amaral</surname><given-names>Ana</given-names></name>
+        </person-group>
+        <article-title>A Statistical and Spatial Analysis of Portuguese Forest Fires in Summer 2016 Considering Landsat 8 and Sentinel 2A Data</article-title>
+        <source>Environments</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>6</volume>
+        <issue>3</issue>
+        <issn>2076-3298</issn>
+        <uri>https://www.mdpi.com/2076-3298/6/3/36</uri>
+        <pub-id pub-id-type="doi">10.3390/environments6030036</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ArekhiU003A2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Arekhi</surname><given-names>Maliheh</given-names></name>
+          <name><surname>Goksel</surname><given-names>Cigdem</given-names></name>
+          <name><surname>Balik Sanli</surname><given-names>Fusun</given-names></name>
+          <name><surname>Senel</surname><given-names>Gizem</given-names></name>
+        </person-group>
+        <article-title>Comparative Evaluation of the Spectral and Spatial Consistency of Sentinel-2 and Landsat-8 OLI Data for Igneada Longos Forest</article-title>
+        <source>ISPRS International Journal of Geo-Information</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>8</volume>
+        <issue>2</issue>
+        <issn>2220-9964</issn>
+        <uri>http://www.mdpi.com/2220-9964/8/2/56</uri>
+        <pub-id pub-id-type="doi">10.3390/ijgi8020056</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-FurukawaU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Furukawa</surname><given-names>Flavio</given-names></name>
+          <name><surname>Morimoto</surname><given-names>Junko</given-names></name>
+          <name><surname>Yoshimura</surname><given-names>Nobuhiko</given-names></name>
+          <name><surname>Kaneko</surname><given-names>Masami</given-names></name>
+        </person-group>
+        <article-title>Comparison of Conventional Change Detection Methodologies Using High-Resolution Imagery to Find Forest Damage Caused by Typhoons</article-title>
+        <source>Remote Sensing</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>12</volume>
+        <issue>19</issue>
+        <issn>2072-4292</issn>
+        <uri>https://www.mdpi.com/2072-4292/12/19/3242</uri>
+        <pub-id pub-id-type="doi">10.3390/rs12193242</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-DamtewU003A2021">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Damtew</surname><given-names>Yohannes Tefera</given-names></name>
+          <name><surname>Verbeiren</surname><given-names>Boud</given-names></name>
+          <name><surname>Awoke</surname><given-names>Aymere</given-names></name>
+          <name><surname>Triest</surname><given-names>Ludwig</given-names></name>
+        </person-group>
+        <article-title>Satellite Imageries and Field Data of Macrophytes Reveal a Regime Shift of a Tropical Lake (Lake Ziway, Ethiopia)</article-title>
+        <source>Water</source>
+        <year iso-8601-date="2021">2021</year>
+        <volume>13</volume>
+        <issn>2073-4441</issn>
+        <uri>https://www.mdpi.com/2073-4441/13/4/396</uri>
+        <pub-id pub-id-type="doi">10.3390/w13040396</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-NinkU003A2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Nink</surname><given-names>Sascha</given-names></name>
+          <name><surname>Hill</surname><given-names>Joachim</given-names></name>
+          <name><surname>Stoffels</surname><given-names>Johannes</given-names></name>
+          <name><surname>Buddenbaum</surname><given-names>Henning</given-names></name>
+          <name><surname>Frantz</surname><given-names>David</given-names></name>
+          <name><surname>Langshausen</surname><given-names>Joachim</given-names></name>
+        </person-group>
+        <article-title>Using Landsat and Sentinel-2 Data for the Generation of Continuously Updated Forest Type Information Layers in a Cross-Border Region</article-title>
+        <source>Remote Sensing</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>11</volume>
+        <issue>20</issue>
+        <issn>2072-4292</issn>
+        <uri>https://www.mdpi.com/2072-4292/11/20/2337</uri>
+        <pub-id pub-id-type="doi">10.3390/rs11202337</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-KokalyU003A2017">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Kokaly</surname><given-names>Raymond F.</given-names></name>
+          <name><surname>Clark</surname><given-names>Roger N.</given-names></name>
+          <name><surname>Swayze</surname><given-names>Gregg A.</given-names></name>
+          <name><surname>Livo</surname><given-names>K. Eric</given-names></name>
+          <name><surname>Hoefen</surname><given-names>Todd M.</given-names></name>
+          <name><surname>Pearson</surname><given-names>Neil C.</given-names></name>
+          <name><surname>Wise</surname><given-names>Richard A.</given-names></name>
+          <name><surname>Benzel</surname><given-names>William M.</given-names></name>
+          <name><surname>Lowers</surname><given-names>Heather A.</given-names></name>
+          <name><surname>Driscoll</surname><given-names>Rhonda L.</given-names></name>
+          <name><surname>Klein</surname><given-names>Anna J.</given-names></name>
+        </person-group>
+        <article-title>USGS spectral library version 7</article-title>
+        <source>Data Series</source>
+        <person-group person-group-type="editor">
+          <name><surname>Survey</surname><given-names>U. S. Geological</given-names></name>
+        </person-group>
+        <publisher-loc>Reston, VA</publisher-loc>
+        <year iso-8601-date="2017">2017</year>
+        <issn>1035</issn>
+        <uri>http://pubs.er.usgs.gov/publication/ds1035</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Palafox-JuarezU003A2021">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Palafox-Juárez</surname><given-names>Erika Betzabeth</given-names></name>
+          <name><surname>López-Martínez</surname><given-names>Jorge Omar</given-names></name>
+          <name><surname>Hernández-Stefanoni</surname><given-names>José Luis</given-names></name>
+          <name><surname>Hernández-Nuñez</surname><given-names>Héctor</given-names></name>
+        </person-group>
+        <article-title>Impact of Urban Land-Cover Changes on the Spatial-Temporal Land Surface Temperature in a Tropical City of Mexico</article-title>
+        <source>ISPRS International Journal of Geo-Information</source>
+        <year iso-8601-date="2021">2021</year>
+        <volume>10</volume>
+        <issue>2</issue>
+        <issn>2220-9964</issn>
+        <uri>https://www.mdpi.com/2220-9964/10/2/76</uri>
+        <pub-id pub-id-type="doi">10.3390/ijgi10020076</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ZhangU003A2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zhang</surname><given-names>Yingying</given-names></name>
+          <name><surname>Zhang</surname><given-names>Hong</given-names></name>
+          <name><surname>Sun</surname><given-names>Zheng</given-names></name>
+        </person-group>
+        <article-title>Effects of Urban Growth on Architectural Heritage: The Case of Buddhist Monasteries in the Qinghai-Tibet Plateau</article-title>
+        <source>Sustainability</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>10</volume>
+        <issue>5</issue>
+        <issn>2071-1050</issn>
+        <uri>http://www.mdpi.com/2071-1050/10/5/1593</uri>
+        <pub-id pub-id-type="doi">10.3390/su10051593</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-USGSU003A2019">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <string-name>United States Geological Survey</string-name>
+        </person-group>
+        <article-title>Landsat 8 (L8) Data Users Handbook. Version 5.0</article-title>
+        <publisher-name>Department of the Interior U.S. Geological Survey</publisher-name>
+        <publisher-loc>South Dakota</publisher-loc>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://prd-wret.s3.us-west-2.amazonaws.com/assets/palladium/production/atoms/files/LSDS-1574_L8_Data_Users_Handbook-v5.0.pdf </uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-ESAU003A2018">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <string-name>European Space Agency</string-name>
+        </person-group>
+        <article-title>Sentinel-2 Products Specification Document</article-title>
+        <publisher-name>European Space Agency</publisher-name>
+        <publisher-loc>/</publisher-loc>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://sentinels.copernicus.eu/web/sentinel/user-guides/sentinel-2-msi/document-library </uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-KruseU003A1993">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kruse</surname><given-names>F. A.</given-names></name>
+          <name><surname>Lefkoff</surname><given-names>A. B.</given-names></name>
+          <name><surname>Boardman</surname><given-names>J. B.</given-names></name>
+          <name><surname>Heidebrecht</surname><given-names>K. B.</given-names></name>
+          <name><surname>Shapiro</surname><given-names>A. T.</given-names></name>
+          <name><surname>Barloon</surname><given-names>P. J.</given-names></name>
+          <name><surname>Goetz</surname><given-names>A. F. H.</given-names></name>
+        </person-group>
+        <article-title>The Spectral Image Processing System (SIPS) - Interactive Visualization and Analysis of Imaging spectrometer Data</article-title>
+        <source>Remote Sensing of Environment</source>
+        <year iso-8601-date="1993">1993</year>
+        <volume>44</volume>
+        <issue>/</issue>
+        <pub-id pub-id-type="doi">10.1016/0034-4257(93)90013-N</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-BreimanU003A2001">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Breiman</surname><given-names>Leo</given-names></name>
+        </person-group>
+        <article-title>Random Forests</article-title>
+        <source>Machine Learning</source>
+        <year iso-8601-date="2001-10">2001</year><month>10</month>
+        <volume>45</volume>
+        <issue>1</issue>
+        <issn>1573-0565</issn>
+        <uri>https://doi.org/10.1023/A:1010933404324 </uri>
+        <pub-id pub-id-type="doi">10.1023/A:1010933404324 </pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-OTB">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>OTB Development Team</string-name>
+        </person-group>
+        <source>Orfeo ToolBox 7.2</source>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2020-10">2020</year><month>10</month>
+        <uri>https://doi.org/10.5281/zenodo.4066373 </uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.4066373</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SNAP">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>European Space Agency</string-name>
+        </person-group>
+        <source>SNAP - ESA sentinel application platform</source>
+        <year iso-8601-date="2021">2021</year>
+        <uri>http://step.esa.int </uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-GRASS">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>GRASS Development Team</string-name>
+        </person-group>
+        <source>Geographic resources analysis support system (GRASS GIS) software, version 7.2</source>
+        <publisher-name>Open Source Geospatial Foundation</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <uri>http://grass.osgeo.org </uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-GDAL">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>GDAL/OGR contributors</string-name>
+        </person-group>
+        <source>GDAL/OGR geospatial data abstraction software library</source>
+        <publisher-name>Open Source Geospatial Foundation</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://gdal.org </uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-QGIS">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>QGIS Development Team</string-name>
+        </person-group>
+        <source>QGIS geographic information system</source>
+        <publisher-name>QGIS Association</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://www.qgis.org </uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

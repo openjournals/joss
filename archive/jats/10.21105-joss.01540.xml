@@ -1,0 +1,588 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1540</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01540</article-id>
+<title-group>
+<article-title>Sourcepredict: Prediction of metagenomic sample sources
+using dimension reduction followed by machine learning
+classification</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-9140-7559</contrib-id>
+<string-name>Maxime Borry</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Archaeogenetics, Max Planck Institute for the
+Science of Human History, Jena, 07745, Germany</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<volume>4</volume>
+<issue>41</issue>
+<fpage>1540</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>microbiome</kwd>
+<kwd>source tracking</kwd>
+<kwd>machine learning</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>SourcePredict is a Python package distributed through Conda, to
+  classify and predict the origin of metagenomic samples, given a
+  reference dataset of known origins, a problem also known as source
+  tracking.</p>
+  <p>DNA shotgun sequencing of human, animal, and environmental samples
+  has opened up new doors to explore the diversity of life in these
+  different environments, a field known as metagenomics
+  (<xref alt="Hugenholtz &amp; Tyson, 2008" rid="ref-metagenomics" ref-type="bibr">Hugenholtz
+  &amp; Tyson, 2008</xref>). One aspect of metagenomics is investigating
+  the community composition of organisms within a sequencing sample with
+  tools known as taxonomic classifiers, such as Kraken
+  (<xref alt="Wood &amp; Salzberg, 2014" rid="ref-kraken" ref-type="bibr">Wood
+  &amp; Salzberg, 2014</xref>).</p>
+  <p>In cases where the origin of a metagenomic sample, its source, is
+  unknown, it is often part of the research question to predict and/or
+  confirm the source. For example, in microbial archaelogy, it is
+  sometimes necessary to rely on metagenomics to validate the source of
+  paleofaeces. Using samples of known sources, a reference dataset can
+  be established with the taxonomic composition of the samples, i.e.,
+  the organisms identified in the samples as features, and the sources
+  of the samples as class labels.</p>
+  <p>With this reference dataset, a machine learning algorithm can be
+  trained to predict the source of unknown samples (sinks) from their
+  taxonomic composition.</p>
+  <p>Other tools used to perform the prediction of a sample source
+  already exist, such as SourceTracker
+  (<xref alt="Knights et al., 2011" rid="ref-sourcetracker" ref-type="bibr">Knights
+  et al., 2011</xref>), which employs Gibbs sampling.</p>
+  <p>However, the Sourcepredict results are more easily interpreted
+  since the samples are embedded in a human observable low-dimensional
+  space. This embedding is performed by a dimension reduction algorithm
+  followed by K-Nearest-Neighbours (KNN) classification.</p>
+  <sec id="method">
+    <title>Method</title>
+    <p>Starting with a numerical organism count matrix (samples as
+    columns, organisms as rows, obtained by a taxonomic classifier) of
+    merged references and sinks datasets, samples are first normalized
+    relative to each other, to correct for uneven sequencing depth using
+    the geometric mean of pairwise ratios (GMPR) method (default)
+    (<xref alt="Chen et al., 2018" rid="ref-gmpr" ref-type="bibr">Chen
+    et al., 2018</xref>).</p>
+    <p>After normalization, Sourcepredict performs a two-step prediction
+    algorithm. First, it predicts the proportion of unknown sources,
+    i.e., which are not represented in the reference dataset. Second, it
+    predicts the proportion of each known source of the reference
+    dataset in the sink samples.</p>
+    <p>Organisms are represented by their taxonomic identifiers
+    (TAXID).</p>
+    <sec id="prediction-of-the-proportion-of-unknown-sources">
+      <title>Prediction of the proportion of unknown sources</title>
+      <p>Let <inline-formula><alternatives>
+      <tex-math><![CDATA[S_i \in \{S_1, .., S_n\}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>∈</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:msub><mml:mi>S</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>S</mml:mi><mml:mi>n</mml:mi></mml:msub><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+      be a sample from the normalized sinks dataset
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[D_{sink}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>,
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[o_{j}^{\ i} \in \{o_{1}^{\ i},.., o_{n_o^{\ i}}^{\ i}\}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mi>o</mml:mi><mml:mi>j</mml:mi><mml:mrow><mml:mspace width="0.222em"></mml:mspace><mml:mi>i</mml:mi></mml:mrow></mml:msubsup><mml:mo>∈</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:msubsup><mml:mi>o</mml:mi><mml:mn>1</mml:mn><mml:mrow><mml:mspace width="0.222em"></mml:mspace><mml:mi>i</mml:mi></mml:mrow></mml:msubsup><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:msubsup><mml:mi>o</mml:mi><mml:msubsup><mml:mi>n</mml:mi><mml:mi>o</mml:mi><mml:mrow><mml:mspace width="0.222em"></mml:mspace><mml:mi>i</mml:mi></mml:mrow></mml:msubsup><mml:mrow><mml:mspace width="0.222em"></mml:mspace><mml:mi>i</mml:mi></mml:mrow></mml:msubsup><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+      an organism in <inline-formula><alternatives>
+      <tex-math><![CDATA[S_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+      and <inline-formula><alternatives>
+      <tex-math><![CDATA[n_o^{\ i}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mi>n</mml:mi><mml:mi>o</mml:mi><mml:mrow><mml:mspace width="0.222em"></mml:mspace><mml:mi>i</mml:mi></mml:mrow></mml:msubsup></mml:math></alternatives></inline-formula>
+      the total number of organisms in <inline-formula><alternatives>
+      <tex-math><![CDATA[S_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+      with <inline-formula><alternatives>
+      <tex-math><![CDATA[o_{j}^{\ i} \in \mathbb{Z}+]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mi>o</mml:mi><mml:mi>j</mml:mi><mml:mrow><mml:mspace width="0.222em"></mml:mspace><mml:mi>i</mml:mi></mml:mrow></mml:msubsup><mml:mo>∈</mml:mo><mml:mstyle mathvariant="double-struck"><mml:mi>ℤ</mml:mi></mml:mstyle><mml:mo>+</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>.
+      Let <inline-formula><alternatives>
+      <tex-math><![CDATA[m]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>m</mml:mi></mml:math></alternatives></inline-formula>
+      be the mean number of samples per source in the reference dataset,
+      such that <inline-formula><alternatives>
+      <tex-math><![CDATA[m = \frac{1}{O}\sum_{i=1}^{O}S_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>m</mml:mi><mml:mo>=</mml:mo><mml:mfrac><mml:mn>1</mml:mn><mml:mi>O</mml:mi></mml:mfrac><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>O</mml:mi></mml:msubsup><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>.
+      For each <inline-formula><alternatives>
+      <tex-math><![CDATA[S_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      sample, I define <inline-formula><alternatives>
+      <tex-math><![CDATA[||m||]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mi>m</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+      derivative samples <inline-formula><alternatives>
+      <tex-math><![CDATA[U_k^{S_i} \in \{U_1^{S_i}, ..,U_{||m||}^{S_i}\}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mi>U</mml:mi><mml:mi>k</mml:mi><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:msubsup><mml:mo>∈</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:msubsup><mml:mi>U</mml:mi><mml:mn>1</mml:mn><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:msubsup><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:msubsup><mml:mi>U</mml:mi><mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mi>m</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow></mml:mrow><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:msubsup><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+      to add to the reference dataset to account for the unknown source
+      proportion in a test sample. Separately for each
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[S_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+      a proportion denoted <inline-formula><alternatives>
+      <tex-math><![CDATA[\alpha \in [0,1]]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>α</mml:mi><mml:mo>∈</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+      (default = <inline-formula><alternatives>
+      <tex-math><![CDATA[0.1]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>0.1</mml:mn></mml:math></alternatives></inline-formula>)
+      of each <inline-formula><alternatives>
+      <tex-math><![CDATA[o_{j}^{\ i}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mi>o</mml:mi><mml:mi>j</mml:mi><mml:mrow><mml:mspace width="0.222em"></mml:mspace><mml:mi>i</mml:mi></mml:mrow></mml:msubsup></mml:math></alternatives></inline-formula>
+      organism of <inline-formula><alternatives>
+      <tex-math><![CDATA[S_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      is added to each <inline-formula><alternatives>
+      <tex-math><![CDATA[U_k^{S_i}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mi>U</mml:mi><mml:mi>k</mml:mi><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:msubsup></mml:math></alternatives></inline-formula>
+      sample such that <inline-formula><alternatives>
+      <tex-math><![CDATA[U_k^{S_i}(o_j^{\ i}) = \alpha \cdot x_{i \ j}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mi>U</mml:mi><mml:mi>k</mml:mi><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:msubsup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mi>o</mml:mi><mml:mi>j</mml:mi><mml:mrow><mml:mspace width="0.222em"></mml:mspace><mml:mi>i</mml:mi></mml:mrow></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>α</mml:mi><mml:mo>⋅</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mspace width="0.222em"></mml:mspace><mml:mi>j</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+      , where <inline-formula><alternatives>
+      <tex-math><![CDATA[x_{i \ j}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>x</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mspace width="0.222em"></mml:mspace><mml:mi>j</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+      is sampled from a Gaussian distribution
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[\mathcal{N}\big(S_i(o_j^{\ i}), 0.01)]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>𝒩</mml:mi></mml:mstyle><mml:mo minsize="1.2" maxsize="1.2" stretchy="false" form="prefix">(</mml:mo><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mi>o</mml:mi><mml:mi>j</mml:mi><mml:mrow><mml:mspace width="0.222em"></mml:mspace><mml:mi>i</mml:mi></mml:mrow></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mn>0.01</mml:mn><mml:mo stretchy="false" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>.
+      The <inline-formula><alternatives>
+      <tex-math><![CDATA[||m||]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mi>m</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[U_k^{S_i}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mi>U</mml:mi><mml:mi>k</mml:mi><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:msubsup></mml:math></alternatives></inline-formula>
+      samples are then added to the reference dataset
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[D_{ref}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>r</mml:mi><mml:mi>e</mml:mi><mml:mi>f</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>,
+      and labeled as <italic>unknown</italic>, to create a new reference
+      dataset denoted <inline-formula><alternatives>
+      <tex-math><![CDATA[{}^{unk}D_{ref}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mrow></mml:mrow><mml:mrow><mml:mi>u</mml:mi><mml:mi>n</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msup><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>r</mml:mi><mml:mi>e</mml:mi><mml:mi>f</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>.
+      To predict the proportion of unknown sources, a Bray-Curtis
+      (<xref alt="Bray &amp; Curtis, 1957" rid="ref-bray-curtis" ref-type="bibr">Bray
+      &amp; Curtis, 1957</xref>) pairwise dissimilarity matrix of all
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[S_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      and <inline-formula><alternatives>
+      <tex-math><![CDATA[U_k^{S_i}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mi>U</mml:mi><mml:mi>k</mml:mi><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:msubsup></mml:math></alternatives></inline-formula>
+      samples is computed using scikit-bio
+      (<xref alt="Rideout et al., 2018" rid="ref-scikit-bio" ref-type="bibr">Rideout
+      et al., 2018</xref>). This distance matrix is then embedded in two
+      dimensions (default) with the scikit-bio implementation of PCoA.
+      This sample embedding is divided into three subsets:
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[{}^{unk}D_{train}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mrow></mml:mrow><mml:mrow><mml:mi>u</mml:mi><mml:mi>n</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msup><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>t</mml:mi><mml:mi>r</mml:mi><mml:mi>a</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+      (<inline-formula><alternatives>
+      <tex-math><![CDATA[64\%]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>64</mml:mn><mml:mi>%</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>),
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[{}^{unk}D_{test}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mrow></mml:mrow><mml:mrow><mml:mi>u</mml:mi><mml:mi>n</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msup><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>t</mml:mi><mml:mi>e</mml:mi><mml:mi>s</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+      (<inline-formula><alternatives>
+      <tex-math><![CDATA[20\%]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>20</mml:mn><mml:mi>%</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>),
+      and <inline-formula><alternatives>
+      <tex-math><![CDATA[{}^{unk}D_{validation}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mrow></mml:mrow><mml:mrow><mml:mi>u</mml:mi><mml:mi>n</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msup><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>v</mml:mi><mml:mi>a</mml:mi><mml:mi>l</mml:mi><mml:mi>i</mml:mi><mml:mi>d</mml:mi><mml:mi>a</mml:mi><mml:mi>t</mml:mi><mml:mi>i</mml:mi><mml:mi>o</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>(<inline-formula><alternatives>
+      <tex-math><![CDATA[16\%]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>16</mml:mn><mml:mi>%</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>).
+      The scikit-learn
+      (<xref alt="Pedregosa et al., 2011" rid="ref-scikit-learn" ref-type="bibr">Pedregosa
+      et al., 2011</xref>) implementation of KNN algorithm is then
+      trained on <inline-formula><alternatives>
+      <tex-math><![CDATA[{}^{unk}D_{train}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mrow></mml:mrow><mml:mrow><mml:mi>u</mml:mi><mml:mi>n</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msup><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>t</mml:mi><mml:mi>r</mml:mi><mml:mi>a</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+      and the training accuracy is computed with
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[{}^{unk}D_{test}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mrow></mml:mrow><mml:mrow><mml:mi>u</mml:mi><mml:mi>n</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msup><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>t</mml:mi><mml:mi>e</mml:mi><mml:mi>s</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>.
+      This trained KNN model is then corrected for probability
+      estimation of the unknown proportion using the scikit-learn
+      implementation of Platt’s scaling method
+      (<xref alt="Platt et al., 1999" rid="ref-platt" ref-type="bibr">Platt
+      et al., 1999</xref>) with <inline-formula><alternatives>
+      <tex-math><![CDATA[{}^{unk}D_{validation}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mrow></mml:mrow><mml:mrow><mml:mi>u</mml:mi><mml:mi>n</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msup><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>v</mml:mi><mml:mi>a</mml:mi><mml:mi>l</mml:mi><mml:mi>i</mml:mi><mml:mi>d</mml:mi><mml:mi>a</mml:mi><mml:mi>t</mml:mi><mml:mi>i</mml:mi><mml:mi>o</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>.
+      The proportion of unknown sources in
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[S_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[p_u \in [0,1]]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>p</mml:mi><mml:mi>u</mml:mi></mml:msub><mml:mo>∈</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+      is then estimated using this trained and corrected KNN model.
+      Ultimately, this process is repeated independently for each sink
+      sample <inline-formula><alternatives>
+      <tex-math><![CDATA[S_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      of <inline-formula><alternatives>
+      <tex-math><![CDATA[D_{sink}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>.</p>
+    </sec>
+    <sec id="prediction-of-the-proportion-of-known-sources">
+      <title>Prediction of the proportion of known sources</title>
+      <p>First, only organism TAXIDs corresponding to the species
+      taxonomic level are retained using the ETE toolkit
+      (<xref alt="Huerta-Cepas et al., 2016" rid="ref-ete3" ref-type="bibr">Huerta-Cepas
+      et al., 2016</xref>). A weighted Unifrac (default)
+      (<xref alt="Lozupone et al., 2007" rid="ref-wu" ref-type="bibr">Lozupone
+      et al., 2007</xref>) pairwise distance matrix is then computed on
+      the merged and normalized training dataset
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[D_{ref}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>r</mml:mi><mml:mi>e</mml:mi><mml:mi>f</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+      and test dataset <inline-formula><alternatives>
+      <tex-math><![CDATA[D_{sink}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+      with scikit-bio, using the NCBI taxonomy as a reference tree. This
+      distance matrix is then embedded in two dimensions (default) using
+      the scikit-learn implementation of t-SNE
+      (<xref alt="Maaten &amp; Hinton, 2008" rid="ref-tsne" ref-type="bibr">Maaten
+      &amp; Hinton, 2008</xref>). The 2-dimensional embedding is then
+      split back to training <inline-formula><alternatives>
+      <tex-math><![CDATA[{}^{tsne}D_{ref}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mrow></mml:mrow><mml:mrow><mml:mi>t</mml:mi><mml:mi>s</mml:mi><mml:mi>n</mml:mi><mml:mi>e</mml:mi></mml:mrow></mml:msup><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>r</mml:mi><mml:mi>e</mml:mi><mml:mi>f</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+      and testing dataset <inline-formula><alternatives>
+      <tex-math><![CDATA[{}^{tsne}D_{sink}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mrow></mml:mrow><mml:mrow><mml:mi>t</mml:mi><mml:mi>s</mml:mi><mml:mi>n</mml:mi><mml:mi>e</mml:mi></mml:mrow></mml:msup><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>.
+      The KNN algorithm is then trained on the train subset, with a five
+      (default) cross validation to look for the optimum number of
+      K-neighbors. The training dataset <inline-formula><alternatives>
+      <tex-math><![CDATA[{}^{tsne}D_{ref}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mrow></mml:mrow><mml:mrow><mml:mi>t</mml:mi><mml:mi>s</mml:mi><mml:mi>n</mml:mi><mml:mi>e</mml:mi></mml:mrow></mml:msup><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>r</mml:mi><mml:mi>e</mml:mi><mml:mi>f</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+      is further divided into three subsets:
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[{}^{tsne}D_{train}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mrow></mml:mrow><mml:mrow><mml:mi>t</mml:mi><mml:mi>s</mml:mi><mml:mi>n</mml:mi><mml:mi>e</mml:mi></mml:mrow></mml:msup><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>t</mml:mi><mml:mi>r</mml:mi><mml:mi>a</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+      (<inline-formula><alternatives>
+      <tex-math><![CDATA[64\%]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>64</mml:mn><mml:mi>%</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>),
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[{}^{tsne}D_{test}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mrow></mml:mrow><mml:mrow><mml:mi>t</mml:mi><mml:mi>s</mml:mi><mml:mi>n</mml:mi><mml:mi>e</mml:mi></mml:mrow></mml:msup><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>t</mml:mi><mml:mi>e</mml:mi><mml:mi>s</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+      (<inline-formula><alternatives>
+      <tex-math><![CDATA[20\%]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>20</mml:mn><mml:mi>%</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>),
+      and <inline-formula><alternatives>
+      <tex-math><![CDATA[{}^{tsne}D_{validation}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mrow></mml:mrow><mml:mrow><mml:mi>t</mml:mi><mml:mi>s</mml:mi><mml:mi>n</mml:mi><mml:mi>e</mml:mi></mml:mrow></mml:msup><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>v</mml:mi><mml:mi>a</mml:mi><mml:mi>l</mml:mi><mml:mi>i</mml:mi><mml:mi>d</mml:mi><mml:mi>a</mml:mi><mml:mi>t</mml:mi><mml:mi>i</mml:mi><mml:mi>o</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+      (<inline-formula><alternatives>
+      <tex-math><![CDATA[16\%]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>16</mml:mn><mml:mi>%</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>).
+      The training accuracy is then computed with
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[{}^{tsne}D_{test}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mrow></mml:mrow><mml:mrow><mml:mi>t</mml:mi><mml:mi>s</mml:mi><mml:mi>n</mml:mi><mml:mi>e</mml:mi></mml:mrow></mml:msup><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>t</mml:mi><mml:mi>e</mml:mi><mml:mi>s</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>.
+      Finally, this second trained KNN model is also corrected for
+      source proportion estimation using the scikit-learn implementation
+      of the Platt’s method with <inline-formula><alternatives>
+      <tex-math><![CDATA[{}^{tsne}D_{validation}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mrow></mml:mrow><mml:mrow><mml:mi>t</mml:mi><mml:mi>s</mml:mi><mml:mi>n</mml:mi><mml:mi>e</mml:mi></mml:mrow></mml:msup><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>v</mml:mi><mml:mi>a</mml:mi><mml:mi>l</mml:mi><mml:mi>i</mml:mi><mml:mi>d</mml:mi><mml:mi>a</mml:mi><mml:mi>t</mml:mi><mml:mi>i</mml:mi><mml:mi>o</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>.
+      The proportion <inline-formula><alternatives>
+      <tex-math><![CDATA[p_{c_s} \in [0,1]]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>p</mml:mi><mml:msub><mml:mi>c</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:msub><mml:mo>∈</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+      of each of the <inline-formula><alternatives>
+      <tex-math><![CDATA[n_s]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>n</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      sources <inline-formula><alternatives>
+      <tex-math><![CDATA[c_s \in \{c_{1},\ ..,\ c_{n_s}\}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>c</mml:mi><mml:mi>s</mml:mi></mml:msub><mml:mo>∈</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:msub><mml:mi>c</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:mspace width="0.222em"></mml:mspace><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:mspace width="0.222em"></mml:mspace><mml:msub><mml:mi>c</mml:mi><mml:msub><mml:mi>n</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:msub><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+      in each sample <inline-formula><alternatives>
+      <tex-math><![CDATA[S_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      is then estimated using this second trained and corrected KNN
+      model.</p>
+    </sec>
+    <sec id="combining-unknown-and-source-proportions">
+      <title>Combining unknown and source proportions</title>
+      <p>For each sample <inline-formula><alternatives>
+      <tex-math><![CDATA[S_i]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>S</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      of the test dataset <inline-formula><alternatives>
+      <tex-math><![CDATA[D_{sink}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>D</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>,
+      the predicted unknown proportion <inline-formula><alternatives>
+      <tex-math><![CDATA[p_{u}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>p</mml:mi><mml:mi>u</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      is then combined with the predicted proportion
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[p_{c_s}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>p</mml:mi><mml:msub><mml:mi>c</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:msub></mml:math></alternatives></inline-formula>
+      for each of the <inline-formula><alternatives>
+      <tex-math><![CDATA[n_s]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>n</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      sources <inline-formula><alternatives>
+      <tex-math><![CDATA[c_s]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>c</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      of the training dataset such that <inline-formula><alternatives>
+      <tex-math><![CDATA[\sum_{c_s=1}^{n_s} s_c + p_u = 1]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mo>∑</mml:mo><mml:mrow><mml:msub><mml:mi>c</mml:mi><mml:mi>s</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:msub><mml:mi>n</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:msubsup><mml:msub><mml:mi>s</mml:mi><mml:mi>c</mml:mi></mml:msub><mml:mo>+</mml:mo><mml:msub><mml:mi>p</mml:mi><mml:mi>u</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+      where <inline-formula><alternatives>
+      <tex-math><![CDATA[s_c = p_{c_s} \cdot p_u]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>s</mml:mi><mml:mi>c</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:msub><mml:mi>p</mml:mi><mml:msub><mml:mi>c</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:msub><mml:mo>⋅</mml:mo><mml:msub><mml:mi>p</mml:mi><mml:mi>u</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+      <p>Finally, a summary table gathering the estimated sources
+      proportions is returned as a <monospace>csv</monospace> file, as
+      well as the t-SNE embedding sample coordinates.</p>
+    </sec>
+  </sec>
+  <sec id="acknowledgements">
+    <title>Acknowledgements</title>
+    <p>Thanks to Dr. Christina Warinner, Dr. Alexander Herbig, Dr. AB
+    Rohrlach, and Alexander Hübner for their valuable comments and for
+    proofreading this manuscript. This work was funded by the Max Planck
+    Society and the Deutsche Forschungsgemeinschaft, project code: EXC
+    2051 #390713860.</p>
+  </sec>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-kraken">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wood</surname><given-names>Derrick E</given-names></name>
+          <name><surname>Salzberg</surname><given-names>Steven L</given-names></name>
+        </person-group>
+        <article-title>Kraken: Ultrafast metagenomic sequence classification using exact alignments</article-title>
+        <source>Genome Biology</source>
+        <publisher-name>BioMed Central</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>15</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1186/gb-2014-15-3-r46</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gmpr">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Chen</surname><given-names>Li</given-names></name>
+          <name><surname>Reeve</surname><given-names>James</given-names></name>
+          <name><surname>Zhang</surname><given-names>Lujun</given-names></name>
+          <name><surname>Huang</surname><given-names>Shengbing</given-names></name>
+          <name><surname>Wang</surname><given-names>Xuefeng</given-names></name>
+          <name><surname>Chen</surname><given-names>Jun</given-names></name>
+        </person-group>
+        <article-title>GMPR: A robust normalization method for zero-inflated count data with application to microbiome sequencing data</article-title>
+        <source>PeerJ</source>
+        <publisher-name>PeerJ Inc.</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>6</volume>
+        <pub-id pub-id-type="doi">10.7717/peerj.4600</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-metagenomics">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hugenholtz</surname><given-names>Philip</given-names></name>
+          <name><surname>Tyson</surname><given-names>Gene W</given-names></name>
+        </person-group>
+        <article-title>Microbiology: metagenomics</article-title>
+        <source>Nature</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="2008">2008</year>
+        <volume>455</volume>
+        <issue>7212</issue>
+        <pub-id pub-id-type="doi">10.1038/455481a</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-scikit-learn">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pedregosa</surname><given-names>Fabian</given-names></name>
+          <name><surname>Varoquaux</surname><given-names>Gaël</given-names></name>
+          <name><surname>Gramfort</surname><given-names>Alexandre</given-names></name>
+          <name><surname>Michel</surname><given-names>Vincent</given-names></name>
+          <name><surname>Thirion</surname><given-names>Bertrand</given-names></name>
+          <name><surname>Grisel</surname><given-names>Olivier</given-names></name>
+          <name><surname>Blondel</surname><given-names>Mathieu</given-names></name>
+          <name><surname>Prettenhofer</surname><given-names>Peter</given-names></name>
+          <name><surname>Weiss</surname><given-names>Ron</given-names></name>
+          <name><surname>Dubourg</surname><given-names>Vincent</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Scikit-learn: Machine learning in Python</article-title>
+        <source>Journal of Machine Learning Research</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>12</volume>
+        <issue>Oct</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-platt">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Platt</surname><given-names>John</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Probabilistic outputs for support vector machines and comparisons to regularized likelihood methods</article-title>
+        <source>Advances in Large Margin Classifiers</source>
+        <publisher-name>Cambridge, MA</publisher-name>
+        <year iso-8601-date="1999">1999</year>
+        <volume>10</volume>
+        <issue>3</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-ete3">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Huerta-Cepas</surname><given-names>Jaime</given-names></name>
+          <name><surname>Serra</surname><given-names>François</given-names></name>
+          <name><surname>Bork</surname><given-names>Peer</given-names></name>
+        </person-group>
+        <article-title>ETE 3: Reconstruction, analysis, and visualization of phylogenomic data</article-title>
+        <source>Molecular Biology and Evolution</source>
+        <publisher-name>Society for Molecular Biology; Evolution</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>33</volume>
+        <issue>6</issue>
+        <pub-id pub-id-type="doi">10.1093/molbev/msw046</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-wu">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lozupone</surname><given-names>Catherine A</given-names></name>
+          <name><surname>Hamady</surname><given-names>Micah</given-names></name>
+          <name><surname>Kelley</surname><given-names>Scott T</given-names></name>
+          <name><surname>Knight</surname><given-names>Rob</given-names></name>
+        </person-group>
+        <article-title>Quantitative and qualitative beta diversity measures lead to different insights into factors that structure microbial communities</article-title>
+        <source>Appl. Environ. Microbiol.</source>
+        <publisher-name>Am Soc Microbiol</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>73</volume>
+        <issue>5</issue>
+        <pub-id pub-id-type="doi">10.1128/AEM.01996-06</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-tsne">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Maaten</surname><given-names>Laurens van der</given-names></name>
+          <name><surname>Hinton</surname><given-names>Geoffrey</given-names></name>
+        </person-group>
+        <article-title>Visualizing data using t-SNE</article-title>
+        <source>Journal of Machine Learning Research</source>
+        <year iso-8601-date="2008">2008</year>
+        <volume>9</volume>
+        <issue>Nov</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-sourcetracker">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Knights</surname><given-names>Dan</given-names></name>
+          <name><surname>Kuczynski</surname><given-names>Justin</given-names></name>
+          <name><surname>Charlson</surname><given-names>Emily S</given-names></name>
+          <name><surname>Zaneveld</surname><given-names>Jesse</given-names></name>
+          <name><surname>Mozer</surname><given-names>Michael C</given-names></name>
+          <name><surname>Collman</surname><given-names>Ronald G</given-names></name>
+          <name><surname>Bushman</surname><given-names>Frederic D</given-names></name>
+          <name><surname>Knight</surname><given-names>Rob</given-names></name>
+          <name><surname>Kelley</surname><given-names>Scott T</given-names></name>
+        </person-group>
+        <article-title>Bayesian community-wide culture-independent microbial source tracking</article-title>
+        <source>Nature methods</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <volume>8</volume>
+        <issue>9</issue>
+        <pub-id pub-id-type="doi">10.1038/nmeth.1650</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bray-curtis">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bray</surname><given-names>J Roger</given-names></name>
+          <name><surname>Curtis</surname><given-names>John T</given-names></name>
+        </person-group>
+        <article-title>An ordination of the upland forest communities of southern Wisconsin</article-title>
+        <source>Ecological monographs</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="1957">1957</year>
+        <volume>27</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.2307/1942268</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-scikit-bio">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Rideout</surname><given-names>Jai Ram</given-names></name>
+          <name><surname>Caporaso</surname><given-names>Greg</given-names></name>
+          <name><surname>Bolyen</surname><given-names>Evan</given-names></name>
+          <name><surname>McDonald</surname><given-names>Daniel</given-names></name>
+          <name><surname>Baeza</surname><given-names>Yoshiki Vázquez</given-names></name>
+          <name><surname>Alastuey</surname><given-names>Jorge Cañardo</given-names></name>
+          <name><surname>Pitman</surname><given-names>Anders</given-names></name>
+          <name><surname>Morton</surname><given-names>Jamie</given-names></name>
+          <name><surname>Navas</surname><given-names>Jose</given-names></name>
+          <name><surname>Gorlick</surname><given-names>Kestrel</given-names></name>
+          <name><surname>Debelius</surname><given-names>Justine</given-names></name>
+          <name><surname>Xu</surname><given-names>Zech</given-names></name>
+          <name><surname>llcooljohn</surname></name>
+          <name><surname>adamrp</surname></name>
+          <name><surname>Shorenstein</surname><given-names>Joshua</given-names></name>
+          <name><surname>Luce</surname><given-names>Laurent</given-names></name>
+          <name><surname>Treuren</surname><given-names>Will Van</given-names></name>
+          <name><surname>Chase</surname><given-names>John</given-names></name>
+          <name><surname>charudatta-navare</surname></name>
+          <name><surname>Brislawn</surname><given-names>Colin</given-names></name>
+          <name><surname>Gonzalez</surname><given-names>Antonio</given-names></name>
+          <name><surname>Patena</surname><given-names>Weronika</given-names></name>
+          <name><surname>Schwarzberg</surname><given-names>Karen</given-names></name>
+          <name><surname>teravest</surname></name>
+          <name><surname>Reeder</surname><given-names>Jens</given-names></name>
+          <name><surname>shiffer1</surname></name>
+          <name><surname>nbresnick</surname></name>
+          <name><surname>Murray</surname><given-names>Kevin</given-names></name>
+          <name><surname>alexbrc</surname></name>
+          <name><surname>Sharma</surname><given-names>Karan</given-names></name>
+        </person-group>
+        <article-title>biocore/scikit-bio: scikit-bio 0.5.5: More compositional methods added</article-title>
+        <year iso-8601-date="2018-12">2018</year><month>12</month>
+        <uri>https://doi.org/10.5281/zenodo.2254379</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.2254379</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

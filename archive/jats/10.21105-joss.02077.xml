@@ -1,0 +1,668 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2077</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02077</article-id>
+<title-group>
+<article-title>The pdb2sql Python Package: Parsing, Manipulation and
+Analysis of PDB Files Using SQL Queries</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-9589-2694</contrib-id>
+<string-name>Nicolas Renaud</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1409-8358</contrib-id>
+<string-name>Cunliang Geng</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Netherlands eScience Center, Science Park 140 1098 XG
+Amsterdam, the Netherlands</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-01-13">
+<day>13</day>
+<month>1</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>49</issue>
+<fpage>2077</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Bioinformatics</kwd>
+<kwd>PDB files</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The analysis of biomolecular structures is a crucial task for a
+  wide range of applications ranging from drug design to protein
+  engineering. The Protein Data Bank (PDB) file format
+  (<xref alt="Burley et al., 2019" rid="ref-pdb" ref-type="bibr">Burley
+  et al., 2019</xref>) is the most popular format to describe
+  biomolecular structures such as proteins and nucleic acids. In this
+  text-based format, each line represents a given atom and entails its
+  main properties such as atom name and identifier, residue name and
+  identifier, chain identifier, coordinates, etc. Several solutions have
+  been developed to parse PDB files into dedicated objects that
+  facilitate the analysis and manipulation of biomolecular structures.
+  This is, for example, the case for the
+  <monospace>BioPython</monospace> parser Hamelryck &amp; Manderick
+  (<xref alt="2003" rid="ref-biopdb" ref-type="bibr">2003</xref>) that
+  loads PDB files into a nested dictionary, the structure of which
+  mimics the hierarchical nature of the biomolecular structure.
+  Selecting a given sub-part of the biomolecule can then be done by
+  going through the dictionary and selecting the required atoms. Other
+  packages, such as <monospace>ProDy</monospace>
+  (<xref alt="Bakan et al., 2011" rid="ref-prody" ref-type="bibr">Bakan
+  et al., 2011</xref>), <monospace>BioJava</monospace>
+  (<xref alt="Lafita, 2019" rid="ref-biojava" ref-type="bibr">Lafita,
+  2019</xref>), <monospace>MMTK</monospace>
+  (<xref alt="Hinsen, 2000" rid="ref-mmtk" ref-type="bibr">Hinsen,
+  2000</xref>) and <monospace>MDAnalysis</monospace>
+  (<xref alt="Gowers et al., 2016" rid="ref-mdanalysis" ref-type="bibr">Gowers
+  et al., 2016</xref>) to cite a few, also offer solutions to parse PDB
+  files. However, these parsers are embedded in large codebases that are
+  sometimes difficult to integrate with new applications and are often
+  geared toward the analysis of molecular dynamics simulations.
+  Lightweight applications such as <monospace>pdb-tools</monospace>
+  (<xref alt="Rodrigues et al., 2018" rid="ref-pdbtools" ref-type="bibr">Rodrigues
+  et al., 2018</xref>) lack the capabilities to manipulate
+  coordinates.</p>
+  <p>We present here the Python package <monospace>pdb2sql</monospace>,
+  which loads individual PDB files into a relational database. Among
+  different solutions, the Structured Query Language (SQL) is a very
+  popular solution to query a given database. However SQL queries are
+  complex and domain scientists such as bioinformaticians are usually
+  not familiar with them. This represents an important barrier to the
+  adoption of SQL technology in bioinformatics.
+  <monospace>pdb2sql</monospace> exposes complex SQL queries through
+  simple Python methods that are intuitive for end users. As such, our
+  package leverages the power of SQL queries and removes the barrier
+  that SQL complexity represents. In addition, several advanced modules
+  have also been built, for example, to rotate or translate biomolecular
+  structures, to characterize interface contacts, and to measure
+  structure similarity between two protein complexes. Additional modules
+  can easily be developed following the same scheme. As a consequence,
+  <monospace>pdb2sql</monospace> is a lightweight and versatile PDB tool
+  that is easy to extend and to integrate with new applications.</p>
+</sec>
+<sec id="capabilities-of-pdb2sql">
+  <title>Capabilities of <monospace>pdb2sql</monospace></title>
+  <p><monospace>pdb2sql</monospace> allows a user to query, manipulate,
+  and process PDB files through a series of dedicated classes. We give
+  an overview of these features and illustrate them with snippets of
+  code. More examples can be found in the documentation
+  (https://pdb2sql.readthedocs.io).</p>
+  <sec id="extracting-data-from-pdb-files">
+    <title>Extracting data from PDB files</title>
+    <p><monospace>pdb2sql</monospace> allows a user to simply query the
+    database using the <monospace>get(attr, **kwargs)</monospace>
+    method. The attribute <monospace>attr</monospace> here is a list of
+    or a single column name of the <monospace>SQL</monospace> database;
+    see Table 1 for available attributes. The keyword argument
+    <monospace>kwargs</monospace> can then be used to specify a
+    sub-selection of atoms.</p>
+    <p>Table 1. Atom attributes and associated definitions in
+    <monospace>pdb2sql</monospace></p>
+    <table-wrap>
+      <table>
+        <thead>
+          <tr>
+            <th>Attribute</th>
+            <th>Definition</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>serial</td>
+            <td>Atom serial number</td>
+          </tr>
+          <tr>
+            <td>name</td>
+            <td>Atom name</td>
+          </tr>
+          <tr>
+            <td>altLoc</td>
+            <td>Alternate location indicator</td>
+          </tr>
+          <tr>
+            <td>resName</td>
+            <td>Residue name</td>
+          </tr>
+          <tr>
+            <td>chainID</td>
+            <td>Chain identifier</td>
+          </tr>
+          <tr>
+            <td>resSeq</td>
+            <td>Residue sequence number</td>
+          </tr>
+          <tr>
+            <td>iCode</td>
+            <td>Code for insertion of residues</td>
+          </tr>
+          <tr>
+            <td>x</td>
+            <td>Orthogonal coordinates for X in Angstroms</td>
+          </tr>
+          <tr>
+            <td>y</td>
+            <td>Orthogonal coordinates for Y in Angstroms</td>
+          </tr>
+          <tr>
+            <td>z</td>
+            <td>Orthogonal coordinates for Z in Angstroms</td>
+          </tr>
+          <tr>
+            <td>occ</td>
+            <td>Occupancy</td>
+          </tr>
+          <tr>
+            <td>temp</td>
+            <td>Temperature factor</td>
+          </tr>
+          <tr>
+            <td>element</td>
+            <td>Element symbol</td>
+          </tr>
+          <tr>
+            <td>model</td>
+            <td>Model serial number</td>
+          </tr>
+        </tbody>
+      </table>
+    </table-wrap>
+    <p>Every attribute name can be used to select specific atoms and
+    multiple conditions can be easily combined. For example, let’s
+    consider the following example:</p>
+    <code language="python">from pdb2sql import pdb2sql
+pdb = pdb2sql('1AK4.pdb')
+atoms = pdb.get('x,y,z',
+                name=['C','H'],
+                resName=['VAL','LEU'],
+                chainID='A')</code>
+    <p>This snippet extracts the coordinates of the carbon and hydrogen
+    atoms that belong to all the valine and leucine residues of the
+    chain labelled <monospace>A</monospace> in the PDB file. Atoms can
+    also be excluded from the selection by appending the prefix
+    <monospace>no_</monospace> to the attribute name. This is the case
+    in the following example:</p>
+    <code language="python">from pdb2sql import pdb2sql
+pdb = pdb2sql('1AK4.pdb')
+atoms = pdb.get('name, resName',
+                no_resName=['GLY', 'PHE'])</code>
+    <p>This snippet extracts the atom and residue names of all atoms
+    except those belonging to the glycine and phenylalanine residues of
+    the structure. Similar combinations of arguments can be designed to
+    obtain complex selection rules that precisely select the desired
+    atom properties.</p>
+  </sec>
+  <sec id="manipulating-pdb-files">
+    <title>Manipulating PDB files</title>
+    <p>The data contained in the SQL database can also be modified using
+    the <monospace>update(attr, vals, **kwargs)</monospace> method. The
+    attributes and keyword arguments are identical to those in the
+    <monospace>get</monospace> method. The <monospace>vals</monospace>
+    argument should contain a <monospace>numpy</monospace> array whose
+    dimension should match the selection criteria. For example:</p>
+    <code language="python">import numpy as np
+from pdb2sql import pdb2sql
+
+pdb = pdb2sql('1AK4.pdb')
+xyz = pdb.get('x,y,z', chainID='A', resSeq=1)
+xyz = np.array(xyz)
+xyz -= np.mean(xyz)
+pdb.update('x,y,z', xyz, chainID='A', resSeq=1)</code>
+    <p>This snippet first extracts the coordinates of atoms in the first
+    residue of chain A, then translates this fragment to the origin and
+    updates the coordinate values in the database.
+    <monospace>pdb2sql</monospace> also provides a convenient class
+    <monospace>transform</monospace> to easily translate or rotate
+    structures. For example, to translate the first residue of the
+    structure 5 Å along the Y-axis,</p>
+    <code language="python">import numpy as np
+from pdb2sql import pdb2sql
+from pdb2sql import transform
+
+pdb = pdb2sql('1AK4.pdb')
+trans_vec = np.array([0,5,0])
+transform.translation(pdb, trans_vec, resSeq=1, chainID='A')</code>
+    <p>One can also rotate a given selection around a given axis with
+    the <monospace>rotate_axis</monospace> method:</p>
+    <code language="python">angle = np.pi
+axis = (1., 0., 0.)
+transform.rot_axis(pdb, axis, angle, resSeq=1, chainID='A')</code>
+  </sec>
+  <sec id="identifying-interface">
+    <title>Identifying interface</title>
+    <p>The <monospace>interface</monospace> class is derived from the
+    <monospace>pdb2sql</monospace> class and offers functionality to
+    identify contact atoms or residues between two different chains with
+    a given contact distance. It is useful for extracting and analysing
+    the interface of, e.g., protein-protein complexes. The following
+    example snippet returns all the atoms and all the residues of the
+    interface of ‘1AK4.pdb’ defined by a contact distance of 6 Å.</p>
+    <code language="python">from pdb2sql import interface
+
+pdb = interface('1AK4.pdb')
+atoms = pdb.get_contact_atoms(cutoff=6.0)
+res = pdb.get_contact_residues(cutoff=6.0)</code>
+    <p>It is also possible to directly create an
+    <monospace>interface</monospace> instance with a
+    <monospace>pdb2sql</monospace> instance as input. In this case, all
+    the changes in the <monospace>pdb2sql</monospace> instance before
+    creating the new <monospace>interface</monospace> instance will be
+    kept in the <monospace>interface</monospace> instance; afterwards,
+    the two instances will be independent, which means changes in one
+    will not affect the other.</p>
+    <code language="python">from pdb2sql import pdb2sql
+from pdb2sql import interface
+
+pdb = pdb2sql('1AK4.pdb')
+pdbitf = interface(pdb)
+atoms = pdbitf.get_contact_atoms(cutoff=6.0)
+res = pdbitf.get_contact_residues(cutoff=6.0)</code>
+  </sec>
+  <sec id="computing-structure-similarity">
+    <title>Computing Structure Similarity</title>
+    <p>The <monospace>StructureSimilarity</monospace> class allows a
+    user to compute similarity measures between two protein-protein
+    complexes. Several popular measures used to classify qualities of
+    protein complex structures in the CAPRI (Critical Assessment of
+    PRedicted Interactions) challenges
+    (<xref alt="Méndez et al., 2003" rid="ref-capri" ref-type="bibr">Méndez
+    et al., 2003</xref>) have been implemented: interface rmsd, ligand
+    rmsd, fraction of native contacts and DockQ
+    (<xref alt="Basu &amp; Wallner, 2016" rid="ref-dockq" ref-type="bibr">Basu
+    &amp; Wallner, 2016</xref>). The approach implemented to compute the
+    interface rmsd and ligand rmsd is identical to the well-known
+    package <monospace>ProFit</monospace>
+    (<xref alt="Martin &amp; Porter, 2009" rid="ref-profit" ref-type="bibr">Martin
+    &amp; Porter, 2009</xref>). All the methods required to superimpose
+    structures have been implemented in the
+    <monospace>transform</monospace> class and therefore this relies on
+    no external dependencies. The following snippet shows how to compute
+    these measures:</p>
+    <code language="python">from pdb2sql import StructureSimilarity
+
+sim = StructureSimilarity(decoy = '1AK4_model.pdb',
+                          ref = '1AK4_xray.pdb')
+
+irmsd = sim.compute_irmsd_fast()
+lrmsd = sim.compute_lrmsd_fast()
+fnat = sim.compute_fnat_fast()
+dockQ = sim.compute_DockQScore(fnat, lrmsd, irmsd)</code>
+  </sec>
+</sec>
+<sec id="application">
+  <title>Application</title>
+  <p><monospace>psb2sql</monospace> has been used at the Netherlands
+  eScience center for bioinformatics projects. This is, for example, the
+  case of <monospace>iScore</monospace>
+  (<xref alt="Geng et al., 2019" rid="ref-iscore" ref-type="bibr">Geng
+  et al., 2019</xref>), which uses graph kernels and support vector
+  machines to rank protein-protein interfaces. We illustrate the use of
+  the package here by computing the interface rmsd and ligand rmsd of a
+  series of structural models using the experimental structure as a
+  reference. This is a common task for protein-protein docking, where a
+  large number of docked conformations are generated and have then to be
+  compared to ground truth to identify the best-generated poses. This
+  calculation is usually done using the ProFit software and we,
+  therefore, compare our results with those obtained with ProFit. The
+  code to compute the similarity measure for different decoys is
+  simple:</p>
+  <code language="python">from pdb2sql import StructureSimilarity
+
+ref = '1AK4.pdb'
+decoys = os.listdir('./decoys')
+irmsd = {}
+
+for d in decoys:g
+    sim = StructureSimilarity(d, ref)
+    irmsd[d] = sim.compute_irmsd_fast(method='svd', izone='1AK4.izone')</code>
+  <p>Note that the method will compute the i-zone, i.e., the zone of the
+  proteins that form the interface in a similar way to ProFit. This is
+  done for the first calculations and the i-zone is then reused for the
+  subsequent calculations. The comparison of our interface rmsd values
+  to those given by ProFit is shown in Fig 1.</p>
+  <p><inline-graphic mimetype="image" mime-subtype="png" xlink:href="sim.png" />
+  Figure 1. Left - Superimposed model (green) and reference (cyan)
+  structures. Right - comparison of interface rmsd values given by
+  <monospace>pdb2sql</monospace> and by
+  <monospace>ProFit</monospace>.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We acknowledge contributions from Li Xue, Sonja Georgievska, and
+  Lars Ridder.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-biopython">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cock</surname><given-names>Peter J. A.</given-names></name>
+          <name><surname>Antao</surname><given-names>Tiago</given-names></name>
+          <name><surname>Chang</surname><given-names>Jeffrey T.</given-names></name>
+          <name><surname>Chapman</surname><given-names>Brad A.</given-names></name>
+          <name><surname>Cox</surname><given-names>Cymon J.</given-names></name>
+          <name><surname>Dalke</surname><given-names>Andrew</given-names></name>
+          <name><surname>Friedberg</surname><given-names>Iddo</given-names></name>
+          <name><surname>Hamelryck</surname><given-names>Thomas</given-names></name>
+          <name><surname>Kauff</surname><given-names>Frank</given-names></name>
+          <name><surname>Wilczynski</surname><given-names>Bartek</given-names></name>
+          <name><surname>Hoon</surname><given-names>Michiel J. L. de</given-names></name>
+        </person-group>
+        <article-title>Biopython: freely available Python tools for computational molecular biology and bioinformatics</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2009-03">2009</year><month>03</month>
+        <volume>25</volume>
+        <issue>11</issue>
+        <issn>1367-4803</issn>
+        <uri>https://doi.org/10.1093/bioinformatics/btp163</uri>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btp163</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-biopdb">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hamelryck</surname><given-names>Thomas</given-names></name>
+          <name><surname>Manderick</surname><given-names>Bernard</given-names></name>
+        </person-group>
+        <article-title>PDB file parser and structure class implemented in Python</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2003-11">2003</year><month>11</month>
+        <volume>19</volume>
+        <issue>17</issue>
+        <issn>1367-4803</issn>
+        <uri>https://doi.org/10.1093/bioinformatics/btg299</uri>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btg299</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-profit">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Martin</surname><given-names>A. C. R.</given-names></name>
+          <name><surname>Porter</surname><given-names>C. T.</given-names></name>
+        </person-group>
+        <source>ProFit3.1</source>
+        <year iso-8601-date="2009">2009</year>
+        <uri>http://www.bioinf.org.uk/software/profit/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-mmtk">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hinsen</surname><given-names>Konrad</given-names></name>
+        </person-group>
+        <article-title>The molecular modeling toolkit: A new approach to molecular simulations</article-title>
+        <source>Journal of Computational Chemistry</source>
+        <year iso-8601-date="2000">2000</year>
+        <volume>21</volume>
+        <issue>2</issue>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1002/%28SICI%291096-987X%2820000130%2921%3A2%3C79%3A%3AAID-JCC1%3E3.0.CO%3B2-B</uri>
+        <pub-id pub-id-type="doi">10.1002/(SICI)1096-987X(20000130)21:2&lt;79::AID-JCC1&gt;3.0.CO;2-B</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mdanalysis">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Gowers</surname></name>
+          <name><surname>Linke</surname></name>
+          <name><surname>Barnoud</surname></name>
+          <name><surname>Reddy</surname></name>
+          <name><surname>Melo</surname></name>
+          <name><surname>Seyler</surname></name>
+          <name><surname>Domański</surname></name>
+          <name><surname>Dotson</surname></name>
+          <name><surname>Buchoux</surname></name>
+          <name><surname>Kenney</surname></name>
+          <name><surname>Beckstein</surname></name>
+        </person-group>
+        <article-title>MDAnalysis: A Python Package for the Rapid Analysis of Molecular Dynamics Simulations</article-title>
+        <source>Proceedings of the 15th Python in Science Conference</source>
+        <person-group person-group-type="editor">
+          <name><surname>Benthall</surname></name>
+          <name><surname>Rostrup</surname></name>
+        </person-group>
+        <year iso-8601-date="2016">2016</year>
+        <pub-id pub-id-type="doi"> 10.25080/Majora-629e541a-00e </pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-iscore">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Geng</surname><given-names>Cunliang</given-names></name>
+          <name><surname>Jung</surname><given-names>Yong</given-names></name>
+          <name><surname>Renaud</surname><given-names>Nicolas</given-names></name>
+          <name><surname>Honavar</surname><given-names>Vasant</given-names></name>
+          <name><surname>Bonvin</surname><given-names>Alexandre M J J</given-names></name>
+          <name><surname>Xue</surname><given-names>Li C</given-names></name>
+        </person-group>
+        <article-title>iScore: A novel graph kernel-based function for scoring protein-protein docking models</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2019-06">2019</year><month>06</month>
+        <issn>1367-4803</issn>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btz496</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-prody">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bakan</surname><given-names>Ahmet</given-names></name>
+          <name><surname>Meireles</surname><given-names>Lidio M.</given-names></name>
+          <name><surname>Bahar</surname><given-names>Ivet</given-names></name>
+        </person-group>
+        <article-title>ProDy: Protein Dynamics Inferred from Theory and Experiments</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2011-04">2011</year><month>04</month>
+        <volume>27</volume>
+        <issue>11</issue>
+        <issn>1367-4803</issn>
+        <uri>https://doi.org/10.1093/bioinformatics/btr168</uri>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btr168</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-biojava">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lafita</surname><given-names>Spencer AND Prlić</given-names><suffix>Aleix AND Bliven</suffix></name>
+        </person-group>
+        <article-title>BioJava 5: A community driven open-source bioinformatics library</article-title>
+        <source>PLOS Computational Biology</source>
+        <publisher-name>Public Library of Science</publisher-name>
+        <year iso-8601-date="2019-02">2019</year><month>02</month>
+        <volume>15</volume>
+        <issue>2</issue>
+        <uri>https://doi.org/10.1371/journal.pcbi.1006791</uri>
+        <pub-id pub-id-type="doi">10.1371/journal.pcbi.1006791</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-dockq">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Basu</surname><given-names>Sankar</given-names></name>
+          <name><surname>Wallner</surname><given-names>Björn</given-names></name>
+        </person-group>
+        <article-title>DockQ: A quality measure for protein-protein docking models</article-title>
+        <source>PLOS ONE</source>
+        <year iso-8601-date="2016-08-25">2016</year><month>08</month><day>25</day>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-01-15">2020</year><month>01</month><day>15</day></date-in-citation>
+        <volume>11</volume>
+        <issue>8</issue>
+        <issn>1932-6203</issn>
+        <uri>https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0161879</uri>
+        <pub-id pub-id-type="doi">10.1371/journal.pone.0161879</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pdb">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Burley</surname><given-names>Stephen K.</given-names></name>
+          <name><surname>Berman</surname><given-names>Helen M.</given-names></name>
+          <name><surname>Bhikadiya</surname><given-names>Charmi</given-names></name>
+          <name><surname>Bi</surname><given-names>Chunxiao</given-names></name>
+          <name><surname>Chen</surname><given-names>Li</given-names></name>
+          <name><surname>Costanzo</surname><given-names>Luigi Di</given-names></name>
+          <name><surname>Christie</surname><given-names>Cole</given-names></name>
+          <name><surname>Duarte</surname><given-names>Jose M.</given-names></name>
+          <name><surname>Dutta</surname><given-names>Shuchismita</given-names></name>
+          <name><surname>Feng</surname><given-names>Zukang</given-names></name>
+          <name><surname>Ghosh</surname><given-names>Sutapa</given-names></name>
+          <name><surname>Goodsell</surname><given-names>David S.</given-names></name>
+          <name><surname>Green</surname><given-names>Rachel Kramer</given-names></name>
+          <name><surname>Guranovic</surname><given-names>Vladimir</given-names></name>
+          <name><surname>Guzenko</surname><given-names>Dmytro</given-names></name>
+          <name><surname>Hudson</surname><given-names>Brian P.</given-names></name>
+          <name><surname>Liang</surname><given-names>Yuhe</given-names></name>
+          <name><surname>Lowe</surname><given-names>Robert</given-names></name>
+          <name><surname>Peisach</surname><given-names>Ezra</given-names></name>
+          <name><surname>Periskova</surname><given-names>Irina</given-names></name>
+          <name><surname>Randle</surname><given-names>Chris</given-names></name>
+          <name><surname>Rose</surname><given-names>Alexander</given-names></name>
+          <name><surname>Sekharan</surname><given-names>Monica</given-names></name>
+          <name><surname>Shao</surname><given-names>Chenghua</given-names></name>
+          <name><surname>Tao</surname><given-names>Yi-Ping</given-names></name>
+          <name><surname>Valasatava</surname><given-names>Yana</given-names></name>
+          <name><surname>Voigt</surname><given-names>Maria</given-names></name>
+          <name><surname>Westbrook</surname><given-names>John</given-names></name>
+          <name><surname>Young</surname><given-names>Jasmine</given-names></name>
+          <name><surname>Zardecki</surname><given-names>Christine</given-names></name>
+          <name><surname>Zhuravleva</surname><given-names>Marina</given-names></name>
+          <name><surname>Kurisu</surname><given-names>Genji</given-names></name>
+          <name><surname>Nakamura</surname><given-names>Haruki</given-names></name>
+          <name><surname>Kengaku</surname><given-names>Yumiko</given-names></name>
+          <name><surname>Cho</surname><given-names>Hasumi</given-names></name>
+          <name><surname>Sato</surname><given-names>Junko</given-names></name>
+          <name><surname>Kim</surname><given-names>Ju Yaen</given-names></name>
+          <name><surname>Ikegawa</surname><given-names>Yasuyo</given-names></name>
+          <name><surname>Nakagawa</surname><given-names>Atsushi</given-names></name>
+          <name><surname>Yamashita</surname><given-names>Reiko</given-names></name>
+          <name><surname>Kudou</surname><given-names>Takahiro</given-names></name>
+          <name><surname>Bekker</surname><given-names>Gert-Jan</given-names></name>
+          <name><surname>Suzuki</surname><given-names>Hirofumi</given-names></name>
+          <name><surname>Iwata</surname><given-names>Takeshi</given-names></name>
+          <name><surname>Yokochi</surname><given-names>Masashi</given-names></name>
+          <name><surname>Kobayashi</surname><given-names>Naohiro</given-names></name>
+          <name><surname>Fujiwara</surname><given-names>Toshimichi</given-names></name>
+          <name><surname>Velankar</surname><given-names>Sameer</given-names></name>
+          <name><surname>Kleywegt</surname><given-names>Gerard J.</given-names></name>
+          <name><surname>Anyango</surname><given-names>Stephen</given-names></name>
+          <name><surname>Armstrong</surname><given-names>David R.</given-names></name>
+          <name><surname>Berrisford</surname><given-names>John M.</given-names></name>
+          <name><surname>Conroy</surname><given-names>Matthew J.</given-names></name>
+          <name><surname>Dana</surname><given-names>Jose M.</given-names></name>
+          <name><surname>Deshpande</surname><given-names>Mandar</given-names></name>
+          <name><surname>Gane</surname><given-names>Paul</given-names></name>
+          <name><surname>Gáborová</surname><given-names>Romana</given-names></name>
+          <name><surname>Gupta</surname><given-names>Deepti</given-names></name>
+          <name><surname>Gutmanas</surname><given-names>Aleksandras</given-names></name>
+          <name><surname>Koča</surname><given-names>Jaroslav</given-names></name>
+          <name><surname>Mak</surname><given-names>Lora</given-names></name>
+          <name><surname>Mir</surname><given-names>Saqib</given-names></name>
+          <name><surname>Mukhopadhyay</surname><given-names>Abhik</given-names></name>
+          <name><surname>Nadzirin</surname><given-names>Nurul</given-names></name>
+          <name><surname>Nair</surname><given-names>Sreenath</given-names></name>
+          <name><surname>Patwardhan</surname><given-names>Ardan</given-names></name>
+          <name><surname>Paysan-Lafosse</surname><given-names>Typhaine</given-names></name>
+          <name><surname>Pravda</surname><given-names>Lukas</given-names></name>
+          <name><surname>Salih</surname><given-names>Osman</given-names></name>
+          <name><surname>Sehnal</surname><given-names>David</given-names></name>
+          <name><surname>Varadi</surname><given-names>Mihaly</given-names></name>
+          <name><surname>Vařeková</surname><given-names>Radka</given-names></name>
+          <name><surname>Markley</surname><given-names>John L.</given-names></name>
+          <name><surname>Hoch</surname><given-names>Jeffrey C.</given-names></name>
+          <name><surname>Romero</surname><given-names>Pedro R.</given-names></name>
+          <name><surname>Baskaran</surname><given-names>Kumaran</given-names></name>
+          <name><surname>Maziuk</surname><given-names>Dimitri</given-names></name>
+          <name><surname>Ulrich</surname><given-names>Eldon L.</given-names></name>
+          <name><surname>Wedell</surname><given-names>Jonathan R.</given-names></name>
+          <name><surname>Yao</surname><given-names>Hongyang</given-names></name>
+          <name><surname>Livny</surname><given-names>Miron</given-names></name>
+          <name><surname>Ioannidis</surname><given-names>Yannis E.</given-names></name>
+        </person-group>
+        <article-title>Protein data bank: The single global archive for 3D macromolecular structure data</article-title>
+        <source>Nucleic Acids Research</source>
+        <year iso-8601-date="2019-01-08">2019</year><month>01</month><day>08</day>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-01-15">2020</year><month>01</month><day>15</day></date-in-citation>
+        <volume>47</volume>
+        <issn>0305-1048</issn>
+        <uri>https://academic.oup.com/nar/article/47/D1/D520/5144142</uri>
+        <pub-id pub-id-type="doi">10.1093/nar/gky949</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pdbtools">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rodrigues</surname><given-names>João P. G. L. M.</given-names></name>
+          <name><surname>Teixeira</surname><given-names>João M. C.</given-names></name>
+          <name><surname>Trellet</surname><given-names>Mikaël</given-names></name>
+          <name><surname>Bonvin</surname><given-names>Alexandre M. J. J.</given-names></name>
+        </person-group>
+        <article-title>pdb-tools: A swiss army knife for molecular structures</article-title>
+        <source>bioRxiv</source>
+        <publisher-name>Cold Spring Harbor Laboratory</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://www.biorxiv.org/content/early/2018/12/04/483305</uri>
+        <pub-id pub-id-type="doi">10.1101/483305</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-capri">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Méndez</surname><given-names>Raúl</given-names></name>
+          <name><surname>Leplae</surname><given-names>Raphaël</given-names></name>
+          <name><surname>Maria</surname><given-names>Leonardo De</given-names></name>
+          <name><surname>Wodak</surname><given-names>Shoshana J.</given-names></name>
+        </person-group>
+        <article-title>Assessment of blind predictions of protein–protein interactions: Current status of docking methods</article-title>
+        <source>Proteins: Structure, Function, and Bioinformatics</source>
+        <year iso-8601-date="2003">2003</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-01-15">2020</year><month>01</month><day>15</day></date-in-citation>
+        <volume>52</volume>
+        <issue>1</issue>
+        <issn>1097-0134</issn>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1002/prot.10393</uri>
+        <pub-id pub-id-type="doi">10.1002/prot.10393</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

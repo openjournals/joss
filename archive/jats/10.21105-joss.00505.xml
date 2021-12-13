@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">505</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00505</article-id>
+<title-group>
+<article-title>Finch: a tool adding dynamic abundance filtering to
+genomic MinHashing</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-8819-9549</contrib-id>
+<string-name>Roderick Bovee</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-8637-406X</contrib-id>
+<string-name>Nick Greenfield</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>One Codex, San Francisco, California, USA</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2017-08-24">
+<day>24</day>
+<month>8</month>
+<year>2017</year>
+</pub-date>
+<volume>3</volume>
+<issue>22</issue>
+<fpage>505</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>minhash</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>MinHash
+  (<xref alt="Broder, 1997" rid="ref-Broder1997" ref-type="bibr">Broder,
+  1997</xref>) is a document similarity estimation technique that has
+  been applied to problems in genomics including sequence search,
+  phylogenetic reconstruction
+  (<xref alt="Brown &amp; Irber, 2016" rid="ref-Brown2016" ref-type="bibr">Brown
+  &amp; Irber, 2016</xref>;
+  <xref alt="Ondov et al., 2016" rid="ref-Ondov2016" ref-type="bibr">Ondov
+  et al., 2016</xref>), and evaluating outbreaks of hospital acquired
+  infections (HAIs)
+  (<xref alt="Sim et al., 2017" rid="ref-Sim2017" ref-type="bibr">Sim et
+  al., 2017</xref>). We developed the <monospace>finch-rs</monospace>
+  library (https://github.com/onecodex/finch-rs) and
+  <monospace>finch</monospace> command line tool for creating,
+  filtering, and manipulating MinHash sketches from genomics data,
+  including both FASTA sequence files and FASTQ raw read data from
+  next-generation sequencing (NGS) instruments. We extend existing
+  MinHash schemes for genomics data with two major additions: (1)
+  calculation of abundances (i.e., minmer counts) during the generation
+  of the MinHash sketches; and (2) adaptive correction of biases
+  introduced due to variable sequencing depths. These features greatly
+  improve the utility of MinHashing when applied directly to raw read
+  data (i.e., FASTQ files) and allows more robust estimation between
+  both isolates and complex metagenomic samples.</p>
+  <p>Finch and similar genomic MinHashing software works by breaking
+  sequence data up into k-length nucleotide or amino acid subsequences
+  (“k-mers”), computing a hash of each k-mer, and then taking the
+  <italic>n</italic> lowest hash values. Collectively these
+  <italic>n</italic> smallest values (“minmers”) comprise a “sketch” of
+  the input sample. By default, previous MinHash implementations for
+  genomics data work by creating sketches from <italic>all</italic>
+  k-mers from an input genomic dataset (though the original Mash tool
+  does enable filtering out k-mers that appear only once using a Bloom
+  filter
+  (<xref alt="Ondov et al., 2016" rid="ref-Ondov2016" ref-type="bibr">Ondov
+  et al., 2016</xref>)). While this works well for high-quality
+  sequences such as genome assemblies (i.e., FASTA files), it quickly
+  becomes problematic when working with raw FASTQ data where errors from
+  NGS instruments can lead to a far larger number of
+  <italic>unique</italic> observed k-mers than are truly present
+  biologically. Similarly, this also leads to the inclusion of
+  sequencing errors and k-mers from minor community members when
+  comparing complex, mixed genomic samples (i.e., microbiome samples).
+  In both cases, non-representative k-mers (either direct products of
+  sequencing error or low abundance organisms) come to dominate sketches
+  and confound inter-sample distance estimates.</p>
+  <p>We address this filtering challenge by “over-sketching” the input
+  genomic data. First, we create a sketch substantially larger than the
+  desired final size (<italic>n</italic>), tracking the abundances of
+  each k-mer in the sketch, and using the abundances in the large sketch
+  to determine a dynamic filtering threshold. We also track how often
+  each k-mer is seen in its forward versus its reverse orientation.
+  These two metrics allow us to both: (1) estimate the empirical
+  sequencing error in the sample and remove k-mers that may not be
+  biologically present; and (2) remove k-mers that exhibit unbalanced
+  forward and reverse orientation ratios. The former addresses the
+  challenges of comparing data sequenced to varying depths (or samples
+  of varying natural complexity) while the latter can correct for errors
+  that may stem from measurement artifacts such as reads that include
+  adapters and barcode sequences. By removing these error k-mers from a
+  final, reduced sketch (size <italic>n</italic>),
+  <monospace>finch</monospace> more robustly estimates distances between
+  sets of both isolates and complex metagenomic samples.</p>
+  <p>Finch is written in the Rust programming language
+  (<xref alt="Matsakis &amp; Klock, 2014" rid="ref-Matsakis2014" ref-type="bibr">Matsakis
+  &amp; Klock, 2014</xref>) which reduces programming errors through
+  static type checking, allows greater control over performance, and
+  easily integrates into higher-level languages such as Python or R. We
+  have integrated Finch into our One Codex platform
+  (<xref alt="Minot et al., 2015" rid="ref-Minot2015" ref-type="bibr">Minot
+  et al., 2015</xref>) and are using it to power clustering and
+  similarity search features.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Broder1997">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Broder</surname><given-names>Andrei Z.</given-names></name>
+        </person-group>
+        <article-title>On the resemblance and containment of documents</article-title>
+        <source>Proceedings. Compression and complexity of SEQUENCES 1997 (cat. no.97TB100171)</source>
+        <publisher-name>Institute of Electrical; Electronics Engineers (IEEE)</publisher-name>
+        <year iso-8601-date="1997">1997</year>
+        <uri>https://doi.org/10.1109%2Fsequen.1997.666900</uri>
+        <pub-id pub-id-type="doi">10.1109/sequen.1997.666900</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Brown2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Brown</surname><given-names>C. Titus</given-names></name>
+          <name><surname>Irber</surname><given-names>Luiz</given-names></name>
+        </person-group>
+        <article-title>Sourmash: A library for MinHash sketching of DNA</article-title>
+        <source>The Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2016-09">2016</year><month>09</month>
+        <volume>1</volume>
+        <issue>5</issue>
+        <uri>https://doi.org/10.21105%2Fjoss.00027</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.00027</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Ondov2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ondov</surname><given-names>Brian D.</given-names></name>
+          <name><surname>Treangen</surname><given-names>Todd J.</given-names></name>
+          <name><surname>Melsted</surname><given-names>Pall</given-names></name>
+          <name><surname>Mallonee</surname><given-names>Adam B.</given-names></name>
+          <name><surname>Bergman</surname><given-names>Nicholas H.</given-names></name>
+          <name><surname>Koren</surname><given-names>Sergey</given-names></name>
+          <name><surname>Phillippy</surname><given-names>Adam M.</given-names></name>
+        </person-group>
+        <article-title>Mash: Fast genome and metagenome distance estimation using MinHash</article-title>
+        <source>Genome Biology</source>
+        <publisher-name>Springer Nature</publisher-name>
+        <year iso-8601-date="2016-06">2016</year><month>06</month>
+        <volume>17</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1186%2Fs13059-016-0997-x</uri>
+        <pub-id pub-id-type="doi">10.1186/s13059-016-0997-x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Sim2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sim</surname><given-names>James Heng Chiak</given-names></name>
+          <name><surname>Truong</surname><given-names>Cynthia</given-names></name>
+          <name><surname>Minot</surname><given-names>Samuel S.</given-names></name>
+          <name><surname>Greenfield</surname><given-names>Nick</given-names></name>
+          <name><surname>Budvytiene</surname><given-names>Indre</given-names></name>
+          <name><surname>Lohith</surname><given-names>Akshar</given-names></name>
+          <name><surname>Anikst</surname><given-names>Victoria</given-names></name>
+          <name><surname>Pourmand</surname><given-names>Nader</given-names></name>
+          <name><surname>Banaei</surname><given-names>Niaz</given-names></name>
+        </person-group>
+        <article-title>Determining the cause of recurrent clostridium difficile infection using whole genome sequencing</article-title>
+        <source>Diagnostic Microbiology and Infectious Disease</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2017-01">2017</year><month>01</month>
+        <volume>87</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1016%2Fj.diagmicrobio.2016.09.023</uri>
+        <pub-id pub-id-type="doi">10.1016/j.diagmicrobio.2016.09.023</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Matsakis2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Matsakis</surname><given-names>Nicholas D.</given-names></name>
+          <name><surname>Klock</surname><given-names>Felix S.</given-names><suffix>II</suffix></name>
+        </person-group>
+        <article-title>The rust language</article-title>
+        <source>Ada Lett.</source>
+        <publisher-name>ACM</publisher-name>
+        <year iso-8601-date="2014-10">2014</year><month>10</month>
+        <volume>34</volume>
+        <issue>3</issue>
+        <uri>http://doi.acm.org/10.1145/2692956.2663188</uri>
+        <pub-id pub-id-type="doi">10.1145/2692956.2663188</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Minot2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Minot</surname><given-names>Samuel S</given-names></name>
+          <name><surname>Krumm</surname><given-names>Niklas</given-names></name>
+          <name><surname>Greenfield</surname><given-names>Nicholas B</given-names></name>
+        </person-group>
+        <article-title>One codex: A sensitive and accurate data platform for genomic microbial identification</article-title>
+        <source>bioRxiv</source>
+        <publisher-name>Cold Spring Harbor Laboratory</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <uri>https://www.biorxiv.org/content/early/2015/09/28/027607</uri>
+        <pub-id pub-id-type="doi">10.1101/027607</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

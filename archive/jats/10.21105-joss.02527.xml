@@ -1,0 +1,673 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2527</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02527</article-id>
+<title-group>
+<article-title>Disimpy: A massively parallel Monte Carlo simulator for
+generating diffusion-weighted MRI data in Python</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-9446-4305</contrib-id>
+<string-name>Leevi Kerkelä</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Fabio Nery</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Matt G. Hall</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Chris A. Clark</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>UCL Great Ormond Street Institute of Child Health,
+University College London, London, United Kingdom</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>National Physical Laboratory, Teddington, United
+Kingdom</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-07-15">
+<day>15</day>
+<month>7</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>52</issue>
+<fpage>2527</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>diffusion MRI</kwd>
+<kwd>neuroscience</kwd>
+<kwd>microstructure</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Disimpy is a simulator for generating diffusion-weighted magnetic
+  resonance imaging (dMRI) data that is useful in the development and
+  validation of new methods for data acquisition and analysis. Diffusion
+  of water is modelled as an ensemble of random walkers whose
+  trajectories are generated on an Nvidia (Nvidia Corporation, Santa
+  Clara, California, United States) CUDA-capable
+  (<xref alt="Nickolls et al., 2008" rid="ref-nickollsU003A2008" ref-type="bibr">Nickolls
+  et al., 2008</xref>)⁠ graphical processing unit (GPU). The massive
+  parallelization results in a significant performance gain, enabling
+  simulation experiments to be performed on standard laptop and desktop
+  computers. Disimpy is written in Python (Python Software Foundation),
+  making its source code very approachable and easily extensible.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Since the diffusion of water in biological tissues is restricted by
+  microscopic obstacles such as cell organelles, myelin, and
+  macromolecules, dMRI enables the study of tissue microstructure
+  <italic>in vivo</italic> by probing the displacements of water
+  molecules
+  (<xref alt="Behrens &amp; Johansen-Berg, 2009" rid="ref-behrensU003A2009" ref-type="bibr">Behrens
+  &amp; Johansen-Berg, 2009</xref>)⁠. It has become a standard tool in
+  neuroscience
+  (<xref alt="Assaf et al., 2019" rid="ref-assafU003A2019" ref-type="bibr">Assaf
+  et al., 2019</xref>)⁠, and a large number of data acquisition and
+  analysis methods have been developed to tackle the difficult inverse
+  problem of inferring microstructural properties of tissue from the
+  dMRI signal
+  (<xref alt="Novikov et al., 2019" rid="ref-novikovU003A2019" ref-type="bibr">Novikov
+  et al., 2019</xref>)⁠.</p>
+  <p>Simulations have played an important role in the development of the
+  field because they do not require the use of expensive scanner time
+  and they provide a powerful tool for investigating the accuracy and
+  precision of new methods, e.g.,
+  (<xref alt="Tournier et al., 2007" rid="ref-tournierU003A2007" ref-type="bibr">Tournier
+  et al., 2007</xref>). Generally, dMRI simulations are based on
+  modelling diffusion inside some geometry to obtain a solution to the
+  diffusion equation, e.g.,
+  (<xref alt="Ianuş et al., 2016" rid="ref-ianusU003A2016" ref-type="bibr">Ianuş
+  et al., 2016</xref>;
+  <xref alt="Li et al., 2019" rid="ref-liU003A2019" ref-type="bibr">Li
+  et al., 2019</xref>), or modelling diffusion using a more
+  generalizable Monte Carlo approach, e.g.,
+  (<xref alt="Hall &amp; Alexander, 2009" rid="ref-hallU003A2009" ref-type="bibr">Hall
+  &amp; Alexander, 2009</xref>;
+  <xref alt="Rafael-Patino et al., 2020" rid="ref-rafaelU003A2020" ref-type="bibr">Rafael-Patino
+  et al., 2020</xref>). The Monte Carlo method enables the use of
+  complex and realistic tissue microstructure models, e.g.,
+  (<xref alt="Callaghan et al., 2020" rid="ref-callaghanU003A2020" ref-type="bibr">Callaghan
+  et al., 2020</xref>), and can be significantly accelerated using GPU
+  computing, e.g.,
+  (<xref alt="Nguyen et al., 2018" rid="ref-nguyenU003A2018" ref-type="bibr">Nguyen
+  et al., 2018</xref>).</p>
+  <p>Here, we present Disimpy, a GPU-accelerated dMRI simulator that
+  enables a large amount of synthetic data to be generated on standard
+  desktop and laptop computers without needing to access high
+  performance computing clusters. Disimpy is written in Python, making
+  its source code very approachable to researchers with no prior
+  experience in GPU computing.</p>
+</sec>
+<sec id="features">
+  <title>Features</title>
+  <p>Disimpy uses efficient numerical methods from Numpy
+  (<xref alt="Van der Walt et al., 2011" rid="ref-waltU003A2011" ref-type="bibr">Van
+  der Walt et al., 2011</xref>)⁠ and Scipy
+  (<xref alt="Virtanen et al., 2020" rid="ref-virtanenU003A2020" ref-type="bibr">Virtanen
+  et al., 2020</xref>)⁠. Numba
+  (<xref alt="Lam et al., 2015" rid="ref-lamU003A2015" ref-type="bibr">Lam
+  et al., 2015</xref>)⁠ is used to compile Python code into CUDA kernels
+  and device functions
+  (<xref alt="Nickolls et al., 2008" rid="ref-nickollsU003A2008" ref-type="bibr">Nickolls
+  et al., 2008</xref>)⁠ which are executed on the GPU. The random walker
+  steps are generated in a massively parallel fashion on individual
+  threads of one-dimensional CUDA blocks, resulting in a performance
+  gain of over an order of magnitude when compared to Camino
+  (<xref alt="Hall &amp; Alexander, 2009" rid="ref-hallU003A2009" ref-type="bibr">Hall
+  &amp; Alexander, 2009</xref>)⁠⁠, a popular dMRI simulator written in
+  Java (<xref alt="Figure 1" rid="figU003A1">Figure 1</xref>). Given
+  that random walker Monte Carlo dMRI simulations require at least
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[10^4]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mn>10</mml:mn><mml:mn>4</mml:mn></mml:msup></mml:math></alternatives></inline-formula>
+  random walkers for sufficient convergence
+  (<xref alt="Hall &amp; Alexander, 2009" rid="ref-hallU003A2009" ref-type="bibr">Hall
+  &amp; Alexander, 2009</xref>)⁠, it is important that Disimpy’s runtime
+  does not linearly depend on the number of random walkers until the
+  number of walkers is in the thousands or tens of thousands, depending
+  on the GPU.</p>
+  <p>Diffusion can be simulated without restrictions, inside
+  analytically defined geometries (cylinders, spheres, ellipsoids), and
+  in arbitrary geometries defined by triangular meshes
+  (<xref alt="Hall et al., 2017" rid="ref-hallU003A2017" ref-type="bibr">Hall
+  et al., 2017</xref>;
+  <xref alt="Panagiotaki et al., 2010" rid="ref-panagiotakiU003A2010" ref-type="bibr">Panagiotaki
+  et al., 2010</xref>)
+  (<xref alt="Figure 2" rid="figU003A2">Figure 2</xref>). Importantly,
+  the random walk model of diffusion is able to capture time-dependent
+  diffusion.</p>
+  <p>Disimpy supports arbitrary diffusion encoding gradient sequences,
+  such as those used in conventional pulsed field gradient experiments
+  (<xref alt="Stejskal &amp; Tanner, 1965" rid="ref-stejskalU003A1965" ref-type="bibr">Stejskal
+  &amp; Tanner, 1965</xref>) as well as the recently developed q-space
+  trajectory encoding
+  (<xref alt="Eriksson et al., 2013" rid="ref-erikssonU003A2013" ref-type="bibr">Eriksson
+  et al., 2013</xref>;
+  <xref alt="Sjölund et al., 2015" rid="ref-sjolundU003A2015" ref-type="bibr">Sjölund
+  et al., 2015</xref>)⁠. Useful helper functions for generating and
+  manipulating gradient arrays are provided. Synthetic data from
+  multiple gradient encoding schemes can be generated from the same
+  simulation.</p>
+  <p>Documentation, tutorial, and contributing guidelines are provided
+  at https://disimpy.readthedocs.io/.</p>
+</sec>
+<sec id="signal-generation">
+  <title>Signal generation</title>
+  <p>Signal generation in Disimpy follows the framework established in
+  (<xref alt="Hall &amp; Alexander, 2009" rid="ref-hallU003A2009" ref-type="bibr">Hall
+  &amp; Alexander, 2009</xref>)⁠ which is briefly summarized here.
+  <xref alt="Equation 1" rid="eqU003A1">Equation 1</xref> and
+  <xref alt="Equation 2" rid="eqU003A2">Equation 2</xref> describe
+  theory. <xref alt="Equation 3" rid="eqU003A3">Equation 3</xref>,
+  <xref alt="Equation 4" rid="eqU003A4">Equation 4</xref>, and
+  <xref alt="Equation 5" rid="eqU003A5">Equation 5</xref> describe the
+  numerical implementation in Disimpy.</p>
+  <p>In a dMRI experiment, the target nuclei are exposed to
+  time-dependent magnetic field gradients which render the signal
+  sensitive to diffusion. During the experiment, the spin of a nucleus
+  experiences a path-dependent phase shift given by
+  <named-content id="eqU003A1" content-type="equation"><disp-formula><alternatives>
+  <tex-math><![CDATA[\label{eq:1}
+  \phi(t) = \gamma \int_0^t \mathbf{B}_0 + \mathbf{G}(t')\cdot\mathbf{r}(t') dt' ,]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>ϕ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>γ</mml:mi><mml:msubsup><mml:mo>∫</mml:mo><mml:mn>0</mml:mn><mml:mi>t</mml:mi></mml:msubsup><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐁</mml:mi></mml:mstyle><mml:mn>0</mml:mn></mml:msub><mml:mo>+</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐆</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mi>′</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>⋅</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐫</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mi>′</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>d</mml:mi><mml:mi>t</mml:mi><mml:mi>′</mml:mi><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></named-content>
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[\gamma]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>γ</mml:mi></mml:math></alternatives></inline-formula>
+  is the gyromagnetic ratio of the nucleus,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{B}_0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐁</mml:mi></mml:mstyle><mml:mn>0</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+  is the static main magnetic field of the scanner,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{G}(t)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐆</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  is the diffusion encoding gradient, and <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{r}(t)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐫</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  is the location of the nucleus. <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{G}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐆</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{B}_0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐁</mml:mi></mml:mstyle><mml:mn>0</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+  change sign after the application of the refocusing pulse.</p>
+  <p>An imaging voxel contains an ensemble of nuclei for which the total
+  signal is given by
+  <named-content id="eqU003A2" content-type="equation"><disp-formula><alternatives>
+  <tex-math><![CDATA[\label{eq:2}
+  S = S_0 \int_{-\infty}^\infty P(\phi) \exp \left( i \phi \right) d\phi ,]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>S</mml:mi><mml:mo>=</mml:mo><mml:msub><mml:mi>S</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:msubsup><mml:mo>∫</mml:mo><mml:mrow><mml:mo>−</mml:mo><mml:mi>∞</mml:mi></mml:mrow><mml:mi>∞</mml:mi></mml:msubsup><mml:mi>P</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>ϕ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>exp</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>i</mml:mi><mml:mi>ϕ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>d</mml:mi><mml:mi>ϕ</mml:mi><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></named-content>
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[P]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>P</mml:mi></mml:math></alternatives></inline-formula>
+  is the spin phase distribution and <inline-formula><alternatives>
+  <tex-math><![CDATA[S_0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>S</mml:mi><mml:mn>0</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+  is the signal without diffusion-weighting while keeping other imaging
+  parameters unchanged.</p>
+  <p>In Disimpy, diffusion is modelled as a three-dimensional random
+  walk over discrete time. The steps, which are randomly sampled from a
+  uniform distribution over the surface of a sphere using the
+  xoroshiro128+ pseudorandom number generator
+  (<xref alt="Blackman &amp; Vigna, 2018" rid="ref-blackmanU003A2018" ref-type="bibr">Blackman
+  &amp; Vigna, 2018</xref>), have a fixed length
+  <named-content id="eqU003A3" content-type="equation"><disp-formula><alternatives>
+  <tex-math><![CDATA[\label{eq:3}
+  l = \sqrt{6 \cdot D \cdot dt} ,]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>l</mml:mi><mml:mo>=</mml:mo><mml:msqrt><mml:mrow><mml:mn>6</mml:mn><mml:mo>⋅</mml:mo><mml:mi>D</mml:mi><mml:mo>⋅</mml:mo><mml:mi>d</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msqrt><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></named-content>
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[D]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>D</mml:mi></mml:math></alternatives></inline-formula>
+  is the diffusion coefficient and <inline-formula><alternatives>
+  <tex-math><![CDATA[dt]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>d</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  is the duration of a time step. At every time point in the simulation,
+  each walker accumulates phase given by
+  <named-content id="eqU003A4" content-type="equation"><disp-formula><alternatives>
+  <tex-math><![CDATA[\label{eq:4}
+  d \phi = \gamma \mathbf{G}(t) \cdot \mathbf{r} (t) dt .]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>d</mml:mi><mml:mi>ϕ</mml:mi><mml:mo>=</mml:mo><mml:mi>γ</mml:mi><mml:mstyle mathvariant="bold"><mml:mi>𝐆</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>⋅</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐫</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>d</mml:mi><mml:mi>t</mml:mi><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></named-content>
+  At the end of the simulated dynamics, the normalized
+  diffusion-weighted signal is calculated as the sum of the real parts
+  of signals from all random walkers
+  <named-content id="eqU003A5" content-type="equation"><disp-formula><alternatives>
+  <tex-math><![CDATA[\label{eq:5}
+  S = \sum_{j=1}^N \text{Re} \left( \exp \left( i \phi_j \right) \right) ,]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>S</mml:mi><mml:mo>=</mml:mo><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>N</mml:mi></mml:munderover><mml:mtext mathvariant="normal">Re</mml:mtext><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mo>exp</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>i</mml:mi><mml:msub><mml:mi>ϕ</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></named-content>
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
+  is the number of random walkers.</p>
+  <p>The initial positions of the random walkers are drawn from a
+  uniform distribution across the diffusion environment. When a random
+  walker collides with a restricting barrier, it is elastically
+  reflected off the collision point in such a way that the random
+  walker’s total path length during <inline-formula><alternatives>
+  <tex-math><![CDATA[dt]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>d</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  is equal to <inline-formula><alternatives>
+  <tex-math><![CDATA[l]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>l</mml:mi></mml:math></alternatives></inline-formula>.</p>
+</sec>
+<sec id="figures">
+  <title>Figures</title>
+  <fig>
+    <caption><p>Performance comparison between Disimpy and Camino, a
+    popular dMRI simulator that runs single-threaded on the CPU. The
+    comparison was performed on a desktop computer with an Intel Xeon
+    E5-1620 v3 3.50 GHz x 8 CPU and an Nvidia Quadro K620 GPU. The
+    simulations were performed using a mesh consisting of
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[10^4]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mn>10</mml:mn><mml:mn>4</mml:mn></mml:msup></mml:math></alternatives></inline-formula>
+    triangles, shown in
+    <xref alt="Figure 2" rid="figU003A2">Figure 2</xref>.<styled-content id="figU003A1"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="paper_figure_1.png" xlink:title="" />
+  </fig>
+  <fig>
+    <caption><p>Example of diffusion in an environment defined by a
+    triangular mesh. (A) Example mesh of <inline-formula><alternatives>
+    <tex-math><![CDATA[10^4]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mn>10</mml:mn><mml:mn>4</mml:mn></mml:msup></mml:math></alternatives></inline-formula>
+    triangles defining the synthetic voxel consisting of 100 spheres
+    with gamma distributed radii. Mesh kindly provided by Gyori
+    (<xref alt="Gyori et al., 2020" rid="ref-gyoriU003A2020" ref-type="bibr">Gyori
+    et al., 2020</xref>)⁠. (B) Example trajectories of 100 random
+    walkers whose initial positions were randomly positioned inside the
+    spheres. Some spheres contain more than one walker. (C) Example
+    trajectories of 100 random walkers outside the
+    spheres.<styled-content id="figU003A2"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="paper_figure_2.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This work was funded by the National Institute for Health Research
+  Great Ormond Street Hospital Biomedical Research Centre (NIHR GOSH
+  BRC).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-callaghanU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Callaghan</surname><given-names>Ross</given-names></name>
+          <name><surname>Alexander</surname><given-names>Daniel C</given-names></name>
+          <name><surname>Palombo</surname><given-names>Marco</given-names></name>
+          <name><surname>Zhang</surname><given-names>Hui</given-names></name>
+        </person-group>
+        <article-title>ConFiG: Contextual fibre growth to generate realistic axonal packing for diffusion MRI simulation</article-title>
+        <source>Neuroimage</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>220</volume>
+        <pub-id pub-id-type="doi">10.1016/j.neuroimage.2020.117107</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-nguyenU003A2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Nguyen</surname><given-names>Khieu-Van</given-names></name>
+          <name><surname>Hernández-Garzón</surname><given-names>Edwin</given-names></name>
+          <name><surname>Valette</surname><given-names>Julien</given-names></name>
+        </person-group>
+        <article-title>Efficient GPU-based monte-carlo simulation of diffusion in real astrocytes reconstructed from confocal microscopy</article-title>
+        <source>Journal of Magnetic Resonance</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>296</volume>
+        <pub-id pub-id-type="doi">10.1016/j.jmr.2018.09.013</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-rafaelU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rafael-Patino</surname><given-names>Jonathan</given-names></name>
+          <name><surname>Romascano</surname><given-names>David</given-names></name>
+          <name><surname>Ramirez-Manzanares</surname><given-names>Alonso</given-names></name>
+          <name><surname>Canales-Rodrı́guez</surname><given-names>Erick Jorge</given-names></name>
+          <name><surname>Girard</surname><given-names>Gabriel</given-names></name>
+          <name><surname>Thiran</surname><given-names>Jean-Philippe</given-names></name>
+        </person-group>
+        <article-title>Robust monte-carlo simulations in diffusion-MRI: Effect of the substrate complexity and parameter choice on the reproducibility of results</article-title>
+        <source>Frontiers in Neuroinformatics</source>
+        <publisher-name>Frontiers</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>14</volume>
+        <pub-id pub-id-type="doi">10.3389/fninf.2020.00008</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-liU003A2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Li</surname><given-names>Jing-Rebecca</given-names></name>
+          <name><surname>Nguyen</surname><given-names>Van-Dang</given-names></name>
+          <name><surname>Tran</surname><given-names>Try Nguyen</given-names></name>
+          <name><surname>Valdman</surname><given-names>Jan</given-names></name>
+          <name><surname>Trang</surname><given-names>Cong-Bang</given-names></name>
+          <name><surname>Van Nguyen</surname><given-names>Khieu</given-names></name>
+          <name><surname>Vu</surname><given-names>Duc Thach Son</given-names></name>
+          <name><surname>Tran</surname><given-names>Hoang An</given-names></name>
+          <name><surname>Tran</surname><given-names>Hoang Trong An</given-names></name>
+          <name><surname>Nguyen</surname><given-names>Thi Minh Phuong</given-names></name>
+        </person-group>
+        <article-title>SpinDoctor: A matlab toolbox for diffusion MRI simulation</article-title>
+        <source>NeuroImage</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>202</volume>
+        <pub-id pub-id-type="doi">10.1016/j.neuroimage.2019.116120</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ianusU003A2016">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Ianuş</surname><given-names>Andrada</given-names></name>
+          <name><surname>Alexander</surname><given-names>Daniel C</given-names></name>
+          <name><surname>Drobnjak</surname><given-names>Ivana</given-names></name>
+        </person-group>
+        <article-title>Microstructure imaging sequence simulation toolbox</article-title>
+        <source>International workshop on simulation and synthesis in medical imaging</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-46630-9_4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gyoriU003A2020">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Gyori</surname><given-names>Noemi</given-names></name>
+          <name><surname>Hall</surname><given-names>Matt G</given-names></name>
+          <name><surname>Clark</surname><given-names>Chris A</given-names></name>
+          <name><surname>Alexander</surname><given-names>Daniel C</given-names></name>
+          <name><surname>Kaden</surname><given-names>Enrico</given-names></name>
+        </person-group>
+        <article-title>Discrepancy between in-vivo measurements and monte-carlo simulations with spherical structures in b-tensor encoding</article-title>
+        <source>International society for magnetic resonance in medicine and society for MR radiographers &amp; technologists virtual conference &amp; exhibition</source>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-hallU003A2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hall</surname><given-names>Matt G</given-names></name>
+          <name><surname>Nedjati-Gilani</surname><given-names>Gemma</given-names></name>
+          <name><surname>Alexander</surname><given-names>Daniel C</given-names></name>
+        </person-group>
+        <article-title>Realistic voxel sizes and reduced signal variation in monte-carlo simulation for diffusion mr data synthesis</article-title>
+        <source>arXiv preprint arXiv:1701.03634</source>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-panagiotakiU003A2010">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Panagiotaki</surname><given-names>Eleftheria</given-names></name>
+          <name><surname>Hall</surname><given-names>Matt G</given-names></name>
+          <name><surname>Zhang</surname><given-names>Hui</given-names></name>
+          <name><surname>Siow</surname><given-names>Bernard</given-names></name>
+          <name><surname>Lythgoe</surname><given-names>Mark F</given-names></name>
+          <name><surname>Alexander</surname><given-names>Daniel C</given-names></name>
+        </person-group>
+        <article-title>High-fidelity meshes from tissue samples for diffusion MRI simulations</article-title>
+        <source>International conference on medical image computing and computer-assisted intervention</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-642-15745-5_50</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sjolundU003A2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sjölund</surname><given-names>Jens</given-names></name>
+          <name><surname>Szczepankiewicz</surname><given-names>Filip</given-names></name>
+          <name><surname>Nilsson</surname><given-names>Markus</given-names></name>
+          <name><surname>Topgaard</surname><given-names>Daniel</given-names></name>
+          <name><surname>Westin</surname><given-names>Carl-Fredrik</given-names></name>
+          <name><surname>Knutsson</surname><given-names>Hans</given-names></name>
+        </person-group>
+        <article-title>Constrained optimization of gradient waveforms for generalized diffusion encoding</article-title>
+        <source>Journal of magnetic resonance</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <volume>261</volume>
+        <pub-id pub-id-type="doi">10.1016/j.jmr.2015.10.012</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-erikssonU003A2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Eriksson</surname><given-names>Stefanie</given-names></name>
+          <name><surname>Lasic</surname><given-names>Samo</given-names></name>
+          <name><surname>Topgaard</surname><given-names>Daniel</given-names></name>
+        </person-group>
+        <article-title>Isotropic diffusion weighting in PGSE NMR by magic-angle spinning of the q-vector</article-title>
+        <source>Journal of Magnetic Resonance</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <volume>226</volume>
+        <pub-id pub-id-type="doi">10.1016/j.jmr.2012.10.015</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-stejskalU003A1965">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Stejskal</surname><given-names>Edward O</given-names></name>
+          <name><surname>Tanner</surname><given-names>John E</given-names></name>
+        </person-group>
+        <article-title>Spin diffusion measurements: Spin echoes in the presence of a time-dependent field gradient</article-title>
+        <source>The journal of chemical physics</source>
+        <publisher-name>American Institute of Physics</publisher-name>
+        <year iso-8601-date="1965">1965</year>
+        <volume>42</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1063/1.1695690</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-blackmanU003A2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Blackman</surname><given-names>David</given-names></name>
+          <name><surname>Vigna</surname><given-names>Sebastiano</given-names></name>
+        </person-group>
+        <article-title>Scrambled linear pseudorandom number generators</article-title>
+        <source>arXiv preprint arXiv:1805.01407</source>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-lamU003A2015">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Lam</surname><given-names>Siu Kwan</given-names></name>
+          <name><surname>Pitrou</surname><given-names>Antoine</given-names></name>
+          <name><surname>Seibert</surname><given-names>Stanley</given-names></name>
+        </person-group>
+        <article-title>Numba: A llvm-based python jit compiler</article-title>
+        <source>Proceedings of the second workshop on the LLVM compiler infrastructure in HPC</source>
+        <year iso-8601-date="2015">2015</year>
+        <pub-id pub-id-type="doi">10.1145/2833157.2833162</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-virtanenU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E</given-names></name>
+          <name><surname>Haberland</surname><given-names>Matt</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Burovski</surname><given-names>Evgeni</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Bright</surname><given-names>Jonathan</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>SciPy 1.0: Fundamental algorithms for scientific computing in python</article-title>
+        <source>Nature methods</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>17</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1038/s41592-019-0686-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-waltU003A2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Van der Walt</surname><given-names>Stéfan</given-names></name>
+          <name><surname>Colbert</surname><given-names>S Chris</given-names></name>
+          <name><surname>Varoquaux</surname><given-names>Gael</given-names></name>
+        </person-group>
+        <article-title>The NumPy array: A structure for efficient numerical computation</article-title>
+        <source>Computing in science &amp; engineering</source>
+        <publisher-name>IEEE Computer Society</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <volume>13</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1109/mcse.2011.37</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hallU003A2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hall</surname><given-names>Matt G</given-names></name>
+          <name><surname>Alexander</surname><given-names>Daniel C</given-names></name>
+        </person-group>
+        <article-title>Convergence and parameter choice for monte-carlo simulations of diffusion MRI</article-title>
+        <source>IEEE transactions on medical imaging</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <volume>28</volume>
+        <issue>9</issue>
+        <pub-id pub-id-type="doi">10.1109/tmi.2009.2015756</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-tournierU003A2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tournier</surname><given-names>J-Donald</given-names></name>
+          <name><surname>Calamante</surname><given-names>Fernando</given-names></name>
+          <name><surname>Connelly</surname><given-names>Alan</given-names></name>
+        </person-group>
+        <article-title>Robust determination of the fibre orientation distribution in diffusion MRI: Non-negativity constrained super-resolved spherical deconvolution</article-title>
+        <source>Neuroimage</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>35</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1016/j.neuroimage.2007.02.016</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-novikovU003A2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Novikov</surname><given-names>Dmitry S</given-names></name>
+          <name><surname>Fieremans</surname><given-names>Els</given-names></name>
+          <name><surname>Jespersen</surname><given-names>Sune N</given-names></name>
+          <name><surname>Kiselev</surname><given-names>Valerij G</given-names></name>
+        </person-group>
+        <article-title>Quantifying brain microstructure with diffusion MRI: Theory and parameter estimation</article-title>
+        <source>NMR in Biomedicine</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>32</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1002/nbm.3998</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-assafU003A2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Assaf</surname><given-names>Yaniv</given-names></name>
+          <name><surname>Johansen-Berg</surname><given-names>Heidi</given-names></name>
+          <name><surname>Thiebaut de Schotten</surname><given-names>Michel</given-names></name>
+        </person-group>
+        <article-title>The role of diffusion MRI in neuroscience</article-title>
+        <source>NMR in Biomedicine</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>32</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1101/140459</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-behrensU003A2009">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Behrens</surname><given-names>Timothy EJ</given-names></name>
+          <name><surname>Johansen-Berg</surname><given-names>Heidi</given-names></name>
+        </person-group>
+        <source>Diffusion MRI: From quantitative measurement to in-vivo neuroanatomy</source>
+        <publisher-name>Academic Press</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-nickollsU003A2008">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Nickolls</surname><given-names>John</given-names></name>
+          <name><surname>Buck</surname><given-names>Ian</given-names></name>
+          <name><surname>Garland</surname><given-names>Michael</given-names></name>
+          <name><surname>Skadron</surname><given-names>Kevin</given-names></name>
+        </person-group>
+        <article-title>Scalable parallel programming with CUDA</article-title>
+        <source>Queue</source>
+        <publisher-name>ACM New York, NY, USA</publisher-name>
+        <year iso-8601-date="2008">2008</year>
+        <volume>6</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1109/hotchips.2008.7476516</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

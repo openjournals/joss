@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">921</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00921</article-id>
+<title-group>
+<article-title>DataDepsGenerators.jl: making reusing data easy by
+automatically generating DataDeps.jl registration code</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-1386-1646</contrib-id>
+<string-name>Lyndon White</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-1162-0865</contrib-id>
+<string-name>Sebastin Santy</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>The University of Western Australia</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>BITS Pilani, KK Birla Goa Campus, India</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2018-10-23">
+<day>23</day>
+<month>10</month>
+<year>2018</year>
+</pub-date>
+<volume>3</volume>
+<issue>31</issue>
+<fpage>921</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>julialang</kwd>
+<kwd>opendata</kwd>
+<kwd>metadata</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>DataDepsGenerators.jl is a tool written to help users of the Julia
+  programming language
+  (<xref alt="Bezanson et al., 2017" rid="ref-Julia" ref-type="bibr">Bezanson
+  et al., 2017</xref>), to observe best practices when making use of
+  published datasets. Using the metadata present in published datasets,
+  it generates the code for the data dependency registration blocks
+  required by DataDeps.jl
+  (<xref alt="White et al., 2018" rid="ref-2018arXiv180801091W" ref-type="bibr">White
+  et al., 2018</xref>). These registration blocks are effectively
+  executable metadata, which can be resolved by DataDeps.jl to download
+  the dataset. They include a message that is displayed to the user
+  whenever the data set is automatically downloaded. This message should
+  include provenance information on the dataset, so that downstream
+  users know its original source and details on its processing.</p>
+  <p>DataDepsGenerators.jl attempts to use the metadata available for a
+  dataset to capture and record:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>The dataset name.</p>
+    </list-item>
+    <list-item>
+      <p>A URL for a website about the dataset.</p>
+    </list-item>
+    <list-item>
+      <p>The names of the authors and maintainers.</p>
+    </list-item>
+    <list-item>
+      <p>The creation date, publication date, and the date of the most
+      recent modification.</p>
+    </list-item>
+    <list-item>
+      <p>The license that the dataset is released under.</p>
+    </list-item>
+    <list-item>
+      <p>The formatted bibliographic details of any paper about or
+      relating to the dataset.</p>
+    </list-item>
+    <list-item>
+      <p>The formatted bibliographic details of how to cite the dataset
+      itself.</p>
+    </list-item>
+    <list-item>
+      <p>A list of URLs where the files making up the dataset can be
+      downloaded.</p>
+    </list-item>
+    <list-item>
+      <p>A corresponding list of file hashes, such as MD5 or SHA256, to
+      validate the files after download.</p>
+    </list-item>
+    <list-item>
+      <p>A description of the dataset.</p>
+    </list-item>
+  </list>
+  <p>Depending on the APIs supported by the repository some of this
+  information may not be available. DataDepsGenerators.jl makes a
+  best-effort attempt to acquire as much provenance information as
+  possible. Where multiple APIs are supported, it makes use of all APIs
+  possible, merging their responses to fill any gaps. It thus often
+  produces higher quality and more comprehensive dataset metadata than
+  is available from any one source.</p>
+  <p>DataDepsGenerators.jl leverages many different APIs to support a
+  very large number of repositories. By current estimates tens of
+  millions of datasets are supported, from hundreds of repositories. The
+  APIs supported include:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p><ext-link ext-link-type="uri" xlink:href="https://datacite.org/">DataCite</ext-link>
+      /
+      <ext-link ext-link-type="uri" xlink:href="https://www.crossref.org/">CrossRef</ext-link></p>
+      <list list-type="bullet">
+        <list-item>
+          <p>This is valid for the majority of all dataset with a
+          DOI.</p>
+        </list-item>
+      </list>
+    </list-item>
+    <list-item>
+      <p><ext-link ext-link-type="uri" xlink:href="https://www.dataone.org/">DataOne</ext-link></p>
+      <list list-type="bullet">
+        <list-item>
+          <p>This supports a number of data repositories used in the
+          earth sciences.</p>
+        </list-item>
+      </list>
+    </list-item>
+    <list-item>
+      <p><ext-link ext-link-type="uri" xlink:href="http://figshare.com/">FigShare</ext-link></p>
+      <list list-type="bullet">
+        <list-item>
+          <p>A popular general purpose data repository.</p>
+        </list-item>
+      </list>
+    </list-item>
+    <list-item>
+      <p><ext-link ext-link-type="uri" xlink:href="http://datadryad.org/">Dryad</ext-link></p>
+      <list list-type="bullet">
+        <list-item>
+          <p>A data repository particularly popular with evolutionary
+          biology and ecology.</p>
+        </list-item>
+      </list>
+    </list-item>
+    <list-item>
+      <p><ext-link ext-link-type="uri" xlink:href="https://archive.ics.uci.edu/ml/">UCI
+      ML repository</ext-link></p>
+      <list list-type="bullet">
+        <list-item>
+          <p>A data repository commonly used for small-medium machine
+          learning benchmark datasets.</p>
+        </list-item>
+      </list>
+    </list-item>
+    <list-item>
+      <p><ext-link ext-link-type="uri" xlink:href="https://github.com">GitHub</ext-link></p>
+      <list list-type="bullet">
+        <list-item>
+          <p>Most well known for hosting code; but is fairly regularly
+          used to host versioned datasets.</p>
+        </list-item>
+      </list>
+    </list-item>
+    <list-item>
+      <p><ext-link ext-link-type="uri" xlink:href="http://ckan.org/">CKAN</ext-link></p>
+      <list list-type="bullet">
+        <list-item>
+          <p>This is the system behind a large number of government open
+          data initiatives such as
+          <ext-link ext-link-type="uri" xlink:href="https://data.gov">Data.Gov</ext-link>,
+          <ext-link ext-link-type="uri" xlink:href="https://data.gov.au/">data.gov.au</ext-link>,
+          and the
+          <ext-link ext-link-type="uri" xlink:href="https://www.europeandataportal.eu/">European
+          Data Portal</ext-link>.</p>
+        </list-item>
+      </list>
+    </list-item>
+    <list-item>
+      <p>Embedded JSON-LD fragments in HTML pages.</p>
+      <list list-type="bullet">
+        <list-item>
+          <p>This is commonly used on many websites to describe their
+          datasets. Including some of those listed above; as well as
+          <ext-link ext-link-type="uri" xlink:href="https://zenodo.org/">Zenodo</ext-link>,
+          <ext-link ext-link-type="uri" xlink:href="https://www.kaggle.com/datasets">Kaggle
+          Datasets</ext-link>, all
+          <ext-link ext-link-type="uri" xlink:href="https://dataverse.org/">DataVerse</ext-link>
+          sites and many others.</p>
+        </list-item>
+      </list>
+    </list-item>
+  </list>
+  <p>DataDepsGenerators.jl as the name suggests, generates static code
+  which the user can add into their project’s Julia source code to make
+  use of with DataDeps.jl. There are a number of reasons why static code
+  generation is preferred over directly using the APIs.</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>On occasion the information reported by the APIs is wrong,
+      incomplete or overly detailed. The user may tweak the details as
+      required by editing the generated code.</p>
+    </list-item>
+    <list-item>
+      <p>The process of accessing the APIs requires a number of heavy
+      dependencies, such as HTML and JSON parsers. If these APIs were to
+      be accessed directly by a project, it would require adding this
+      large dependency tree to the project.</p>
+    </list-item>
+    <list-item>
+      <p>It is important to know if a dataset has changed. As such
+      retrieving the file hash and last modification date would be
+      pointless if they are updated automatically.</p>
+    </list-item>
+  </list>
+  <p>Finally: having the provenance information recorded in plain text,
+  makes the dataset metadata readily accessible to anyone reading the
+  source code; without having to run the project’s application.</p>
+  <p>The automatic downloading of data is important to allow for
+  robustly replicable scientific code. The inclusion of provenance
+  information is required to give proper credit and to allow for good
+  understanding of the dataset’s real world context.
+  DataDepsGenerators.jl makes this easy by automating most of the
+  work.</p>
+  <sec id="other-similar-packages">
+    <title>Other similar packages</title>
+    <p>In the R software ecosystem there is the
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/ropensci/suppdata"><monospace>suppdata</monospace></ext-link>
+    (<xref alt="Pearse &amp; Chamberlain, 2018" rid="ref-suppdata" ref-type="bibr">Pearse
+    &amp; Chamberlain, 2018</xref>) package.
+    <monospace>suppdata</monospace> is a package for easily downloading
+    supplementary data files attached to journal articles. It is thus
+    very similar in purpose: to make research data more accessible. It
+    is a direct download tool, rather than DataDepsGenerators.jl’s
+    approach of generating metadata that is evaluated to preform the
+    download. While there is some overlap, in that both support FigShare
+    and Dryad, <monospace>suppdata</monospace> primarily supports
+    journals rather than data repositories.</p>
+    <p>When it comes to accessing data repositories, there exists
+    several R packages which only support a single provider of data.
+    These vary in their support for different functionality. They often
+    support features beyond the scope of DataDepsGenerators.jl, to
+    search, or upload data to the supported repository. Examples
+    include:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p><ext-link ext-link-type="uri" xlink:href="https://github.com/ropensci/rdryad"><monospace>rdryad</monospace>
+        for DataDryad</ext-link></p>
+      </list-item>
+      <list-item>
+        <p><ext-link ext-link-type="uri" xlink:href="https://github.com/ropensci/rfigshare"><monospace>rfigshare</monospace>
+        for FigShare</ext-link></p>
+      </list-item>
+      <list-item>
+        <p><ext-link ext-link-type="uri" xlink:href="https://github.com/ropensci/ckanr"><monospace>ckanr</monospace>
+        for CKAN</ext-link></p>
+      </list-item>
+      <list-item>
+        <p><ext-link ext-link-type="uri" xlink:href="https://github.com/ropensci/rdatacite"><monospace>rdatacite</monospace>
+        for DataCite</ext-link></p>
+      </list-item>
+      <list-item>
+        <p><ext-link ext-link-type="uri" xlink:href="https://github.com/DataONEorg/rdataone"><monospace>rdataone</monospace>
+        for DataOne</ext-link></p>
+      </list-item>
+    </list>
+    <p>To the best of our knowledge at present there does not exist a
+    unifying R package that supports anywhere near the range of data
+    repositories supported by DataDepsGenerators.jl. Contemporaneously,
+    with the creation of DataDepsGenerator.jl, there was a proposal for
+    another related R package
+    (<ext-link ext-link-type="uri" xlink:href="https://github.com/ropenscilabs/doidata"><monospace>doidata</monospace></ext-link>)
+    which would access data based on a DOI. While this has yet to
+    eventuate into usable software, several of the discussions relating
+    to it were insightful, and contributed to the functionality of
+    DataDepsGenerators.jl.</p>
+  </sec>
+  <sec id="acknowledgments">
+    <title>Acknowledgments</title>
+    <p>This work was largely carried out as a
+    <ext-link ext-link-type="uri" xlink:href="https://medium.com/@sebastinsanty/google-summer-of-code-2018-julia-computing-report-8d3f553d7050">Google
+    Summer of Code project</ext-link>, as part of the NumFocus
+    organisation. It also benefited from funding from Australian
+    Research Council Grants DP150102405 and LP110100050.</p>
+    <p>We also wish to thank the support teams behind the APIs and
+    repositories listed above. In the course of creating this tool we
+    thoroughly exercised a number of APIs. In doing so we encountered a
+    number of bugs and issues; almost all of which have now been fixed,
+    by the attentive support and operation staff of the providers.</p>
+  </sec>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Julia">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bezanson</surname><given-names>J.</given-names></name>
+          <name><surname>Edelman</surname><given-names>A.</given-names></name>
+          <name><surname>Karpinski</surname><given-names>S.</given-names></name>
+          <name><surname>Shah</surname><given-names>V.</given-names></name>
+        </person-group>
+        <article-title>Julia: A fresh approach to numerical computing</article-title>
+        <source>SIAM Review</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>59</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1137/141000671</uri>
+        <pub-id pub-id-type="doi">10.1137/141000671</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-suppdata">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pearse</surname><given-names>William D</given-names></name>
+          <name><surname>Chamberlain</surname><given-names>Scott A</given-names></name>
+        </person-group>
+        <article-title>Suppdata: Downloading supplementary data from published manuscripts</article-title>
+        <source>Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2018-05">2018</year><month>05</month>
+        <volume>3</volume>
+        <issue>25</issue>
+        <uri>https://doi.org/10.21105/joss.00721</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.00721</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-2018arXiv180801091W">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>White</surname><given-names>L.</given-names></name>
+          <name><surname>Togneri</surname><given-names>R.</given-names></name>
+          <name><surname>Liu</surname><given-names>W.</given-names></name>
+          <name><surname>Bennamoun</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>DataDeps.jl: Repeatable Data Setup for Replicable Data Science</article-title>
+        <source>ArXiv e-prints</source>
+        <year iso-8601-date="2018-08">2018</year><month>08</month>
+        <uri>https://arxiv.org/abs/1808.01091</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

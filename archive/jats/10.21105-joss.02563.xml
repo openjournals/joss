@@ -1,0 +1,732 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2563</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02563</article-id>
+<title-group>
+<article-title>matador: a Python library for analysing, curating and
+performing high-throughput density-functional theory
+calculations</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1182-9098</contrib-id>
+<string-name>Matthew L. Evans</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-7453-5698</contrib-id>
+<string-name>Andrew J. Morris</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Theory of Condensed Matter Group, Cavendish Laboratory,
+University of Cambridge, J. J. Thomson Avenue, Cambridge, CB3 0HE,
+U.K.</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>School of Metallurgy and Materials, University of
+Birmingham, Edgbaston, Birmingham, B15 2TT, U.K.</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<volume>5</volume>
+<issue>54</issue>
+<fpage>2563</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>density-functional theory</kwd>
+<kwd>ab initio</kwd>
+<kwd>crystal structure prediction</kwd>
+<kwd>materials discovery</kwd>
+<kwd>databases</kwd>
+<kwd>castep</kwd>
+<kwd>quantum espresso</kwd>
+<kwd>mongodb</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The properties of materials depend heavily on their atomistic
+  structure; knowledge of the possible stable atomic configurations that
+  define a material is required to understand the performance of many
+  technologically and ecologically relevant devices, such as those used
+  for energy storage
+  (<xref alt="A. F. Harper, Evans, &amp; Morris, 2020" rid="ref-CuP" ref-type="bibr">A.
+  F. Harper, Evans, &amp; Morris, 2020</xref>;
+  <xref alt="Marbella et al., 2018" rid="ref-NaP" ref-type="bibr">Marbella
+  et al., 2018</xref>). First-principles crystal structure prediction
+  (CSP) is the art of finding these stable configurations using only
+  quantum mechanics
+  (<xref alt="A. F. Harper, Evans, Darby, et al., 2020" rid="ref-JM" ref-type="bibr">A.
+  F. Harper, Evans, Darby, et al., 2020</xref>). Density-functional
+  theory (DFT) is a ubiquitous theoretical framework for finding
+  approximate solutions to quantum mechanics; calculations using a
+  modern DFT package are sufficiently robust and accurate that insight
+  into real materials can be readily obtained. The computationally
+  intensive work is performed by well-established, low-level software
+  packages, such as CASTEP
+  (<xref alt="Clark et al., 2005" rid="ref-castep" ref-type="bibr">Clark
+  et al., 2005</xref>) or Quantum Espresso
+  (<xref alt="Giannozzi et al., 2009" rid="ref-qe" ref-type="bibr">Giannozzi
+  et al., 2009</xref>), which are able to make use of modern
+  high-performance computers. In order to use these codes easily,
+  reliably and reproducibly, many high-level libraries have been
+  developed to create, curate and manipulate the calculations from these
+  low-level workhorses; <monospace>matador</monospace> is one such
+  framework.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>The purpose of <monospace>matador</monospace> is fourfold:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>to promote the use of local databases and high-throughput
+      workflows to increase the reproducibility of the computational
+      results,</p>
+    </list-item>
+    <list-item>
+      <p>to perform reliable analysis of the stability, structure and
+      properties of materials derived from calculations,</p>
+    </list-item>
+    <list-item>
+      <p>to provide tools to create customisable, publication-quality
+      plots of phase diagrams, spectral properties and
+      electrochemistry,</p>
+    </list-item>
+    <list-item>
+      <p>to make the above functionality available to those with limited
+      programming experience.</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="matador">
+  <title><monospace>matador</monospace></title>
+  <p><monospace>matador</monospace> is a Python 3.6+ library and set of
+  command-line tools for performing and analysing high-throughput DFT
+  calculations using the CASTEP
+  (<xref alt="Clark et al., 2005" rid="ref-castep" ref-type="bibr">Clark
+  et al., 2005</xref>) and Quantum Espresso
+  (<xref alt="Giannozzi et al., 2009" rid="ref-qe" ref-type="bibr">Giannozzi
+  et al., 2009</xref>) packages. It is well-tested and fully-documented
+  at
+  <ext-link ext-link-type="uri" xlink:href="https://matador-db.readthedocs.io">ReadTheDocs</ext-link>,
+  and comes with several tutorials and examples. The package is
+  available on PyPI under the name
+  <ext-link ext-link-type="uri" xlink:href="https://pypi.org/project/matador-db"><monospace>matador-db</monospace></ext-link>.
+  As with many projects, <monospace>matador</monospace> is built on top
+  of the scientific Python ecosystem of NumPy
+  (<xref alt="Harris et al., 2020" rid="ref-numpy" ref-type="bibr">Harris
+  et al., 2020</xref>), SciPy
+  (<xref alt="Virtanen et al., 2020" rid="ref-scipy" ref-type="bibr">Virtanen
+  et al., 2020</xref>) and matplotlib
+  (<xref alt="Hunter, 2007" rid="ref-matplotlib" ref-type="bibr">Hunter,
+  2007</xref>).</p>
+  <p><monospace>matador</monospace> has been developed with
+  high-throughput CSP in mind and has found use in the application of
+  CSP to energy storage materials
+  (<xref alt="A. F. Harper, Evans, &amp; Morris, 2020" rid="ref-CuP" ref-type="bibr">A.
+  F. Harper, Evans, &amp; Morris, 2020</xref>;
+  <xref alt="Marbella et al., 2018" rid="ref-NaP" ref-type="bibr">Marbella
+  et al., 2018</xref>); in this use case, a single compositional phase
+  diagram can consist of tens of thousands of structural relaxation
+  calculations. This package is aimed at users of CASTEP or Quantum
+  Espresso who are comfortable with the command-line, yet maybe lack the
+  Python knowledge required to start from scratch with more
+  sophisticated packages. There are many mature packages that provide
+  overlapping functionality with <monospace>matador</monospace>, the
+  most widespread of which being the Atomic Simulation Environment (ASE)
+  (<xref alt="Larsen et al., 2017" rid="ref-ase" ref-type="bibr">Larsen
+  et al., 2017</xref>) and pymatgen
+  (<xref alt="Ong et al., 2013" rid="ref-pymatgen" ref-type="bibr">Ong
+  et al., 2013</xref>). A translation layer to and from the structure
+  representation of both of these packages is provided, such that
+  analysis can be reused and combined.</p>
+  <fig>
+    <caption><p>Li-Zn-P ternary phase diagram created with matador, plot
+    generated with matplotlib
+    (<xref alt="Hunter, 2007" rid="ref-matplotlib" ref-type="bibr">Hunter,
+    2007</xref>) and python-ternary
+    (<xref alt="M. Harper et al., 2019" rid="ref-ternary" ref-type="bibr">M.
+    Harper et al.,
+    2019</xref>).<styled-content id="figU003Ahull"></styled-content></p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="./LiZnP_hull.pdf" xlink:title="" />
+  </fig>
+</sec>
+<sec id="overview-of-functionality">
+  <title>Overview of functionality</title>
+  <p>There are two ways of working with <monospace>matador</monospace>,
+  either from the command-line interface (CLI) or through the Python
+  library directly, with some features that are unique to each. The
+  functionality of <monospace>matador</monospace> can be broadly split
+  into three categories:</p>
+  <list list-type="order">
+    <list-item>
+      <p><italic>Creation and curation of databases of the results of
+      first-principles calculations.</italic></p>
+    </list-item>
+  </list>
+  <p><monospace>matador</monospace> allows for the creation of
+  <ext-link ext-link-type="uri" xlink:href="https://mongodb.com">MongoDB</ext-link>
+  databases of CASTEP (6.0+) geometry optimisations from the
+  command-line, using <monospace>matador import</monospace>. Only
+  calculations that are deemed “successful”, and that have
+  fully-specified inputs are stored, with errors displayed for the rest.
+  The resulting database can be queried with
+  <monospace>matador query</monospace>, either with Python or through
+  the powerful CLI. The results can be filtered for structural
+  “uniqueness” and written to one of several supported file types and
+  exported for use in other frameworks, such as ASE or pymatgen.
+  Prototyping of structures directly from the database is achieved using
+  <monospace>matador swaps</monospace>, which uses the same interface as
+  <monospace>matador query</monospace> to return structure files with
+  “swapped” elements
+  (<xref alt="Marbella et al., 2018" rid="ref-NaP" ref-type="bibr">Marbella
+  et al., 2018</xref>).</p>
+  <list list-type="order">
+    <list-item>
+      <label>2.</label>
+      <p><italic>High-throughput calculations and automated
+      workflows.</italic></p>
+    </list-item>
+  </list>
+  <p>The <monospace>run3</monospace> executable bundled with
+  <monospace>matador</monospace> allows for high-throughput calculations
+  to be performed with little setup and no programming knowledge.
+  Specialised support for CASTEP and the post-processing tool OptaDOS
+  (<xref alt="Morris et al., 2014" rid="ref-optados" ref-type="bibr">Morris
+  et al., 2014</xref>;
+  <xref alt="Nicholls et al., 2012" rid="ref-optados2" ref-type="bibr">Nicholls
+  et al., 2012</xref>) is provided to perform high-throughput geometry
+  optimisations, orbital-projected band structures and densities of
+  states, phonon calculations and elastic properties, however
+  <monospace>run3</monospace> can also be used to run generic MPI
+  programs concurrently on a set of structures. Sensible defaults for
+  these workflows are provided by leveraging the open-source SeeK-path
+  (<xref alt="Hinuma et al., 2017" rid="ref-seekpath" ref-type="bibr">Hinuma
+  et al., 2017</xref>) and spglib
+  (<xref alt="Togo &amp; Tanaka, 2018" rid="ref-spglib" ref-type="bibr">Togo
+  &amp; Tanaka, 2018</xref>) libraries. The bundled
+  <monospace>dispersion</monospace> script and associated library
+  functionality allows for the creation of publication-quality spectral
+  and vibrational property plots, in a similar fashion to the
+  <monospace>sumo</monospace> package
+  (<xref alt="Ganose et al., 2018" rid="ref-sumo" ref-type="bibr">Ganose
+  et al., 2018</xref>). The <monospace>matador.compute</monospace>
+  module behind <monospace>run3</monospace> also powers the
+  <monospace>ilustrado</monospace> genetic algorithm code
+  (<xref alt="Evans, 2020" rid="ref-ilustrado" ref-type="bibr">Evans,
+  2020</xref>).</p>
+  <list list-type="order">
+    <list-item>
+      <label>3.</label>
+      <p><italic>Stability and structural analysis (with an emphasis on
+      battery materials).</italic></p>
+    </list-item>
+  </list>
+  <p>The construction of reliable compositional phase diagrams requires
+  several independent calculations to be performed on different atomic
+  configurations with a compatible set of external parameters. These can
+  be generated from a database query using
+  <monospace>matador hull</monospace>, which allows the user to filter
+  between different sets of calculations, and, where relevant,
+  <monospace>matador voltage</monospace> can provide the electrochemical
+  properties of that same phase diagram. Structural fingerprints
+  implemented include pair distribution functions, powder X-ray
+  diffraction patterns, and periodic crystal bond graphs. As more
+  calculations are performed, changes to phase diagrams stored in the
+  local database can be tracked with
+  <monospace>matador hulldiff</monospace>. Phase diagrams can also be
+  constructed from multiple energy values per structure, for example to
+  show the effects of finite temperature
+  (<xref alt="A. F. Harper, Evans, &amp; Morris, 2020" rid="ref-CuP" ref-type="bibr">A.
+  F. Harper, Evans, &amp; Morris, 2020</xref>), or in the specific case
+  of ensemble-based exchange-correlation functionals like the Bayesian
+  Error Estimate Functional (BEEF)
+  (<xref alt="Mortensen et al., 2005" rid="ref-beef" ref-type="bibr">Mortensen
+  et al., 2005</xref>). An example of a ternary phase diagram is shown
+  <xref alt="Figure 1" rid="figU003Ahull">Figure 1</xref>.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We acknowledge all the contributors, users and testers of this
+  package, primarily Angela Harper, James Darby, Jordan Dorrell and
+  Matthew Cliffe. M.E. would like to acknowledge the EPSRC Centre for
+  Doctoral Training in Computational Methods for Materials Science for
+  funding under grant number EP/L015552/1. A.J.M. acknowledges funding
+  from EPSRC (EP/P003532/1). The authors acknowledge networking support
+  via the EPSRC Collaborative Computational Projects, CCP9
+  (EP/M022595/1) and CCP-NC (EP/T026642/1). Much of the development and
+  testing was performed on the Cambridge Service for Data Driven
+  Discovery (CSD3) operated by the University of Cambridge Research
+  Computing Service (http://www.csd3.cam.ac.uk/), provided by Dell EMC
+  and Intel using Tier-2 funding from the Engineering and Physical
+  Sciences Research Council, and DiRAC funding from the Science and
+  Technology Facilities Council (www.dirac.ac.uk).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-pymatgen">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ong</surname><given-names>Shyue Ping</given-names></name>
+          <name><surname>Richards</surname><given-names>William Davidson</given-names></name>
+          <name><surname>Jain</surname><given-names>Anubhav</given-names></name>
+          <name><surname>Hautier</surname><given-names>Geoffroy</given-names></name>
+          <name><surname>Kocher</surname><given-names>Michael</given-names></name>
+          <name><surname>Cholia</surname><given-names>Shreyas</given-names></name>
+          <name><surname>Gunter</surname><given-names>Dan</given-names></name>
+          <name><surname>Chevrier</surname><given-names>Vincent L.</given-names></name>
+          <name><surname>Persson</surname><given-names>Kristin A.</given-names></name>
+          <name><surname>Ceder</surname><given-names>Gerbrand</given-names></name>
+        </person-group>
+        <article-title>Python Materials Genomics (pymatgen): A robust, open-source python library for materials analysis</article-title>
+        <source>Computational Materials Science</source>
+        <year iso-8601-date="2013-02">2013</year><month>02</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2018-11-13">2018</year><month>11</month><day>13</day></date-in-citation>
+        <volume>68</volume>
+        <issn>09270256</issn>
+        <uri>https://linkinghub.elsevier.com/retrieve/pii/S0927025612006295</uri>
+        <pub-id pub-id-type="doi">10.1016/j.commatsci.2012.10.028</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-numpy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Harris</surname><given-names>Charles R.</given-names></name>
+          <name><surname>Millman</surname><given-names>K. Jarrod</given-names></name>
+          <name><surname>Walt</surname><given-names>Stéfan J van der</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Wieser</surname><given-names>Eric</given-names></name>
+          <name><surname>Taylor</surname><given-names>Julian</given-names></name>
+          <name><surname>Berg</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Smith</surname><given-names>Nathaniel J.</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Picus</surname><given-names>Matti</given-names></name>
+          <name><surname>Hoyer</surname><given-names>Stephan</given-names></name>
+          <name><surname>Kerkwijk</surname><given-names>Marten H. van</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Haldane</surname><given-names>Allan</given-names></name>
+          <name><surname>Fernández del Río</surname><given-names>Jaime</given-names></name>
+          <name><surname>Wiebe</surname><given-names>Mark</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Gérard-Marchant</surname><given-names>Pierre</given-names></name>
+          <name><surname>Sheppard</surname><given-names>Kevin</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Abbasi</surname><given-names>Hameer</given-names></name>
+          <name><surname>Gohlke</surname><given-names>Christoph</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+        </person-group>
+        <article-title>Array programming with NumPy</article-title>
+        <source>Nature</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>585</volume>
+        <pub-id pub-id-type="doi">10.1038/s41586-020-2649-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-castep">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Clark</surname><given-names>Stewart J.</given-names></name>
+          <name><surname>Segall</surname><given-names>Matthew D.</given-names></name>
+          <name><surname>Pickard</surname><given-names>Chris J.</given-names></name>
+          <name><surname>Hasnip</surname><given-names>Phil J.</given-names></name>
+          <name><surname>Probert</surname><given-names>Matt I. J.</given-names></name>
+          <name><surname>Refson</surname><given-names>Keith</given-names></name>
+          <name><surname>Payne</surname><given-names>Mike C.</given-names></name>
+        </person-group>
+        <article-title>First principles methods using CASTEP</article-title>
+        <source>Zeitschrift für Kristallographie - Crystalline Materials</source>
+        <year iso-8601-date="2005-01">2005</year><month>01</month>
+        <volume>220</volume>
+        <issue>5/6</issue>
+        <issn>2196-7105</issn>
+        <uri>http://www.degruyter.com/view/j/zkri.2005.220.issue-5-6/zkri.220.5.567.65075/zkri.220.5.567.65075.xml</uri>
+        <pub-id pub-id-type="doi">10.1524/zkri.220.5.567.65075</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-optados">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Morris</surname><given-names>Andrew J.</given-names></name>
+          <name><surname>Nicholls</surname><given-names>Rebecca J.</given-names></name>
+          <name><surname>Pickard</surname><given-names>Chris J.</given-names></name>
+          <name><surname>Yates</surname><given-names>Jonathan R.</given-names></name>
+        </person-group>
+        <article-title>OptaDOS: A tool for obtaining density of states, core-level and optical spectra from electronic structure codes</article-title>
+        <source>Computer Physics Communications</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>185</volume>
+        <issue>5</issue>
+        <issn>00104655</issn>
+        <uri>http://dx.doi.org/10.1016/j.cpc.2014.02.013</uri>
+        <pub-id pub-id-type="doi">10.1016/j.cpc.2014.02.013</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-NaP">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Marbella</surname><given-names>Lauren E.</given-names></name>
+          <name><surname>Evans</surname><given-names>Matthew L.</given-names></name>
+          <name><surname>Groh</surname><given-names>Matthias F.</given-names></name>
+          <name><surname>Nelson</surname><given-names>Joseph</given-names></name>
+          <name><surname>Griffith</surname><given-names>Kent J.</given-names></name>
+          <name><surname>Morris</surname><given-names>Andrew J.</given-names></name>
+          <name><surname>Grey</surname><given-names>Clare P.</given-names></name>
+        </person-group>
+        <article-title>Sodiation and Desodiation via Helical Phosphorus Intermediates in High-Capacity Anodes for Sodium-Ion Batteries</article-title>
+        <source>Journal of the American Chemical Society</source>
+        <year iso-8601-date="2018-06">2018</year><month>06</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2018-08-02">2018</year><month>08</month><day>02</day></date-in-citation>
+        <volume>140</volume>
+        <issue>25</issue>
+        <issn>0002-7863, 1520-5126</issn>
+        <uri>http://pubs.acs.org/doi/10.1021/jacs.8b04183</uri>
+        <pub-id pub-id-type="doi">10.1021/jacs.8b04183</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-spglib">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Togo</surname><given-names>Atsushi</given-names></name>
+          <name><surname>Tanaka</surname><given-names>Isao</given-names></name>
+        </person-group>
+        <article-title>Spglib: A software library for crystal symmetry search</article-title>
+        <source>arXiv:1808.01590 [cond-mat]</source>
+        <year iso-8601-date="2018-08">2018</year><month>08</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-02-19">2020</year><month>02</month><day>19</day></date-in-citation>
+        <uri>http://arxiv.org/abs/1808.01590</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-ase">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Larsen</surname><given-names>Ask Hjorth</given-names></name>
+          <name><surname>Mortensen</surname><given-names>Jens Jørgen</given-names></name>
+          <name><surname>Blomqvist</surname><given-names>Jakob</given-names></name>
+          <name><surname>Castelli</surname><given-names>Ivano E.</given-names></name>
+          <name><surname>Christensen</surname><given-names>Rune</given-names></name>
+          <name><surname>Dułak</surname><given-names>Marcin</given-names></name>
+          <name><surname>Friis</surname><given-names>Jesper</given-names></name>
+          <name><surname>Groves</surname><given-names>Michael N.</given-names></name>
+          <name><surname>Hammer</surname><given-names>Bjørk</given-names></name>
+          <name><surname>Hargus</surname><given-names>Cory</given-names></name>
+          <name><surname>Hermes</surname><given-names>Eric D.</given-names></name>
+          <name><surname>Jennings</surname><given-names>Paul C.</given-names></name>
+          <name><surname>Jensen</surname><given-names>Peter Bjerre</given-names></name>
+          <name><surname>Kermode</surname><given-names>James</given-names></name>
+          <name><surname>Kitchin</surname><given-names>John R.</given-names></name>
+          <name><surname>Kolsbjerg</surname><given-names>Esben Leonhard</given-names></name>
+          <name><surname>Kubal</surname><given-names>Joseph</given-names></name>
+          <name><surname>Kaasbjerg</surname><given-names>Kristen</given-names></name>
+          <name><surname>Lysgaard</surname><given-names>Steen</given-names></name>
+          <name><surname>Maronsson</surname><given-names>Jón Bergmann</given-names></name>
+          <name><surname>Maxson</surname><given-names>Tristan</given-names></name>
+          <name><surname>Olsen</surname><given-names>Thomas</given-names></name>
+          <name><surname>Pastewka</surname><given-names>Lars</given-names></name>
+          <name><surname>Peterson</surname><given-names>Andrew</given-names></name>
+          <name><surname>Rostgaard</surname><given-names>Carsten</given-names></name>
+          <name><surname>Schiøtz</surname><given-names>Jakob</given-names></name>
+          <name><surname>Schütt</surname><given-names>Ole</given-names></name>
+          <name><surname>Strange</surname><given-names>Mikkel</given-names></name>
+          <name><surname>Thygesen</surname><given-names>Kristian S.</given-names></name>
+          <name><surname>Vegge</surname><given-names>Tejs</given-names></name>
+          <name><surname>Vilhelmsen</surname><given-names>Lasse</given-names></name>
+          <name><surname>Walter</surname><given-names>Michael</given-names></name>
+          <name><surname>Zeng</surname><given-names>Zhenhua</given-names></name>
+          <name><surname>Jacobsen</surname><given-names>Karsten W.</given-names></name>
+        </person-group>
+        <article-title>The atomic simulation environment—a Python library for working with atoms</article-title>
+        <source>J. Phys.: Condens. Matter</source>
+        <year iso-8601-date="2017-06">2017</year><month>06</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-06-23">2020</year><month>06</month><day>23</day></date-in-citation>
+        <volume>29</volume>
+        <issue>27</issue>
+        <issn>0953-8984</issn>
+        <uri>https://doi.org/10/f9wbtg</uri>
+        <pub-id pub-id-type="doi">10.1088/1361-648x/aa680e</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-qe">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Giannozzi</surname><given-names>Paolo</given-names></name>
+          <name><surname>Baroni</surname><given-names>Stefano</given-names></name>
+          <name><surname>Bonini</surname><given-names>Nicola</given-names></name>
+          <name><surname>Calandra</surname><given-names>Matteo</given-names></name>
+          <name><surname>Car</surname><given-names>Roberto</given-names></name>
+          <name><surname>Cavazzoni</surname><given-names>Carlo</given-names></name>
+          <name><surname>Ceresoli</surname><given-names>Davide</given-names></name>
+          <name><surname>Chiarotti</surname><given-names>Guido L.</given-names></name>
+          <name><surname>Cococcioni</surname><given-names>Matteo</given-names></name>
+          <name><surname>Dabo</surname><given-names>Ismaila</given-names></name>
+          <name><surname>Corso</surname><given-names>Andrea Dal</given-names></name>
+          <name><surname>Gironcoli</surname><given-names>Stefano de</given-names></name>
+          <name><surname>Fabris</surname><given-names>Stefano</given-names></name>
+          <name><surname>Fratesi</surname><given-names>Guido</given-names></name>
+          <name><surname>Gebauer</surname><given-names>Ralph</given-names></name>
+          <name><surname>Gerstmann</surname><given-names>Uwe</given-names></name>
+          <name><surname>Gougoussis</surname><given-names>Christos</given-names></name>
+          <name><surname>Kokalj</surname><given-names>Anton</given-names></name>
+          <name><surname>Lazzeri</surname><given-names>Michele</given-names></name>
+          <name><surname>Martin-Samos</surname><given-names>Layla</given-names></name>
+          <name><surname>Marzari</surname><given-names>Nicola</given-names></name>
+          <name><surname>Mauri</surname><given-names>Francesco</given-names></name>
+          <name><surname>Mazzarello</surname><given-names>Riccardo</given-names></name>
+          <name><surname>Paolini</surname><given-names>Stefano</given-names></name>
+          <name><surname>Pasquarello</surname><given-names>Alfredo</given-names></name>
+          <name><surname>Paulatto</surname><given-names>Lorenzo</given-names></name>
+          <name><surname>Sbraccia</surname><given-names>Carlo</given-names></name>
+          <name><surname>Scandolo</surname><given-names>Sandro</given-names></name>
+          <name><surname>Sclauzero</surname><given-names>Gabriele</given-names></name>
+          <name><surname>Seitsonen</surname><given-names>Ari P.</given-names></name>
+          <name><surname>Smogunov</surname><given-names>Alexander</given-names></name>
+          <name><surname>Umari</surname><given-names>Paolo</given-names></name>
+          <name><surname>Wentzcovitch</surname><given-names>Renata M.</given-names></name>
+        </person-group>
+        <article-title>QUANTUM ESPRESSO: A modular and open-source software project for quantum simulations of materials</article-title>
+        <source>J. Phys.: Condens. Matter</source>
+        <year iso-8601-date="2009-09">2009</year><month>09</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-06-23">2020</year><month>06</month><day>23</day></date-in-citation>
+        <volume>21</volume>
+        <issue>39</issue>
+        <issn>0953-8984</issn>
+        <uri>https://doi.org/10/d7spb8</uri>
+        <pub-id pub-id-type="doi">10.1088/0953-8984/21/39/395502</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-matplotlib">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hunter</surname><given-names>John D.</given-names></name>
+        </person-group>
+        <article-title>Matplotlib: A 2D Graphics Environment</article-title>
+        <source>Computing in Science Engineering</source>
+        <year iso-8601-date="2007-05">2007</year><month>05</month>
+        <volume>9</volume>
+        <issue>3</issue>
+        <issn>1558-366X</issn>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2007.55</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ternary">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Harper</surname><given-names>M.</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>marcharper/python-ternary: Version 1.0.6</article-title>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2019-04">2019</year><month>04</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-06-23">2020</year><month>06</month><day>23</day></date-in-citation>
+        <uri>https://zenodo.org/record/2628066</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.2628066</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ilustrado">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Evans</surname><given-names>Matthew L.</given-names></name>
+        </person-group>
+        <article-title>ml-evs/ilustrado: v0.3</article-title>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2020-06">2020</year><month>06</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-06-23">2020</year><month>06</month><day>23</day></date-in-citation>
+        <uri>https://zenodo.org/record/3904495</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3904495</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-CuP">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Harper</surname><given-names>Angela F.</given-names></name>
+          <name><surname>Evans</surname><given-names>Matthew L.</given-names></name>
+          <name><surname>Morris</surname><given-names>Andrew J.</given-names></name>
+        </person-group>
+        <article-title>Novel Phases of Copper Phosphides from Computational Structure Searches</article-title>
+        <source>Chemistry of Materials</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>32</volume>
+        <uri>https://pubs.acs.org/doi/10.1021/acs.chemmater.0c02054</uri>
+        <pub-id pub-id-type="doi">10.1021/acs.chemmater.0c02054</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-scipy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+          <name><surname>Haberland</surname><given-names>Matt</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Burovski</surname><given-names>Evgeni</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Bright</surname><given-names>Jonathan</given-names></name>
+          <name><surname>Walt</surname><given-names>Stéfan J. van der</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Wilson</surname><given-names>Joshua</given-names></name>
+          <name><surname>Millman</surname><given-names>K. Jarrod</given-names></name>
+          <name><surname>Mayorov</surname><given-names>Nikolay</given-names></name>
+          <name><surname>Nelson</surname><given-names>Andrew R. J.</given-names></name>
+          <name><surname>Jones</surname><given-names>Eric</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Larson</surname><given-names>Eric</given-names></name>
+          <name><surname>Carey</surname><given-names>C. J.</given-names></name>
+          <name><surname>Polat</surname><given-names>İlhan</given-names></name>
+          <name><surname>Feng</surname><given-names>Yu</given-names></name>
+          <name><surname>Moore</surname><given-names>Eric W.</given-names></name>
+          <name><surname>VanderPlas</surname><given-names>Jake</given-names></name>
+          <name><surname>Laxalde</surname><given-names>Denis</given-names></name>
+          <name><surname>Perktold</surname><given-names>Josef</given-names></name>
+          <name><surname>Cimrman</surname><given-names>Robert</given-names></name>
+          <name><surname>Henriksen</surname><given-names>Ian</given-names></name>
+          <name><surname>Quintero</surname><given-names>E. A.</given-names></name>
+          <name><surname>Harris</surname><given-names>Charles R.</given-names></name>
+          <name><surname>Archibald</surname><given-names>Anne M.</given-names></name>
+          <name><surname>Ribeiro</surname><given-names>Antônio H.</given-names></name>
+          <name><surname>Pedregosa</surname><given-names>Fabian</given-names></name>
+          <name><surname>Mulbregt</surname><given-names>Paul van</given-names></name>
+        </person-group>
+        <article-title>SciPy 1.0: Fundamental algorithms for scientific computing in Python</article-title>
+        <source>Nature Methods</source>
+        <year iso-8601-date="2020-03">2020</year><month>03</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-06-23">2020</year><month>06</month><day>23</day></date-in-citation>
+        <volume>17</volume>
+        <issue>3</issue>
+        <issn>1548-7105</issn>
+        <uri>https://www.nature.com/articles/s41592-019-0686-2</uri>
+        <pub-id pub-id-type="doi">10.1038/s41592-019-0686-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-seekpath">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hinuma</surname><given-names>Yoyo</given-names></name>
+          <name><surname>Pizzi</surname><given-names>Giovanni</given-names></name>
+          <name><surname>Kumagai</surname><given-names>Yu</given-names></name>
+          <name><surname>Oba</surname><given-names>Fumiyasu</given-names></name>
+          <name><surname>Tanaka</surname><given-names>Isao</given-names></name>
+        </person-group>
+        <article-title>Band structure diagram paths based on crystallography</article-title>
+        <source>Computational Materials Science</source>
+        <year iso-8601-date="2017-02">2017</year><month>02</month>
+        <volume>128</volume>
+        <issn>09270256</issn>
+        <uri>http://dx.doi.org/10/f9jxbz</uri>
+        <pub-id pub-id-type="doi">10.1016/j.commatsci.2016.10.015</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-beef">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mortensen</surname><given-names>J. J.</given-names></name>
+          <name><surname>Kaasbjerg</surname><given-names>K.</given-names></name>
+          <name><surname>Frederiksen</surname><given-names>S. L.</given-names></name>
+          <name><surname>Nørskov</surname><given-names>J. K.</given-names></name>
+          <name><surname>Sethna</surname><given-names>J. P.</given-names></name>
+          <name><surname>Jacobsen</surname><given-names>K. W.</given-names></name>
+        </person-group>
+        <article-title>Bayesian Error Estimation in Density-Functional Theory</article-title>
+        <source>Physical Review Letters</source>
+        <year iso-8601-date="2005-11">2005</year><month>11</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2018-09-14">2018</year><month>09</month><day>14</day></date-in-citation>
+        <volume>95</volume>
+        <issue>21</issue>
+        <issn>0031-9007, 1079-7114</issn>
+        <uri>https://link.aps.org/doi/10.1103/PhysRevLett.95.216401</uri>
+        <pub-id pub-id-type="doi">10.1103/PhysRevLett.95.216401</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-JM">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Harper</surname><given-names>Angela F.</given-names></name>
+          <name><surname>Evans</surname><given-names>Matthew L.</given-names></name>
+          <name><surname>Darby</surname><given-names>James P.</given-names></name>
+          <name><surname>Karasulu</surname><given-names>Bora</given-names></name>
+          <name><surname>Koçer</surname><given-names>Can P.</given-names></name>
+          <name><surname>Nelson</surname><given-names>Joseph R.</given-names></name>
+          <name><surname>Morris</surname><given-names>Andrew J.</given-names></name>
+        </person-group>
+        <article-title>Ab initio Structure Prediction Methods for Battery Materials : A review of recent computational efforts to predict the atomic level structure and bonding in materials for rechargeable batteries</article-title>
+        <source>Johnson Matthey Technology Review</source>
+        <year iso-8601-date="2020-04">2020</year><month>04</month>
+        <volume>64</volume>
+        <issue>2</issue>
+        <uri>https://doi.org/10/ggrmgf</uri>
+        <pub-id pub-id-type="doi">10.1595/205651320X15742491027978</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sumo">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ganose</surname><given-names>Alex M.</given-names></name>
+          <name><surname>Jackson</surname><given-names>Adam J.</given-names></name>
+          <name><surname>Scanlon</surname><given-names>David O.</given-names></name>
+        </person-group>
+        <article-title>Sumo: Command-line tools for plotting and analysis of periodic ab initio calculations</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>3</volume>
+        <issue>28</issue>
+        <uri>https://doi.org/10.21105/joss.00717</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.00717</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-optados2">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Nicholls</surname><given-names>R. J.</given-names></name>
+          <name><surname>Morris</surname><given-names>A. J.</given-names></name>
+          <name><surname>Pickard</surname><given-names>Chris J.</given-names></name>
+          <name><surname>Yates</surname><given-names>Jonathan R.</given-names></name>
+        </person-group>
+        <article-title>OptaDOS - a new tool for EELS calculations</article-title>
+        <source>J. Phys.: Conf. Ser.</source>
+        <year iso-8601-date="2012-07">2012</year><month>07</month>
+        <volume>371</volume>
+        <uri>https://doi.org/10/gg5vsq</uri>
+        <pub-id pub-id-type="doi">10.1088/1742-6596/371/1/012062</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

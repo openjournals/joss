@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">753</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00753</article-id>
+<title-group>
+<article-title>opt_einsum - A Python package for optimizing contraction
+order for einsum-like expressions</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-8626-0900</contrib-id>
+<string-name>Daniel G. A. Smith</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-9461-3024</contrib-id>
+<string-name>Johnnie Gray</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>The Molecular Science Software Institute, Blacksburg, VA
+24060</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>University College London, London, UK</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2018-05-14">
+<day>14</day>
+<month>5</month>
+<year>2018</year>
+</pub-date>
+<volume>3</volume>
+<issue>26</issue>
+<fpage>753</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>array</kwd>
+<kwd>tensors</kwd>
+<kwd>optimization</kwd>
+<kwd>phylogenetics</kwd>
+<kwd>natural selection</kwd>
+<kwd>molecular evolution</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>einsum</monospace> is a powerful Swiss army knife for
+  arbitrary tensor contractions and general linear algebra found in the
+  popular <monospace>numpy</monospace>
+  (<xref alt="Walt et al., 2011" rid="ref-NumPy" ref-type="bibr">Walt et
+  al., 2011</xref>) package. While these expressions can be used to form
+  most mathematical operations found in NumPy, the optimization of these
+  expressions becomes increasingly important as naive implementations
+  increase the overall scaling of these expressions resulting in a
+  dramatic increase in overall execution time. Expressions with many
+  tensors are particularly prevalent in many-body theories such as
+  quantum chemistry, particle physics, and nuclear physics in addition
+  to other fields such as machine learning. At the extreme case, matrix
+  product state theory can have thousands of tensors meaning that the
+  computation cannot procede in a naive fashion.</p>
+  <p>The canonical NumPy <monospace>einsum</monospace> function
+  considers expressions as a single unit and is not able to factor these
+  expressions into multiple smaller pieces. For example, consider the
+  following index transformation:
+  <monospace>M_{pqrs} = C_{pi} C_{qj} I_{ijkl} C_{rk} C_{sl}</monospace>
+  with two different algorithms:</p>
+  <code language="python">import numpy as np
+
+dim = 10
+I = np.random.rand(dim, dim, dim, dim)
+C = np.random.rand(dim, dim)
+
+def naive(I, C):
+    # N^8 scaling
+    return np.einsum('pi,qj,ijkl,rk,sl-&gt;pqrs', C, C, I, C, C)
+
+def optimized(I, C):
+    # N^5 scaling
+    K = np.einsum('pi,ijkl-&gt;pjkl', C, I)
+    K = np.einsum('qj,pjkl-&gt;pqkl', C, K)
+    K = np.einsum('rk,pqkl-&gt;pqrl', C, K)
+    K = np.einsum('sl,pqrl-&gt;pqrs', C, K)
+    return K</code>
+  <p>By building intermediate arrays the overall scaling of the
+  contraction is reduced and considerable cost savings even for small
+  <monospace>N</monospace> (<monospace>N=10</monospace>) can be
+  seen:</p>
+  <code language="python">&gt;&gt; np.allclose(naive(I, C), optimized(I, C))
+True
+
+%timeit naive(I, C)
+1 loops, best of 3: 829 ms per loop
+
+%timeit optimized(I, C)
+1000 loops, best of 3: 445 µs per loop</code>
+  <p>This index transformation is a well known contraction that leads to
+  straightforward intermediates. This contraction can be further
+  complicated by considering that the shape of the C matrices need not
+  be the same, in this case the ordering in which the indices are
+  transformed matters greatly. The opt_einsum package handles this logic
+  automatically and is a drop in replacement for the
+  <monospace>np.einsum</monospace> function:</p>
+  <code language="python">from opt_einsum import contract
+
+dim = 30
+I = np.random.rand(dim, dim, dim, dim)
+C = np.random.rand(dim, dim)
+
+%timeit optimized(I, C)
+10 loops, best of 3: 65.8 ms per loop
+
+%timeit contract('pi,qj,ijkl,rk,sl-&gt;pqrs', C, C, I, C, C)
+100 loops, best of 3: 16.2 ms per loop</code>
+  <p>The above automatically will find the optimal contraction order, in
+  this case identical to that of the optimized function above, and
+  computes the products. In this case, it uses
+  <monospace>np.dot</monospace> internally to exploit any vendor BLAS
+  functionality that the NumPy build may have.</p>
+  <p>In addition, backends other than NumPy can be used to either
+  exploit GPU computation via Tensorflow
+  (<xref alt="Abadi et al., 2016" rid="ref-Tensorflow" ref-type="bibr">Abadi
+  et al., 2016</xref>) or distributed compute capabilities via Dask
+  (<xref alt="Dask Development Team, 2016" rid="ref-Dask" ref-type="bibr">Dask
+  Development Team, 2016</xref>). The core components of
+  <monospace>opt_einsum</monospace> have been contributed back to the
+  <monospace>numpy</monospace> library and can be found in all
+  <monospace>numpy.einsum</monospace> function calls in version 1.12 or
+  later using the <monospace>optimize</monospace> keyword
+  (https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.einsum.html).</p>
+  <p>The software is on GitHub
+  (https://github.com/dgasmith/opt_einsum/tree/v2.0.0) and can be
+  downloaded via pip or conda-forge. Further discussion of features and
+  uses can be found at the documentation
+  (http://optimized-einsum.readthedocs.io/en/latest/).</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We acknowledge additional contributions from Fabian-Robert Stöter,
+  Robert T. McGibbon, and Nils Werner to this project.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-NumPy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Walt</surname><given-names>S. van der</given-names></name>
+          <name><surname>Colbert</surname><given-names>S. C.</given-names></name>
+          <name><surname>Varoquaux</surname><given-names>G.</given-names></name>
+        </person-group>
+        <article-title>The NumPy array: A structure for efficient numerical computation</article-title>
+        <source>Comput. Sci. Eng.</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>13</volume>
+        <issue>2</issue>
+        <issn>1521-9615</issn>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2011.37</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Dask">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>Dask Development Team</string-name>
+        </person-group>
+        <article-title>Dask: Library for dynamic task scheduling</article-title>
+        <year iso-8601-date="2016">2016</year>
+        <uri>http://dask.pydata.org</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Tensorflow">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Abadi</surname><given-names>Martı́n</given-names></name>
+          <name><surname>Agarwal</surname><given-names>Ashish</given-names></name>
+          <name><surname>Barham</surname><given-names>Paul</given-names></name>
+          <name><surname>Brevdo</surname><given-names>Eugene</given-names></name>
+          <name><surname>Chen</surname><given-names>Zhifeng</given-names></name>
+          <name><surname>Citro</surname><given-names>Craig</given-names></name>
+          <name><surname>Corrado</surname><given-names>Gregory S.</given-names></name>
+          <name><surname>Davis</surname><given-names>Andy</given-names></name>
+          <name><surname>Dean</surname><given-names>Jeffrey</given-names></name>
+          <name><surname>Devin</surname><given-names>Matthieu</given-names></name>
+          <name><surname>Ghemawat</surname><given-names>Sanjay</given-names></name>
+          <name><surname>Goodfellow</surname><given-names>Ian J.</given-names></name>
+          <name><surname>Harp</surname><given-names>Andrew</given-names></name>
+          <name><surname>Irving</surname><given-names>Geoffrey</given-names></name>
+          <name><surname>Isard</surname><given-names>Michael</given-names></name>
+          <name><surname>Jia</surname><given-names>Yangqing</given-names></name>
+          <name><surname>Józefowicz</surname><given-names>Rafal</given-names></name>
+          <name><surname>Kaiser</surname><given-names>Lukasz</given-names></name>
+          <name><surname>Kudlur</surname><given-names>Manjunath</given-names></name>
+          <name><surname>Levenberg</surname><given-names>Josh</given-names></name>
+          <name><surname>Mané</surname><given-names>Dan</given-names></name>
+          <name><surname>Monga</surname><given-names>Rajat</given-names></name>
+          <name><surname>Moore</surname><given-names>Sherry</given-names></name>
+          <name><surname>Murray</surname><given-names>Derek Gordon</given-names></name>
+          <name><surname>Olah</surname><given-names>Chris</given-names></name>
+          <name><surname>Schuster</surname><given-names>Mike</given-names></name>
+          <name><surname>Shlens</surname><given-names>Jonathon</given-names></name>
+          <name><surname>Steiner</surname><given-names>Benoit</given-names></name>
+          <name><surname>Sutskever</surname><given-names>Ilya</given-names></name>
+          <name><surname>Talwar</surname><given-names>Kunal</given-names></name>
+          <name><surname>Tucker</surname><given-names>Paul A.</given-names></name>
+          <name><surname>Vanhoucke</surname><given-names>Vincent</given-names></name>
+          <name><surname>Vasudevan</surname><given-names>Vijay</given-names></name>
+          <name><surname>Viégas</surname><given-names>Fernanda B.</given-names></name>
+          <name><surname>Vinyals</surname><given-names>Oriol</given-names></name>
+          <name><surname>Warden</surname><given-names>Pete</given-names></name>
+          <name><surname>Wattenberg</surname><given-names>Martin</given-names></name>
+          <name><surname>Wicke</surname><given-names>Martin</given-names></name>
+          <name><surname>Yu</surname><given-names>Yuan</given-names></name>
+          <name><surname>Zheng</surname><given-names>Xiaoqiang</given-names></name>
+        </person-group>
+        <article-title>TensorFlow: Large-scale machine learning on heterogeneous distributed systems</article-title>
+        <source>CoRR</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>abs/1603.04467</volume>
+        <uri>http://arxiv.org/abs/1603.04467</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

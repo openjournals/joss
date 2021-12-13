@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2580</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02580</article-id>
+<title-group>
+<article-title>Open Source Optical Coherence Tomography
+Software</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-4494-6127</contrib-id>
+<string-name>Miroslav Zabic</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Ben Matthias</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Alexander Heisterkamp</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Tammo Ripken</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Institute of Quantum Optics, Leibniz University Hannover,
+Welfengarten 1, 30167 Hannover, Germany</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Industrial and Biomedical Optics Department, Laser Zentrum
+Hannover e.V., Hollerithallee 8, 30419 Hannover, Germany</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-05-22">
+<day>22</day>
+<month>5</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>54</issue>
+<fpage>2580</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>CUDA</kwd>
+<kwd>Optical Coherence Tomography</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Optical coherence tomography (OCT) is a non-invasive imaging
+  technique that is often described as the optical equivalent to
+  ultrasound imaging. The basic building block of OCT acquisitions is an
+  optical interference pattern that can be processed into a depth
+  profile, which is also called A-scan. Several adjacent A-scans can be
+  merged into a cross-sectional image. Most research that incorporates
+  OCT requires a software solution for processing of the acquired raw
+  data.</p>
+  <p>Here we present an open source software package for OCT processing
+  with an easy to use graphical user interface. The implemented OCT
+  processing pipeline enables A-scan processing rates in the MHz range.
+  Custom OCT systems, or any other source of Fourier Domain OCT raw
+  data, can be integrated via a developed plug-in system, which also
+  allows the development of custom post processing modules.</p>
+</sec>
+<sec id="introduction">
+  <title>1. Introduction</title>
+  <p>Optical coherence tomography (OCT) is a non-invasive imaging
+  technique used primarily in the medical field, especially in
+  ophthalmology. The core element of any OCT system is an optical
+  interferometer that generates a spectral fringe pattern by combining a
+  reference beam and the backscattered light from a sample. To obtain an
+  interpretable image from this acquired raw OCT signal several
+  processing steps are necessary, whereby the inverse Fourier transform
+  represents an essential step. As the possible acquisition speed for
+  raw OCT data has increased constantly, more sophisticated methods were
+  needed for processing and live visualization of the acquired OCT data.
+  A particularly impressive setup was presented by Choi et al.
+  (<xref alt="Choi et al., 2012" rid="ref-choi2012spectral" ref-type="bibr">Choi
+  et al., 2012</xref>) that utilizes twenty FPGA-modules for real-time
+  OCT signal processing and a graphics processing unit (GPU) for volume
+  rendering. Nowadays, processing is typically done on graphics cards
+  (<xref alt="Jian et al., 2013" rid="ref-jian2013graphics" ref-type="bibr">Jian
+  et al., 2013</xref>;
+  <xref alt="Rasakanthan et al., 2011" rid="ref-rasakanthan2011processing" ref-type="bibr">Rasakanthan
+  et al., 2011</xref>;
+  <xref alt="Sylwestrzak et al., 2012" rid="ref-sylwestrzak2012four" ref-type="bibr">Sylwestrzak
+  et al., 2012</xref>;
+  <xref alt="Wieser et al., 2014" rid="ref-wieser2014high" ref-type="bibr">Wieser
+  et al., 2014</xref>;
+  <xref alt="Zhang &amp; Kang, 2010" rid="ref-zhang2010real" ref-type="bibr">Zhang
+  &amp; Kang, 2010</xref>), not FPGAs, because implementing algorithms
+  on GPUs is more flexible and takes less time
+  (<xref alt="Li et al., 2011" rid="ref-li2011scalable" ref-type="bibr">Li
+  et al., 2011</xref>). Most of the publications that describe OCT GPU
+  processing do not provide the actual software implementation. A
+  commendable exemption is the GPU accelerated OCT processing pipeline
+  published by Jian et al. The associated source code, which
+  demonstrates an implementation of OCT data processing and
+  visualization and does not include any advanced features such as a
+  graphical user interface (GUI), already consists of several thousand
+  lines. Thus, the most time consuming task of Fourier Domain OCT
+  (FD-OCT) system development is not the optical setup, but the software
+  development. The software can be separated into hardware control and
+  signal processing, whereby the former being a highly individual,
+  hardware-dependent software module and the latter being a generic
+  software module, which is almost identical for many systems. To
+  drastically reduce OCT system development time, we present OCTproZ, an
+  open source OCT processing software package that can easily be
+  extended, via a plug-in system, for many different hardware setups. In
+  this paper we give a brief overview of the key functionality and
+  structure of the software.</p>
+</sec>
+<sec id="basic-overview-of-octproz">
+  <title>2. Basic overview of OCTproZ</title>
+  <p>OCTproZ performs live signal processing and visualization of OCT
+  data. It is written in C++, uses the cross-platform application
+  framework Qt (<xref alt="Qt, 2020" rid="ref-qt" ref-type="bibr">Qt,
+  2020</xref>) for the GUI and utilizes Nvidia’s computer unified device
+  architecture (CUDA)
+  (<xref alt="​NVIDIA, 2020" rid="ref-cuda" ref-type="bibr">​NVIDIA,
+  2020</xref>) for GPU parallel computing. A screenshot of the
+  application can be seen in Figure
+  <xref alt="1" rid="figU003Ascreenshot">1</xref>.</p>
+  <fig>
+    <caption><p>Screenshot of OCTproZ v1.0.0 Processing settings visible
+    in the left panel can be changed before processing is started or
+    while processing is in progress. Processed data is live visualized
+    in 2D as cross sectional images (B-scan and en face view) and in 3D
+    as interactive volume rendering. The live view shows a piece of wood
+    with a couple layers of tape and a laser burned hole.
+    <styled-content id="figU003Ascreenshot"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="figures/20191122_screenshot3d.png" xlink:title="" />
+  </fig>
+  <p>The software can be separated into three parts: main application,
+  development kit (DevKit) and plug-ins. The main application, OCTproZ
+  itself, contains the logic for the GUI, processing and visualization.
+  The DevKit, which is implemented as static library, provides the
+  necessary interface for plug-in development. Plug-ins can be one of
+  two kinds: “Acquisition Systems” or “Extensions”. The former represent
+  OCT systems and provide raw data to OCTproZ, the later are software
+  modules that can extend the functionality of an OCT system (e.g.,
+  software control of a liquid lens) or provide additional custom
+  defined post processing steps. All plug-ins are dynamic libraries that
+  can be loaded into OCTproZ during runtime.</p>
+</sec>
+<sec id="processing-pipeline">
+  <title>3. Processing Pipeline</title>
+  <p>Raw data, i.e. acquired spectral fringe pattern, from the OCT
+  system is transferred to RAM until enough data for a user-defined
+  amount of cross-sectional images, so-called B-scans, is acquired. Via
+  direct memory access (DMA) this raw data batch is then copied
+  asynchronously to GPU memory where OCT signal processing is executed.
+  If the processed data needs to be stored or post processing steps are
+  desired the processed OCT data can be transferred back to RAM with the
+  use of DMA. An overview of the processing steps is depicted in Figure
+  <xref alt="2" rid="figU003Aprocessing">2</xref>.</p>
+  <fig>
+    <caption><p>Processing pipeline of OCTproZ v1.2.0. Each box inside
+    “OCTproZ GPU Processing” represents a CUDA kernel. Some processing
+    steps are combinend into a single kernel (e.g. k-linearization,
+    dispersion compensation and windowing) to enhance processing
+    performance.
+    <styled-content id="figU003Aprocessing"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="figures/processing_pipeline_linear_v2.png" xlink:title="" />
+  </fig>
+  <p>The processing pipeline consists of data conversion,
+  k-linearization, numerical dispersion compensation, windowing, fast
+  Fourier transform, fixed-pattern noise removal, truncate, logarithm,
+  backward scan correction, sinusoidal scan correction and
+  visualization. A detailed description of each processing step can be
+  found in the user manual. Here we just want to mention that the
+  implementation of the fixed-pattern noise removal is based on a
+  publication by Moon et al.
+  (<xref alt="Moon et al., 2010" rid="ref-moon2010reference" ref-type="bibr">Moon
+  et al., 2010</xref>) and the volume viewer is based on source code
+  from an open source raycaster
+  (<xref alt="​Pilia, 2018" rid="ref-pilia2018raycaster" ref-type="bibr">​Pilia,
+  2018</xref>). In order to avoid unnecessary data transfer to host
+  memory, CUDA-OpenGL interoperability is used which allows the
+  processed data to remain in GPU memory for visualization.</p>
+</sec>
+<sec id="processing-performance">
+  <title>4. Processing Performance</title>
+  <p>Processing rate highly depends on the size of the raw data, the
+  used computer hardware and resource usage by background or system
+  processes. With common modern computer systems and typical data
+  dimensions for OCT, OCTproZ achieves A-scan rates in the MHz range.
+  Exemplary, Table 1 shows two computer systems and their respective
+  processing rates for the full processing pipeline. However, since the
+  3D live view is computationally intensive the processing rate changes
+  noticeably depending on whether the volume viewer is activated or not.
+  The used raw data set consists of samples with a bit depth of 12, 1024
+  samples per raw A-scan, 512 A-scans per B-scan and 256 B-scans per
+  volume. As the volume is processed in batches, the batch size was set
+  for each system to a reasonable number of B-scans per buffer to avoid
+  GPU memory overflow. It should be noted that this performance
+  evaluation was done with OCTproZ v1.0.0 but is also valid for v1.2.0
+  if the newly introduced processing step for sinusoidal scan distortion
+  correction is disabled.</p>
+  <p>Table 1: Comparison of two computer systems and their respective
+  processing rates for raw data sets with 12 bit per sample, 1024
+  samples per raw A-scan, 512 A-scans per B-scan and 256 B-scans per
+  volume.</p>
+  <table-wrap>
+    <table>
+      <thead>
+        <tr>
+          <th align="left"></th>
+          <th align="left"><bold>Office Computer</bold></th>
+          <th align="left"><bold>Lab Computer</bold></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="left">CPU</td>
+          <td align="left">Intel® Core i5-7500</td>
+          <td align="left">AMD Ryzen Threadripper 1900X</td>
+        </tr>
+        <tr>
+          <td align="left">RAM</td>
+          <td align="left">16 GB</td>
+          <td align="left">32 GB</td>
+        </tr>
+        <tr>
+          <td align="left">GPU</td>
+          <td align="left">NVIDIA Quadro K620</td>
+          <td align="left">NVIDIA GeForce GTX 1080 Ti</td>
+        </tr>
+        <tr>
+          <td align="left">Operating system</td>
+          <td align="left">Windows 10</td>
+          <td align="left">Ubuntu 16.04</td>
+        </tr>
+        <tr>
+          <td align="left">B-scans per buffer</td>
+          <td align="left">32</td>
+          <td align="left">256</td>
+        </tr>
+        <tr>
+          <td align="left">With 3D live view:</td>
+          <td align="left"></td>
+          <td align="left"></td>
+        </tr>
+        <tr>
+          <td align="left">A-scans per second</td>
+          <td align="left">~<bold><inline-formula><alternatives>
+          <tex-math><![CDATA[250 \cdot 10^{3}]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>250</mml:mn><mml:mo>⋅</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>3</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula></bold></td>
+          <td align="left">~<bold><inline-formula><alternatives>
+          <tex-math><![CDATA[4.0 \cdot 10^{6}]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>4.0</mml:mn><mml:mo>⋅</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>6</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula></bold></td>
+        </tr>
+        <tr>
+          <td align="left">Volumes per second</td>
+          <td align="left">~<bold><inline-formula><alternatives>
+          <tex-math><![CDATA[1.9]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>1.9</mml:mn></mml:math></alternatives></inline-formula></bold></td>
+          <td align="left">~<bold><inline-formula><alternatives>
+          <tex-math><![CDATA[30]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>30</mml:mn></mml:math></alternatives></inline-formula></bold></td>
+        </tr>
+        <tr>
+          <td align="left">Without 3D live view:</td>
+          <td align="left"></td>
+          <td align="left"></td>
+        </tr>
+        <tr>
+          <td align="left">A-scans per second</td>
+          <td align="left">~<bold><inline-formula><alternatives>
+          <tex-math><![CDATA[300 \cdot 10^{3}]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>300</mml:mn><mml:mo>⋅</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>3</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula></bold></td>
+          <td align="left">~<bold><inline-formula><alternatives>
+          <tex-math><![CDATA[4.8 \cdot 10^{6}]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>4.8</mml:mn><mml:mo>⋅</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>6</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula></bold></td>
+        </tr>
+        <tr>
+          <td align="left">Volumes per second</td>
+          <td align="left">~<bold><inline-formula><alternatives>
+          <tex-math><![CDATA[2.2]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>2.2</mml:mn></mml:math></alternatives></inline-formula></bold></td>
+          <td align="left">~<bold><inline-formula><alternatives>
+          <tex-math><![CDATA[36]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>36</mml:mn></mml:math></alternatives></inline-formula></bold></td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+</sec>
+<sec id="plug-in-system">
+  <title>5. Plug-in System</title>
+  <p>To develop custom plug-ins for OCTproZ and thus extend its
+  functionality, a development kit is provided. It consists of a static
+  library and a collection of C++ header files that specify which
+  classes and methods have to be implemented to create custom plug-ins.
+  Currently two kinds of plug-ins exist: Acquisition Systems and
+  Extensions. For both we made examples including source code publicly
+  available which may be used together with the open source and
+  cross-platform integrated development environment Qt Creator as
+  starting point for custom plug-in development.</p>
+  <p>The main task of an Acquisition System is to provide raw data to
+  OCTproZ. In most cases, this means that the implementation of an
+  Acquisition System contains the software control of a data acquisition
+  unit.</p>
+  <p>Extensions have a wide area of use cases. As they are able to
+  receive raw data and processed data via the Qt signals and slots
+  mechanism, they are suitable for custom post-processing routines. The
+  exact implementation of an Extension is mainly up to the developer and
+  can also include hardware control. Therefore, Extensions are ideal for
+  hardware control algorithms that rely on feedback from live OCT
+  images. The best example of this is wavefront sensorless adaptive
+  optics with a wavefront modulator such as a deformable mirror.
+  Particular care must be taken if high speed OCT systems are used, as
+  the acquisition speed of OCT data may exceed the processing speed of
+  the custom Extension. In this case, a routine within the Extension
+  should be implemented that discards incoming OCT data if previous data
+  is still being processed.</p>
+</sec>
+<sec id="conclusion">
+  <title>6. Conclusion</title>
+  <p>In this paper, we introduced OCTproZ, an open source software
+  package for live OCT signal processing. With the presented plug-in
+  system, it is possible to develop software modules to use OCTproZ with
+  custom OCT systems, thus reducing the OCT system development time
+  significantly. OCTproZ is meant to be a collaborative project, where
+  everyone involved in the field of OCT is invited to improve the
+  software and share the changes within the community. We especially
+  hope for more open source publications within the OCT community to
+  reduce the time necessary for the replication of OCT processing
+  algorithms and thereby accelerate scientific progress.</p>
+</sec>
+<sec id="funding">
+  <title>Funding</title>
+  <p>This work was partially funded by the European Regional Development
+  Fund and the state of Lower Saxony as part of the project OPhonLas
+  (EFRE-SER 2014-2020, 85007492).</p>
+  <graphic mimetype="image" mime-subtype="png" xlink:href="figures/efre.png" />
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-choi2012spectral">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Choi</surname><given-names>Dong-hak</given-names></name>
+          <name><surname>Hiro-Oka</surname><given-names>Hideaki</given-names></name>
+          <name><surname>Shimizu</surname><given-names>Kimiya</given-names></name>
+          <name><surname>Ohbayashi</surname><given-names>Kohji</given-names></name>
+        </person-group>
+        <article-title>Spectral domain optical coherence tomography of multi-MHz a-scan rates at 1310 nm range and real-time 4D-display up to 41 volumes/second</article-title>
+        <source>Biomedical optics express</source>
+        <publisher-name>Optical Society of America</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>3</volume>
+        <issue>12</issue>
+        <pub-id pub-id-type="doi">10.1364/boe.3.003067</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-zhang2010real">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zhang</surname><given-names>Kang</given-names></name>
+          <name><surname>Kang</surname><given-names>Jin U</given-names></name>
+        </person-group>
+        <article-title>Real-time 4D signal processing and visualization using graphics processing unit on a regular nonlinear-k fourier-domain OCT system</article-title>
+        <source>Optics express</source>
+        <publisher-name>Optical Society of America</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <volume>18</volume>
+        <issue>11</issue>
+        <pub-id pub-id-type="doi">10.1364/oe.18.011772</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-rasakanthan2011processing">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rasakanthan</surname><given-names>Janarthanan</given-names></name>
+          <name><surname>Sugden</surname><given-names>Kate</given-names></name>
+          <name><surname>Tomlins</surname><given-names>Peter H</given-names></name>
+        </person-group>
+        <article-title>Processing and rendering of fourier domain optical coherence tomography images at a line rate over 524 kHz using a graphics processing unit</article-title>
+        <source>Journal of biomedical optics</source>
+        <publisher-name>International Society for Optics; Photonics</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <volume>16</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1117/1.3548153</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sylwestrzak2012four">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sylwestrzak</surname><given-names>Marcin</given-names></name>
+          <name><surname>Szlag</surname><given-names>Daniel</given-names></name>
+          <name><surname>Szkulmowski</surname><given-names>Maciej</given-names></name>
+          <name><surname>Gorczynska</surname><given-names>Iwona M</given-names></name>
+          <name><surname>Bukowska</surname><given-names>Danuta</given-names></name>
+          <name><surname>Wojtkowski</surname><given-names>Maciej</given-names></name>
+          <name><surname>Targowski</surname><given-names>Piotr</given-names></name>
+        </person-group>
+        <article-title>Four-dimensional structural and doppler optical coherence tomography imaging on graphics processing units</article-title>
+        <source>Journal of biomedical optics</source>
+        <publisher-name>International Society for Optics; Photonics</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>17</volume>
+        <issue>10</issue>
+        <pub-id pub-id-type="doi">10.1117/1.JBO.17.10.100502</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-li2011scalable">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Li</surname><given-names>Jian</given-names></name>
+          <name><surname>Sarunic</surname><given-names>Marinko V</given-names></name>
+          <name><surname>Shannon</surname><given-names>Lesley</given-names></name>
+        </person-group>
+        <article-title>Scalable, high performance fourier domain optical coherence tomography: Why FPGAs and not GPGPUs</article-title>
+        <source>2011 IEEE 19th annual international symposium on field-programmable custom computing machines</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <pub-id pub-id-type="doi">10.1109/fccm.2011.27</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-jian2013graphics">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jian</surname><given-names>Yifan</given-names></name>
+          <name><surname>Wong</surname><given-names>Kevin</given-names></name>
+          <name><surname>Sarunic</surname><given-names>Marinko V</given-names></name>
+        </person-group>
+        <article-title>Graphics processing unit accelerated optical coherence tomography processing at megahertz axial scan rate and high resolution video rate volumetric rendering</article-title>
+        <source>Journal of biomedical optics</source>
+        <publisher-name>International Society for Optics; Photonics</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <volume>18</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1117/1.JBO.18.2.026002</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-moon2010reference">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Moon</surname><given-names>Sucbei</given-names></name>
+          <name><surname>Lee</surname><given-names>Sang-Won</given-names></name>
+          <name><surname>Chen</surname><given-names>Zhongping</given-names></name>
+        </person-group>
+        <article-title>Reference spectrum extraction and fixed-pattern noise removal in optical coherence tomography</article-title>
+        <source>Optics express</source>
+        <publisher-name>Optical Society of America</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <volume>18</volume>
+        <issue>24</issue>
+        <pub-id pub-id-type="doi">10.1364/OE.18.024395</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-wieser2014high">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wieser</surname><given-names>Wolfgang</given-names></name>
+          <name><surname>Draxinger</surname><given-names>Wolfgang</given-names></name>
+          <name><surname>Klein</surname><given-names>Thomas</given-names></name>
+          <name><surname>Karpf</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Pfeiffer</surname><given-names>Tom</given-names></name>
+          <name><surname>Huber</surname><given-names>Robert</given-names></name>
+        </person-group>
+        <article-title>High definition live 3D-OCT in vivo: Design and evaluation of a 4D OCT engine with 1 GVoxel/s</article-title>
+        <source>Biomedical optics express</source>
+        <publisher-name>Optical Society of America</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>5</volume>
+        <issue>9</issue>
+        <pub-id pub-id-type="doi">10.1364/BOE.5.002963</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pilia2018raycaster">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>​Pilia</surname><given-names>Martino</given-names></name>
+        </person-group>
+        <article-title>GPU-accelerated single-pass raycaster</article-title>
+        <source>​GitHub repository</source>
+        <publisher-name>​GitHub</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://github.com/m-pilia/volume-raycasting</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-qt">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Qt</surname></name>
+        </person-group>
+        <year iso-8601-date="2020">2020</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-08-23">2020</year><month>08</month><day>23</day></date-in-citation>
+        <uri>https://www.qt.io</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-cuda">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>​NVIDIA</surname></name>
+        </person-group>
+        <article-title>CUDA</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-08-23">2020</year><month>08</month><day>23</day></date-in-citation>
+        <uri>https://developer.nvidia.com/cuda-zone</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

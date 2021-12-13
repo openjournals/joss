@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1003</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01003</article-id>
+<title-group>
+<article-title>FixedPointFinder: A Tensorflow toolbox for identifying
+and characterizing fixed points in recurrent neural
+networks</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-4508-0537</contrib-id>
+<string-name>Matthew D. Golub</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-1620-1264</contrib-id>
+<string-name>David Sussillo</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-3"/>
+<xref ref-type="aff" rid="aff-4"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Electrical Engineering, Stanford
+University</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Stanford Neurosciences Institute, Stanford
+University</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Google Brain</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-4">
+<institution-wrap>
+<institution>Work done while at Stanford University</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2018-09-17">
+<day>17</day>
+<month>9</month>
+<year>2018</year>
+</pub-date>
+<volume>3</volume>
+<issue>31</issue>
+<fpage>1003</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>recurrent neural networks</kwd>
+<kwd>fixed point optimization</kwd>
+<kwd>nonlinear dynamical systems</kwd>
+<kwd>Tensorflow</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Recurrent neural networks (RNNs) are powerful function
+  approximators that can be designed or trained to solve a variety of
+  computational tasks. Such tasks require the transformation of a set of
+  time-varying input signals into a set of time-varying output signals.
+  Neuroscientists are increasingly interested in using RNNs to explain
+  complex relationships present in recorded neural activity
+  (<xref alt="Pandarinath et al., 2018" rid="ref-Pandarinath2018" ref-type="bibr">Pandarinath
+  et al., 2018</xref>) and to propose dynamical mechanisms through which
+  a population of neurons might implement a computation
+  (<xref alt="Mante et al., 2013" rid="ref-ManteSussillo2013" ref-type="bibr">Mante
+  et al., 2013</xref>;
+  <xref alt="Remington et al., 2018" rid="ref-Remington2018" ref-type="bibr">Remington
+  et al., 2018</xref>). Once fit to neural recordings or trained to
+  solve a task of interest, an RNN can be reverse-engineered to
+  understand how a computation is implemented in a high-dimensional
+  recurrent neural system, which can suggest hypotheses for how the task
+  might be solved by the brain.</p>
+  <p>Perhaps the most critical step in this reverse-engineering is
+  identifying the fixed points of the RNN’s internal dynamics. These
+  fixed points, along with local linearizations of the RNN dynamics
+  about those fixed points, provide a mechanistic description of how the
+  network implements a computation. Identifying the fixed points of an
+  RNN requires optimization tools that have previously been tailored for
+  specific, “vanilla” or Hopfield-like RNN architectures Katz &amp;
+  Reggia
+  (<xref alt="2018" rid="ref-Katz2018" ref-type="bibr">2018</xref>).
+  These approaches rely on hard-coded analytic derivatives (e.g., of the
+  hyperbolic tangent function) and thus can be cumbersome for
+  complicated models (e.g., gated architectures), for studies that
+  involve multiple different models, or when frequent architectural
+  changes are required during the development of a model. While
+  numerical derivatives can partially alleviate these difficulties, the
+  additional computational costs typically make them infeasible for
+  anything but the smallest of models.</p>
+  <p>Here, we introduce <monospace>FixedPointFinder</monospace>, an
+  open-source Tensorflow toolbox for finding fixed points and linearized
+  dynamics in arbitrary RNN architectures.
+  <monospace>FixedPointFinder</monospace> leverages Tensorflow’s
+  efficient automatic differentiation back-end to perform the
+  optimizations and Jacobian calculations required for fixed-point
+  identification and characterization.
+  <monospace>FixedPointFinder</monospace> works with any arbitrary RNN
+  architecture that conforms to Tensorflow’s
+  <monospace>RNNCell</monospace> API, including popular gated
+  architectures (e.g., long short-term memory (LSTM) or gated recurrent
+  units (GRU)), traditional “vanilla” architectures, as well as custom
+  researcher-developed architectures.</p>
+</sec>
+<sec id="example">
+  <title>Example</title>
+  <p><monospace>FixedPointFinder</monospace> includes an end-to-end
+  example that trains a Tensorflow RNN to solve a task and then
+  identifies and visualizes the fixed points of the trained RNN. The
+  task is the “flip-flop” task previously described in Sussillo &amp;
+  Barak
+  (<xref alt="2013" rid="ref-SussilloBarak2013" ref-type="bibr">2013</xref>).
+  Briefly, the task is to implement a 3-bit binary memory, in which each
+  of 3 input channels delivers signed transient pulses (-1 or +1) to a
+  corresponding bit of the memory, and an input pulse flips the state of
+  that memory bit (also -1 or +1) whenever a pulse’s sign is opposite of
+  the current state of the bit. The example trains a 16-unit LSTM RNN to
+  solve this task (Fig. 1). Once the RNN is trained, the example uses
+  <monospace>FixedPointFinder</monospace> to identify and characterize
+  the trained RNN’s fixed points. Finally, the example produces a
+  visualization of these results (Fig. 2). In addition to demonstrating
+  a working use of <monospace>FixedPointFinder</monospace>, this example
+  provides a testbed for experimenting with different RNN architectures
+  (e.g., numbers of recurrent units, LSTMs vs. GRUs vs. vanilla RNNs)
+  and characterizing how these lower-level model design choices manifest
+  in the higher-level dynamical implementation used to solve a task.</p>
+  <fig>
+    <caption><p>Inputs (gray), target outputs (cyan), and outputs of a
+    trained LSTM RNN (purple) from an example trial of the flip-flop
+    task. Signed input pulses (gray) flip the corresponding bit’s state
+    (green) whenever an input pulse has the opposite sign of the current
+    bit state (e.g., if gray goes high when green is low). The RNN has
+    been trained to nearly perfectly reproduce the target memory state
+    (purple closely overlaps cyan).</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="task_example.png" xlink:title="" />
+  </fig>
+  <fig>
+    <caption><p>Fixed-point structure of an LSTM RNN trained to solve
+    the flip-flop task. <monospace>FixedPointFinder</monospace>
+    identified 8 stable fixed points (black points), each of which
+    corresponds to a unique state of the 3-bit memory.
+    <monospace>FixedPointFinder</monospace> also identified a number of
+    unstable fixed points (red points) along with their unstable modes
+    (red lines), which mediate the set of state transitions trained into
+    the RNN’s dynamics. Here, each unstable fixed point is a “saddle” in
+    the RNN’s dynamical flow field, and the corresponding unstable modes
+    indicate the directions that nearby states are repelled from the
+    fixed point. State trajectories from example trials (blue) traverse
+    about these fixed points. All quantities are visualized in the
+    3-dimensional space determined by the top 3 principal components
+    computed across 128 example trials.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="fixed_points.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="availability">
+  <title>Availability</title>
+  <p><monospace>FixedPointFinder</monospace> is publicly available under
+  the
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/mattgolub/fixed-point-finder/blob/master/LICENSE">Apache
+  2.0 license</ext-link> at
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/mattgolub/fixed-point-finder">https://github.com/mattgolub/fixed-point-finder</ext-link>.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This work was supported by the Stanford Neurosciences Institute,
+  the Office of Naval Research Grant #N00014-18-1-2158, and the Simons
+  Foundation Grant #543049.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-ManteSussillo2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mante</surname><given-names>Valerio</given-names></name>
+          <name><surname>Sussillo</surname><given-names>David</given-names></name>
+          <name><surname>Shenoy</surname><given-names>Krishna V</given-names></name>
+          <name><surname>Newsome</surname><given-names>William T</given-names></name>
+        </person-group>
+        <article-title>Context-dependent computation by recurrent dynamics in prefrontal cortex</article-title>
+        <source>Nature</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <volume>503</volume>
+        <issue>7474</issue>
+        <pub-id pub-id-type="doi">10.1038/nature12742</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Remington2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Remington</surname><given-names>Evan D</given-names></name>
+          <name><surname>Narain</surname><given-names>Devika</given-names></name>
+          <name><surname>Hosseini</surname><given-names>Eghbal A</given-names></name>
+          <name><surname>Jazayeri</surname><given-names>Mehrdad</given-names></name>
+        </person-group>
+        <article-title>Flexible sensorimotor computations through rapid reconfiguration of cortical dynamics</article-title>
+        <source>Neuron</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>98</volume>
+        <issue>5</issue>
+        <pub-id pub-id-type="doi">10.1016/j.neuron.2018.05.020</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SussilloBarak2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sussillo</surname><given-names>David</given-names></name>
+          <name><surname>Barak</surname><given-names>Omri</given-names></name>
+        </person-group>
+        <article-title>Opening the black box: Low-dimensional dynamics in high-dimensional recurrent neural networks</article-title>
+        <source>Neural Computation</source>
+        <publisher-name>MIT Press</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <volume>25</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1162/NECO_a_00409</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Pandarinath2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pandarinath</surname><given-names>Chethan</given-names></name>
+          <name><surname>O’Shea</surname><given-names>Daniel J</given-names></name>
+          <name><surname>Collins</surname><given-names>Jasmine</given-names></name>
+          <name><surname>Jozefowicz</surname><given-names>Rafal</given-names></name>
+          <name><surname>Stavisky</surname><given-names>Sergey D</given-names></name>
+          <name><surname>Kao</surname><given-names>Jonathan C</given-names></name>
+          <name><surname>Trautmann</surname><given-names>Eric M</given-names></name>
+          <name><surname>Kaufman</surname><given-names>Matthew T</given-names></name>
+          <name><surname>Ryu</surname><given-names>Stephen I</given-names></name>
+          <name><surname>Hochberg</surname><given-names>Leigh R</given-names></name>
+          <name><surname>Henderson</surname><given-names>Jaimie M.</given-names></name>
+          <name><surname>Shenoy</surname><given-names>Krishna V.</given-names></name>
+          <name><surname>Abbott</surname><given-names>L. F.</given-names></name>
+          <name><surname>Sussillo</surname><given-names>D</given-names></name>
+        </person-group>
+        <article-title>Inferring single-trial neural population dynamics using sequential auto-encoders</article-title>
+        <source>Nature Methods</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>15</volume>
+        <issue>10</issue>
+        <pub-id pub-id-type="doi">10.1038/s41592-018-0109-9</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Katz2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Katz</surname><given-names>Garrett E</given-names></name>
+          <name><surname>Reggia</surname><given-names>James A</given-names></name>
+        </person-group>
+        <article-title>Using directional fibers to locate fixed points of recurrent neural networks</article-title>
+        <source>IEEE Transactions on Neural Networks and Learning Systems</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>29</volume>
+        <issue>8</issue>
+        <pub-id pub-id-type="doi">10.1109/TNNLS.2017.2733544</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

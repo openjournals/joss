@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2957</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02957</article-id>
+<title-group>
+<article-title>nf-gwas-pipeline: A Nextflow Genome-Wide Association
+Study Pipeline</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<string-name>Zeyuan Song</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Anastasia Gurinovich</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Anthony Federico</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-4"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Stefano Monti</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-4"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Paola Sebastiani</string-name>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Biostatistics, Boston University School of
+Public Health, 801 Massachusetts Avenue 3rd Floor, Boston, MA 02218,
+USA</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Section of Computational Biomedicine, Boston University
+School of Medicine, 72 East Concord St., Boston, MA 02218,
+USA</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Institute for Clinical Research and Health Policy Studies,
+Tufts Medical Center, 800 Washington Street, Boston, MA 02111,
+USA</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-4">
+<institution-wrap>
+<institution>Bioinformatics Program, Boston University, 24 Cummington
+Mall, Boston, MA 02215, USA</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-11-21">
+<day>21</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>59</issue>
+<fpage>2957</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Nextflow</kwd>
+<kwd>GWAS</kwd>
+<kwd>gene-based analysis</kwd>
+<kwd>longitudianl GWAS</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>A tool for conducting Genome-Wide Association Study (GWAS) in a
+  systematic, automated and reproducible manner is overdue. We developed
+  an automated GWAS pipeline by combining multiple analysis tools –
+  including bcftools, vcftools, the R packages SNPRelate/GENESIS/GMMAT
+  and ANNOVAR – through Nextflow, which is a portable, flexible, and
+  reproducible reactive workflow framework for developing pipelines. The
+  GWAS pipeline integrates the steps of data quality control and
+  assessment and genetic association analyses, including analysis of
+  cross-sectional and longitudinal studies with either single variants
+  or gene-based tests, into a unified analysis workflow. The pipeline is
+  implemented in Nextflow, dependencies are distributed through Docker,
+  and the code is publicly available on Github.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Genome-Wide Association Studies (GWAS) have led to the discovery of
+  highly reproducible variants associated with human complex traits and
+  diseases
+  (<xref alt="Tam V et al., 2019" rid="ref-TamU003A2019" ref-type="bibr">Tam
+  V et al., 2019</xref>). Many software tools are available for
+  conducting GWAS using cross-sectional data and standard multivariable
+  linear or logistic regression. However, the analysis of longitudinal
+  or family-based studies requires the use of advanced statistical
+  methods such as mixed effect modeling, or survival analysis. To
+  conduct a GWAS with such complex data, often investigators have to
+  rely on multiple programs and ad-hoc linking the results generated
+  between steps because each program focuses on a specific aspect of the
+  analysis
+  (<xref alt="Eller RJ et al., 2019" rid="ref-EllerU003A2019" ref-type="bibr">Eller
+  RJ et al., 2019</xref>). This approach makes it difficult to keep
+  track of all the analysis steps and parameters, including data
+  cleaning, filtering, and calculation of the genome-wide principal
+  components, limiting reproducibility of the analyses. To address these
+  problems, we have developed a GWAS pipeline that provides a
+  comprehensive computing environment to manage genome-wide genotype
+  data, to conduct analyses of continuous and binary traits using mixed
+  effect models, and to summarize, annotate, and visualize the
+  results.</p>
+</sec>
+<sec id="materials-and-methods">
+  <title>Materials and Methods</title>
+  <sec id="features">
+    <title>Features</title>
+    <p>The pipeline is implemented in Nextflow, a portable, scalable and
+    parallelizable reactive workflow framework for data-intensive
+    pipelines
+    (<xref alt="Di Tommaso P et al., 2017" rid="ref-DiU003A2017" ref-type="bibr">Di
+    Tommaso P et al., 2017</xref>). Through Nextflow, the GWAS pipeline
+    is designed to automatically parallelize workflow steps, denoted as
+    processes, and does not require users to manually handle
+    intermediate data between steps, thus improving traceability and
+    reproducibility. Additionally, the pipeline remains flexible
+    allowing users to customize parameters and options in the
+    configuration file. Adding processes (i.e., additional analytical
+    steps) in Nextflow framework is standardized and simple. Advanced
+    Nextflow users can define and incorporate additional processes in
+    the pipeline framework, which will then be executed as part of the
+    customized pipeline.</p>
+  </sec>
+  <sec id="workflow">
+    <title>Workflow</title>
+    <p>Figure 1 depicts the workflow:</p>
+    <list list-type="order">
+      <list-item>
+        <p>Input. Required files include VCF files for all 22
+        chromosomes and a comma-delimited phenotype file including
+        sample id, phenotype and covariates. Optionally, users can
+        provide a file with a list of Single Nucleotide Polymorphisms
+        (SNPs) to compute genome-wide principal components and genetic
+        relationship or provide a kinship matrix for known
+        relations.</p>
+      </list-item>
+      <list-item>
+        <p>Quality control. The pipeline removes monomorphic SNPs and
+        variants with percent of missing values above a provided
+        threshold. The cleaned VCF files are then converted into Genome
+        Data Structure (GDS) file format for computationally efficient
+        data storage
+        (<xref alt="Zheng X et al., 2017" rid="ref-ZhengU003A2017" ref-type="bibr">Zheng
+        X et al., 2017</xref>).</p>
+      </list-item>
+      <list-item>
+        <p>Principal component analysis and genetic relationship
+        inference. This is an optional step that uses the PC-AiR and
+        PC-Relate algorithms [Conomos MP et al.
+        (<xref alt="2015" rid="ref-ConomosU003A2015" ref-type="bibr">2015</xref>)](<xref alt="Conomos MP et al., 2016" rid="ref-ConomosU003A2016" ref-type="bibr">Conomos
+        MP et al., 2016</xref>) to estimate the genetic relationship
+        matrix between study subjects (GRM) and genome-wide principal
+        components (PCs) to adjust for population structure. Users have
+        the option to provide their own PCs as covariates and/or
+        GRM.</p>
+      </list-item>
+      <list-item>
+        <p>Association tests. The pipeline can conduct three types of
+        analyses of qualitative and quantitative traits: GWAS of
+        individual SNPs, gene-based tests, and genome-wide longitudinal
+        analyses, by turning on the corresponding logical options in the
+        configuration file. All three analyses fit a null model first
+        and then iterate over the whole genome by testing one variant or
+        gene at a time. The tests for cross-sectional data are based on
+        the R package GENESIS
+        (<xref alt="Gogarten SM et al., 2019" rid="ref-GogartenU003A2019" ref-type="bibr">Gogarten
+        SM et al., 2019</xref>). The test for longitudinal data is based
+        on the R package GMMAT, which uses generalized mixed effect
+        models
+        (<xref alt="Chen H et al., 2016" rid="ref-ChenU003A2016" ref-type="bibr">Chen
+        H et al., 2016</xref>).</p>
+      </list-item>
+      <list-item>
+        <p>Output and Visualization. Manhattan and QQ-plots with the
+        value of genomic control are generated for any of the three
+        analyses. The output file includes SNP results annotated with
+        ANNOVAR and minor allele frequency (MAF) for any subgroup of
+        individuals defined by the users. Finally, an html-report of the
+        analysis is generated.</p>
+      </list-item>
+    </list>
+  </sec>
+  <sec id="configuration-file">
+    <title>Configuration file</title>
+    <p>A single configuration file containing all the pipeline options
+    and parameters is provided. Users can customize this file to deploy
+    specific analysis processes. For example, a user may run a GWAS on a
+    cohort of unrelated individuals by turning off the GRM step. To
+    reduce the complexity for new users, only essential parameters are
+    modifiable in the configuration file. Advanced users can modify any
+    parameters by diving into the original code.</p>
+  </sec>
+  <sec id="installation-and-execution">
+    <title>Installation and Execution</title>
+    <p>The pipeline can be cloned from
+    https://github.com/montilab/nf-gwas-pipeline. A Docker container was
+    built to assist in installing the necessary tools and the pipeline
+    and ensuring accessibility to specific versions of tools and
+    packages. There are two methods for executing the pipeline. Users
+    can execute the pipeline through the command line interface
+    specifying parameters and a configuration file. All available
+    options can be either obtained by the command ‘–help’ or from the
+    configuration file. If a configuration file is specified, users
+    should set paths for all input files and specify the analysis with
+    corresponding parameters. Once file paths and parameters are set,
+    the execution can be either run locally or scaled up to various
+    high-performance computing environments.</p>
+  </sec>
+  <sec id="output-and-error-handling">
+    <title>Output and Error Handling</title>
+    <p>Output files are automatically arranged in a nested folder
+    structure (Fig. 1). Each lowest-level subfolder holds output and log
+    files from executed process. In addition, Nextflow creates its own
+    work folder to hold intermediate output files, which serves as a
+    record of a run. If errors are encountered in a run, users can fix
+    the specific error and re-run the pipeline with the “-resume”
+    command. Once resumed, the pipeline automatically uses the cached
+    files from the previous run and continues processes that have been
+    fixed
+    (<xref alt="Di Tommaso P et al., 2017" rid="ref-DiU003A2017" ref-type="bibr">Di
+    Tommaso P et al., 2017</xref>).</p>
+  </sec>
+</sec>
+<sec id="conclusions-and-discussions">
+  <title>Conclusions and Discussions</title>
+  <p>The GWAS pipeline provides a user-friendly one-step analysis tool.
+  The workflow balances flexibility and reproducibility by requiring
+  limited options and parameters. To run more study- specific analyses,
+  users may need to modify some parameters in the original scripts.
+  While three types of analyses are currently available, the
+  Nextflow-based pipeline is easy to extend with new tools and methods.
+  We plan to include more complex models and analyses, such as survival
+  analysis, in the next versions of the pipeline.</p>
+</sec>
+<sec id="figures">
+  <title>Figures</title>
+  <fig>
+    <caption><p>Figure 1</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="nf-gwas-pipeline.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We thank for Harold Bae and Aparna Bhutkar for their help. This
+  work was supported with funding from NIH/NIA: U19AG023122 (Longevity
+  Consortium), and UH2AG064704 (Omics Profiles in Centenarians).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-TamU003A2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>Tam V</string-name>
+          <string-name>Patel N</string-name>
+          <string-name>Turcotte M</string-name>
+          <string-name>Bossé Y</string-name>
+          <string-name>Paré G</string-name>
+          <string-name>Meyre D</string-name>
+        </person-group>
+        <article-title>Benefits and limitations of genome- wide association studies</article-title>
+        <source>Nat Rev Genet</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>20</volume>
+        <issue>8</issue>
+        <pub-id pub-id-type="doi">10.1038/s41576-019-0127-1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-EllerU003A2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>Eller RJ</string-name>
+          <string-name>Janga SC</string-name>
+          <string-name>Walsh S</string-name>
+        </person-group>
+        <article-title>Odyssey: a semi-automated pipeline for phasing, imputation, and analysis of genome-wide genetic data</article-title>
+        <source>BMC Bioinformatics</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>20</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1186/s12859-019-2964-5</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-DiU003A2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>Di Tommaso P</string-name>
+          <string-name>Chatzou M</string-name>
+          <string-name>Floden EW</string-name>
+          <string-name>Barja PP</string-name>
+          <string-name>Palumbo E</string-name>
+          <string-name>Notredame C</string-name>
+        </person-group>
+        <article-title>Nextflow enables reproducible computational workflows</article-title>
+        <source>Nat. Biotechnol</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>35</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1038/nbt.3820</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ZhengU003A2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>Zheng X</string-name>
+          <string-name>Gogarten SM</string-name>
+          <string-name>Lawrence M</string-name>
+          <string-name>et al</string-name>
+        </person-group>
+        <article-title>SeqArray-a storage-efficient high-performance data format for WGS variant calls</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>33</volume>
+        <issue>15</issue>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btx145</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ConomosU003A2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>Conomos MP</string-name>
+          <string-name>Miller MB</string-name>
+          <string-name>Thornton TA</string-name>
+        </person-group>
+        <article-title>Robust inference of population structure for ancestry prediction and correction of stratification in the presence of relatedness</article-title>
+        <source>Genet Epidemiol</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>39</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1002/gepi.21896</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ConomosU003A2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>Conomos MP</string-name>
+          <string-name>Reiner AP</string-name>
+          <string-name>Weir BS</string-name>
+          <string-name>Thornton TA</string-name>
+        </person-group>
+        <article-title>Model-free Estimation of Recent Genetic Relatedness</article-title>
+        <source>Am J Hum Genet</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>98</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1016/j.ajhg.2015.11.022</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-GogartenU003A2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>Gogarten SM</string-name>
+          <string-name>Sofer T</string-name>
+          <string-name>Chen H</string-name>
+          <string-name>et al</string-name>
+        </person-group>
+        <article-title>Genetic association testing using the GENESIS R/Bioconductor package</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>35</volume>
+        <issue>24</issue>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btz567</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ChenU003A2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>Chen H</string-name>
+          <string-name>Wang C</string-name>
+          <string-name>Conomos MP</string-name>
+          <string-name>et al</string-name>
+        </person-group>
+        <article-title>Control for Population Structure and Relatedness for Binary Traits in Genetic Association Studies via Logistic Mixed Models</article-title>
+        <source>Am J Hum Genet</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>98</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1016/j.ajhg.2016.02.012</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

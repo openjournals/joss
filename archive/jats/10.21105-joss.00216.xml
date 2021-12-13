@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">216</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00216</article-id>
+<title-group>
+<article-title>Fitting a Gamma-Gompertz survival model to
+capture-recapture data collected on free-ranging animal
+populations</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-7819-5739</contrib-id>
+<string-name>Gilbert Marzolin</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-7001-5142</contrib-id>
+<string-name>Olivier Gimenez</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Centre National de la Recherche Scientifique</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2018-01-12">
+<day>12</day>
+<month>1</month>
+<year>2018</year>
+</pub-date>
+<volume>3</volume>
+<issue>21</issue>
+<fpage>216</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>gamma-gompertz</kwd>
+<kwd>survival</kwd>
+<kwd>capture-recapture</kwd>
+<kwd>MCMC</kwd>
+<kwd>data cloning</kwd>
+<kwd>dipper</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p><monospace>GammaGompertzCR</monospace> is an R package
+  (<xref alt="R Core Team, 2016" rid="ref-R" ref-type="bibr">R Core
+  Team, 2016</xref>) that allows estimating survival in free-ranging
+  animal populations using a Gompertz capture-recapture model with a
+  Gamma frailty to deal with individual heterogeneity
+  (<xref alt="Marzolin et al., 2011" rid="ref-MarzolinCharmantierGimenez2011" ref-type="bibr">Marzolin
+  et al., 2011</xref>;
+  <xref alt="Missov, 2013" rid="ref-Missov2013" ref-type="bibr">Missov,
+  2013</xref>). To use the package, users should be familiar with
+  Bayesian MCMC techniques and in particular how to interpret
+  convergence diagnostics. We refer to Robert &amp; Casella
+  (<xref alt="2010" rid="ref-robert2010introducing" ref-type="bibr">2010</xref>)
+  for an introduction to Bayesian MCMC techniques with R and to King et
+  al.
+  (<xref alt="2009" rid="ref-king2009bayesian" ref-type="bibr">2009</xref>)
+  for an introduction for ecologists. In this paper, we introduce the
+  theory underlying the model we implement in
+  <monospace>GammaGompertzCR</monospace>, and illustrate the approach
+  using a real example.</p>
+</sec>
+<sec id="theory">
+  <title>Theory</title>
+  <sec id="the-gamma-gompertz-model">
+    <title>The Gamma-Gompertz model</title>
+    <p>We consider a random variable <inline-formula><alternatives>
+    <tex-math><![CDATA[T \geq 0]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>T</mml:mi><mml:mo>≥</mml:mo><mml:mn>0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+    called time to event. When the event is death of some organism,
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[T]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>T</mml:mi></mml:math></alternatives></inline-formula>
+    is usually associated with a survivor function
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[S]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>S</mml:mi></mml:math></alternatives></inline-formula>
+    such as, for <inline-formula><alternatives>
+    <tex-math><![CDATA[t\geq 0]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>t</mml:mi><mml:mo>≥</mml:mo><mml:mn>0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>,
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[S(t) = P(T>t)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>S</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>P</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>T</mml:mi><mml:mo>&gt;</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.
+    Denoting <inline-formula><alternatives>
+    <tex-math><![CDATA[f]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>
+    the pdf of <inline-formula><alternatives>
+    <tex-math><![CDATA[T]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>T</mml:mi></mml:math></alternatives></inline-formula>,
+    we have <inline-formula><alternatives>
+    <tex-math><![CDATA[S(t)= \int_t^{+ \infty }{f(t)dt}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>S</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msubsup><mml:mo>∫</mml:mo><mml:mi>t</mml:mi><mml:mrow><mml:mo>+</mml:mo><mml:mi>∞</mml:mi></mml:mrow></mml:msubsup><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>d</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    or <inline-formula><alternatives>
+    <tex-math><![CDATA[f(t)=-dS(t)/dt]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>−</mml:mo><mml:mi>d</mml:mi><mml:mi>S</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>/</mml:mi><mml:mi>d</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.
+    The hazard function or mortality rate <inline-formula><alternatives>
+    <tex-math><![CDATA[h]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>h</mml:mi></mml:math></alternatives></inline-formula>
+    yields, for <inline-formula><alternatives>
+    <tex-math><![CDATA[t \geq 0]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>t</mml:mi><mml:mo>≥</mml:mo><mml:mn>0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>,
+    the rate of death <inline-formula><alternatives>
+    <tex-math><![CDATA[h(t)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>h</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    given the animal survived up to time <inline-formula><alternatives>
+    <tex-math><![CDATA[t]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>t</mml:mi></mml:math></alternatives></inline-formula>,
+    that is <inline-formula><alternatives>
+    <tex-math><![CDATA[h(t) = f(t)/S(t)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>h</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>/</mml:mi><mml:mi>S</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    or <inline-formula><alternatives>
+    <tex-math><![CDATA[h(t) = -d\log{S(t)}/dt]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>h</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>−</mml:mo><mml:mi>d</mml:mi><mml:mo>log</mml:mo><mml:mrow><mml:mi>S</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow><mml:mi>/</mml:mi><mml:mi>d</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.
+    In case of discrete time steps - for instance age
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[j]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>j</mml:mi></mml:math></alternatives></inline-formula>
+    in years - annual survival <inline-formula><alternatives>
+    <tex-math><![CDATA[s]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>s</mml:mi></mml:math></alternatives></inline-formula>
+    by age is obtained as <inline-formula><alternatives>
+    <tex-math><![CDATA[s(j,j+1) = P(T > j+1|T>j) = S(j+1)/S(j)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>s</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>j</mml:mi><mml:mo>,</mml:mo><mml:mi>j</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>P</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>T</mml:mi><mml:mo>&gt;</mml:mo><mml:mi>j</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:mi>T</mml:mi><mml:mo>&gt;</mml:mo><mml:mi>j</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>S</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>j</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>/</mml:mi><mml:mi>S</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>j</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+    <p>To deal with individual heterogeneity in survival, we can use
+    individual random-effect models
+    (<xref alt="Marzolin et al., 2011" rid="ref-MarzolinCharmantierGimenez2011" ref-type="bibr">Marzolin
+    et al., 2011</xref>) or multiply the baseline mortality rate
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[h]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>h</mml:mi></mml:math></alternatives></inline-formula>
+    by a unit-specific random variable <inline-formula><alternatives>
+    <tex-math><![CDATA[u]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>u</mml:mi></mml:math></alternatives></inline-formula>
+    named frailty. When <inline-formula><alternatives>
+    <tex-math><![CDATA[h]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>h</mml:mi></mml:math></alternatives></inline-formula>
+    is Gompertz with <inline-formula><alternatives>
+    <tex-math><![CDATA[h(t) = a e^{b t}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>h</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>a</mml:mi><mml:msup><mml:mi>e</mml:mi><mml:mrow><mml:mi>b</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[u]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>u</mml:mi></mml:math></alternatives></inline-formula>
+    is distributed as a <inline-formula><alternatives>
+    <tex-math><![CDATA[\Gamma(k,\lambda)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>Γ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>k</mml:mi><mml:mo>,</mml:mo><mml:mi>λ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    (with mean <inline-formula><alternatives>
+    <tex-math><![CDATA[k/\lambda]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>k</mml:mi><mml:mi>/</mml:mi><mml:mi>λ</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>),
+    we have a multiplicative Gamma-Gompertz frailty model. Typically a
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\Gamma]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>Γ</mml:mi></mml:math></alternatives></inline-formula>
+    with mean one is adopted, hence <inline-formula><alternatives>
+    <tex-math><![CDATA[k = \lambda]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>k</mml:mi><mml:mo>=</mml:mo><mml:mi>λ</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    and variance is <inline-formula><alternatives>
+    <tex-math><![CDATA[1/k]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>1</mml:mn><mml:mi>/</mml:mi><mml:mi>k</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.
+    In a Gamma-Gompertz model, the population survival function is
+    obtained through marginalization. When two parameters are used,
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[S(t)= (1+(a/b\lambda)(e^{bt}-1))^{-k}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>S</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo>+</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>a</mml:mi><mml:mi>/</mml:mi><mml:mi>b</mml:mi><mml:mi>λ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msup><mml:mi>e</mml:mi><mml:mrow><mml:mi>b</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msup><mml:mo>−</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mrow><mml:mo>−</mml:mo><mml:mi>k</mml:mi></mml:mrow></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>
+    (<xref alt="Missov, 2013" rid="ref-Missov2013" ref-type="bibr">Missov,
+    2013</xref>), hence the hazard equals <inline-formula><alternatives>
+    <tex-math><![CDATA[h(t)=a(k/\lambda)e^{bt}/(1+a(e^{bt}-1)/b\lambda)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>h</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>a</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>k</mml:mi><mml:mi>/</mml:mi><mml:mi>λ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:msup><mml:mi>e</mml:mi><mml:mrow><mml:mi>b</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msup><mml:mi>/</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo>+</mml:mo><mml:mi>a</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msup><mml:mi>e</mml:mi><mml:mrow><mml:mi>b</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msup><mml:mo>−</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>/</mml:mi><mml:mi>b</mml:mi><mml:mi>λ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.
+    In our case, we use <inline-formula><alternatives>
+    <tex-math><![CDATA[\lambda = k]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>λ</mml:mi><mml:mo>=</mml:mo><mml:mi>k</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.
+    For the detection probability, we used a yearly random effect
+    normally distributed with mean <inline-formula><alternatives>
+    <tex-math><![CDATA[\psi]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ψ</mml:mi></mml:math></alternatives></inline-formula>
+    and standard deviation <inline-formula><alternatives>
+    <tex-math><![CDATA[\sigma_{\eta}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>σ</mml:mi><mml:mi>η</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    on the logit scale.</p>
+  </sec>
+  <sec id="parameter-estimation">
+    <title>Parameter estimation</title>
+    <p>To get maximum likelihood parameter estimates, we use data
+    cloning in the Bayesian framework
+    (<xref alt="Lele et al., 2007" rid="ref-LeleDennisLutscher2007" ref-type="bibr">Lele
+    et al., 2007</xref>) implemented in the R package
+    <monospace>dclone</monospace>
+    (<xref alt="Solymos, 2010" rid="ref-Solymos2010" ref-type="bibr">Solymos,
+    2010</xref>). Data cloning uses multiple copies of the data to
+    produce prior-invariant inferences and converge towards a normal
+    distribution centered at the maximum likelihood estimates. In
+    addition, this method allows detecting non-identifiable parameters
+    (<xref alt="Lele et al., 2010" rid="ref-LeleNadeemSchmuland2010" ref-type="bibr">Lele
+    et al., 2010</xref>).</p>
+  </sec>
+</sec>
+<sec id="illustration">
+  <title>Illustration</title>
+  <p>We now illustrate the estimation of Gamma-Gompertz model parameters
+  using data cloning. We analysed capture-recapture data collected on 75
+  breeding females over 9 years in a Dipper (<italic>Cinclus
+  cinclus</italic>) population
+  (<xref alt="Marzolin et al., 2011" rid="ref-MarzolinCharmantierGimenez2011" ref-type="bibr">Marzolin
+  et al., 2011</xref>). These data are just a subset of the complete
+  dataset (&gt;1000 individuals, 35 years) that is provided with the
+  package. We used 1, 10, 50 and 100 clones with 3 parallel MCMC chains
+  for a total of 5000 iterates with a burn-in period of 1000. The model
+  fitting took less than 5 minutes.</p>
+  <p>Parameter estimates are provided in Table 1.</p>
+  <table-wrap>
+    <table>
+      <thead>
+        <tr>
+          <th align="center">Parameter</th>
+          <th align="center">Mean</th>
+          <th align="center">SD</th>
+          <th align="center">Credible interval</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[a]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>a</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td align="center">0.12</td>
+          <td align="center">0.02</td>
+          <td align="center">[0.09; 0.15]</td>
+        </tr>
+        <tr>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[b]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>b</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td align="center">0.48</td>
+          <td align="center">0.03</td>
+          <td align="center">[0.43; 0.54]</td>
+        </tr>
+        <tr>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[k]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>k</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td align="center">4.90</td>
+          <td align="center">0.03</td>
+          <td align="center">[4.84; 4.96]</td>
+        </tr>
+        <tr>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[\psi]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ψ</mml:mi></mml:math></alternatives></inline-formula></td>
+          <td align="center">1.40</td>
+          <td align="center">0.03</td>
+          <td align="center">[1.34; 1.46]</td>
+        </tr>
+        <tr>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[\sigma_{\eta}]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>σ</mml:mi><mml:mi>η</mml:mi></mml:msub></mml:math></alternatives></inline-formula></td>
+          <td align="center">0.67</td>
+          <td align="center">0.02</td>
+          <td align="center">[0.63; 0.71]</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>Table 1: Parameter estimates of the Gamma-Gompertz model using the
+  Dipper dataset. We refer to Theory section for more details about
+  these parameters. We provide the posterior mean and standard deviation
+  as well as the <inline-formula><alternatives>
+  <tex-math><![CDATA[95\%]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>95</mml:mn><mml:mi>%</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  credible interval.</p>
+  <p>We also provide a plot of the relationship between estimated
+  survival and age in Figure
+  <xref alt="1" rid="figU003Asurvage">1</xref>.</p>
+  <fig>
+    <caption><p>The relationship between Dipper survival and age as
+    estimated by the Gamma-Gompertz
+    model.<styled-content id="figU003Asurvage"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="fig_agesurvival.png" xlink:title="" />
+  </fig>
+  <p>More details on how to use the package, including conducting
+  convergence diagnostics, performing a sensitivity analysis and
+  checking parameter identifiability, are provided at the package
+  development repository (see next section).</p>
+</sec>
+<sec id="availability">
+  <title>Availability</title>
+  <p>The latest version of the package is available at
+  ‘https://github.com/oliviergimenez/GammaGompertzCR’.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-king2009bayesian">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>King</surname><given-names>R.</given-names></name>
+          <name><surname>Gimenez</surname><given-names>O.</given-names></name>
+          <name><surname>Morgan</surname><given-names>B.</given-names></name>
+          <name><surname>Brooks</surname><given-names>S.</given-names></name>
+        </person-group>
+        <source>Bayesian analysis for population ecology</source>
+        <publisher-name>Chapman &amp; Hall/CRC</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-robert2010introducing">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Robert</surname><given-names>C.</given-names></name>
+          <name><surname>Casella</surname><given-names>G.</given-names></name>
+        </person-group>
+        <source>Introducing monte carlo methods with r</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-R">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>R Core Team</string-name>
+        </person-group>
+        <source>R: A language and environment for statistical computing</source>
+        <publisher-name>R Foundation for Statistical Computing</publisher-name>
+        <publisher-loc>Vienna, Austria</publisher-loc>
+        <year iso-8601-date="2016">2016</year>
+        <uri>http://www.R-project.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-LeleDennisLutscher2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lele</surname><given-names>SR</given-names></name>
+          <name><surname>Dennis</surname><given-names>D</given-names></name>
+          <name><surname>Lutscher</surname><given-names>F</given-names></name>
+        </person-group>
+        <article-title>Data cloning: Easy maximum likelihood estimation for complex ecological models using Bayesian Markov chain Monte Carlo methods</article-title>
+        <source>Ecology Letters</source>
+        <year iso-8601-date="2007">2007</year>
+        <volume>10</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-LeleNadeemSchmuland2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lele</surname><given-names>SR</given-names></name>
+          <name><surname>Nadeem</surname><given-names>K</given-names></name>
+          <name><surname>Schmuland</surname><given-names>B</given-names></name>
+        </person-group>
+        <article-title>Estimability and likelihood inference for Generalized Linear Mixed Models using Data Cloning</article-title>
+        <source>Journal of the American Statistical association</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>105</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-MarzolinCharmantierGimenez2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Marzolin</surname><given-names>G</given-names></name>
+          <name><surname>Charmantier</surname><given-names>A</given-names></name>
+          <name><surname>Gimenez</surname><given-names>O</given-names></name>
+        </person-group>
+        <article-title>Frailty in state-space models: Application to actuarial senescence in the Dipper</article-title>
+        <source>Ecology</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>92</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-Missov2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Missov</surname><given-names>TI</given-names></name>
+        </person-group>
+        <article-title>Gamma-Gompertz life expectancy at birth</article-title>
+        <source>Demographic Research</source>
+        <year iso-8601-date="2013">2013</year>
+        <volume>28</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-Solymos2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Solymos</surname><given-names>P</given-names></name>
+        </person-group>
+        <article-title>Dclone: Data cloning in r</article-title>
+        <source>The R Journal</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>2</volume>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

@@ -1,0 +1,659 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2526</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02526</article-id>
+<title-group>
+<article-title>hal9001: Scalable highly adaptive lasso regression in
+R</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-7127-2789</contrib-id>
+<string-name>Nima S. Hejazi</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-4"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9874-6649</contrib-id>
+<string-name>Jeremy R. Coyle</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-1432-5511</contrib-id>
+<string-name>Mark J. van der Laan</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-3"/>
+<xref ref-type="aff" rid="aff-4"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Graduate Group in Biostatistics, University of California,
+Berkeley</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Division of Biostatistics, School of Public Health,
+University of California, Berkeley</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Department of Statistics, University of California,
+Berkeley</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-4">
+<institution-wrap>
+<institution>Center for Computational Biology, University of California,
+Berkeley</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-09-25">
+<day>25</day>
+<month>9</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>53</issue>
+<fpage>2526</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>machine learning</kwd>
+<kwd>targeted learning</kwd>
+<kwd>causal inference</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The <monospace>hal9001</monospace> <monospace>R</monospace> package
+  provides a computationally efficient implementation of the
+  <italic>highly adaptive lasso</italic> (HAL), a flexible nonparametric
+  regression and machine learning algorithm endowed with several
+  theoretically convenient properties. <monospace>hal9001</monospace>
+  pairs an implementation of this estimator with an array of practical
+  variable selection tools and sensible defaults in order to improve the
+  scalability of the algorithm. By building on existing
+  <monospace>R</monospace> packages for lasso regression and leveraging
+  compiled code in key internal functions, the
+  <monospace>hal9001</monospace> <monospace>R</monospace> package
+  provides a family of highly adaptive lasso estimators suitable for use
+  in both modern large-scale data analysis and cutting-edge research
+  efforts at the intersection of statistics and machine learning,
+  including the emerging subfield of computational causal inference
+  (<xref alt="Wong, 2020" rid="ref-wong2020computational" ref-type="bibr">Wong,
+  2020</xref>).</p>
+</sec>
+<sec id="background">
+  <title>Background</title>
+  <p>The highly adaptive lasso (HAL) is a nonparametric regression
+  function capable of estimating complex (e.g., possibly
+  infinite-dimensional) functional parameters at a fast
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[n^{-1/3}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>n</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn><mml:mi>/</mml:mi><mml:mn>3</mml:mn></mml:mrow></mml:msup></mml:math></alternatives></inline-formula>
+  rate under only relatively mild conditions
+  (<xref alt="Bibaut &amp; van der Laan, 2019" rid="ref-bibaut2019fast" ref-type="bibr">Bibaut
+  &amp; van der Laan, 2019</xref>;
+  <xref alt="van der Laan, 2017" rid="ref-vdl2017generally" ref-type="bibr">van
+  der Laan, 2017</xref>;
+  <xref alt="van der Laan &amp; Bibaut, 2017" rid="ref-vdl2017uniform" ref-type="bibr">van
+  der Laan &amp; Bibaut, 2017</xref>). HAL requires that the space of
+  the functional parameter be a subset of the set of càdlàg (right-hand
+  continuous with left-hand limits) functions with sectional variation
+  norm bounded by a constant. In contrast to the wealth of data adaptive
+  regression techniques that make strong local smoothness assumptions on
+  the true form of the target functional, HAL regression’s assumption of
+  a finite sectional variation norm constitutes only a
+  <italic>global</italic> smoothness assumption, making it a powerful
+  and versatile approach. The <monospace>hal9001</monospace> package
+  primarily implements a zeroth-order HAL estimator, which constructs
+  and selects by lasso penalization a linear combination of indicator
+  basis functions, minimizing the loss-specific empirical risk under the
+  constraint that the <inline-formula><alternatives>
+  <tex-math><![CDATA[L_1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>L</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>-norm
+  of the resultant vector of coefficients be bounded by a finite
+  constant. Importantly, the estimator is formulated such that this
+  finite constant is the sectional variation norm of the target
+  functional.</p>
+  <p>Intuitively, construction of a HAL estimator proceeds in two steps.
+  First, a design matrix composed of basis functions is generated based
+  on the available set of covariates. The zeroth-order HAL makes use of
+  indicator basis functions, resulting in a large, sparse matrix with
+  binary entries; higher-order HAL estimators, which replace the use of
+  indicator basis functions with splines, have been formulated, with
+  implementation in a nascent stage. Representation of the target
+  functional <inline-formula><alternatives>
+  <tex-math><![CDATA[f]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>
+  in terms of indicator basis functions partitions the support of
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[f]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>
+  into knot points, with such basis functions placed over subsets of
+  sections of <inline-formula><alternatives>
+  <tex-math><![CDATA[f]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>.
+  Generally, numerous basis functions are created, with an appropriate
+  set of indicator bases then selected through lasso penalization. Thus,
+  the second step of fitting a HAL model is performing
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[L_1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>L</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>-penalized
+  regression on the large, sparse design matrix of indicator bases. The
+  selected HAL regression model approximates the sectional variation
+  norm of the target functional as the absolute sum of the estimated
+  coefficients of indicator basis functions. The
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[L_1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>L</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+  penalization parameter <inline-formula><alternatives>
+  <tex-math><![CDATA[\lambda]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>λ</mml:mi></mml:math></alternatives></inline-formula>
+  can be data adaptively chosen via a cross-validation selector
+  (<xref alt="van der Laan &amp; Dudoit, 2003" rid="ref-vdl2003unified" ref-type="bibr">van
+  der Laan &amp; Dudoit, 2003</xref>;
+  <xref alt="van der Vaart et al., 2006" rid="ref-vdv2006oracle" ref-type="bibr">van
+  der Vaart et al., 2006</xref>); however, alternative selection
+  criteria may be more appropriate when the estimand functional is not
+  the target parameter but instead a nuisance function of a possibly
+  complex parameter
+  (<xref alt="Ertefaie et al., 2020" rid="ref-ertefaie2020nonparametric" ref-type="bibr">Ertefaie
+  et al., 2020</xref>; e.g.,
+  <xref alt="van der Laan et al., 2019" rid="ref-vdl2019efficient" ref-type="bibr">van
+  der Laan et al., 2019</xref>). An extensive set of simulation
+  experiments were used to assess the prediction performance of HAL
+  regression
+  (<xref alt="Benkeser &amp; van der Laan, 2016" rid="ref-benkeser2016hal" ref-type="bibr">Benkeser
+  &amp; van der Laan, 2016</xref>); these studies relied upon the
+  subsequently deprecated
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/benkeser/halplus"><monospace>halplus</monospace>
+  <monospace>R</monospace> package</ext-link>.</p>
+</sec>
+<sec id="hal9001s-core-functionality">
+  <title><monospace>hal9001</monospace>’s core functionality</title>
+  <p>The <monospace>hal9001</monospace> package, for the
+  <monospace>R</monospace> language and environment for statistical
+  computing (<xref alt="R Core Team, 2020" rid="ref-R" ref-type="bibr">R
+  Core Team, 2020</xref>), aims to provide a scalable implementation of
+  the HAL nonparametric regression function. To provide a single,
+  unified interface, the principal user-facing function is
+  <monospace>fit_hal()</monospace>, which, at minimum, requires a matrix
+  of predictors <monospace>X</monospace> and an outcome
+  <monospace>Y</monospace>. By default, invocation of
+  <monospace>fit_hal()</monospace> will build a HAL model using
+  indicator basis functions for up to a limited number of interactions
+  of the variables in <monospace>X</monospace>, fitting the penalized
+  regression model via the lasso procedure available in the extremely
+  popular <monospace>glmnet</monospace> <monospace>R</monospace> package
+  (<xref alt="Friedman et al., 2009" rid="ref-friedman2009glmnet" ref-type="bibr">Friedman
+  et al., 2009</xref>). As creation of the design matrix of indicator
+  basis functions can be computationally expensive, several utility
+  functions (e.g., <monospace>make_design_matrix()</monospace>,
+  <monospace>make_basis_list()</monospace>,
+  <monospace>make_copy_map()</monospace>) have been written in C++ and
+  integrated into the package via the <monospace>Rcpp</monospace>
+  framework
+  (<xref alt="Eddelbuettel et al., 2011" rid="ref-eddelbuettel2011rcpp" ref-type="bibr">Eddelbuettel
+  et al., 2011</xref>;
+  <xref alt="Eddelbuettel, 2013" rid="ref-eddelbuettel2013seamless" ref-type="bibr">Eddelbuettel,
+  2013</xref>). <monospace>hal9001</monospace> additionally supports the
+  fitting of standard (Gaussian), logistic, and Cox proportional hazards
+  models (via the <monospace>family</monospace> argument), including
+  variations that accommodate offsets (via the
+  <monospace>offset</monospace> argument) and partially penalized models
+  (via the <monospace>X_unpenalized</monospace> argument).</p>
+  <p>Over several years of development and usage, it was found that the
+  performance of HAL regression can suffer in high-dimensional settings.
+  To alleviate these computational limitations, several screening and
+  filtering approaches were investigated and implemented. These include
+  screening of variables prior to creating the design matrix and
+  filtering of indicator basis functions (via the
+  <monospace>reduce_basis</monospace> argument) as well as early
+  stopping when fitting the sequence of HAL models in the
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[L_1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>L</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>-norm
+  penalization parameter <inline-formula><alternatives>
+  <tex-math><![CDATA[\lambda]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>λ</mml:mi></mml:math></alternatives></inline-formula>.
+  Future software development efforts will continue to improve upon the
+  computational aspects and performance of the HAL regression options
+  supported by <monospace>hal9001</monospace>. Currently, stable
+  releases of the <monospace>hal9001</monospace> package are made
+  available on the Comprehensive <monospace>R</monospace> Archive
+  Network at https://CRAN.R-project.org/package=hal9001, while both
+  stable (branch <monospace>master</monospace>) and development (branch
+  <monospace>devel</monospace>) versions of the package are hosted at
+  https://github.com/tlverse/hal9001. Releases of the package use both
+  GitHub and Zenodo (https://doit.org/10.5281/zenodo.3558313).</p>
+</sec>
+<sec id="applications">
+  <title>Applications</title>
+  <p>As <monospace>hal9001</monospace> is the canonical implementation
+  of the highly adaptive lasso, the package has been relied upon in a
+  variety of statistical applications. Speaking generally, HAL
+  regression is often used in order to develop efficient estimation
+  strategies in challenging estimation and inference problems; thus, we
+  interpret <italic>statistical applications</italic> of HAL regression
+  chiefly as examples of novel theoretical developments that have been
+  thoroughly investigated in simulation experiments and with
+  illustrative data analysis examples. In the sequel, we briefly point
+  out a few recently successful examples:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Ju et al.
+      (<xref alt="2020" rid="ref-ju2020robust" ref-type="bibr">2020</xref>)
+      formulate a procedure based on HAL regression that allows the
+      construction of asymptotically normal and efficient estimators of
+      causal effects that are robust to the presence of instrumental
+      variables, which can often lead to severe issues for estimation
+      and inference
+      (<xref alt="Hernán &amp; Robins, 2020" rid="ref-hernan2020causal" ref-type="bibr">Hernán
+      &amp; Robins, 2020</xref>). While a variety of procedures have
+      been proposed to overcome the issues posed by instrumental
+      variables, a particularly successful idea was given by Shortreed
+      &amp; Ertefaie
+      (<xref alt="2017" rid="ref-shortreed2017outcome" ref-type="bibr">2017</xref>),
+      who proposed standard lasso regression to select covariates for
+      the exposure model based on an estimated outcome model. The work
+      of Ju et al.
+      (<xref alt="2020" rid="ref-ju2020robust" ref-type="bibr">2020</xref>)
+      replaces the standard lasso with HAL regression, effectively
+      screening for <italic>infinitesimal instrumental basis
+      functions</italic> rather than instrumental variables, providing
+      much enhanced flexibility. Here, the authors demonstrate how HAL
+      regression provides exceptionally fine-grained control over
+      screening problematic covariates while simultaneously facilitating
+      the construction of causal effect estimators with desirable
+      asymptotic properties.</p>
+    </list-item>
+    <list-item>
+      <p>Dı́az &amp; Hejazi
+      (<xref alt="2020" rid="ref-diaz2020causal" ref-type="bibr">2020</xref>)
+      introduce novel mediation effects based on joint stochastic
+      interventions on exposure and mediator variables. To complement
+      the new causal effects outlined in their work, these authors
+      introduce efficient estimators that rely upon a fast rate of
+      convergence of nuisance parameter estimators to their true
+      counterparts. As the authors note, HAL is currently the only
+      machine learning algorithm for which such a fast rate of
+      convergence can rigorously be proven under minimal global
+      smoothness assumptions. By relying upon HAL regression for the
+      construction of their proposed estimators, Dı́az &amp; Hejazi
+      (<xref alt="2020" rid="ref-diaz2020causal" ref-type="bibr">2020</xref>)
+      advance not only the state-of-the-art in causal mediation analysis
+      but also provide evidence, in both simulation experiments and an
+      illustrative data analysis, of how HAL regression can be brought
+      to bear on challenging causal inference problems to develop
+      flexible and robust estimation strategies.</p>
+    </list-item>
+    <list-item>
+      <p>Hejazi et al.
+      (<xref alt="2020" rid="ref-hejazi2020efficient" ref-type="bibr">2020</xref>)
+      develop novel theoretical insights for building efficient
+      estimators of causal effects under two-phase sampling designs,
+      relying upon the flexibility and fast convergence of HAL
+      regression at the core of their theoretical contributions.
+      Corrections for two-phase sampling, a family of procedures for
+      developing efficient estimators of full-sample effects in spite of
+      censoring introduced by the second-phase subsample, have received
+      much attention, though developments applicable to large,
+      unrestricted statistical models have been limited. These authors
+      provide a formulation and theory for utilizing causal effect
+      estimators, based on data subject to two-phase sampling, that
+      attain asymptotic efficiency by way of the fast convergence rate
+      of HAL regression. In effect, this works demonstrates that HAL
+      regression has properties suitable for both flexible estimation
+      and efficient inference in settings with complex data structures.
+      The authors make their methodology available in the
+      <monospace>txshift</monospace> R package
+      (<xref alt="Hejazi &amp; Benkeser, 2020a" rid="ref-hejazi2020txshift-rpkg" ref-type="bibr">Hejazi
+      &amp; Benkeser, 2020a</xref>,
+      <xref alt="2020b" rid="ref-hejazi2020txshift-joss" ref-type="bibr">2020b</xref>),
+      which relies upon <monospace>hal9001</monospace>. These authors
+      additionally provide examples in simulation experiments and a
+      re-analysis of a recent HIV-1 vaccine efficacy trial using their
+      proposed statistical approach.</p>
+    </list-item>
+    <list-item>
+      <p>Ertefaie et al.
+      (<xref alt="2020" rid="ref-ertefaie2020nonparametric" ref-type="bibr">2020</xref>)
+      provide a considered study of the construction of inverse
+      probability weighted (IPW) estimators that rely upon HAL
+      regression in the estimation of the exposure mechanism. While IPW
+      estimators classically require the use of parametric models of the
+      exposure mechanism, these authors propose and investigate novel
+      variants of these estimators that instead rely upon the fast
+      convergence rate of HAL regression for the required nuisance
+      parameter functional. In particular, Ertefaie et al.
+      (<xref alt="2020" rid="ref-ertefaie2020nonparametric" ref-type="bibr">2020</xref>)
+      show through theoretical advances, several simulation experiments,
+      and an illustrative data analysis of data from the well-documented
+      NHEFS study that IPW estimators based on HAL regression can be
+      made asymptotically linear and even efficient under an
+      undersmoothing-based debiasing procedure. In so doing, the authors
+      simultaneously advance the literatures on HAL regression and on
+      IPW estimation, establishing the interface between the two as an
+      area of viable future research. Notably, in demonstrating their
+      proposed IPW estimators with the NHEFS data, the authors show that
+      IPW estimators based on HAL regression can yield meaningful
+      substantive conclusions without the typically restrictive
+      parametric assumptions required for IPW estimation.</p>
+    </list-item>
+  </list>
+  <p>As further theoretical advances continue to be made with HAL
+  regression, and the resultant statistical methodology explored, we
+  expect both the number and variety of such examples to steadily
+  increase.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-benkeser2016hal">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Benkeser</surname><given-names>David</given-names></name>
+          <name><surname>van der Laan</surname><given-names>Mark J</given-names></name>
+        </person-group>
+        <article-title>The highly adaptive lasso estimator</article-title>
+        <source>2016 IEEE international conference on data science and advanced analytics (DSAA)</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://doi.org/10.1109/dsaa.2016.93</uri>
+        <pub-id pub-id-type="doi">10.1109/dsaa.2016.93</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-vdl2017generally">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>van der Laan</surname><given-names>Mark J</given-names></name>
+        </person-group>
+        <article-title>A generally efficient targeted minimum loss based estimator based on the Highly Adaptive Lasso</article-title>
+        <source>The International Journal of Biostatistics</source>
+        <publisher-name>De Gruyter</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://doi.org/10.1515/ijb-2015-0097</uri>
+        <pub-id pub-id-type="doi">10.1515/ijb-2015-0097</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bibaut2019fast">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bibaut</surname><given-names>Aurélien F</given-names></name>
+          <name><surname>van der Laan</surname><given-names>Mark J</given-names></name>
+        </person-group>
+        <article-title>Fast rates for empirical risk minimization over càdlàg functions with bounded sectional variation norm</article-title>
+        <source>arXiv preprint arXiv:1907.09244</source>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-vdl2019efficient">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>van der Laan</surname><given-names>Mark J</given-names></name>
+          <name><surname>Benkeser</surname><given-names>David</given-names></name>
+          <name><surname>Cai</surname><given-names>Weixin</given-names></name>
+        </person-group>
+        <article-title>Efficient estimation of pathwise differentiable target parameters with the undersmoothed highly adaptive lasso</article-title>
+        <source>arXiv preprint arXiv:1908.05607</source>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-vdl2017uniform">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>van der Laan</surname><given-names>Mark J</given-names></name>
+          <name><surname>Bibaut</surname><given-names>Aurélien F</given-names></name>
+        </person-group>
+        <article-title>Uniform consistency of the highly adaptive lasso estimator of infinite-dimensional parameters</article-title>
+        <source>arXiv preprint arXiv:1709.06256</source>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-R">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>R Core Team</string-name>
+        </person-group>
+        <source>: A language and environment for statistical computing</source>
+        <publisher-name>R Foundation for Statistical Computing</publisher-name>
+        <publisher-loc>Vienna, Austria</publisher-loc>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://www.R-project.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-friedman2009glmnet">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Friedman</surname><given-names>Jerome</given-names></name>
+          <name><surname>Hastie</surname><given-names>Trevor</given-names></name>
+          <name><surname>Tibshirani</surname><given-names>Rob</given-names></name>
+        </person-group>
+        <article-title>Glmnet: Lasso and elastic-net regularized generalized linear models</article-title>
+        <source>R package version</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume>1</volume>
+        <issue>4</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-vdl2003unified">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>van der Laan</surname><given-names>Mark J</given-names></name>
+          <name><surname>Dudoit</surname><given-names>Sandrine</given-names></name>
+        </person-group>
+        <article-title>Unified cross-validation methodology for selection among estimators and a general cross-validated adaptive epsilon-net estimator: finite sample oracle inequalities and examples</article-title>
+        <publisher-name>Division of Biostatistics, University of California, Berkeley</publisher-name>
+        <year iso-8601-date="2003">2003</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-vdv2006oracle">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>van der Vaart</surname><given-names>Aad W</given-names></name>
+          <name><surname>Dudoit</surname><given-names>Sandrine</given-names></name>
+          <name><surname>van der Laan</surname><given-names>Mark J</given-names></name>
+        </person-group>
+        <article-title>Oracle inequalities for multi-fold cross validation</article-title>
+        <source>Statistics &amp; Decisions</source>
+        <year iso-8601-date="2006">2006</year>
+        <volume>24</volume>
+        <issue>3</issue>
+        <uri>https://doi.org/10.1524/stnd.2006.24.3.351</uri>
+        <pub-id pub-id-type="doi">10.1524/stnd.2006.24.3.351</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ertefaie2020nonparametric">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ertefaie</surname><given-names>Ashkan</given-names></name>
+          <name><surname>Hejazi</surname><given-names>Nima S</given-names></name>
+          <name><surname>van der Laan</surname><given-names>Mark J</given-names></name>
+        </person-group>
+        <article-title>Nonparametric inverse probability weighted estimators based on the highly adaptive lasso</article-title>
+        <source></source>
+        <year iso-8601-date="2020">2020</year>
+        <volume></volume>
+        <issue></issue>
+        <uri>http://arxiv.org/abs/2005.11303</uri>
+        <pub-id pub-id-type="doi"></pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-eddelbuettel2011rcpp">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Eddelbuettel</surname><given-names>Dirk</given-names></name>
+          <name><surname>François</surname><given-names>Romain</given-names></name>
+          <name><surname>Allaire</surname><given-names>J</given-names></name>
+          <name><surname>Ushey</surname><given-names>Kevin</given-names></name>
+          <name><surname>Kou</surname><given-names>Qiang</given-names></name>
+          <name><surname>Russel</surname><given-names>N</given-names></name>
+          <name><surname>Chambers</surname><given-names>John</given-names></name>
+          <name><surname>Bates</surname><given-names>D</given-names></name>
+        </person-group>
+        <article-title>Rcpp: Seamless R and C++ integration</article-title>
+        <source>Journal of Statistical Software</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>40</volume>
+        <issue>8</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-eddelbuettel2013seamless">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Eddelbuettel</surname><given-names>Dirk</given-names></name>
+        </person-group>
+        <source>Seamless R and C++ integration with Rcpp</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-wong2020computational">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wong</surname><given-names>Jeffrey C</given-names></name>
+        </person-group>
+        <article-title>Computational causal inference</article-title>
+        <source>arXiv preprint arXiv:2007.10979</source>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-ju2020robust">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ju</surname><given-names>Cheng</given-names></name>
+          <name><surname>Benkeser</surname><given-names>David</given-names></name>
+          <name><surname>van der Laan</surname><given-names>Mark J</given-names></name>
+        </person-group>
+        <article-title>Robust inference on the average treatment effect using the outcome highly adaptive lasso</article-title>
+        <source>Biometrics</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>76</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1111/biom.13121</uri>
+        <pub-id pub-id-type="doi">10.1111/biom.13121</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-diaz2020causal">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dı́az</surname><given-names>Iván</given-names></name>
+          <name><surname>Hejazi</surname><given-names>Nima S</given-names></name>
+        </person-group>
+        <article-title>Causal mediation analysis for stochastic interventions</article-title>
+        <source>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>82</volume>
+        <issue>3</issue>
+        <uri>https://doi.org/10.1111/rssb.12362</uri>
+        <pub-id pub-id-type="doi">10.1111/rssb.12362</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hejazi2020efficient">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hejazi</surname><given-names>Nima S</given-names></name>
+          <name><surname>van der Laan</surname><given-names>Mark J</given-names></name>
+          <name><surname>Janes</surname><given-names>Holly E</given-names></name>
+          <name><surname>Gilbert</surname><given-names>Peter B</given-names></name>
+          <name><surname>Benkeser</surname><given-names>David C</given-names></name>
+        </person-group>
+        <article-title>Efficient nonparametric inference on the effects of stochastic interventions under two-phase sampling, with applications to vaccine efficacy trials</article-title>
+        <source>Biometrics</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume></volume>
+        <issue></issue>
+        <uri>https://doi.org/10.1111/biom.13375</uri>
+        <pub-id pub-id-type="doi">10.1111/biom.13375</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-shortreed2017outcome">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Shortreed</surname><given-names>Susan M</given-names></name>
+          <name><surname>Ertefaie</surname><given-names>Ashkan</given-names></name>
+        </person-group>
+        <article-title>Outcome-adaptive lasso: Variable selection for causal inference</article-title>
+        <source>Biometrics</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>73</volume>
+        <issue>4</issue>
+        <uri>https://doi.org/10.1111/biom.12679</uri>
+        <pub-id pub-id-type="doi">10.1111/biom.12679</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hernan2020causal">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hernán</surname><given-names>Miguel A</given-names></name>
+          <name><surname>Robins</surname><given-names>James M</given-names></name>
+        </person-group>
+        <article-title>Causal inference: What if</article-title>
+        <source>Boca Raton: Chapman &amp; Hill/CRC</source>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-hejazi2020txshift-joss">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hejazi</surname><given-names>Nima S</given-names></name>
+          <name><surname>Benkeser</surname><given-names>David C</given-names></name>
+        </person-group>
+        <article-title>txshift: Efficient estimation of the causal effects of stochastic interventions in R</article-title>
+        <source>under review at Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-hejazi2020txshift-rpkg">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Hejazi</surname><given-names>Nima S</given-names></name>
+          <name><surname>Benkeser</surname><given-names>David C</given-names></name>
+        </person-group>
+        <source>txshift: Efficient estimation of the causal effects of stochastic interventions</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://github.com/nhejazi/txshift</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

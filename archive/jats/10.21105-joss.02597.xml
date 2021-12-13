@@ -1,0 +1,856 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2597</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02597</article-id>
+<title-group>
+<article-title>qgs: A flexible Python framework of reduced-order
+multiscale climate models</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-5098-404X</contrib-id>
+<string-name>Jonathan Demaeyer</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-4458-8953</contrib-id>
+<string-name>Lesley De Cruz</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1734-1042</contrib-id>
+<string-name>Stéphane Vannitsem</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Royal Meteorological Institute of Belgium, Avenue
+Circulaire, 3, 1180 Brussels, Belgium</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-08-07">
+<day>7</day>
+<month>8</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>56</issue>
+<fpage>2597</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Numba</kwd>
+<kwd>Idealized atmospheric model</kwd>
+<kwd>Coupled model</kwd>
+<kwd>Mid-latitude climate variability</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>qgs</monospace> is a a Python implementation of a set of
+  idealized reduced-order models representing atmospheric mid-latitude
+  variability. It consists of a two-layer
+  <italic>q</italic>uasi-<italic>g</italic>eostrophic
+  <italic>s</italic>pectral (<monospace>qgs</monospace>) model of the
+  atmosphere on a beta-plane, coupled either to a simple land surface or
+  to a shallow-water ocean. The model’s dynamical fields include the
+  atmospheric and oceanic streamfunction and temperature fields, and the
+  land temperature field.</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>In the case where it is coupled to an ocean, it reproduces the
+      Modular Arbitrary-Order Ocean-Atmosphere Model (MAOOAM), described
+      in De Cruz et al.
+      (<xref alt="2016" rid="ref-DDV2016" ref-type="bibr">2016</xref>).
+      In Vannitsem et al.
+      (<xref alt="2015" rid="ref-VDDG2015" ref-type="bibr">2015</xref>),
+      a 36-variable configuration of this model was shown to reproduce a
+      low-frequency variability (LFV) typical of the coupled
+      ocean-atmosphere system. This coupling consists in both mechanical
+      and heat exchange interactions between the two components. The
+      model has already been used in different contexts, in particular
+      for data assimilation
+      (<xref alt="Penny et al., 2019" rid="ref-PBBCDSY2019" ref-type="bibr">Penny
+      et al., 2019</xref>;
+      <xref alt="Tondeur et al., 2020" rid="ref-TCVB2020" ref-type="bibr">Tondeur
+      et al., 2020</xref>), and predictability studies
+      (<xref alt="Vannitsem et al., 2019" rid="ref-VSD2019" ref-type="bibr">Vannitsem
+      et al., 2019</xref>;
+      <xref alt="Vannitsem &amp; Duan, 2020" rid="ref-VD2020" ref-type="bibr">Vannitsem
+      &amp; Duan, 2020</xref>)</p>
+    </list-item>
+    <list-item>
+      <p>In the case of a land surface coupling, it emulates the model
+      proposed in Reinhold &amp; Pierrehumbert
+      (<xref alt="1982" rid="ref-RP1982" ref-type="bibr">1982</xref>)
+      and Cehelsky &amp; Tung
+      (<xref alt="1987" rid="ref-CT1987" ref-type="bibr">1987</xref>)
+      with a simple thermal relaxation toward a climatological
+      temperature and a mechanical coupling due to the friction between
+      the land and the atmosphere. It can also emulate the model
+      proposed in Li et al.
+      (<xref alt="2018" rid="ref-LHHBD2018" ref-type="bibr">2018</xref>),
+      with mechanical coupling and heat exchange. In addition, the
+      number of dynamical spectral modes can be configured by the user,
+      as is the case for the MAOOAM model.</p>
+    </list-item>
+  </list>
+  <p>In the <monospace>qgs</monospace> framework, the partial
+  differential equations (PDEs) that govern the time evolution of its
+  fields are projected on a basis of functions defined on its spatial
+  domain. This kind of decomposition transforms the PDEs into a set of
+  ordinary differential equations (ODEs) which can then be solved with
+  the usual integration techniques. Presently in
+  <monospace>qgs</monospace>, the functions of the basis are chosen
+  amongst the orthogonal Fourier modes compatible with the boundary
+  conditions of each subcomponent of the system, namely the atmosphere,
+  and the ocean or the land surface coupled to it. A future development
+  is planned that will enable the user to specify the basis of functions
+  for each component, depending on the required boundary conditions.</p>
+  <p>The model implementation consists of submodules to set up the
+  model’s parameters and to compute the tensor that defines the
+  coefficients of the system of
+  ODEs<xref ref-type="fn" rid="fn1">1</xref>. This tensor is used by the
+  code to compute the tendencies function and its Jacobian matrix. These
+  functions can then be fed to the <monospace>qgs</monospace> built-in
+  Runge-Kutta integrator or to another integrator implemented by the
+  user. As an example, the usage of the Julia
+  <monospace>DifferentialEquations.jl</monospace>
+  (<xref alt="Rackauckas &amp; Nie, 2017" rid="ref-RN2017" ref-type="bibr">Rackauckas
+  &amp; Nie, 2017</xref>) integration package through the Python
+  <monospace>diffeqpy</monospace>
+  (<xref alt="Rackauckas &amp; Arakaki, 2020" rid="ref-diffeqpy" ref-type="bibr">Rackauckas
+  &amp; Arakaki, 2020</xref>) package is provided. The tangent linear
+  and adjoint models
+  (<xref alt="Kalnay, 2003" rid="ref-K2003" ref-type="bibr">Kalnay,
+  2003</xref>) are also available and allow one to easily conduct data
+  assimilation and linear sensitivity analysis experiments.</p>
+  <p>The model implementation uses NumPy
+  (<xref alt="Harris et al., 2020" rid="ref-vCV2011" ref-type="bibr">Harris
+  et al., 2020</xref>;
+  <xref alt="Oliphant, 2006" rid="ref-O2006" ref-type="bibr">Oliphant,
+  2006</xref>) and SciPy
+  (<xref alt="Virtanen et al., 2020" rid="ref-scipy" ref-type="bibr">Virtanen
+  et al., 2020</xref>) for arrays and computations support, as well as
+  Numba
+  (<xref alt="Lam et al., 2015" rid="ref-numba" ref-type="bibr">Lam et
+  al., 2015</xref>) and sparse
+  (<xref alt="Sparse developers, 2020" rid="ref-sparse" ref-type="bibr">Sparse
+  developers, 2020</xref>) to considerably accelerate the tensor
+  products computation used to compute the tendencies.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>In atmospheric and climate sciences, research and development is
+  often first conducted with a simple idealized system like the
+  Lorenz-<inline-formula><alternatives>
+  <tex-math><![CDATA[N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
+  models (<inline-formula><alternatives>
+  <tex-math><![CDATA[N \in \{63, 84, 96\}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>N</mml:mi><mml:mo>∈</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mn>63</mml:mn><mml:mo>,</mml:mo><mml:mn>84</mml:mn><mml:mo>,</mml:mo><mml:mn>96</mml:mn><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>)
+  (<xref alt="Edward N. Lorenz, 1996" rid="ref-L96" ref-type="bibr">Edward
+  N. Lorenz, 1996</xref>,
+  <xref alt="1984" rid="ref-L84" ref-type="bibr">1984</xref>;
+  <xref alt="Edward N. Lorenz, 1963" rid="ref-L63" ref-type="bibr">Edward
+  N. Lorenz, 1963</xref>) which are toy models of atmospheric
+  variability. The first two models are heavily truncated systems
+  (3-variable) describing the very large synoptic-scale dynamics of the
+  single-component atmosphere, that neglect the interaction with other
+  components of the climate system and with smaller scales. The third
+  one is based on reasonable heuristic assumptions on the spatial
+  dynamics along a latitude, which may however lead to unrealistic
+  statistical features.</p>
+  <p>Reduced-order spectral quasi-geostrophic models of the atmosphere
+  with a large number of modes offer better representations of the dry
+  atmospheric dynamics
+  (<xref alt="O’Brien &amp; Branscome, 1989" rid="ref-OB1989" ref-type="bibr">O’Brien
+  &amp; Branscome, 1989</xref>). The dynamics thus obtained allow one to
+  identify typical features of the atmospheric circulation, such as
+  blocked and zonal circulation regimes, and low-frequency variability.
+  However, these models are less often considered in literature, despite
+  their demonstration of more realistic behavior.</p>
+  <p><monospace>qgs</monospace> aims to popularize these systems by
+  providing a fast and easy-to-use Python framework for researchers and
+  teachers to integrate this kind of model. For an efficient handling of
+  the model by users, its documentation is conceived such that its
+  equations and parameters are explained and linked to the code. In the
+  future, its development will be done in a modular fashion which
+  enables the connection of the atmosphere to various other subsystems
+  and the use of built-in and external toolboxes.</p>
+  <p>The choice to use Python was specifically made to facilitate its
+  use in Jupyter Notebooks
+  (<xref alt="Kluyver et al., 2016" rid="ref-jupyter" ref-type="bibr">Kluyver
+  et al., 2016</xref>) and with the multiple recent machine learning
+  libraries that are available in this language.</p>
+</sec>
+<sec id="state-of-the-field">
+  <title>State of the field</title>
+  <p>Other software might interest the reader in need of an easy-to-use
+  idealized atmospheric model.</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>MAOOAM: The Modular Arbitrary-Order Ocean-Atmosphere Model, a
+      coupled ocean-atmosphere model included in
+      <monospace>qgs</monospace>
+      (<xref alt="De Cruz &amp; Demaeyer, 2020" rid="ref-MAOOAM" ref-type="bibr">De
+      Cruz &amp; Demaeyer, 2020</xref>). Code available in Lua, Fortran
+      and Python.</p>
+    </list-item>
+    <list-item>
+      <p>q-gcm: A mid-latitude grid-based quasi-geostrophic
+      ocean-atmosphere model with two oceanic layers. Code in Fortran,
+      interface in Python
+      (<xref alt="Hogg et al., 2014" rid="ref-qgcm" ref-type="bibr">Hogg
+      et al., 2014</xref>).</p>
+    </list-item>
+    <list-item>
+      <p>pyqg: A pseudo-spectral Python solver for quasi-geostrophic
+      systems
+      (<xref alt="Jansen et al., 2019" rid="ref-pyqg" ref-type="bibr">Jansen
+      et al., 2019</xref>). Allow one to create and solve
+      multiple-layers quasi-geostrophic systems.</p>
+    </list-item>
+    <list-item>
+      <p>Isca: A research General Circulation Model (GCM) to simulate
+      global dynamics. Written in Fortran and largely configurable with
+      Python scripts, with internal coding changes required for
+      non-standard cases
+      (<xref alt="Isca development team, University of Exeter, 2020" rid="ref-Isca" ref-type="bibr">Isca
+      development team, University of Exeter, 2020</xref>;
+      <xref alt="Vallis et al., 2018" rid="ref-Vetal2018" ref-type="bibr">Vallis
+      et al., 2018</xref>).</p>
+    </list-item>
+  </list>
+  <p><monospace>qgs</monospace> distinguishes itself from these other
+  models by the combination of a simplified and configurable geometry, a
+  spectral discretization, an efficient numerical implementation of the
+  ODE system by a sparse tensor multiplication, and the availability of
+  the tangent linear and adjoint models. As such it is very suitable to
+  quickly simulate very long time periods while capturing key aspects of
+  the climate dynamics at mid-latitudes.</p>
+  <p>The mechanically coupled atmosphere-land configuration of
+  <monospace>qgs</monospace> was used to test new ideas using response
+  theory to adapt statistical postprocessing schemes to model changes
+  (<xref alt="Demaeyer &amp; Vannitsem, 2020" rid="ref-DV2020" ref-type="bibr">Demaeyer
+  &amp; Vannitsem, 2020</xref>). The MAOOAM model configuration of
+  <monospace>qgs</monospace> was recently considered to perform
+  strongly-coupled data assimilation experiments in the ocean-atmosphere
+  system
+  (<xref alt="Carrassi et al., 2020" rid="ref-CBDGRV2020" ref-type="bibr">Carrassi
+  et al., 2020</xref>).</p>
+</sec>
+<sec id="performance">
+  <title>Performance</title>
+  <p>The performance of the <monospace>qgs</monospace> MAOOAM
+  implementation has been benchmarked against the Lua and Fortran
+  implementations of this model
+  (<xref alt="De Cruz &amp; Demaeyer, 2020" rid="ref-MAOOAM" ref-type="bibr">De
+  Cruz &amp; Demaeyer, 2020</xref>). This comparison was done on a
+  recent Intel CPU with 12 cores, with two different model resolutions:
+  one used in Vannitsem et al.
+  (<xref alt="2015" rid="ref-VDDG2015" ref-type="bibr">2015</xref>) and
+  one truncated at the wavenumber 6 for both the oceanic and atmospheric
+  components. The former leads to a 36-dimensional system of ODEs while
+  the latter is higher-dimensional, using 228 variables.</p>
+  <p>In both cases, all the different code implementations have been
+  initialized with the same initial data and parameters, except for the
+  length of the trajectory being computed. The low-dimensional system
+  was integrated for 10<inline-formula><alternatives>
+  <tex-math><![CDATA[^7]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi></mml:mi><mml:mn>7</mml:mn></mml:msup></mml:math></alternatives></inline-formula>
+  timeunits (roughly <inline-formula><alternatives>
+  <tex-math><![CDATA[\sim]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>∼</mml:mo></mml:math></alternatives></inline-formula>
+  1850 years) while the higher-dimensional one was integrated over
+  10<inline-formula><alternatives>
+  <tex-math><![CDATA[^6]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi></mml:mi><mml:mn>6</mml:mn></mml:msup></mml:math></alternatives></inline-formula>
+  timeunits (<inline-formula><alternatives>
+  <tex-math><![CDATA[\sim]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>∼</mml:mo></mml:math></alternatives></inline-formula>
+  185 years). In the case of the Fortran implementation, two different
+  compilers (GNU Gfortran and Intel Ifort) with two different levels of
+  optimization (O2 and O3) have been tested, but no significant
+  differences between these compilers and options were found. In
+  addition, two different built-in integration modules of
+  <monospace>qgs</monospace> have been considered: a non-parallel
+  integrator located in the module
+  <monospace>integrators.integrate</monospace> and a parallel one
+  located in the module <monospace>integrators.integrator</monospace>.
+  The latter can integrate multiple trajectories simultaneously, but for
+  the purpose of the benchmark, only one trajectory was computed with
+  it, the other implementations being non-parallel.</p>
+  <p>The results of this benchmark are depicted on
+  <xref alt="Figure 1" rid="figU003Abenchmark">Figure 1</xref> and show
+  that <monospace>qgs</monospace>, while not the fastest implementation
+  of MAOOAM available, is a fair competitor. The time difference is in
+  general not greater than a factor 5 and tends to be less for
+  high-dimensional model configurations, with an integration time
+  roughly the same as the Lua implementation. We note that there is also
+  a significant difference between the parallel and non-parallel
+  implementation of <monospace>qgs</monospace>, but this difference also
+  seems to vanish for higher-resolution model configurations. In any
+  case, the parallel integrator of <monospace>qgs</monospace> can
+  straightforwardly integrate multiple trajectories simultaneously and
+  therefore has an advantage over the non-parallel one (provided that
+  multiple CPU cores are available). A final remark is that the initial
+  Python version of MAOOAM (found in
+  <xref alt="De Cruz &amp; Demaeyer, 2020" rid="ref-MAOOAM" ref-type="bibr">De
+  Cruz &amp; Demaeyer, 2020</xref>) takes 283 minutes to integrate the
+  low-resolution model configuration (not shown).</p>
+  <fig>
+    <caption><p>Computational times in seconds of different MAOOAM
+    implementations: (a) time to compute a
+    10<inline-formula><alternatives>
+    <tex-math><![CDATA[^7]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi></mml:mi><mml:mn>7</mml:mn></mml:msup></mml:math></alternatives></inline-formula>
+    timeunits trajectory with a low-order model configuration (36
+    variables). (b) time to compute a 10<inline-formula><alternatives>
+    <tex-math><![CDATA[^6]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi></mml:mi><mml:mn>6</mml:mn></mml:msup></mml:math></alternatives></inline-formula>
+    timeunits trajectory with a higher-order model configuration (228
+    variables).
+    <styled-content id="figU003Abenchmark"></styled-content></p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="timing_results.pdf" xlink:title="" />
+  </fig>
+  <p>In conclusion, <monospace>qgs</monospace> is a sufficiently fast
+  Python implementation as compared to the other implementations of the
+  MAOOAM model. In addition, it has the benefit of being more flexible,
+  extensible, and easier to use in the general Python scientific
+  ecosystem.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This research has been partly supported by EUMETNET (Postprocessing
+  module of the NWP Cooperation Programme).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-VDDG2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Vannitsem</surname><given-names>Stéphane</given-names></name>
+          <name><surname>Demaeyer</surname><given-names>Jonathan</given-names></name>
+          <name><surname>De Cruz</surname><given-names>Lesley</given-names></name>
+          <name><surname>Ghil</surname><given-names>Michael</given-names></name>
+        </person-group>
+        <article-title>Low-frequency variability and heat transport in a low-order nonlinear coupled ocean–atmosphere model</article-title>
+        <source>Physica D: Nonlinear Phenomena</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>309</volume>
+        <pub-id pub-id-type="doi">10.1016/j.physd.2015.07.006</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-DDV2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>De Cruz</surname><given-names>L.</given-names></name>
+          <name><surname>Demaeyer</surname><given-names>J.</given-names></name>
+          <name><surname>Vannitsem</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>The modular arbitrary-order ocean-atmosphere model: maooam v1.0</article-title>
+        <source>Geoscientific Model Development</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>9</volume>
+        <issue>8</issue>
+        <pub-id pub-id-type="doi">10.5194/gmd-9-2793-2016</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-CT1987">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cehelsky</surname><given-names>P.</given-names></name>
+          <name><surname>Tung</surname><given-names>K. K.</given-names></name>
+        </person-group>
+        <article-title>Theories of multiple equilibria and weather regimes - A critical reexamination. Part II: Baroclinic two-layer models</article-title>
+        <source>Journal of the Atmospheric Sciences</source>
+        <year iso-8601-date="1987">1987</year>
+        <volume>44</volume>
+        <issue>21</issue>
+        <pub-id pub-id-type="doi">10.1175/1520-0469(1987)044%3C3282:TOMEAW%3E2.0.CO;2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-RP1982">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Reinhold</surname><given-names>B.</given-names></name>
+          <name><surname>Pierrehumbert</surname><given-names>R.</given-names></name>
+        </person-group>
+        <article-title>Dynamics of weather regimes: Quasi-stationary waves and blocking</article-title>
+        <source>Monthly Weather Review</source>
+        <year iso-8601-date="1982">1982</year>
+        <volume>110</volume>
+        <pub-id pub-id-type="doi">10.1175/1520-0493(1982)110%3C1105:DOWRQS%3E2.0.CO;2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LHHBD2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Li</surname><given-names>D.</given-names></name>
+          <name><surname>He</surname><given-names>Y.</given-names></name>
+          <name><surname>Huang</surname><given-names>J.</given-names></name>
+          <name><surname>Bi</surname><given-names>L.</given-names></name>
+          <name><surname>Ding</surname><given-names>L.</given-names></name>
+        </person-group>
+        <article-title>Multiple equilibria in a land–atmosphere coupled system</article-title>
+        <source>Journal of Meteorological Research</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>32</volume>
+        <issue>6</issue>
+        <pub-id pub-id-type="doi">10.1007/s13351-018-8012-y</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MAOOAM">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>De Cruz</surname><given-names>L.</given-names></name>
+          <name><surname>Demaeyer</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>MAOOAM: Modular arbitrary-order ocean-atmosphere model</article-title>
+        <source>​GitHub repository</source>
+        <publisher-name>​GitHub</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://github.com/Climdyn/MAOOAM</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Isca">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>Isca development team, University of Exeter</string-name>
+        </person-group>
+        <article-title>Isca</article-title>
+        <source>​GitHub repository</source>
+        <publisher-name>​GitHub</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://github.com/ExeClim/Isca</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-pyqg">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Jansen</surname><given-names>M.</given-names></name>
+          <name><surname>Abernathey</surname><given-names>R.</given-names></name>
+          <name><surname>Rocha</surname><given-names>C.</given-names></name>
+          <name><surname>Poulin</surname><given-names>F.</given-names></name>
+        </person-group>
+        <article-title>Pyqg</article-title>
+        <source>​GitHub repository</source>
+        <publisher-name>​GitHub</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://github.com/pyqg/pyqg</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-qgcm">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Hogg</surname><given-names>A.</given-names></name>
+          <name><surname>Dewar</surname><given-names>B.</given-names></name>
+          <name><surname>Blundell</surname><given-names>J.</given-names></name>
+          <name><surname>Chapman</surname><given-names>C.</given-names></name>
+        </person-group>
+        <article-title>Q-gcm</article-title>
+        <year iso-8601-date="2014">2014</year>
+        <uri>http://q-gcm.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-numba">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Lam</surname><given-names>Siu Kwan</given-names></name>
+          <name><surname>Pitrou</surname><given-names>Antoine</given-names></name>
+          <name><surname>Seibert</surname><given-names>Stanley</given-names></name>
+        </person-group>
+        <article-title>Numba: A LLVM-based python JIT compiler</article-title>
+        <source>Proceedings of the second workshop on the LLVM compiler infrastructure in HPC</source>
+        <year iso-8601-date="2015">2015</year>
+        <pub-id pub-id-type="doi">10.1145/2833157.2833162</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-DV2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Demaeyer</surname><given-names>J.</given-names></name>
+          <name><surname>Vannitsem</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>Correcting for model changes in statistical postprocessing – an approach based on response theory</article-title>
+        <source>Nonlinear Processes in Geophysics</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>27</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.5194/npg-27-307-2020</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-L63">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lorenz</surname><given-names>Edward N.</given-names></name>
+        </person-group>
+        <article-title>Deterministic Nonperiodic Flow</article-title>
+        <source>Journal of the Atmospheric Sciences</source>
+        <year iso-8601-date="1963-03">1963</year><month>03</month>
+        <volume>20</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1175/1520-0469(1963)020&lt;0130:DNF&gt;2.0.CO;2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-L96">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Lorenz</surname><given-names>Edward N</given-names></name>
+        </person-group>
+        <article-title>Predictability: A problem partly solved</article-title>
+        <source>Proc. Seminar on predictability</source>
+        <year iso-8601-date="1996">1996</year>
+        <volume>1</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-L84">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lorenz</surname><given-names>Edward N</given-names></name>
+        </person-group>
+        <article-title>Irregularity: A fundamental property of the atmosphere</article-title>
+        <source>Tellus A</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="1984">1984</year>
+        <volume>36</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1111/j.1600-0870.1984.tb00230.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sparse">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>Sparse developers</string-name>
+        </person-group>
+        <article-title>Sparse</article-title>
+        <source>​GitHub repository</source>
+        <publisher-name>​GitHub</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://github.com/pydata/sparse</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-vCV2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Harris</surname><given-names>Charles R.</given-names></name>
+          <name><surname>Millman</surname><given-names>K. Jarrod</given-names></name>
+          <name><surname>Walt</surname><given-names>St’efan J. van der</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Wieser</surname><given-names>Eric</given-names></name>
+          <name><surname>Taylor</surname><given-names>Julian</given-names></name>
+          <name><surname>Berg</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Smith</surname><given-names>Nathaniel J.</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Picus</surname><given-names>Matti</given-names></name>
+          <name><surname>Hoyer</surname><given-names>Stephan</given-names></name>
+          <name><surname>Kerkwijk</surname><given-names>Marten H. van</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Haldane</surname><given-names>Allan</given-names></name>
+          <name><surname>R’ıo</surname><given-names>Jaime Fern’andez del</given-names></name>
+          <name><surname>Wiebe</surname><given-names>Mark</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>G’erard-Marchant</surname><given-names>Pierre</given-names></name>
+          <name><surname>Sheppard</surname><given-names>Kevin</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Abbasi</surname><given-names>Hameer</given-names></name>
+          <name><surname>Gohlke</surname><given-names>Christoph</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+        </person-group>
+        <article-title>Array programming with NumPy</article-title>
+        <source>Nature</source>
+        <publisher-name>Springer Science; Business Media LLC</publisher-name>
+        <year iso-8601-date="2020-09">2020</year><month>09</month>
+        <volume>585</volume>
+        <issue>7825</issue>
+        <uri>https://doi.org/10.1038/s41586-020-2649-2</uri>
+        <pub-id pub-id-type="doi">10.1038/s41586-020-2649-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-O2006">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Oliphant</surname><given-names>Travis E</given-names></name>
+        </person-group>
+        <source>A guide to NumPy</source>
+        <publisher-name>Trelgol Publishing USA</publisher-name>
+        <year iso-8601-date="2006">2006</year>
+        <volume>1</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-scipy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+          <name><surname>Haberland</surname><given-names>Matt</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Burovski</surname><given-names>Evgeni</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Bright</surname><given-names>Jonathan</given-names></name>
+          <name><surname>van der Walt</surname><given-names>Stéfan J.</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Wilson</surname><given-names>Joshua</given-names></name>
+          <name><surname>Jarrod Millman</surname><given-names>K.</given-names></name>
+          <name><surname>Mayorov</surname><given-names>Nikolay</given-names></name>
+          <name><surname>Nelson</surname><given-names>Andrew R. J.</given-names></name>
+          <name><surname>Jones</surname><given-names>Eric</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Larson</surname><given-names>Eric</given-names></name>
+          <name><surname>Carey</surname><given-names>CJ</given-names></name>
+          <name><surname>Polat</surname><given-names>İlhan</given-names></name>
+          <name><surname>Feng</surname><given-names>Yu</given-names></name>
+          <name><surname>Moore</surname><given-names>Eric W.</given-names></name>
+          <name><surname>Vand erPlas</surname><given-names>Jake</given-names></name>
+          <name><surname>Laxalde</surname><given-names>Denis</given-names></name>
+          <name><surname>Perktold</surname><given-names>Josef</given-names></name>
+          <name><surname>Cimrman</surname><given-names>Robert</given-names></name>
+          <name><surname>Henriksen</surname><given-names>Ian</given-names></name>
+          <name><surname>Quintero</surname><given-names>E. A.</given-names></name>
+          <name><surname>Harris</surname><given-names>Charles R</given-names></name>
+          <name><surname>Archibald</surname><given-names>Anne M.</given-names></name>
+          <name><surname>Ribeiro</surname><given-names>Antônio H.</given-names></name>
+          <name><surname>Pedregosa</surname><given-names>Fabian</given-names></name>
+          <name><surname>van Mulbregt</surname><given-names>Paul</given-names></name>
+          <name><surname>Contributors</surname><given-names>SciPy 1. 0</given-names></name>
+        </person-group>
+        <article-title>SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python</article-title>
+        <source>Nature Methods</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>17</volume>
+        <pub-id pub-id-type="doi">10.1038/s41592-019-0686-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-jupyter">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Kluyver</surname><given-names>Thomas</given-names></name>
+          <name><surname>Ragan-Kelley</surname><given-names>Benjamin</given-names></name>
+          <name><surname>Pérez</surname><given-names>Fernando</given-names></name>
+          <name><surname>Granger</surname><given-names>Brian</given-names></name>
+          <name><surname>Bussonnier</surname><given-names>Matthias</given-names></name>
+          <name><surname>Frederic</surname><given-names>Jonathan</given-names></name>
+          <name><surname>Kelley</surname><given-names>Kyle</given-names></name>
+          <name><surname>Hamrick</surname><given-names>Jessica</given-names></name>
+          <name><surname>Grout</surname><given-names>Jason</given-names></name>
+          <name><surname>Corlay</surname><given-names>Sylvain</given-names></name>
+          <name><surname>Ivanov</surname><given-names>Paul</given-names></name>
+          <name><surname>Avila</surname><given-names>Damián</given-names></name>
+          <name><surname>Abdalla</surname><given-names>Safia</given-names></name>
+          <name><surname>Willing</surname><given-names>Carol</given-names></name>
+        </person-group>
+        <article-title>Jupyter notebooks - a publishing format for reproducible computational workflows</article-title>
+        <person-group person-group-type="editor">
+          <name><surname>Loizides</surname><given-names>F.</given-names></name>
+          <name><surname>Schmidt</surname><given-names>B.</given-names></name>
+        </person-group>
+        <publisher-name>IOS Press</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <pub-id pub-id-type="doi">10.3233/978-1-61499-649-1-87</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-RN2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rackauckas</surname><given-names>C.</given-names></name>
+          <name><surname>Nie</surname><given-names>Q.</given-names></name>
+        </person-group>
+        <article-title>Differentialequations.jl – a performant and feature-rich ecosystem for solving differential equations in julia</article-title>
+        <source>Journal of Open Research Software</source>
+        <publisher-name>Ubiquity Press</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>5</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.5334/jors.151</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-diffeqpy">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Rackauckas</surname><given-names>C.</given-names></name>
+          <name><surname>Arakaki</surname><given-names>T.</given-names></name>
+        </person-group>
+        <article-title>Diffeqpy</article-title>
+        <source>​GitHub repository</source>
+        <publisher-name>​GitHub</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://github.com/SciML/diffeqpy</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-PBBCDSY2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Penny</surname><given-names>SG</given-names></name>
+          <name><surname>Bach</surname><given-names>E</given-names></name>
+          <name><surname>Bhargava</surname><given-names>K</given-names></name>
+          <name><surname>Chang</surname><given-names>C-C</given-names></name>
+          <name><surname>Da</surname><given-names>C</given-names></name>
+          <name><surname>Sun</surname><given-names>L</given-names></name>
+          <name><surname>Yoshida</surname><given-names>T</given-names></name>
+        </person-group>
+        <article-title>Strongly coupled data assimilation in multiscale media: Experiments using a quasi-geostrophic coupled model</article-title>
+        <source>Journal of Advances in Modeling Earth Systems</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>11</volume>
+        <issue>6</issue>
+        <pub-id pub-id-type="doi">10.1029/2019MS001652</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-TCVB2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tondeur</surname><given-names>Maxime</given-names></name>
+          <name><surname>Carrassi</surname><given-names>Alberto</given-names></name>
+          <name><surname>Vannitsem</surname><given-names>Stephane</given-names></name>
+          <name><surname>Bocquet</surname><given-names>Marc</given-names></name>
+        </person-group>
+        <article-title>On temporal scale separation in coupled data assimilation with the ensemble kalman filter</article-title>
+        <source>Journal of Statistical Physics</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>179</volume>
+        <pub-id pub-id-type="doi">10.1007/s10955-020-02525-z</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-VSD2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Vannitsem</surname><given-names>Stéphane</given-names></name>
+          <name><surname>Solé-Pomies</surname><given-names>Roman</given-names></name>
+          <name><surname>De Cruz</surname><given-names>Lesley</given-names></name>
+        </person-group>
+        <article-title>Routes to long-term atmospheric predictability in reduced-order coupled ocean–atmosphere systems: Impact of the ocean basin boundary conditions</article-title>
+        <source>Quarterly Journal of the Royal Meteorological Society</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>145</volume>
+        <issue>723</issue>
+        <pub-id pub-id-type="doi">10.1002/qj.3594</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-VD2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Vannitsem</surname><given-names>Stéphane</given-names></name>
+          <name><surname>Duan</surname><given-names>Wansuo</given-names></name>
+        </person-group>
+        <article-title>On the use of near-neutral backward lyapunov vectors to get reliable ensemble forecasts in coupled ocean-atmosphere systems</article-title>
+        <source>Climate Dynamics</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <pub-id pub-id-type="doi">10.1007/s00382-020-05313-3</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Vetal2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Vallis</surname><given-names>G. K.</given-names></name>
+          <name><surname>Colyer</surname><given-names>G.</given-names></name>
+          <name><surname>Geen</surname><given-names>R.</given-names></name>
+          <name><surname>Gerber</surname><given-names>E.</given-names></name>
+          <name><surname>Jucker</surname><given-names>M.</given-names></name>
+          <name><surname>Maher</surname><given-names>P.</given-names></name>
+          <name><surname>Paterson</surname><given-names>A.</given-names></name>
+          <name><surname>Pietschnig</surname><given-names>M.</given-names></name>
+          <name><surname>Penn</surname><given-names>J.</given-names></name>
+          <name><surname>Thomson</surname><given-names>S. I.</given-names></name>
+        </person-group>
+        <article-title>Isca, v1.0: A framework for the global modelling of the atmospheres of earth and other planets at varying levels of complexity</article-title>
+        <source>Geoscientific Model Development</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>11</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.5194/gmd-11-843-2018</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-OB1989">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>O’Brien</surname><given-names>Enda</given-names></name>
+          <name><surname>Branscome</surname><given-names>Lee</given-names></name>
+        </person-group>
+        <article-title>Minimal modeling of the extratropical general circulation</article-title>
+        <source>Tellus A: Dynamic Meteorology and Oceanography</source>
+        <publisher-name>Taylor &amp; Francis</publisher-name>
+        <year iso-8601-date="1989">1989</year>
+        <volume>41</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.3402/tellusa.v41i4.11842</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-K2003">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Kalnay</surname><given-names>Eugenia</given-names></name>
+        </person-group>
+        <source>Atmospheric modeling, data assimilation and predictability</source>
+        <publisher-name>Cambridge university press</publisher-name>
+        <year iso-8601-date="2003">2003</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-CBDGRV2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Carrassi</surname><given-names>Alberto</given-names></name>
+          <name><surname>Bocquet</surname><given-names>Marc</given-names></name>
+          <name><surname>Demaeyer</surname><given-names>Jonathan</given-names></name>
+          <name><surname>Grudzien</surname><given-names>Colin</given-names></name>
+          <name><surname>Raanes</surname><given-names>Patrick</given-names></name>
+          <name><surname>Vannitsem</surname><given-names>Stephane</given-names></name>
+        </person-group>
+        <article-title>Data assimilation for chaotic dynamics</article-title>
+        <source>arXiv preprint arXiv:2010.07063</source>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+<fn-group>
+  <fn id="fn1">
+    <label>1</label><p>More details about the implementation can be
+    found in De Cruz et al.
+    (<xref alt="2016" rid="ref-DDV2016" ref-type="bibr">2016</xref>) and
+    in the <italic>Code Description</italic> section of the included
+    documentation.</p>
+  </fn>
+</fn-group>
+</back>
+</article>

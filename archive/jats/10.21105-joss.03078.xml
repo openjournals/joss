@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3078</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03078</article-id>
+<title-group>
+<article-title>Metatheory.jl: Fast and Elegant Algebraic Computation in
+Julia with Extensible Equality Saturation</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-8122-9469</contrib-id>
+<string-name>Alessandro Cheli</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>University of Pisa, Pisa, Italy</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-02-11">
+<day>11</day>
+<month>2</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>59</issue>
+<fpage>3078</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>compiler</kwd>
+<kwd>symbolic</kwd>
+<kwd>algebra</kwd>
+<kwd>rewriting</kwd>
+<kwd>optimization</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>The Julia programming language is a fresh approach to technical
+  computing
+  (<xref alt="Bezanson et al., 2017" rid="ref-bezanson2017julia" ref-type="bibr">Bezanson
+  et al., 2017</xref>), disrupting the popular conviction that a
+  programming language cannot be high-level, easy to learn, and
+  performant at the same time. One of the most practical features of
+  Julia is the excellent metaprogramming and macro system, allowing for
+  <italic>homoiconicity</italic>: programmatic generation and
+  manipulation of expressions as first-class values, a well-known
+  paradigm found in LISP dialects such as Scheme.</p>
+  <p>Metatheory.jl is a general-purpose metaprogramming and algebraic
+  computation library for the Julia programming language, designed to
+  take advantage of its powerful reflection capabilities to bridge the
+  gap between symbolic mathematics, abstract interpretation, equational
+  reasoning, optimization, composable compiler transforms, and advanced
+  homoiconic pattern-matching features. Intuitively, Metatheory.jl
+  transforms Julia expressions into other Julia expressions at both
+  compile time and run time. This allows users to perform customized and
+  composable compiler optimizations that are specifically tailored to
+  single, arbitrary Julia packages. The library provides a simple,
+  algebraically composable interface to help scientists to implement and
+  reason about all kinds of formal systems, by defining concise
+  rewriting rules as syntactically-valid Julia code. The primary benefit
+  of using Metatheory.jl is the algebraic nature of the specification of
+  the rewriting system. Composable blocks of rewrite rules bear a strong
+  resemblance to algebraic structures encountered in everyday scientific
+  literature.</p>
+</sec>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Metatheory.jl offers a concise macro system to define
+  <italic>theories</italic>: composable blocks of rewriting rules that
+  can be executed through two, highly composable, rewriting backends.
+  The first is based on standard rewriting, built on top of the pattern
+  matcher developed in Zhao &amp; Carlsson
+  (<xref alt="2020" rid="ref-matchcore" ref-type="bibr">2020</xref>).
+  This approach, however, suffers from the usual problems of rewriting
+  systems. For example, even trivial equational rules such as
+  commutativity may lead to non-terminating systems and thus need to be
+  adjusted by some sort of structuring or rewriting order, which is
+  known to require extensive user reasoning.</p>
+  <p>The other back-end for Metatheory.jl, the core of our contribution,
+  is designed so that it does not require the user to reason about
+  rewriting order. To do so it relies on equality saturation on
+  <italic>e-graphs</italic>, the state-of-the-art technique adapted from
+  the <monospace>egg</monospace> Rust library
+  (<xref alt="Willsey et al., 2021" rid="ref-egg" ref-type="bibr">Willsey
+  et al., 2021</xref>).</p>
+  <p><italic>E-graphs</italic> can compactly represent many equivalent
+  expressions and programs. Provided with a theory of rewriting rules,
+  defined in pure Julia, the <italic>equality saturation</italic>
+  process iteratively executes an e-graph-specific pattern matcher and
+  inserts the matched substitutions. Since e-graphs can contain loops,
+  infinite derivations can be represented compactly and it is not
+  required that the described rewrite system be terminating or
+  confluent.</p>
+  <p>The saturation process relies on the definition of e-graphs to
+  include <italic>rebuilding</italic>, i.e. the automatic process of
+  propagation and maintenance of congruence closures. One of the core
+  contributions of Willsey et al.
+  (<xref alt="2021" rid="ref-egg" ref-type="bibr">2021</xref>) is a
+  delayed e-graph rebuilding process that is executed at the end of each
+  saturation step, whereas previous definitions of e-graphs in the
+  literature included rebuilding after every rewrite operation. Provided
+  with <italic>equality saturation</italic>, users can efficiently
+  derive (and analyze) all possible equivalent expressions contained in
+  an e-graph. The saturation process can be required to stop prematurely
+  as soon as chosen properties about the e-graph and its expressions are
+  proved. This latter back-end based on <italic>e-graphs</italic> is
+  suitable for partial evaluators, symbolic mathematics, static
+  analysis, theorem proving and superoptimizers.</p>
+  <fig>
+    <caption><p>These four e-graphs represent the process of equality
+    saturation, adding many equivalent ways to write
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[a * (2 * 3) / 6]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>a</mml:mi><mml:mo>*</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>2</mml:mn><mml:mo>*</mml:mo><mml:mn>3</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>/</mml:mi><mml:mn>6</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+    after each iteration.
+    <styled-content id="figU003Aegraph"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="egraphs.png" xlink:title="" />
+  </fig>
+  <p>The original <monospace>egg</monospace> library
+  (<xref alt="Willsey et al., 2021" rid="ref-egg" ref-type="bibr">Willsey
+  et al., 2021</xref>) is the first implementation of generic and
+  extensible e-graphs
+  (<xref alt="Nelson &amp; Oppen, 1980" rid="ref-nelson1980fast" ref-type="bibr">Nelson
+  &amp; Oppen, 1980</xref>); the contributions of
+  <monospace>egg</monospace> include novel amortized algorithms for fast
+  and efficient equivalence saturation and analysis. Differently from
+  the original Rust implementation of <monospace>egg</monospace>, which
+  handles expressions defined as Rust strings and data structures, our
+  system directly manipulates homoiconic Julia expressions, and can
+  therefore fully leverage the Julia subtyping mechanism
+  (<xref alt="Zappa Nardelli et al., 2018" rid="ref-zappa2018julia" ref-type="bibr">Zappa
+  Nardelli et al., 2018</xref>), allowing programmers to build
+  expressions containing not only symbols but all kinds of Julia values.
+  This permits rewriting and analyses to be efficiently based on runtime
+  data contained in expressions. Most importantly, users can – and are
+  encouraged to – include type assertions in the left-hand side of
+  rewriting rules in theories.</p>
+  <p>One of the project goals of Metatheory.jl, beyond being easy to use
+  and composable, is to be fast and efficient. Both the first-class
+  pattern matching system and the generation of e-graph analyses from
+  theories rely on RuntimeGeneratedFunctions.jl
+  (<xref alt="Rackauckas &amp; Foster, 2021" rid="ref-rgf" ref-type="bibr">Rackauckas
+  &amp; Foster, 2021</xref>), generating callable functions at runtime
+  that efficiently bypass Julia’s world age problem (explained and
+  formalized in Belyakova et al.
+  (<xref alt="2020" rid="ref-belyakova2020world" ref-type="bibr">2020</xref>))
+  with the full performance of a standard Julia anonymous function.</p>
+  <sec id="analyses-and-extraction">
+    <title>Analyses and Extraction</title>
+    <p>With Metatheory.jl, modeling analyses and conditional/dynamic
+    rewrites are straightforward. It is possible to check conditions on
+    runtime values or to read and write from external data structures
+    during rewriting. The analysis mechanism described in
+    <monospace>egg</monospace>
+    (<xref alt="Willsey et al., 2021" rid="ref-egg" ref-type="bibr">Willsey
+    et al., 2021</xref>) and re-implemented in our contribution lets
+    users define ways to compute additional analysis metadata from an
+    arbitrary semi-lattice domain, such as costs of nodes or logical
+    statements attached to terms. Other than for inspection, analysis
+    data can be used to modify expressions in the e-graph both during
+    rewriting steps and after e-graph saturation.</p>
+    <p>Therefore using the equality saturation (e-graph) backend,
+    extraction can be performed as an on-the-fly e-graph analysis or
+    after saturation. Users can define their own cost function, or
+    choose between a variety of predefined cost functions for
+    automatically extracting the best-fitting expressions from an
+    equivalence class represented in an e-graph.</p>
+  </sec>
+</sec>
+<sec id="example-usage">
+  <title>Example Usage</title>
+  <p>In this example, we build rewrite systems, called
+  <monospace>theories</monospace> in Metatheory.jl, for simplifying
+  expressions in the usual commutative monoid of multiplication and the
+  commutative group of addition, and we compose the
+  <monospace>theories</monospace> together with a <italic>constant
+  folding</italic> theory. The pattern matcher for the e-graphs backend
+  allows us to use the existing Julia type hierarchy for integers and
+  floating-point numbers with a high level of abstraction. As a
+  contribution over the original egg
+  (<xref alt="Willsey et al., 2021" rid="ref-egg" ref-type="bibr">Willsey
+  et al., 2021</xref>) implementation, left-hand sides of rules in
+  Metatheory.jl can contain type assertions on pattern variables, to
+  give rules that depend on consistent type hierarchies and to
+  seamlessly access literal Julia values in the right-hand side of
+  dynamic rules.</p>
+  <p>We finally introduce two simple rules for simplifying fractions,
+  that for the sake of simplicity, do not check any additional analysis
+  data. <xref alt="Figure 1" rid="figU003Aegraph">Figure 1</xref>
+  contains a friendly visualization of a consistent fragment of the
+  equality saturation process in this example. You can see how loops
+  evidently appear in the definition of the rewriting rules. While the
+  classic rewriting backend would loop indefinitely or stop early when
+  repeatedly matching these rules, the e-graph backend natively supports
+  this level of abstraction and allows the programmer to completely
+  forget about the ordering and looping of rules. Efficient scheduling
+  heuristics are applied automatically to prevent instantaneous
+  combinatorial explosion of the e-graph, thus preventing substantial
+  slowdown of the equality saturation process.</p>
+  <code language="julia">using Metatheory
+using Metatheory.EGraphs
+
+comm_monoid = @theory begin
+  # commutativity
+  a * b =&gt; b * a
+  # identity
+  a * 1 =&gt; a
+  # associativity
+  a * (b * c) =&gt; (a * b) * c
+  (a * b) * c =&gt; a * (b * c)
+end;
+
+comm_group = @theory begin
+  # commutativity
+  a + b =&gt; b + a
+  # identity
+  a + 0 =&gt; a
+  # associativity
+  a + (b + c) =&gt; (a + b) + c
+  (a + b) + c =&gt; a + (b + c)
+  # inverse
+  a + (-a) =&gt; 0
+end;
+
+# dynamic rules are defined with the `|&gt;` operator
+folder = @theory begin
+  a::Real + b::Real |&gt; a+b
+  a::Real * b::Real |&gt; a*b
+end;
+
+div_sim = @theory begin
+  (a * b) / c =&gt; a * (b / c)
+  a::Real / a::Real  |&gt;  (a != 0 ? 1 : error(&quot;division by 0&quot;))
+end;
+
+t = union(comm_monoid, comm_group, folder, div_sim) ;
+
+g = EGraph(:(a * (2*3) / 6)) ;
+saturate!(g, t) ;
+ex = extract!(g, astsize)
+# :a
+  </code>
+</sec>
+<sec id="conclusion">
+  <title>Conclusion</title>
+  <p>Many applications of equality saturation to advanced optimization
+  tasks have been recently published. Herbie
+  (<xref alt="Panchekha et al., 2015" rid="ref-panchekha2015automatically" ref-type="bibr">Panchekha
+  et al., 2015</xref>) is a tool for automatically improving the
+  precision of floating point expressions, which recently switched to
+  <monospace>egg</monospace> as the core rewriting backend. However,
+  Herbie requires interoperation and conversion of expressions between
+  different languages and libraries. In Yang et al.
+  (<xref alt="2021" rid="ref-yang2021equality" ref-type="bibr">2021</xref>),
+  the authors used <monospace>egg</monospace> to superoptimize tensor
+  signal flow graphs describing neural networks. Implementing similar
+  case studies in pure Julia would make valid research contributions on
+  their own. We are confident that a well-integrated and homoiconic
+  equality saturation engine in pure Julia will permit exploration of
+  many new metaprogramming applications, and allow them to be
+  implemented in an elegant, performant and concise way. Code for
+  Metatheory.jl is available in Cheli
+  (<xref alt="2021" rid="ref-metatheory" ref-type="bibr">2021</xref>),
+  or at
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/0x0f0f0f/Metatheory.jl">https://github.com/0x0f0f0f/Metatheory.jl</ext-link>.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We acknowledge Max Willsey and contributors for their work on the
+  original <monospace>egg</monospace> library
+  (<xref alt="Willsey et al., 2021" rid="ref-egg" ref-type="bibr">Willsey
+  et al., 2021</xref>), Christopher Rackauckas and Christopher Foster
+  for their efforts in developing RuntimeGeneratedFunctions
+  (<xref alt="Rackauckas &amp; Foster, 2021" rid="ref-rgf" ref-type="bibr">Rackauckas
+  &amp; Foster, 2021</xref>), Taine Zhao for developing MLStyle
+  (<xref alt="Zhao, 2021" rid="ref-mlstyle" ref-type="bibr">Zhao,
+  2021</xref>) and MatchCore
+  (<xref alt="Zhao &amp; Carlsson, 2020" rid="ref-matchcore" ref-type="bibr">Zhao
+  &amp; Carlsson, 2020</xref>), and Philip Zucker for his original idea
+  of implementing E-Graphs in Julia
+  (<xref alt="Zucker, 2020b" rid="ref-philzuck1" ref-type="bibr">Zucker,
+  2020b</xref>,
+  <xref alt="2020a" rid="ref-philzuck2" ref-type="bibr">2020a</xref>)
+  and support during the development of the project. Special thanks to
+  Filippo Bonchi for a friendly review of a preliminary version of this
+  article.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-rgf">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Rackauckas</surname><given-names>C</given-names></name>
+          <name><surname>Foster</surname><given-names>C</given-names></name>
+        </person-group>
+        <article-title>RuntimeGeneratedFunctions.jl: Functions generated at runtime without world-age issues</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>GitHub</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://github.com/SciML/RuntimeGeneratedFunctions.jl</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-mlstyle">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Zhao</surname><given-names>T</given-names></name>
+        </person-group>
+        <article-title>MLStyle.jl: Fast, consistent and extensible functional programming infrastructures</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>GitHub</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://github.com/thautwarm/MLStyle.jl</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-metatheory">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Cheli</surname><given-names>Alessandro</given-names></name>
+        </person-group>
+        <article-title>Metatheory.jl</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>GitHub</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://github.com/JuliaSymbolics/Metatheory.jl</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-matchcore">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Zhao</surname><given-names>T</given-names></name>
+          <name><surname>Carlsson</surname><given-names>K</given-names></name>
+        </person-group>
+        <article-title>MatchCore.jl: A minimal implementation of optimized pattern matching.</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>GitHub</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://github.com/thautwarm/MatchCore.jl</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-egg">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Willsey</surname><given-names>Max</given-names></name>
+          <name><surname>Nandi</surname><given-names>Chandrakana</given-names></name>
+          <name><surname>Wang</surname><given-names>Yisu Remy</given-names></name>
+          <name><surname>Flatt</surname><given-names>Oliver</given-names></name>
+          <name><surname>Tatlock</surname><given-names>Zachary</given-names></name>
+          <name><surname>Panchekha</surname><given-names>Pavel</given-names></name>
+        </person-group>
+        <article-title>Egg: Fast and extensible equality saturation</article-title>
+        <source>Proc. ACM Program. Lang.</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="2021-01">2021</year><month>01</month>
+        <volume>5</volume>
+        <issue>POPL</issue>
+        <uri>https://doi.org/10.1145/3434304</uri>
+        <pub-id pub-id-type="doi">10.1145/3434304</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bezanson2017julia">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bezanson</surname><given-names>Jeff</given-names></name>
+          <name><surname>Edelman</surname><given-names>Alan</given-names></name>
+          <name><surname>Karpinski</surname><given-names>Stefan</given-names></name>
+          <name><surname>Shah</surname><given-names>Viral B.</given-names></name>
+        </person-group>
+        <article-title>Julia: A fresh approach to numerical computing</article-title>
+        <source>SIAM Review</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>59</volume>
+        <issue>1</issue>
+        <uri> 
+                https://doi.org/10.1137/141000671
+            
+        </uri>
+        <pub-id pub-id-type="doi">10.1137/141000671</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-belyakova2020world">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Belyakova</surname><given-names>Julia</given-names></name>
+          <name><surname>Chung</surname><given-names>Benjamin</given-names></name>
+          <name><surname>Gelinas</surname><given-names>Jack</given-names></name>
+          <name><surname>Nash</surname><given-names>Jameson</given-names></name>
+          <name><surname>Tate</surname><given-names>Ross</given-names></name>
+          <name><surname>Vitek</surname><given-names>Jan</given-names></name>
+        </person-group>
+        <article-title>World age in Julia: Optimizing method dispatch in the presence of eval</article-title>
+        <source>Proc. ACM Program. Lang.</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="2020-11">2020</year><month>11</month>
+        <volume>4</volume>
+        <issue>OOPSLA</issue>
+        <uri>https://doi.org/10.1145/3428275</uri>
+        <pub-id pub-id-type="doi">10.1145/3428275</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-zappa2018julia">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zappa Nardelli</surname><given-names>Francesco</given-names></name>
+          <name><surname>Belyakova</surname><given-names>Julia</given-names></name>
+          <name><surname>Pelenitsyn</surname><given-names>Artem</given-names></name>
+          <name><surname>Chung</surname><given-names>Benjamin</given-names></name>
+          <name><surname>Bezanson</surname><given-names>Jeff</given-names></name>
+          <name><surname>Vitek</surname><given-names>Jan</given-names></name>
+        </person-group>
+        <article-title>Julia subtyping: A rational reconstruction</article-title>
+        <source>Proc. ACM Program. Lang.</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="2018-10">2018</year><month>10</month>
+        <volume>2</volume>
+        <issue>OOPSLA</issue>
+        <uri>https://doi.org/10.1145/3276483</uri>
+        <pub-id pub-id-type="doi">10.1145/3276483</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-panchekha2015automatically">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Panchekha</surname><given-names>Pavel</given-names></name>
+          <name><surname>Sanchez-Stern</surname><given-names>Alex</given-names></name>
+          <name><surname>Wilcox</surname><given-names>James R.</given-names></name>
+          <name><surname>Tatlock</surname><given-names>Zachary</given-names></name>
+        </person-group>
+        <article-title>Automatically improving accuracy for floating point expressions</article-title>
+        <source>SIGPLAN Not.</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="2015-06">2015</year><month>06</month>
+        <volume>50</volume>
+        <issue>6</issue>
+        <issn>0362-1340</issn>
+        <uri>https://doi.org/10.1145/2813885.2737959</uri>
+        <pub-id pub-id-type="doi">10.1145/2813885.2737959</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-yang2021equality">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yang</surname><given-names>Yichen</given-names></name>
+          <name><surname>Phothilimtha</surname><given-names>Phitchaya Mangpo</given-names></name>
+          <name><surname>Wang</surname><given-names>Yisu Remy</given-names></name>
+          <name><surname>Willsey</surname><given-names>Max</given-names></name>
+          <name><surname>Roy</surname><given-names>Sudip</given-names></name>
+          <name><surname>Pienaar</surname><given-names>Jacques</given-names></name>
+        </person-group>
+        <article-title>Equality saturation for tensor graph superoptimization</article-title>
+        <source>arXiv preprint arXiv:2101.01332</source>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://arxiv.org/pdf/2101.01332.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-nelson1980fast">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Nelson</surname><given-names>Greg</given-names></name>
+          <name><surname>Oppen</surname><given-names>Derek C.</given-names></name>
+        </person-group>
+        <article-title>Fast decision procedures based on congruence closure</article-title>
+        <source>J. ACM</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="1980-04">1980</year><month>04</month>
+        <volume>27</volume>
+        <issue>2</issue>
+        <issn>0004-5411</issn>
+        <uri>https://doi.org/10.1145/322186.322198</uri>
+        <pub-id pub-id-type="doi">10.1145/322186.322198</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-philzuck1">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zucker</surname><given-names>Philip</given-names></name>
+        </person-group>
+        <article-title>E-graphs in Julia Part I</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://www.philipzucker.com/egraph-1/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-philzuck2">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zucker</surname><given-names>Philip</given-names></name>
+        </person-group>
+        <article-title>E-graph pattern matching Part II</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://www.philipzucker.com/egraph-2/</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

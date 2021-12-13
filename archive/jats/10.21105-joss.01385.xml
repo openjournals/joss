@@ -1,0 +1,788 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1385</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01385</article-id>
+<title-group>
+<article-title>RAFF.jl: Robust Algebraic Fitting Function in
+Julia</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-9718-6486</contrib-id>
+<string-name>Emerson V. Castelani</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Ronaldo Lopes</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-7790-6703</contrib-id>
+<string-name>Wesley V. I. Shirabayashi</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-4963-0946</contrib-id>
+<string-name>Francisco N. C. Sobral</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Mathematics, State University of Maringá,
+Paraná, Brazil</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-05-19">
+<day>19</day>
+<month>5</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>39</issue>
+<fpage>1385</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Statistics</kwd>
+<kwd>Lower Order-Value Optimization</kwd>
+<kwd>Outlier detection</kwd>
+<kwd>Nonlinear optimization</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>RAFF.jl</monospace> is a Julia package for the
+  adjustment of a function to a dataset coming from some experiment.
+  This package is an alternative to classical adjustment techniques such
+  as linear and nonlinear regression. The goal of this package is to
+  find robust adjustments free from the influence of possible outliers
+  (discrepant points of the adjustment).</p>
+</sec>
+<sec id="motivation">
+  <title>Motivation</title>
+  <p>Let <inline-formula><alternatives>
+  <tex-math><![CDATA[f : \mathbb{R}^n \to \mathbb{R}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mo>:</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:mi>n</mml:mi></mml:msup><mml:mo>→</mml:mo><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle></mml:mrow></mml:math></alternatives></inline-formula>
+  be a function whose mathematical description is not available. This
+  function can be, for example, a black-box, a proprietary computer
+  program or an experiment. Suppose that a dataset
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[S = \{(x_1, y_1), \dots, (x_m, y_m)\}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>S</mml:mi><mml:mo>=</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mi>…</mml:mi><mml:mo>,</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>m</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mi>m</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+  is available, where <inline-formula><alternatives>
+  <tex-math><![CDATA[y_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>y</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  is an approximation of <inline-formula><alternatives>
+  <tex-math><![CDATA[f(x_i)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  (from an experimental procedure, numerical approximation, etc.) and we
+  want to approximate <inline-formula><alternatives>
+  <tex-math><![CDATA[f]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>
+  by a known model <inline-formula><alternatives>
+  <tex-math><![CDATA[\phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϕ</mml:mi></mml:math></alternatives></inline-formula>.
+  Model <inline-formula><alternatives>
+  <tex-math><![CDATA[\phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϕ</mml:mi></mml:math></alternatives></inline-formula>
+  can be defined as <inline-formula><alternatives>
+  <tex-math><![CDATA[\phi(x, \theta)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>ϕ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>,
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>
+  are the <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>
+  independent variables of <inline-formula><alternatives>
+  <tex-math><![CDATA[f]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>
+  represents some parameters of <inline-formula><alternatives>
+  <tex-math><![CDATA[\phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϕ</mml:mi></mml:math></alternatives></inline-formula>.
+  <monospace>RAFF.jl</monospace> (Robust Algebraic Fitting Function) is
+  a Julia package developed to find parameters
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>
+  for <inline-formula><alternatives>
+  <tex-math><![CDATA[\phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϕ</mml:mi></mml:math></alternatives></inline-formula>
+  in order to adjust it to the observed values
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[S]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>S</mml:mi></mml:math></alternatives></inline-formula>
+  of the unknown function <inline-formula><alternatives>
+  <tex-math><![CDATA[f]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>.
+  Following Liu &amp; Wang
+  (<xref alt="2008" rid="ref-Liu2008" ref-type="bibr">2008</xref>) and
+  Keleş
+  (<xref alt="2018" rid="ref-keles2018" ref-type="bibr">2018</xref>), in
+  general, the adjustment can be related to</p>
+  <list list-type="order">
+    <list-item>
+      <p>Classical least squares (algebraic fit): which considers the
+      sum of deviations of type <inline-formula><alternatives>
+      <tex-math><![CDATA[\vert \phi(x_i, \theta) - y_i \vert^2]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="postfix">|</mml:mo><mml:mi>ϕ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:msup><mml:mo stretchy="false" form="postfix">|</mml:mo><mml:mn>2</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>,
+      also known as regression;</p>
+    </list-item>
+    <list-item>
+      <p>Orthogonal least squares (geometric fit): which considers the
+      sum of deviations of type <inline-formula><alternatives>
+      <tex-math><![CDATA[\min_x \Vert (x, \phi(x, \theta))-(x_i, y_i)\Vert^2]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mo>min</mml:mo><mml:mi>x</mml:mi></mml:msub><mml:mo stretchy="false" form="postfix">‖</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>ϕ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:msup><mml:mo stretchy="false" form="postfix">‖</mml:mo><mml:mn>2</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>
+      (orthogonal projection on the curve to be adjusted).</p>
+    </list-item>
+  </list>
+  <p><monospace>RAFF.jl</monospace> was developed to solve a
+  generalization of the first case.</p>
+  <p>Linear and nonlinear regression is essentially the adjustment of
+  mathematical functions to data and is a problem that appears in many
+  areas of science. When data comes from real experiments, non-expected
+  errors may cause the appearance of outliers, which might be
+  responsible for causing the regression calculated by sum of deviations
+  to result in misleading approximations. Regression is strongly
+  connected to Statistics but practical methods to detect outliers are
+  not very common. Motulsky &amp; Brown
+  (<xref alt="2006" rid="ref-Motulsky2006a" ref-type="bibr">2006</xref>),
+  for example, develop a method for outlier detection based on the
+  assumption that the error follows a Lorentzian distribution around the
+  function and use nonlinear regression based on least squares.
+  <monospace>RAFF.jl</monospace> provides automatic detection of
+  outliers using a voting system. It is an optimization-based package,
+  based on algorithms for Lower Order-Value Optimization (LOVO) which
+  were introduced by Andreani et al.
+  (<xref alt="2005" rid="ref-Andreani2005" ref-type="bibr">2005</xref>)
+  and revisited by Andreani et al.
+  (<xref alt="2009" rid="ref-Andreani2009" ref-type="bibr">2009</xref>).
+  Recently, Martı́nez
+  (<xref alt="2012" rid="ref-Martinez2012" ref-type="bibr">2012</xref>)
+  performed a complete review about LOVO problems considering
+  theoretical aspects of algorithms to solve it and potential
+  applications.</p>
+</sec>
+<sec id="background">
+  <title>Background</title>
+  <p>To elucidate the essence of how <monospace>RAFF.jl</monospace>
+  works, let us detail some aspects related to the LOVO problem and its
+  resolution. Let us consider <inline-formula><alternatives>
+  <tex-math><![CDATA[m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>m</mml:mi></mml:math></alternatives></inline-formula>
+  functions <inline-formula><alternatives>
+  <tex-math><![CDATA[F_i:\mathbb{R}^n \rightarrow \mathbb{R}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>F</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>:</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:mi>n</mml:mi></mml:msup><mml:mo>→</mml:mo><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle></mml:mrow></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[i=1,...,m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:mi>m</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.
+  Given <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta \in \mathbb{R}^n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>θ</mml:mi><mml:mo>∈</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:mi>n</mml:mi></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>,
+  we can sort the set <inline-formula><alternatives>
+  <tex-math><![CDATA[\{F_i(\theta),i=1,...,m\}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:msub><mml:mi>F</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:mi>m</mml:mi><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+  in ascending order: <disp-formula><alternatives>
+  <tex-math><![CDATA[
+  F_{i_1(\theta)}(\theta)\leq F_{i_2(\theta)}(\theta)\leq ...\leq
+  F_{i_m(\theta)}(\theta).
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>F</mml:mi><mml:mrow><mml:msub><mml:mi>i</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>≤</mml:mo><mml:msub><mml:mi>F</mml:mi><mml:mrow><mml:msub><mml:mi>i</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>≤</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>≤</mml:mo><mml:msub><mml:mi>F</mml:mi><mml:mrow><mml:msub><mml:mi>i</mml:mi><mml:mi>m</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula>
+  Considering a value <inline-formula><alternatives>
+  <tex-math><![CDATA[1\leq p \leq m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>1</mml:mn><mml:mo>≤</mml:mo><mml:mi>p</mml:mi><mml:mo>≤</mml:mo><mml:mi>m</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>,
+  we can define the LOVO function as <disp-formula><alternatives>
+  <tex-math><![CDATA[S_p(\theta)=\sum_{k=1}^{p} F_{i_k(\theta)}(\theta)]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>S</mml:mi><mml:mi>p</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>k</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>p</mml:mi></mml:munderover><mml:msub><mml:mi>F</mml:mi><mml:mrow><mml:msub><mml:mi>i</mml:mi><mml:mi>k</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula>
+  and the LOVO problem as <disp-formula><alternatives>
+  <tex-math><![CDATA[\min_{\theta \in \mathbb{R}^{n}}S_p(\theta).]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:munder><mml:mo>min</mml:mo><mml:mrow><mml:mi>θ</mml:mi><mml:mo>∈</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:mi>n</mml:mi></mml:msup></mml:mrow></mml:munder><mml:msub><mml:mi>S</mml:mi><mml:mi>p</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>Assuming that <inline-formula><alternatives>
+  <tex-math><![CDATA[F_i, i=1,...,m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>F</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:mi>m</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  are continuous functions we have that <inline-formula><alternatives>
+  <tex-math><![CDATA[S_p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>S</mml:mi><mml:mi>p</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  is a continuous function, but assuming that
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[F_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>F</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>’s
+  are differentiable functions we cannot conclude that
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[S_p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>S</mml:mi><mml:mi>p</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  is differentiable. This can be seen by reformulating the LOVO problem
+  as follows. Denoting <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{C}=\{\mathcal{C}_1,...,\mathcal{C}_r\}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>𝒞</mml:mi></mml:mstyle><mml:mo>=</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:msub><mml:mstyle mathvariant="script"><mml:mi>𝒞</mml:mi></mml:mstyle><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mstyle mathvariant="script"><mml:mi>𝒞</mml:mi></mml:mstyle><mml:mi>r</mml:mi></mml:msub><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+  as the set of all combinations of <inline-formula><alternatives>
+  <tex-math><![CDATA[\{1,...,m\}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:mi>m</mml:mi><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+  taken <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+  at time, we can define for each <inline-formula><alternatives>
+  <tex-math><![CDATA[i\in \{1,...,r\}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>i</mml:mi><mml:mo>∈</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:mi>r</mml:mi><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+  the following function <disp-formula><alternatives>
+  <tex-math><![CDATA[f_i(\theta)=\sum_{k\in \mathcal{C}_i} F_k(\theta)]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>f</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:munder><mml:mo>∑</mml:mo><mml:mrow><mml:mi>k</mml:mi><mml:mo>∈</mml:mo><mml:msub><mml:mstyle mathvariant="script"><mml:mi>𝒞</mml:mi></mml:mstyle><mml:mi>i</mml:mi></mml:msub></mml:mrow></mml:munder><mml:msub><mml:mi>F</mml:mi><mml:mi>k</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula>
+  and <disp-formula><alternatives>
+  <tex-math><![CDATA[f_{min}(\theta)=\min\{f_1(\theta),...,f_r(\theta)\}.]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>f</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>min</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mi>r</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="false" form="postfix">}</mml:mo><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula>
+  It can be observed that, for a given <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[f_{min}(\theta)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>f</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  is obtained by a combination <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{C}_j]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="script"><mml:mi>𝒞</mml:mi></mml:mstyle><mml:mi>j</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  which contains the smallest sum of <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+  elements of the set <inline-formula><alternatives>
+  <tex-math><![CDATA[\{F_i(\theta),i=1,...,m\}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:msub><mml:mi>F</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:mi>m</mml:mi><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>.
+  Therefore <inline-formula><alternatives>
+  <tex-math><![CDATA[f_{\min}(\theta)=S_p(\theta)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>f</mml:mi><mml:mo>min</mml:mo></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msub><mml:mi>S</mml:mi><mml:mi>p</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  and, consequently, the LOVO function is non differentiable. The LOVO
+  problem description can become more clear by considering an example.
+  In this sense, let us consider the dataset given by</p>
+  <table-wrap>
+    <table>
+      <thead>
+        <tr>
+          <th align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[x]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula></th>
+          <th align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[y]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>y</mml:mi></mml:math></alternatives></inline-formula></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="center">-0.5</td>
+          <td align="center">0.119447</td>
+        </tr>
+        <tr>
+          <td align="center">0.0</td>
+          <td align="center">0.3</td>
+        </tr>
+        <tr>
+          <td align="center">0.5</td>
+          <td align="center">0.203551</td>
+        </tr>
+        <tr>
+          <td align="center">0.75</td>
+          <td align="center">0.423998</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>and the model defined by <inline-formula><alternatives>
+  <tex-math><![CDATA[\phi(x,\theta)=\theta (\sin(x)+\cos(x))]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>ϕ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>θ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mo>sin</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mo>cos</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.
+  Naturally, we have <inline-formula><alternatives>
+  <tex-math><![CDATA[m=4]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>m</mml:mi><mml:mo>=</mml:mo><mml:mn>4</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  and let us consider <inline-formula><alternatives>
+  <tex-math><![CDATA[p=3]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>=</mml:mo><mml:mn>3</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>.
+  The <inline-formula><alternatives>
+  <tex-math><![CDATA[F_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>F</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>’s
+  can assume diferent forms. To leave the example closest to our
+  approach, let’s consider <inline-formula><alternatives>
+  <tex-math><![CDATA[F_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>F</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>’s
+  as: <disp-formula><alternatives>
+  <tex-math><![CDATA[
+  \begin{aligned}
+    F_1(\theta) & =(0.119447 -\phi(-0.5,\theta))^2, \\
+    F_2(\theta) & =(0.3 -\phi(0.0,\theta))^2, \\
+    F_3(\theta) & =(0.203551 -\phi(0.5,\theta))^2, \\
+    F_4(\theta) & =(0.423998 -\phi(-0.75,\theta))^2.
+  \end{aligned}
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtable><mml:mtr><mml:mtd columnalign="right"><mml:msub><mml:mi>F</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>0.119447</mml:mn><mml:mo>−</mml:mo><mml:mi>ϕ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mo>−</mml:mo><mml:mn>0.5</mml:mn><mml:mo>,</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup><mml:mo>,</mml:mo></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"><mml:msub><mml:mi>F</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>0.3</mml:mn><mml:mo>−</mml:mo><mml:mi>ϕ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>0.0</mml:mn><mml:mo>,</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup><mml:mo>,</mml:mo></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"><mml:msub><mml:mi>F</mml:mi><mml:mn>3</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>0.203551</mml:mn><mml:mo>−</mml:mo><mml:mi>ϕ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>0.5</mml:mn><mml:mo>,</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup><mml:mo>,</mml:mo></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"><mml:msub><mml:mi>F</mml:mi><mml:mn>4</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>0.423998</mml:mn><mml:mo>−</mml:mo><mml:mi>ϕ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mo>−</mml:mo><mml:mn>0.75</mml:mn><mml:mo>,</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup><mml:mi>.</mml:mi></mml:mtd></mml:mtr></mml:mtable></mml:math></alternatives></disp-formula>
+  Since <inline-formula><alternatives>
+  <tex-math><![CDATA[m=4]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>m</mml:mi><mml:mo>=</mml:mo><mml:mn>4</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[p=3]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>=</mml:mo><mml:mn>3</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>,
+  we have 4 possible subsets with 3 elements each from set
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\{1,2,3,4\}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mn>2</mml:mn><mml:mo>,</mml:mo><mml:mn>3</mml:mn><mml:mo>,</mml:mo><mml:mn>4</mml:mn><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>:
+  <disp-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{C}_1=\{1,2,3\},\mathcal{C}_2=\{1,2,4\},\mathcal{C}_3=\{1,3,4\}\ \text{and}\ \mathcal{C}_4=\{2,3,4\}.]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mstyle mathvariant="script"><mml:mi>𝒞</mml:mi></mml:mstyle><mml:mn>1</mml:mn></mml:msub><mml:mo>=</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mn>2</mml:mn><mml:mo>,</mml:mo><mml:mn>3</mml:mn><mml:mo stretchy="false" form="postfix">}</mml:mo><mml:mo>,</mml:mo><mml:msub><mml:mstyle mathvariant="script"><mml:mi>𝒞</mml:mi></mml:mstyle><mml:mn>2</mml:mn></mml:msub><mml:mo>=</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mn>2</mml:mn><mml:mo>,</mml:mo><mml:mn>4</mml:mn><mml:mo stretchy="false" form="postfix">}</mml:mo><mml:mo>,</mml:mo><mml:msub><mml:mstyle mathvariant="script"><mml:mi>𝒞</mml:mi></mml:mstyle><mml:mn>3</mml:mn></mml:msub><mml:mo>=</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mn>3</mml:mn><mml:mo>,</mml:mo><mml:mn>4</mml:mn><mml:mo stretchy="false" form="postfix">}</mml:mo><mml:mspace width="0.222em"></mml:mspace><mml:mtext mathvariant="normal">and</mml:mtext><mml:mspace width="0.222em"></mml:mspace><mml:msub><mml:mstyle mathvariant="script"><mml:mi>𝒞</mml:mi></mml:mstyle><mml:mn>4</mml:mn></mml:msub><mml:mo>=</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mn>2</mml:mn><mml:mo>,</mml:mo><mml:mn>3</mml:mn><mml:mo>,</mml:mo><mml:mn>4</mml:mn><mml:mo stretchy="false" form="postfix">}</mml:mo><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula>
+  Thus, associated to each <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{C}_i,i=1,...,4]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mstyle mathvariant="script"><mml:mi>𝒞</mml:mi></mml:mstyle><mml:mi>i</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:mn>4</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>,
+  we can define function <inline-formula><alternatives>
+  <tex-math><![CDATA[f_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  as follows <disp-formula><alternatives>
+  <tex-math><![CDATA[
+  \begin{aligned}
+      f_1(\theta) & =F_1(\theta)+F_2(\theta)+F_3(\theta),\\
+      f_2(\theta) & =F_1(\theta)+F_2(\theta)+F_4(\theta),\\
+      f_3(\theta) & =F_1(\theta)+F_3(\theta)+F_4(\theta),\\
+      f_4(\theta) & =F_2(\theta)+F_3(\theta)+F_4(\theta),
+  \end{aligned}
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtable><mml:mtr><mml:mtd columnalign="right"><mml:msub><mml:mi>f</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:msub><mml:mi>F</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:msub><mml:mi>F</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:msub><mml:mi>F</mml:mi><mml:mn>3</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"><mml:msub><mml:mi>f</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:msub><mml:mi>F</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:msub><mml:mi>F</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:msub><mml:mi>F</mml:mi><mml:mn>4</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"><mml:msub><mml:mi>f</mml:mi><mml:mn>3</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:msub><mml:mi>F</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:msub><mml:mi>F</mml:mi><mml:mn>3</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:msub><mml:mi>F</mml:mi><mml:mn>4</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"><mml:msub><mml:mi>f</mml:mi><mml:mn>4</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:msub><mml:mi>F</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:msub><mml:mi>F</mml:mi><mml:mn>3</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:msub><mml:mi>F</mml:mi><mml:mn>4</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo></mml:mtd></mml:mtr></mml:mtable></mml:math></alternatives></disp-formula>
+  and consequently, <disp-formula><alternatives>
+  <tex-math><![CDATA[f_{min}(\theta)=\min\{f_1(\theta),f_2(\theta),f_3(\theta),f_4(\theta)\}=S_3(\theta).]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>f</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>min</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mn>3</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mn>4</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="false" form="postfix">}</mml:mo><mml:mo>=</mml:mo><mml:msub><mml:mi>S</mml:mi><mml:mn>3</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula>
+  As previously pointed out, this function is continuous but it is not
+  differentiable as illustrated in
+  <xref alt="Figure 2" rid="lovo">Figure 2</xref>.</p>
+  <fig id="lovo">
+    <caption><p>The red function represents the LOVO function. Observing
+    the interval <inline-formula><alternatives>
+    <tex-math><![CDATA[[0.2,0.25]]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mn>0.2</mml:mn><mml:mo>,</mml:mo><mml:mn>0.25</mml:mn><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+    we can note a singular point even considering
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[f_1]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>,
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[f_2]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>,
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[f_3]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mn>3</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[f_4]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>f</mml:mi><mml:mn>4</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+    as differentiable functions.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="lovo_desc.png" xlink:title="" />
+  </fig>
+  <p>Andreani et al.
+  (<xref alt="2009" rid="ref-Andreani2009" ref-type="bibr">2009</xref>)
+  introduced line search methods and handled the possible singularities
+  in a clever way, using the following approximation for
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\nabla f_{min}(\theta)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>∇</mml:mi><mml:msub><mml:mi>f</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  <disp-formula><alternatives>
+  <tex-math><![CDATA[\nabla f_{min}(\theta)=\nabla f_i(\theta),]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>∇</mml:mi><mml:msub><mml:mi>f</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>∇</mml:mi><mml:msub><mml:mi>f</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[i \in \mathcal{I} (\theta)=\{k \in \{1,...,r\};f_k(\theta)=f_{min}(\theta)\}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>i</mml:mi><mml:mo>∈</mml:mo><mml:mstyle mathvariant="script"><mml:mi>ℐ</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mi>k</mml:mi><mml:mo>∈</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:mi>r</mml:mi><mml:mo stretchy="false" form="postfix">}</mml:mo><mml:mo>;</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mi>k</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>.
+  This approach can naturally be extended for second order
+  derivatives.</p>
+  <p>An important point for practical purposes is when we consider the
+  LOVO problem with <inline-formula><alternatives>
+  <tex-math><![CDATA[p=m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>=</mml:mo><mml:mi>m</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[F_i(\theta)=(\phi(x_i,\theta)- y_i)^2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>F</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>ϕ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>.
+  In this case, the LOVO problem coincides with classical least squares
+  and, consequently, it can be seen as a generalization of the least
+  squares problem. When <inline-formula><alternatives>
+  <tex-math><![CDATA[p < m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>&lt;</mml:mo><mml:mi>m</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[F_i(\theta)=(\phi(x_i,\theta)- y_i)^2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>F</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>ϕ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>,
+  the solution <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>
+  provides a model <inline-formula><alternatives>
+  <tex-math><![CDATA[\phi(x,\theta)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>ϕ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  free from influence of the <inline-formula><alternatives>
+  <tex-math><![CDATA[m-p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>m</mml:mi><mml:mo>−</mml:mo><mml:mi>p</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  points with the highest deviation. The number
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+  can be interpreted as the number of trusted points, that is,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[m - p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>m</mml:mi><mml:mo>−</mml:mo><mml:mi>p</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  possible outliers were identified.</p>
+  <p>One of the most usual ways to solve the problem of nonlinear least
+  squares is by using the Levenberg-Marquardt method
+  (<xref alt="Moré, 1978" rid="ref-more1978levenberg" ref-type="bibr">Moré,
+  1978</xref>). This method is a first-order method, where derivatives
+  of the model <inline-formula><alternatives>
+  <tex-math><![CDATA[\phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϕ</mml:mi></mml:math></alternatives></inline-formula>
+  <italic>with respect to <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula></italic>
+  are used to compute the gradient of the objective function in the
+  associated least squares problem. The reason for the wide use of
+  Levenberg-Marquardt method is, in general, associated with quadratic
+  convergence properties even using only first-order derivatives. In
+  this direction, it is relevant to ask about Levenberg-Marquardt-based
+  methods to solve LOVO problems in the context of adjustment
+  functions.</p>
+  <p><monospace>RAFF.jl</monospace> implements a Levenberg-Marquardt
+  algorithm in the context of LOVO problems, i.e., it solves the problem
+  of minimizing <inline-formula><alternatives>
+  <tex-math><![CDATA[f_{min}(\theta)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>f</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>,
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[F_i(\theta)=(\phi(x_i,\theta)- y_i)^2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>F</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>ϕ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>,
+  for <inline-formula><alternatives>
+  <tex-math><![CDATA[i = 1,\dots, m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>…</mml:mi><mml:mo>,</mml:mo><mml:mi>m</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.
+  In this sense, first-order derivatives are necessary and the same
+  strategy of Andreani et al.
+  (<xref alt="2009" rid="ref-Andreani2009" ref-type="bibr">2009</xref>)
+  is used. It uses first-order derivatives of the model
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϕ</mml:mi></mml:math></alternatives></inline-formula>
+  with respect to <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>
+  to approximate the gradient of <inline-formula><alternatives>
+  <tex-math><![CDATA[f_{min}(\theta)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>f</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>,
+  which is a non differentiable function. Moreover, LOVO problems have
+  the limitation that the number <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+  of possible trusted points needs to be given by the user.
+  <monospace>RAFF.jl</monospace> solves this limitation by implementing
+  a voting system. In this voting system, several LOVO subproblems are
+  solved with different values for <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>,
+  the number of possible trusted points. Each solution of a LOVO
+  subproblem is associated to a vector parameter
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>.
+  The vector parameters are compared against each other using the
+  Euclidean distance, where small distances (using a threshold) are
+  considered the same solution. The parameter
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta^*]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>θ</mml:mi><mml:mo>*</mml:mo></mml:msup></mml:math></alternatives></inline-formula>
+  which most occurs among them is declared as the solution.</p>
+</sec>
+<sec id="functionality">
+  <title>Functionality</title>
+  <p><monospace>RAFF.jl</monospace> main methods expect as input a
+  dataset of the observed data and a model function, whose parameters
+  one intends to adjust. The model function is a regular Julia function
+  with 2 arguments: <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>
+  represents the parameters of the model and
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>
+  represents the arguments of function <inline-formula><alternatives>
+  <tex-math><![CDATA[f]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>.
+  The following function is an example of a model representing the
+  logistic function <disp-formula><alternatives>
+  <tex-math><![CDATA[ \phi(x, \theta) =
+  \theta_1 + \frac{\theta_2}{1.0 + \exp(- \theta_3 x + \theta_4)}.
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>ϕ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>θ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msub><mml:mi>θ</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>+</mml:mo><mml:mfrac><mml:msub><mml:mi>θ</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mrow><mml:mn>1.0</mml:mn><mml:mo>+</mml:mo><mml:mo>exp</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mo>−</mml:mo><mml:msub><mml:mi>θ</mml:mi><mml:mn>3</mml:mn></mml:msub><mml:mi>x</mml:mi><mml:mo>+</mml:mo><mml:msub><mml:mi>θ</mml:mi><mml:mn>4</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:mfrac><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula>
+  The observed data can be represented by the following table:</p>
+  <table-wrap>
+    <table>
+      <thead>
+        <tr>
+          <th align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[x]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula></th>
+          <th align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[y]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>y</mml:mi></mml:math></alternatives></inline-formula></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="center">0.0000</td>
+          <td align="center">1166.0892</td>
+        </tr>
+        <tr>
+          <td align="center">3.3333</td>
+          <td align="center">1384.4495</td>
+        </tr>
+        <tr>
+          <td align="center">6.6666</td>
+          <td align="center">4054.1959</td>
+        </tr>
+        <tr>
+          <td align="center">10.0000</td>
+          <td align="center">2692.4928</td>
+        </tr>
+        <tr>
+          <td align="center">13.3333</td>
+          <td align="center">3011.5096</td>
+        </tr>
+        <tr>
+          <td align="center">16.6666</td>
+          <td align="center">3882.4381</td>
+        </tr>
+        <tr>
+          <td align="center">20.0000</td>
+          <td align="center">4612.4603</td>
+        </tr>
+        <tr>
+          <td align="center">23.3333</td>
+          <td align="center">6605.6544</td>
+        </tr>
+        <tr>
+          <td align="center">26.6666</td>
+          <td align="center">5880.1774</td>
+        </tr>
+        <tr>
+          <td align="center">30.0000</td>
+          <td align="center">5506.3050</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>In this example, the true function was given by
+  <disp-formula><alternatives>
+  <tex-math><![CDATA[ f(x) = 1000 +
+  \frac{5000}{1.0 + \exp(- 0.2 x + 3)}. ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mn>1000</mml:mn><mml:mo>+</mml:mo><mml:mfrac><mml:mn>5000</mml:mn><mml:mrow><mml:mn>1.0</mml:mn><mml:mo>+</mml:mo><mml:mo>exp</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mo>−</mml:mo><mml:mn>0.2</mml:mn><mml:mi>x</mml:mi><mml:mo>+</mml:mo><mml:mn>3</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:mfrac><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula>
+  The observed data was generated as random normal perturbations around
+  the graphic of <inline-formula><alternatives>
+  <tex-math><![CDATA[f]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>
+  and is shown in <xref alt="Figure 1" rid="logistic">Figure 1</xref>.
+  The dots and triangles represent the observed data, where the red
+  triangles were manually set to be the outliers. Using the least
+  squares technique with the model above, the green function is found.
+  When <monospace>RAFF.jl</monospace> is applied to the same problem, it
+  correctly identifies the two outliers. The resulting function is
+  depicted as the red one, very close to <inline-formula><alternatives>
+  <tex-math><![CDATA[f]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>.</p>
+  <fig id="logistic">
+    <caption><p>Points representing the logistic function. The red
+    triangles are two outliers that should be ignored. The blue dashed
+    function is the true one, while the green was obtained by
+    traditional least squares techniques and the red one was obtained by
+    <monospace>RAFF.jl</monospace>.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="logistic.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="additional-features">
+  <title>Additional features</title>
+  <p>The user may also provide more information to
+  <monospace>RAFF.jl</monospace>, such as an rough approximation to the
+  expected number of <italic>trusted</italic> observations. Additional
+  methods and options are also available to more advanced users, such as
+  generation of random test data and multistart strategies. First-order
+  derivatives of the model <inline-formula><alternatives>
+  <tex-math><![CDATA[\phi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϕ</mml:mi></mml:math></alternatives></inline-formula>
+  with respect to <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>
+  can also be provided, which results in a faster executing time. When
+  they are not provided by the user, <monospace>RAFF.jl</monospace> uses
+  Julia’s <monospace>ForwardDiff.jl</monospace> package
+  (<xref alt="Revels et al., 2016" rid="ref-Revels2016" ref-type="bibr">Revels
+  et al., 2016</xref>).</p>
+  <p><monospace>RAFF.jl</monospace> can be run in serial, parallel and
+  distributed environments. Parallel and distributed methods use the
+  native
+  <ext-link ext-link-type="uri" xlink:href="https://docs.julialang.org/en/v1.0/stdlib/Distributed/"><monospace>Distributed.jl</monospace></ext-link>
+  package. The distributed version is a primary-worker implementation
+  that does not use shared arrays, therefore, can be run both locally or
+  on a cluster of computers.</p>
+  <p>This package is intended to be used by any experimental researcher
+  with a little knowledge about mathematical modeling and fitting
+  functions.</p>
+</sec>
+<sec id="installation-and-usage">
+  <title>Installation and usage</title>
+  <p><monospace>RAFF.jl</monospace> is an open-source software that can
+  be
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/fsobral/RAFF.jl">downloaded
+  from Github</ext-link>. It is a registered package and can be directly
+  installed from Julia’s package repository. The whole description for
+  first time usage or its API is available at its
+  <ext-link ext-link-type="uri" xlink:href="https://fsobral.github.io/RAFF.jl/stable/">documentation</ext-link>.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>This project was supported by Fundação Araucária under grant
+  002/17.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Andreani2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Andreani</surname><given-names>R.</given-names></name>
+          <name><surname>Martı́nez</surname><given-names>J. M.</given-names></name>
+          <name><surname>Martı́nez</surname><given-names>L.</given-names></name>
+          <name><surname>Yano</surname><given-names>F. S.</given-names></name>
+        </person-group>
+        <article-title>Low Order-Value Optimization and Applications</article-title>
+        <source>Journal of Global Optimization</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume>43</volume>
+        <issue>1</issue>
+        <issn>0925-5001</issn>
+        <uri>http://link.springer.com/10.1007/s10898-008-9280-3</uri>
+        <pub-id pub-id-type="doi">10.1007/s10898-008-9280-3</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Andreani2005">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Andreani</surname><given-names>R.</given-names></name>
+          <name><surname>Dunder</surname><given-names>C.</given-names></name>
+          <name><surname>Martı́nez</surname><given-names>J. M.</given-names></name>
+        </person-group>
+        <article-title>Nonlinear-Programming Reformulation of the Order-Value Optimization Problem</article-title>
+        <source>Mathematical Methods of Operations Research</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2005">2005</year>
+        <volume>61</volume>
+        <issue>3</issue>
+        <issn>1432-5217</issn>
+        <uri>https://doi.org/10.1007/s001860400410</uri>
+        <pub-id pub-id-type="doi">10.1007/s001860400410</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Martinez2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Martı́nez</surname><given-names>J. M.</given-names></name>
+        </person-group>
+        <article-title>Generalized order-value optimization</article-title>
+        <source>Top</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>20</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1007/s11750-010-0169-1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Revels2016">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Revels</surname><given-names>J.</given-names></name>
+          <name><surname>Lubin</surname><given-names>M.</given-names></name>
+          <name><surname>Papamarkou</surname><given-names>T.</given-names></name>
+        </person-group>
+        <article-title>Forward-mode automatic differentiation in Julia</article-title>
+        <publisher-name>arXiv:1607.07892 [cs.MS]</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Motulsky2006a">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Motulsky</surname><given-names>H. J.</given-names></name>
+          <name><surname>Brown</surname><given-names>E. R.</given-names></name>
+        </person-group>
+        <article-title>Detecting Outliers When Fitting Data with Nonlinear Regression – a New Method Based on Robust Nonlinear Regression and the False Discovery Rate</article-title>
+        <source>BMC Bioinformatics</source>
+        <year iso-8601-date="2006">2006</year>
+        <volume>7</volume>
+        <issue>123</issue>
+        <pub-id pub-id-type="doi">10.1186/1471-2105-7-123</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Liu2008">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Liu</surname><given-names>Y.</given-names></name>
+          <name><surname>Wang</surname><given-names>W.</given-names></name>
+        </person-group>
+        <article-title>A Revisit to Least Squares Orthogonal Distance Fitting of Parametric Curves and Surfaces</article-title>
+        <source>Advances in geometric modeling and processing</source>
+        <person-group person-group-type="editor">
+          <name><surname>Chen</surname><given-names>Falai</given-names></name>
+          <name><surname>Jüttler</surname><given-names>Bert</given-names></name>
+        </person-group>
+        <publisher-name>Springer Berlin Heidelberg</publisher-name>
+        <publisher-loc>Berlin, Heidelberg</publisher-loc>
+        <year iso-8601-date="2008">2008</year>
+        <isbn>978-3-540-79246-8</isbn>
+        <pub-id pub-id-type="doi">10.1007/978-3-540-79246-8_29</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-keles2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Keleş</surname><given-names>Taliha</given-names></name>
+        </person-group>
+        <article-title>Comparison of Classical Least Squares and Orthogonal Regression in Measurement Error Models.</article-title>
+        <source>International Online Journal of Educational Sciences</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>10</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.15345/iojes.2018.03.013</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-more1978levenberg">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Moré</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>The Levenberg-Marquardt Algorithm: Implementation and Theory</article-title>
+        <source>Numerical Analysis</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="1978">1978</year>
+        <uri>https://doi.org/10.1007/BFb0067700</uri>
+        <pub-id pub-id-type="doi">10.1007/BFb0067700</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

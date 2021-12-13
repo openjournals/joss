@@ -1,0 +1,690 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1635</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01635</article-id>
+<title-group>
+<article-title>Spruceup: fast and flexible identification,
+visualization, and removal of outliers from large multiple sequence
+alignments</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-0872-7098</contrib-id>
+<string-name>Marek L. Borowiec</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Entomology, Plant Pathology and Nematology,
+University of Idaho</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-09-23">
+<day>23</day>
+<month>9</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>42</issue>
+<fpage>1635</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>bioinformatics</kwd>
+<kwd>alignment trimming</kwd>
+<kwd>phylogenetics</kwd>
+<kwd>orthology</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>spruceup</monospace> is an open-source Python software
+  package that utilizes a novel algorithm and allows flexible
+  identification, visualization, and removal of abnormal sequences from
+  multiple sequence alignments (MSAs). The
+  <monospace>spruceup</monospace> algorithm aims to solve the problem of
+  individual poorly aligned sequences rarely addressed by other
+  alignment trimming tools. It relies on computing distance metrics in a
+  sliding window along an MSA and comparing them to metrics across all
+  windows for each sample. While the program is designed with trimming
+  phylogenetic datasets in mind, its output can be used for any task
+  requiring computing of distances along MSAs with custom
+  parameters.</p>
+  <p>Evolutionary inference is increasingly reliant on large MSAs
+  consisting of millions of sites from hundreds or thousands of samples.
+  MSAs used for inference of evolutionary relationships should contain
+  homologous nucleotides or amino acids (alignment columns) from
+  different samples (alignment rows). However, MSAs may contain errors
+  that violate this assumption of homology, resulting from
+  cross-contamination, hidden paralogy, high divergence leading to
+  insufficient information for accurate alignment, or other failures of
+  alignment algorithms. These errors have been well-documented and shown
+  to negatively impact phylogenetic inference. While many tools exist
+  for trimming of poorly-aligned MSA columns, few allow identification
+  of individual misaligned sequences. Tools for removal of poorly
+  aligned columns address issues impacting most samples in the MSA but
+  are not designed to identify misalignment limited to a single or few
+  samples. Failure to remove such individual misaligned samples
+  introduces errors into downstream analyses. Lack of tools for
+  automated detection of these sequences means that most researchers
+  simply do not address them and only few attempt manual alignment
+  curation. Although visual inspection of data is always desirable,
+  manual error correction is unsustainable with the alignment sizes used
+  in modern phylogenetic studies. <monospace>spruceup</monospace> is
+  intended for any phylogeneticist working with large datasets as a
+  complement to commonly used tools that filter poorly-aligned MSA
+  sites.</p>
+</sec>
+<sec id="overview">
+  <title>Overview</title>
+  <p>Evolutionary research relies on multiple sequence alignments (MSAs)
+  which are matrix representations of hypotheses about the evolutionary
+  history of genetic material. Rows in these matrices correspond to
+  different samples, most often individual organisms representative of
+  species or populations. The columns, which are called sites, contain
+  nucleotides (in DNA and RNA sequences) or amino acids (in protein
+  sequences) that should be homologous, meaning they are derived from
+  the same ancestral nucleotide or amino acid in all included samples.
+  Due to complexities of molecular evolution, aligning sequences such
+  that they are homologous is a significant computational challenge
+  (<xref alt="Morrison, 2018" rid="ref-morrison_2018multiple" ref-type="bibr">Morrison,
+  2018</xref>). As a result, homology errors that have negative impact
+  on downstream analyses, including phylogenetics and evolutionary
+  inference
+  (<xref alt="Ogden &amp; Rosenberg, 2006" rid="ref-ogden_2006msa" ref-type="bibr">Ogden
+  &amp; Rosenberg, 2006</xref>), are widespread in currently published
+  phylogenetic data
+  (<xref alt="Philippe et al., 2017" rid="ref-philippe_2017" ref-type="bibr">Philippe
+  et al., 2017</xref>;
+  <xref alt="Springer &amp; Gatesy, 2018" rid="ref-springer_2018homology" ref-type="bibr">Springer
+  &amp; Gatesy, 2018</xref>). Recent studies show that dramatically
+  different phylogenetic trees can be produced by altering a few regions
+  or even sites in very large MSAs
+  (<xref alt="Brown &amp; Thomson, 2017" rid="ref-brown_2017bf" ref-type="bibr">Brown
+  &amp; Thomson, 2017</xref>;
+  <xref alt="Shen et al., 2017" rid="ref-shen_2017contentious" ref-type="bibr">Shen
+  et al., 2017</xref>;
+  <xref alt="Walker et al., 2018" rid="ref-walker_2018contentious" ref-type="bibr">Walker
+  et al., 2018</xref>). Because of this, researchers often post-process
+  MSAs following alignment to identify and filter out non-homologous
+  matrix cells.</p>
+  <p>Many tools exist that trim alignments based on low-quality sites
+  (<xref alt="Capella-Gutierrez et al., 2009" rid="ref-capella_gutierrez_2009trimal" ref-type="bibr">Capella-Gutierrez
+  et al., 2009</xref>;
+  <xref alt="Criscuolo &amp; Gribaldo, 2010" rid="ref-criscuolo_2010bmge" ref-type="bibr">Criscuolo
+  &amp; Gribaldo, 2010</xref>;
+  <xref alt="Dress et al., 2008" rid="ref-dress_2008noisy" ref-type="bibr">Dress
+  et al., 2008</xref>;
+  <xref alt="Kück et al., 2010" rid="ref-kuck_2010" ref-type="bibr">Kück
+  et al., 2010</xref>;
+  <xref alt="Penn et al., 2010" rid="ref-penn_2010guidance" ref-type="bibr">Penn
+  et al., 2010</xref>;
+  <xref alt="Talavera &amp; Castresana, 2007" rid="ref-talavera_2007" ref-type="bibr">Talavera
+  &amp; Castresana, 2007</xref>;
+  <xref alt="Wu et al., 2012" rid="ref-wu_2012zorro" ref-type="bibr">Wu
+  et al., 2012</xref>). These methods process MSAs on a column-by-column
+  basis and can identify alignment blocks where many samples are
+  problematic but may not have the power to identify errors affecting
+  only one or few of the samples.</p>
+  <p>Relatively few existing alignment trimming strategies have the
+  ability to process data on a row-by-row basis and detect errors
+  resulting from misalignment of one or few samples. An approach that
+  has been successfully used in several phylogenomic studies uses
+  information from phylogenetic trees inferred from individual locus or
+  gene alignments to identify sequences characterized by unusually long
+  branches
+  (<xref alt="Borowiec et al., 2015" rid="ref-borowiec_2015ctenophora" ref-type="bibr">Borowiec
+  et al., 2015</xref>;
+  <xref alt="Yang &amp; Smith, 2014" rid="ref-yang_2014transcriptomes" ref-type="bibr">Yang
+  &amp; Smith, 2014</xref>). Unfortunately, this approach may
+  disproportionately affect genuinely divergent sequences, such as
+  distantly related outgroup taxa. A more sophisticated version of this
+  idea, capable of taking into account divergent samples, is implemented
+  in TreeShrink
+  (<xref alt="Mai &amp; Mirarab, 2018" rid="ref-mai_2018treeshrink" ref-type="bibr">Mai
+  &amp; Mirarab, 2018</xref>). All tree-based approaches require
+  phylogenetic analysis prior to and following alignment trimming, which
+  may be computationally expensive.</p>
+  <p>Two recently developed methods aim to identify artifacts affecting
+  only one or few samples directly from sequence alignments: HmmCleaner
+  (<xref alt="Di Franco et al., 2019" rid="ref-di_franco_2019hmmcleaner" ref-type="bibr">Di
+  Franco et al., 2019</xref>) and PREQUAL
+  (<xref alt="Whelan et al., 2018" rid="ref-whelan_2018prequal" ref-type="bibr">Whelan
+  et al., 2018</xref>). Both tools build hidden Markov models of
+  sequences within an alignment to identify poorly-aligned sequence
+  fragments. They are designed to work with amino acid and
+  protein-coding nucleotide sequences and are thus not suitable for some
+  phylogenomic alignments, such as ones constructed from partially or
+  largely non-coding ultraconserved elements
+  (<xref alt="Faircloth et al., 2012" rid="ref-faircloth_2012uces" ref-type="bibr">Faircloth
+  et al., 2012</xref>).</p>
+  <p>Finally, visual inspection of alignment followed by manual
+  correction has been proposed to deal with alignment issues
+  (<xref alt="Springer &amp; Gatesy, 2018" rid="ref-springer_2018homology" ref-type="bibr">Springer
+  &amp; Gatesy, 2018</xref>). Visual inspection of data is always
+  desirable but it is unlikely to be used as a comprehensive
+  error-removal strategy with alignments that now routinely include
+  thousands of loci sequenced from dozens or even hundreds of samples
+  (<xref alt="Edwards et al., 2016" rid="ref-edwards_2016" ref-type="bibr">Edwards
+  et al., 2016</xref>).</p>
+  <p>The Python software package <monospace>spruceup</monospace>
+  introduced here was designed to perform fast detection of outlier
+  sequences and alignment trimming without prior phylogenetic analysis
+  and without penalizing genuinely divergent sequences. It is also
+  capable of fine-scale alignment inspection that allows identification
+  of errors affecting only parts of a locus or gene region. It fills a
+  need for a user-friendly toolbox for flexible identification,
+  visualization, and removal of individual misaligned sequence fragments
+  from large multiple sequence alignments.</p>
+  <p>The workflow of outlier detection and removal is as follows:</p>
+  <list list-type="order">
+    <list-item>
+      <p>Split large phylogenomic alignment into windows of user-defined
+      size and overlap.</p>
+    </list-item>
+    <list-item>
+      <p>Calculate genetic distances among samples in each window;
+      distances can optionally be scaled by distance derived from a
+      guide tree.</p>
+    </list-item>
+    <list-item>
+      <p>Compute distribution of distances across windows for each
+      sample.</p>
+    </list-item>
+    <list-item>
+      <p>Fit a lognormal curve to distances observed for each sample
+      (optional).</p>
+    </list-item>
+    <list-item>
+      <p>Using a user-defined cutoff, reject windows from the tail of
+      the distribution in each sample. The cutoff can represent quantile
+      of the fitted distribution or the mean of each sample’s distances
+      across windows. The cutoff defined this way varies across samples
+      and ensures that genuinely divergent samples are not
+      disproportionately affected (Figure 1).</p>
+    </list-item>
+    <list-item>
+      <p>Plot and visualize distribution of distances and cutoffs for
+      each sample.</p>
+    </list-item>
+  </list>
+  <p><monospace>spruceup</monospace> allows the user to calculate
+  distances across alignment windows of arbitrary size and overlap. The
+  resulting distances are written to a <monospace>json</monospace>
+  format file. This distance output file can be later used for
+  exploration of various outlier cutoff criteria and thresholds, or
+  other applications where the user needs to know sample-specific
+  distances across the alignment. Given user-defined criteria, the
+  removal procedure identifies outliers and records their alignment
+  coordinates to a file. Distribution of distances across all alignment
+  windows are visualized for each sample along with thresholds chosen
+  for trimming. The program can be used for outlier removal with
+  variable amount of supervision, from trimming relying on default
+  settings to assisted manual inspection of potentially erroneous
+  regions.</p>
+</sec>
+<sec id="availability-and-implementation">
+  <title>Availability and Implementation</title>
+  <p><monospace>spruceup</monospace> is written in Python 3 and
+  supported on Linux operating systems. It is distributed under GNU
+  GPLv3 license (https://www.gnu.org/licenses/gpl-3.0.en.html). The
+  source code, manual, tutorial, and example files are available on
+  GitHub (https://github.com/marekborowiec/spruceup).
+  <monospace>spruceup</monospace> is available on and can also be
+  installed through the Python Package Index at
+  (https://pypi.org/project/spruceup/).</p>
+</sec>
+<sec id="figure">
+  <title>Figure</title>
+  <fig>
+    <caption><p>Outlier removal from multiple sequence alignment by
+    <monospace>spruceup</monospace>. This nucleotide alignment was
+    simulated under a phylogenetic tree with topology and branch lengths
+    taken from the empirical dataset of Ultraconserved Elements
+    (<xref alt="Faircloth et al., 2012" rid="ref-faircloth_2012uces" ref-type="bibr">Faircloth
+    et al., 2012</xref>) sequenced for a group of ants
+    (<xref alt="Blaimer et al., 2016" rid="ref-blaimer_2016acropyga" ref-type="bibr">Blaimer
+    et al., 2016</xref>). 100 alignments of 500 nucleotides each were
+    simulated under the general time-reversible model (GTR) with state
+    change rates between 0.1 and 1.0, base frequencies ranging from 0.1
+    to 0.8, and branch length scaling between 0.1 and 50, each parameter
+    selected randomly for each alignment. After the 100 alignments were
+    concatenated, divergent (complemented) sequence fragments were
+    introduced (left panels), and later trimmed using the
+    <monospace>spruceup</monospace> workflow (right panels). The figure
+    shows only a small window of the simulated concatenated alignment of
+    50,000 nucleotides. Alignments visualized with AliView:
+    https://ormbunkar.se/aliview/.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="spruceup-fig1.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>I would like to thank Philip S. Ward (UC Davis) for testing and
+  valuable feedback on <monospace>spruceup</monospace>.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-blaimer_2016acropyga">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Blaimer</surname><given-names>Bonnie B.</given-names></name>
+          <name><surname>LaPolla</surname><given-names>John S.</given-names></name>
+          <name><surname>Branstetter</surname><given-names>Michael G.</given-names></name>
+          <name><surname>Lloyd</surname><given-names>Michael W.</given-names></name>
+          <name><surname>Brady</surname><given-names>Seán G.</given-names></name>
+        </person-group>
+        <article-title>Phylogenomics, biogeography and diversification of obligate mealybug-tending ants in the genus Acropyga</article-title>
+        <source>Molecular Phylogenetics and Evolution</source>
+        <publisher-name>Elsevier BV</publisher-name>
+        <year iso-8601-date="2016-09">2016</year><month>09</month>
+        <volume>102</volume>
+        <uri>https://doi.org/10.1016%2Fj.ympev.2016.05.030</uri>
+        <pub-id pub-id-type="doi">10.1016/j.ympev.2016.05.030</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-borowiec_2015ctenophora">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Borowiec</surname><given-names>Marek L.</given-names></name>
+          <name><surname>Lee</surname><given-names>Ernest K.</given-names></name>
+          <name><surname>Chiu</surname><given-names>Joanna C.</given-names></name>
+          <name><surname>Plachetzki</surname><given-names>David C.</given-names></name>
+        </person-group>
+        <article-title>Extracting phylogenetic signal and accounting for bias in whole-genome data sets supports the Ctenophora as sister to remaining Metazoa</article-title>
+        <source>BMC Genomics</source>
+        <publisher-name>Springer Nature</publisher-name>
+        <year iso-8601-date="2015-11">2015</year><month>11</month>
+        <volume>16</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1186%2Fs12864-015-2146-4</uri>
+        <pub-id pub-id-type="doi">10.1186/s12864-015-2146-4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-brown_2017bf">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Brown</surname><given-names>Jeremy M.</given-names></name>
+          <name><surname>Thomson</surname><given-names>Robert C.</given-names></name>
+        </person-group>
+        <article-title>Bayes factors unmask highly variable information content, bias, and extreme influence in phylogenomic analyses</article-title>
+        <source>Systematic Biology</source>
+        <publisher-name>Oxford University Press (OUP)</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>66</volume>
+        <issue>4</issue>
+        <uri>https://doi.org/10.1093%2Fsysbio%2Fsyw101</uri>
+        <pub-id pub-id-type="doi">10.1093/sysbio/syw101</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-capella_gutierrez_2009trimal">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Capella-Gutierrez</surname><given-names>S.</given-names></name>
+          <name><surname>Silla-Martinez</surname><given-names>J. M.</given-names></name>
+          <name><surname>Gabaldon</surname><given-names>T.</given-names></name>
+        </person-group>
+        <article-title>trimAl: A tool for automated alignment trimming in large-scale phylogenetic analyses</article-title>
+        <source>Bioinformatics</source>
+        <publisher-name>Oxford University Press (OUP)</publisher-name>
+        <year iso-8601-date="2009-06">2009</year><month>06</month>
+        <volume>25</volume>
+        <issue>15</issue>
+        <uri>https://doi.org/10.1093%2Fbioinformatics%2Fbtp348</uri>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btp348</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-criscuolo_2010bmge">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Criscuolo</surname><given-names>Alexis</given-names></name>
+          <name><surname>Gribaldo</surname><given-names>Simonetta</given-names></name>
+        </person-group>
+        <article-title>BMGE (block mapping and gathering with entropy): A new software for selection of phylogenetic informative regions from multiple sequence alignments</article-title>
+        <source>BMC Evolutionary Biology</source>
+        <publisher-name>Springer Nature</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <volume>10</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1186%2F1471-2148-10-210</uri>
+        <pub-id pub-id-type="doi">10.1186/1471-2148-10-210</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-di_franco_2019hmmcleaner">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Di Franco</surname><given-names>Arnaud</given-names></name>
+          <name><surname>Poujol</surname><given-names>Raphaël</given-names></name>
+          <name><surname>Baurain</surname><given-names>Denis</given-names></name>
+          <name><surname>Philippe</surname><given-names>Hervé</given-names></name>
+        </person-group>
+        <article-title>Evaluating the usefulness of alignment filtering methods to reduce the impact of errors on evolutionary inferences</article-title>
+        <source>BMC Evolutionary Biology</source>
+        <publisher-name>Springer Nature</publisher-name>
+        <year iso-8601-date="2019-01">2019</year><month>01</month>
+        <volume>19</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1186%2Fs12862-019-1350-2</uri>
+        <pub-id pub-id-type="doi">10.1186/s12862-019-1350-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-dress_2008noisy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dress</surname><given-names>Andreas WM</given-names></name>
+          <name><surname>Flamm</surname><given-names>Christoph</given-names></name>
+          <name><surname>Fritzsch</surname><given-names>Guido</given-names></name>
+          <name><surname>Grünewald</surname><given-names>Stefan</given-names></name>
+          <name><surname>Kruspe</surname><given-names>Matthias</given-names></name>
+          <name><surname>Prohaska</surname><given-names>Sonja J</given-names></name>
+          <name><surname>Stadler</surname><given-names>Peter F</given-names></name>
+        </person-group>
+        <article-title>Noisy: Identification of problematic columns in multiple sequence alignments</article-title>
+        <source>Algorithms for Molecular Biology</source>
+        <publisher-name>Springer Nature</publisher-name>
+        <year iso-8601-date="2008">2008</year>
+        <volume>3</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1186%2F1748-7188-3-7</uri>
+        <pub-id pub-id-type="doi">10.1186/1748-7188-3-7</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-edwards_2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Edwards</surname><given-names>Scott V.</given-names></name>
+          <name><surname>Xi</surname><given-names>Zhenxiang</given-names></name>
+          <name><surname>Janke</surname><given-names>Axel</given-names></name>
+          <name><surname>Faircloth</surname><given-names>Brant C.</given-names></name>
+          <name><surname>McCormack</surname><given-names>John E.</given-names></name>
+          <name><surname>Glenn</surname><given-names>Travis C.</given-names></name>
+          <name><surname>Zhong</surname><given-names>Bojian</given-names></name>
+          <name><surname>Wu</surname><given-names>Shaoyuan</given-names></name>
+          <name><surname>Lemmon</surname><given-names>Emily Moriarty</given-names></name>
+          <name><surname>Lemmon</surname><given-names>Alan R.</given-names></name>
+          <name><surname>Leaché</surname><given-names>Adam D.</given-names></name>
+          <name><surname>Liu</surname><given-names>Liang</given-names></name>
+          <name><surname>Davis</surname><given-names>Charles C.</given-names></name>
+        </person-group>
+        <article-title>Implementing and testing the multispecies coalescent model: A valuable paradigm for phylogenomics</article-title>
+        <source>Molecular Phylogenetics and Evolution</source>
+        <publisher-name>Elsevier BV</publisher-name>
+        <year iso-8601-date="2016-01">2016</year><month>01</month>
+        <volume>94</volume>
+        <uri>https://doi.org/10.1016%2Fj.ympev.2015.10.027</uri>
+        <pub-id pub-id-type="doi">10.1016/j.ympev.2015.10.027</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-faircloth_2012uces">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Faircloth</surname><given-names>Brant C.</given-names></name>
+          <name><surname>McCormack</surname><given-names>John E.</given-names></name>
+          <name><surname>Crawford</surname><given-names>Nicholas G.</given-names></name>
+          <name><surname>Harvey</surname><given-names>Michael G.</given-names></name>
+          <name><surname>Brumfield</surname><given-names>Robb T.</given-names></name>
+          <name><surname>Glenn</surname><given-names>Travis C.</given-names></name>
+        </person-group>
+        <article-title>Ultraconserved elements anchor thousands of genetic markers spanning multiple evolutionary timescales</article-title>
+        <source>Systematic Biology</source>
+        <publisher-name>Oxford University Press (OUP)</publisher-name>
+        <year iso-8601-date="2012-01">2012</year><month>01</month>
+        <volume>61</volume>
+        <issue>5</issue>
+        <uri>http://dx.doi.org/10.1093/sysbio/sys004</uri>
+        <pub-id pub-id-type="doi">10.1093/sysbio/sys004</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kuck_2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kück</surname><given-names>Patrick</given-names></name>
+          <name><surname>Meusemann</surname><given-names>Karen</given-names></name>
+          <name><surname>Dambach</surname><given-names>Johannes</given-names></name>
+          <name><surname>Thormann</surname><given-names>Birthe</given-names></name>
+          <name><surname>von Reumont</surname><given-names>Björn M</given-names></name>
+          <name><surname>Wägele</surname><given-names>Johann W</given-names></name>
+          <name><surname>Misof</surname><given-names>Bernhard</given-names></name>
+        </person-group>
+        <article-title>Parametric and non-parametric masking of randomness in sequence alignments can be improved and leads to better resolved trees</article-title>
+        <source>Frontiers in Zoology</source>
+        <publisher-name>Springer Nature</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <volume>7</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1186%2F1742-9994-7-10</uri>
+        <pub-id pub-id-type="doi">10.1186/1742-9994-7-10</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mai_2018treeshrink">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mai</surname><given-names>Uyen</given-names></name>
+          <name><surname>Mirarab</surname><given-names>Siavash</given-names></name>
+        </person-group>
+        <article-title>TreeShrink: Fast and accurate detection of outlier long branches in collections of phylogenetic trees</article-title>
+        <source>BMC Genomics</source>
+        <publisher-name>Springer Nature</publisher-name>
+        <year iso-8601-date="2018-05">2018</year><month>05</month>
+        <volume>19</volume>
+        <issue>S5</issue>
+        <uri>https://doi.org/10.1186%2Fs12864-018-4620-2</uri>
+        <pub-id pub-id-type="doi">10.1186/s12864-018-4620-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-morrison_2018multiple">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Morrison</surname><given-names>David A</given-names></name>
+        </person-group>
+        <article-title>Multiple sequence alignment is not a solved problem</article-title>
+        <source>arXiv</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://arxiv.org/abs/1808.07717</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-ogden_2006msa">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ogden</surname><given-names>T Heath</given-names></name>
+          <name><surname>Rosenberg</surname><given-names>Michael S</given-names></name>
+        </person-group>
+        <article-title>Multiple sequence alignment accuracy and phylogenetic inference</article-title>
+        <source>Systematic Biology</source>
+        <publisher-name>Oxford University Press (OUP)</publisher-name>
+        <year iso-8601-date="2006-04">2006</year><month>04</month>
+        <volume>55</volume>
+        <issue>2</issue>
+        <uri>https://doi.org/10.1080%2F10635150500541730</uri>
+        <pub-id pub-id-type="doi">10.1080/10635150500541730</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-penn_2010guidance">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Penn</surname><given-names>O.</given-names></name>
+          <name><surname>Privman</surname><given-names>E.</given-names></name>
+          <name><surname>Ashkenazy</surname><given-names>H.</given-names></name>
+          <name><surname>Landan</surname><given-names>G.</given-names></name>
+          <name><surname>Graur</surname><given-names>D.</given-names></name>
+          <name><surname>Pupko</surname><given-names>T.</given-names></name>
+        </person-group>
+        <article-title>GUIDANCE: A web server for assessing alignment confidence scores</article-title>
+        <source>Nucleic Acids Research</source>
+        <publisher-name>Oxford University Press (OUP)</publisher-name>
+        <year iso-8601-date="2010-05">2010</year><month>05</month>
+        <volume>38</volume>
+        <issue>Web Server</issue>
+        <uri>https://doi.org/10.1093%2Fnar%2Fgkq443</uri>
+        <pub-id pub-id-type="doi">10.1093/nar/gkq443</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-philippe_2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Philippe</surname><given-names>Hervé</given-names></name>
+          <name><surname>de Vienne</surname><given-names>Damien M.</given-names></name>
+          <name><surname>Ranwez</surname><given-names>Vincent</given-names></name>
+          <name><surname>Roure</surname><given-names>Béatrice</given-names></name>
+          <name><surname>Baurain</surname><given-names>Denis</given-names></name>
+          <name><surname>Delsuc</surname><given-names>Frédéric</given-names></name>
+        </person-group>
+        <article-title>Pitfalls in supermatrix phylogenomics</article-title>
+        <source>European Journal of Taxonomy</source>
+        <publisher-name>Museum National DHistoire Naturelle</publisher-name>
+        <year iso-8601-date="2017-02">2017</year><month>02</month>
+        <volume>283</volume>
+        <uri>https://doi.org/10.5852%2Fejt.2017.283</uri>
+        <pub-id pub-id-type="doi">10.5852/ejt.2017.283</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-shen_2017contentious">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Shen</surname><given-names>Xing-Xing</given-names></name>
+          <name><surname>Hittinger</surname><given-names>Chris Todd</given-names></name>
+          <name><surname>Rokas</surname><given-names>Antonis</given-names></name>
+        </person-group>
+        <article-title>Contentious relationships in phylogenomic studies can be driven by a handful of genes</article-title>
+        <source>Nature Ecology and Evolution</source>
+        <publisher-name>Springer Nature</publisher-name>
+        <year iso-8601-date="2017-04">2017</year><month>04</month>
+        <volume>1</volume>
+        <issue>5</issue>
+        <uri>https://doi.org/10.1038%2Fs41559-017-0126</uri>
+        <pub-id pub-id-type="doi">10.1038/s41559-017-0126</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-springer_2018homology">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Springer</surname><given-names>Mark S.</given-names></name>
+          <name><surname>Gatesy</surname><given-names>John</given-names></name>
+        </person-group>
+        <article-title>On the importance of homology in the age of phylogenomics</article-title>
+        <source>Systematics and Biodiversity</source>
+        <publisher-name>Informa UK Limited</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>16</volume>
+        <issue>3</issue>
+        <uri>https://doi.org/10.1080%2F14772000.2017.1401016</uri>
+        <pub-id pub-id-type="doi">10.1080/14772000.2017.1401016</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-talavera_2007">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Talavera</surname><given-names>Gerard</given-names></name>
+          <name><surname>Castresana</surname><given-names>Jose</given-names></name>
+        </person-group>
+        <article-title>Improvement of phylogenies after removing divergent and ambiguously aligned blocks from protein sequence alignments</article-title>
+        <source>Systematic Biology</source>
+        <publisher-name>Oxford University Press (OUP)</publisher-name>
+        <year iso-8601-date="2007-08">2007</year><month>08</month>
+        <volume>56</volume>
+        <issue>4</issue>
+        <uri>http://dx.doi.org/10.1080/10635150701472164</uri>
+        <pub-id pub-id-type="doi">10.1080/10635150701472164</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-walker_2018contentious">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Walker</surname><given-names>Joseph F</given-names></name>
+          <name><surname>Brown</surname><given-names>Joseph W</given-names></name>
+          <name><surname>Smith</surname><given-names>Stephen A</given-names></name>
+        </person-group>
+        <article-title>Analyzing contentious relationships and outlier genes in phylogenomics</article-title>
+        <source>Systematic Biology</source>
+        <publisher-name>Oxford University Press (OUP)</publisher-name>
+        <year iso-8601-date="2018-06">2018</year><month>06</month>
+        <volume>67</volume>
+        <issue>5</issue>
+        <uri>https://doi.org/10.1093%2Fsysbio%2Fsyy043</uri>
+        <pub-id pub-id-type="doi">10.1093/sysbio/syy043</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-whelan_2018prequal">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Whelan</surname><given-names>Simon</given-names></name>
+          <name><surname>Irisarri</surname><given-names>Iker</given-names></name>
+          <name><surname>Burki</surname><given-names>Fabien</given-names></name>
+        </person-group>
+        <article-title>PREQUAL: Detecting non-homologous characters in sets of unaligned homologous sequences</article-title>
+        <source>Bioinformatics</source>
+        <publisher-name>Oxford University Press (OUP)</publisher-name>
+        <year iso-8601-date="2018-06">2018</year><month>06</month>
+        <volume>34</volume>
+        <issue>22</issue>
+        <uri>https://doi.org/10.1093%2Fbioinformatics%2Fbty448</uri>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/bty448</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-wu_2012zorro">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wu</surname><given-names>Martin</given-names></name>
+          <name><surname>Chatterji</surname><given-names>Sourav</given-names></name>
+          <name><surname>Eisen</surname><given-names>Jonathan A.</given-names></name>
+        </person-group>
+        <article-title>Accounting for alignment uncertainty in phylogenomics</article-title>
+        <source>PLoS ONE</source>
+        <publisher-name>Public Library of Science (PLoS)</publisher-name>
+        <year iso-8601-date="2012-01">2012</year><month>01</month>
+        <volume>7</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1371%2Fjournal.pone.0030288</uri>
+        <pub-id pub-id-type="doi">10.1371/journal.pone.0030288</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-yang_2014transcriptomes">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yang</surname><given-names>Ya</given-names></name>
+          <name><surname>Smith</surname><given-names>Stephen A.</given-names></name>
+        </person-group>
+        <article-title>Orthology inference in nonmodel organisms using transcriptomes and low-coverage genomes: Improving accuracy and matrix occupancy for phylogenomics</article-title>
+        <source>Molecular Biology and Evolution</source>
+        <publisher-name>Oxford University Press (OUP)</publisher-name>
+        <year iso-8601-date="2014-08">2014</year><month>08</month>
+        <volume>31</volume>
+        <issue>11</issue>
+        <uri>https://doi.org/10.1093%2Fmolbev%2Fmsu245</uri>
+        <pub-id pub-id-type="doi">10.1093/molbev/msu245</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

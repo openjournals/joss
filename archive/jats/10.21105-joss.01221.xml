@@ -1,0 +1,475 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1221</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01221</article-id>
+<title-group>
+<article-title>areal: An R package for areal weighted
+interpolation</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-4310-9888</contrib-id>
+<string-name>Christopher G. Prener</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Charles K. Revord</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Sociology and Anthropology, Saint Louis
+University, St. Louis, MO, USA</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-03-22">
+<day>22</day>
+<month>3</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>37</issue>
+<fpage>1221</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>geospatial science</kwd>
+<kwd>spatial statistics</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>Population data are often available at various levels of
+  aggregation, such as census tracts or block groups in the United
+  States or output areas in the United Kingdom. These units are often
+  drawn for convenience and not because they represent some commonly
+  accepted area in residents’ lived experiences. Despite this,
+  researchers often use them as proxies for neighborhoods since they
+  come with readily available demographic data. Researchers who do wish
+  to move past these proxies and produce population estimates for other
+  geographies typically resort to developing their own, often manual,
+  implementations of the areal weighted interpolation workflow
+  (<xref alt="Qiu et al., 2012" rid="ref-qiu2012development" ref-type="bibr">Qiu
+  et al., 2012</xref>). The lack of reliable and easy to use software
+  that implements this technique has therefore served as an additional
+  barrier to using local neighborhood boundaries in research.</p>
+  <p>Areal weighted interpolation is the most accessible technique for
+  estimating population values for overlapping but incongruent areas,
+  such as imputing neighborhood populations from census tracts. Unlike
+  interpolation techniques, such as inverse distance weighted
+  interpolation, that are appropriate for point data, areal weighted
+  interpolation is designed specifically for working with data already
+  aggregated to some set of polygon spatial features
+  (<xref alt="Lam, 1983" rid="ref-lam1983spatial" ref-type="bibr">Lam,
+  1983</xref>). Estimating population values from these data to an
+  overlapping but incongruent set of polygon features is known as the
+  <italic>polygon overlay problem</italic>
+  (<xref alt="Goodchild, 1978" rid="ref-goodchild1978statistical" ref-type="bibr">Goodchild,
+  1978</xref>), with the original data known as the “source” data and
+  the overlapping set of features known as the “target” data
+  (<xref alt="Markoff &amp; Shapiro, 1973" rid="ref-markoff1973linkage" ref-type="bibr">Markoff
+  &amp; Shapiro, 1973</xref>). The estimation process varies based on
+  whether data are spatially <italic>extensive</italic> (i.e. count
+  data) or spatially <italic>intensive</italic> [i.e. ratios,
+  percentages, means, or medians; Goodchild &amp; Lam
+  (<xref alt="1980" rid="ref-goodchild1980areal" ref-type="bibr">1980</xref>)].</p>
+  <p>In estimating values for the target features, areal weighted
+  interpolation makes a significant assumption that individuals are
+  evenly spread throughout the source features
+  (<xref alt="Qiu et al., 2012" rid="ref-qiu2012development" ref-type="bibr">Qiu
+  et al., 2012</xref>). This assumption often breaks down in practice.
+  For example, a census tract with a large park or a neighborhood that
+  has a significant commercial area alongside residential housing would
+  violate this assumption. While more complex methods do exist to
+  compensate for violating this assumption, there are few tools to
+  implement them, and the strategies have mainly remained the focus of
+  academics instead of GIS practitioners
+  (<xref alt="Langford, 2007" rid="ref-langford2007rapid" ref-type="bibr">Langford,
+  2007</xref>;
+  <xref alt="Qiu et al., 2012" rid="ref-qiu2012development" ref-type="bibr">Qiu
+  et al., 2012</xref>).</p>
+</sec>
+<sec id="the-areal-r-package">
+  <title>The areal R package</title>
+  <p>The <monospace>areal</monospace> package aims to reduce the
+  barriers to the implementation of areal interpolation in spatial
+  researchers’ work. By implementing the process in
+  <monospace>R</monospace>, we aim to improve the reproducibility of the
+  interpolation process, which is often done manually using
+  point-and-click desktop GIS software. We also aim to provide
+  additional functionality that is not currently available in existing
+  approaches found in the sf package
+  (<xref alt="Pebesma, 2018" rid="ref-pebesma2018simple" ref-type="bibr">Pebesma,
+  2018</xref>), for example the
+  <monospace>st_interpolate_aw()</monospace> function, while providing
+  support for modern data management
+  (e.g. <monospace>tidyverse</monospace>) and spatial data
+  (e.g. <monospace>sf</monospace>) frameworks.</p>
+  <p>Therefore, we provide functions that:</p>
+  <list list-type="order">
+    <list-item>
+      <p>validate data suitability for areal interpolation,</p>
+    </list-item>
+    <list-item>
+      <p>allow for frictionless, iterative interpolation of both
+      spatially extensive (e.g., count) and intensive (e.g., ratio)
+      data, and</p>
+    </list-item>
+    <list-item>
+      <p>provide a manual workflow for implementing the interpolation
+      process as well as a single omnibus function.</p>
+    </list-item>
+  </list>
+  <p>The validation process checks for five conditions that must be met
+  prior to interpolation:</p>
+  <list list-type="order">
+    <list-item>
+      <p>Are both objects <monospace>sf</monospace> objects?</p>
+    </list-item>
+    <list-item>
+      <p>Do both objects share the same coordinate system?</p>
+    </list-item>
+    <list-item>
+      <p>Is that coordinate system planar?</p>
+    </list-item>
+    <list-item>
+      <p>Do the given variables exist in the source data?</p>
+    </list-item>
+    <list-item>
+      <p>Will interpolation overwrite columns in the target data?</p>
+    </list-item>
+  </list>
+  <p>This validation process can be run independently by end users via
+  the <monospace>ar_validate()</monospace> function and is also run
+  initially when <monospace>aw_interpolate()</monospace> is called. The
+  validation process is aimed at helping users new to both
+  <monospace>R</monospace> and areal interpolation ensure they have
+  arranged their data correctly.</p>
+  <p>Unlike existing approaches, the <monospace>areal</monospace>
+  package offers the ability to interpolate multiple variables in a
+  single function call and provides a wider set of options for making
+  these estimates. For spatially extensive interpolations, we offer a
+  formula that matches the existing functionality in
+  <monospace>sf</monospace>, which is based on the total area of the
+  original source feature (specified with
+  <monospace>weight = &quot;total&quot;</monospace>). Alternatively, we
+  offer a second formula that is more suitable for data where there
+  should be complete overlap between the source and target data, but
+  there is not. Such incongruity could be due to data quality issues or
+  variation in how different sources represent particular geographies.
+  This uses a sum of the source feature areas remaining after the data
+  are intersected as part of the spatial weight calculation process
+  (specified with <monospace>weight = &quot;sum&quot;</monospace>).</p>
+  <p>Our package also provides a manual approach for calculating
+  estimates alongside the primary function
+  <monospace>aw_interpolate()</monospace>. This is important for users
+  who need to unpack the interpolation workflow and diagnose data issues
+  that occur during interpolation as well as programmers who want to use
+  a portion of the workflow in their software. Finally,
+  <monospace>areal</monospace> provides both spatial
+  (<monospace>sf</monospace> object) and a-spatial
+  (<monospace>tibble</monospace> object) options for output.</p>
+</sec>
+<sec id="a-short-example">
+  <title>A Short Example</title>
+  <p>Once data have been prepared for interpolation, meaning they share
+  the same projected coordinate system and there are no conflicts
+  between variable names, interpolations can be calculated with a single
+  function <monospace>aw_interpolate()</monospace>. This functionality
+  is illustrated here using source and target data built into the
+  <monospace>areal</monospace> package:</p>
+  <code language="r script">&gt; aw_interpolate(ar_stl_wards, tid = WARD, source = ar_stl_race, 
++   sid = GEOID, weight = &quot;sum&quot;, output = &quot;tibble&quot;,
++   extensive = c(&quot;TOTAL_E&quot;, &quot;WHITE_E&quot;, &quot;BLACK_E&quot;))
+# A tibble: 28 x 6
+   OBJECTID  WARD       AREA TOTAL_E WHITE_E BLACK_E
+      &lt;dbl&gt; &lt;int&gt;      &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+ 1        1     1  46138761.   7992.    153.   7779.
+ 2        2     2 267817711.  12145.   1323.  10639.
+ 3        3     3  66291644.   7344.    591.   6635.
+ 4        4     4  53210707.   8458.    160.   8203.
+ 5        5     5  60462396.   8783.   1526.   7056.
+ 6        6     6  64337271.  14050.   5840.   7439.
+ 7        7     7 101268146.  15840.   8220.   6629.
+ 8        8     8  45966410.  12188.   7604.   3796.
+ 9        9     9  73993891.  14217.   6838.   6413.
+10       10    10  62915358.  11239.   8703.   1667.
+# … with 18 more rows</code>
+  <p>If a <monospace>sf</monospace> object is desired, changing the
+  <monospace>output</monospace> argument in the example above to
+  <monospace>&quot;sf&quot;</monospace> will provide not only the
+  estimated values but the relevant geometric data as well.</p>
+  <p>Spatially intensive interpolations, which are used by analysts for
+  data that are ratios or percentage values, can be calculated by
+  replacing the <monospace>extensive</monospace> argument with
+  <monospace>intensive</monospace>. Alternatively, both arguments and
+  corresponding vectors of variable names can be provided to interpolate
+  both spatially extensive and intensive data simultaneously.</p>
+  <p>The source data from the above data along with one of the
+  variables, total population (<monospace>TOTAL_E</monospace>), are
+  mapped in panel A below at the census tract level. The resulting data
+  for the total population variable interpolated to the target political
+  ward data have been mapped in panel B:</p>
+  <graphic mimetype="image" mime-subtype="png" xlink:href="../man/figures/exampleMap.png" />
+  <p>Additional examples and vignette illustrations of
+  <monospace>areal</monospace>’s functionality are available on the
+  package’s
+  <ext-link ext-link-type="uri" xlink:href="https://slu-openGIS.github.io/areal/">website</ext-link>.</p>
+</sec>
+<sec id="a-quick-comparison-with-sf">
+  <title>A Quick Comparison with sf</title>
+  <p>Since <monospace>sf</monospace> offers similar functionality, three
+  comparisons are made and presented here. Code for these comparisons is
+  available in an appendix within the <monospace>areal</monospace>
+  <ext-link ext-link-type="uri" xlink:href="https:://github.com/slu-openGIS/areal/paper/appendix.md">GitHub
+  repository</ext-link>. The first compares spatially extensive
+  interpolations calculated in both <monospace>areal</monospace> and
+  <monospace>sf</monospace>. The first ten features are shown here for
+  comparison:</p>
+  <graphic mimetype="image" mime-subtype="png" xlink:href="extensiveTable.png" />
+  <p>Both <monospace>st_interpolate_aw()</monospace> and
+  <monospace>aw_interpolate()</monospace> with the
+  <monospace>weight = &quot;total&quot;</monospace> produce identical
+  results, which is expected.</p>
+  <p>The above comparison also shows the difference between using
+  <monospace>&quot;total&quot;</monospace> and
+  <monospace>&quot;sum&quot;</monospace> for the
+  <monospace>weight</monospace> argument in
+  <monospace>aw_interpolate()</monospace>. If we expect that our source
+  and target data should overlap completely (but perhaps do not because
+  of data quality issues), the <monospace>&quot;sum&quot;</monospace>
+  approach will allocate all individuals into target features whereas
+  <monospace>&quot;total&quot;</monospace>will not, instead allocating
+  only a proportion of individuals relative to the overlap between the
+  source and target features. In the example data provided in the
+  <monospace>areal</monospace> package, this is the case - the Census
+  tracts do not perfectly map onto the extent of the wards, and so the
+  <monospace>&quot;total&quot;</monospace> approach is
+  inappropriate.</p>
+  <p>The differences are highlighted in the <monospace>delta</monospace>
+  column in the above figure. With these data, the
+  <monospace>&quot;total&quot;</monospace> approach yields generally
+  smaller results that the <monospace>&quot;sum&quot;</monospace>
+  approach, with an average difference of -30.781. The largest
+  difference between the <monospace>&quot;total&quot;</monospace> and
+  <monospace>&quot;sum&quot;</monospace> approaches was -194.750
+  individuals. The added functionality within
+  <monospace>areal</monospace> therefore provides a potentially more
+  accurate set of estimations in similar cases where data should
+  overlap, but do not.</p>
+  <p>The second comparison is with spatially intensive interpolations.
+  For this approach, both <monospace>st_interpolate_aw()</monospace> and
+  <monospace>aw_interpolate()</monospace> should yield identical
+  results. As before, the first ten features are shown here for
+  comparison:</p>
+  <graphic mimetype="image" mime-subtype="png" xlink:href="intensiveTable.png" />
+  <p>As with the extensive interpolations where
+  <monospace>weight = &quot;total&quot;</monospace>, both
+  <monospace>st_interpolate_aw()</monospace> and
+  <monospace>aw_interpolate()</monospace> produce the expected identical
+  results.</p>
+  <sec id="notes-on-performance">
+    <title>Notes on Performance</title>
+    <p>Finally, a comparison of the speed at which both the
+    <monospace>sf</monospace> and <monospace>areal</monospace> packages
+    calculated these values is included in the
+    <ext-link ext-link-type="uri" xlink:href="https:://github.com/slu-openGIS/areal/paper/appendix.md">appendix</ext-link>
+    as well. For the extensive interpolations,
+    <monospace>aw_interpolate()</monospace> performed 28 milliseconds
+    slower on the sample data provided in the package, with a mean
+    execution time of 279.429 milliseconds. Similarly, the intensive
+    interpolations were 20 milliseconds slower when using
+    <monospace>areal</monospace>, which had a mean execution time of
+    267.878 milliseconds. Both comparisons were made using the
+    <monospace>R</monospace> package
+    <monospace>microbenchmark</monospace>
+    (<xref alt="Mersmann, 2018" rid="ref-olaf2018micro" ref-type="bibr">Mersmann,
+    2018</xref>).</p>
+    <p>One particular performance concern to note are intersections (a
+    step in the interpolation process) that return geometry collections.
+    These will cause <monospace>st_interpolate_aw()</monospace> function
+    from <monospace>sf</monospace> to error. The
+    <monospace>aw_interpolate()</monospace> function will not error, but
+    instead will correctly address these geometry collections before
+    proceeding with the interpolation. However, the correction process
+    can take significantly longer than it would a similarly sized data
+    set that does not require this additional step.</p>
+    <p>The
+    <ext-link ext-link-type="uri" xlink:href="https:://github.com/slu-openGIS/areal/paper/appendix.md">appendix</ext-link>
+    also contains an example of interpolating population from Missouri’s
+    115 counties into its 4,506 Census block groups. When evaluated with
+    <monospace>microbenchmark</monospace>, the average length of time to
+    complete this process was 17.689 seconds.</p>
+  </sec>
+</sec>
+<sec id="availability">
+  <title>Availability</title>
+  <p><monospace>areal</monospace> is open source software made available
+  under the GNU GPL-3 license. It can be installed through CRAN
+  (<xref alt="Prener &amp; Revord, 2019" rid="ref-prener2019areal" ref-type="bibr">Prener
+  &amp; Revord, 2019</xref>) using:
+  <monospace>install.packages(&quot;areal&quot;)</monospace>.
+  <monospace>areal</monospace> can also be installed from its GitHub
+  repository using the <monospace>remotes</monospace> package:
+  <monospace>remotes::install_github(&quot;slu-openGIS/areal&quot;)</monospace>.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>The authors wish to thank their colleagues, J.S. Onésimo Sandoval,
+  Ph.D. and Taylor Harris Braswell, M.A., for reviewing an initial draft
+  of this manuscript.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-goodchild1978statistical">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Goodchild</surname><given-names>Michael F</given-names></name>
+        </person-group>
+        <article-title>Statistical aspects of the polygon overlay problem</article-title>
+        <source>Harvard Papers on Geographic Information Systems</source>
+        <publisher-name>Addison-Wesley</publisher-name>
+        <year iso-8601-date="1978">1978</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-goodchild1980areal">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Goodchild</surname><given-names>Michael F</given-names></name>
+          <name><surname>Lam</surname><given-names>Nina Siu Ngan</given-names></name>
+        </person-group>
+        <source>Areal interpolation: A variant of the traditional spatial problem</source>
+        <publisher-name>Department of Geography, University of Western Ontario London, ON, Canada</publisher-name>
+        <year iso-8601-date="1980">1980</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-lam1983spatial">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lam</surname><given-names>Nina Siu-Ngan</given-names></name>
+        </person-group>
+        <article-title>Spatial interpolation methods: A review</article-title>
+        <source>The American Cartographer</source>
+        <publisher-name>Taylor &amp; Francis</publisher-name>
+        <year iso-8601-date="1983">1983</year>
+        <volume>10</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1559/152304083783914958</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-langford2007rapid">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Langford</surname><given-names>Mitchel</given-names></name>
+        </person-group>
+        <article-title>Rapid facilitation of dasymetric-based population interpolation by means of raster pixel maps</article-title>
+        <source>Computers, Environment and Urban Systems</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>31</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1016/j.compenvurbsys.2005.07.005</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-markoff1973linkage">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Markoff</surname><given-names>John</given-names></name>
+          <name><surname>Shapiro</surname><given-names>Gilbert</given-names></name>
+        </person-group>
+        <article-title>The linkage of data describing overlapping geographical units</article-title>
+        <source>Historical Methods Newsletter</source>
+        <publisher-name>Taylor &amp; Francis</publisher-name>
+        <year iso-8601-date="1973">1973</year>
+        <volume>7</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1080/00182494.1973.10112670</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-olaf2018micro">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Mersmann</surname><given-names>Olaf</given-names></name>
+        </person-group>
+        <source>Microbenchmark: Accurate timing functions</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://CRAN.R-project.org/package=microbenchmark</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-pebesma2018simple">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pebesma</surname><given-names>Edzer</given-names></name>
+        </person-group>
+        <article-title>Simple Features for R: Standardized Support for Spatial Vector Data</article-title>
+        <source>The R Journal</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>10</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.32614/RJ-2018-009</uri>
+        <pub-id pub-id-type="doi">10.32614/RJ-2018-009</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-prener2019areal">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <name><surname>Prener</surname><given-names>Christopher</given-names></name>
+          <name><surname>Revord</surname><given-names>Charles</given-names></name>
+        </person-group>
+        <article-title>Areal: Areal weighted interpolation</article-title>
+        <year iso-8601-date="2019">2019</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2018-12-20">2018</year><month>12</month><day>20</day></date-in-citation>
+        <uri>https://CRAN.R-project.org/package=areal </uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.2603540</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-qiu2012development">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Qiu</surname><given-names>Fang</given-names></name>
+          <name><surname>Zhang</surname><given-names>Caiyun</given-names></name>
+          <name><surname>Zhou</surname><given-names>Yuhong</given-names></name>
+        </person-group>
+        <article-title>The development of an areal interpolation ArcGIS extension and a comparative study</article-title>
+        <source>GIScience &amp; Remote Sensing</source>
+        <publisher-name>Taylor &amp; Francis</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>49</volume>
+        <issue>5</issue>
+        <pub-id pub-id-type="doi">10.2747/1548-1603.49.5.644</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

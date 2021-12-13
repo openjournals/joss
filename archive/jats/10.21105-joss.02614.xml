@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2614</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02614</article-id>
+<title-group>
+<article-title>Ripserer.jl: flexible and efficient persistent homology
+computation in Julia</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<string-name>Matija Čufar</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Independent Researcher</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-08-27">
+<day>27</day>
+<month>8</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>54</issue>
+<fpage>2614</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Persistent Homology</kwd>
+<kwd>Topological Data Analysis</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>Persistent homology
+  (<xref alt="Edelsbrunner &amp; Harer, 2008" rid="ref-edelsbrunner2008persistent" ref-type="bibr">Edelsbrunner
+  &amp; Harer, 2008</xref>) is a relatively recent computational
+  technique that extracts topological information from various kinds of
+  datasets. This topological information gives us a good overview of the
+  global shape of the data as well as giving us a description of its
+  local geometry. Since its introduction, it has been used in a diverse
+  range of applications, including biology
+  (<xref alt="Bernoff &amp; Topaz, 2016" rid="ref-bernoff2016biological" ref-type="bibr">Bernoff
+  &amp; Topaz, 2016</xref>), material science
+  (<xref alt="Lee et al., 2017" rid="ref-lee2017quantifying" ref-type="bibr">Lee
+  et al., 2017</xref>), signal processing
+  (<xref alt="Tralie, 2016" rid="ref-tralie2016high" ref-type="bibr">Tralie,
+  2016</xref>), and computer vision
+  (<xref alt="Asaad &amp; Jassim, 2017" rid="ref-asaad2017topological" ref-type="bibr">Asaad
+  &amp; Jassim, 2017</xref>). A problem persistent homology faces is the
+  very large size of combinatorial structures it has to work with.
+  Recent algorithmic advances employ various computational shortcuts to
+  overcome this problem.</p>
+  <p>Among the most successful implementations of persistent homology is
+  Ripser
+  (<xref alt="Bauer, 2019" rid="ref-bauer2019ripser" ref-type="bibr">Bauer,
+  2019</xref>). With its speed and low memory usage, it makes persistent
+  homology practical for larger datasets, even in higher dimensions. The
+  introduction of Ripser has spawned a whole cottage industry of
+  extensions and wrappers. Some examples include Ripser++
+  (<xref alt="Zhang et al., 2020" rid="ref-zhang2020gpu" ref-type="bibr">Zhang
+  et al., 2020</xref>), Lock-free Ripser
+  (<xref alt="Morozov &amp; Nigmetov, 2020" rid="ref-morozov2020towards" ref-type="bibr">Morozov
+  &amp; Nigmetov, 2020</xref>), Ripser.py
+  (<xref alt="Tralie et al., 2018" rid="ref-tralie2018ripser" ref-type="bibr">Tralie
+  et al., 2018</xref>), Cubical Ripser
+  (<xref alt="Kaji et al., 2020" rid="ref-kaji2020cubical" ref-type="bibr">Kaji
+  et al., 2020</xref>), and Flagser
+  (<xref alt="Lütgehetmann et al., 2020" rid="ref-lutgehetmann2020computing" ref-type="bibr">Lütgehetmann
+  et al., 2020</xref>).</p>
+  <p>In the Julia
+  (<xref alt="Bezanson et al., 2017" rid="ref-bezanson2017julia" ref-type="bibr">Bezanson
+  et al., 2017</xref>) space, there are few persistent homology packages
+  available. The ones we were able to find include
+  Eirene.jl<xref ref-type="fn" rid="fn1">1</xref>
+  (<xref alt="Henselman &amp; Ghrist, 2016" rid="ref-henselman2016matroid" ref-type="bibr">Henselman
+  &amp; Ghrist, 2016</xref>),
+  ComputationalHomology.jl<xref ref-type="fn" rid="fn2">2</xref>,
+  Sparips.jl<xref ref-type="fn" rid="fn3">3</xref>
+  (<xref alt="Brehm &amp; Hardering, 2018" rid="ref-brehm2018sparips" ref-type="bibr">Brehm
+  &amp; Hardering, 2018</xref>), and
+  PersistentCohomology.jl<xref ref-type="fn" rid="fn4">4</xref>, of
+  which only Eirene.jl is available through the Julia package
+  manager.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>A significant hurdle in developing new approaches to persistent
+  homology stems from the fact that developing an efficient
+  implementation of its matrix reduction algorithm is nontrivial.</p>
+  <p>To solve this problem, we introduce Ripserer.jl, a pure Julia
+  implementation of persistent homology based on the algorithm that
+  powers Ripser. It provides users with an intuitive user interface and
+  is readily useful as a topological data analysis framework. The other
+  main feature Ripserer.jl provides is the ability to hook into its
+  algorithm through an API. This allows researchers to experiment with
+  different approaches to persistent homology without having to
+  reimplement the algorithm from scratch or forking an existing
+  repository.</p>
+  <fig>
+    <caption><p>Example visualizations. The plot on the left shows the
+    three main representative cocycles in the data. The right plot shows
+    the persistence diagram.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="figure.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Along with its companion package,
+  PersistenceDiagrams.jl<xref ref-type="fn" rid="fn5">5</xref>,
+  Ripserer.jl provides a featureful environment for computing persistent
+  homology and integrating it with the rest of Julia’s data science
+  stack. At the time of writing, it offers the following features.</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Fast Vietoris-Rips, alpha complex, and cubical persistent
+      homology computation.</p>
+    </list-item>
+    <list-item>
+      <p>Representative cocycle and critical simplex computation.</p>
+    </list-item>
+    <list-item>
+      <p>Support for coefficients in any, possibly user-defined,
+      field.</p>
+    </list-item>
+    <list-item>
+      <p>Convenient persistence diagram and representative cocycle
+      visualization via Plots.jl<xref ref-type="fn" rid="fn6">6</xref>
+      recipes.</p>
+    </list-item>
+    <list-item>
+      <p>Bottleneck and Wasserstein matching and distance
+      computation.</p>
+    </list-item>
+    <list-item>
+      <p>Various persistence diagram vectorization functions,
+      implemented with persistence images
+      (<xref alt="Adams et al., 2017" rid="ref-adams2017persistence" ref-type="bibr">Adams
+      et al., 2017</xref>) and persistence curves
+      (<xref alt="Chung &amp; Lawson, 2019" rid="ref-chung2019persistence" ref-type="bibr">Chung
+      &amp; Lawson, 2019</xref>).</p>
+    </list-item>
+    <list-item>
+      <p>Easy extensibility through a documented API.</p>
+    </list-item>
+  </list>
+  <p>Our benchmarks<xref ref-type="fn" rid="fn7">7</xref> show that
+  Ripserer’s performance is very close to that of Ripser. It tends to be
+  slightly slower for dense inputs and slightly faster for very sparse
+  inputs. In the cubical case, we compared it to Cubical Ripser. There
+  the performance was worse, taking up to 3 times as long to compute
+  some results. This is expected as Cubical Ripser is much more
+  specialized for its use case and even splits its code into different
+  repositories for different dimensions.</p>
+  <p>We have not compared performance with newer, parallel
+  implementations such as Ripser++ or lock-free Ripser. Judging from the
+  benchmarks they provide, we expect them to perform much better. Their
+  downside, however, is that they require powerful hardware, such as
+  GPUs or large numbers of processors.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>We would like to thank Žiga Virk for comments, suggestions and
+  ideas, and Ulrich Bauer for making the source code of Ripser freely
+  available.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-adams2017persistence">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Adams</surname><given-names>Henry</given-names></name>
+          <name><surname>Emerson</surname><given-names>Tegan</given-names></name>
+          <name><surname>Kirby</surname><given-names>Michael</given-names></name>
+          <name><surname>Neville</surname><given-names>Rachel</given-names></name>
+          <name><surname>Peterson</surname><given-names>Chris</given-names></name>
+          <name><surname>Shipman</surname><given-names>Patrick</given-names></name>
+          <name><surname>Chepushtanova</surname><given-names>Sofya</given-names></name>
+          <name><surname>Hanson</surname><given-names>Eric</given-names></name>
+          <name><surname>Motta</surname><given-names>Francis</given-names></name>
+          <name><surname>Ziegelmeier</surname><given-names>Lori</given-names></name>
+        </person-group>
+        <article-title>Persistence images: A stable vector representation of persistent homology</article-title>
+        <source>The Journal of Machine Learning Research</source>
+        <publisher-name>JMLR. org</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>18</volume>
+        <issue>1</issue>
+        <uri>https://dl.acm.org/doi/10.5555/3122009.3122017</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-asaad2017topological">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Asaad</surname><given-names>Aras</given-names></name>
+          <name><surname>Jassim</surname><given-names>Sabah</given-names></name>
+        </person-group>
+        <article-title>Topological data analysis for image tampering detection</article-title>
+        <source>International workshop on digital watermarking</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-64185-0_11</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bauer2019ripser">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bauer</surname><given-names>Ulrich</given-names></name>
+        </person-group>
+        <article-title>Ripser: Efficient computation of vietoris-rips persistence barcodes</article-title>
+        <source>arXiv preprint arXiv:1908.02518</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://arxiv.org/abs/1908.02518</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-bernoff2016biological">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bernoff</surname><given-names>Andrew J</given-names></name>
+          <name><surname>Topaz</surname><given-names>Chad M</given-names></name>
+        </person-group>
+        <article-title>Biological aggregation driven by social and environmental factors: A nonlocal model and its degenerate cahn–hilliard approximation</article-title>
+        <source>SIAM Journal on Applied Dynamical Systems</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>15</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1137/15M1031151</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-chung2019persistence">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Chung</surname><given-names>Yu-Min</given-names></name>
+          <name><surname>Lawson</surname><given-names>Austin</given-names></name>
+        </person-group>
+        <article-title>Persistence curves: A canonical framework for summarizing persistence diagrams</article-title>
+        <source>arXiv preprint arXiv:1904.07768</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://arxiv.org/abs/1904.07768</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-edelsbrunner2008persistent">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Edelsbrunner</surname><given-names>Herbert</given-names></name>
+          <name><surname>Harer</surname><given-names>John</given-names></name>
+        </person-group>
+        <article-title>Persistent homology-a survey</article-title>
+        <source>Contemporary mathematics</source>
+        <publisher-name>Providence, RI: American Mathematical Society</publisher-name>
+        <year iso-8601-date="2008">2008</year>
+        <volume>453</volume>
+        <pub-id pub-id-type="doi">10.1090/conm/453/08802</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kaji2020cubical">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kaji</surname><given-names>Shizuo</given-names></name>
+          <name><surname>Sudo</surname><given-names>Takeki</given-names></name>
+          <name><surname>Ahara</surname><given-names>Kazushi</given-names></name>
+        </person-group>
+        <article-title>Cubical ripser: Software for computing persistent homology of image and volume data</article-title>
+        <source>arXiv preprint arXiv:2005.12692</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://arxiv.org/pdf/2005.12692.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-lee2017quantifying">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lee</surname><given-names>Yongjin</given-names></name>
+          <name><surname>Barthel</surname><given-names>Senja D</given-names></name>
+          <name><surname>Dłotko</surname><given-names>Paweł</given-names></name>
+          <name><surname>Moosavi</surname><given-names>S Mohamad</given-names></name>
+          <name><surname>Hess</surname><given-names>Kathryn</given-names></name>
+          <name><surname>Smit</surname><given-names>Berend</given-names></name>
+        </person-group>
+        <article-title>Quantifying similarity of pore-geometry in nanoporous materials</article-title>
+        <source>Nature communications</source>
+        <publisher-name>Nature Publishing Group</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>8</volume>
+        <pub-id pub-id-type="doi">10.1038/ncomms15396</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-morozov2020towards">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Morozov</surname><given-names>Dmitriy</given-names></name>
+          <name><surname>Nigmetov</surname><given-names>Arnur</given-names></name>
+        </person-group>
+        <article-title>Towards lockfree persistent homology</article-title>
+        <source>Proceedings of the 32nd ACM symposium on parallelism in algorithms and architectures</source>
+        <year iso-8601-date="2020">2020</year>
+        <pub-id pub-id-type="doi">10.1145/3350755.3400244</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-tralie2016high">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Tralie</surname><given-names>Christopher</given-names></name>
+        </person-group>
+        <article-title>High-dimensional geometry of sliding window embeddings of periodic videos</article-title>
+        <source>32nd international symposium on computational geometry (SoCG 2016)</source>
+        <publisher-name>Schloss Dagstuhl-Leibniz-Zentrum fuer Informatik</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <pub-id pub-id-type="doi">10.4230/LIPIcs.SoCG.2016.71</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-tralie2018ripser">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tralie</surname><given-names>Christopher</given-names></name>
+          <name><surname>Saul</surname><given-names>Nathaniel</given-names></name>
+          <name><surname>Bar-On</surname><given-names>Rann</given-names></name>
+        </person-group>
+        <article-title>Ripser. Py: A lean persistent homology library for python</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>3</volume>
+        <issue>29</issue>
+        <pub-id pub-id-type="doi">10.21105/joss.00925</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-zhang2020gpu">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Zhang</surname><given-names>Simon</given-names></name>
+          <name><surname>Xiao</surname><given-names>Mengbai</given-names></name>
+          <name><surname>Wang</surname><given-names>Hao</given-names></name>
+        </person-group>
+        <article-title>GPU-accelerated computation of vietoris-rips persistence barcodes</article-title>
+        <source>arXiv preprint arXiv:2003.07989</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://arxiv.org/abs/2003.07989</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-bezanson2017julia">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bezanson</surname><given-names>Jeff</given-names></name>
+          <name><surname>Edelman</surname><given-names>Alan</given-names></name>
+          <name><surname>Karpinski</surname><given-names>Stefan</given-names></name>
+          <name><surname>Shah</surname><given-names>Viral B</given-names></name>
+        </person-group>
+        <article-title>Julia: A fresh approach to numerical computing</article-title>
+        <source>SIAM review</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>59</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1137/141000671</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-henselman2016matroid">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Henselman</surname><given-names>Gregory</given-names></name>
+          <name><surname>Ghrist</surname><given-names>Robert</given-names></name>
+        </person-group>
+        <article-title>Matroid filtrations and computational persistent homology</article-title>
+        <source>arXiv preprint arXiv:1606.00199</source>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://arxiv.org/abs/1606.00199</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-brehm2018sparips">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Brehm</surname><given-names>Bernhard</given-names></name>
+          <name><surname>Hardering</surname><given-names>Hanne</given-names></name>
+        </person-group>
+        <article-title>Sparips</article-title>
+        <source>arXiv preprint arXiv:1807.09982</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://arxiv.org/abs/1807.09982</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-lutgehetmann2020computing">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lütgehetmann</surname><given-names>Daniel</given-names></name>
+          <name><surname>Govc</surname><given-names>Dejan</given-names></name>
+          <name><surname>Smith</surname><given-names>Jason P</given-names></name>
+          <name><surname>Levi</surname><given-names>Ran</given-names></name>
+        </person-group>
+        <article-title>Computing persistent homology of directed flag complexes</article-title>
+        <source>Algorithms</source>
+        <publisher-name>Multidisciplinary Digital Publishing Institute</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>13</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.3390/a13010019</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+<fn-group>
+  <fn id="fn1">
+    <label>1</label><p>https://github.com/Eetion/Eirene.jl</p>
+  </fn>
+  <fn id="fn2">
+    <label>2</label><p>https://github.com/wildart/ComputationalHomology.jl</p>
+  </fn>
+  <fn id="fn3">
+    <label>3</label><p>https://github.com/bbrehm/Sparips.jl</p>
+  </fn>
+  <fn id="fn4">
+    <label>4</label><p>https://github.com/piever/PersistentCohomology.jl</p>
+  </fn>
+  <fn id="fn5">
+    <label>5</label><p>https://github.com/mtsch/PersistenceDiagrams.jl</p>
+  </fn>
+  <fn id="fn6">
+    <label>6</label><p>https://github.com/JuliaPlots/Plots.jl</p>
+  </fn>
+  <fn id="fn7">
+    <label>7</label><p>https://mtsch.github.io/Ripserer.jl/dev/benchmarks/</p>
+  </fn>
+</fn-group>
+</back>
+</article>

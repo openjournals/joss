@@ -1,0 +1,571 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3828</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03828</article-id>
+<title-group>
+<article-title>ordPens: An R package for Selection, Smoothing and
+Principal Components Analysis for Ordinal Variables</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-5702-130X</contrib-id>
+<string-name>Aisouda Hoshiyar</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>School of Economics and Social Sciences, Helmut Schmidt
+University, Hamburg, Germany</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<volume>6</volume>
+<issue>68</issue>
+<fpage>3828</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>smoothing</kwd>
+<kwd>ordinal ANOVA</kwd>
+<kwd>Nonlinear Principal Components Analysis</kwd>
+<kwd>fusion</kwd>
+<kwd>lasso</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Ordinal data are a common case in applied statistics. In order to
+  incorporate the ordinal scale level, among other things,
+  regularization techniques are often suggested in the literature
+  (<xref alt="Tutz &amp; Gertheiss, 2014" rid="ref-TutzU003A2014" ref-type="bibr">Tutz
+  &amp; Gertheiss, 2014</xref>,
+  <xref alt="2016" rid="ref-TutzU003A2016" ref-type="bibr">2016</xref>).
+  In particular, penalization approaches for smoothing and selection
+  when dealing with Likert-type data – which are by no means restricted
+  to Likert scale – are commonly proposed.
+  <monospace>ordPens</monospace> is a package in the R programming
+  language (<xref alt="R Core Team, 2021" rid="ref-R" ref-type="bibr">R
+  Core Team, 2021</xref>) and provides several penalty approaches for
+  ordinal predictors in regression models and ordinal variables for
+  principal component analysis (PCA).
+  In the regression context, smoothing is obtained by introducing a
+  penalty term and a tuning parameter controling the amount of penalty.
+  Adding the penalty term to the likelihood function yields the
+  penalized likelihood, which is then maximized. Different types of
+  penalization can be considered, depending on whether to achieve
+  smoothing, selection or clustering of variables. Smoothing only can be
+  done by penalizing the sum of squared differences of adjacent
+  coefficients for a given variable, subject to proper ordering. A
+  modified group lasso based on a difference penalty can be used for
+  selection. Clustering/fusion of categories can be achieved by the
+  fused lasso penalizing absolute differences by using the
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[L_1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>L</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>-norm.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>As suggested by Tutz &amp; Gertheiss
+  (<xref alt="2014" rid="ref-TutzU003A2014" ref-type="bibr">2014</xref>)
+  and Tutz &amp; Gertheiss
+  (<xref alt="2016" rid="ref-TutzU003A2016" ref-type="bibr">2016</xref>),
+  selection, and/or smoothing/fusing of ordinally scaled independent
+  variables shall be done using a modified group lasso or generalized
+  ridge penalty when dealing with ordinally scaled predictors in
+  regression analysis. The penalized log-likelihood to be maximized
+  takes the form <inline-formula><alternatives>
+  <tex-math><![CDATA[\bm{l}_p(\bm{\beta}) = \bm{l}(\bm{\beta}) - \lambda \bm{J}(\bm{\beta})]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐥</mml:mi></mml:mstyle><mml:mi>p</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛃</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐥</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛃</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:mi>λ</mml:mi><mml:mstyle mathvariant="bold"><mml:mi>𝐉</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛃</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>,
+  with <inline-formula><alternatives>
+  <tex-math><![CDATA[\bm{\beta}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝛃</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  corresponding to the vector of regression parameters,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\lambda]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>λ</mml:mi></mml:math></alternatives></inline-formula>
+  representing the smoothing parameter and
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\bm{J}(\cdot)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐉</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mo>⋅</mml:mo><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  being the penalty function. <monospace>ordPens</monospace>
+  (<xref alt="Gertheiss &amp; Hoshiyar, 2021" rid="ref-ordPensU003A2021" ref-type="bibr">Gertheiss
+  &amp; Hoshiyar, 2021</xref>) offers various tools for data analysis of
+  ordinally scaled data. The package attacks the afore mentioned tasks
+  and offers penalized regression for smoothing, selection and fusion.
+  Specifically, the function <monospace>ordSmooth()</monospace> for
+  smoothing only incorporates the generalized ridge penalty
+  <disp-formula><alternatives>
+  <tex-math><![CDATA[
+    \bm{J}(\bm{\beta}) = \sum_{s=1}^p \bm{\beta}_s^T \bm{D}_{d,s}^T \bm{D}_{d,s} \bm{\beta}_s,
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐉</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛃</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>s</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>p</mml:mi></mml:munderover><mml:msubsup><mml:mstyle mathvariant="bold"><mml:mi>𝛃</mml:mi></mml:mstyle><mml:mi>s</mml:mi><mml:mi>T</mml:mi></mml:msubsup><mml:msubsup><mml:mstyle mathvariant="bold"><mml:mi>𝐃</mml:mi></mml:mstyle><mml:mrow><mml:mi>d</mml:mi><mml:mo>,</mml:mo><mml:mi>s</mml:mi></mml:mrow><mml:mi>T</mml:mi></mml:msubsup><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐃</mml:mi></mml:mstyle><mml:mrow><mml:mi>d</mml:mi><mml:mo>,</mml:mo><mml:mi>s</mml:mi></mml:mrow></mml:msub><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝛃</mml:mi></mml:mstyle><mml:mi>s</mml:mi></mml:msub><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+  with <inline-formula><alternatives>
+  <tex-math><![CDATA[\bm{D}_{d,s}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐃</mml:mi></mml:mstyle><mml:mrow><mml:mi>d</mml:mi><mml:mo>,</mml:mo><mml:mi>s</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+  being the matrix generating differences of order
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[d]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>d</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\bm{\beta}_s^T = (\beta_{s1}, ..., \beta_{sk_{s}})]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mstyle mathvariant="bold"><mml:mi>𝛃</mml:mi></mml:mstyle><mml:mi>s</mml:mi><mml:mi>T</mml:mi></mml:msubsup><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>β</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mn>1</mml:mn></mml:mrow></mml:msub><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>β</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:msub><mml:mi>k</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:mrow></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  being the parameter vector linked to the
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[s]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>s</mml:mi></mml:math></alternatives></inline-formula>th
+  (dummy-coded) predictor with categories <inline-formula><alternatives>
+  <tex-math><![CDATA[1,...,k_s]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>k</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>.
+  The <monospace>ordSelect()</monospace> function performs smoothing and
+  selection by adopting a modified group lasso penalty based on
+  differences of the form <disp-formula><alternatives>
+  <tex-math><![CDATA[
+    \bm{J}(\bm{\beta}) = \sum_{s=1}^p \sqrt{k_s} \sqrt{ \bm{\beta}_s^T \bm{D}_{d,s}^T \bm{D}_{d,s} \bm{\beta}_s }.
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐉</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛃</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>s</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>p</mml:mi></mml:munderover><mml:msqrt><mml:msub><mml:mi>k</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:msqrt><mml:msqrt><mml:mrow><mml:msubsup><mml:mstyle mathvariant="bold"><mml:mi>𝛃</mml:mi></mml:mstyle><mml:mi>s</mml:mi><mml:mi>T</mml:mi></mml:msubsup><mml:msubsup><mml:mstyle mathvariant="bold"><mml:mi>𝐃</mml:mi></mml:mstyle><mml:mrow><mml:mi>d</mml:mi><mml:mo>,</mml:mo><mml:mi>s</mml:mi></mml:mrow><mml:mi>T</mml:mi></mml:msubsup><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐃</mml:mi></mml:mstyle><mml:mrow><mml:mi>d</mml:mi><mml:mo>,</mml:mo><mml:mi>s</mml:mi></mml:mrow></mml:msub><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝛃</mml:mi></mml:mstyle><mml:mi>s</mml:mi></mml:msub></mml:mrow></mml:msqrt><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula>
+  Clustering of categories is done by the function
+  <monospace>ordFusion()</monospace>, which uses a fused lasso penalty
+  based on differences of first order: <disp-formula><alternatives>
+  <tex-math><![CDATA[
+    \bm{J}(\bm{\beta}) = \sum_{s=1}^p \sum_{j=2}^{k_s}  |  \beta_{sj} -  \beta_{s,j-1} |.
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐉</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝛃</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>s</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>p</mml:mi></mml:munderover><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mn>2</mml:mn></mml:mrow><mml:msub><mml:mi>k</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:munderover><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:msub><mml:mi>β</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mi>β</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mo>,</mml:mo><mml:mi>j</mml:mi><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msub><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula>
+  For more information on the original group lasso (for nominal
+  predictors and grouped variables in general), see Meier et al.
+  (<xref alt="2008" rid="ref-MeierU003A2008" ref-type="bibr">2008</xref>)
+  and Yuan &amp; Lin
+  (<xref alt="2006" rid="ref-YuanU003A2006" ref-type="bibr">2006</xref>).
+  For details on the fused lasso, see Tibshirani et al.
+  (<xref alt="2005" rid="ref-TibshiraniU003A2005" ref-type="bibr">2005</xref>).
+  In the case of smoothing only, the package includes auxiliary
+  functions such that <monospace>mgcv::gam()</monospace>
+  (<xref alt="Wood, 2008" rid="ref-WoodU003A2008" ref-type="bibr">Wood,
+  2008</xref>,
+  <xref alt="2017" rid="ref-WoodU003A2017" ref-type="bibr">2017</xref>)
+  can be used for fitting generalized linear and additive models with
+  first- and second-order ordinal smoothing penalty as well as built-in
+  smoothing parameter selection. Also, <monospace>mgcv</monospace> tools
+  for further statistical inference can be used, see Gertheiss et al.
+  (<xref alt="2021" rid="ref-GertheissU003A2021" ref-type="bibr">2021</xref>)
+  for details. Furthermore, testing for differences in the means, known
+  as analysis of variance (ANOVA), is provided for ordered factors by
+  the function <monospace>ordAOV()</monospace> penalizing (squared)
+  differences of adjacent means. Testing for differentially expressed
+  genes, when analyzing microarrays of gene expression data, is
+  incorporated by the function <monospace>ordGene()</monospace>.
+  Technical details can be viewed from Gertheiss
+  (<xref alt="2014" rid="ref-GertheissU003A2014" ref-type="bibr">2014</xref>)
+  and Sweeney et al.
+  (<xref alt="2016" rid="ref-SweeneyU003A2016" ref-type="bibr">2016</xref>),
+  respectively.</p>
+  <p>If, in contrast, dimension reduction is desired in an unsupervised
+  way, principal components analysis can be applied to ordinal data as
+  well. However, those data are usually either treated as numeric
+  implying linear relationships between the variables at hand, or
+  non-linear PCA is applied where the obtained coefficients are
+  sometimes hard to interpret. Note that in IBM SPSS Statistics (Version
+  25.0), for instance, there is an option available for smoothing
+  quantifications by the use of spline functions, which, however, limits
+  the type of functions that can be fitted when using a small number of
+  knots and a suitable choice may be challenging for the (inexperienced)
+  user. On the other hand, as splines are defined on interval scale
+  whereas ordinal variables can only take some discrete values, the
+  usage of spline functions may be seen as unnecessarily complex for
+  scaling ordinal data. To incorporate the ordinal scale level, the
+  concept of penalization can also be adapted here, as suggested in
+  Hoshiyar et al.
+  (<xref alt="2021" rid="ref-HoshiyarU003A2021" ref-type="bibr">2021</xref>).
+  Penalized non-linear principal components analysis for ordinal
+  variables is incorporated in the function
+  <monospace>ordPCA()</monospace> using a second-order difference
+  penalty. In addition, the function provides performance evaluation and
+  selection of an optimal penalty parameter using k-fold
+  cross-validation. Also, the option of both non-monotone effects and
+  incorporating constraints enforcing monotonicity is provided.
+  Penalized non-linear PCA therefore serves as an intermediate between
+  the standard methods typically used so far (see above). The new
+  approach offers both better interpretability as well as better
+  performance on validation data.</p>
+  <p>A topic of future research would be the analysis of dependencies
+  within a (high dimensional) set of ordinal variables by graphical
+  models. A further typical approach when dealing with ordinal data is
+  motivated by assuming a latent continuous variable linked to the
+  ordinal variable via thresholds. The proportional odds model, which is
+  also motivated as a latent variable approach, in combination with the
+  ordinal penalty could be also of interest for future research. Another
+  interesting field is found in Huang et al.
+  (<xref alt="2021" rid="ref-HuangU003A2021" ref-type="bibr">2021</xref>),
+  who analyze (mixed) ordinal dependencies using a latent Gaussian
+  copula model based on rank correlations. Assuming a latent continuous
+  variable, however, may not always be desirable by the data analyst.
+  The methods implemented in <monospace>ordPens</monospace> (up to
+  version 1.0.0) therefore do not underly the latent variable
+  assumption.</p>
+</sec>
+<sec id="availability">
+  <title>Availability</title>
+  <p>The R package <monospace>ordPens</monospace> is publicly available
+  on
+  <ext-link ext-link-type="uri" xlink:href="https://cran.r-project.org/web/packages/ordPens/index.html">CRAN</ext-link>
+  and
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/cran/ordPens">Github</ext-link>,
+  where issues can be opened. <monospace>ordPens</monospace> is licensed
+  under the GPL-2 General Public License. Documentation and examples are
+  contained in the package manual, which can be found on
+  <ext-link ext-link-type="uri" xlink:href="https://cran.r-project.org/web/packages/ordPens/ordPens.pdf">CRAN</ext-link>.</p>
+  <p>To install <monospace>ordPens</monospace>, simply run:</p>
+  <code language="r script">install.packages(&quot;ordPens&quot;)</code>
+  <p>For penalized regression and ordinal ANOVA see also
+  <monospace>vignette(&quot;ordPens&quot;, package = &quot;ordPens&quot;)</monospace>.
+  Penalized non-linear PCA is also documented in detail and can be
+  accessed via
+  <monospace>vignette(&quot;ordPCA&quot;, package = &quot;ordPens&quot;)</monospace>.</p>
+</sec>
+<sec id="ordpens-in-action">
+  <title><monospace>ordPens</monospace> in action</title>
+  <p>This example illustrates penalized non-linear PCA on the so-called
+  brief ICF core set on Chronic Widespread Pain (CWP) consisting of 26
+  ordinally scaled variables. Details on the data can be found in
+  Gertheiss et al.
+  (<xref alt="2011" rid="ref-GerHogObeTutU003A2011" ref-type="bibr">2011</xref>);
+  or by typing <monospace>?ICFCoreSetCWP</monospace>. Analysis of the
+  so-called comprehensive core set for CWP, consisting of 67 ICF
+  variables, is found in Hoshiyar et al.
+  (<xref alt="2021" rid="ref-HoshiyarU003A2021" ref-type="bibr">2021</xref>).
+  Note that the <monospace>ordPCA</monospace> vignette also analyzes the
+  comprehensive core set. Figure 1, generated by the following code,
+  illustrates the estimated coefficients of selected variables for
+  different values of the penalty parameter
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\lambda]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>λ</mml:mi></mml:math></alternatives></inline-formula>
+  along with cross-validation results.</p>
+  <code language="r script">
+library(ordPens)
+
+# load ICF data &amp; code adequately
+data(ICFCoreSetCWP) 
+H &lt;- ICFCoreSetCWP[,1:67] + matrix(c(rep(1,50), rep(5,16), 1), 
+                                   nrow(ICFCoreSetCWP), 67, byrow = TRUE)
+
+# select brief core set variables 
+brief &lt;- c(&quot;b130&quot;,&quot;b134&quot;,&quot;b140&quot;,&quot;b147&quot;,&quot;b152&quot;,&quot;b1602&quot;,&quot;b280&quot;,&quot;b455&quot;,
+           &quot;b730&quot;,&quot;b760&quot;,&quot;d175&quot;,&quot;d230&quot;,&quot;d240&quot;,&quot;d430&quot;,&quot;d450&quot;,&quot;d640&quot;,
+           &quot;d760&quot;,&quot;d770&quot;,&quot;d850&quot;,&quot;d920&quot;,&quot;e1101&quot;,&quot;e310&quot;,&quot;e355&quot;,&quot;e410&quot;,
+           &quot;e420&quot;,&quot;e570&quot;)
+           
+H &lt;- H[, brief]
+xnames &lt;- names(H)
+
+# ordinal penalized PCA 
+icf_pca1 &lt;- ordPCA(H, p = 2, lambda = c(5, 0.5, 0.001), qstart = NULL, 
+                   crit = 1e-7, maxit = 100, Ks = c(rep(5,20),rep(9,6)), 
+                   constr = c(rep(TRUE,20), rep(FALSE,6)), CV = FALSE, 
+                   k = 5) 
+
+# 5-fold cross-validation
+lambda &lt;- 10^seq(4, -4, by = -0.1)
+set.seed(1234) 
+cvResult &lt;- ordPCA(H, p = 2, lambda = lambda, Ks = c(rep(5,20),rep(9,6)), 
+                   constr = c(rep(TRUE,20), rep(FALSE,6)), 
+                   CV = TRUE, k = 5, CVfit = FALSE) 
+
+# plotting results for selected variables
+par(mfrow = c(2,3))
+for(i in which(xnames==&quot;b280&quot;|xnames==&quot;d450&quot;|xnames==&quot;e1101&quot;|
+               xnames==&quot;e410&quot;)){
+  plot(icf_pca1$qs[[i]][,3], type = &quot;b&quot;, xlab = &quot;category&quot;, col = 1,
+       ylab = &quot;quantification&quot;, main = xnames[i], bty = &quot;n&quot;, xaxt = &quot;n&quot;,
+       ylim = range(icf_pca1$qs[[i]])) 
+  lines(icf_pca1$qs[[i]][,2], type=&quot;b&quot;, col=2, lty=2, pch=2, lwd=2)
+  lines(icf_pca1$qs[[i]][,1], type=&quot;b&quot;, col=3, lty=3, pch=3, lwd=2)
+  axis(1, at = 1:length(icf_pca1$qs[[i]][,1])) 
+}
+  
+plot(log10(lambda), apply(cvResult$VAFtrain, 2, mean), type = &quot;l&quot;,  
+     xlab = expression(log[10](lambda)), ylab = &quot;VAF&quot;, cex.axis = 1.2,
+     main = &quot;training data&quot;, cex.lab = 1.2) 
+
+plot(log10(lambda), apply(cvResult$VAFtest, 2, mean), type = &quot;l&quot;,
+     xlab = expression(log[10](lambda)), ylab = &quot;VAF&quot;, cex.axis = 1.2,
+     main = &quot;validation data&quot;, cex.lab = 1.2)
+abline(v = log10(lambda)[which.max(apply(cvResult$VAFtest,2,mean))], 
+       lty=2)  </code>
+  <fig>
+    <caption><p>Category quantifications/scores for
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\lambda \to 0]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>λ</mml:mi><mml:mo>→</mml:mo><mml:mn>0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+    (solid black), <inline-formula><alternatives>
+    <tex-math><![CDATA[\lambda = 0.5]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>λ</mml:mi><mml:mo>=</mml:mo><mml:mn>0.5</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+    (dashed red), <inline-formula><alternatives>
+    <tex-math><![CDATA[\lambda = 5]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>λ</mml:mi><mml:mo>=</mml:mo><mml:mn>5</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+    (dotted green) (a)–(d); VAF by the first 5 principal components: (e)
+    training data, (f) validation data with optimal
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\lambda]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>λ</mml:mi></mml:math></alternatives></inline-formula>
+    (dashed line).</p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="ordPens_pca.pdf" xlink:title="" />
+  </fig>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This work was supported in part by Deutsche Forschungsgemeinschaft
+  (DFG) under Grant GE2353/2-1.</p>
+  <p>I thank Jan Gertheiss and Fabian Scheipl for their contributions to
+  the software package. Jan Gertheiss created initial package versions
+  0.1-1 up to 0.3-1 and helped discussing the manuscript. Fabian Scheipl
+  implemented the ordinal smoothing penalty for use within
+  <monospace>mgcv</monospace>.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-GerHogObeTutU003A2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gertheiss</surname><given-names>J.</given-names></name>
+          <name><surname>Hogger</surname><given-names>S.</given-names></name>
+          <name><surname>Oberhauser</surname><given-names>C.</given-names></name>
+          <name><surname>Tutz</surname><given-names>G.</given-names></name>
+        </person-group>
+        <article-title>Selection of ordinally scaled independent variables with applications to international classification of functioning core sets</article-title>
+        <source>Journal of the Royal Statistical Society C</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>60</volume>
+        <pub-id pub-id-type="doi">10.1111/j.1467-9876.2010.00753.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-GertheissU003A2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gertheiss</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>ANOVA for factors with ordered levels</article-title>
+        <source>Journal of Agricultural, Biological, and Environmental Statistics</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>19</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1007/s13253-014-0170-5</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SweeneyU003A2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sweeney</surname><given-names>E.</given-names></name>
+          <name><surname>Crainiceanu</surname><given-names>C.</given-names></name>
+          <name><surname>Gertheiss</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>Testing differentially expressed genes in dose-response studies and with ordinal phenotypes</article-title>
+        <source>Statistical applications in genetics and molecular biology</source>
+        <publisher-name>De Gruyter</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>15</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1515/sagmb-2015-0091</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-R">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>R Core Team</string-name>
+        </person-group>
+        <source>R: A language and environment for statistical computing</source>
+        <publisher-name>R Foundation for Statistical Computing</publisher-name>
+        <publisher-loc>Vienna</publisher-loc>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://www.R-project.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-TutzU003A2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tutz</surname><given-names>G.</given-names></name>
+          <name><surname>Gertheiss</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>Rating scales as predictors - the old question of scale level and some answers</article-title>
+        <source>Psychometrika</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>79</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1007/S11336-013-9343-3</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-GertheissU003A2021">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gertheiss</surname><given-names>J.</given-names></name>
+          <name><surname>Scheipl</surname><given-names>F.</given-names></name>
+          <name><surname>Lauer</surname><given-names>T.</given-names></name>
+          <name><surname>Ehrhardt</surname><given-names>H.</given-names></name>
+        </person-group>
+        <article-title>Statistical inference for ordinal predictors in generalized linear and additive models with application to bronchopulmonary dysplasia</article-title>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://arxiv.org/abs/2102.01946</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-TutzU003A2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tutz</surname><given-names>G.</given-names></name>
+          <name><surname>Gertheiss</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>Regularized regression for categorical data</article-title>
+        <source>Statistical Modelling</source>
+        <publisher-name>Sage Publications Sage India: New Delhi, India</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>16</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1177/1471082X16642560</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-WoodU003A2008">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wood</surname><given-names>Simon N</given-names></name>
+        </person-group>
+        <article-title>Fast stable direct fitting and smoothness selection for generalized additive models</article-title>
+        <source>Journal of the Royal Statistical Society B</source>
+        <year iso-8601-date="2008">2008</year>
+        <volume>70</volume>
+        <pub-id pub-id-type="doi">10.1111/j.1467-9868.2007.00646.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-WoodU003A2017">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Wood</surname><given-names>Simon N</given-names></name>
+        </person-group>
+        <source>Generalized additive models: An introduction with R</source>
+        <publisher-name>CRC Press</publisher-name>
+        <publisher-loc>Boca Raton</publisher-loc>
+        <year iso-8601-date="2017">2017</year>
+        <isbn>9781498728331</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-MeierU003A2008">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Meier</surname><given-names>Lukas</given-names></name>
+          <name><surname>Van De Geer</surname><given-names>Sara</given-names></name>
+          <name><surname>Bühlmann</surname><given-names>Peter</given-names></name>
+        </person-group>
+        <article-title>The group lasso for logistic regression</article-title>
+        <source>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2008">2008</year>
+        <volume>70</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1111/j.1467-9868.2007.00627.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-TibshiraniU003A2005">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tibshirani</surname><given-names>Robert</given-names></name>
+          <name><surname>Saunders</surname><given-names>Michael</given-names></name>
+          <name><surname>Rosset</surname><given-names>Saharon</given-names></name>
+          <name><surname>Zhu</surname><given-names>Ji</given-names></name>
+          <name><surname>Knight</surname><given-names>Keith</given-names></name>
+        </person-group>
+        <article-title>Sparsity and smoothness via the fused lasso</article-title>
+        <source>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2005">2005</year>
+        <volume>67</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1111/j.1467-9868.2005.00490.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-YuanU003A2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yuan</surname><given-names>Ming</given-names></name>
+          <name><surname>Lin</surname><given-names>Yi</given-names></name>
+        </person-group>
+        <article-title>Model selection and estimation in regression with grouped variables</article-title>
+        <source>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2006">2006</year>
+        <volume>68</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1111/j.1467-9868.2005.00532.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-HoshiyarU003A2021">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hoshiyar</surname><given-names>A.</given-names></name>
+          <name><surname>Kiers</surname><given-names>H. A. L.</given-names></name>
+          <name><surname>Gertheiss</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>Penalized non-linear principal components analysis for ordinal variables with an application to international classification of functioning core sets</article-title>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://arxiv.org/abs/2110.02805</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-ordPensU003A2021">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Gertheiss</surname><given-names>J.</given-names></name>
+          <name><surname>Hoshiyar</surname><given-names>A.</given-names></name>
+        </person-group>
+        <source>ordPens: Selection, fusion, smoothing and principal components analysis for ordinal variables</source>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://CRAN.R-project.org/package=ordPens</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-HuangU003A2021">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Huang</surname><given-names>Mingze</given-names></name>
+          <name><surname>Müller</surname><given-names>Christian L.</given-names></name>
+          <name><surname>Gaynanova</surname><given-names>Irina</given-names></name>
+        </person-group>
+        <article-title>Latentcor: An R package for estimating latent correlations from mixed data types</article-title>
+        <source>Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <volume>6</volume>
+        <issue>65</issue>
+        <uri>https://doi.org/10.21105/joss.03634</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.03634</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

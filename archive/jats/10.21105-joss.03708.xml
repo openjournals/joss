@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3708</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03708</article-id>
+<title-group>
+<article-title>Heta compiler: a software tool for the development of
+large-scale QSP models and compilation into simulation
+formats</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-6612-5373</contrib-id>
+<string-name>Evgeny Metelkin</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>InSysBio LLC</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-08-20">
+<day>20</day>
+<month>8</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>67</issue>
+<fpage>3708</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>systems biology</kwd>
+<kwd>quantitative systems pharmacology</kwd>
+<kwd>mathematical modeling</kwd>
+<kwd>pharmacometrics</kwd>
+<kwd>format conversion</kwd>
+<kwd>sbml</kwd>
+<kwd>heta</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Today mathematical modeling is becoming more and more popular in
+  biomedicine and drug development. <bold>Quantitative systems
+  pharmacology</bold> (QSP), a relatively new research discipline, is
+  devoted to complex models describing organisms, diseases, and drug
+  dynamics. Designing these models presents a set of challenging
+  methodological problems like managing a huge amount of data, dealing
+  with large-scale models, time-consuming calculations, etc. <bold>Heta
+  compiler</bold> is a small and fast software tool written in
+  JavaScript which manages infrastructure for QSP modeling projects. The
+  purpose of the tool is to build and integrate QSP platform modules, to
+  check their completeness and consistency, and then to compile
+  everything into runnable code that will be executed in simulation
+  software. A user can apply a command-line interface to run the model
+  building process. Alternatively, Heta compiler can be used as a
+  package for developing web-based applications or be integrated with
+  simulation software.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>The large and still growing Systems Biology (SB) and Systems
+  Pharmacology modeling communities utilize a variety of software tools
+  for simulation and data analysis
+  (<xref alt="Knight-Schrijver et al., 2016" rid="ref-Knight-Schrijver2016" ref-type="bibr">Knight-Schrijver
+  et al., 2016</xref>;
+  <xref alt="Mentré et al., 2020" rid="ref-Mentre2020" ref-type="bibr">Mentré
+  et al., 2020</xref>;
+  <xref alt="Stéphanou et al., 2018" rid="ref-Stephanou2018" ref-type="bibr">Stéphanou
+  et al., 2018</xref>). Usually, the modelers solve the
+  algebraic-differential equations or perform parameters identification
+  or sensitivity analysis. While being useful for tackling specific
+  problems, each software tool often has no user-friendly way for
+  routine operations like step-by-step model creation and maintenance.
+  Furthermore, different tools have their own internal model format
+  which cannot be reused.</p>
+  <p>This paper presents Heta compiler which provides a convenient and
+  flexible way for the development of dynamic large-scale models based
+  on the <bold>Heta language</bold> code. The compiler translates the
+  source modeling code into a variety of formats to be run in simulation
+  software tools. Heta compiler also provides information on errors in a
+  model which can be used to debug.</p>
+  <p>This tool is an effort to resolve the typical problems in a QSP
+  project by creating a controllable working environment. The
+  pre-formulated requirements are:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>store QSP models and data in integrated infrastructure,</p>
+    </list-item>
+    <list-item>
+      <p>support iterative platform updates,</p>
+    </list-item>
+    <list-item>
+      <p>support of models written in human-readable formats as well as
+      in tables,</p>
+    </list-item>
+    <list-item>
+      <p>help for model code reuse and sharing,</p>
+    </list-item>
+    <list-item>
+      <p>provide interface for storing several models in a single
+      platform,</p>
+    </list-item>
+    <list-item>
+      <p>export models and data to different popular formats so it can
+      be used out-of-the-box.</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="heta-formats">
+  <title>Heta formats</title>
+  <p><monospace>Heta compiler</monospace> has been evolving alongside
+  the Heta language
+  (<xref alt="Metelkin, 2019" rid="ref-metelkin2019" ref-type="bibr">Metelkin,
+  2019</xref>) specification. Heta is a series of human-readable and
+  writable formats for QSP and Systems Biology projects: Heta code,
+  table representation, JSON, and YAML notation. Heta describes dynamic
+  models in the process-description format i.e., as interacting
+  components that describe volumes, concentrations, amounts, rates. On
+  the other side, it was designed to be easily transformed into ODEs or
+  other formats.</p>
+  <p>The standardization of process-description modeling notation was
+  also pursued in formats like SBML, CellML, Antimony. However the Heta
+  standard can be distinguished by the specific features:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Human-readable/writable code that can be used for model
+      development or modification.</p>
+    </list-item>
+    <list-item>
+      <p>Easy code parsing.</p>
+    </list-item>
+    <list-item>
+      <p>Modularity: QSP/SB platform can be subdivided into several
+      files and spaces for better project management.</p>
+    </list-item>
+    <list-item>
+      <p>Multiple interchangeable representation: human-readable code,
+      tables, JSON, YAML.</p>
+    </list-item>
+    <list-item>
+      <p>Reusability: modeling platforms should be easily extended for
+      other projects.</p>
+    </list-item>
+    <list-item>
+      <p>Reach annotation capabilities for better model code
+      revision.</p>
+    </list-item>
+    <list-item>
+      <p>Simple transformation to popular modeling formats or
+      general-purpose ODEs.</p>
+    </list-item>
+    <list-item>
+      <p>Support of translation from/to SBML
+      (<xref alt="Hucka et al., 2003" rid="ref-Hucka2003" ref-type="bibr">Hucka
+      et al., 2003</xref>).</p>
+    </list-item>
+  </list>
+  <sec id="example">
+    <title>Example</title>
+    <p>Code in
+    <xref alt="Figure 1" rid="figU003Amodel-code">Figure 1</xref> is an
+    example of the Heta code describing a simple one-compartment model.
+    The metabolic scheme of the model can be found in
+    <xref alt="Figure 2" rid="figU003Amodel-scheme">Figure 2</xref>.</p>
+    <fig>
+      <caption><p>Model code in Heta format:
+      <monospace>index.heta</monospace> file.
+      <styled-content id="figU003Amodel-code"></styled-content></p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="model-code.png" xlink:title="" />
+    </fig>
+    <fig>
+      <caption><p>One compartment model with two metabolites and one
+      reaction.<styled-content id="figU003Amodel-scheme"></styled-content></p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="model-scheme.png" xlink:title="" />
+    </fig>
+    <p>When the size of a model code is large it is recommended to
+    subdivide it into modules but this model is small and can be placed
+    into a single file, e.g <monospace>index.heta</monospace>. To build
+    the platform with <monospace>Heta compiler</monospace> one can run
+    the compilation with the following command in a command terminal:
+    <monospace>heta build</monospace>.</p>
+  </sec>
+</sec>
+<sec id="features-overview">
+  <title>Features overview</title>
+  <p><monospace>Heta compiler</monospace> includes the parser of the
+  Heta formats and supports all features of the
+  <ext-link ext-link-type="uri" xlink:href="https://hetalang.github.io/#/specifications/">Heta
+  specifications</ext-link> of version 0.4.1. It was designed to support
+  exporting to different popular modeling formats. The current version
+  supports the following formats:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>DBSolveOptimum</p>
+    </list-item>
+    <list-item>
+      <p>SBML of levels 2 and 3</p>
+    </list-item>
+    <list-item>
+      <p>mrgsolve</p>
+    </list-item>
+    <list-item>
+      <p>Simbiology</p>
+    </list-item>
+    <list-item>
+      <p>Matlab describing ODEs file</p>
+    </list-item>
+    <list-item>
+      <p>Julia language code</p>
+    </list-item>
+    <list-item>
+      <p>JSON/YAML</p>
+    </list-item>
+    <list-item>
+      <p>Excel sheets</p>
+    </list-item>
+  </list>
+  <p><monospace>Heta compiler</monospace> can work in two modes: as a
+  command-line tool for model development or as a library to be
+  incorporated into third-party applications. The source code is written
+  in pure JavaScript and can be run in the Node environment or in a
+  browser. It can be used for both: server-side and front-end
+  applications.</p>
+  <p>To use <monospace>Heta compiler</monospace> in a modeling project a
+  user should follow the specific formats and agreements. Project files
+  i.e. model code, datasets, figures, etc. should be stored in the same
+  directory. This directory typically includes an optional
+  <monospace>platform.json</monospace> declaration file that stores the
+  supplementary information of a platform as well as specific parameters
+  for platform compilation. The alternative way to set the options of
+  the compiler is to use command-line arguments. The list of them can be
+  shown with <monospace>heta build -h</monospace> command in a
+  shell.</p>
+  <fig>
+    <caption><p>A typical workflow of
+    <monospace>heta compiler</monospace> in a modeling
+    project.<styled-content id="figU003Aworkflow"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="workflow.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="results-and-discussion">
+  <title>Results and discussion</title>
+  <p><monospace>Heta compiler</monospace> can be used as the framework
+  for a QSP modeling project of any size and complexity. Currently, it
+  is applied for the development and maintenance of a variety of
+  commercial and open-source modeling projects
+  (<xref alt="Metelkin et al., 2019" rid="ref-faah" ref-type="bibr">Metelkin
+  et al., 2019</xref>;
+  <xref alt="Metelkin &amp; Demin, 2020" rid="ref-covid" ref-type="bibr">Metelkin
+  &amp; Demin, 2020</xref>). <monospace>Heta compiler</monospace> has
+  also been used for the development of web applications like the
+  <ext-link ext-link-type="uri" xlink:href="https://irt.insysbio.com/">Immune
+  Response Template</ext-link> navigator and “PK/RO simulator” R-Shiny
+  application
+  (<xref alt="Shchelokov et al., 2019" rid="ref-mAb-app" ref-type="bibr">Shchelokov
+  et al., 2019</xref>).</p>
+  <p>The Heta-based formats are friendly for version control systems
+  like Git and SVN because of the modular structure and the text-based
+  representation. Heta compiler can easily be integrated with existing
+  modeling infrastructure, workflows or used as a part of a CI/CD
+  workflow.</p>
+  <p><monospace>Heta compiler</monospace> is a part of the Heta project
+  which is an initiative for the development of full-cycle
+  infrastructure for modeling in pharmacology and biology:
+  <ext-link ext-link-type="uri" xlink:href="https://hetalang.github.io">https://hetalang.github.io</ext-link>.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Hucka2003">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hucka</surname><given-names>M.</given-names></name>
+          <name><surname>Finney</surname><given-names>A.</given-names></name>
+          <name><surname>Sauro</surname><given-names>H. M.</given-names></name>
+          <name><surname>Bolouri</surname><given-names>H.</given-names></name>
+          <name><surname>Doyle</surname><given-names>J. C.</given-names></name>
+          <name><surname>Kitano</surname><given-names>H.</given-names></name>
+          <name><surname>SBML Forum:</surname></name>
+          <name><surname>Arkin</surname><given-names>A. P.</given-names></name>
+          <name><surname>Bornstein</surname><given-names>B. J.</given-names></name>
+          <name><surname>Bray</surname><given-names>D.</given-names></name>
+          <name><surname>Cornish-Bowden</surname><given-names>A.</given-names></name>
+          <name><surname>Cuellar</surname><given-names>A. A.</given-names></name>
+          <name><surname>Dronov</surname><given-names>S.</given-names></name>
+          <name><surname>Gilles</surname><given-names>E. D.</given-names></name>
+          <name><surname>Ginkel</surname><given-names>M.</given-names></name>
+          <name><surname>Gor</surname><given-names>V.</given-names></name>
+          <name><surname>Goryanin</surname><given-names>I. I.</given-names></name>
+          <name><surname>Hedley</surname><given-names>W. J.</given-names></name>
+          <name><surname>Hodgman</surname><given-names>T. C.</given-names></name>
+          <name><surname>Hofmeyr</surname><given-names>J.-H.</given-names></name>
+          <name><surname>Hunter</surname><given-names>P. J.</given-names></name>
+          <name><surname>Juty</surname><given-names>N. S.</given-names></name>
+          <name><surname>Kasberger</surname><given-names>J. L.</given-names></name>
+          <name><surname>Kremling</surname><given-names>A.</given-names></name>
+          <name><surname>Kummer</surname><given-names>U.</given-names></name>
+          <name><surname>Novere</surname><given-names>N. Le</given-names></name>
+          <name><surname>Loew</surname><given-names>L. M.</given-names></name>
+          <name><surname>Lucio</surname><given-names>D.</given-names></name>
+          <name><surname>Mendes</surname><given-names>P.</given-names></name>
+          <name><surname>Minch</surname><given-names>E.</given-names></name>
+          <name><surname>Mjolsness</surname><given-names>E. D.</given-names></name>
+          <name><surname>Nakayama</surname><given-names>Y.</given-names></name>
+          <name><surname>Nelson</surname><given-names>M. R.</given-names></name>
+          <name><surname>Nielsen</surname><given-names>P. F.</given-names></name>
+          <name><surname>Sakurada</surname><given-names>T.</given-names></name>
+          <name><surname>Schaff</surname><given-names>J. C.</given-names></name>
+          <name><surname>Shapiro</surname><given-names>B. E.</given-names></name>
+          <name><surname>Shimizu</surname><given-names>T. S.</given-names></name>
+          <name><surname>Spence</surname><given-names>H. D.</given-names></name>
+          <name><surname>Stelling</surname><given-names>J.</given-names></name>
+          <name><surname>Takahashi</surname><given-names>K.</given-names></name>
+          <name><surname>Tomita</surname><given-names>M.</given-names></name>
+          <name><surname>Wagner</surname><given-names>J.</given-names></name>
+          <name><surname>Wang</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>The systems biology markup language (SBML): A medium for representation and exchange of biochemical network models</article-title>
+        <source>Bioinformatics</source>
+        <year iso-8601-date="2003-03">2003</year><month>03</month>
+        <volume>19</volume>
+        <issn>1367-4803</issn>
+        <pub-id pub-id-type="doi">10.1093/bioinformatics/btg015</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Mentre2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mentré</surname><given-names>France</given-names></name>
+          <name><surname>Friberg</surname><given-names>Lena E.</given-names></name>
+          <name><surname>Duffull</surname><given-names>Stephen</given-names></name>
+          <name><surname>French</surname><given-names>Jonathan</given-names></name>
+          <name><surname>Lauffenburger</surname><given-names>Douglas A.</given-names></name>
+          <name><surname>Li</surname><given-names>Lang</given-names></name>
+          <name><surname>Mager</surname><given-names>Donald E.</given-names></name>
+          <name><surname>Sinha</surname><given-names>Vikram</given-names></name>
+          <name><surname>Sobie</surname><given-names>Eric</given-names></name>
+          <name><surname>Zhao</surname><given-names>Ping</given-names></name>
+        </person-group>
+        <article-title>Pharmacometrics and systems pharmacology 2030</article-title>
+        <source>Clinical Pharmacology &amp; Therapeutics</source>
+        <year iso-8601-date="2020-01">2020</year><month>01</month>
+        <volume>107</volume>
+        <issn>0009-9236</issn>
+        <pub-id pub-id-type="doi">10.1002/cpt.1683</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Stephanou2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Stéphanou</surname><given-names>Angélique</given-names></name>
+          <name><surname>Fanchon</surname><given-names>Eric</given-names></name>
+          <name><surname>Innominato</surname><given-names>Pasquale F.</given-names></name>
+          <name><surname>Ballesta</surname><given-names>Annabelle</given-names></name>
+        </person-group>
+        <article-title>Systems biology, systems medicine, systems pharmacology: The what and the why</article-title>
+        <source>Acta Biotheoretica</source>
+        <year iso-8601-date="2018-12">2018</year><month>12</month>
+        <volume>66</volume>
+        <issn>0001-5342</issn>
+        <pub-id pub-id-type="doi">10.1007/s10441-018-9330-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Knight-Schrijver2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Knight-Schrijver</surname><given-names>V. R.</given-names></name>
+          <name><surname>Chelliah</surname><given-names>V.</given-names></name>
+          <name><surname>Cucurull-Sanchez</surname><given-names>L.</given-names></name>
+          <name><surname>Novère</surname><given-names>N. Le</given-names></name>
+        </person-group>
+        <article-title>The promises of quantitative systems pharmacology modelling for drug development</article-title>
+        <source>Computational and Structural Biotechnology Journal</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>14</volume>
+        <issn>20010370</issn>
+        <pub-id pub-id-type="doi">10.1016/j.csbj.2016.09.002</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-faah">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Metelkin</surname><given-names>Evgeny</given-names></name>
+          <name><surname>Bagrova</surname><given-names>Natalia</given-names></name>
+          <name><surname>Benson</surname><given-names>Neil</given-names></name>
+          <name><surname>Demin</surname><given-names>Oleg</given-names></name>
+          <name><surname>Graaf</surname><given-names>Piet van der</given-names></name>
+        </person-group>
+        <article-title>FAAH inhibitor: QSP modeling platform describing fatty acid amide hydrolase inhibition in human</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>GitHub</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://github.com/insysbio/faah-inhibitor</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-covid">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Metelkin</surname><given-names>Evgeny</given-names></name>
+          <name><surname>Demin</surname><given-names>Oleg</given-names></name>
+        </person-group>
+        <article-title>QSP model of COVID-19: SARS-CoV-2 virus and host cell life cycles, immune response and therapeutic treatments</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>GitHub</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://github.com/insysbio/covid19-qsp-model</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-mAb-app">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Shchelokov</surname><given-names>Dmitry</given-names></name>
+          <name><surname>Metelkin</surname><given-names>Evgeny</given-names></name>
+          <name><surname>Jr</surname><given-names>Oleg Demin</given-names></name>
+        </person-group>
+        <article-title>PK/RO simulator for anti-PD-1 mAbs</article-title>
+        <source>ShinyApps.io</source>
+        <publisher-name>InSysBio LLC</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://insysbio.shinyapps.io/mAb-app/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-metelkin2019">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Metelkin</surname><given-names>Evgeny</given-names></name>
+        </person-group>
+        <article-title>&quot;Heta&quot; is a new declarative language to define the large-scale systems pharmacology and systems biology models</article-title>
+        <source>American Conference on Pharmacometrics 10</source>
+        <year iso-8601-date="2019-10">2019</year><month>10</month>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

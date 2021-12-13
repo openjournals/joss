@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2180</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02180</article-id>
+<title-group>
+<article-title>Sensie: Probing the sensitivity of neural
+networks</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-4239-4055</contrib-id>
+<string-name>Colin Jacobs</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Center for Astrophysics and Supercomputing, Swinburne
+University of Technology</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-03-20">
+<day>20</day>
+<month>3</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>50</issue>
+<fpage>2180</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>machine learning</kwd>
+<kwd>neural networks</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>Deep neural networks (DNNs) are finding increasing application
+  across a wide variety of fields, including in industry and scientific
+  research. Although DNNs are able to successfully tackle data problems
+  that proved intractable to other methods, for instance in computer
+  vision, they suffer from a lack of interpretability. Some well-known
+  methods for visualising and interpreting the outputs of DNNs include
+  directly inspecting the learned features of a model
+  (e.g. convolutional kernels and activation maps); or producing
+  “saliency maps” which allow a human researcher to inspect which parts
+  of an input (such as an image) played the most crucial role in the
+  model reaching a particular determination. These algorithms include
+  occluding parts of an image
+  (<xref alt="Zeiler &amp; Fergus, 2014" rid="ref-zeilerVisualizingUnderstandingConvolutional2014" ref-type="bibr">Zeiler
+  &amp; Fergus, 2014</xref>), guided backpropagation
+  (<xref alt="Simonyan et al., 2013" rid="ref-simonyanDeepConvolutionalNetworks2013" ref-type="bibr">Simonyan
+  et al., 2013</xref>), and more complex algorithms such as SmoothGrad
+  (<xref alt="Smilkov et al., 2017" rid="ref-smilkovSmoothGradRemovingNoise2017" ref-type="bibr">Smilkov
+  et al., 2017</xref>) and Layer-wise relevance propagation
+  (<xref alt="Binder et al., 2016" rid="ref-binderLayerwiseRelevancePropagation2016" ref-type="bibr">Binder
+  et al., 2016</xref>).</p>
+  <p>However, simply inspecting the most salient regions of an input
+  image (or other input) may not always be sufficiently interpretable.
+  Here we present <monospace>Sensie</monospace>, a python package to
+  quickly inspect and quantify the sensitivity of a trained model to
+  user-specified properties of the input domain, or under the arbitrary
+  transformation of a test set.</p>
+  <p>Several quality software packages exist to probe artificial neural
+  network internals, such as <monospace>Innvestigate</monospace>
+  (<xref alt="Alber et al., 2018" rid="ref-alberINNvestigateNeuralNetworks2018" ref-type="bibr">Alber
+  et al., 2018</xref>),
+  <monospace>tf-explain</monospace><xref ref-type="fn" rid="fn1">1</xref>,
+  and <monospace>keras-vis</monospace>
+  (<xref alt="Kotikalapudi &amp; contributors, 2017" rid="ref-raghakotkerasvis" ref-type="bibr">Kotikalapudi
+  &amp; contributors, 2017</xref>). These packages are geared towards
+  traditional image-based applications, and cannot explore relationships
+  between the neural network performance and arbitrary properties of the
+  examples presented to the network. <monospace>Sensie</monospace> is
+  designed to fill that gap.</p>
+</sec>
+<sec id="method">
+  <title>Method</title>
+  <p><monospace>Sensie</monospace> helps the user explore the
+  sensitivity of a machine learning model to properties of data (using a
+  test set with known, correct outputs). <monospace>Sensie</monospace>
+  wraps a pre-trained model, and assists in quantifying and visualising
+  changes in the performance of the model as a function of either a
+  specified property of the data (one that is explicitly passed to the
+  model at test time, or other metadata); or a perturbation of the data,
+  parameterised by a value <italic>p</italic>. In addition,
+  <monospace>Sensie</monospace> offers a convenience method to display
+  the sensitivity of a classification model to the class itself, though
+  this should be used with caution.</p>
+  <p><monospace>Sensie</monospace>’s algorithm is summarised as follows
+  as applied to a network trained for classification, for two use
+  cases:</p>
+  <p><bold>A)</bold> Using data or metadata: a scalar property
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+  of the test set <inline-formula><alternatives>
+  <tex-math><![CDATA[X_{\textrm{test}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>X</mml:mi><mml:mtext mathvariant="normal">test</mml:mtext></mml:msub></mml:math></alternatives></inline-formula>,
+  such that each example <inline-formula><alternatives>
+  <tex-math><![CDATA[\boldsymbol{x}_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  has a corresponding value <inline-formula><alternatives>
+  <tex-math><![CDATA[p_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>p</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  and a supplied ground truth <inline-formula><alternatives>
+  <tex-math><![CDATA[\hat{y}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>y</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:math></alternatives></inline-formula>:</p>
+  <list list-type="order">
+    <list-item>
+      <p>Segment the data into bins by <inline-formula><alternatives>
+      <tex-math><![CDATA[p]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>.</p>
+    </list-item>
+    <list-item>
+      <p>Collect predictions from the model (using
+      <monospace>model.predict()</monospace> or a user-supplied
+      function), and note the scores for the correct classes
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[\hat{y}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>y</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:math></alternatives></inline-formula>.</p>
+    </list-item>
+    <list-item>
+      <p>Calculate the mean score <inline-formula><alternatives>
+      <tex-math><![CDATA[\bar{s}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>s</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+      in the correct class for each bin, and the standard deviation.</p>
+    </list-item>
+    <list-item>
+      <p>Plot <inline-formula><alternatives>
+      <tex-math><![CDATA[\bar{s}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>s</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+      as a function of <inline-formula><alternatives>
+      <tex-math><![CDATA[p]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>.</p>
+    </list-item>
+    <list-item>
+      <p>Estimate the significance of the effect using Bayesian linear
+      regression, producing a scalar value representing
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[\partial \bar{s}/\partial p]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>∂</mml:mi><mml:mover><mml:mi>s</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mi>/</mml:mi><mml:mi>∂</mml:mi><mml:mi>p</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>,
+      with 50% and 95% credible intervals.</p>
+    </list-item>
+  </list>
+  <p><bold>B)</bold> Using a perturber function
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[f_{\textrm{perturb}}(\boldsymbol{x}, p)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>f</mml:mi><mml:mtext mathvariant="normal">perturb</mml:mtext></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo>,</mml:mo><mml:mi>p</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>—an
+  arbitrary transformation of the inputs—applied to the test set, where
+  the magnitude of perturbation is parameterised by
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>:</p>
+  <list list-type="order">
+    <list-item>
+      <p>Choose discrete values of <inline-formula><alternatives>
+      <tex-math><![CDATA[p]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+      to be tested.</p>
+    </list-item>
+    <list-item>
+      <p>For each value of <inline-formula><alternatives>
+      <tex-math><![CDATA[p]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+      to be tested, <inline-formula><alternatives>
+      <tex-math><![CDATA[p_j]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>p</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+      transform the test set such that <inline-formula><alternatives>
+      <tex-math><![CDATA[X'_j = f_{\textrm{perturb}}(X_\textrm{test}, p_j)]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>X</mml:mi><mml:msub><mml:mi>′</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:msub><mml:mi>f</mml:mi><mml:mtext mathvariant="normal">perturb</mml:mtext></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mtext mathvariant="normal">test</mml:mtext></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>p</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+    </list-item>
+    <list-item>
+      <p>Collect predictions from the model for
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[X'_j]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>X</mml:mi><mml:msub><mml:mi>′</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+      (using <monospace>model.predict()</monospace> or a user-supplied
+      method), and note the scores for the correct classes,
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[\hat{y}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>y</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:math></alternatives></inline-formula>.</p>
+    </list-item>
+    <list-item>
+      <p>Calculate the mean score <inline-formula><alternatives>
+      <tex-math><![CDATA[\bar{s}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>s</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+      in the correct class for each <inline-formula><alternatives>
+      <tex-math><![CDATA[p_j]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>p</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+      and the standard deviation.</p>
+    </list-item>
+    <list-item>
+      <p>Plot <inline-formula><alternatives>
+      <tex-math><![CDATA[\bar{s}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>s</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+      as a function of <inline-formula><alternatives>
+      <tex-math><![CDATA[p]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>.</p>
+    </list-item>
+    <list-item>
+      <p>Estimate the significance of the effect using Bayesian linear
+      regression<xref ref-type="fn" rid="fn2">2</xref>, producing a
+      scalar value representing <inline-formula><alternatives>
+      <tex-math><![CDATA[\partial \bar{s}/\partial p]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>∂</mml:mi><mml:mover><mml:mi>s</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover><mml:mi>/</mml:mi><mml:mi>∂</mml:mi><mml:mi>p</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>,
+      with 50% and 95% credible intervals.</p>
+    </list-item>
+  </list>
+  <p>In the first case, A), <monospace>Sensie</monospace> can optionally
+  forego binning by P, and treat every element as a data point in
+  determining the trend.</p>
+  <fig>
+    <caption><p>Left: Output from <monospace>Sensie</monospace> for a
+    model trained to recognise handwritten digits, testing model
+    sensitivity to rotation. Error bars show the standard deviation for
+    the mean ground-truth-class score. Right: Sensitivity of a model to
+    an applied blur of the input image data, showing a linear fit to a
+    significant region.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="sensie_examples.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="discussion-and-conclusion">
+  <title>Discussion and conclusion</title>
+  <p><monospace>Sensie</monospace> helps the model user to quickly
+  identify sensitivities of the accuracy to various properties of the
+  input. This may identify deficiencies in the training set; for
+  instance, if we expect an image classifier to be robust under a
+  particular transformation such as rotation or translation,
+  <monospace>Sensie</monospace> can quickly quantify whether such a
+  transformation has a statistically significant effect on the accuracy
+  across the test set. Figure 1 shows two examples; on the left, an
+  output plot from <monospace>Sensie</monospace> showing the sensitivity
+  of a trained model to rotation of the input images; the fact that the
+  curve is not flat indicates that the model is highly sensitive to
+  input orientation and that this is a significant feature (or bug) of
+  the training process. On the right, the sensitivity of a trained model
+  to a Gaussian blur applied to the model, along with a fit indicating
+  the magnitude of the effect. The sensitivity to any given property,
+  i.e. the curve <inline-formula><alternatives>
+  <tex-math><![CDATA[\bar{s}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>s</mml:mi><mml:mo accent="true">‾</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+  vs <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>,
+  may not be linear. In this case, a fit using linear regression may
+  produce a less meaningful result.</p>
+  <p><monospace>Sensie</monospace> has been successfully applied to a
+  model trained for astronomical classification
+  (<xref alt="Jacobs et al., 2019" rid="ref-jacobsExtendedCatalogGalaxy2019" ref-type="bibr">Jacobs
+  et al., 2019</xref>) to indicate the model’s sensitivity to the scale
+  of features present in the input; the signal-to-noise ratio of the
+  input data; the colours of the input; and astrophysical properties of
+  the objects present in an input image.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>The author acknowledges support from Karl Glazebrook’s Australian
+  Research Council Laureate Fellowship FL180100060.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-binderLayerwiseRelevancePropagation2016">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Binder</surname><given-names>Alexander</given-names></name>
+          <name><surname>Montavon</surname><given-names>Grégoire</given-names></name>
+          <name><surname>Lapuschkin</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Müller</surname><given-names>Klaus-Robert</given-names></name>
+          <name><surname>Samek</surname><given-names>Wojciech</given-names></name>
+        </person-group>
+        <article-title>Layer-wise relevance propagation for neural networks with local renormalization layers</article-title>
+        <source>International Conference on Artificial Neural Networks</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-44781-0_8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-jacobsExtendedCatalogGalaxy2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jacobs</surname><given-names>C.</given-names></name>
+          <name><surname>Collett</surname><given-names>T.</given-names></name>
+          <name><surname>Glazebrook</surname><given-names>K.</given-names></name>
+          <name><surname>Buckley-Geer</surname><given-names>E.</given-names></name>
+          <name><surname>Diehl</surname><given-names>H. T.</given-names></name>
+          <name><surname>Lin</surname><given-names>H.</given-names></name>
+          <name><surname>McCarthy</surname><given-names>C.</given-names></name>
+          <name><surname>Qin</surname><given-names>A. K.</given-names></name>
+          <name><surname>Odden</surname><given-names>C.</given-names></name>
+          <name><surname>Escudero</surname><given-names>M. Caso</given-names></name>
+          <name><surname>Dial</surname><given-names>P.</given-names></name>
+          <name><surname>Yung</surname><given-names>V. J.</given-names></name>
+          <name><surname>Gaitsch</surname><given-names>S.</given-names></name>
+          <name><surname>Pellico</surname><given-names>A.</given-names></name>
+          <name><surname>Lindgren</surname><given-names>K. A.</given-names></name>
+          <name><surname>Abbott</surname><given-names>T. M. C.</given-names></name>
+          <name><surname>Annis</surname><given-names>J.</given-names></name>
+          <name><surname>Avila</surname><given-names>S.</given-names></name>
+          <name><surname>Brooks</surname><given-names>D.</given-names></name>
+          <name><surname>Burke</surname><given-names>D. L.</given-names></name>
+          <name><surname>Rosell</surname><given-names>A. Carnero</given-names></name>
+          <name><surname>Kind</surname><given-names>M. Carrasco</given-names></name>
+          <name><surname>Carretero</surname><given-names>J.</given-names></name>
+          <name><surname>Costa</surname><given-names>L. N. da</given-names></name>
+          <name><surname>Vicente</surname><given-names>J. De</given-names></name>
+          <name><surname>Fosalba</surname><given-names>P.</given-names></name>
+          <name><surname>Frieman</surname><given-names>J.</given-names></name>
+          <name><surname>García-Bellido</surname><given-names>J.</given-names></name>
+          <name><surname>Gaztanaga</surname><given-names>E.</given-names></name>
+          <name><surname>Goldstein</surname><given-names>D. A.</given-names></name>
+          <name><surname>Gruen</surname><given-names>D.</given-names></name>
+          <name><surname>Gruendl</surname><given-names>R. A.</given-names></name>
+          <name><surname>Gschwend</surname><given-names>J.</given-names></name>
+          <name><surname>Hollowood</surname><given-names>D. L.</given-names></name>
+          <name><surname>Honscheid</surname><given-names>K.</given-names></name>
+          <name><surname>Hoyle</surname><given-names>B.</given-names></name>
+          <name><surname>James</surname><given-names>D. J.</given-names></name>
+          <name><surname>Krause</surname><given-names>E.</given-names></name>
+          <name><surname>Kuropatkin</surname><given-names>N.</given-names></name>
+          <name><surname>Lahav</surname><given-names>O.</given-names></name>
+          <name><surname>Lima</surname><given-names>M.</given-names></name>
+          <name><surname>Maia</surname><given-names>M. A. G.</given-names></name>
+          <name><surname>Marshall</surname><given-names>J. L.</given-names></name>
+          <name><surname>Miquel</surname><given-names>R.</given-names></name>
+          <name><surname>Plazas</surname><given-names>A. A.</given-names></name>
+          <name><surname>Roodman</surname><given-names>A.</given-names></name>
+          <name><surname>Sanchez</surname><given-names>E.</given-names></name>
+          <name><surname>Scarpine</surname><given-names>V.</given-names></name>
+          <name><surname>Serrano</surname><given-names>S.</given-names></name>
+          <name><surname>Sevilla-Noarbe</surname><given-names>I.</given-names></name>
+          <name><surname>Smith</surname><given-names>M.</given-names></name>
+          <name><surname>Sobreira</surname><given-names>F.</given-names></name>
+          <name><surname>Suchyta</surname><given-names>E.</given-names></name>
+          <name><surname>Swanson</surname><given-names>M. E. C.</given-names></name>
+          <name><surname>Tarle</surname><given-names>G.</given-names></name>
+          <name><surname>Vikram</surname><given-names>V.</given-names></name>
+          <name><surname>Walker</surname><given-names>A. R.</given-names></name>
+          <name><surname>and</surname><given-names>Y. Zhang</given-names></name>
+        </person-group>
+        <article-title>An Extended Catalog of Galaxy in DES Using Convolutional Neural Networks</article-title>
+        <source>ApJS</source>
+        <year iso-8601-date="2019-07">2019</year><month>07</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-07-21">2019</year><month>07</month><day>21</day></date-in-citation>
+        <volume>243</volume>
+        <issue>1</issue>
+        <issn>0067-0049</issn>
+        <uri>https://doi.org/10.3847\%2F1538-4365\%2Fab26b6</uri>
+        <pub-id pub-id-type="doi">10.3847/1538-4365/ab26b6</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-simonyanDeepConvolutionalNetworks2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Simonyan</surname><given-names>Karen</given-names></name>
+          <name><surname>Vedaldi</surname><given-names>Andrea</given-names></name>
+          <name><surname>Zisserman</surname><given-names>Andrew</given-names></name>
+        </person-group>
+        <article-title>Deep inside convolutional networks: Visualising image classification models and saliency maps</article-title>
+        <source>arXiv preprint arXiv:1312.6034</source>
+        <year iso-8601-date="2013">2013</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-04-19">2017</year><month>04</month><day>19</day></date-in-citation>
+        <uri>https://arxiv.org/abs/1312.6034</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-smilkovSmoothGradRemovingNoise2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Smilkov</surname><given-names>Daniel</given-names></name>
+          <name><surname>Thorat</surname><given-names>Nikhil</given-names></name>
+          <name><surname>Kim</surname><given-names>Been</given-names></name>
+          <name><surname>Viégas</surname><given-names>Fernanda</given-names></name>
+          <name><surname>Wattenberg</surname><given-names>Martin</given-names></name>
+        </person-group>
+        <article-title>SmoothGrad: Removing noise by adding noise</article-title>
+        <source>arXiv:1706.03825 [cs, stat]</source>
+        <year iso-8601-date="2017-06">2017</year><month>06</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-10-17">2019</year><month>10</month><day>17</day></date-in-citation>
+        <uri>http://arxiv.org/abs/1706.03825</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-zeilerVisualizingUnderstandingConvolutional2014">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Zeiler</surname><given-names>Matthew D.</given-names></name>
+          <name><surname>Fergus</surname><given-names>Rob</given-names></name>
+        </person-group>
+        <article-title>Visualizing and Understanding Convolutional Networks</article-title>
+        <source>Computer Vision  ECCV 2014</source>
+        <person-group person-group-type="editor">
+          <name><surname>Fleet</surname><given-names>David</given-names></name>
+          <name><surname>Pajdla</surname><given-names>Tomas</given-names></name>
+          <name><surname>Schiele</surname><given-names>Bernt</given-names></name>
+          <name><surname>Tuytelaars</surname><given-names>Tinne</given-names></name>
+        </person-group>
+        <publisher-name>Springer International Publishing</publisher-name>
+        <publisher-loc>Cham</publisher-loc>
+        <year iso-8601-date="2014">2014</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2016-02-19">2016</year><month>02</month><day>19</day></date-in-citation>
+        <volume>8689</volume>
+        <isbn>978-3-319-10589-5 978-3-319-10590-1</isbn>
+        <uri>http://link.springer.com/10.1007/978-3-319-10590-1_53</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-raghakotkerasvis">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Kotikalapudi</surname><given-names>Raghavendra</given-names></name>
+          <name><surname>contributors</surname></name>
+        </person-group>
+        <article-title>Keras-vis</article-title>
+        <publisher-name>https://github.com/raghakot/keras-vis; GitHub</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-alberINNvestigateNeuralNetworks2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Alber</surname><given-names>Maximilian</given-names></name>
+          <name><surname>Lapuschkin</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Seegerer</surname><given-names>Philipp</given-names></name>
+          <name><surname>Hägele</surname><given-names>Miriam</given-names></name>
+          <name><surname>Schütt</surname><given-names>Kristof T.</given-names></name>
+          <name><surname>Montavon</surname><given-names>Grégoire</given-names></name>
+          <name><surname>Samek</surname><given-names>Wojciech</given-names></name>
+          <name><surname>Müller</surname><given-names>Klaus-Robert</given-names></name>
+          <name><surname>Dähne</surname><given-names>Sven</given-names></name>
+          <name><surname>Kindermans</surname><given-names>Pieter-Jan</given-names></name>
+        </person-group>
+        <article-title>iNNvestigate neural networks!</article-title>
+        <source>arXiv:1808.04260 [cs, stat]</source>
+        <year iso-8601-date="2018-08">2018</year><month>08</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-10-23">2019</year><month>10</month><day>23</day></date-in-citation>
+        <uri>http://arxiv.org/abs/1808.04260</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+<fn-group>
+  <fn id="fn1">
+    <label>1</label><p>https://github.com/sicara/tf-explain</p>
+  </fn>
+  <fn id="fn2">
+    <label>2</label><p>See
+    https://docs.pymc.io/notebooks/GLM-linear.html for an example using
+    the PyMC3 probabilistic programming framework.</p>
+  </fn>
+</fn-group>
+</back>
+</article>

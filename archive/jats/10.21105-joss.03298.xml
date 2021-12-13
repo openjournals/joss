@@ -1,0 +1,802 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3298</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03298</article-id>
+<title-group>
+<article-title>RustBCA: A High-Performance
+Binary-Collision-Approximation Code for Ion-Material
+Interactions</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9733-6058</contrib-id>
+<string-name>Jon. T Drobny</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Davide Curreli</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Nuclear, Plasma, and Radiological
+Engineering, University of Illinois at Urbana-Champaign</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-10-24">
+<day>24</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>64</issue>
+<fpage>3298</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>plasma material interactions</kwd>
+<kwd>binary collision approximation</kwd>
+<kwd>ion solid interactions</kwd>
+<kwd>ion material interactions</kwd>
+<kwd>sputtering</kwd>
+<kwd>reflection</kwd>
+<kwd>implantation</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Ion-material interactions are of vital importance in industrial
+  applications, the study and design of nuclear fusion devices, the
+  engineering of survivable spacecraft components, and more. In
+  particular, plasma-material interactions are typically dominated by
+  ion-material interactions, including the phenomena of sputtering,
+  reflection, and implantation. These phenomena are difficult to model
+  analytically, and many such models rely on empirical or semi-empirical
+  formulas, such as the Yamamura sputtering yield formula
+  (<xref alt="Y. Yamamura, 1982" rid="ref-Yamamura1982" ref-type="bibr">Y.
+  Yamamura, 1982</xref>), or the Thomas reflection coefficient
+  (<xref alt="Thomas et al., 1992" rid="ref-Thomas1992" ref-type="bibr">Thomas
+  et al., 1992</xref>). However, such models are inherently limited, and
+  of little applicability to complex geometry, multi-component surfaces,
+  or for coupling to plasma or material dynamics codes. Since
+  ion-material interactions span a range of energies from sub-eV to GeV
+  and beyond, n-body approaches such as molecular dynamics can be
+  computationally infeasible for many applications where the
+  characteristic ion range exceeds the limits of reasonable molecular
+  dynamics domains. Instead, approximations to the full n-body problem
+  are used; the most common of these is the Binary Collision
+  Approximation (BCA), a set of simplifying assumptions to the full
+  n-body problem. RustBCA is a high-performance, general purpose,
+  ion-material interactions BCA code, built for scientific flexibility
+  and ease of use. RustBCA features include:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>electronic stopping formulations for low energy (up to 25
+      keV/nucleon) and high energy (up to 1 GeV/nucleon)</p>
+    </list-item>
+    <list-item>
+      <p>Kr-C, ZBL, Moliere, and Lenz-Jensen screened coulomb
+      interatomic potentials</p>
+    </list-item>
+    <list-item>
+      <p>Lennard-Jones and Morse attractive-repulsive potentials</p>
+    </list-item>
+    <list-item>
+      <p>the unique capability of using multiple interatomic potentials
+      in a single simulation</p>
+    </list-item>
+    <list-item>
+      <p>choice of Gaussian quadrature or the approximate MAGIC
+      algorithm for determining scattering angles</p>
+    </list-item>
+    <list-item>
+      <p>full trajectory tracking of ions and material atoms, including
+      local nuclear and electronic energy losses</p>
+    </list-item>
+    <list-item>
+      <p>a human- and machine-readable configuration file</p>
+    </list-item>
+    <list-item>
+      <p>full 6D output of all particles that leave the simulation (via
+      sputtering or reflection)</p>
+    </list-item>
+    <list-item>
+      <p>multiple geometry types</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="binary-collision-approximation-codes">
+  <title>Binary Collision Approximation Codes</title>
+  <p>RustBCA is an amorphous-material BCA code, following the TRIM
+  (<xref alt="Biersack &amp; Haggmark, 1980" rid="ref-Biersack1980" ref-type="bibr">Biersack
+  &amp; Haggmark, 1980</xref>) family of codes, which includes Tridyn
+  (<xref alt="Möller et al., 1988" rid="ref-Möller1988" ref-type="bibr">Möller
+  et al., 1988</xref>), SDTrimSP
+  (<xref alt="Mutzke et al., n.d." rid="ref-Mutzke2019" ref-type="bibr">Mutzke
+  et al., n.d.</xref>), F-TRIDYN
+  (<xref alt="Drobny et al., 2017" rid="ref-Drobny2017" ref-type="bibr">Drobny
+  et al., 2017</xref>), and SRIM
+  (<xref alt="Ziegler et al., 2010" rid="ref-Ziegler2010" ref-type="bibr">Ziegler
+  et al., 2010</xref>); this has historically been the most popular
+  implementation of the BCA. Based on the number of citations recorded
+  in Google Scholar at the time of writing, SRIM is the most popular
+  amorphous-material BCA code, likely due to its being free to download,
+  available on Windows, and having a graphical user interface. It is
+  followed by the original TRIM code, upon which SRIM was based, then
+  Tridyn, and finally SDTrimSP. Crystalline-material BCA codes have also
+  been developed, such as MARLOWE
+  (<xref alt="Robinson &amp; Torrens, 1974" rid="ref-Robinson1974" ref-type="bibr">Robinson
+  &amp; Torrens, 1974</xref>), OKSANA
+  (<xref alt="Shulga, 1984" rid="ref-Shulga1984" ref-type="bibr">Shulga,
+  1984</xref>), and some versions of ACAT
+  (<xref alt="Yasunori Yamamura &amp; Tawara, 1996" rid="ref-Yamamura1996" ref-type="bibr">Yasunori
+  Yamamura &amp; Tawara, 1996</xref>), but are not as widely used. The
+  BCA itself is a set of simplifying assumptions for the ion-material
+  interaction problem; the assumptions used in the amorphous-material
+  BCA can be summarized as follows:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Particles in the code, ions and material atoms both, are
+      “superparticles” that represent many real ions or atoms each</p>
+    </list-item>
+    <list-item>
+      <p>Energetic particles interact with initially stationary atoms in
+      the material through elastic, binary collisions</p>
+    </list-item>
+    <list-item>
+      <p>Collisions occur at mean-free-path lengths, or exponentially
+      distributed path lengths for gaseous targets</p>
+    </list-item>
+    <list-item>
+      <p>Particle trajectories are approximated by the classical
+      asymptotic trajectories</p>
+    </list-item>
+    <list-item>
+      <p>Electronic interactions are separated from the nuclear, elastic
+      interactions</p>
+    </list-item>
+    <list-item>
+      <p>Local electronic energy losses occur at each collision</p>
+    </list-item>
+    <list-item>
+      <p>Nonlocal electronic energy losses occur along each segment of
+      the asymptotic trajectories</p>
+    </list-item>
+    <list-item>
+      <p>Material atoms are mobile and transfer momentum following
+      collisions</p>
+    </list-item>
+    <list-item>
+      <p>Particles are stopped when their energy drops below a
+      threshold, cutoff energy, or when they leave the simulation as
+      sputtered or reflected/transmitted particles</p>
+    </list-item>
+    <list-item>
+      <p>Particles that leave a surface experience reflection by or
+      refraction through a locally planar surface binding potential</p>
+    </list-item>
+    <list-item>
+      <p>When simulating radiation damage, only material atoms given an
+      energy larger than the threshold displacement energy will be
+      considered removed from their original location</p>
+    </list-item>
+  </list>
+  <p>For detailed summaries of the history and theory of binary
+  collision approximation codes, see the review by Robinson
+  (<xref alt="Robinson, 1994" rid="ref-Robinson1994" ref-type="bibr">Robinson,
+  1994</xref>) and the text by Eckstein
+  (<xref alt="Eckstein, 1991" rid="ref-Eckstein1991" ref-type="bibr">Eckstein,
+  1991</xref>).</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>Ion-material interactions have been historically modeled using
+  analytical and semi-empirical formulas, such as Sigmund’s sputtering
+  theory
+  (<xref alt="Sigmund, 1987" rid="ref-Sigmund1987" ref-type="bibr">Sigmund,
+  1987</xref>), the Bohdansky formula
+  (<xref alt="Bohdansky, 1984" rid="ref-Bohdansky1984" ref-type="bibr">Bohdansky,
+  1984</xref>;
+  <xref alt="Bohdansky et al., 1980" rid="ref-Bohdansky1980" ref-type="bibr">Bohdansky
+  et al., 1980</xref>), the Yamamura formula
+  (<xref alt="Y. Yamamura, 1982" rid="ref-Yamamura1982" ref-type="bibr">Y.
+  Yamamura, 1982</xref>,
+  <xref alt="1984" rid="ref-Yamamura1984" ref-type="bibr">1984</xref>;
+  <xref alt="Y. Yamamura et al., 1983" rid="ref-Yamamura1983" ref-type="bibr">Y.
+  Yamamura et al., 1983</xref>), and the Thomas et al. reflection
+  coefficient
+  (<xref alt="Thomas et al., 1992" rid="ref-Thomas1992" ref-type="bibr">Thomas
+  et al., 1992</xref>). However, for any physical situation beyond the
+  regimes of validity of these formulas (e.g., non-normal angles of
+  incidence), or for complex geometry, or for inhomogeneous composition,
+  straightforward empirical formulas cannot be reliably used. Many BCA
+  codes have been developed to provide computationally efficient
+  solutions to these problems, including SRIM
+  (<xref alt="Ziegler et al., 2010" rid="ref-Ziegler2010" ref-type="bibr">Ziegler
+  et al., 2010</xref>), Tridyn
+  (<xref alt="Möller et al., 1988" rid="ref-Möller1988" ref-type="bibr">Möller
+  et al., 1988</xref>), F-TRIDYN
+  (<xref alt="Drobny et al., 2017" rid="ref-Drobny2017" ref-type="bibr">Drobny
+  et al., 2017</xref>), SDTrimSP
+  (<xref alt="Mutzke et al., n.d." rid="ref-Mutzke2019" ref-type="bibr">Mutzke
+  et al., n.d.</xref>) and its derivatives, which are based on the
+  original TRIM
+  (<xref alt="Biersack &amp; Haggmark, 1980" rid="ref-Biersack1980" ref-type="bibr">Biersack
+  &amp; Haggmark, 1980</xref>) code. However, each has limitations that
+  prevent widespread adoption across a broad range of applications. In
+  particular, SRIM, which is free-use but closed-source, suffers from
+  relatively poor computational performance and significant anomalies in
+  sputtered atom angular distributions and light ion sputtering yields
+  (<xref alt="Hofsäss et al., 2014" rid="ref-Hofsass2014" ref-type="bibr">Hofsäss
+  et al., 2014</xref>;
+  <xref alt="Shulga, 2018" rid="ref-Shulga2018" ref-type="bibr">Shulga,
+  2018</xref>,
+  <xref alt="2019" rid="ref-Shulga2019" ref-type="bibr">2019</xref>;
+  <xref alt="Wittmaack, 2004" rid="ref-Wittmaack2004" ref-type="bibr">Wittmaack,
+  2004</xref>). Tridyn and F-TRIDYN, which are not open source, are
+  limited to low ion energy, specific screened-coulomb potentials,
+  mono-angular ion beams, atomically flat and atomically rough surfaces
+  respectively, and are single-threaded. SDTrimSP, although
+  significantly more advanced than the preceding codes, is built on the
+  original TRIM source code and is not open-source.</p>
+  <p>As far as the authors are aware, there is no widely-used
+  open-source BCA code suitable for simulating plasma-material
+  interactions. Iradina is an open source BCA that has been used for
+  ion-material interactions in a semicondcutor manufacturing context
+  (<xref alt="Holland-Moritz et al., 2017" rid="ref-HollandMoritz2017" ref-type="bibr">Holland-Moritz
+  et al., 2017</xref>;
+  <xref alt="Johannes et al., 2014" rid="ref-Johannes2014" ref-type="bibr">Johannes
+  et al., 2014</xref>), but sputtering yields, reflection coefficients,
+  or other key quantities of interest from iradina have not, to the
+  knowledge of the authors, been reported for a wide range of ions,
+  targets, energies, or angles. Additionally, those BCA codes that are
+  available, through licensing agreements or as closed-source software,
+  are not well suited to a wide range of physical problems.
+  Particularly, the direct integration of BCA codes to particle or
+  subsurface dynamics codes, such as those performed using F-TRIDYN for
+  ITER divertor simulations
+  (<xref alt="Lasa et al., 2020" rid="ref-Lasa2020" ref-type="bibr">Lasa
+  et al., 2020</xref>), requires costly external wrappers to manage
+  simulations and process output files to perform file-based coupling.
+  RustBCA, as part of the
+  <ext-link ext-link-type="uri" xlink:href="https://collab.cels.anl.gov/display/PSIscidac2/Plasma+Surface+Interactions+2">Plasma
+  Surface Interactions 2 SciDAC Project</ext-link> suite of codes, has
+  been developed to fill that gap and expand upon the feature set
+  included in currently available BCA codes.</p>
+  <p>Features unique to RustBCA include the ability to handle
+  attractive-repulsive interatomic potentials, use multiple interatomic
+  potentials in one simulation, handle high-energy incident ions and
+  multiple geometry types, use large file input of incident particles to
+  facilitate coupling to other codes via HDF5, output pre-binned
+  distributions without post-processing of text-based particle lists,
+  and use a human- and machine-readable configuration file. RustBCA has
+  been designed with modern programming techniques, robust
+  error-handling, and multi-threading capability. RustBCA is being
+  developed as both a standalone code and as a library code that may be
+  used to add BCA routines to other high-performance codes to avoid
+  file-based code coupling entirely. Additionally, the TRIM family of
+  codes typically relies on the MAGIC algorithm to approximate the
+  scattering integral with 5 fitting coefficients. RustBCA includes not
+  only an implementation of the MAGIC algorithm, but also
+  Mendenhall-Weller, Gauss-Mehler, and Gauss-Legendre quadrature, the
+  three of which are significantly more accurate than the MAGIC
+  algorithm. We hope that giving users direct access to a user-friendly,
+  flexible, high-performance, open-source BCA will encourage and enable
+  heretofore unexplored research in ion-materials interactions.</p>
+  <fig>
+    <caption><p>Figure showing sputtering yields of silicon from SRIM,
+    RustBCA, F-TRIDYN, Yamamura’s formula for Q=0.33-0.99, and a smooth
+    analytical fit to experimental data by Wittmaack
+    (<xref alt="Wittmaack, 2004" rid="ref-Wittmaack2004" ref-type="bibr">Wittmaack,
+    2004</xref>), for an incident energy of 1 keV and for many different
+    projectiles.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="corrected_yields.png" xlink:title="" />
+  </fig>
+  <p>Quantities of interest from RustBCA, including sputtering yields,
+  have been benchmarked against F-TRIDYN, SRIM, empirical formulas, and
+  experiments. This summary figure shows the sputtering yields of
+  silicon by 1 keV helium, beryllium, oxygen, neon, aluminum, silicon,
+  argon, titanium, copper, krypton, xenon, ytterbium, tungsten, gold,
+  lead and uranium ions. SRIM’s unphysical Z1 dependence is clearly
+  visible, as is the divergence of Yamamura’s formula (for Q = 0.66, the
+  reported value for silicon, and +/- 0.33) at high mass ratios (M1
+  &gt;&gt; M2) from the experimental data collected by Wittmaack
+  (<xref alt="Wittmaack, 2004" rid="ref-Wittmaack2004" ref-type="bibr">Wittmaack,
+  2004</xref>). RustBCA and F-TRIDYN both reproduce the correct Z1
+  dependence of the sputtering yield, and correctly model the magnitude
+  of the yield for all projectiles. It should be noted that, for this
+  simulation, F-TRIDYN uses corrected MAGIC coefficients
+  (<xref alt="Ziegler et al., 2010" rid="ref-Ziegler2010" ref-type="bibr">Ziegler
+  et al., 2010</xref>), that differ from those originally included in
+  the Tridyn source code; Tridyn’s orignal MAGIC coefficients
+  underestimated the sputtering yield for high mass ratios. A soft grey
+  line depicts the point of silicon on silicon sputtering. Reflection
+  coefficients, although very low for mass ratios above one, are also
+  shown, with F-TRIDYN and RustBCA agreeing with the semi-empirical
+  Thomas reflection coefficient formula.</p>
+</sec>
+<sec id="examples">
+  <title>Examples</title>
+  <p>RustBCA includes multiple example input files, under the examples/
+  folder on the directory, as well as discussion of each on the RustBCA
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/lcpp-org/RustBCA/wiki">Wiki</ext-link>
+  page. Three examples will be summarized here.</p>
+  <sec id="example-1-layered-targets">
+    <title>Example 1: Layered Targets</title>
+    <p>First, an example of 2 keV helium ions at normal incidence on a
+    layered titanium dioxide, aluminum, and silicon target can be run in
+    2D with:</p>
+    <preformat>cargo run --release examples/layered_geometry.toml</preformat>
+    <p>The same example using the 1D layered geometry can be run
+    with:</p>
+    <preformat>cargo run --release 1D examples/layered_geometry_1D.toml</preformat>
+    <fig>
+      <caption><p>Helium implantation depth distributions at 2 keV in a
+      layered TiO2-Al-Si target.</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="layered_target.png" xlink:title="" />
+    </fig>
+    <p>The depth distribution, compared to F-TRIDYN
+    (<xref alt="Drobny et al., 2017" rid="ref-Drobny2017" ref-type="bibr">Drobny
+    et al., 2017</xref>), clearly shows the effect of layer composition
+    and sharp interfaces on the combined nuclear and electronic stopping
+    of helium.</p>
+  </sec>
+  <sec id="example-2-2d-geometry">
+    <title>Example 2: 2D Geometry</title>
+    <p>Second, as an example of the capability of RustBCA to handle 2D
+    geometry, the trajectories of 1 keV hydrogen on a circular
+    cross-section of boron-nitride can be simulated.</p>
+    <preformat>cargo run --release examples/boron_nitride.toml</preformat>
+    <fig>
+      <caption><p>Trajectories of hydrogen and mobile boron and nitrogen
+      resulting from 10 1 keV hydrogen ions impacting on a circular
+      cross-section boron-nitride target.</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="H_B_N.png" xlink:title="" />
+    </fig>
+  </sec>
+  <sec id="example-3-spherical-geometry">
+    <title>Example 3: Spherical geometry</title>
+    <p>Third, the 2D boron nitride example can be run as a spherical
+    boron nitride dust grain, by running the following command:</p>
+    <preformat>cargo run --release SPHERE examples/boron_nitride_sphere.toml</preformat>
+    <p>The trajectories can be plotted in 3D with mayavi using
+    <monospace>do_trajectory_plot_3d()</monospace> or in 2D with
+    matplotlib using <monospace>do_trajectory_plot()</monospace> in
+    <monospace>scripts/rustbca.py</monospace>.</p>
+    <fig>
+      <caption><p>Trajectories of hydrogen, boron, and nitrogen in a 3D
+      boron target. Hydrogen is medium blue, nitrogen yellow, and boron
+      light blue.</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="sphere_trajectories_bordered.png" xlink:title="" />
+    </fig>
+  </sec>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This work was funded by the U.S. Department of Energy, Office of
+  Fusion Energy Sciences through the Scientific Discovery through
+  Advanced Computing (SciDAC) project on Plasma Surface Interactions 2
+  (Grant No. DE-SC0018141).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-HollandMoritz2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Holland-Moritz</surname><given-names>Henry</given-names></name>
+          <name><surname>Ilinov</surname><given-names>Andrey</given-names></name>
+          <name><surname>Djurabekova</surname><given-names>Flyura</given-names></name>
+          <name><surname>Nordlund</surname><given-names>Kai</given-names></name>
+          <name><surname>Ronning</surname><given-names>Carsten</given-names></name>
+        </person-group>
+        <article-title>Sputtering and redeposition of ion irradiated au nanoparticle arrays: Direct comparison of simulations to experiments</article-title>
+        <source>New Journal of Physics</source>
+        <publisher-name>Institute of Physics Publishing</publisher-name>
+        <year iso-8601-date="2017-01">2017</year><month>01</month>
+        <volume>19</volume>
+        <issn>13672630</issn>
+        <uri>https://iopscience.iop.org/article/10.1088/1367-2630/aa56eb https://iopscience.iop.org/article/10.1088/1367-2630/aa56eb/meta</uri>
+        <pub-id pub-id-type="doi">10.1088/1367-2630/aa56eb</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Johannes2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Johannes</surname><given-names>A.</given-names></name>
+          <name><surname>Noack</surname><given-names>S.</given-names></name>
+          <name><surname>Paschoal</surname><given-names>W.</given-names></name>
+          <name><surname>Kumar</surname><given-names>S.</given-names></name>
+          <name><surname>Jacobsson</surname><given-names>D.</given-names></name>
+          <name><surname>Pettersson</surname><given-names>H.</given-names></name>
+          <name><surname>Samuelson</surname><given-names>L.</given-names></name>
+          <name><surname>Dick</surname><given-names>K. A.</given-names></name>
+          <name><surname>Martinez-Criado</surname><given-names>G.</given-names></name>
+          <name><surname>Burghammer</surname><given-names>M.</given-names></name>
+          <name><surname>Ronning</surname><given-names>C.</given-names></name>
+        </person-group>
+        <article-title>Enhanced sputtering and incorporation of mn in implanted GaAs and ZnO nanowires</article-title>
+        <source>Journal of Physics D: Applied Physics</source>
+        <publisher-name>Institute of Physics Publishing</publisher-name>
+        <year iso-8601-date="2014-10">2014</year><month>10</month>
+        <volume>47</volume>
+        <issn>13616463</issn>
+        <uri>https://iopscience.iop.org/article/10.1088/0022-3727/47/39/394003 https://iopscience.iop.org/article/10.1088/0022-3727/47/39/394003/meta</uri>
+        <pub-id pub-id-type="doi">10.1088/0022-3727/47/39/394003</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Wittmaack2004">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wittmaack</surname><given-names>Klaus</given-names></name>
+        </person-group>
+        <article-title>Reliability of a popular simulation code for predicting sputtering yields of solids and ranges of low-energy ions</article-title>
+        <source>Journal of Applied Physics</source>
+        <publisher-name>American Institute of PhysicsAIP</publisher-name>
+        <year iso-8601-date="2004-09">2004</year><month>09</month>
+        <volume>96</volume>
+        <issn>00218979</issn>
+        <uri>http://aip.scitation.org/doi/10.1063/1.1776318</uri>
+        <pub-id pub-id-type="doi">10.1063/1.1776318</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Shulga1984">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Shulga</surname><given-names>V. I.</given-names></name>
+        </person-group>
+        <article-title>Computer simulation of single-crystal and polycrystal sputtering. II</article-title>
+        <source>Radiation Effects</source>
+        <publisher-name>Taylor &amp; Francis</publisher-name>
+        <year iso-8601-date="1984">1984</year>
+        <volume>82</volume>
+        <issue>3-4</issue>
+        <uri>
+                   https://doi.org/10.1080/00337578408215770
+           </uri>
+        <pub-id pub-id-type="doi">10.1080/00337578408215770</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Robinson1974">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Robinson</surname><given-names>Mark T.</given-names></name>
+          <name><surname>Torrens</surname><given-names>Ian M.</given-names></name>
+        </person-group>
+        <article-title>Computer simulation of atomic-displacement cascades in solids in the binary-collision approximation</article-title>
+        <source>Physical Review B</source>
+        <publisher-name>American Physical Society</publisher-name>
+        <year iso-8601-date="1974-06">1974</year><month>06</month>
+        <volume>9</volume>
+        <issn>01631829</issn>
+        <uri>https://journals.aps.org/prb/abstract/10.1103/PhysRevB.9.5008</uri>
+        <pub-id pub-id-type="doi">10.1103/PhysRevB.9.5008</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Biersack1980">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Biersack</surname><given-names>J. P.</given-names></name>
+          <name><surname>Haggmark</surname><given-names>L. G.</given-names></name>
+        </person-group>
+        <article-title>A monte carlo computer program for the transport of energetic ions in amorphous targets</article-title>
+        <source>Nuclear Instruments and Methods</source>
+        <publisher-name>Elsevier BV</publisher-name>
+        <year iso-8601-date="1980-08">1980</year><month>08</month>
+        <volume>174</volume>
+        <issn>0029554X</issn>
+        <pub-id pub-id-type="doi">10.1016/0029-554x(80)90440-1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Mutzke2019">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Mutzke</surname><given-names>A</given-names></name>
+          <name><surname>Schneider</surname><given-names>R</given-names></name>
+          <name><surname>Dohmen</surname><given-names>W</given-names></name>
+          <name><surname>Schmid</surname><given-names>R ;</given-names></name>
+          <name><surname>Eckstein</surname><given-names>W</given-names></name>
+          <name><surname>Dohmen</surname><given-names>R</given-names></name>
+          <name><surname>Schmid</surname><given-names>K</given-names></name>
+          <name><surname>Toussaint</surname><given-names>U Von</given-names></name>
+          <name><surname>Bandelow</surname><given-names>G</given-names></name>
+        </person-group>
+        <article-title>SDTrimSP version 6.00</article-title>
+      </element-citation>
+    </ref>
+    <ref id="ref-Yamamura1982">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yamamura</surname><given-names>Y.</given-names></name>
+        </person-group>
+        <article-title>Theory of sputtering and comparison to experimental data</article-title>
+        <source>Nuclear Instruments and Methods</source>
+        <publisher-name>North-Holland</publisher-name>
+        <year iso-8601-date="1982-03">1982</year><month>03</month>
+        <volume>194</volume>
+        <issn>0029554X</issn>
+        <pub-id pub-id-type="doi">10.1016/0029-554X(82)90575-4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Drobny2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Drobny</surname><given-names>Jon</given-names></name>
+          <name><surname>Hayes</surname><given-names>Alyssa</given-names></name>
+          <name><surname>Curreli</surname><given-names>Davide</given-names></name>
+          <name><surname>Ruzic</surname><given-names>David N.</given-names></name>
+        </person-group>
+        <article-title>F-TRIDYN: A binary collision approximation code for simulating ion interactions with rough surfaces</article-title>
+        <source>Journal of Nuclear Materials</source>
+        <publisher-name>Elsevier B.V.</publisher-name>
+        <year iso-8601-date="2017-10">2017</year><month>10</month>
+        <volume>494</volume>
+        <issn>00223115</issn>
+        <pub-id pub-id-type="doi">10.1016/j.jnucmat.2017.07.037</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Robinson1994">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Robinson</surname><given-names>Mark T.</given-names></name>
+        </person-group>
+        <article-title>The binary collision approximation: Background and introduction</article-title>
+        <source>Radiation Effects and Defects in Solids</source>
+        <year iso-8601-date="1994-07">1994</year><month>07</month>
+        <volume>130-131</volume>
+        <issn>10294953</issn>
+        <pub-id pub-id-type="doi">10.1080/10420159408219767</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Möller1988">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Möller</surname><given-names>W.</given-names></name>
+          <name><surname>Eckstein</surname><given-names>W.</given-names></name>
+          <name><surname>Biersack</surname><given-names>J. P.</given-names></name>
+        </person-group>
+        <article-title>Tridyn-binary collision simulation of atomic collisions and dynamic composition changes in solids</article-title>
+        <source>Computer Physics Communications</source>
+        <publisher-name>North-Holland</publisher-name>
+        <year iso-8601-date="1988-11">1988</year><month>11</month>
+        <volume>51</volume>
+        <issn>00104655</issn>
+        <pub-id pub-id-type="doi">10.1016/0010-4655(88)90148-8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Thomas1992">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Thomas</surname><given-names>E. W.</given-names></name>
+          <name><surname>Janev</surname><given-names>R. K.</given-names></name>
+          <name><surname>Smith</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>Scaling of particle reflection coefficients</article-title>
+        <source>Nuclear Inst. and Methods in Physics Research, B</source>
+        <publisher-name>North-Holland</publisher-name>
+        <year iso-8601-date="1992-07">1992</year><month>07</month>
+        <volume>69</volume>
+        <issn>0168583X</issn>
+        <pub-id pub-id-type="doi">10.1016/0168-583X(92)95298-6</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Bohdansky1984">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bohdansky</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>A universal relation for the sputtering yield of monatomic solids at normal ion incidence</article-title>
+        <source>Nuclear Inst. and Methods in Physics Research, B</source>
+        <publisher-name>North-Holland</publisher-name>
+        <year iso-8601-date="1984-03">1984</year><month>03</month>
+        <volume>2</volume>
+        <issn>0168583X</issn>
+        <pub-id pub-id-type="doi">10.1016/0168-583X(84)90271-4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Bohdansky1980">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bohdansky</surname><given-names>J.</given-names></name>
+          <name><surname>Roth</surname><given-names>J.</given-names></name>
+          <name><surname>Bay</surname><given-names>H. L.</given-names></name>
+        </person-group>
+        <article-title>An analytical formula and important parameters for low-energy ion sputtering</article-title>
+        <source>Journal of Applied Physics</source>
+        <year iso-8601-date="1980">1980</year>
+        <volume>51</volume>
+        <issn>00218979</issn>
+        <pub-id pub-id-type="doi">10.1063/1.327954</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Yamamura1983">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yamamura</surname><given-names>Y.</given-names></name>
+          <name><surname>Matsunami</surname><given-names>N.</given-names></name>
+          <name><surname>Itoh</surname><given-names>N.</given-names></name>
+        </person-group>
+        <article-title>THEORETICAL STUDIES ON AN EMPIRICAL FORMULA FOR SPUTTERING YIELD AT NORMAL INCIDENCE.</article-title>
+        <source>Radiation effects</source>
+        <publisher-name>Taylor &amp; Francis Group</publisher-name>
+        <year iso-8601-date="1983">1983</year>
+        <volume>71</volume>
+        <issn>00337579</issn>
+        <uri>https://www.tandfonline.com/doi/abs/10.1080/00337578308218604</uri>
+        <pub-id pub-id-type="doi">10.1080/00337578308218604</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Yamamura1984">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yamamura</surname><given-names>Y.</given-names></name>
+        </person-group>
+        <article-title>Empirical formula for angular dependence of sputtering yields.</article-title>
+        <source>Radiation effects</source>
+        <publisher-name>Taylor &amp; Francis Group</publisher-name>
+        <year iso-8601-date="1984">1984</year>
+        <volume>80</volume>
+        <issn>00337579</issn>
+        <uri>https://www.tandfonline.com/doi/abs/10.1080/00337578408222489</uri>
+        <pub-id pub-id-type="doi">10.1080/00337578408222489</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Ziegler2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ziegler</surname><given-names>James F.</given-names></name>
+          <name><surname>Ziegler</surname><given-names>M. D.</given-names></name>
+          <name><surname>Biersack</surname><given-names>J. P.</given-names></name>
+        </person-group>
+        <article-title>SRIM - the stopping and range of ions in matter (2010)</article-title>
+        <source>Nuclear Instruments and Methods in Physics Research, Section B: Beam Interactions with Materials and Atoms</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>268</volume>
+        <issn>0168583X</issn>
+        <pub-id pub-id-type="doi">10.1016/j.nimb.2010.02.091</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Yamamura1996">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yamamura</surname><given-names>Yasunori</given-names></name>
+          <name><surname>Tawara</surname><given-names>Hiro</given-names></name>
+        </person-group>
+        <article-title>Energy dependence of ion-induced sputtering yields from monatomic solids at normal incidence</article-title>
+        <source>Atomic Data and Nuclear Data Tables</source>
+        <publisher-name>Academic Press Inc.</publisher-name>
+        <year iso-8601-date="1996-03">1996</year><month>03</month>
+        <volume>62</volume>
+        <issn>0092640X</issn>
+        <pub-id pub-id-type="doi">10.1006/adnd.1996.0005</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Eckstein1991">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Eckstein</surname><given-names>Wolfgang</given-names></name>
+        </person-group>
+        <source>Computer simulation of ion-solid interactions</source>
+        <publisher-name>Springer-Verlag</publisher-name>
+        <year iso-8601-date="1991">1991</year>
+        <isbn>9783642735134</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-Shulga2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Shulga</surname><given-names>V. I.</given-names></name>
+        </person-group>
+        <article-title>A comment on the computer simulation program SRIM</article-title>
+        <source>Journal of Surface Investigation</source>
+        <publisher-name>Pleiades Publishing</publisher-name>
+        <year iso-8601-date="2019-05">2019</year><month>05</month>
+        <volume>13</volume>
+        <issn>18197094</issn>
+        <pub-id pub-id-type="doi">10.1134/S1027451019030339</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Shulga2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Shulga</surname><given-names>V. I.</given-names></name>
+        </person-group>
+        <article-title>Note on the artefacts in SRIM simulation of sputtering</article-title>
+        <source>Applied Surface Science</source>
+        <publisher-name>Elsevier B.V.</publisher-name>
+        <year iso-8601-date="2018-05">2018</year><month>05</month>
+        <volume>439</volume>
+        <issn>01694332</issn>
+        <pub-id pub-id-type="doi">10.1016/j.apsusc.2018.01.039</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Hofsass2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hofsäss</surname><given-names>H.</given-names></name>
+          <name><surname>Zhang</surname><given-names>K.</given-names></name>
+          <name><surname>Mutzke</surname><given-names>A.</given-names></name>
+        </person-group>
+        <article-title>Simulation of ion beam sputtering with SDTrimSP, TRIDYN and SRIM</article-title>
+        <source>Applied Surface Science</source>
+        <publisher-name>Elsevier B.V.</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <volume>310</volume>
+        <isbn>0169-4332</isbn>
+        <issn>01694332</issn>
+        <uri>http://dx.doi.org/10.1016/j.apsusc.2014.03.152</uri>
+        <pub-id pub-id-type="doi">10.1016/j.apsusc.2014.03.152</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Lasa2020">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Lasa</surname><given-names>A.</given-names></name>
+          <name><surname>Canik</surname><given-names>J. M.</given-names></name>
+          <name><surname>Blondel</surname><given-names>S.</given-names></name>
+          <name><surname>Younkin</surname><given-names>T. R.</given-names></name>
+          <name><surname>Curreli</surname><given-names>D.</given-names></name>
+          <name><surname>Drobny</surname><given-names>J.</given-names></name>
+          <name><surname>Roth</surname><given-names>P.</given-names></name>
+          <name><surname>Cianciosa</surname><given-names>M.</given-names></name>
+          <name><surname>Elwasif</surname><given-names>W.</given-names></name>
+          <name><surname>Green</surname><given-names>D. L.</given-names></name>
+          <name><surname>Wirth</surname><given-names>B. D.</given-names></name>
+        </person-group>
+        <article-title>Multi-physics modeling of the long-term evolution of helium plasma exposed surfaces</article-title>
+        <source>Physica Scripta</source>
+        <publisher-name>Institute of Physics Publishing</publisher-name>
+        <year iso-8601-date="2020-01">2020</year><month>01</month>
+        <volume>2020</volume>
+        <issn>14024896</issn>
+        <uri>https://doi.org/10.1088/1402-4896/ab4c29</uri>
+        <pub-id pub-id-type="doi">10.1088/1402-4896/ab4c29</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Sigmund1987">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sigmund</surname><given-names>Peter</given-names></name>
+        </person-group>
+        <article-title>Mechanisms and theory of physical sputtering by particle impact</article-title>
+        <source>Nuclear Inst. and Methods in Physics Research, B</source>
+        <publisher-name>North-Holland</publisher-name>
+        <year iso-8601-date="1987-06">1987</year><month>06</month>
+        <volume>27</volume>
+        <issn>0168583X</issn>
+        <pub-id pub-id-type="doi">10.1016/0168-583X(87)90004-8</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

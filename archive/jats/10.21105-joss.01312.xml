@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1312</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01312</article-id>
+<title-group>
+<article-title>Rclean: A Tool for Writing Cleaner, More Transparent
+Code</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-3758-2406</contrib-id>
+<string-name>Matthew K. Lau</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-6876-1306</contrib-id>
+<string-name>Thomas F. J.-M. Pasquier</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-2165-4658</contrib-id>
+<string-name>Margo Seltzer</string-name>
+<xref ref-type="aff" rid="aff-4"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Harvard Forest, Harvard University</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Department of Computer Science, University of
+Bristol</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>School of Engineering and Applied Science, Harvard
+University</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-4">
+<institution-wrap>
+<institution>Department of Computer Science, University of British
+Columbia</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<volume>5</volume>
+<issue>46</issue>
+<fpage>1312</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>reproducibility</kwd>
+<kwd>transparency</kwd>
+<kwd>code cleaning</kwd>
+<kwd>data provenance</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>The growth of programming in the sciences has been explosive in the
+  last decade. This has facilitated the rapid advancement of science
+  through the agile development of computational tools. However,
+  concerns have begun to surface about the reproducibility of scientific
+  research in general
+  (<xref alt="Baker, 2016" rid="ref-Baker2016" ref-type="bibr">Baker,
+  2016</xref>) and the potential issues stemming from issues with
+  analytical software
+  (<xref alt="Stodden et al., 2018" rid="ref-Stodden2018" ref-type="bibr">Stodden
+  et al., 2018</xref>). Specifically, there is a growing recognition
+  across disciplines that simply making data and software “available” is
+  not enough and that there is a need to improve the transparency and
+  stability of scientific software
+  (<xref alt="Pasquier et al., 2018" rid="ref-Pasquier2018" ref-type="bibr">Pasquier
+  et al., 2018</xref>).</p>
+  <p>At the core of the growth of scientific computation, the
+  <monospace>R</monospace> statistical programming language has grown
+  exponentially to become one of the top ten programming languages in
+  use today. At its root R is a <italic>statistical</italic> programming
+  language. That is, it was designed for use in analytical workflows,
+  and the majority of the R community is focused on producing code for
+  idiosyncratic projects that are <italic>results</italic> oriented.
+  Also, R’s design is intentionally at a level that abstracts many
+  aspects of programming that would otherwise act as a barrier to entry
+  for many users. This is good in that there are many people who use R
+  with little to no formal training in computer science or software
+  engineering, but these same users can also be frequently frustrated by
+  code that is fragile, buggy, and complicated enough to quickly become
+  obtuse even to the authors. The stability, reproducibility, and re-use
+  of scientific analyses in R would be improved by refactoring, which is
+  a common practice in software engineering
+  (<xref alt="Martin, 2009" rid="ref-Martin2009CleanCraftsmanship" ref-type="bibr">Martin,
+  2009</xref>). From this perspective, tools that can lower the time and
+  energy required to refactor analytical scripts and otherwise help to
+  “clean” code, but abstracted enough to be easily accessible, could
+  have a significant impact on scientific reproducibility across all
+  disciplines
+  (<xref alt="Visser et al., 2015" rid="ref-Visser2015" ref-type="bibr">Visser
+  et al., 2015</xref>).</p>
+  <p>To provide support for easier refactoring in R, we have created
+  <monospace>Rclean</monospace>. The <monospace>Rclean</monospace>
+  package provides tools to automatically reduce a script to the parts
+  that are specifically relevant to a research product (e.g., a
+  scientific report, academic talk, research article, etc.) Although
+  potentially useful to all R coders, it was designed to ease
+  refactoring for scientists who use R but do not have formal training
+  in software engineering.</p>
+</sec>
+<sec id="methods">
+  <title>Methods</title>
+  <p>The goal of <monospace>Rclean</monospace> is to provide a set of
+  tools that help someone reduce and organize code based on results.
+  More often then not, when someone is writing an R script, the intent
+  is to produce a set of results, such as a statistical analysis,
+  figure, table, etc. This set of results is always a subset of a much
+  larger set of possible ways to explore a dataset, as there are many
+  statistical approaches and tests, let alone ways to create
+  visualizations and other representations of patterns in data. This
+  commonly leads to lengthy, complicated scripts from which researchers
+  manually subset results, but likely never to be refactored because of
+  the difficulty in disentangling the code needed to produce some
+  results and not others. The ‘Rclean’ package uses an automated
+  technique based on data provenance to analyze existing scripts and
+  provide ways to identify and extract code to produce a desired
+  output.</p>
+  <sec id="data-provenance">
+    <title>Data Provenance</title>
+    <p>All of these processes rely on the generation of data provenance.
+    The term provenance means information about the origins of some
+    object. Data provenance is a formal representation of the execution
+    of a computational process
+    (<ext-link ext-link-type="uri" xlink:href="https://www.w3.org/TR/prov-dm/">https://www.w3.org/TR/prov-dm/</ext-link>),
+    to rigorously determine the the unique computational pathway from
+    inputs to results
+    (<xref alt="Carata et al., 2014" rid="ref-Carata2014" ref-type="bibr">Carata
+    et al., 2014</xref>). To avoid confusion, note that “data” in this
+    context is used in a broad sense to include all of the information
+    generated during computation, not just the data that are collected
+    in a research project that are used as input to an analysis. Having
+    the formalized, mathematically rigorous representation that data
+    provenance provides guarantees that the analyses that
+    <monospace>Rclean</monospace> conducts are theoretically sound. Most
+    importantly, because the relationships defined by the provenance can
+    be represented as a graph, it is possible to apply network search
+    algorithms to determine the minimum and sufficient code needed to
+    generate the chosen result in the <monospace>clean</monospace>
+    function.</p>
+    <p>There are multiple approaches to collecting data provenance, but
+    <monospace>Rclean</monospace> uses “prospective” provenance, which
+    analyzes code and uses language specific information to predict the
+    relationship among processes and data objects.
+    <monospace>Rclean</monospace> relies on a library called
+    <monospace>CodeDepends</monospace> to gather the prospective
+    provenance for each script. For more information on the mechanics of
+    the <monospace>CodeDepends</monospace> package, see
+    (<xref alt="Temple Lang et al., 2020" rid="ref-R-CodeDepends" ref-type="bibr">Temple
+    Lang et al., 2020</xref>). To get an idea of what data provenance
+    is, take a look at the <monospace>code_graph</monospace> function.
+    The plot that it generates is a graphical representation of the
+    prospective provenance generated for <monospace>Rclean</monospace>
+    .</p>
+    <fig>
+      <caption><p>Network diagram of the prospective data provenance
+      generated for an example script. Arrows indicate which lines of
+      code (numbered) produced which objects (named).</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="paper_files/figure-markdown_strict/prov-graph-1.png" xlink:title="" />
+    </fig>
+    <p>In the future, it would also be useful to extend the existing
+    framework to support other provenance methods. One such possibility
+    is <italic>retrospective provenance</italic>, which tracks a
+    computational process as it is executing. Through this active,
+    concurrent monitoring, retrospective provenance can gather
+    information that static prospective provenance can’t. Greater
+    details of the computational process would enable other features
+    that could address some challenges, such as processing information
+    from comments, parsing control statements, and replicating random
+    processes. However, using retrospective provenance comes at a cost.
+    In order to gather it, the script needs to be executed. When scripts
+    are computationally intensive or contain bugs that stop execution,
+    then retrospective provenance can not be obtained for part or all of
+    the code. Some work has already been done in the direction of
+    implementing retrospective provenance for code cleaning in R (see
+    <ext-link ext-link-type="uri" xlink:href="http://end-to-end-provenance.github.io">http://end-to-end-provenance.github.io</ext-link>).</p>
+  </sec>
+  <sec id="software-availability">
+    <title>Software Availability</title>
+    <p>The software is currently hosted on GitHub, and we recommend
+    using the <monospace>devtools</monospace> library
+    (<xref alt="Wickham et al., 2019" rid="ref-R-devtools" ref-type="bibr">Wickham
+    et al., 2019</xref>) to install directly from the repository
+    (<ext-link ext-link-type="uri" xlink:href="https://github.com/ROpenSci/Rclean">https://github.com/ROpenSci/Rclean</ext-link>).
+    The package is open-source and welcomes contributions. Please visit
+    the repository page to report issues, request features or provide
+    other feedback.</p>
+  </sec>
+</sec>
+<sec id="discussion">
+  <title>Discussion</title>
+  <p>We see promise in connecting <monospace>Rclean</monospace> with
+  other clean code and reproducibility tools. One example is the
+  <monospace>reprex</monospace> package, which provides a simple API for
+  sharing reproducible examples
+  (<xref alt="Bryan et al., 2019" rid="ref-R-reprex" ref-type="bibr">Bryan
+  et al., 2019</xref>). Another possibility is to help transition
+  scripts to function, package and workflow creation and refactoring via
+  toolboxes like <monospace>drake</monospace>
+  (<xref alt="Landau, 2020" rid="ref-R-drake" ref-type="bibr">Landau,
+  2020</xref>). <monospace>Rclean</monospace> could provide a reliable
+  way to extract parts of a larger script that would be piped to a
+  simplified reproducible example, in the case of
+  <monospace>reprex</monospace>, or, since it can isolate the code from
+  inputs to one or more outputs, be used to extract all of the
+  components needed to write one or more functions that would be a part
+  of a package or workflow, as is the goal of
+  <monospace>drake</monospace>. To conclude, we hope that
+  <monospace>Rclean</monospace> makes writing scientific software easier
+  for the R community. We look forward to feedback and help with
+  extending its application, particularly in the area of
+  reproducibility. To get involved, report bugs, suggest features,
+  please visit the project page.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>This work was improved by discussions with ecologists at Harvard
+  Forest and through the helpful review provided by the ROpenSci
+  community, particularly Anna Krystalli, Will Landau, and Clemens
+  Schmid. Much of the work was funded by US National Science Foundation
+  grant SSI-1450277 for applications of End-to-End Data Provenance.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Baker2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Baker</surname><given-names>Monya</given-names></name>
+        </person-group>
+        <article-title>1,500 scientists lift the lid on reproducibility</article-title>
+        <source>Nature</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>533</volume>
+        <uri>https://www.nature.com/news/1-500-scientists-lift-the-lid-on-reproducibility-1.19970</uri>
+        <pub-id pub-id-type="doi">10.1038/533452a</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Carata2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Carata</surname><given-names>Lucian</given-names></name>
+          <name><surname>Akoush</surname><given-names>Sherif</given-names></name>
+          <name><surname>Balakrishnan</surname><given-names>Nikilesh</given-names></name>
+          <name><surname>Bytheway</surname><given-names>Thomas</given-names></name>
+          <name><surname>Sohan</surname><given-names>Ripduman</given-names></name>
+          <name><surname>Seltzer</surname><given-names>Margo</given-names></name>
+          <name><surname>Hopper</surname><given-names>Andy</given-names></name>
+        </person-group>
+        <article-title>A Primer on Provenance</article-title>
+        <source>Queue</source>
+        <publisher-name>ACM</publisher-name>
+        <year iso-8601-date="2014-03">2014</year><month>03</month>
+        <volume>12</volume>
+        <issue>3</issue>
+        <issn>15427730</issn>
+        <uri>http://dl.acm.org/citation.cfm?doid=2602649.2602651</uri>
+        <pub-id pub-id-type="doi">10.1145/2602649.2602651</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Stodden2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Stodden</surname><given-names>Victoria</given-names></name>
+          <name><surname>Seiler</surname><given-names>Jennifer</given-names></name>
+          <name><surname>Ma</surname><given-names>Zhaokun</given-names></name>
+        </person-group>
+        <article-title>An empirical analysis of journal policy effectiveness for computational reproducibility</article-title>
+        <source>Proceedings of the National Academy of Sciences of the United States of America</source>
+        <publisher-name>National Academy of Sciences</publisher-name>
+        <year iso-8601-date="2018-03">2018</year><month>03</month>
+        <volume>115</volume>
+        <issue>11</issue>
+        <issn>1091-6490</issn>
+        <uri>http://www.ncbi.nlm.nih.gov/pubmed/29531050</uri>
+        <pub-id pub-id-type="doi">10.1073/pnas.1708290115</pub-id>
+        <pub-id pub-id-type="pmid">29531050</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Pasquier2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pasquier</surname><given-names>Thomas</given-names></name>
+          <name><surname>Lau</surname><given-names>Matthew K.</given-names></name>
+          <name><surname>Han</surname><given-names>Xueyuan</given-names></name>
+          <name><surname>Fong</surname><given-names>Elizabeth</given-names></name>
+          <name><surname>Lerner</surname><given-names>Barbara S.</given-names></name>
+          <name><surname>Boose</surname><given-names>Emery R.</given-names></name>
+          <name><surname>Crosas</surname><given-names>Merce</given-names></name>
+          <name><surname>Ellison</surname><given-names>Aaron M.</given-names></name>
+          <name><surname>Seltzer</surname><given-names>Margo</given-names></name>
+        </person-group>
+        <article-title>Sharing and Preserving Computational Analyses for Posterity with encapsulator</article-title>
+        <source>Computing in Science &amp; Engineering</source>
+        <year iso-8601-date="2018-07">2018</year><month>07</month>
+        <volume>20</volume>
+        <issue>4</issue>
+        <issn>1521-9615</issn>
+        <uri>https://ieeexplore.ieee.org/document/8409369/</uri>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2018.042781334</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Visser2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Visser</surname><given-names>Marco D.</given-names></name>
+          <name><surname>McMahon</surname><given-names>Sean M.</given-names></name>
+          <name><surname>Merow</surname><given-names>Cory</given-names></name>
+          <name><surname>Dixon</surname><given-names>Philip M.</given-names></name>
+          <name><surname>Record</surname><given-names>Sydne</given-names></name>
+          <name><surname>Jongejans</surname><given-names>Eelke</given-names></name>
+        </person-group>
+        <article-title>Speeding Up Ecological and Evolutionary Computations in R; Essentials of High Performance Computing for Biologists</article-title>
+        <source>PLOS Computational Biology</source>
+        <person-group person-group-type="editor">
+          <name><surname>Ouellette</surname><given-names>Francis</given-names></name>
+        </person-group>
+        <publisher-name>Springer-Verlag</publisher-name>
+        <year iso-8601-date="2015-03">2015</year><month>03</month>
+        <volume>11</volume>
+        <issue>3</issue>
+        <issn>1553-7358</issn>
+        <uri>http://dx.plos.org/10.1371/journal.pcbi.1004140</uri>
+        <pub-id pub-id-type="doi">10.1371/journal.pcbi.1004140</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Martin2009CleanCraftsmanship">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Martin</surname><given-names>Robert</given-names></name>
+        </person-group>
+        <source>Clean code: a handbook of agile software craftsmanship</source>
+        <year iso-8601-date="2009">2009</year>
+        <isbn>9780132350884</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-R-CodeDepends">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Temple Lang</surname><given-names>Duncan</given-names></name>
+          <name><surname>Peng</surname><given-names>Roger</given-names></name>
+          <name><surname>Nolan</surname><given-names>Deborah</given-names></name>
+          <name><surname>Becker</surname><given-names>Gabriel</given-names></name>
+        </person-group>
+        <source>CodeDepends: Analysis of R Code for Reproducible Research and Code Comprehension</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://github.com/duncantl/CodeDepends</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-R-devtools">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Wickham</surname><given-names>Hadley</given-names></name>
+          <name><surname>Hester</surname><given-names>Jim</given-names></name>
+          <name><surname>Chang</surname><given-names>Winston</given-names></name>
+        </person-group>
+        <source>devtools: Tools to Make Developing R Packages Easier</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://CRAN.R-project.org/package=devtools</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-R-drake">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Landau</surname><given-names>William Michael</given-names></name>
+        </person-group>
+        <source>drake: A Pipeline Toolkit for Reproducible Computation at Scale</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://CRAN.R-project.org/package=drake</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-R-reprex">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Bryan</surname><given-names>Jennifer</given-names></name>
+          <name><surname>Hester</surname><given-names>Jim</given-names></name>
+          <name><surname>Robinson</surname><given-names>David</given-names></name>
+          <name><surname>Wickham</surname><given-names>Hadley</given-names></name>
+        </person-group>
+        <source>reprex: Prepare Reproducible Example Code via the Clipboard</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://CRAN.R-project.org/package=reprex</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">400</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00400</article-id>
+<title-group>
+<article-title>ResumableFunctions: C# sharp style generators for
+Julia.</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-0761-6265</contrib-id>
+<string-name>Ben Lauwens</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Royal Military Academy, Brussels, Belgium</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<volume>2</volume>
+<issue>18</issue>
+<fpage>400</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>semi-coroutine</kwd>
+<kwd>finite-state-machine</kwd>
+<kwd>julia</kwd>
+<kwd>iterator</kwd>
+<kwd>stackless</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>C# has a convenient way to create iterators
+  (<xref alt="Microsoft, 2017" rid="ref-CIterators" ref-type="bibr">Microsoft,
+  2017</xref>) using the <monospace>yield return</monospace> statement.
+  The package
+  (<xref alt="Lauwens, 2017a" rid="ref-ResumableFunctions" ref-type="bibr">Lauwens,
+  2017a</xref>) provides the same functionality for the Julia language
+  (<xref alt="Bezanson et al., 2017" rid="ref-Julia" ref-type="bibr">Bezanson
+  et al., 2017</xref>) by introducing the
+  <monospace>@resumable</monospace> and the
+  <monospace>@yield</monospace> macros. These macros can be used to
+  replace the <monospace>Task</monospace> switching functions
+  <monospace>produce</monospace> and <monospace>consume</monospace>
+  which were deprecated in Julia v0.6. <monospace>Channels</monospace>
+  are the preferred way for inter-task communication in julia v0.6+, but
+  their performance is subpar for iterator applications.</p>
+  <p>The macro <monospace>@resumable</monospace> transform a function
+  definition into a finite state-machine, i.e. a callable type holding
+  the state and references to the internal variables of the function and
+  a constructor for this new type respecting the method signature of the
+  original function definition. When calling the new type a modified
+  version of the body of the original function definition is executed: -
+  a dispatch mechanism is inserted at the start to allow a non local
+  jump to a label inside the body; - the <monospace>@yield</monospace>
+  statement is replaced by a <monospace>return</monospace> statement and
+  a label placeholder as endpoint of a non local jump; -
+  <monospace>for</monospace> loops are transformed in
+  <monospace>while</monospace> loops and -
+  <monospace>try</monospace>-<monospace>catch</monospace>-<monospace>finally</monospace>-<monospace>end</monospace>
+  expressions are converted in a sequence of
+  <monospace>try</monospace>-<monospace>catch</monospace>-<monospace>end</monospace>
+  expressions with at the end of the <monospace>catch</monospace> part a
+  non local jump to a label that marks the beginning of the expressions
+  in the <monospace>finally</monospace> part. The two last
+  transformations are needed to overcome the limitations of the non
+  local jump macros <monospace>@goto</monospace> and
+  <monospace>@label</monospace>.</p>
+  <p>Straightforward two-way communication between the caller and the
+  callable type is possible by calling the callable type with an extra
+  argument. The value of this argument is passed to the left side of an
+  <monospace>arg = @yield ret</monospace> expression.</p>
+  <p>The <monospace>iterator</monospace> interface is implemented so
+  that a <monospace>@resumable function</monospace> can be used
+  transparently.</p>
+  <p>Benchmarks show that this macro based implementation of
+  semi-coroutines is an order of magnitude faster than both the original
+  <monospace>Task</monospace> switching with
+  <monospace>produce</monospace> and <monospace>consume</monospace> and
+  the newer <monospace>Channel</monospace> based approach for inter-task
+  communication. A context switch is more expensive than a function
+  call.</p>
+  <p>The next generation of process-driven simulations in the
+  discrete-event simulation framework
+  (<xref alt="Lauwens, 2017b" rid="ref-SimJulia" ref-type="bibr">Lauwens,
+  2017b</xref>) is based on this package.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-ResumableFunctions">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <name><surname>Lauwens</surname><given-names>Ben</given-names></name>
+        </person-group>
+        <article-title>ResumableFunctions: C# sharp style generators a.k.a. Semi-coroutines for julia.</article-title>
+        <year iso-8601-date="2017">2017</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-09-01">2017</year><month>09</month><day>01</day></date-in-citation>
+        <uri>https://github.com/BenLauwens/ResumableFunctions.jl.git</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-SimJulia">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <name><surname>Lauwens</surname><given-names>Ben</given-names></name>
+        </person-group>
+        <article-title>SimJulia: Discrete event process oriented simulation framework written in julia.</article-title>
+        <year iso-8601-date="2017">2017</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-09-01">2017</year><month>09</month><day>01</day></date-in-citation>
+        <uri>https://github.com/BenLauwens/SimJulia.jl.git</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Julia">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bezanson</surname><given-names>Jeff</given-names></name>
+          <name><surname>Edelman</surname><given-names>Alan</given-names></name>
+          <name><surname>Karpinski</surname><given-names>Stefan</given-names></name>
+          <name><surname>Shah</surname><given-names>Viral B.</given-names></name>
+        </person-group>
+        <article-title>Julia: A fresh approach to numerical computing.</article-title>
+        <source>SIAM Review</source>
+        <publisher-name>SIAM</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <issue>59</issue>
+        <pub-id pub-id-type="doi">https://doi.org/10.1137/141000671</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-CIterators">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <name><surname>Microsoft</surname></name>
+        </person-group>
+        <article-title>Iterators (c#).</article-title>
+        <year iso-8601-date="2017">2017</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2017-09-01">2017</year><month>09</month><day>01</day></date-in-citation>
+        <uri>https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/iterators</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

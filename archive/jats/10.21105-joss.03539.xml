@@ -1,0 +1,570 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3539</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03539</article-id>
+<title-group>
+<article-title>individual: An R package for individual-based
+epidemiological models</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-0872-7098</contrib-id>
+<string-name>Giovanni D. Charles</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-5781-9493</contrib-id>
+<string-name>Sean L. Wu</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>MRC Centre for Global Infectious Disease Analysis, Abdul
+Latif Jameel Institute for Disease and Emergency Analytics (J-IDEA),
+Imperial College London, London, UK.</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Division of Epidemiology and Biostatistics, School of
+Public Health, University of California, Berkeley, CA 94720,
+USA</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2017-08-13">
+<day>13</day>
+<month>8</month>
+<year>2017</year>
+</pub-date>
+<volume>6</volume>
+<issue>66</issue>
+<fpage>3539</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>epidemiology</kwd>
+<kwd>individual based</kwd>
+<kwd>agent based</kwd>
+<kwd>infectious disease</kwd>
+<kwd>simulation</kwd>
+<kwd>stochastic</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>individual</monospace> is an R package which provides
+  users a set of useful primitive elements for specifying
+  individual-based models (IBMs), also called agent-based models (ABMs),
+  with special attention to models for infectious disease epidemiology.
+  Users build models by specifying variables for each characteristic
+  describing individuals in the simulated population using data
+  structures from the package. <monospace>individual</monospace>
+  provides efficient methods for finding subsets of individuals based on
+  these variables, or cohorts. Cohorts can then be targeted for variable
+  updates or scheduled for events. Variable updates queued during a time
+  step are executed at the end of a discrete time step, and the code
+  places no restrictions on how individuals are allowed to interact.
+  These data structures are designed to provide an intuitive way for
+  users to turn their conceptual model of a system into executable code,
+  which is fast and memory efficient.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Complex stochastic models are crucial for many tasks in infectious
+  disease epidemiology. Such models can formalize theory, generate
+  synthetic data, evaluate counterfactual scenarios, forecast trends,
+  and be used for statistical inference
+  (<xref alt="Ganyani et al., 2021" rid="ref-GanyaniU003A2021" ref-type="bibr">Ganyani
+  et al., 2021</xref>). IBMs are a way to design disaggregated
+  simulation models, usually contrasted with mathematical models, which
+  may model a density or concentration of individuals, or otherwise lump
+  individuals with similar attributes together in some way
+  (<xref alt="Shalizi, 2006" rid="ref-ShaliziU003A2006" ref-type="bibr">Shalizi,
+  2006</xref>). For modeling finite numbers of individuals with
+  significant between-individual heterogeneity and complex dynamics,
+  IBMs are a natural modeling choice when a representation using
+  mathematical models would be cumbersome or impossible
+  (<xref alt="Willem et al., 2017" rid="ref-WillemU003A2017" ref-type="bibr">Willem
+  et al., 2017</xref>). Even if an aggregated representation were
+  feasible, there are many reasons why an individual-based
+  representation is to be preferred. Synthetic data may need to produce
+  individual level outcomes, which aggregated models by their very
+  nature are unable to provide
+  (<xref alt="Tracy et al., 2018" rid="ref-TracyU003A2018" ref-type="bibr">Tracy
+  et al., 2018</xref>). Other complexities, such as when events occur
+  after a random delay whose distribution differs from a Markovian one,
+  mean even aggregated models will need to store individual completion
+  times, necessitating more complex simulation algorithms and data
+  structures; in such cases it is often more straightforward to adopt an
+  individual-based representation from the start.</p>
+  <p>For practical use, individual-based models need to balance
+  comprehensibility and speed. A fast model whose code is only
+  understood by the author can be difficult to use as a basis for
+  scientific exploration, which necessarily requires the development of
+  multiple models to test hypotheses or explore sensitivity to certain
+  assumptions. On the other hand a clear yet slow model can be
+  practically unusable for tasks such as uncertainty quantification or
+  statistical inference. <monospace>individual</monospace> provides a
+  toolkit for users to write models that is general enough to cover
+  nearly all models of practical interest using simple, standardized
+  code which is fast enough to be useful for computationally taxing
+  applications.</p>
+</sec>
+<sec id="state-of-the-field">
+  <title>State of the field</title>
+  <p>There are many software libraries for epidemiological simulation,
+  both in R and other programming languages. However, based on our
+  review of existing software, no other library exists in the R language
+  which provides users with a set of primitive elements for defining
+  epidemiological models without imposing strong restrictions upon the
+  type of model that may be simulated (e.g.; compartmental, network,
+  etc.), or limiting users to particular mathematical forms for model
+  dynamics.</p>
+  <sec id="general-r-packages">
+    <title>General R packages</title>
+    <p>Generic individual-based simulation packages in R include
+    IBMPopSim
+    (<xref alt="Giorgi et al., 2020" rid="ref-GiorgiU003A2020" ref-type="bibr">Giorgi
+    et al., 2020</xref>), ibm
+    (<xref alt="Oliveros-Ramos, 2016" rid="ref-OliverosU003A2016" ref-type="bibr">Oliveros-Ramos,
+    2016</xref>) and ibmcraftr
+    (<xref alt="Tun, 2016" rid="ref-TunU003A2016" ref-type="bibr">Tun,
+    2016</xref>). IBMPopSim provides sophisticated simulation
+    algorithms, but requires users to input C++ code as a string which
+    is then compiled, making it difficult to interface with the existing
+    R ecosystem.</p>
+  </sec>
+  <sec id="epidemiological-r-packages">
+    <title>Epidemiological R packages</title>
+    <p>EpiModel
+    (<xref alt="Jenness et al., 2018" rid="ref-JennessU003A2018" ref-type="bibr">Jenness
+    et al., 2018</xref>) allows the simulation of highly detailed
+    discrete time models on networks, relying on the statnet
+    (<xref alt="Krivitsky et al., 2003-2020" rid="ref-HandcockU003Astatnet" ref-type="bibr">Krivitsky
+    et al., 2003-2020</xref>) project for classes and algorithms.
+    However due to its focus on directly transmitted diseases,
+    <monospace>individual</monospace> may be more applicable to other
+    epidemiological situations such as vector-borne diseases. In
+    addition it does not offer an interface for compiled code.</p>
+    <p>hybridModels
+    (<xref alt="Marques et al., 2020" rid="ref-FernandoU003A2020" ref-type="bibr">Marques
+    et al., 2020</xref>), similarly provides tools for simulating
+    epidemics on dynamic networks. However, it is fully implemented in
+    R, limiting the scope for scale and optimisation.</p>
+    <p>Other packages in R are more specialised or restrict the model’s
+    transmission dynamics to specific mathematical forms (e.g.; mass
+    action). These include SimInf
+    (<xref alt="Bauer et al., 2016" rid="ref-BauerU003A2016" ref-type="bibr">Bauer
+    et al., 2016</xref>), nosoi
+    (<xref alt="Lequime et al., 2020" rid="ref-LequimeU003A2020" ref-type="bibr">Lequime
+    et al., 2020</xref>), SPARSEMODr
+    (<xref alt="Mihaljevic et al., 2021" rid="ref-MihaljevicU003A2021" ref-type="bibr">Mihaljevic
+    et al., 2021</xref>), EpiILMCT
+    (<xref alt="Almutiry &amp; Deardon, 2020" rid="ref-AlmutiryU003A2020" ref-type="bibr">Almutiry
+    &amp; Deardon, 2020</xref>) and EpiILM
+    (<xref alt="Warriyar et al., 2020" rid="ref-WarriyarU003A2020" ref-type="bibr">Warriyar
+    et al., 2020</xref>).</p>
+  </sec>
+</sec>
+<sec id="design-principles">
+  <title>Design principles</title>
+  <p>Because in many epidemiological models the most important
+  representation of state is a finite set of mutually exclusive values,
+  such as the Susceptible, Infectious, Recovered classes from the
+  well-known SIR model
+  (<xref alt="Allen, 2017" rid="ref-AllenU003A2017" ref-type="bibr">Allen,
+  2017</xref>), <monospace>individual</monospace> uses a bitset to store
+  these data. At the R level users can call set operations (union,
+  intersection, complement, symmetric difference, set difference) which
+  are implemented as bitwise operations in the C++ source. This lets
+  users write clear, highly efficient code for updating their model,
+  fully in R.</p>
+  <p>In contrast to other individual-based modeling software, where
+  users focus on defining a type for simulated individuals, in
+  <monospace>individual</monospace> users instead define variables, one
+  for each characteristic of the simulated population. Individual agents
+  are defined by their their position in each bitset giving membership
+  in a variable, or element in a vector of integers or floats. This
+  design is similar to a component system, a design pattern to help
+  decouple complicated types
+  (<xref alt="Nystrom, 2014" rid="ref-NystromU003A2014" ref-type="bibr">Nystrom,
+  2014</xref>). Because of this disaggregated representation of state,
+  performing operations to find and schedule cohorts of individuals
+  benefits from fast bitwise operators. This state representation is (to
+  our knowledge), novel for epidemiological simulation. While Rizzi et
+  al.
+  (<xref alt="2018" rid="ref-RizziU003A2018" ref-type="bibr">2018</xref>)
+  proposed using a bitset to represent the state of each simulated
+  individual, the population was still stored as types in an array.</p>
+  <p><monospace>individual</monospace> uses <monospace>Rcpp</monospace>
+  (<xref alt="Eddelbuettel &amp; François, 2011" rid="ref-Rcpp" ref-type="bibr">Eddelbuettel
+  &amp; François, 2011</xref>) to link to C++ source code, which
+  underlies the data structures exposed to the user. The API for
+  <monospace>individual</monospace> uses <monospace>R6</monospace>
+  (<xref alt="Chang, 2020" rid="ref-R6" ref-type="bibr">Chang,
+  2020</xref>) classes at the R level which users call to create,
+  update, and query variables. <monospace>individual</monospace> also
+  provides a C++ header-only interface which advanced users can link to
+  from their R package. Users can then write their own C++ code or
+  benefit from other packages with a compiled interface, significantly
+  enhancing the extensibility of <monospace>individual</monospace>’s
+  API, and documentation on interacting with
+  <monospace>individual</monospace>’s C++ API is available in the
+  package
+  <ext-link ext-link-type="uri" xlink:href="https://mrc-ide.github.io/individual/articles/Performance.html">documentation</ext-link>.</p>
+  <p>After a user has specified all the variables in their model,
+  dynamics are specified by processes which run each time step, and
+  events which can be scheduled to update specific cohorts in the
+  future. The simulation loop then executes processes, fires events and
+  updates state on each discrete time step.</p>
+  <fig>
+    <caption><p>A flow diagram for the simulation loop</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="sim_loop.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="licensing-and-availability">
+  <title>Licensing and availability</title>
+  <p><monospace>individual</monospace> is licensed under the MIT
+  License, with all source code stored at
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/mrc-ide/individual">GitHub</ext-link>.
+  Requests, suggestions, and bug reports are encouraged via filing an
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/mrc-ide/individual/issues">issue</ext-link>.
+  A general guide on how to contribute to
+  <monospace>individual</monospace> is available at the
+  <ext-link ext-link-type="uri" xlink:href="https://mrc-ide.github.io/individual/articles/Contributing.html">package’s
+  website</ext-link>. The automated test coverage can be found at
+  <ext-link ext-link-type="uri" xlink:href="https://app.codecov.io/gh/mrc-ide/individual/">codecov.io</ext-link>.
+  Example code can be found in the
+  <ext-link ext-link-type="uri" xlink:href="https://mrc-ide.github.io/individual/articles/Tutorial.html">tutorial
+  section</ext-link> of the package documentation.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We would like to thank Dr. Pete Winskill and Dr. Oliver Watson for
+  their encouragement, testing and contributions to the repository. And
+  Dr. Richard Fitzjohn for his early technical feedback and expert
+  advice on R package development.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-ShaliziU003A2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Shalizi</surname><given-names>Cosma Rohilla</given-names></name>
+        </person-group>
+        <article-title>Methods and techniques of complex systems science: An overview</article-title>
+        <source>Complex systems science in biomedicine</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2006">2006</year>
+        <pub-id pub-id-type="doi">10.1007/978-0-387-33532-2_2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-WillemU003A2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Willem</surname><given-names>Lander</given-names></name>
+          <name><surname>Verelst</surname><given-names>Frederik</given-names></name>
+          <name><surname>Bilcke</surname><given-names>Joke</given-names></name>
+          <name><surname>Hens</surname><given-names>Niel</given-names></name>
+          <name><surname>Beutels</surname><given-names>Philippe</given-names></name>
+        </person-group>
+        <article-title>Lessons from a decade of individual-based models for infectious disease transmission: A systematic review (2006-2015)</article-title>
+        <source>BMC infectious diseases</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>17</volume>
+        <issue>1</issue>
+        <uri>https://bmcinfectdis.biomedcentral.com/articles/10.1186/s12879-017-2699-8</uri>
+        <pub-id pub-id-type="doi">10.1186/s12879-017-2699-8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-TracyU003A2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tracy</surname><given-names>Melissa</given-names></name>
+          <name><surname>Cerdá</surname><given-names>Magdalena</given-names></name>
+          <name><surname>Keyes</surname><given-names>Katherine M.</given-names></name>
+        </person-group>
+        <article-title>Agent-based modeling in public health: Current applications and future directions</article-title>
+        <source>Annual Review of Public Health</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>39</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1146/annurev-publhealth-040617-014317</uri>
+        <pub-id pub-id-type="doi">10.1146/annurev-publhealth-040617-014317</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-GanyaniU003A2021">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ganyani</surname><given-names>Tapiwa</given-names></name>
+          <name><surname>Faes</surname><given-names>Christel</given-names></name>
+          <name><surname>Hens</surname><given-names>Niel</given-names></name>
+        </person-group>
+        <article-title>Simulation and analysis methods for stochastic compartmental epidemic models</article-title>
+        <source>Annual Review of Statistics and Its Application</source>
+        <year iso-8601-date="2021">2021</year>
+        <volume>8</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1146/annurev-statistics-061120-034438</uri>
+        <pub-id pub-id-type="doi">10.1146/annurev-statistics-061120-034438</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-R6">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Chang</surname><given-names>Winston</given-names></name>
+        </person-group>
+        <source>R6: Encapsulated classes with reference semantics</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://CRAN.R-project.org/package=R6</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Rcpp">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Eddelbuettel</surname><given-names>Dirk</given-names></name>
+          <name><surname>François</surname><given-names>Romain</given-names></name>
+        </person-group>
+        <article-title>Rcpp: Seamless R and C++ integration</article-title>
+        <source>Journal of Statistical Software</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>40</volume>
+        <issue>8</issue>
+        <uri>https://www.jstatsoft.org/v40/i08/</uri>
+        <pub-id pub-id-type="doi">10.18637/jss.v040.i08</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-BauerU003A2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bauer</surname><given-names>Pavol</given-names></name>
+          <name><surname>Engblom</surname><given-names>Stefan</given-names></name>
+          <name><surname>Widgren</surname><given-names>Stefan</given-names></name>
+        </person-group>
+        <article-title>Fast event-based epidemiological simulations on national scales</article-title>
+        <source>The International Journal of High Performance Computing Applications</source>
+        <publisher-name>SAGE Publications Sage UK: London, England</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>30</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1177/1094342016635723</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-FernandoU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Marques</surname><given-names>Fernando S.</given-names></name>
+          <name><surname>Grisi-Filho</surname><given-names>José H. H.</given-names></name>
+          <name><surname>Silva</surname><given-names>Jean C. R.</given-names></name>
+          <name><surname>Almeida</surname><given-names>Erivânia C.</given-names></name>
+          <name><surname>Júnior</surname><given-names>José L. Silva</given-names></name>
+        </person-group>
+        <article-title>hybridModels: An R package for the stochastic simulation of disease spreading in dynamic networks</article-title>
+        <source>Journal of Statistical Software</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>94</volume>
+        <issue>6</issue>
+        <pub-id pub-id-type="doi">10.18637/jss.v094.i06</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-OliverosU003A2016">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Oliveros-Ramos</surname><given-names>Ricardo</given-names></name>
+        </person-group>
+        <source>Ibm: Individual based models in r</source>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://CRAN.R-project.org/package=ibm</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-TunU003A2016">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Tun</surname><given-names>Sai Thein Than</given-names></name>
+        </person-group>
+        <source>Ibmcraftr: Toolkits to develop individual-based models in infectious disease</source>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://CRAN.R-project.org/package=ibmcraftr</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-GiorgiU003A2020">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Giorgi</surname><given-names>Daphné</given-names></name>
+          <name><surname>Kaakai</surname><given-names>Sarah</given-names></name>
+          <name><surname>Lemaire</surname><given-names>Vincent</given-names></name>
+        </person-group>
+        <source>IBMPopSim: Individual based model population simulation</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://CRAN.R-project.org/package=IBMPopSim</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-WarriyarU003A2020">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Warriyar</surname><given-names>Vineetha K. V.</given-names></name>
+          <name><surname>Almutiry</surname><given-names>Waleed</given-names></name>
+          <name><surname>Deardon</surname><given-names>Rob</given-names></name>
+        </person-group>
+        <source>EpiILM: Spatial and network based individual level models for epidemics</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://CRAN.R-project.org/package=EpiILM</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-AlmutiryU003A2020">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Almutiry</surname><given-names>Waleed</given-names></name>
+          <name><surname>Deardon</surname><given-names>Rob</given-names></name>
+        </person-group>
+        <source>EpiILMCT: Continuous time distance-based and network-based individual level models for epidemics</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://CRAN.R-project.org/package=EpiILMCT</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-HandcockU003Astatnet">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Krivitsky</surname><given-names>Pavel N.</given-names></name>
+          <name><surname>Handcock</surname><given-names>Mark S.</given-names></name>
+          <name><surname>Hunter</surname><given-names>David R.</given-names></name>
+          <name><surname>Butts</surname><given-names>Carter T.</given-names></name>
+          <name><surname>Klumb</surname><given-names>Chad</given-names></name>
+          <name><surname>Goodreau</surname><given-names>Steven M.</given-names></name>
+          <name><surname>Morris</surname><given-names>Martina</given-names></name>
+        </person-group>
+        <source>Statnet: Software tools for the statistical modeling of network data</source>
+        <publisher-name>Statnet Development Team</publisher-name>
+        <uri>http://statnet.org</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-JennessU003A2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jenness</surname><given-names>Samuel M</given-names></name>
+          <name><surname>Goodreau</surname><given-names>Steven M</given-names></name>
+          <name><surname>Morris</surname><given-names>Martina</given-names></name>
+        </person-group>
+        <article-title>EpiModel: An r package for mathematical modeling of infectious disease over networks</article-title>
+        <source>Journal of statistical software</source>
+        <publisher-name>NIH Public Access</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>84</volume>
+        <pub-id pub-id-type="doi">10.18637/jss.v084.i08</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LequimeU003A2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lequime</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Bastide</surname><given-names>Paul</given-names></name>
+          <name><surname>Dellicour</surname><given-names>Simon</given-names></name>
+          <name><surname>Lemey</surname><given-names>Philippe</given-names></name>
+          <name><surname>Baele</surname><given-names>Guy</given-names></name>
+        </person-group>
+        <article-title>Nosoi: A stochastic agent-based transmission chain simulation framework in r</article-title>
+        <source>Methods in ecology and evolution</source>
+        <publisher-name>Wiley Online Library</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>11</volume>
+        <issue>8</issue>
+        <pub-id pub-id-type="doi">10.1111/2041-210X.13422</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-RizziU003A2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rizzi</surname><given-names>Rogério Luis</given-names></name>
+          <name><surname>Kaizer</surname><given-names>Wesley Luciano</given-names></name>
+          <name><surname>Rizzi</surname><given-names>Claudia Brandelero</given-names></name>
+          <name><surname>Galante</surname><given-names>Guilherme</given-names></name>
+          <name><surname>Coelho</surname><given-names>Flávio Codeço</given-names></name>
+        </person-group>
+        <article-title>Modeling direct transmission diseases using parallel bitstring agent-based models</article-title>
+        <source>IEEE Transactions on Computational Social Systems</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>5</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1109/tcss.2018.2871625</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-AllenU003A2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Allen</surname><given-names>Linda JS</given-names></name>
+        </person-group>
+        <article-title>A primer on stochastic epidemic models: Formulation, numerical simulation, and analysis</article-title>
+        <source>Infectious Disease Modelling</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>2</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1016/j.idm.2017.03.001</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-NystromU003A2014">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Nystrom</surname><given-names>Robert</given-names></name>
+        </person-group>
+        <source>Game programming patterns</source>
+        <publisher-name>Genever Benning</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-MihaljevicU003A2021">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mihaljevic</surname><given-names>Joseph R</given-names></name>
+          <name><surname>Borkovec</surname><given-names>Seth</given-names></name>
+          <name><surname>Ratnavale</surname><given-names>Saikanth</given-names></name>
+          <name><surname>Hocking</surname><given-names>Toby D</given-names></name>
+          <name><surname>Banister</surname><given-names>Kelsey E</given-names></name>
+          <name><surname>Eppinger</surname><given-names>Joseph E</given-names></name>
+          <name><surname>Hepp</surname><given-names>Crystal M</given-names></name>
+          <name><surname>Doerry</surname><given-names>Eck</given-names></name>
+        </person-group>
+        <article-title>SPARSEMODr: Rapid simulations of spatially explicit and stochastic models of infectious disease</article-title>
+        <source>medRxiv</source>
+        <publisher-name>Cold Spring Harbor Laboratory Press</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://www.medrxiv.org/content/early/2021/05/18/2021.05.13.21256216</uri>
+        <pub-id pub-id-type="doi">10.1101/2021.05.13.21256216</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

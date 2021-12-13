@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1400</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01400</article-id>
+<title-group>
+<article-title>ppiclF: A Parallel Particle-In-Cell Library in
+Fortran</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-5329-6341</contrib-id>
+<string-name>David Zwick</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Mechanical &amp; Aerospace Engineering,
+University of Florida</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-04-19">
+<day>19</day>
+<month>4</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>37</issue>
+<fpage>1400</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>particle</kwd>
+<kwd>particle-in-cell</kwd>
+<kwd>ODE integrator</kwd>
+<kwd>Euler-Lagrange</kwd>
+<kwd>discrete element method</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>Particle-in-cell (PIC) simulations are ubiquitous in science and
+  engineering. Relevant applications range from explosively driven
+  compressible multiphase gas-solid flow to atomistic modeling. In
+  typical PIC simulations, individual particles are tracked as they move
+  through a surrounding mesh, or cells. Throughout a simulation,
+  particle-mesh and particle-particle interactions occur frequently. At
+  the core of the particle portion of these simulations is a system of
+  differential equations describing the physical behavior of each
+  particle. As a result, the system given by</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[\dfrac{d \mathbf{Y}}{dt} = \dot{\mathbf{Y}}]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle displaystyle="true"><mml:mfrac><mml:mrow><mml:mi>d</mml:mi><mml:mstyle mathvariant="bold"><mml:mi>𝐘</mml:mi></mml:mstyle></mml:mrow><mml:mrow><mml:mi>d</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:mfrac></mml:mstyle><mml:mo>=</mml:mo><mml:mover><mml:mstyle mathvariant="bold"><mml:mi>𝐘</mml:mi></mml:mstyle><mml:mo accent="true">̇</mml:mo></mml:mover></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>must be solved subject to appropriate initial conditions
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{Y} (t = 0)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐘</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>=</mml:mo><mml:mn>0</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  and right-hand-side forcing <inline-formula><alternatives>
+  <tex-math><![CDATA[\dot{\mathbf{Y}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mstyle mathvariant="bold"><mml:mi>𝐘</mml:mi></mml:mstyle><mml:mo accent="true">̇</mml:mo></mml:mover></mml:math></alternatives></inline-formula>.
+  For PIC applications, <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{Y}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐘</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  often includes particle coordinates and other evolving particle
+  states, while <inline-formula><alternatives>
+  <tex-math><![CDATA[\dot{\mathbf{Y}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mstyle mathvariant="bold"><mml:mi>𝐘</mml:mi></mml:mstyle><mml:mo accent="true">̇</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+  may be composed of appropriate force models.</p>
+  <p>While initially the given system of equations appears
+  straightforward, computational constraints make this a daunting task
+  when there are billions of equations, whose forcing may even depend on
+  the states of other equations. Adding to this difficulty is the fact
+  that the particles are often added as an afterthought when building
+  new PIC software. As a result, typical PIC implementations may
+  initially perform below expectations.</p>
+  <p>In order to remedy these challenges, a parallel dynamic
+  load-balancing approach can be taken where cells and particles are
+  distributed to different processors in memory based on some measure of
+  overall computational workload
+  (<xref alt="Liao et al., 1996" rid="ref-liao_1996" ref-type="bibr">Liao
+  et al., 1996</xref>). This can be accomplished through the use of
+  modern libraries, such as Zoltan
+  (<xref alt="Boman et al., 1999" rid="ref-ZoltanHomePage" ref-type="bibr">Boman
+  et al., 1999</xref>), where the cell and particle data is
+  redistributed in memory. In preexisting cell-only applications though,
+  the cells may already be evenly balanced and need not be altered. In
+  this case, it is of practical importance that particles can
+  unobtrusively be added to traditional cell-only codes without altering
+  preexisting data structures, while at the same time achieving high
+  parallel performance.</p>
+</sec>
+<sec id="summary">
+  <title>Summary</title>
+  <p>ppiclF is a parallel particle-in-cell library written in Fortran.
+  Its main purpose is to provide a unified and scalable interface for a
+  user to solve the above general system of differential equations in
+  PIC simulations. The library performs on-the-fly load-balancing of the
+  given system of equations across MPI processing ranks based on the
+  coordinates associated with each particle. The library allows simple
+  user input of an external overlapping mesh for interactions between
+  particles and their nearby cells. Additionally, ppiclF includes an
+  optional fast binned parallel nearest neighbor search between
+  particles within a user specified distance so that more sophisticated
+  user-implemented right-hand-side forcing models can easily be
+  evaluated. The algorithms have demonstrated scalability to 100,000
+  processors, allowing billions of equations to be solved
+  simultaneously. The library can easily be integrated with existing
+  cell-only codes since it does not alter data structures associated
+  with the cells. A more complete description of ppiclF and its use is
+  found on the documentation site
+  (<xref alt="Zwick, 2019" rid="ref-ppiclf-doc" ref-type="bibr">Zwick,
+  2019</xref>).</p>
+  <p>ppiclF was originally designed to be used by researchers in the
+  field of multiphase flow. In fact, it has been used as a discrete
+  element method solver coupled to both the incompressible Navier-Stokes
+  solver NEK5000 (2019) and the compressible Euler equation solver
+  CMT-nek (2019) to solve large-scale fluid-particle systems. Examples
+  of these applications include fluidized beds and multiphase
+  shock-tubes, which are detailed in the dissertation of Zwick, D.
+  (<xref alt="2019" rid="ref-Zwick" ref-type="bibr">2019</xref>).
+  However, since the above system of differential equations are also
+  found in many other disciplines, ppiclF’s applications are not limited
+  to multiphase flow. As a result, this library is organized such that a
+  user is only required to set the initial conditions and forcing for
+  the system; other details, such as the parallelization strategy, are
+  handled internally. Thus, ppiclF’s framework allows a user to easily
+  translate their mathematical system of equations into executable
+  code.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This material is based upon work supported by the National Science
+  Foundation Graduate Research Fellowship under Grant No. DGE-1315138.
+  This work was also supported in part by the US Department of Energy,
+  National Nuclear Security Administration, Advanced Simulation and
+  Computing Program, as a Cooperative Agreement under the Predictive
+  Science Academic Alliance Program, under Contract
+  No. DE-NA0002378.</p>
+  <p>There have been numerous suggestions and reworking of ppiclF over
+  the past few years, including valuable input from the NEK5000 team at
+  Argonne National Laboratory and the Center for Compressible Multiphase
+  Turbulence team at the University of Florida.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Zwick">
+      <element-citation publication-type="thesis">
+        <person-group person-group-type="author">
+          <string-name>Zwick, D.</string-name>
+        </person-group>
+        <article-title>Scalable highly-resolved Euler-Lagrange multiphase flow simulation with applications to shock tubes.</article-title>
+        <publisher-name>University of Florida</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-ppiclf-doc">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <name><surname>Zwick</surname><given-names>D.</given-names></name>
+        </person-group>
+        <article-title>A Parallel Particle-In-Cell Library in Fortran (ppiclF).</article-title>
+        <year iso-8601-date="2019">2019</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-04-21">2019</year><month>04</month><day>21</day></date-in-citation>
+        <uri>https://dpzwick.github.io/ppiclF-doc</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-nek5000">
+      <element-citation publication-type="webpage">
+        <article-title>NEK5000.</article-title>
+        <publisher-name>Argonne National Laboratory, Illinois</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-04-21">2019</year><month>04</month><day>21</day></date-in-citation>
+        <uri>https://nek5000.mcs.anl.gov</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-cmt-nek">
+      <element-citation publication-type="webpage">
+        <article-title>CMT-nek.</article-title>
+        <publisher-name>The Center for Compressible Multiphase Turbulence at the University of Florida</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-04-21">2019</year><month>04</month><day>21</day></date-in-citation>
+        <uri>https://github.com/UFCCMT/Nek5000</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-liao_1996">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Liao</surname><given-names>W. K.</given-names></name>
+          <name><surname>Ou</surname><given-names>C. W.</given-names></name>
+          <name><surname>Ranka</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>Dynamic alignment and distribution of irregularly coupled data arrays for scalable parallelization of particle-in-cell problems</article-title>
+        <source>Proceedings of International Conference on Parallel Processing</source>
+        <year iso-8601-date="1996">1996</year>
+        <pub-id pub-id-type="doi">10.1109/IPPS.1996.508039</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ZoltanHomePage">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <name><surname>Boman</surname><given-names>E.</given-names></name>
+          <name><surname>Devine</surname><given-names>K.</given-names></name>
+          <name><surname>Fisk</surname><given-names>L. A.</given-names></name>
+          <name><surname>Heaphy</surname><given-names>R.</given-names></name>
+          <name><surname>Hendrickson</surname><given-names>B.</given-names></name>
+          <name><surname>Leung</surname><given-names>V.</given-names></name>
+          <name><surname>Vaughan</surname><given-names>C.</given-names></name>
+          <name><surname>Catalyurek</surname><given-names>U.</given-names></name>
+          <name><surname>Bozdag</surname><given-names>D.</given-names></name>
+          <name><surname>Mitchell</surname><given-names>W.</given-names></name>
+        </person-group>
+        <article-title>Zoltan home page</article-title>
+        <year iso-8601-date="1999">1999</year>
+        <uri>https://cs.sandia.gov/Zoltan</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

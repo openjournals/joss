@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2290</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02290</article-id>
+<title-group>
+<article-title>dcgp: Differentiable Cartesian Genetic Programming made
+easy.</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9846-8423</contrib-id>
+<string-name>Dario Izzo</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Francesco Biscani</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Advanced Concepts Team, European Space Research and
+Technology Center (Noordwijk, NL)</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Max Planck Institute for Astronomy (Heidelberg,
+D)</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-05-05">
+<day>5</day>
+<month>5</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>51</issue>
+<fpage>2290</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Python</kwd>
+<kwd>genetic programming</kwd>
+<kwd>cartesian genetic programming</kwd>
+<kwd>symblic regression</kwd>
+<kwd>neural networks</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Genetic Programming (GP), is a computational technique based on the
+  idea of representing a computer program in some dedicated
+  data-structure (e.g. a tree) to then evolve it using genetic
+  algorithms as to improve its ability at solving a predefined task. How
+  good a certain program is at solving the task is typically
+  encapsulated in its <italic>fitness</italic>: a vector of floating
+  point values defining various aspects of the program. In a typical
+  example, the <italic>fitness</italic> would be the program output
+  error with respect to a predefined behaviour over a number of inputs.
+  Generation after generation, the genetic algorithm would then improve
+  such a fitness in the attempt to have the program behave
+  correctly.</p>
+  <p>The idea flourished in the late 80s mainly thanks to the work of
+  John Koza
+  (<xref alt="Koza, 2010" rid="ref-kozaU003A2010" ref-type="bibr">Koza,
+  2010</xref>), and (using the words of Koza) has always had a “hidden
+  skeleton in the closet”: the difficulty to find and evolve real valued
+  parameters in the expressed program. A recent development called
+  <bold>differentiable genetic programming</bold>
+  (<xref alt="Izzo et al., 2017" rid="ref-izzoU003A2017" ref-type="bibr">Izzo
+  et al., 2017</xref>), was introduced to address exactly this issue by
+  allowing to learn constants in computer programs using the
+  differential information of the program outputs as obtained using
+  automated differentiation techniques.</p>
+  <p>The evolution of a <bold>differentiable genetic program</bold> can
+  be supported by using the information on the derivatives (at any
+  order) of the program outputs with respect to chosen parameters,
+  enabling in GP the equivalent of back-propagation in Artificial Neural
+  Networks (ANN). The fitness of a program can thus be defined also in
+  terms of its derivatives, allowing to go beyond symbolic regression
+  tasks and, for example, to solve differential equations, learn
+  differential models, capture conserved quantities in dynamical
+  systems, search for Lyapunov functions in controlled systems,
+  etc..</p>
+  <p>In this work we introduce the C++ library
+  <monospace>dcgp</monospace> and the Python package
+  <monospace>dcgpy</monospace>, tools we developed to allow research
+  into the applications enabled by <bold>differentiable genetic
+  programming</bold>. In the rest of this paper, we will refer mainly to
+  <monospace>dcgp</monospace>, with the understanding that the a
+  corresponding behaviour can always be also obtained in
+  <monospace>dcgpy</monospace>.</p>
+  <p>A different library called CGP-Library
+  (<xref alt="Turner &amp; Miller, 2015" rid="ref-turnerU003A2015" ref-type="bibr">Turner
+  &amp; Miller, 2015</xref>) is already available as a cross platform C
+  implementation of Cartesian Genetic Programming, designed to be simple
+  to use and extendable. The <monospace>dcgp</monospace> library here
+  introduced, differs in several aspects: it allows to perform
+  derivatives on the represented programs (hence implementing a
+  differentiable form of genetic programming), it allows to use Python
+  to use runtime scripting, it is thread-safe and it allows to define
+  kernels as generic functors.</p>
+</sec>
+<sec id="methods">
+  <title>Methods</title>
+  <p>In <monospace>dcgp</monospace> computer programs are encoded using
+  the Cartesian Genetic Programming (CGP) encoding
+  (<xref alt="Miller, 2011" rid="ref-millerU003A2011" ref-type="bibr">Miller,
+  2011</xref>), that is an acyclic graph representation. A Cartesian
+  genetic program, in its original form, is depicted in
+  <xref alt="Figure 1" rid="figU003Acgp">Figure 1</xref> and is defined
+  by the number of inputs <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>,
+  the number of outputs <inline-formula><alternatives>
+  <tex-math><![CDATA[m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>m</mml:mi></mml:math></alternatives></inline-formula>,
+  the number of rows <inline-formula><alternatives>
+  <tex-math><![CDATA[r]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>r</mml:mi></mml:math></alternatives></inline-formula>,
+  the number of columns <inline-formula><alternatives>
+  <tex-math><![CDATA[c]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>c</mml:mi></mml:math></alternatives></inline-formula>,
+  the levels-back <inline-formula><alternatives>
+  <tex-math><![CDATA[l]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>l</mml:mi></mml:math></alternatives></inline-formula>,
+  the arity <inline-formula><alternatives>
+  <tex-math><![CDATA[a]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>a</mml:mi></mml:math></alternatives></inline-formula>
+  of its functional units (<italic>kernels</italic>) and the set of
+  possible <italic>kernels</italic>. With reference to
+  <xref alt="Figure 1" rid="figU003Acgp">Figure 1</xref>, each of the
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[n + rc]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>n</mml:mi><mml:mo>+</mml:mo><mml:mi>r</mml:mi><mml:mi>c</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  nodes in a CGP is assigned a unique id. The vector of integers:
+  <disp-formula><alternatives>
+  <tex-math><![CDATA[
+  \mathbf x_I = [F_0, C_{0,0}, C_{0,1}, ...,  C_{0, a}, F_1, C_{1,0}, ....., O_1, O_2, ..., O_m]
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mi>I</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:msub><mml:mi>F</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>C</mml:mi><mml:mrow><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:mn>0</mml:mn></mml:mrow></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>C</mml:mi><mml:mrow><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msub><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>C</mml:mi><mml:mrow><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:mi>a</mml:mi></mml:mrow></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>F</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>C</mml:mi><mml:mrow><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mn>0</mml:mn></mml:mrow></mml:msub><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>O</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>O</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>O</mml:mi><mml:mi>m</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula>
+  defines entirely the value of the terminal nodes and thus the computer
+  program.</p>
+  <fig>
+    <caption><p>A classical
+    CGP.<styled-content id="figU003Acgp"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="cgp.png" xlink:title="" />
+  </fig>
+  <p>Several <italic>kernels</italic> are already available in
+  <monospace>dcgp</monospace>, but the user can define his own both in
+  the C++ and in the Python version, allowing for the possibility to
+  consider kernels that are, themselves, genetic programs.</p>
+  <p>In <monospace>dcgp</monospace> the CGP representations of programs
+  are all derived from a base C++ templated class
+  <monospace>dcgp::expression&lt;T&gt;</monospace>. The use of the
+  template parameter <monospace>T</monospace> allows to compute the
+  nodes of the acyclic graph defining the computer program, and thus its
+  outputs, using different computational types. In particular, the use
+  of <bold>generalized dual numbers</bold>, implemented as a new type in
+  the library <monospace>audi</monospace>
+  (<xref alt="Izzo &amp; Biscani, 2020" rid="ref-audiU003A2020" ref-type="bibr">Izzo
+  &amp; Biscani, 2020</xref>), are enabled and can be used to obtain the
+  derivatives, at any order, of the program outputs with respect to
+  parameters present in its encoding. <bold>Generalized dual
+  numbers</bold> are elements of the algebra of truncated Taylor
+  polynomials and act, in this context, as a high order, forward mode,
+  automated differentiation method. The library
+  <monospace>audi</monospace> makes computations in this algebra rather
+  straight-forward by defining all the basic arithmetics rules for the
+  new type <monospace>audi::gdual&lt;T&gt;</monospace> which,
+  essentially, represents a multivariate Taylor polynomial and thus
+  contains all the derivatives of the considered expansion.</p>
+  <p>The two classes
+  <monospace>dcgp::expression_weighted&lt;T&gt;</monospace> and
+  <monospace>dcgp::expression_ann</monospace> derive from the base class
+  <monospace>dcgp::expression&lt;T&gt;</monospace> and offer new,
+  extended, kinds of CGP representations.
+  <monospace>dcgp::expression_weighted&lt;T&gt;</monospace> adds a
+  weight to each node connection and thus creates a program rich in
+  floating point constants to be learned.
+  <monospace>dcgp::expression_ann</monospace> adds also a bias to each
+  node, thus making it possible to represent generic artificial neural
+  networks. Since forward mode automated differentiation is highly
+  unefficient whenever a high number of parameters are to be learned (a
+  typical situation when training ANN weights and biases),
+  <monospace>dcgp::expression_ann</monospace> is only allowed to operate
+  on the type <monospace>double</monospace>. Its weights and biases can
+  be learned using backward mode automated differentiation (back
+  propagation) and a stochastic gradient descent algorithm implemented
+  specifically for the class.</p>
+  <p>All computer programs represented in <monospace>dcgp</monospace>
+  can be <italic>mutated</italic> via the corresponding methods of the
+  <monospace>dcgp::expression&lt;T&gt;</monospace> base class, and thus
+  evolved. Mutations can be chosen selectively to affect only specific
+  part of the chromosome, thus affecting only the
+  <italic>kernels</italic>, the connections or the output nodes. As an
+  example, the different consequences of such mutations are visualized,
+  in the case of a <monospace>dcgp::expression_ann</monospace>, in
+  <xref alt="Figure 2" rid="figU003Aann_mut">Figure 2</xref> and studied
+  preliminarily in
+  (<xref alt="Märtens &amp; Izzo, 2019" rid="ref-martensU003A2019" ref-type="bibr">Märtens
+  &amp; Izzo, 2019</xref>). No crossover is implemented at the level of
+  the <monospace>dcgp::expression&lt;T&gt;</monospace>, as the original
+  technique employed to evolve Cartesian genetic programs
+  (<xref alt="Miller, 2011" rid="ref-millerU003A2011" ref-type="bibr">Miller,
+  2011</xref>) was purely mutation based. We do intend to add this
+  possibility in future versions.</p>
+  <fig>
+    <caption><p>Effects of mutations on a
+    dCGPANN.<styled-content id="figU003Aann_mut"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="ann_mut.png" xlink:title="" />
+  </fig>
+  <p>When using a <monospace>dcgp::expression&lt;T&gt;</monospace> for a
+  symbolic regression task, <monospace>dcgp</monospace> includes also
+  several novel evolutionary startegies
+  (<xref alt="Schwefel, 1993" rid="ref-schwefelU003A1993" ref-type="bibr">Schwefel,
+  1993</xref>), <bold>memetic</bold> and <bold>multiobjective</bold>, as
+  well as a dedicated <monospace>dcgp::symbolic_regression</monospace>
+  class that represents such problems as an optimization problem.</p>
+</sec>
+<sec id="notes-on-efficiency">
+  <title>Notes on efficiency</title>
+  <p>The process of evolving a CGP can be lengthy and, being subject to
+  a degree of randomness, is typically repeated a few times to explore
+  the diversity of possible evolved solutions. As a consequence, CPU
+  efficiency is an enabler to build a successful learning pipeline. In
+  the C++ library <monospace>dcgp</monospace> there are several
+  parallelization levels that can be exploited for this purpose. To
+  start with, the program loss with respect to its expected output, can
+  be parallelized when computed on multiple points. A second layer of
+  parallelization is offered by <monospace>audi</monospace>
+  (<xref alt="Izzo &amp; Biscani, 2020" rid="ref-audiU003A2020" ref-type="bibr">Izzo
+  &amp; Biscani, 2020</xref>) when <bold>generalized dual numbers</bold>
+  are employed. In this case, the underlying truncated Taylor polynomial
+  algebra makes use of fine grained parallelization. A third layer is
+  also present in the non <bold>memetic</bold> optimization algorithms
+  shipped with <monospace>dcgp</monospace> as they can evaluate the
+  fitness of the various individuals in parallel using a batch fitness
+  evaluator. All the resulting nested parallelism is dealt with using
+  the ®Intel threading building blocks library. In the Python package
+  <monospace>dcgpy</monospace> things are different as multi-threading
+  is not permitted by the Python interpreter and the multi-process
+  paradigm is highly unefficient for a fine grained parallelization. As
+  a consequence, most of the mentioned parallelization are unavailable.
+  The use of coarse-grained parallelization paradigms, such as the
+  island model for evolutionary algorithms, is thus suggested to achieve
+  the best out of <monospace>dcgpy</monospace> computational times.</p>
+</sec>
+<sec id="c-and-python-apis">
+  <title>C++ and Python APIs</title>
+  <p>Two separate APIs are maintained for the C++ and Python version of
+  the code. While the APIs are designed to be as close as possible, and
+  to offer a similar experience, there are inevitable differences
+  stemming from the very different capabilities of the languages (to
+  mention one, think about the lack of an equivalent to C++ templates in
+  Python).</p>
+  <p>In Python a typical initial use of the <monospace>dcgpy</monospace>
+  package, would look like:</p>
+  <code language="python">import dcgpy
+ks = dcgpy.kernel_set_double([&quot;sum&quot;, &quot;diff&quot;, &quot;div&quot;, &quot;mul&quot;])
+ex = dcgpy.expression_double(inputs = 1, outputs = 1, rows = 1, 
+                cols = 6, levels_back = 6, arity  = 2, kernels = ks())
+print(&quot;Numerical output: &quot;, ex([1.2]))
+print(&quot;Symbolic output: &quot;, ex([&quot;x&quot;]))
+ex.mutate_active(2)
+print(&quot;Numerical output: &quot;, ex([1.2]))
+print(&quot;Symbolic output: &quot;, ex([&quot;x&quot;]))</code>
+  <p>and produce the output:</p>
+  <preformat>Numerical output:  [1.7]
+Symbolic output:  ['((x/(x+x))+x)']
+Numerical output:  [1.68]
+Symbolic output:  ['((x*(x+x))-x)']</preformat>
+  <p>while in C++ a typical use of the <monospace>dcgp</monospace>
+  library achieving a similar result would look like:</p>
+  <code language="c++">#include &lt;dcgp.hpp&gt;
+int main() {
+    dcgp::kernel_set&lt;double&gt; ks({&quot;sum&quot;, &quot;diff&quot;, &quot;div&quot;, &quot;mul&quot;});
+    dcgp::expression&lt;double&gt; ex(1u, 1u, 1u, 6u, 6u, 2u, ks());
+    std::cout &lt;&lt; &quot;Numerical output: &quot;, ex({1.2})) &lt;&lt; &quot;\n&quot;;
+    std::cout &lt;&lt; &quot;Symbolic output: &quot;, ex({&quot;x&quot;})) &lt;&lt; &quot;\n&quot;;
+    ex.mutate_active(2);
+    std::cout &lt;&lt; &quot;Numerical output: &quot;, ex({1.2})) &lt;&lt; &quot;\n&quot;;
+    std::cout &lt;&lt; &quot;Symbolic output: &quot;, ex({&quot;x&quot;})) &lt;&lt; &quot;\n&quot;;
+}</code>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>We acknowledge the important support of Luca Guj and Dow
+  Corporation during the development of the API and documentation.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-izzoU003A2017">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Izzo</surname><given-names>Dario</given-names></name>
+          <name><surname>Biscani</surname><given-names>Francesco</given-names></name>
+          <name><surname>Mereta</surname><given-names>Alessio</given-names></name>
+        </person-group>
+        <article-title>Differentiable genetic programming</article-title>
+        <source>European conference on genetic programming</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-319-55696-3_3</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-schwefelU003A1993">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Schwefel</surname><given-names>Hans-Paul Paul</given-names></name>
+        </person-group>
+        <source>Evolution and optimum seeking: The sixth generation</source>
+        <publisher-name>John Wiley &amp; Sons, Inc.</publisher-name>
+        <year iso-8601-date="1993">1993</year>
+        <isbn>978-0-471-57148-3</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-kozaU003A2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Koza</surname><given-names>John R</given-names></name>
+        </person-group>
+        <article-title>Human-competitive results produced by genetic programming</article-title>
+        <source>Genetic programming and evolvable machines</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <volume>11</volume>
+        <issue>3-4</issue>
+        <pub-id pub-id-type="doi">10.1007/s10710-010-9112-3</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-millerU003A2011">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Miller</surname><given-names>Julian F</given-names></name>
+        </person-group>
+        <article-title>Cartesian genetic programming</article-title>
+        <source>Cartesian genetic programming</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-642-17310-3_2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-audiU003A2020">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Izzo</surname><given-names>Dario</given-names></name>
+          <name><surname>Biscani</surname><given-names>Francesco</given-names></name>
+        </person-group>
+        <article-title>AuDi: v1.8</article-title>
+        <source>Zenodo</source>
+        <year iso-8601-date="2020">2020</year>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3702783</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-martensU003A2019">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Märtens</surname><given-names>Marcus</given-names></name>
+          <name><surname>Izzo</surname><given-names>Dario</given-names></name>
+        </person-group>
+        <article-title>Neural network architecture search with differentiable cartesian genetic programming for regression</article-title>
+        <source>Proceedings of the genetic and evolutionary computation conference companion</source>
+        <publisher-name>Association for Computing Machinery (ACM)</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <pub-id pub-id-type="doi">10.1145/3319619.3322003</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-turnerU003A2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Turner</surname><given-names>Andrew James</given-names></name>
+          <name><surname>Miller</surname><given-names>Julian Francis</given-names></name>
+        </person-group>
+        <article-title>Introducing a cross platform open source cartesian genetic programming library</article-title>
+        <source>Genetic Programming and Evolvable Machines</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <volume>16</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1007/s10710-014-9233-1</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

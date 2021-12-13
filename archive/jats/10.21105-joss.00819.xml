@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">819</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00819</article-id>
+<title-group>
+<article-title>quimb: A python package for quantum information and
+many-body calculations</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-9461-3024</contrib-id>
+<string-name>Johnnie Gray</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>University College London, London, UK</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2018-06-08">
+<day>8</day>
+<month>6</month>
+<year>2018</year>
+</pub-date>
+<volume>3</volume>
+<issue>29</issue>
+<fpage>819</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>python</kwd>
+<kwd>quantum</kwd>
+<kwd>physics</kwd>
+<kwd>tensor networks</kwd>
+<kwd>DMRG</kwd>
+<kwd>TEBD</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The language of quantum physics is essentially linear algebra,
+  making it easy to begin simulating using standard numerical routines.
+  However, the amount of classical resources required to simulate a
+  quantum system scales exponenially with its size. This imposes, in the
+  generic case, dramatic limits on the sizes reachable and requires that
+  great care is taken in order to maximise performance. Nonetheless, and
+  in part due to this difficulty, there is much to be learnt from
+  simulating many-body quantum systems. One useful set of tools in this
+  case is quantum information inspired quantities such as entanglement
+  meausures. Entanglement is also the key quantity when formulating
+  tensor networks, an efficient representation of certain many-body
+  quantum states. <monospace>quimb</monospace> is a pure python library
+  that covers all these areas, with an emphasis on being interactive and
+  easy to use without sacrificing performance.</p>
+  <p>The main <monospace>quimb</monospace> module utilizes numpy
+  (<xref alt="Guide to NumPy, 2015" rid="ref-numpy" ref-type="bibr"><italic>Guide
+  to NumPy</italic>, 2015</xref>) and scipy
+  (<xref alt="Jones et al., 2001--" rid="ref-scipy" ref-type="bibr">Jones
+  et al., 2001--</xref>) sparse matrices to represent quantum states and
+  operators. Amongst other things there are tools to: (i) construct
+  states and operators in composite tensor spaces; (ii) generate various
+  special or random states and operators such as Hamiltonians; (iii)
+  perform and compute many operations and quantities on these states;
+  and (iv) efficiently evolve states with a variety of methods. Much of
+  this core functionality is accelerated with
+  <monospace>numba</monospace> or <monospace>numexpr</monospace>.
+  Additionally, <monospace>quimb</monospace> has an optional
+  <monospace>slepc4py</monospace>
+  (<xref alt="Dalcin et al., 2011" rid="ref-dalcin2011parallel" ref-type="bibr">Dalcin
+  et al., 2011</xref>;
+  <xref alt="Hernandez et al., 2005" rid="ref-hernandez2005slepc" ref-type="bibr">Hernandez
+  et al., 2005</xref>) interface for various linear algebra routines,
+  such as eigen-decomposition. These are accessed through unified
+  functions so that one can easily switch between
+  <monospace>slepc4py</monospace>, <monospace>scipy</monospace> and
+  other backends. When required, <monospace>quimb</monospace> handles
+  spawning local <monospace>mpi4py</monospace>
+  (<xref alt="Dalcı́n et al., 2005" rid="ref-mpi4py" ref-type="bibr">Dalcı́n
+  et al., 2005</xref>) workers automatically, but there also tools for
+  explicitly running under MPI, for example on a cluster. The following
+  snippet illustrates some basic usage:</p>
+  <code language="python">&gt;&gt;&gt; import quimb as qu
+
+&gt;&gt;&gt; psi_0 = qu.rand_product_state(n=16)
+&gt;&gt;&gt; H = qu.ham_heis(n=16, sparse=True)
+
+&gt;&gt;&gt; evo = qu.Evolution(psi_0, H, progbar=True)
+&gt;&gt;&gt; evo.update_to(1)
+100%|███████████████████████████████████████| 100/100 [00:00&lt;00:00, 292.51%/s]
+
+&gt;&gt;&gt; dims = [2] * 16
+&gt;&gt;&gt; sysa, sysb = [7, 8, 9], [10, 11, 12]
+&gt;&gt;&gt; qu.logneg_subsys(evo.pt, dims, sysa, sysb)
+0.7719264840262068</code>
+  <p>The submodule <monospace>quimb.tensor</monospace> has a more
+  speciliazed set of tools that focus on tensor networks
+  (<xref alt="Bridgeman &amp; Chubb, 2017" rid="ref-tensor-networks" ref-type="bibr">Bridgeman
+  &amp; Chubb, 2017</xref>) - one of the key recent advancements in
+  many-body quantum theory. General highlights of
+  <monospace>quimb.tensor</monospace> include: (i) an efficient,
+  geometry free representation of arbitrary tensor networks; (ii)
+  automatic contraction of 100s-1000s of tensors using
+  <monospace>opt_einsum</monospace>
+  (<xref alt="Smith &amp; Gray, 2018" rid="ref-opt_einsum" ref-type="bibr">Smith
+  &amp; Gray, 2018</xref>), including on the GPU; (iii) the ability to
+  plot any tensor network, color-coded, with bond-sizes represented; and
+  (iv) the ability to treat any network as a
+  <monospace>LinearOperator</monospace>, allowing many iterative
+  decompositions such as those in <monospace>scipy</monospace>. Based on
+  these, fast versions of 1D tensor network algorithms such as DMRG and
+  TEBD are implemented, as well as tools for efficiently dealing with
+  periodic boundary conditions. The following snippet illustrates some
+  usage of <monospace>quimb.tensor</monospace>:</p>
+  <code language="python">&gt;&gt;&gt; import quimb.tensor as qtn
+
+&gt;&gt;&gt; # set up a MPO Hamiltonian and DMRG object, solve it
+&gt;&gt;&gt; H = qtn.MPO_ham_heis(100)
+&gt;&gt;&gt; dmrg = qtn.DMRG2(H)
+&gt;&gt;&gt; dmrg.solve(max_sweeps=3, verbosity=1)
+SWEEP-1, direction=R, max_bond=8, cutoff:1e-08
+100%|█████████████████████████████████████████| 99/99 [00:02&lt;00:00, 46.42it/s]
+Energy: -43.97194198907086 ... not converged.
+SWEEP-2, direction=R, max_bond=16, cutoff:1e-08
+100%|████████████████████████████████████████| 99/99 [00:00&lt;00:00, 117.69it/s]
+Energy: -44.111515305613054 ... not converged.
+SWEEP-3, direction=R, max_bond=32, cutoff:1e-08
+100%|████████████████████████████████████████| 99/99 [00:00&lt;00:00, 196.39it/s]
+Energy: -44.12521153106866 ... not converged.
+
+&gt;&gt;&gt; # find the half chain entropy
+&gt;&gt;&gt; gs = dmrg.state
+&gt;&gt;&gt; gs.entropy(50)
+1.2030121785347394
+
+&gt;&gt;&gt; # lazily form &lt;psi|psi&gt;, select 15 sites, and plot (see figure 1.)
+&gt;&gt;&gt; (gs.H &amp; gs)[30:45].graph(color=['I{}'.format(i) for i in range(30, 45)])</code>
+  <fig>
+    <caption><p>Example output of the tensor network graph
+    plotter.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="fig-TN-graph.png" xlink:title="" />
+  </fig>
+  <p>Overall, <monospace>quimb</monospace> aims to be an accessible but
+  capable approach to simulating quantum many-body problems, and has
+  been used already in a number of
+  publications(<xref alt="Gray et al., 2016" rid="ref-gray2016unravelling" ref-type="bibr">Gray
+  et al., 2016</xref>,
+  <xref alt="2017" rid="ref-gray2017measuring" ref-type="bibr">2017</xref>,
+  <xref alt="2018" rid="ref-gray2018many" ref-type="bibr">2018</xref>).
+  The full documentation can be found online at
+  http://quimb.readthedocs.io/en/latest/.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>JG acknowledges funding from the EPSRC Centre for Doctoral Training
+  in Delivering Quantum Technologies at UCL.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-numpy">
+      <element-citation publication-type="book">
+        <source>Guide to NumPy</source>
+        <publisher-name>CreateSpace Independent Publishing Platform</publisher-name>
+        <publisher-loc>USA</publisher-loc>
+        <year iso-8601-date="2015">2015</year>
+        <isbn>151730007X, 9781517300074</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-scipy">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Jones</surname><given-names>Eric</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>SciPy: Open source scientific tools for Python</article-title>
+        <uri>http://www.scipy.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-dalcin2011parallel">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dalcin</surname><given-names>Lisandro D</given-names></name>
+          <name><surname>Paz</surname><given-names>Rodrigo R</given-names></name>
+          <name><surname>Kler</surname><given-names>Pablo A</given-names></name>
+          <name><surname>Cosimo</surname><given-names>Alejandro</given-names></name>
+        </person-group>
+        <article-title>Parallel distributed computing using python</article-title>
+        <source>Advances in Water Resources</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <volume>34</volume>
+        <issue>9</issue>
+        <pub-id pub-id-type="doi">10.1016/j.advwatres.2011.04.013</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hernandez2005slepc">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hernandez</surname><given-names>Vicente</given-names></name>
+          <name><surname>Roman</surname><given-names>Jose E</given-names></name>
+          <name><surname>Vidal</surname><given-names>Vicente</given-names></name>
+        </person-group>
+        <article-title>SLEPc: A scalable and flexible toolkit for the solution of eigenvalue problems</article-title>
+        <source>ACM Transactions on Mathematical Software (TOMS)</source>
+        <publisher-name>ACM</publisher-name>
+        <year iso-8601-date="2005">2005</year>
+        <volume>31</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1145/1089014.1089019</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mpi4py">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dalcı́n</surname><given-names>Lisandro</given-names></name>
+          <name><surname>Paz</surname><given-names>Rodrigo</given-names></name>
+          <name><surname>Storti</surname><given-names>Mario</given-names></name>
+        </person-group>
+        <article-title>MPI for python</article-title>
+        <source>Journal of Parallel and Distributed Computing</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2005">2005</year>
+        <volume>65</volume>
+        <issue>9</issue>
+        <pub-id pub-id-type="doi">10.1016/j.jpdc.2005.03.010</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-opt_einsum">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Smith</surname><given-names>Daniel GA</given-names></name>
+          <name><surname>Gray</surname><given-names>Johnnie</given-names></name>
+        </person-group>
+        <article-title>Opt_einsum - a python package for optimizing contraction order for einsum-like expressions</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://doi.org/10.21105/joss.00753</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.00753</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-tensor-networks">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bridgeman</surname><given-names>Jacob C</given-names></name>
+          <name><surname>Chubb</surname><given-names>Christopher T</given-names></name>
+        </person-group>
+        <article-title>Hand-waving and interpretive dance: An introductory course on tensor networks</article-title>
+        <source>Journal of Physics A: Mathematical and Theoretical</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>50</volume>
+        <issue>22</issue>
+        <uri>http://stacks.iop.org/1751-8121/50/i=22/a=223001</uri>
+        <pub-id pub-id-type="doi">10.1088/1751-8121/aa6dc3</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gray2016unravelling">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gray</surname><given-names>Johnnie</given-names></name>
+          <name><surname>Bayat</surname><given-names>Abolfazl</given-names></name>
+          <name><surname>Puddy</surname><given-names>Reuben K</given-names></name>
+          <name><surname>Smith</surname><given-names>Charles G</given-names></name>
+          <name><surname>Bose</surname><given-names>Sougato</given-names></name>
+        </person-group>
+        <article-title>Unravelling quantum dot array simulators via singlet-triplet measurements</article-title>
+        <source>Physical Review B</source>
+        <publisher-name>APS</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>94</volume>
+        <issue>19</issue>
+        <pub-id pub-id-type="doi">10.1103/PhysRevB.94.195136</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gray2018many">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gray</surname><given-names>Johnnie</given-names></name>
+          <name><surname>Bose</surname><given-names>Sougato</given-names></name>
+          <name><surname>Bayat</surname><given-names>Abolfazl</given-names></name>
+        </person-group>
+        <article-title>Many-body localization transition: Schmidt gap, entanglement length, and scaling</article-title>
+        <source>Physical Review B</source>
+        <publisher-name>APS</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>97</volume>
+        <issue>20</issue>
+        <pub-id pub-id-type="doi">10.1103/PhysRevB.97.201105</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gray2017measuring">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gray</surname><given-names>Johnnie</given-names></name>
+          <name><surname>Banchi</surname><given-names>Leonardo</given-names></name>
+          <name><surname>Bayat</surname><given-names>Abolfazl</given-names></name>
+          <name><surname>Bose</surname><given-names>Sougato</given-names></name>
+        </person-group>
+        <article-title>Measuring entanglement negativity</article-title>
+        <source>arXiv preprint arXiv:1709.04923</source>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

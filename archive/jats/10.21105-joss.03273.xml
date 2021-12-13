@@ -1,0 +1,865 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3273</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03273</article-id>
+<title-group>
+<article-title>cvCovEst: Cross-validated covariance matrix estimator
+selection and evaluation in R</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-4850-2507</contrib-id>
+<string-name>Philippe Boileau</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-7127-2789</contrib-id>
+<string-name>Nima S. Hejazi</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-1127-2557</contrib-id>
+<string-name>Brian Collica</string-name>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-1432-5511</contrib-id>
+<string-name>Mark J. van der Laan</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-3"/>
+<xref ref-type="aff" rid="aff-4"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-6069-8629</contrib-id>
+<string-name>Sandrine Dudoit</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-3"/>
+<xref ref-type="aff" rid="aff-4"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Graduate Group in Biostatistics, University of California,
+Berkeley</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Center for Computational Biology, University of California,
+Berkeley</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Department of Statistics, University of California,
+Berkeley</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-4">
+<institution-wrap>
+<institution>Division of Biostatistics, School of Public Health,
+University of California, Berkeley</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<volume>6</volume>
+<issue>63</issue>
+<fpage>3273</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>covariance matrix</kwd>
+<kwd>cross-validation</kwd>
+<kwd>high-dimensional statistics</kwd>
+<kwd>loss-based estimation</kwd>
+<kwd>multivariate analysis</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Covariance matrices play fundamental roles in myriad statistical
+  procedures. When the observations in a dataset far outnumber the
+  features, asymptotic theory and empirical evidence have demonstrated
+  the sample covariance matrix to be the optimal estimator of this
+  parameter. This assertion does not hold when the number of
+  observations is commensurate with or smaller than the number of
+  features. Consequently, statisticians have derived many novel
+  covariance matrix estimators for the high-dimensional regime, often
+  relying on additional assumptions about the parameter’s structural
+  characteristics (e.g., sparsity). While these estimators have greatly
+  improved the ability to estimate covariance matrices in
+  high-dimensional settings, objectively selecting the best estimator
+  from among the many possible candidates remains a largely unaddressed
+  challenge. The <monospace>cvCovEst</monospace> package addresses this
+  methodological gap through its implementation of a cross-validated
+  framework for covariance matrix estimator selection. This
+  data-adaptive procedure’s selections are asymptotically optimal under
+  minimal assumptions – in fact, they are equivalent to the selections
+  that would be made if given full knowledge of the true data-generating
+  processes (i.e., an oracle selector)
+  (<xref alt="van der Laan &amp; Dudoit, 2003" rid="ref-laan_dudoitU003A2003" ref-type="bibr">van
+  der Laan &amp; Dudoit, 2003</xref>).</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>When the number of observations in a dataset far exceeds the number
+  of features, the estimator of choice for the covariance matrix is the
+  sample covariance matrix. It is efficient under minimal regularity
+  assumptions on the data-generating distribution. In high-dimensional
+  regimes, however, its performance is unsatisfactory: the sample
+  covariance matrix is highly variable, and produces estimates with
+  diverging condition numbers and over-dispersed eigenvalues
+  (<xref alt="Johnstone, 2001" rid="ref-johnstone2001distribution" ref-type="bibr">Johnstone,
+  2001</xref>). Analyses employing this demonstrably poor estimator may
+  be negatively impacted.</p>
+  <p>As high-dimensional data have become widespread, researchers have
+  derived many novel covariance matrix estimators to remediate the
+  sample covariance matrix’s shortcomings. These estimators come in many
+  flavors, though most are constructed by regularizing the sample
+  covariance matrix. Comprehensive reviews are provided by Fan et al.
+  (<xref alt="2016" rid="ref-fan2016" ref-type="bibr">2016</xref>) and
+  Pourahmadi
+  (<xref alt="2013" rid="ref-pourahmadi2013" ref-type="bibr">2013</xref>),
+  and these estimators are implemented across a diversity of R packages:
+  <monospace>CovTools</monospace>
+  (<xref alt="Lee &amp; You, 2019" rid="ref-lee2019" ref-type="bibr">Lee
+  &amp; You, 2019</xref>), <monospace>CVTuningCov</monospace>
+  (<xref alt="Wang, 2014" rid="ref-wang2014" ref-type="bibr">Wang,
+  2014</xref>), and <monospace>nlshrink</monospace>
+  (<xref alt="Ramprasad, 2016" rid="ref-ramprasad2016" ref-type="bibr">Ramprasad,
+  2016</xref>) to name but a few.</p>
+  <p>This variety brings with it many challenges. Identifying an
+  “optimal” estimator from among a collection of candidates can prove a
+  daunting task, one whose objectivity is often compromised by the data
+  analyst’s decisions. Though data-driven approaches for selecting an
+  optimal estimator from among estimators belonging to certain (limited)
+  classes have been derived, the question of selecting from a diverse
+  collection of candidate procedures remains unaddressed.</p>
+</sec>
+<sec id="cvcovest-framework">
+  <title><monospace>cvCovEst</monospace> Framework</title>
+  <p>The solution provided by <monospace>cvCovEst</monospace> is a
+  general, cross-validation-based, estimator-agnostic framework for
+  covariance matrix estimator selection. The asymptotic optimality of
+  selections are guaranteed under a few non-restrictive assumptions by
+  extending the seminal work of van der Laan &amp; Dudoit
+  (<xref alt="2003" rid="ref-laan_dudoitU003A2003" ref-type="bibr">2003</xref>),
+  Dudoit &amp; van der Laan
+  (<xref alt="2005" rid="ref-dudoit2005" ref-type="bibr">2005</xref>),
+  and van der Vaart et al.
+  (<xref alt="2006" rid="ref-vaart2006" ref-type="bibr">2006</xref>) on
+  data-adaptive estimator selection to high-dimensional covariance
+  matrix estimation
+  (<xref alt="Boileau et al., 2021" rid="ref-boileau2021" ref-type="bibr">Boileau
+  et al., 2021</xref>). Here, optimality is defined as choosing an
+  estimator with an equivalent risk difference to that which would have
+  been selected were the underlying data-generating distribution
+  <italic>completely known</italic>.</p>
+  <p>The <monospace>cvCovEst</monospace> software package implements
+  this framework for the <monospace>R</monospace> language and
+  environment for statistical computing
+  (<xref alt="R Core Team, 2021" rid="ref-R" ref-type="bibr">R Core
+  Team, 2021</xref>). Included is a collection of covariance matrix
+  estimators spanning the work of many researchers (Table 1). They may
+  be employed independently of the cross-validation procedure.
+  <monospace>cvCovEst</monospace> also provides a variety of plotting
+  and summary functions. These diagnostic tools allow users to gauge the
+  algorithm’s performance, diagnose issues that might arise during
+  estimation procedures, and build intuition about the many estimators’
+  behaviors. Additionally, users have options to increase the
+  cross-validation method’s computational efficiency via parallel
+  computation. Parallelization relies on the suite of
+  <monospace>future</monospace> packages
+  (<xref alt="Bengtsson, 2020" rid="ref-future" ref-type="bibr">Bengtsson,
+  2020</xref>) by way of the <monospace>origami</monospace> package
+  (<xref alt="Coyle &amp; Hejazi, 2018" rid="ref-origami" ref-type="bibr">Coyle
+  &amp; Hejazi, 2018</xref>).</p>
+  <p>Table 1: Covariance matrix estimators implemented as of
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/PhilBoileau/cvCovEst">version
+  1.0.0</ext-link>.</p>
+  <table-wrap>
+    <table>
+      <colgroup>
+        <col width="30%" />
+        <col width="30%" />
+        <col width="39%" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Estimator</th>
+          <th>Implementation</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Sample covariance matrix</td>
+          <td><monospace>sampleCovEst()</monospace></td>
+          <td>The sample covariance matrix.</td>
+        </tr>
+        <tr>
+          <td>Hard thresholding
+          (<xref alt="Bickel &amp; Levina, 2008b" rid="ref-Bickel2008_thresh" ref-type="bibr">Bickel
+          &amp; Levina, 2008b</xref>)</td>
+          <td><monospace>thresholdingEst()</monospace></td>
+          <td>Applies a hard thresholding operator to the entries of the
+          sample covariance matrix.</td>
+        </tr>
+        <tr>
+          <td>SCAD thresholding
+          (<xref alt="Fan &amp; Li, 2001" rid="ref-fan2001" ref-type="bibr">Fan
+          &amp; Li, 2001</xref>;
+          <xref alt="Rothman et al., 2009" rid="ref-rothman2009" ref-type="bibr">Rothman
+          et al., 2009</xref>)</td>
+          <td><monospace>scadEst()</monospace></td>
+          <td>Applies the SCAD thresholding operator to the entries of
+          the sample covariance matrix.</td>
+        </tr>
+        <tr>
+          <td>Adaptive LASSO
+          (<xref alt="Rothman et al., 2009" rid="ref-rothman2009" ref-type="bibr">Rothman
+          et al., 2009</xref>)</td>
+          <td><monospace>adaptiveLassoEst()</monospace></td>
+          <td>Applies the adaptive LASSO thresholding operator to the
+          entries of the sample covariance matrix.</td>
+        </tr>
+        <tr>
+          <td>Banding
+          (<xref alt="Bickel &amp; Levina, 2008a" rid="ref-bickel2008_banding" ref-type="bibr">Bickel
+          &amp; Levina, 2008a</xref>)</td>
+          <td><monospace>bandingEst()</monospace></td>
+          <td>Replaces the sample covariance matrix’s off-diagonal bands
+          by zeros.</td>
+        </tr>
+        <tr>
+          <td>Tapering
+          (<xref alt="Cai et al., 2010" rid="ref-cai2010" ref-type="bibr">Cai
+          et al., 2010</xref>)</td>
+          <td><monospace>taperingEst()</monospace></td>
+          <td>Tapers the sample covariance matrix’s off-diagonal bands,
+          eventually replacing them by zeros.</td>
+        </tr>
+        <tr>
+          <td>Optimal Linear Shrinkage
+          (<xref alt="Ledoit &amp; Wolf, 2004" rid="ref-Ledoit2004" ref-type="bibr">Ledoit
+          &amp; Wolf, 2004</xref>)</td>
+          <td><monospace>linearShrinkLWEst()</monospace></td>
+          <td>Asymptotically optimal shrinkage of the sample covariance
+          matrix towards the identity.</td>
+        </tr>
+        <tr>
+          <td>Linear Shrinkage
+          (<xref alt="Ledoit &amp; Wolf, 2004" rid="ref-Ledoit2004" ref-type="bibr">Ledoit
+          &amp; Wolf, 2004</xref>)</td>
+          <td><monospace>linearShrinkEst()</monospace></td>
+          <td>Shrinkage of the sample covariance matrix towards the
+          identity, but the shrinkage is controlled by a
+          hyperparameter.</td>
+        </tr>
+        <tr>
+          <td>Dense Linear Shrinkage
+          (<xref alt="Schäfer &amp; Strimmer, 2005" rid="ref-shafer2005" ref-type="bibr">Schäfer
+          &amp; Strimmer, 2005</xref>)</td>
+          <td><monospace>denseLinearShrinkEst()</monospace></td>
+          <td>Asymptotically optimal shrinkage of the sample covariance
+          matrix towards a dense matrix whose diagonal elements are the
+          mean of the sample covariance matrix’s diagonal and whose
+          off-diagonal elements are the mean of the sample covariance
+          matrix’s off-diagonal elements.</td>
+        </tr>
+        <tr>
+          <td>Nonlinear Shrinkage
+          (<xref alt="Ledoit &amp; Wolf, 2020" rid="ref-Ledoit2020" ref-type="bibr">Ledoit
+          &amp; Wolf, 2020</xref>)</td>
+          <td><monospace>nlShrinkLWEst()</monospace></td>
+          <td>Analytical estimator for the nonlinear shrinkage of the
+          sample covariance matrix.</td>
+        </tr>
+        <tr>
+          <td>POET
+          (<xref alt="Fan et al., 2013" rid="ref-fan2013" ref-type="bibr">Fan
+          et al., 2013</xref>)</td>
+          <td><monospace>poetEst()</monospace></td>
+          <td>An estimator based on latent variable estimation and
+          thresholding.</td>
+        </tr>
+        <tr>
+          <td>Robust POET
+          (<xref alt="Fan et al., 2018" rid="ref-fan2018" ref-type="bibr">Fan
+          et al., 2018</xref>)</td>
+          <td><monospace>robustPoetEst()</monospace></td>
+          <td>A robust (and more computationally taxing) take on the
+          POET estimator.</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+</sec>
+<sec id="examples">
+  <title>Examples</title>
+  <p>We briefly showcase <monospace>cvCovEst</monospace>’s functionality
+  through a toy example and an application to single-cell transcriptomic
+  data.</p>
+  <sec id="toy-dataset-example">
+    <title>Toy Dataset Example</title>
+    <p>Multivariate normal data are simulated using a covariance matrix
+    with a Toeplitz structure and then fed to the
+    <monospace>cvCovEst</monospace> function. A summary of the
+    cross-validated estimation procedure is provided via the
+    <monospace>plot</monospace> method.</p>
+    <preformat>library(MASS)
+library(cvCovEst)
+set.seed(1584)
+
+# function to generate a toeplitz matrix
+toep_sim &lt;- function(p, rho, alpha) {
+
+    times &lt;- seq_len(p)
+    H &lt;- abs(outer(times, times, &quot;-&quot;)) + diag(p)
+    H &lt;- H^-(1 + alpha) * rho
+    covmat &lt;- H + diag(p) * (1 - rho)
+
+    sign_mat &lt;- sapply(
+      times,
+      function(i) {
+        sapply(
+          times,
+          function(j) {
+            (-1)^(abs(i - j))
+          }
+        )
+      }
+    )
+    return(covmat * sign_mat)
+}
+
+# generate a 100 x 100 covariance matrix
+sim_covmat &lt;- toep_sim(p = 100, rho = 0.6, alpha = 0.3)
+
+# sample 75 observations from multivariate normal mean = 0, var = sim_covmat
+sim_dat &lt;-  MASS::mvrnorm(n = 75, mu = rep(0, 100), Sigma = sim_covmat)
+
+# run CV-selector
+cv_cov_est_sim &lt;- cvCovEst(
+  dat = sim_dat,
+  estimators = c(
+    linearShrinkEst, thresholdingEst, bandingEst, adaptiveLassoEst,
+    sampleCovEst, taperingEst
+  ),
+  estimator_params = list(
+    linearShrinkEst = list(alpha = seq(0.25, 0.75, 0.05)),
+    thresholdingEst = list(gamma = seq(0.25, 0.75, 0.05)),
+    bandingEst = list(k = seq(2L, 10L, 2L)),
+    adaptiveLassoEst = list(lambda = c(0.1, 0.25, 0.5, 0.75, 1), n = seq(1, 5)),
+    taperingEst = list(k = seq(2L, 10L, 2L))
+  ),
+  cv_scheme = &quot;v_fold&quot;,
+  v_folds = 5
+)
+
+# plot a summary of the results
+plot(cv_cov_est_sim, data_orig = sim_dat)</preformat>
+    <fig>
+      <caption><p>A summary of the <monospace>cvCovEst</monospace>
+      procedure’s results. In the top left corner, the selected
+      estimator’s risk is plotted against its considered
+      hyperparameters. In the top right, the eigenvalues of the selected
+      estimator’s estimate are displayed. The bottom left plot presents
+      the estimated covariance matrix. Entries are colored based on
+      their absolute values. Finally, the table in the bottom right
+      summarizes the performance of the best estimators from each
+      class.</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="summary_plot.png" xlink:title="" />
+    </fig>
+  </sec>
+  <sec id="single-cell-transcriptomic-data">
+    <title>Single Cell Transcriptomic Data</title>
+    <p>Single-cell transcriptome sequencing (scRNA-seq) measures the
+    gene expression profiles of individual cells within a given
+    population, permitting the identification of rare cell types and the
+    study of developmental trajectories. The datasets resulting from
+    these experiments are typically high-dimensional: expression data
+    for hundreds or thousands of cells are collected for tens of
+    thousands of genes. A critical step in most analytic workflows is
+    therefore that of dimension reduction. In addition to facilitating
+    visualization, this reduction is thought to have a denoising effect.
+    That is, the effects of uninteresting biological variation are
+    typically mitigated in these lower-dimensional embeddings.</p>
+    <p>A popular method for the dimensionality reduction of scRNA-seq is
+    uniform manifold approximation and projection (UMAP)
+    (<xref alt="McInnes et al., 2018" rid="ref-mcinnes2018" ref-type="bibr">McInnes
+    et al., 2018</xref>), capable of capturing non-linear relationships
+    between features, applied to the dataset’s leading principal
+    components. Since these principal components (PCs) are derived from
+    the sample covariance matrix, however, they are likely to be poor
+    estimates of the true PCs when the number of genes exceeds the
+    number of cells. Instead, the <monospace>cvCovEst</monospace>
+    estimate could be used to compute the initial dimensionality
+    reduction.</p>
+    <p>Indeed, we find that the two-dimensional UMAP embedding resulting
+    from the <monospace>cvCovEst</monospace>-based approach improves
+    upon that of the standard PCA-based approach when applied to a
+    dataset of 285 mouse visual cortex’s cells’ 1,000 most variable
+    genes
+    (<xref alt="Tasic et al., 2016" rid="ref-tasic2016" ref-type="bibr">Tasic
+    et al., 2016</xref>). Fewer rare cells are misclustered, engendering
+    a 47% improvement in average silhouette width. For further
+    discussion, see Boileau et al.
+    (<xref alt="2021" rid="ref-boileau2021" ref-type="bibr">2021</xref>).</p>
+    <fig>
+      <caption><p>A comparison of UMAP embeddings using the 20 leading
+      PCs from traditional PCA and from
+      <monospace>cvCovEst</monospace>-based PCA as
+      initializations.</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="allen-umap.png" xlink:title="" />
+    </fig>
+  </sec>
+</sec>
+<sec id="availability">
+  <title>Availability</title>
+  <p>A stable release of the <monospace>cvCovEst</monospace> package is
+  freely-available via the
+  <ext-link ext-link-type="uri" xlink:href="https://CRAN.R-project.org/package=cvCovEst">Comprehensive
+  <monospace>R</monospace> Archive Network</ext-link>. Its development
+  version can be found on
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/PhilBoileau/cvCovEst">GitHub</ext-link>.
+  Documentation and examples are contained in each version’s manual
+  pages, vignette, and <monospace>pkgdown</monospace>
+  (<xref alt="Wickham &amp; Hesselberth, 2020" rid="ref-pkgdown" ref-type="bibr">Wickham
+  &amp; Hesselberth, 2020</xref>) website at
+  https://philboileau.github.io/cvCovEst.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>Philippe Boileau’s contribution to this work was supported by the
+  Fonds de recherche du Québec - Nature et technologies (B1X) and by the
+  National Institute of Environmental Health Sciences [P42ES004705]
+  Superfund Research Program at UC Berkeley.</p>
+  <p>We thank Jamarcus Liu for his contributions to the software
+  package.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-fan2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fan</surname><given-names>Jianqing</given-names></name>
+          <name><surname>Liao</surname><given-names>Yuan</given-names></name>
+          <name><surname>Liu</surname><given-names>Han</given-names></name>
+        </person-group>
+        <article-title>An overview of the estimation of large covariance and precision matrices</article-title>
+        <source>The Econometrics Journal</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>19</volume>
+        <issue>1</issue>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1111/ectj.12061</uri>
+        <pub-id pub-id-type="doi">10.1111/ectj.12061</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-laan_dudoitU003A2003">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>van der Laan</surname><given-names>Mark J</given-names></name>
+          <name><surname>Dudoit</surname><given-names>Sandrine</given-names></name>
+        </person-group>
+        <article-title>Unified cross-validation methodology for selection among estimators and a general cross-validated adaptive epsilon-net estimator: Finite sample oracle inequalities and examples</article-title>
+        <publisher-name>University of California, Berkeley</publisher-name>
+        <publisher-loc>Berkeley</publisher-loc>
+        <year iso-8601-date="2003">2003</year>
+        <uri>https://biostats.bepress.com/ucbbiostat/paper130</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-dudoit2005">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dudoit</surname><given-names>Sandrine</given-names></name>
+          <name><surname>van der Laan</surname><given-names>Mark J</given-names></name>
+        </person-group>
+        <article-title>Asymptotics of cross-validated risk estimation in estimator selection and performance assessment</article-title>
+        <source>Statistical Methodology</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2005">2005</year>
+        <volume>2</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1016/j.stamet.2005.02.003</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-vaart2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>van der Vaart</surname><given-names>Aad W</given-names></name>
+          <name><surname>Dudoit</surname><given-names>Sandrine</given-names></name>
+          <name><surname>van der Laan</surname><given-names>Mark J</given-names></name>
+        </person-group>
+        <article-title>Oracle inequalities for multi-fold cross validation</article-title>
+        <source>Statistics and Decisions</source>
+        <year iso-8601-date="2006">2006</year>
+        <volume>24</volume>
+        <pub-id pub-id-type="doi">10.1524/stnd.2006.24.3.351</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-R">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>R Core Team</string-name>
+        </person-group>
+        <source>R: A language and environment for statistical computing</source>
+        <publisher-name>R Foundation for Statistical Computing</publisher-name>
+        <publisher-loc>Vienna, Austria</publisher-loc>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://www.R-project.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-future">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Bengtsson</surname><given-names>Henrik</given-names></name>
+        </person-group>
+        <article-title>A unifying framework for parallel and distributed processing in R using futures</article-title>
+        <year iso-8601-date="2020-08">2020</year><month>08</month>
+        <uri>https://arxiv.org/abs/2008.00553</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-origami">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Coyle</surname><given-names>Jeremy R</given-names></name>
+          <name><surname>Hejazi</surname><given-names>Nima S</given-names></name>
+        </person-group>
+        <article-title>Origami: A generalized framework for cross-validation in r</article-title>
+        <source>Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>3</volume>
+        <issue>21</issue>
+        <uri>https://doi.org/10.21105/joss.00512</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.00512</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-boileau2021">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Boileau</surname><given-names>Philippe</given-names></name>
+          <name><surname>Hejazi</surname><given-names>Nima S</given-names></name>
+          <name><surname>van der Laan</surname><given-names>Mark J</given-names></name>
+          <name><surname>Dudoit</surname><given-names>Sandrine</given-names></name>
+        </person-group>
+        <article-title>Cross-validated loss-based covariance matrix estimator selection in high dimensions</article-title>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://arxiv.org/abs/2102.09715</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Bickel2008_thresh">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bickel</surname><given-names>Peter J</given-names></name>
+          <name><surname>Levina</surname><given-names>Elizaveta</given-names></name>
+        </person-group>
+        <article-title>Covariance regularization by thresholding</article-title>
+        <source>Annals of Statistics</source>
+        <publisher-name>The Institute of Mathematical Statistics</publisher-name>
+        <year iso-8601-date="2008-12">2008</year><month>12</month>
+        <volume>36</volume>
+        <issue>6</issue>
+        <uri>https://doi.org/10.1214/08-AOS600</uri>
+        <pub-id pub-id-type="doi">10.1214/08-AOS600</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bickel2008_banding">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bickel</surname><given-names>Peter J</given-names></name>
+          <name><surname>Levina</surname><given-names>Elizaveta</given-names></name>
+        </person-group>
+        <article-title>Regularized estimation of large covariance matrices</article-title>
+        <source>Annals of Statistics</source>
+        <publisher-name>The Institute of Mathematical Statistics</publisher-name>
+        <year iso-8601-date="2008-02">2008</year><month>02</month>
+        <volume>36</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.1214/009053607000000758</uri>
+        <pub-id pub-id-type="doi">10.1214/009053607000000758</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Ledoit2004">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ledoit</surname><given-names>Olivier</given-names></name>
+          <name><surname>Wolf</surname><given-names>Michael</given-names></name>
+        </person-group>
+        <article-title>A well-conditioned estimator for large-dimensional covariance matrices</article-title>
+        <source>Journal of Multivariate Analysis</source>
+        <year iso-8601-date="2004">2004</year>
+        <volume>88</volume>
+        <issue>2</issue>
+        <issn>0047-259X</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S0047259X03000964</uri>
+        <pub-id pub-id-type="doi">10.1016/S0047-259X(03)00096-4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-cai2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cai</surname><given-names>T. Tony</given-names></name>
+          <name><surname>Zhang</surname><given-names>Cun-Hui</given-names></name>
+          <name><surname>Zhou</surname><given-names>Harrison H</given-names></name>
+        </person-group>
+        <article-title>Optimal rates of convergence for covariance matrix estimation</article-title>
+        <source>Annals of Statistics</source>
+        <publisher-name>The Institute of Mathematical Statistics</publisher-name>
+        <year iso-8601-date="2010-08">2010</year><month>08</month>
+        <volume>38</volume>
+        <issue>4</issue>
+        <uri>https://doi.org/10.1214/09-AOS752</uri>
+        <pub-id pub-id-type="doi">10.1214/09-AOS752</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Ledoit2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ledoit</surname><given-names>Olivier</given-names></name>
+          <name><surname>Wolf</surname><given-names>Michael</given-names></name>
+        </person-group>
+        <article-title>Analytical nonlinear shrinkage of large-dimensional covariance matrices</article-title>
+        <source>Annals of Statistics</source>
+        <publisher-name>Institute of Mathematical Statistics</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>48</volume>
+        <issue>5</issue>
+        <uri>https://doi.org/10.1214/19-AOS1921</uri>
+        <pub-id pub-id-type="doi">10.1214/19-AOS1921</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-shafer2005">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Schäfer</surname><given-names>Juliane</given-names></name>
+          <name><surname>Strimmer</surname><given-names>Korbinian</given-names></name>
+        </person-group>
+        <article-title>A shrinkage approach to large-scale covariance matrix estimation and implications for functional genomics</article-title>
+        <source>Statistical Applications in Genetics and Molecular Biology</source>
+        <publisher-name>De Gruyter</publisher-name>
+        <year iso-8601-date="2005">2005</year>
+        <volume>4</volume>
+        <issue>1</issue>
+        <uri>https://doi.org/10.2202/1544-6115.1175</uri>
+        <pub-id pub-id-type="doi">10.2202/1544-6115.1175</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-fan2001">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fan</surname><given-names>Jianqing</given-names></name>
+          <name><surname>Li</surname><given-names>Runze</given-names></name>
+        </person-group>
+        <article-title>Variable selection via nonconcave penalized likelihood and its oracle properties</article-title>
+        <source>Journal of the American Statistical Association</source>
+        <publisher-name>Taylor &amp; Francis</publisher-name>
+        <year iso-8601-date="2001">2001</year>
+        <volume>96</volume>
+        <issue>456</issue>
+        <uri>https://doi.org/10.1198/016214501753382273</uri>
+        <pub-id pub-id-type="doi">10.1198/016214501753382273</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-rothman2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rothman</surname><given-names>Adam J</given-names></name>
+          <name><surname>Levina</surname><given-names>Elizaveta</given-names></name>
+          <name><surname>Zhu</surname><given-names>Ji</given-names></name>
+        </person-group>
+        <article-title>Generalized thresholding of large covariance matrices</article-title>
+        <source>Journal of the American Statistical Association</source>
+        <publisher-name>Taylor &amp; Francis</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <volume>104</volume>
+        <issue>485</issue>
+        <uri>https://doi.org/10.1198/jasa.2009.0101</uri>
+        <pub-id pub-id-type="doi">10.1198/jasa.2009.0101</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-fan2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fan</surname><given-names>Jianqing</given-names></name>
+          <name><surname>Liao</surname><given-names>Yuan</given-names></name>
+          <name><surname>Mincheva</surname><given-names>Martina</given-names></name>
+        </person-group>
+        <article-title>Large covariance estimation by thresholding principal orthogonal complements</article-title>
+        <source>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</source>
+        <publisher-name>[Royal Statistical Society, Wiley]</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <volume>75</volume>
+        <issue>4</issue>
+        <issn>13697412, 14679868</issn>
+        <uri>http://www.jstor.org/stable/24772450</uri>
+        <pub-id pub-id-type="doi">10.2139/ssrn.1977673</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-fan2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fan</surname><given-names>Jianqing</given-names></name>
+          <name><surname>Liu</surname><given-names>Han</given-names></name>
+          <name><surname>Wang</surname><given-names>Weichen</given-names></name>
+        </person-group>
+        <article-title>Large covariance estimation through elliptical factor models</article-title>
+        <source>Annals of Statistics</source>
+        <publisher-name>The Institute of Mathematical Statistics</publisher-name>
+        <year iso-8601-date="2018-08">2018</year><month>08</month>
+        <volume>46</volume>
+        <issue>4</issue>
+        <uri>https://doi.org/10.1214/17-AOS1588</uri>
+        <pub-id pub-id-type="doi">10.1214/17-AOS1588</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pourahmadi2013">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Pourahmadi</surname><given-names>Mohsen</given-names></name>
+        </person-group>
+        <source>High-dimensional covariance estimation</source>
+        <publisher-name>Wiley</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <isbn>978-1-118-03429-3</isbn>
+      </element-citation>
+    </ref>
+    <ref id="ref-johnstone2001distribution">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Johnstone</surname><given-names>Iain M.</given-names></name>
+        </person-group>
+        <article-title>On the distribution of the largest eigenvalue in principalcomponents analysis</article-title>
+        <source>Annals of Statistics</source>
+        <publisher-name>Institute of Mathematical Statistics</publisher-name>
+        <year iso-8601-date="2001">2001</year>
+        <volume>29</volume>
+        <issue>2</issue>
+        <uri>https://doi.org/10.1214/aos/1009210544</uri>
+        <pub-id pub-id-type="doi">10.1214/aos/1009210544</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-tasic2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tasic</surname><given-names>Bosiljka</given-names></name>
+          <name><surname>Menon</surname><given-names>Vilas</given-names></name>
+          <name><surname>Nguyen</surname><given-names>Thuc Nghi</given-names></name>
+          <name><surname>Kim</surname><given-names>Tae Kyung</given-names></name>
+          <name><surname>Jarsky</surname><given-names>Tim</given-names></name>
+          <name><surname>Yao</surname><given-names>Zizhen</given-names></name>
+          <name><surname>Levi</surname><given-names>Boaz</given-names></name>
+          <name><surname>Gray</surname><given-names>Lucas T</given-names></name>
+          <name><surname>Sorensen</surname><given-names>Staci A</given-names></name>
+          <name><surname>Dolbeare</surname><given-names>Tim</given-names></name>
+          <name><surname>Bertagnolli</surname><given-names>Darren</given-names></name>
+          <name><surname>Goldy</surname><given-names>Jeff</given-names></name>
+          <name><surname>Shapovalova</surname><given-names>Nadiya</given-names></name>
+          <name><surname>Parry</surname><given-names>Sheana</given-names></name>
+          <name><surname>Lee</surname><given-names>Changkyu</given-names></name>
+          <name><surname>Smith</surname><given-names>Kimberly</given-names></name>
+          <name><surname>Bernard</surname><given-names>Amy</given-names></name>
+          <name><surname>Madisen</surname><given-names>Linda</given-names></name>
+          <name><surname>Sunkin</surname><given-names>Susan M</given-names></name>
+          <name><surname>Hawrylycz</surname><given-names>Michael</given-names></name>
+          <name><surname>Koch</surname><given-names>Christof</given-names></name>
+          <name><surname>Zeng</surname><given-names>Hongkui</given-names></name>
+        </person-group>
+        <article-title>Adult mouse cortical cell taxonomy revealed by single cell transcriptomics</article-title>
+        <source>Nature Neuroscience</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>19</volume>
+        <issue>2</issue>
+        <uri>https://doi.org/10.1038/nn.4216</uri>
+        <pub-id pub-id-type="doi">10.1038/nn.4216</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mcinnes2018">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>McInnes</surname><given-names>Leland</given-names></name>
+          <name><surname>Healy</surname><given-names>John</given-names></name>
+          <name><surname>Melville</surname><given-names>James</given-names></name>
+        </person-group>
+        <article-title>UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction</article-title>
+        <year iso-8601-date="2018-02">2018</year><month>02</month>
+        <uri>http://arxiv.org/abs/1802.03426</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-lee2019">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Lee</surname><given-names>Kyoungjae</given-names></name>
+          <name><surname>You</surname><given-names>Kisung</given-names></name>
+        </person-group>
+        <source>CovTools: Statistical tools for covariance analysis</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://CRAN.R-project.org/package=CovTools</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-wang2014">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Wang</surname><given-names>Binhuan</given-names></name>
+        </person-group>
+        <source>CVTuningCov: Regularized estimators of covariance matrices with CV tuning</source>
+        <year iso-8601-date="2014">2014</year>
+        <uri>https://CRAN.R-project.org/package=CVTuningCov</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-ramprasad2016">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Ramprasad</surname><given-names>Pratik</given-names></name>
+        </person-group>
+        <source>nlshrink: Non-linear shrinkage estimation of population eigenvalues and covariance matrices</source>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://CRAN.R-project.org/package=nlshrink</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-pkgdown">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Wickham</surname><given-names>Hadley</given-names></name>
+          <name><surname>Hesselberth</surname><given-names>Jay</given-names></name>
+        </person-group>
+        <source>pkgdown: Make static HTML documentation for a package</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://CRAN.R-project.org/package=pkgdown</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

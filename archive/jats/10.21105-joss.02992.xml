@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2992</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02992</article-id>
+<title-group>
+<article-title>RBF: An R package to compute a robust backfitting
+estimator for additive models</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1893-2039</contrib-id>
+<string-name>Alejandra M. Martínez</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-1873-4611</contrib-id>
+<string-name>Matias Salibian-Barrera</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Departamento de Ciencias Básicas, Universidad Nacional de
+Luján, Argentina</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Department of Statistics, University of British Columbia,
+Canada</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-11-17">
+<day>17</day>
+<month>11</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>60</issue>
+<fpage>2992</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Backfitting</kwd>
+<kwd>Additive models</kwd>
+<kwd>Robustness</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Although highly flexible, non-parametric regression models
+  typically require large sample sizes to be estimated reliably,
+  particularly when they include many explanatory variables. Additive
+  models provide an alternative that is more flexible than linear
+  models, not affected by the curse of dimensionality, and also allow
+  the exploration of individual covariate effects. Standard algorithms
+  to fit these models can be highly susceptible to the presence of a few
+  atypical or outlying observations in the data. The
+  <monospace>RBF</monospace>
+  (<xref alt="Salibian-Barrera &amp; Martı́nez, 2020" rid="ref-RBF" ref-type="bibr">Salibian-Barrera
+  &amp; Martı́nez, 2020</xref>) package for R implements the robust
+  estimator for additive models of Boente et al.
+  (<xref alt="2017" rid="ref-BoenteMartinezSalibian2017" ref-type="bibr">2017</xref>),
+  which can resist the damaging effect of outliers in the training
+  set.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>The purpose of <monospace>RBF</monospace> is to provide a
+  user-friendly implementation of a robust kernel-based estimation
+  procedure for additive models that is resistant to the presence of
+  potential outliers.</p>
+</sec>
+<sec id="implementation-goals">
+  <title>Implementation Goals</title>
+  <p><monospace>RBF</monospace> implements a user interface similar to
+  that of the R package <monospace>gam</monospace>
+  (<xref alt="T. Hastie, 2019" rid="ref-gam" ref-type="bibr">T. Hastie,
+  2019</xref>), which computes the standard non-robust kernel-based fit
+  for additive models using the backfitting algorithm. The
+  <monospace>RBF</monospace> package also includes several modeling
+  tools, including functions to produce diagnostic plots, obtain fitted
+  values and compute predictions.</p>
+</sec>
+<sec id="background">
+  <title>Background</title>
+  <p>Additive models offer a non-parametric generalization of linear
+  models (T. J. Hastie &amp; Tibshirani
+  (<xref alt="1990" rid="ref-HastieTibshirani1990" ref-type="bibr">1990</xref>)).
+  They are flexible, interpretable and avoid the <italic>curse of
+  dimensionality</italic> which means that, as the number of explanatory
+  variables increases, neighbourhoods rapidly become sparse, and much
+  fewer training observations are available to estimate the regression
+  function at any one point.</p>
+  <p>If <inline-formula><alternatives>
+  <tex-math><![CDATA[Y]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>Y</mml:mi></mml:math></alternatives></inline-formula>
+  denotes the response variable, and <inline-formula><alternatives>
+  <tex-math><![CDATA[\textbf{X} = (X_1, \ldots, X_d)^\top]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mtext mathvariant="bold">𝐗</mml:mtext><mml:mo>=</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:mi>…</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>d</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>⊤</mml:mi></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>
+  a vector of explanatory variables, then an additive regression model
+  postulates that
+  <named-content id="eqU003Amodel" content-type="equation"><disp-formula><alternatives>
+  <tex-math><![CDATA[\label{eq:model} 
+  Y \ = \ \mu + \sum_{j=1}^d g_j(X_j) \, + \, \epsilon \, ,]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>Y</mml:mi><mml:mspace width="0.222em"></mml:mspace><mml:mo>=</mml:mo><mml:mspace width="0.222em"></mml:mspace><mml:mi>μ</mml:mi><mml:mo>+</mml:mo><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>d</mml:mi></mml:munderover><mml:msub><mml:mi>g</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mspace width="0.167em"></mml:mspace><mml:mo>+</mml:mo><mml:mspace width="0.167em"></mml:mspace><mml:mi>ϵ</mml:mi><mml:mspace width="0.167em"></mml:mspace><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula></named-content>
+  where the error <inline-formula><alternatives>
+  <tex-math><![CDATA[\epsilon]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϵ</mml:mi></mml:math></alternatives></inline-formula>
+  is independent of <inline-formula><alternatives>
+  <tex-math><![CDATA[\textbf{X}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtext mathvariant="bold">𝐗</mml:mtext></mml:math></alternatives></inline-formula>
+  and centered at zero, the location parameter
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mu \in \mathbb{R}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>μ</mml:mi><mml:mo>∈</mml:mo><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle></mml:mrow></mml:math></alternatives></inline-formula>,
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[g_j \, : \, \mathbb{R} \to \mathbb{R}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>g</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mspace width="0.167em"></mml:mspace><mml:mo>:</mml:mo><mml:mspace width="0.167em"></mml:mspace><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:mo>→</mml:mo><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle></mml:mrow></mml:math></alternatives></inline-formula>
+  are smooth functions. Note that if <inline-formula><alternatives>
+  <tex-math><![CDATA[g_j( X_j ) = \beta_j \, X_j]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>g</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msub><mml:mi>β</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mspace width="0.167em"></mml:mspace><mml:msub><mml:mi>X</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+  for some <inline-formula><alternatives>
+  <tex-math><![CDATA[\beta_j \in \mathbb{R}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>β</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo>∈</mml:mo><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle></mml:mrow></mml:math></alternatives></inline-formula>
+  then <xref alt="Equation 1" rid="eqU003Amodel">Equation 1</xref>
+  reduces to a standard linear regression model. </p>
+  <p>The backfitting algorithm (Friedman &amp; Stuetzle
+  (<xref alt="1981" rid="ref-FriedmanStuetzle1981" ref-type="bibr">1981</xref>))
+  can be used to fit the model in
+  <xref alt="Equation 1" rid="eqU003Amodel">Equation 1</xref> with
+  kernel regression estimators for the smooth components
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[g_j]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>g</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:math></alternatives></inline-formula>.
+  It is based on the following observation: under
+  <xref alt="Equation 1" rid="eqU003Amodel">Equation 1</xref> the
+  additive components satisfy <inline-formula><alternatives>
+  <tex-math><![CDATA[g_j(x) = E [ Y - \mu - \sum_{\ell \ne j} g_\ell(X_\ell) | X_j = x ]]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>g</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>E</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mi>Y</mml:mi><mml:mo>−</mml:mo><mml:mi>μ</mml:mi><mml:mo>−</mml:mo><mml:msub><mml:mo>∑</mml:mo><mml:mrow><mml:mi>ℓ</mml:mi><mml:mo>≠</mml:mo><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:msub><mml:mi>g</mml:mi><mml:mi>ℓ</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>ℓ</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.
+  Thus, each <inline-formula><alternatives>
+  <tex-math><![CDATA[g_j]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>g</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  is iteratively computed by smoothing the partial residuals as
+  functions of <inline-formula><alternatives>
+  <tex-math><![CDATA[X_j]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>X</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:math></alternatives></inline-formula>.</p>
+  <p>It is well known that these estimators can be seriously affected by
+  a relatively small proportion of atypical observations in the training
+  set. Boente et al.
+  (<xref alt="2017" rid="ref-BoenteMartinezSalibian2017" ref-type="bibr">2017</xref>)
+  proposed a robust version of backfitting, which is implemented in the
+  <monospace>RBF</monospace> package. Intuitively, the idea is to use
+  the backfitting algorithm with robust smoothers, such as kernel-based
+  M-estimators (Boente &amp; Fraiman
+  (<xref alt="1989" rid="ref-BoenteFraiman1989" ref-type="bibr">1989</xref>)).
+  These robust estimators solve: <disp-formula><alternatives>
+  <tex-math><![CDATA[ \min_{\mu, g_1, \ldots, g_d} E \left[ \, \rho \left( \frac{Y - \mu -
+  \sum_{j=1}^d g_j(X_j) }{\sigma} \right) \right]  \, , 
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:munder><mml:mo>min</mml:mo><mml:mrow><mml:mi>μ</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>g</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:mi>…</mml:mi><mml:mo>,</mml:mo><mml:msub><mml:mi>g</mml:mi><mml:mi>d</mml:mi></mml:msub></mml:mrow></mml:munder><mml:mi>E</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mspace width="0.167em"></mml:mspace><mml:mi>ρ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mfrac><mml:mrow><mml:mi>Y</mml:mi><mml:mo>−</mml:mo><mml:mi>μ</mml:mi><mml:mo>−</mml:mo><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>d</mml:mi></mml:munderover><mml:msub><mml:mi>g</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow><mml:mi>σ</mml:mi></mml:mfrac><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mspace width="0.167em"></mml:mspace><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+  where the minimization is computed over <inline-formula><alternatives>
+  <tex-math><![CDATA[\mu \in \mathbb{R}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>μ</mml:mi><mml:mo>∈</mml:mo><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle></mml:mrow></mml:math></alternatives></inline-formula>,
+  and functions <inline-formula><alternatives>
+  <tex-math><![CDATA[g_j]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>g</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  with <inline-formula><alternatives>
+  <tex-math><![CDATA[E[g_j(X_j)] = 0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>E</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:msub><mml:mi>g</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mn>0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[E[g_j^2(X_j)] < \infty]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>E</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:msubsup><mml:mi>g</mml:mi><mml:mi>j</mml:mi><mml:mn>2</mml:mn></mml:msubsup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:mo>&lt;</mml:mo><mml:mi>∞</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.
+  The loss function <inline-formula><alternatives>
+  <tex-math><![CDATA[\rho : \mathbb{R} \to \mathbb{R}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>ρ</mml:mi><mml:mo>:</mml:mo><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:mo>→</mml:mo><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle></mml:mrow></mml:math></alternatives></inline-formula>
+  is even, non-decreasing and non-negative, and
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\sigma]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>σ</mml:mi></mml:math></alternatives></inline-formula>
+  is the residual scale. Different choices of the loss function
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\rho]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ρ</mml:mi></mml:math></alternatives></inline-formula>
+  yield fits with varying robustness properties. Typical choices for
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\rho]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ρ</mml:mi></mml:math></alternatives></inline-formula>
+  are Tukey’s bisquare family and Huber’s loss (Maronna et al.
+  (<xref alt="2018" rid="ref-maronna2018robust" ref-type="bibr">2018</xref>)).
+  Note that when <inline-formula><alternatives>
+  <tex-math><![CDATA[\rho(t) = t^2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>ρ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msup><mml:mi>t</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>,
+  this approach reduces to the standard backfitting.</p>
+</sec>
+<sec id="illustration">
+  <title>Illustration</title>
+  <p>The <monospace>airquality</monospace> data set contains 153 daily
+  air quality measurements in the New York region between May and
+  September, 1973 (Chambers et al.
+  (<xref alt="1983" rid="ref-ChambersClevelandKleinerTukey1983" ref-type="bibr">1983</xref>)).
+  The interest is in modeling the mean Ozone
+  (<inline-formula><alternatives>
+  <tex-math><![CDATA[\mbox{O}_3]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mtext mathvariant="normal">O</mml:mtext><mml:mn>3</mml:mn></mml:msub></mml:math></alternatives></inline-formula>)
+  concentration as a function of 3 potential explanatory variables:
+  solar radiance in the frequency band 4000-7700 (Solar.R), wind speed
+  (Wind) and temperature (Temp). We focus on the 111 complete entries in
+  the data set.</p>
+  <p>Since the plot in
+  <xref alt="Figure 1" rid="figU003Ascatterplot">Figure 1</xref>
+  suggests that the relationship between ozone and the other variables
+  is not linear, we propose using an additive regression model of the
+  form
+  <named-content id="eqU003Aozone-model" content-type="equation"><disp-formula><alternatives>
+  <tex-math><![CDATA[\label{eq:ozone-model}
+  \mbox{Ozone}=\mu+g_{1}(\mbox{Solar.R})+g_{2}(\mbox{Wind})+g_{3}(\mbox{Temp}) + \varepsilon \, .]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mtext mathvariant="normal">Ozone</mml:mtext><mml:mo>=</mml:mo><mml:mi>μ</mml:mi><mml:mo>+</mml:mo><mml:msub><mml:mi>g</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtext mathvariant="normal">Solar.R</mml:mtext><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:msub><mml:mi>g</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtext mathvariant="normal">Wind</mml:mtext><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:msub><mml:mi>g</mml:mi><mml:mn>3</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtext mathvariant="normal">Temp</mml:mtext><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mi>ε</mml:mi><mml:mspace width="0.167em"></mml:mspace><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></named-content></p>
+  <fig>
+    <caption><p>Scatter plot of the <monospace>airquality</monospace>
+    data. The response variable is Ozone.
+    <styled-content id="figU003Ascatterplot"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="ScatterPlot.png" xlink:title="" />
+  </fig>
+  <p>To fit the model above we use robust local linear kernel
+  M-estimators and Tukey’s bisquare loss function. These choices are set
+  using the arguments <monospace>degree = 1</monospace> and
+  <monospace>type='Tukey'</monospace> in the call to the function
+  <monospace>backf.rob</monospace>. The model is specified with the
+  standard formula notation in R. The argument
+  <monospace>windows</monospace> is a vector with the bandwidths to be
+  used with each kernel smoother. To estimate optimal values we used a
+  robust leave-one-out cross alidation approach (Boente et al.
+  (<xref alt="2017" rid="ref-BoenteMartinezSalibian2017" ref-type="bibr">2017</xref>))
+  which resulted in the following bandwidths:</p>
+  <preformat>R&gt; bandw &lt;- c(136.7285, 10.67314, 4.764985)</preformat>
+  <p>The code below computes the corresponding robust backfitting
+  estimator for
+  <xref alt="Equation 2" rid="eqU003Aozone-model">Equation 2</xref>:</p>
+  <preformat>R&gt; data(airquality)
+R&gt; library(RBF)
+R&gt; ccs &lt;- complete.cases(airquality)
+R&gt; fit.full &lt;- backf.rob(Ozone ~ Solar.R + Wind + Temp, windows=bandw, 
+                   degree=1, type='Tukey', subset = ccs, data=airquality)</preformat>
+  <p>To compare the robust and classical estimators we use the R package
+  <monospace>gam</monospace>. Optimal bandwidths were estimated using
+  leave-one-out cross-validation as before.</p>
+  <preformat>R&gt; library(gam)
+R&gt; aircomplete &lt;- airquality[ccs, c('Ozone', 'Solar.R', 'Wind', 'Temp')]
+R&gt; fit.gam &lt;- gam(Ozone ~ lo(Solar.R, span=.7) + lo(Wind, span=.7) + 
+                  lo(Temp, span=.5), data=aircomplete)</preformat>
+  <p><xref alt="Figure 2" rid="figU003Aozonetodos">Figure 2</xref>
+  contains partial residuals plots and both sets of estimated functions:
+  blue solid lines indicate the robust fit and magenta dashed ones the
+  classical one.</p>
+  <fig>
+    <caption><p>Partial residuals and fits for the
+    <monospace>airquality</monospace> data. Robust and classical fits
+    are shown with solid blue and dashed magenta lines, respectively.
+    <styled-content id="figU003Aozonetodos"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="Figure-ozone-todos.png" xlink:title="" />
+  </fig>
+  <p>The two fits differ mainly on the estimated effects of wind speed
+  and temperature. The classical estimate for
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[g_1(\mbox{Temp})]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>g</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtext mathvariant="normal">Temp</mml:mtext><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  is consistently lower than the robust counterpart for
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mbox{Temp} \ge 85]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mtext mathvariant="normal">Temp</mml:mtext><mml:mo>≥</mml:mo><mml:mn>85</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>.
+  For wind speed, the non-robust estimate <inline-formula><alternatives>
+  <tex-math><![CDATA[\hat{g}_2(\mbox{Wind})]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mover><mml:mi>g</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover><mml:mn>2</mml:mn></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtext mathvariant="normal">Wind</mml:mtext><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  suggests a higher effect over Ozone concentrations for low wind speeds
+  than the one given by the robust estimate, and the opposite difference
+  for higher speeds.</p>
+  <p>Residuals from a robust fit can generally be used to detect the
+  presence of atypical observations in the training data.
+  <xref alt="Figure 3" rid="figU003Aboxplot">Figure 3</xref> displays a
+  boxplot of these residuals. We note 4 possible outlying points
+  (indicated with red circles).</p>
+  <fig>
+    <caption><p>Boxplot of the residuals obtained using the robust fit.
+    Potential outliers are highlighed with solid red circles.
+    <styled-content id="figU003Aboxplot"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="Figure-ozone-boxplot.png" xlink:title="" />
+  </fig>
+  <p>To investigate whether the differences between the robust and
+  non-robust estimators are due to the outliers, we recomputed the
+  classical fit after removing them.
+  <xref alt="Figure 4" rid="figU003Aozoneout">Figure 4</xref> shows the
+  estimated curves obtained with the classical estimator using the
+  clean data together with the robust ones (computed on the whole data
+  set). Outliers are highlighted in red. Note that both fits are now
+  very close. An intuitive interpretation is that the robust fit has
+  automatically down-weighted potential outliers and produced estimates
+  very similar to the classical ones applied to the
+  clean observations.</p>
+  <fig>
+    <caption><p>Plots of estimated curves and partial residuals. The
+    solid blue lines indicate the robust fit computed on the whole data
+    set, while the classical estimators computed on the cleandata are
+    shown with dashed magenta lines. Larger red circles indicate
+    potential outliers.
+    <styled-content id="figU003Aozoneout"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="Figure-ozone-out-cla-rob.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="availability">
+  <title>Availability</title>
+  <p>The software is available at the Comprehensive R Archive Network
+  <ext-link ext-link-type="uri" xlink:href="https://CRAN.R-project.org/">CRAN</ext-link>
+  and also at the GitHub repository
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/msalibian/RBF">https://github.com/msalibian/RBF</ext-link>.
+  The GitHub repository also contains detailed scripts reproducing the
+  data analysis above.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This research was partially supported by: 20020170100022BA from the
+  Universidad de Buenos Aires; project PICT 2018-00740 from ANPCYT;
+  Internal Projects CD-CBLUJ 301/19 and CD-CBLUJ 204/19 from the
+  Department of Basic Science of the Universidad Nacional de Luján
+  (UNLu); the Researchers in Training Project RESREC-LUJ 224/19 (UNLu);
+  and by the Natural Sciences and Engineering Research Council of Canada
+  (Discovery Grant RGPIN-2016-04288).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-BoenteMartinezSalibian2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Boente</surname><given-names>Graciela</given-names></name>
+          <name><surname>Martı́nez</surname><given-names>Alejandra</given-names></name>
+          <name><surname>Salibian-Barrera</surname><given-names>Matias</given-names></name>
+        </person-group>
+        <article-title>Robust estimators for additive models using backfitting</article-title>
+        <source>Journal of Nonparametric Statistics</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>29</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1080/10485252.2017.1369077</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-BoenteFraiman1989">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Boente</surname><given-names>Graciela</given-names></name>
+          <name><surname>Fraiman</surname><given-names>Ricardo</given-names></name>
+        </person-group>
+        <article-title>Robust nonparametric regression estimation</article-title>
+        <source>Journal of Multivariate Analysis</source>
+        <year iso-8601-date="1989">1989</year>
+        <volume>29</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1016/0047-259X(89)90023-7</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ChambersClevelandKleinerTukey1983">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Chambers</surname><given-names>J. M.</given-names></name>
+          <name><surname>Cleveland</surname><given-names>W. S.</given-names></name>
+          <name><surname>Kleiner</surname><given-names>B.</given-names></name>
+          <name><surname>Tukey</surname><given-names>P. A.</given-names></name>
+        </person-group>
+        <source>Graphical methods for data analysis</source>
+        <publisher-name>Chapman &amp; Hall</publisher-name>
+        <publisher-loc>London</publisher-loc>
+        <year iso-8601-date="1983">1983</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-FriedmanStuetzle1981">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Friedman</surname><given-names>J. H.</given-names></name>
+          <name><surname>Stuetzle</surname><given-names>W.</given-names></name>
+        </person-group>
+        <article-title>Projection pursuit regression</article-title>
+        <source>Journal of the American Statistical Association</source>
+        <year iso-8601-date="1981">1981</year>
+        <volume>76</volume>
+        <issue>376</issue>
+        <pub-id pub-id-type="doi">10.2307/2287576</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-HastieTibshirani1990">
+      <element-citation publication-type="book">
+        <source>Generalized additive models</source>
+        <person-group person-group-type="editor">
+          <name><surname>Hastie</surname><given-names>T. J.</given-names></name>
+          <name><surname>Tibshirani</surname><given-names>R. J.</given-names></name>
+        </person-group>
+        <publisher-name>Chapman &amp; Hall</publisher-name>
+        <publisher-loc>London</publisher-loc>
+        <year iso-8601-date="1990">1990</year>
+        <pub-id pub-id-type="doi">10.1201/9780203753781-6</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-maronna2018robust">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Maronna</surname><given-names>Ricardo A.</given-names></name>
+          <name><surname>Martin</surname><given-names>R. Douglas</given-names></name>
+          <name><surname>Yohai</surname><given-names>Victor J.</given-names></name>
+          <name><surname>Salibian-Barrera</surname><given-names>Matias</given-names></name>
+        </person-group>
+        <source>Robust statistics: Theory and methods (with r)</source>
+        <publisher-name>John Wiley &amp; Sons</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-gam">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Hastie</surname><given-names>Trevor</given-names></name>
+        </person-group>
+        <source>Gam: Generalized additive models</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://CRAN.R-project.org/package=gam</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-RBF">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Salibian-Barrera</surname><given-names>Matias</given-names></name>
+          <name><surname>Martı́nez</surname><given-names>Alejandra</given-names></name>
+        </person-group>
+        <source>RBF: Robust backfitting</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://CRAN.R-project.org/package=RBF</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

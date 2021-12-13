@@ -1,0 +1,630 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1190</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01190</article-id>
+<title-group>
+<article-title>Multiblock PLS: Block dependent prediction modeling for
+Python</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-1552-0220</contrib-id>
+<string-name>Andreas Baum</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-3403-7624</contrib-id>
+<string-name>Laurent Vermue</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Applied Mathematics and Computer Science,
+Technical University of Denmark, Richard Petersens Plads 324, DK-2800
+Kgs. Lyngby, Denmark</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-01-06">
+<day>6</day>
+<month>1</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>34</issue>
+<fpage>1190</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>multivariate statistics</kwd>
+<kwd>data fusion</kwd>
+<kwd>latent variables</kwd>
+<kwd>exploratory analysis</kwd>
+<kwd>data integration</kwd>
+<kwd>MB-PLS</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>Partial Least Squares (PLS) regression is a statistical method for
+  supervised multivariate analysis. It relates two data blocks
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\textbf{X}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtext mathvariant="bold">𝐗</mml:mtext></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\textbf{Y}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtext mathvariant="bold">𝐘</mml:mtext></mml:math></alternatives></inline-formula>
+  to each other with the aim of establishing a prediction model. When
+  deployed in production, this model can be used to predict an outcome
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\textbf{y}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtext mathvariant="bold">𝐲</mml:mtext></mml:math></alternatives></inline-formula>
+  from a newly measured feature vector <inline-formula><alternatives>
+  <tex-math><![CDATA[\textbf{x}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtext mathvariant="bold">𝐱</mml:mtext></mml:math></alternatives></inline-formula>.
+  PLS is popular in chemometrics, process control and other analytic
+  fields, due to its striking advantages, namely the ability to analyze
+  small sample sizes and the ability to handle high-dimensional data
+  with cross-correlated features (where Ordinary Least Squares
+  regression typically fails). In addition, and in contrast to many
+  other machine learning approaches, PLS models can be interpreted using
+  its latent variable structure just like principal components can be
+  interpreted for a PCA analysis.</p>
+  <p>Multivariate data is often structured in blocks,
+  e.g. <inline-formula><alternatives>
+  <tex-math><![CDATA[\textbf{X}_1]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mtext mathvariant="bold">𝐗</mml:mtext><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\textbf{X}_2]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mtext mathvariant="bold">𝐗</mml:mtext><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>,
+  … , <inline-formula><alternatives>
+  <tex-math><![CDATA[\textbf{X}_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mtext mathvariant="bold">𝐗</mml:mtext><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>.
+  This could mean that one has obtained data from two different analytic
+  methodologies for a similar set of samples, which may indicate two
+  totally independent feature spaces. In such cases it is often
+  important to understand how each data block contributes to the
+  prediction of <inline-formula><alternatives>
+  <tex-math><![CDATA[\textbf{Y}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtext mathvariant="bold">𝐘</mml:mtext></mml:math></alternatives></inline-formula>.
+  Examples for data measured in blocks could be the following.</p>
+  <list list-type="order">
+    <list-item>
+      <p>It can be of interest to relate patient clinical records to
+      data obtained through different high-throughput omics
+      measurements. These data could typically be structured in blocks
+      referring to genomics, transciptomics, proteomics, metabolomics
+      etc.</p>
+    </list-item>
+    <list-item>
+      <p>Spectroscopic methods are useful to predict and assure food
+      quality parameters. When measuring food samples by several
+      different spectroscopic methods, e.g. by applying near infrared
+      and UV-vis spectroscopy, it is meaningful to combine the data
+      blocks to obtain reliable prediction models.</p>
+    </list-item>
+    <list-item>
+      <p>A process utilizing fermentation technology is typically
+      carried out in several sequential production phases, i.e. seed and
+      main fermentation phase. If sensor data is available for all
+      production phases it is meaningful to include these as individual
+      data blocks when establishing prediction models for quality
+      control parameters, such as product yield.</p>
+    </list-item>
+  </list>
+  <p>Several Data Fusion approaches were proposed to establish combined
+  prediction models from such multiblock data
+  (<xref alt="Li et al., 2016" rid="ref-liU003A16" ref-type="bibr">Li et
+  al., 2016</xref>). One of the proposed methods is Multiblock-PLS
+  (MB-PLS)
+  (<xref alt="Westerhuis et al., 1998" rid="ref-westerhuisU003A98" ref-type="bibr">Westerhuis
+  et al., 1998</xref>). It is closely related to PLS regression, but
+  instead of obtaining an interpretative model for the entire
+  (concatenated) data matrix <inline-formula><alternatives>
+  <tex-math><![CDATA[\textbf{X}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtext mathvariant="bold">𝐗</mml:mtext></mml:math></alternatives></inline-formula>
+  one obtains model parameters for each individual data block
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\textbf{X}_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mtext mathvariant="bold">𝐗</mml:mtext><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>.
+  Furthermore, it provides a relative importance measure,
+  i.e. expressing how much each block <inline-formula><alternatives>
+  <tex-math><![CDATA[\textbf{X}_i]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mtext mathvariant="bold">𝐗</mml:mtext><mml:mi>i</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  contributes to the prediction of <inline-formula><alternatives>
+  <tex-math><![CDATA[\textbf{Y}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtext mathvariant="bold">𝐘</mml:mtext></mml:math></alternatives></inline-formula>.
+  Subsequently, this information can be used to recognize block specific
+  patterns in the data.</p>
+  <p>At the current stage software packages for MB-PLS exist for Matlab
+  (<ext-link ext-link-type="uri" xlink:href="http://www.models.life.ku.dk/MBToolbox">http://www.models.life.ku.dk/MBToolbox</ext-link>)
+  and R
+  (<xref alt="Bougeard &amp; Dray, 2018" rid="ref-bougeardU003A18" ref-type="bibr">Bougeard
+  &amp; Dray, 2018</xref>). In the following sections we give a brief
+  introduction to the statistical method and its implementation. The
+  package is distributed under the BSD-3-Clause license and made
+  available at
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/DTUComputeStatisticsAndDataAnalysis/MBPLS">https://github.com/DTUComputeStatisticsAndDataAnalysis/MBPLS</ext-link>
+  together with several introductory Jupyter notebook examples. It is
+  also available as <monospace>pip</monospace> installable Python
+  package
+  (<ext-link ext-link-type="uri" xlink:href="https://pypi.org/project/mbpls/">https://pypi.org/project/mbpls/</ext-link>)
+  and comes with a Read-the-Docs documentation
+  (<ext-link ext-link-type="uri" xlink:href="https://mbpls.readthedocs.io">https://mbpls.readthedocs.io</ext-link>).</p>
+</sec>
+<sec id="methods">
+  <title>Methods</title>
+  <p>The MB-PLS package can be utilized for PLS and MB-PLS regression.
+  The statistical background is briefly introduced in the following.
+  More detailed information is given in the <monospace>mbpls</monospace>
+  help of the Python package
+  (<ext-link ext-link-type="uri" xlink:href="https://mbpls.readthedocs.io/en/latest/mbpls.html">https://mbpls.readthedocs.io/en/latest/mbpls.html</ext-link>).</p>
+  <sec id="pls">
+    <title>PLS</title>
+    <p>PLS was introduced by Wold et al.
+    (<xref alt="1984" rid="ref-woldU003A84" ref-type="bibr">1984</xref>)
+    and aims at finding a suitable subspace projection
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\textbf{w}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtext mathvariant="bold">𝐰</mml:mtext></mml:math></alternatives></inline-formula>
+    which maximizes co-variance between a so called score vector
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\textbf{t}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtext mathvariant="bold">𝐭</mml:mtext></mml:math></alternatives></inline-formula>
+    and a response vector <inline-formula><alternatives>
+    <tex-math><![CDATA[\textbf{y}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtext mathvariant="bold">𝐲</mml:mtext></mml:math></alternatives></inline-formula>
+    that will yield a least squares solution. The formal PLS criterion
+    for univariate responses <inline-formula><alternatives>
+    <tex-math><![CDATA[\textbf{y}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtext mathvariant="bold">𝐲</mml:mtext></mml:math></alternatives></inline-formula>
+    is given in eq. <xref alt="[eq1]" rid="eq1">[eq1]</xref>.
+    <named-content id="eq1" content-type="equation"><disp-formula><alternatives>
+    <tex-math><![CDATA[
+        \underset{\textbf{w}}{\mathrm{arg max}}\; \left(cov(\textbf{t}, \textbf{y}) \: 
+        \middle |  \: min\left(\sum_{i=1}^{I} \sum_{j=1}^{J}(\textbf{x}_{ij} - 
+        \textbf{t}_{i}\textbf{w}_{j})^2\right)
+        \land \Vert \textbf{w} \Vert = 1 \right ) \tag{1} \label{eq1}
+    ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:munder><mml:mstyle mathvariant="normal"><mml:mi>a</mml:mi><mml:mi>r</mml:mi><mml:mi>g</mml:mi><mml:mi>m</mml:mi><mml:mi>a</mml:mi><mml:mi>x</mml:mi></mml:mstyle><mml:mtext mathvariant="bold">𝐰</mml:mtext></mml:munder><mml:mspace width="0.278em"></mml:mspace><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>c</mml:mi><mml:mi>o</mml:mi><mml:mi>v</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mtext mathvariant="bold">𝐭</mml:mtext><mml:mo>,</mml:mo><mml:mtext mathvariant="bold">𝐲</mml:mtext><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mspace width="0.222em"></mml:mspace><mml:mo stretchy="true" form="infix">|</mml:mo><mml:mspace width="0.222em"></mml:mspace><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>I</mml:mi></mml:munderover><mml:munderover><mml:mo>∑</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mi>J</mml:mi></mml:munderover><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mtext mathvariant="bold">𝐱</mml:mtext><mml:mrow><mml:mi>i</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mtext mathvariant="bold">𝐭</mml:mtext><mml:mi>i</mml:mi></mml:msub><mml:msub><mml:mtext mathvariant="bold">𝐰</mml:mtext><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mn>2</mml:mn></mml:msup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>∧</mml:mo><mml:mo stretchy="false" form="postfix">‖</mml:mo><mml:mtext mathvariant="bold">𝐰</mml:mtext><mml:mo stretchy="false" form="postfix">‖</mml:mo><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula></named-content></p>
+    <p>This procedure is typically repeated to find
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[K]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>K</mml:mi></mml:math></alternatives></inline-formula>
+    latent variables (LV). In each latent variable step, the score
+    vector <inline-formula><alternatives>
+    <tex-math><![CDATA[\textbf{t}_k]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mtext mathvariant="bold">𝐭</mml:mtext><mml:mi>k</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    is subsequently projected onto its respective matrix
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\textbf{X}_k]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mtext mathvariant="bold">𝐗</mml:mtext><mml:mi>k</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    to find the loading vector <inline-formula><alternatives>
+    <tex-math><![CDATA[\textbf{p}_k]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mtext mathvariant="bold">𝐩</mml:mtext><mml:mi>k</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    (eq. <xref alt="[eq2]" rid="eq2">[eq2]</xref>). Once found,
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\textbf{X}_{k}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mtext mathvariant="bold">𝐗</mml:mtext><mml:mi>k</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+    is deflated by the explained variance (eq.
+    <xref alt="[eq3]" rid="eq3">[eq3]</xref>) and the next latent
+    variable <inline-formula><alternatives>
+    <tex-math><![CDATA[k+1]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>k</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+    can be calculated using <inline-formula><alternatives>
+    <tex-math><![CDATA[\textbf{X}_{k+1}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mtext mathvariant="bold">𝐗</mml:mtext><mml:mrow><mml:mi>k</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>.</p>
+    <p><named-content id="eq2" content-type="equation"><disp-formula><alternatives>
+    <tex-math><![CDATA[
+        \textbf{p}_{k} = \textbf{X}_k\textbf{t}_{k} \tag{2} \label{eq2}
+    ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mtext mathvariant="bold">𝐩</mml:mtext><mml:mi>k</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:msub><mml:mtext mathvariant="bold">𝐗</mml:mtext><mml:mi>k</mml:mi></mml:msub><mml:msub><mml:mtext mathvariant="bold">𝐭</mml:mtext><mml:mi>k</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></disp-formula></named-content>
+    <named-content id="eq3" content-type="equation"><disp-formula><alternatives>
+    <tex-math><![CDATA[
+        \textbf{X}_{k+1} = \textbf{X}_{k} - \textbf{t}_{k} \textbf{p}_{k^T} \tag{3} \label{eq3}
+    ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mtext mathvariant="bold">𝐗</mml:mtext><mml:mrow><mml:mi>k</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:msub><mml:mtext mathvariant="bold">𝐗</mml:mtext><mml:mi>k</mml:mi></mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mtext mathvariant="bold">𝐭</mml:mtext><mml:mi>k</mml:mi></mml:msub><mml:msub><mml:mtext mathvariant="bold">𝐩</mml:mtext><mml:msup><mml:mi>k</mml:mi><mml:mi>T</mml:mi></mml:msup></mml:msub></mml:mrow></mml:math></alternatives></disp-formula></named-content></p>
+    <p>Algorithms to perform PLS regression include the
+    <bold>N</bold>onlinear <bold>I</bold>terative <bold>PA</bold>rtial
+    <bold>L</bold>east <bold>S</bold>quares (NIPALS)
+    (<xref alt="Wold et al., 1984" rid="ref-woldU003A84" ref-type="bibr">Wold
+    et al., 1984</xref>), <bold>UNI</bold>versal <bold>PA</bold>rtial
+    <bold>L</bold>east <bold>S</bold>quares (UNIPALS)
+    (<xref alt="Dunn III et al., 1989" rid="ref-dunnU003A89" ref-type="bibr">Dunn
+    III et al., 1989</xref>), Kernel UNIPALS
+    (<xref alt="Lindgren et al., 1993" rid="ref-lindgrenU003A93" ref-type="bibr">Lindgren
+    et al., 1993</xref>;
+    <xref alt="Rännar et al., 1994" rid="ref-rannarU003A94" ref-type="bibr">Rännar
+    et al., 1994</xref>,
+    <xref alt="1995" rid="ref-rannarU003A95" ref-type="bibr">1995</xref>)
+    and SIMPLS algorithm
+    (<xref alt="de Jong, 1993" rid="ref-jongU003A93" ref-type="bibr">de
+    Jong, 1993</xref>). While NIPALS represents an iterative approach,
+    the other algorithms are based on Singular Value Decomposition
+    (SVD). All the above mentioned algorithms are implemented in the
+    MB-PLS package. Benchmark results and comparisons to other Software
+    packages are provided below.</p>
+  </sec>
+  <sec id="mb-pls">
+    <title>MB-PLS</title>
+    <fig>
+      <caption><p>The figure illustrates the extraction of a single LV
+      (<inline-formula><alternatives>
+      <tex-math><![CDATA[k = 1]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>k</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>).
+      MB-PLS offers extra exploratory features for each block,
+      i.e. block scores, block loadings and block importances
+      (BIP).<styled-content id="figU003Ambpls"></styled-content></p></caption>
+      <graphic mimetype="application" mime-subtype="pdf" xlink:href="mbpls_illustration.pdf" xlink:title="" />
+    </fig>
+    <p>MB-PLS can be understood as an extension of PLS to incorporate
+    several data blocks <inline-formula><alternatives>
+    <tex-math><![CDATA[\textbf{X}_1, ... \: , \textbf{X}_i]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mtext mathvariant="bold">𝐗</mml:mtext><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mi>.</mml:mi><mml:mspace width="0.222em"></mml:mspace><mml:mo>,</mml:mo><mml:msub><mml:mtext mathvariant="bold">𝐗</mml:mtext><mml:mi>i</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+    which all share a common sample dimension. The prediction accuracy
+    does not deviate from normal PLS, if all data blocks were
+    concatenated into a single block, but the advantage of MB-PLS is to
+    gain extra model interpretability concerning the underlying block
+    structure of the data. For each LV one obtains extra block scores,
+    block loadings and block importances (BIP). The extraction of a
+    single LV using MB-PLS is illustrated in figure
+    <xref alt="1" rid="figU003Ambpls">1</xref>. The results are read in
+    a fashion that 67% variance in <inline-formula><alternatives>
+    <tex-math><![CDATA[\textbf{Y}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtext mathvariant="bold">𝐘</mml:mtext></mml:math></alternatives></inline-formula>
+    are explained by the first LV. The two blocks
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\textbf{X}_1]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mtext mathvariant="bold">𝐗</mml:mtext><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[\textbf{X}_2]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mtext mathvariant="bold">𝐗</mml:mtext><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+    contribute to the prediction of the 67% with their relative BIPs,
+    43% and 57%, respectively. More important blocks result in more
+    influential block loadings and contribute stronger to the prediction
+    of <inline-formula><alternatives>
+    <tex-math><![CDATA[\textbf{Y}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtext mathvariant="bold">𝐘</mml:mtext></mml:math></alternatives></inline-formula>.
+    Hence, interpretation of patterns among block scores with high
+    importance are recommended.</p>
+    <p>To assert that the BIP is a meaningful indicator it is necessary
+    to standardize the data prior to MB-PLS analysis. When
+    standardization is employed all features in all blocks have a
+    variance of <inline-formula><alternatives>
+    <tex-math><![CDATA[1]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>1</mml:mn></mml:math></alternatives></inline-formula>.
+    For post-hoc interpretation of the loadings an inverse
+    transformation is carried out to ensure straight forward
+    interpretation of the results.</p>
+  </sec>
+</sec>
+<sec id="software-and-implementation">
+  <title>Software and Implementation</title>
+  <p>The package is written in pure Python 3. In its core it builds on
+  Numpy and Scipy for efficient data handling and fast mathematical
+  operations of big data-sets. To achieve a fast implementation all
+  algorithms using SVD employ Scipy’s partial SVD capability, i.e. by
+  only calculating the first singular value at each PLS iteration.
+  Multiple matrix multiplications use the optimized Numpy multi-array
+  multiplication. In addition, the MB-PLS implementation can handle
+  missing data without prior imputation based on the sparse NIPALS
+  algorithm by Martens &amp; Martens
+  (<xref alt="2001" rid="ref-martensU003A01" ref-type="bibr">2001</xref>).
+  The overall code design follows the structure and philosophy of
+  Scikit-learn
+  (<xref alt="Pedregosa et al., 2011" rid="ref-pedregosaU003A11" ref-type="bibr">Pedregosa
+  et al., 2011</xref>). Therefore, objects are instantiated in a
+  Scikit-learn manner and can be accessed with the same methods,
+  i.e. fit, predict, transform and score. Furthermore, Scikit-learn’s
+  base classes and validation methods are incorporated. As a result, all
+  objects are fully compatible to Scikit-learn and, thus, allow the use
+  of model selection functions, e.g. cross validation and grid search,
+  as well as a processing pipeline. For exploratory analysis, each
+  fitted model contains a custom <inline-formula><alternatives>
+  <tex-math><![CDATA[\texttt{plot}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtext mathvariant="monospace">𝚙𝚕𝚘𝚝</mml:mtext></mml:math></alternatives></inline-formula>
+  method that the fitted model attributes in a meaningful manner using
+  Matplotlib, which allows a straight forward evaluation of the MBPLS
+  results without requiring any additional coding.</p>
+</sec>
+<sec id="benchmark">
+  <title>Benchmark</title>
+  <fig>
+    <caption><p>Comparison of run-times based on different data-set
+    sizes<styled-content id="figU003Aruntimes"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="combined_comparison.png" xlink:title="" />
+  </fig>
+  <p>To compare the four algorithms, the run-times are analyzed for
+  different data-set sizes with two basic shapes, i.e. non-symmetric
+  shapes with more samples than variables
+  (<inline-formula><alternatives>
+  <tex-math><![CDATA[N>P]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>N</mml:mi><mml:mo>&gt;</mml:mo><mml:mi>P</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>)
+  or vice versa (<inline-formula><alternatives>
+  <tex-math><![CDATA[N<P]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>N</mml:mi><mml:mo>&lt;</mml:mo><mml:mi>P</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>)
+  and symmetric shapes (<inline-formula><alternatives>
+  <tex-math><![CDATA[N=P]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>N</mml:mi><mml:mo>=</mml:mo><mml:mi>P</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>).
+  To simulate the multiblock and multivariate behaviour, each data-set
+  is split into two <inline-formula><alternatives>
+  <tex-math><![CDATA[\textbf{X}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtext mathvariant="bold">𝐗</mml:mtext></mml:math></alternatives></inline-formula>-blocks
+  with the size <inline-formula><alternatives>
+  <tex-math><![CDATA[N\times\frac{P}{2}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>N</mml:mi><mml:mo>×</mml:mo><mml:mfrac><mml:mi>P</mml:mi><mml:mn>2</mml:mn></mml:mfrac></mml:mrow></mml:math></alternatives></inline-formula>
+  and accompanied by a <inline-formula><alternatives>
+  <tex-math><![CDATA[\textbf{Y}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtext mathvariant="bold">𝐘</mml:mtext></mml:math></alternatives></inline-formula>-block
+  of size <inline-formula><alternatives>
+  <tex-math><![CDATA[N\times10]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>N</mml:mi><mml:mo>×</mml:mo><mml:mn>10</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>.
+  The data is randomly generated for each run, so that the obtained
+  times exhibit worst-case behaviour, since there are no actual latent
+  structures. All algorithms are set to find the first 20 LVs and are
+  run three times for each data-set size on a machine with two Intel ®
+  Xeon ® X5650 @ <inline-formula><alternatives>
+  <tex-math><![CDATA[2.67~GHz]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>2.67</mml:mn><mml:mspace width="0.222em"></mml:mspace><mml:mi>G</mml:mi><mml:mi>H</mml:mi><mml:mi>z</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  processors and <inline-formula><alternatives>
+  <tex-math><![CDATA[48~GB]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>48</mml:mn><mml:mspace width="0.222em"></mml:mspace><mml:mi>G</mml:mi><mml:mi>B</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  RAM.</p>
+  <p>As to be seen in both both plots of figure
+  <xref alt="2" rid="figU003Aruntimes">2</xref> all algorithms
+  implemented in the Python mbpls package substantially outperform the
+  above mentioned R-package Ade4-MBPLS by Bougeard &amp; Dray
+  (<xref alt="2018" rid="ref-bougeardU003A18" ref-type="bibr">2018</xref>),
+  which was run on the same machine. In general NIPALS is the fastest
+  multiblock algorithm that is only outperformed by the SIMPLS
+  algorithm, which only supports single block PLS. However, figure
+  <xref alt="2" rid="figU003Aruntimes">2</xref>a shows how the KERNEL
+  algorithm performs progressively better in cases where
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[N>>P]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>N</mml:mi><mml:mo>&gt;</mml:mo><mml:mo>&gt;</mml:mo><mml:mi>P</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  or <inline-formula><alternatives>
+  <tex-math><![CDATA[N<<P]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>N</mml:mi><mml:mo>&lt;</mml:mo><mml:mo>&lt;</mml:mo><mml:mi>P</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.
+  As to be seen in this plot, the runtime of this algorithm is a
+  combination of an exponential part given by the right plot and
+  dependent on <inline-formula><alternatives>
+  <tex-math><![CDATA[min(N,P)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>N</mml:mi><mml:mo>,</mml:mo><mml:mi>P</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  and a linear part defined by <inline-formula><alternatives>
+  <tex-math><![CDATA[diff(N,P)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>d</mml:mi><mml:mi>i</mml:mi><mml:mi>f</mml:mi><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>N</mml:mi><mml:mo>,</mml:mo><mml:mi>P</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.
+  Due to the exponential part, <inline-formula><alternatives>
+  <tex-math><![CDATA[min(N,P)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>m</mml:mi><mml:mi>i</mml:mi><mml:mi>n</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>N</mml:mi><mml:mo>,</mml:mo><mml:mi>P</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  has to be considered carefully when choosing the KERNEL algorithm over
+  NIPALS.</p>
+  <p>An important feature of this Python mbpls package is its invariance
+  to shape rotations, i.e. it obtains the same run-times for both
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[N>P]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>N</mml:mi><mml:mo>&gt;</mml:mo><mml:mi>P</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[N<P]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>N</mml:mi><mml:mo>&lt;</mml:mo><mml:mi>P</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  given the same ratio <inline-formula><alternatives>
+  <tex-math><![CDATA[\frac{N}{P}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mfrac><mml:mi>N</mml:mi><mml:mi>P</mml:mi></mml:mfrac></mml:math></alternatives></inline-formula>
+  and its respective inverse, which e.g. is not the case for the
+  R-package.</p>
+</sec>
+<sec id="acknowledgement">
+  <title>Acknowledgement</title>
+  <p>The authors gratefully acknowledge the financial support through
+  the BioPro (Innovationsfonden project nr. 10513) and DABAI
+  (Innovationsfonden project nr. 10599 and 10577) project.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-westerhuisU003A98">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Westerhuis</surname><given-names>J. A.</given-names></name>
+          <name><surname>Kourti</surname><given-names>T.</given-names></name>
+          <name><surname>MacGregor</surname><given-names>J. F.</given-names></name>
+        </person-group>
+        <article-title>Analysis of multiblock and hierarchical PCA and PLS models</article-title>
+        <source>Journal of Chemometrics</source>
+        <year iso-8601-date="1998">1998</year>
+        <volume>12</volume>
+        <issue>5</issue>
+        <pub-id pub-id-type="doi">10.1002/(SICI)1099-128X(199809/10)12:5&lt;301::AID-CEM515&gt;3.0.CO;2-S</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-rannarU003A95">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rännar</surname><given-names>S.</given-names></name>
+          <name><surname>Geladi</surname><given-names>P.</given-names></name>
+          <name><surname>Lindgren</surname><given-names>F.</given-names></name>
+          <name><surname>Wold</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>A PLS kernel algorithm for data sets with many variables and few objects. Part II: Cross-validation, missing data and examples</article-title>
+        <source>Journal of Chemometrics</source>
+        <year iso-8601-date="1995">1995</year>
+        <volume>9</volume>
+        <issue>6</issue>
+        <pub-id pub-id-type="doi">10.1002/cem.1180090604</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-rannarU003A94">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rännar</surname><given-names>S.</given-names></name>
+          <name><surname>Lindgren</surname><given-names>F.</given-names></name>
+          <name><surname>Geladi</surname><given-names>P.</given-names></name>
+          <name><surname>Wold</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>A PLS kernel algorithm for data sets with many variables and fewer objects. Part 1: Theory and algorithm</article-title>
+        <source>Journal of Chemometrics</source>
+        <year iso-8601-date="1994">1994</year>
+        <volume>8</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1002/cem.1180080204</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-liU003A16">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Li</surname><given-names>Yifeng</given-names></name>
+          <name><surname>Wu</surname><given-names>Fang-Xiang</given-names></name>
+          <name><surname>Ngom</surname><given-names>Alioune</given-names></name>
+        </person-group>
+        <article-title>A review on machine learning principles for multi-view biological data integration</article-title>
+        <source>Briefings in Bioinformatics</source>
+        <year iso-8601-date="2016">2016</year>
+        <volume>19</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1093/bib/bbw113</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-martensU003A01">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Martens</surname><given-names>H.</given-names></name>
+          <name><surname>Martens</surname><given-names>M.</given-names></name>
+        </person-group>
+        <source>Multivariate analysis of quality: An introduction</source>
+        <publisher-name>Wiley</publisher-name>
+        <publisher-loc>Chichester</publisher-loc>
+        <year iso-8601-date="2001">2001</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-dunnU003A89">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dunn III</surname><given-names>W. J.</given-names></name>
+          <name><surname>Scott</surname><given-names>D. R.</given-names></name>
+          <name><surname>Glen</surname><given-names>W. G.</given-names></name>
+        </person-group>
+        <article-title>Principal components analysis and partial least squares regression</article-title>
+        <source>Tetrahedron computer methodology</source>
+        <year iso-8601-date="1989">1989</year>
+        <volume>2</volume>
+        <issue>6</issue>
+        <pub-id pub-id-type="doi">10.1016/0898-5529(89)90004-3</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pedregosaU003A11">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pedregosa</surname><given-names>F.</given-names></name>
+          <name><surname>Varoquaux</surname><given-names>G.</given-names></name>
+          <name><surname>Gramfort</surname><given-names>A.</given-names></name>
+          <name><surname>Michel</surname><given-names>V.</given-names></name>
+          <name><surname>Thirion</surname><given-names>B.</given-names></name>
+          <name><surname>Grisel</surname><given-names>O.</given-names></name>
+          <name><surname>Blondel</surname><given-names>M.</given-names></name>
+          <name><surname>Prettenhofer</surname><given-names>P.</given-names></name>
+          <name><surname>Weiss</surname><given-names>R.</given-names></name>
+          <name><surname>Dubourg</surname><given-names>V.</given-names></name>
+          <name><surname>Vanderplas</surname><given-names>J.</given-names></name>
+          <name><surname>Passos</surname><given-names>A.</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>D.</given-names></name>
+          <name><surname>Brucher</surname><given-names>M.</given-names></name>
+          <name><surname>Perrot</surname><given-names>M.</given-names></name>
+          <name><surname>Duchesnay</surname><given-names>E.</given-names></name>
+        </person-group>
+        <article-title>Scikit-learn: Machine learning in python</article-title>
+        <source>Journal of Machine Learning Research</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>12</volume>
+        <issue>Oct</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-jongU003A93">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>de Jong</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>SIMPLS: An alternative approach to partial least squares regression</article-title>
+        <source>Chemometrics and intelligent laboratory systems</source>
+        <year iso-8601-date="1993">1993</year>
+        <volume>18</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1016/0169-7439(93)85002-X</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-bougeardU003A18">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bougeard</surname><given-names>S.</given-names></name>
+          <name><surname>Dray</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>Supervised multiblock analysis in r with the ade4 package</article-title>
+        <source>Journal of Statistical Software</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>86</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.18637/jss.v086.i01</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-woldU003A84">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wold</surname><given-names>S.</given-names></name>
+          <name><surname>Ruhe</surname><given-names>A.</given-names></name>
+          <name><surname>Wold</surname><given-names>H.</given-names></name>
+          <name><surname>III</surname><given-names>W. J. Dunn</given-names></name>
+        </person-group>
+        <article-title>The collinearity problem in linear regression. The partial least squares (PLS) approach to generalized inverses</article-title>
+        <source>SIAM Journal on Scientific and Statistical Computing</source>
+        <year iso-8601-date="1984">1984</year>
+        <volume>5</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1137/0905052</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lindgrenU003A93">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lindgren</surname><given-names>F.</given-names></name>
+          <name><surname>Geladi</surname><given-names>P.</given-names></name>
+          <name><surname>Wold</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>The kernel algorithm for PLS</article-title>
+        <source>Journal of Chemometrics</source>
+        <year iso-8601-date="1993">1993</year>
+        <volume>7</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1002/cem.1180070104</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

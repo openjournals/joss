@@ -1,0 +1,600 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2813</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02813</article-id>
+<title-group>
+<article-title>IndividualDisplacements.jl: a Julia package to simulate
+and study particle displacements within the climate
+system</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-0872-7098</contrib-id>
+<string-name>Gael Forget</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>MIT, EAPS</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-09-21">
+<day>21</day>
+<month>9</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>60</issue>
+<fpage>2813</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>MITgcm</kwd>
+<kwd>ocean</kwd>
+<kwd>atmosphere</kwd>
+<kwd>Lagrangian</kwd>
+<kwd>particles</kwd>
+<kwd>parcels</kwd>
+<kwd>materials</kwd>
+<kwd>substances</kwd>
+<kwd>tracking</kwd>
+<kwd>pathways</kwd>
+<kwd>trajectories</kwd>
+<kwd>transit times</kwd>
+<kwd>transports</kwd>
+<kwd>dynamics</kwd>
+<kwd>individuals</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>IndividualDisplacements.jl</monospace>
+  (<xref alt="Gaël Forget, 2021" rid="ref-IndividualDisplacementsFeb2021" ref-type="bibr">Gaël
+  Forget, 2021</xref>) is focused on computation and analysis of
+  individual displacements across the global climate system.
+  <italic>Individuals</italic> is used here as a generic term to
+  represent points, particles, parcels, materials, etc that tend to be
+  carried around the Earth by geophysical fluids (via oceanic currents
+  or atmospheric flows for example). Their
+  <italic>displacements</italic>, or trajectories, are computed by
+  deriving pointwise velocities from flow fields provided by the user
+  and integrating over time (e.g.,
+  <xref alt="Figure 1" rid="figU003Aatm">Figure 1</xref> and
+  <xref alt="Figure 2" rid="figU003Aocn">Figure 2</xref>).</p>
+  <p>This Julia package is notably aimed at the analysis of numerical
+  models that simulate Oceanic and / or Atmospheric transport processes
+  on staggered C-grids – those most often used in both regional and
+  global modeling. Inter-operability with global climate model grids
+  like the cube-sphere and lat-lon-cap grid (e.g.,
+  <xref alt="G. Forget et al., 2015" rid="ref-gmd-8-3071-2015" ref-type="bibr">G.
+  Forget et al., 2015</xref>) is a key feature enabled by
+  <monospace>MeshArrays.jl</monospace>
+  (<ext-link ext-link-type="uri" xlink:href="https://youtu.be/RDxAy_zSUvg">JuliaCon
+  2018 (video link)</ext-link>,
+  <xref alt="Gaël Forget et al., 2020" rid="ref-MeshArraysAugust2020" ref-type="bibr">Gaël
+  Forget et al., 2020</xref>). The chosen approach also readily supports
+  simpler grids (cartesian, spherical, curvilinear grids) often used in
+  process-oriented models, regional models, or satellite data
+  products.</p>
+  <p><monospace>IndividualDisplacements.jl</monospace> is thus readily
+  suited to exploit climate model output and other gridded data sets in
+  research projects that involve, for example, tracking plankton
+  communities, heat storage, or plastic garbage patches within the
+  Ocean; or dust, water, or chemical compounds within the Atmosphere. To
+  achieve generality and interpretability,
+  <monospace>IndividualDisplacements.jl</monospace> first defines two
+  data structures (<monospace>FlowFields</monospace> and
+  <monospace>Individuals</monospace>) that allow for simple, flexible
+  user specifications of flow fields, initial positions, etc. It then
+  adds a high-level API such that integrating trajectories for
+  individuals <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathit{I}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="italic"><mml:mi>𝐼</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  amounts to a single function call, <inline-formula><alternatives>
+  <tex-math><![CDATA[\int!\,(\,\mathit{I}\,)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>∫</mml:mo><mml:mi>!</mml:mi><mml:mspace width="0.167em"></mml:mspace><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mspace width="0.167em"></mml:mspace><mml:mstyle mathvariant="italic"><mml:mi>𝐼</mml:mi></mml:mstyle><mml:mspace width="0.167em"></mml:mspace><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+  <p>Internally, the package currently employs
+  <monospace>OrdinaryDiffEq.jl</monospace> to integrate particle motions
+  over time (within the <inline-formula><alternatives>
+  <tex-math><![CDATA[\int!\,(\,\mathit{I}\,)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>∫</mml:mo><mml:mi>!</mml:mi><mml:mspace width="0.167em"></mml:mspace><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mspace width="0.167em"></mml:mspace><mml:mstyle mathvariant="italic"><mml:mi>𝐼</mml:mi></mml:mstyle><mml:mspace width="0.167em"></mml:mspace><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  function call), <monospace>NetCDF.jl</monospace> and
+  <monospace>CSV.jl</monospace> for I/O, and
+  <monospace>DataFrames.jl</monospace> for diagnostics computed along
+  particle trajectories (within <inline-formula><alternatives>
+  <tex-math><![CDATA[\int!\,(\,\mathit{I}\,)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>∫</mml:mo><mml:mi>!</mml:mi><mml:mspace width="0.167em"></mml:mspace><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mspace width="0.167em"></mml:mspace><mml:mstyle mathvariant="italic"><mml:mi>𝐼</mml:mi></mml:mstyle><mml:mspace width="0.167em"></mml:mspace><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  or afterwards). The initial test suite (see
+  <xref alt="Gaël Forget, 2021" rid="ref-IndividualDisplacementsFeb2021" ref-type="bibr">Gaël
+  Forget, 2021</xref>) is based not only on idealized flow fields and
+  toy-models, but also on data-constrained Ocean simulations from the
+  OCCA/ECCO projects
+  (<xref alt="Gaël Forget, 2018" rid="ref-Forget2018setup" ref-type="bibr">Gaël
+  Forget, 2018</xref>,
+  <xref alt="2010" rid="ref-Forget2010" ref-type="bibr">2010</xref>;
+  <xref alt="G. Forget et al., 2015" rid="ref-gmd-8-3071-2015" ref-type="bibr">G.
+  Forget et al., 2015</xref>), which are also used in marine ecosystem
+  simulations in CBIOMES
+  (<xref alt="Gaël Forget, 2019" rid="ref-cbiomes2019" ref-type="bibr">Gaël
+  Forget, 2019</xref>). The OCCA/ECCO gridded ocean circulation
+  estimates are retrieved from a permanent dataverse archive
+  (<xref alt="Gaël Forget, 2016a" rid="ref-Forget2016dataverse" ref-type="bibr">Gaël
+  Forget, 2016a</xref>,
+  <xref alt="2016b" rid="ref-OCCAdataverse" ref-type="bibr">2016b</xref>)
+  automatically via the Julia Artifacts system.</p>
+  <p><monospace>IndividualDisplacements.jl</monospace> is also intended
+  to facilitate research involving model-data comparison, data
+  assimilation, or machine learning by providing basic interfaces to
+  other displacement data sets. To start the package provides some
+  support for ingesting (1) data collected in the field by the Global
+  Ocean Drifter Program and Argo array of drifting buoys, and (2)
+  trajectories simulated internally, <italic>online</italic>, by the MIT
+  general circulation model.</p>
+  <p>The examples folder, which is unit tested upon building the
+  documentation hosted online for each code revision, already covers
+  several common grid cases, two-dimensional and three-dimensional
+  flows, steady-state and time-variable flows. It demonstrates
+  interpolation and diagnostics methods, three plotting libraries, and
+  two notebook systems. Minor parameter changes in these examples should
+  suffice to start applying
+  <monospace>IndividualDisplacements.jl</monospace> to any other MITgcm
+  simulation of e.g. atmospheric or oceanic turbulence
+  (<xref alt="Campin et al., 2020" rid="ref-MITgcm2020" ref-type="bibr">Campin
+  et al., 2020</xref>).</p>
+  <fig>
+    <caption><p>Atmosphere simulation example. Hundred thousand
+    particles are displaced by time-varying 2D flow fields provided by
+    MITgcm on a cube-sphere grid
+    (<xref alt="Campin et al., 2020" rid="ref-MITgcm2020" ref-type="bibr">Campin
+    et al., 2020</xref>) using <monospace>MITgcmTools.jl</monospace>.
+    Particle colors show velocity while contours show
+    temperature.<styled-content id="figU003Aatm"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="simulated_atm_flow04.png" xlink:title="" />
+  </fig>
+  <fig>
+    <caption><p>Ocean simulation example. A particle is displaced (left
+    panels) by time-varying 3D flow fields from a global ocean state
+    estimate
+    (<xref alt="G. Forget et al., 2015" rid="ref-gmd-8-3071-2015" ref-type="bibr">G.
+    Forget et al., 2015</xref>) using
+    <monospace>OceanStateEstimation.jl</monospace>. Vertical profiles of
+    temperature and salinity are recorded along the way (right
+    panels).<styled-content id="figU003Aocn"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="simulated_lagr_float03.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Lagrangian simulation and analysis frameworks such as
+  <monospace>IndividualDisplacements.jl</monospace> have been widely
+  used across scientific domains involved with geophysical fluids for
+  decades; see Pisso et al.
+  (<xref alt="2019" rid="ref-FLEXPART" ref-type="bibr">2019</xref>) or
+  Van Sebille et al.
+  (<xref alt="2018" rid="ref-VanSebille2018" ref-type="bibr">2018</xref>)
+  for recent reviews in, respectively, oceanography or atmospheric
+  sciences. <monospace>IndividualDisplacements.jl</monospace> is most
+  directly related to the <monospace>MITgcm/flt</monospace> Fortran
+  package which the author also recently extended
+  (<xref alt="Campin et al., 2020" rid="ref-MITgcm2020" ref-type="bibr">Campin
+  et al., 2020</xref>). This new Julia package was in fact partly
+  motivated by a need to provide an easier and simpler alternative to
+  using <monospace>MITgcm/flt</monospace> in its offline mode in order
+  to handle global grids not readily supported by other packages
+  (<xref alt="G. Forget et al., 2015" rid="ref-gmd-8-3071-2015" ref-type="bibr">G.
+  Forget et al., 2015</xref>;
+  <xref alt="Gaël Forget, 2020" rid="ref-FltGlobalOceanWorkflow2020" ref-type="bibr">Gaël
+  Forget, 2020</xref>;
+  <xref alt="Rousselet et al., 2020" rid="ref-Rousselet2020" ref-type="bibr">Rousselet
+  et al., 2020</xref>).</p>
+  <p><monospace>IndividualDisplacements.jl</monospace> notably aims to
+  provide a bridge between the vast community of domain experts, who are
+  typically used to older languages like Fortran, C, Matlab, or Python,
+  and the rapidly growing Julia community and package ecosystem. Julia’s
+  native parallelism, GPU support, custom array types, differential
+  programming tools, and plotting libraries indeed all offer great new
+  opportunities for exploiting state of the art HPC climate model
+  simulations and the large data sets that they routinely generate.</p>
+  <p>The development of
+  <monospace>IndividualDisplacements.jl</monospace> was motivated not
+  just by our scientific needs and ongoing research projects (see below)
+  but also by the need for more effective tools for climate education,
+  citizen science, and advocacy. In the documentation and examples
+  folder, this is highlighted by the use of unicode in the API,
+  <monospace>Pluto.jl</monospace> notebooks, and
+  <monospace>Makie.jl</monospace> animations, which showcase Julia’s
+  expressivity and reactivity.</p>
+  <p><monospace>IndividualDisplacements.jl</monospace> readily supports
+  all common <monospace>MITgcm</monospace> grids and configurations via
+  <monospace>MeshArrays.jl</monospace> and
+  <monospace>MITgcmTools.jl</monospace> (incl. Ocean, Atmosphere,
+  sea-ice, bio-geo-chemistry, and ecology). This, by itself, yields a
+  large pool of potential scientific applications and expected users;
+  including via the various ongoing research projects that rely on
+  adjoint-optimized, data-constrained solutions from the OCCA/ECCO
+  projects
+  (<xref alt="Gaël Forget, 2010" rid="ref-Forget2010" ref-type="bibr">Gaël
+  Forget, 2010</xref>;
+  <xref alt="G. Forget et al., 2015" rid="ref-gmd-8-3071-2015" ref-type="bibr">G.
+  Forget et al., 2015</xref>).</p>
+  <p>At this stage, <monospace>IndividualDisplacements.jl</monospace> is
+  considered production-ready, such that we could immediately start
+  transferring several ongoing research collaborations that use MITgcm
+  and ECCO
+  (<xref alt="Gaël Forget &amp; Ferreira, 2019" rid="ref-Forget2019" ref-type="bibr">Gaël
+  Forget &amp; Ferreira, 2019</xref>;
+  <xref alt="Rousselet et al., 2020" rid="ref-Rousselet2020" ref-type="bibr">Rousselet
+  et al., 2020</xref>) from Fortran to Julia. Extension to other models
+  may start with MERRA2 / MITgcm coupled model runs
+  (<xref alt="Strobach et al., 2020" rid="ref-Strobach2020" ref-type="bibr">Strobach
+  et al., 2020</xref>) and near-term applications could also include
+  data assimilation to better simulate plastic garbage patches
+  (<xref alt="Peytavin et al., 2021" rid="ref-gmd-2020-385" ref-type="bibr">Peytavin
+  et al., 2021</xref>).</p>
+  <p>The documentation of
+  <monospace>IndividualDisplacements.jl</monospace> is also now
+  considered sufficient for welcoming additional contributors.
+  Integration with Julia packages developed in
+  <monospace>JuliaClimate</monospace>,
+  <monospace>JuliaOcean</monospace>, <monospace>JuliaGeo</monospace>,
+  <monospace>JuliaStats</monospace>,
+  <monospace>JuliaDynamics</monospace>, and other relevant organizations
+  is thus expected to intensify moving forward.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We acknowledge contributions from the open source community at
+  large, the paper reviewers and journal editor, as well as developers
+  of <monospace>Julia</monospace> and its packages upon which
+  <monospace>IndividualDisplacements.jl</monospace> crucially
+  depends.</p>
+  <p>Funding that supported this work was provided by the Simons
+  Collaboration on Computational Biogeochemical Modeling of Marine
+  Ecosystems (CBIOMES) (grant no. 549931) and the National Aeronautic
+  and Space Administration (grant NASA 19-PO19-0001 from
+  NNH19ZDA001N-PO, grant NASA 80NSSC17K0561 from NNH16ZDA001N-IDS, and
+  grant 19-MAP19-0018 from NNH19ZDA001N-MAP).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Forget2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Forget</surname><given-names>Gaël</given-names></name>
+          <name><surname>Ferreira</surname><given-names>David</given-names></name>
+        </person-group>
+        <article-title>Global ocean heat transport dominated by heat export from the tropical Pacific</article-title>
+        <source>Nature Geoscience</source>
+        <year iso-8601-date="2019">2019</year>
+        <issn>1752-0908</issn>
+        <uri>https://doi.org/10.1038/s41561-019-0333-7</uri>
+        <pub-id pub-id-type="doi">10.1038/s41561-019-0333-7</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Forget2018setup">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Forget</surname><given-names>Gaël</given-names></name>
+        </person-group>
+        <source>Gaelforget/ECCOv4: Documentation updates</source>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2018-04">2018</year><month>04</month>
+        <uri>https://doi.org/10.5281/zenodo.1211363</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.1211363</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Forget2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Forget</surname><given-names>Gaël</given-names></name>
+        </person-group>
+        <article-title>Mapping Ocean Observations in a Dynamical Framework: A 2004–06 Ocean Atlas</article-title>
+        <source>Journal of Physical Oceanography</source>
+        <year iso-8601-date="2010-06">2010</year><month>06</month>
+        <volume>40</volume>
+        <issue>6</issue>
+        <issn>0022-3670</issn>
+        <pub-id pub-id-type="doi">10.1175/2009JPO4043.1</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-OCCAdataverse">
+      <element-citation publication-type="dataset">
+        <person-group person-group-type="author">
+          <name><surname>Forget</surname><given-names>Gaël</given-names></name>
+        </person-group>
+        <article-title>OCCA monthly ocean atlas</article-title>
+        <publisher-name>Harvard Dataverse</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://doi.org/10.7910/DVN/RNXA2A</uri>
+        <pub-id pub-id-type="doi">10.7910/DVN/RNXA2A</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Forget2016dataverse">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Forget</surname><given-names>Gaël</given-names></name>
+        </person-group>
+        <article-title>ECCO version 4 release 2: Monthly 1992-2011 time series</article-title>
+        <publisher-name>Harvard Dataverse</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <uri>http://dx.doi.org/10.7910/DVN/NXYKDW</uri>
+        <pub-id pub-id-type="doi">10.7910/DVN/NXYKDW</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gmd-8-3071-2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Forget</surname><given-names>G.</given-names></name>
+          <name><surname>Campin</surname><given-names>J.-M.</given-names></name>
+          <name><surname>Heimbach</surname><given-names>P.</given-names></name>
+          <name><surname>Hill</surname><given-names>C. N.</given-names></name>
+          <name><surname>Ponte</surname><given-names>R. M.</given-names></name>
+          <name><surname>Wunsch</surname><given-names>C.</given-names></name>
+        </person-group>
+        <article-title>ECCO version 4: an integrated framework for non-linear inverse modeling and global ocean state estimation</article-title>
+        <source>Geoscientific Model Development</source>
+        <year iso-8601-date="2015-10">2015</year><month>10</month>
+        <volume>8</volume>
+        <issue>10</issue>
+        <issn>1991-9603</issn>
+        <uri>http://www.geosci-model-dev.net/8/3071/2015/</uri>
+        <pub-id pub-id-type="doi">10.5194/gmd-8-3071-2015</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MITgcm2020">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Campin</surname><given-names>Jean-Michel</given-names></name>
+          <name><surname>Heimbach</surname><given-names>Patrick</given-names></name>
+          <name><surname>Losch</surname><given-names>Martin</given-names></name>
+          <name><surname>Forget</surname><given-names>Gaël</given-names></name>
+          <name><surname>edhill3</surname></name>
+          <name><surname>Adcroft</surname><given-names>Alistair</given-names></name>
+          <name><surname>amolod</surname></name>
+          <name><surname>Menemenlis</surname><given-names>Dimitris</given-names></name>
+          <name><surname>dfer22</surname></name>
+          <name><surname>Hill</surname><given-names>Chris</given-names></name>
+          <name><surname>Jahn</surname><given-names>Oliver</given-names></name>
+          <name><surname>Scott</surname><given-names>Jeff</given-names></name>
+          <name><surname>stephdut</surname></name>
+          <name><surname>Mazloff</surname><given-names>Matt</given-names></name>
+          <name><surname>Fox-Kemper</surname><given-names>Baylor</given-names></name>
+          <name><surname>antnguyen13</surname></name>
+          <name><surname>Doddridge</surname><given-names>Ed</given-names></name>
+          <name><surname>Fenty</surname><given-names>Ian</given-names></name>
+          <name><surname>Bates</surname><given-names>Michael</given-names></name>
+          <name><surname>AndrewEichmann-NOAA</surname></name>
+          <name><surname>Smith</surname><given-names>Timothy</given-names></name>
+          <name><surname>Martin</surname><given-names>Torge</given-names></name>
+          <name><surname>Lauderdale</surname><given-names>Jonathan</given-names></name>
+          <name><surname>Abernathey</surname><given-names>Ryan</given-names></name>
+          <name><surname>samarkhatiwala</surname></name>
+          <name><surname>hongandyan</surname></name>
+          <name><surname>Deremble</surname><given-names>Bruno</given-names></name>
+          <name><surname>dngoldberg</surname></name>
+          <name><surname>Bourgault</surname><given-names>Pascal</given-names></name>
+          <name><surname>dussin</surname></name>
+        </person-group>
+        <source>MITgcm/MITgcm: Mid 2020 version</source>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2020-07">2020</year><month>07</month>
+        <uri>https://doi.org/10.5281/zenodo.3967889</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3967889</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-cbiomes2019">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Forget</surname><given-names>Gaël</given-names></name>
+        </person-group>
+        <source>CBIOMES/global-ocean-model: Update MITgcm &amp; DarwinProject elements</source>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2019-04">2019</year><month>04</month>
+        <uri>https://doi.org/10.5281/zenodo.2653669</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.2653669</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-FltGlobalOceanWorkflow2020">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Forget</surname><given-names>Gaël</given-names></name>
+        </person-group>
+        <source>Gaelforget/ECCOv4_flt_offline: Initial public release</source>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2020-11">2020</year><month>11</month>
+        <uri>https://doi.org/10.5281/zenodo.4193582</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.4193582</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Rousselet2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rousselet</surname><given-names>Louise</given-names></name>
+          <name><surname>Cessi</surname><given-names>Paola</given-names></name>
+          <name><surname>Forget</surname><given-names>Gaël</given-names></name>
+        </person-group>
+        <article-title>Routes of the upper branch of the atlantic meridional overturning circulation according to an ocean state estimate</article-title>
+        <source>Geophysical Research Letters</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>47</volume>
+        <issue>18</issue>
+        <pub-id pub-id-type="doi">10.1029/2020GL089137</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-FLEXPART">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pisso</surname><given-names>I.</given-names></name>
+          <name><surname>Sollum</surname><given-names>E.</given-names></name>
+          <name><surname>Grythe</surname><given-names>H.</given-names></name>
+          <name><surname>Kristiansen</surname><given-names>N. I.</given-names></name>
+          <name><surname>Cassiani</surname><given-names>M.</given-names></name>
+          <name><surname>Eckhardt</surname><given-names>S.</given-names></name>
+          <name><surname>Arnold</surname><given-names>D.</given-names></name>
+          <name><surname>Morton</surname><given-names>D.</given-names></name>
+          <name><surname>Thompson</surname><given-names>R. L.</given-names></name>
+          <name><surname>Groot Zwaaftink</surname><given-names>C. D.</given-names></name>
+          <name><surname>Evangeliou</surname><given-names>N.</given-names></name>
+          <name><surname>Sodemann</surname><given-names>H.</given-names></name>
+          <name><surname>Haimberger</surname><given-names>L.</given-names></name>
+          <name><surname>Henne</surname><given-names>S.</given-names></name>
+          <name><surname>Brunner</surname><given-names>D.</given-names></name>
+          <name><surname>Burkhart</surname><given-names>J. F.</given-names></name>
+          <name><surname>Fouilloux</surname><given-names>A.</given-names></name>
+          <name><surname>Brioude</surname><given-names>J.</given-names></name>
+          <name><surname>Philipp</surname><given-names>A.</given-names></name>
+          <name><surname>Seibert</surname><given-names>P.</given-names></name>
+          <name><surname>Stohl</surname><given-names>A.</given-names></name>
+        </person-group>
+        <article-title>The lagrangian particle dispersion model FLEXPART version 10.4</article-title>
+        <source>Geoscientific Model Development</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>12</volume>
+        <issue>12</issue>
+        <uri>https://gmd.copernicus.org/articles/12/4955/2019/</uri>
+        <pub-id pub-id-type="doi">10.5194/gmd-12-4955-2019</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-VanSebille2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Van Sebille</surname><given-names>Erik</given-names></name>
+          <name><surname>Griffies</surname><given-names>Stephen M.</given-names></name>
+          <name><surname>Abernathey</surname><given-names>Ryan</given-names></name>
+          <name><surname>Adams</surname><given-names>Thomas P.</given-names></name>
+          <name><surname>Berloff</surname><given-names>Pavel</given-names></name>
+          <name><surname>Biastoch</surname><given-names>Arne</given-names></name>
+          <name><surname>Blanke</surname><given-names>Bruno</given-names></name>
+          <name><surname>Chassignet</surname><given-names>Eric P.</given-names></name>
+          <name><surname>Cheng</surname><given-names>Yu</given-names></name>
+          <name><surname>Cotter</surname><given-names>Colin J.</given-names></name>
+          <name><surname>Deleersnijder</surname><given-names>Eric</given-names></name>
+          <name><surname>Döös</surname><given-names>Kristofer</given-names></name>
+          <name><surname>Drake</surname><given-names>Henri F.</given-names></name>
+          <name><surname>Drijfhout</surname><given-names>Sybren</given-names></name>
+          <name><surname>Gary</surname><given-names>Stefan F.</given-names></name>
+          <name><surname>Heemink</surname><given-names>Arnold W.</given-names></name>
+          <name><surname>Kjellsson</surname><given-names>Joakim</given-names></name>
+          <name><surname>Koszalka</surname><given-names>Inga Monika</given-names></name>
+          <name><surname>Lange</surname><given-names>Michael</given-names></name>
+          <name><surname>Lique</surname><given-names>Camille</given-names></name>
+          <name><surname>MacGilchrist</surname><given-names>Graeme A.</given-names></name>
+          <name><surname>Marsh</surname><given-names>Robert</given-names></name>
+          <name><surname>Mayorga Adame</surname><given-names>C. Gabriela</given-names></name>
+          <name><surname>McAdam</surname><given-names>Ronan</given-names></name>
+          <name><surname>Nencioli</surname><given-names>Francesco</given-names></name>
+          <name><surname>Paris</surname><given-names>Claire B.</given-names></name>
+          <name><surname>Piggott</surname><given-names>Matthew D.</given-names></name>
+          <name><surname>Polton</surname><given-names>Jeff A.</given-names></name>
+          <name><surname>Rühs</surname><given-names>Siren</given-names></name>
+          <name><surname>Shah</surname><given-names>Syed H. A. M.</given-names></name>
+          <name><surname>Thomas</surname><given-names>Matthew D.</given-names></name>
+          <name><surname>Wang</surname><given-names>Jinbo</given-names></name>
+          <name><surname>Wolfram</surname><given-names>Phillip J.</given-names></name>
+          <name><surname>Zanna</surname><given-names>Laure</given-names></name>
+          <name><surname>Zika</surname><given-names>Jan D.</given-names></name>
+        </person-group>
+        <article-title>Lagrangian ocean analysis: Fundamentals and practices</article-title>
+        <source>Ocean Modelling</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>121</volume>
+        <issn>1463-5003</issn>
+        <pub-id pub-id-type="doi">10.1016/j.ocemod.2017.11.008</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Strobach2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Strobach</surname><given-names>Ehud</given-names></name>
+          <name><surname>Molod</surname><given-names>Andrea</given-names></name>
+          <name><surname>Trayanov</surname><given-names>Atanas</given-names></name>
+          <name><surname>Forget</surname><given-names>Gaël</given-names></name>
+          <name><surname>Campin</surname><given-names>Jean-Michel</given-names></name>
+          <name><surname>Hill</surname><given-names>Chris</given-names></name>
+          <name><surname>Menemenlis</surname><given-names>Dimitris</given-names></name>
+        </person-group>
+        <article-title>Three-to-six-day air–sea oscillation in models and observations</article-title>
+        <source>Geophysical Research Letters</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>47</volume>
+        <issue>10</issue>
+        <pub-id pub-id-type="doi">10.1029/2019GL085837</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MeshArraysAugust2020">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Forget</surname><given-names>Gaël</given-names></name>
+          <name><surname>Milechin</surname><given-names>Lauren</given-names></name>
+          <name><surname>Ekre</surname><given-names>Fredrik</given-names></name>
+          <name><surname>TagBot</surname><given-names>Julia</given-names></name>
+        </person-group>
+        <source>JuliaClimate/MeshArrays.jl: v0.2.12</source>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2020-08">2020</year><month>08</month>
+        <uri>https://doi.org/10.5281/zenodo.3995076</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3995076</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-IndividualDisplacementsFeb2021">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Forget</surname><given-names>Gaël</given-names></name>
+        </person-group>
+        <source>JuliaClimate/IndividualDisplacements.jl: v0.2.10</source>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2021-02">2021</year><month>02</month>
+        <uri>https://doi.org/10.5281/zenodo.4517441</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.4517441</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gmd-2020-385">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Peytavin</surname><given-names>A.</given-names></name>
+          <name><surname>Sainte-Rose</surname><given-names>B.</given-names></name>
+          <name><surname>Forget</surname><given-names>G.</given-names></name>
+          <name><surname>Campin</surname><given-names>J.-M.</given-names></name>
+        </person-group>
+        <article-title>Ocean plastic assimilator v0.1: Assimilation of plastics concentration data into lagrangian dispersion models</article-title>
+        <source>Geoscientific Model Development Discussions</source>
+        <year iso-8601-date="2021">2021</year>
+        <volume>2021</volume>
+        <uri>https://gmd.copernicus.org/preprints/gmd-2020-385/</uri>
+        <pub-id pub-id-type="doi">10.5194/gmd-2020-385</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

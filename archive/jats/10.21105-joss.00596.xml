@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">596</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00596</article-id>
+<title-group>
+<article-title>Nostril: A nonsense string evaluator written in
+Python</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-9105-5960</contrib-id>
+<string-name>Michael Hucka</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Computing and Mathematical Sciences,
+California Institute of Technology, Pasadena, CA 91125,
+USA</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2018-02-06">
+<day>6</day>
+<month>2</month>
+<year>2018</year>
+</pub-date>
+<volume>3</volume>
+<issue>25</issue>
+<fpage>596</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>mining source repositories</kwd>
+<kwd>identifiers</kwd>
+<kwd>text processing</kwd>
+<kwd>inference</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Nostril (<italic>Nonsense String Evaluator</italic>) is a Python 3
+  module that can infer whether a given word or text string is likely to
+  be nonsense or meaningful text. A “meaningful” string of characters is
+  one constructed from real or real-looking English words or fragments
+  of real words (even if the words are
+  <italic>runtogetherlikethis</italic>). The main use case for Nostril
+  is to decide whether short strings returned by source code mining
+  methods are likely to be program identifiers (of classes, functions,
+  variables, etc.), or random or other non-identifier strings.</p>
+  <p>Nostril is easy to use. It provides a Python function named
+  <monospace>nonsense()</monospace>; this function takes a single text
+  string as an argument and returns a Boolean value as a result. Here is
+  an example of its use. The following code,</p>
+  <code language="python">    from nostril import nonsense
+    for s in ['bunchofwords', 'xywinlist', 'faiwtlwexu', 'asfgtqwafazfy']:
+        if nonsense(s):
+           print(&quot;{} is nonsense&quot;.format(s))
+        else:
+           print(&quot;{} is real&quot;.format(s))</code>
+  <p>produces the following output:</p>
+  <preformat>    bunchofwords is real
+    xywinlist is real
+    faiwtlwexu is nonsense
+    asfgtqwafazfy is nonsense</preformat>
+  <p>Nostril also includes a command-line program named
+  <monospace>nostril</monospace>; it will evaluate strings provided on
+  the command line or in a file, and is useful for experimenting with
+  Nostril or using it in command-oriented workflows.</p>
+</sec>
+<sec id="the-need-for-detecting-nonsense">
+  <title>The need for detecting nonsense</title>
+  <p>A number of research efforts have investigated extracting and
+  analyzing textual information contained in software artifacts (e.g.,
+  <xref alt="Dit et al., 2011" rid="ref-Dit2011-fz" ref-type="bibr">Dit
+  et al., 2011</xref>;
+  <xref alt="Linstead et al., 2009" rid="ref-Linstead2009-ky" ref-type="bibr">Linstead
+  et al., 2009</xref>). However, source code files can contain
+  meaningless text, such as random text used as markers or test cases,
+  and code extraction methods can also sometimes make mistakes and
+  produce garbled text. When used in processing pipelines without human
+  intervention, it is often important to include a data cleaning step
+  before passing tokens extracted from source code to subsequent
+  analysis or machine learning algorithms. Thus, a basic (and often
+  unmentioned) step is to filter out nonsense tokens.</p>
+  <p>Discerning real identifiers from nonsense is a surprisingly
+  difficult problem, because program identifiers often consist of words,
+  acronyms and word fragments jammed together (e.g.,
+  <monospace>ioFlXFndrInfo</monospace>). The resulting strings can
+  challenge even humans. Nostril uses a combination of (1) a prefilter
+  that detects simple positive and negative cases using heuristic rules
+  and (2) a custom TF-IDF
+  (<xref alt="Manning et al., 2009" rid="ref-manning2009introduction" ref-type="bibr">Manning
+  et al., 2009</xref>) scoring scheme that uses letter 4-grams as
+  features. The software includes a precomputed table of n-gram weights
+  derived by training the system on a large set of strings constructed
+  from concatenated American English words, real text corpora, and other
+  inputs. Parameter values were optimized using the evolutionary
+  algorithm NSGA-II
+  (<xref alt="Deb et al., 2000" rid="ref-deb2000fast" ref-type="bibr">Deb
+  et al., 2000</xref>).</p>
+  <p>By default, Nostril is tuned to reduce false positives – it is more
+  likely to say something is <italic>not</italic> gibberish when it
+  really might be. This bias is motivated by Nostril’s original purpose
+  of filtering source code identifiers for machine-learning
+  applications, where false positives would cause real identifiers to be
+  filtered out and potentially-useful features to be missed. However,
+  the bias and other parameters (and the table of n-grams) can also be
+  retrained if applications require it.</p>
+  <p>Nostril is reasonably fast: once the package is loaded, a string
+  evaluation takes 30–50 microseconds on average on a 4 Ghz Apple macOS
+  computer. Nostril is accurate: it achieves 99.76% on the the Ludiso
+  identifier oracle
+  (<xref alt="Binkley et al., 2013" rid="ref-binkley2013dataset" ref-type="bibr">Binkley
+  et al., 2013</xref>) and 91.70% on a test set of 1,000,000
+  machine-generated random strings.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>This material is based upon work supported by the
+  <ext-link ext-link-type="uri" xlink:href="https://nsf.gov">National
+  Science Foundation</ext-link> under Grant Number 1533792. Any
+  opinions, findings, and conclusions or recommendations expressed in
+  this material are those of the author(s) and do not necessarily
+  reflect the views of the National Science Foundation.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-deb2000fast">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Deb</surname><given-names>Kalyanmoy</given-names></name>
+          <name><surname>Agrawal</surname><given-names>Samir</given-names></name>
+          <name><surname>Pratap</surname><given-names>Amrit</given-names></name>
+          <name><surname>Meyarivan</surname><given-names>T</given-names></name>
+        </person-group>
+        <article-title>A fast elitist non-dominated sorting genetic algorithm for multi-objective optimization: NSGA-II</article-title>
+        <source>Parallel problem solving from nature PPSN VI</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2000">2000</year>
+        <uri>http://dx.doi.org/10.1007/3-540-45356-3_83</uri>
+        <pub-id pub-id-type="doi">10.1007/3-540-45356-3_83</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-manning2009introduction">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Manning</surname><given-names>Christopher D</given-names></name>
+          <name><surname>Raghavan</surname><given-names>Prabhakar</given-names></name>
+          <name><surname>Schütze</surname><given-names>Hinrich</given-names></name>
+        </person-group>
+        <source>Introduction to information retrieval</source>
+        <publisher-name>Cambridge University Press</publisher-name>
+        <year iso-8601-date="2009">2009</year>
+        <isbn>9781139472104</isbn>
+        <uri>https://doi.org/10.1017/CBO9780511809071</uri>
+        <pub-id pub-id-type="doi">10.1017/CBO9780511809071</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-binkley2013dataset">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Binkley</surname><given-names>David</given-names></name>
+          <name><surname>Lawrie</surname><given-names>Dawn</given-names></name>
+          <name><surname>Pollock</surname><given-names>Lori</given-names></name>
+          <name><surname>Hill</surname><given-names>Emily</given-names></name>
+          <name><surname>Vijay-Shanker</surname><given-names>K</given-names></name>
+        </person-group>
+        <article-title>A dataset for evaluating identifier splitters</article-title>
+        <source>Proceedings of the 10th working conference on mining software repositories</source>
+        <publisher-name>IEEE Press</publisher-name>
+        <year iso-8601-date="2013">2013</year>
+        <isbn>9781467329361</isbn>
+        <uri>http://dl.acm.org/citation.cfm?id=2487085.2487158</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Dit2011-fz">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Dit</surname><given-names>B</given-names></name>
+          <name><surname>Guerrouj</surname><given-names>L</given-names></name>
+          <name><surname>Poshyvanyk</surname><given-names>D</given-names></name>
+          <name><surname>Antoniol</surname><given-names>G</given-names></name>
+        </person-group>
+        <article-title>Can better identifier splitting techniques help feature location?</article-title>
+        <source>2011 IEEE 19th international conference on program comprehension</source>
+        <year iso-8601-date="2011-06">2011</year><month>06</month>
+        <issn>1092-8138</issn>
+        <uri>http://dx.doi.org/10.1109/ICPC.2011.47</uri>
+        <pub-id pub-id-type="doi">10.1109/ICPC.2011.47</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Linstead2009-ky">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Linstead</surname><given-names>Erik</given-names></name>
+          <name><surname>Bajracharya</surname><given-names>Sushil</given-names></name>
+          <name><surname>Ngo</surname><given-names>Trung</given-names></name>
+          <name><surname>Rigor</surname><given-names>Paul</given-names></name>
+          <name><surname>Lopes</surname><given-names>Cristina</given-names></name>
+          <name><surname>Baldi</surname><given-names>Pierre</given-names></name>
+        </person-group>
+        <article-title>Sourcerer: Mining and searching internet-scale software repositories</article-title>
+        <source>Data mining and knowledge discovery</source>
+        <year iso-8601-date="2009-04">2009</year><month>04</month>
+        <volume>18</volume>
+        <issue>2</issue>
+        <issn>1384-5810, 1573-756X</issn>
+        <uri>https://doi.org/10.1007/s10618-008-0118-x</uri>
+        <pub-id pub-id-type="doi">10.1007/s10618-008-0118-x</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

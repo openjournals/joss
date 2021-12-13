@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2412</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02412</article-id>
+<title-group>
+<article-title>toughio: Pre- and post-processing Python library for
+TOUGH</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-7927-0019</contrib-id>
+<string-name>Keurfon Luu</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Energy Geosciences Division, Lawrence Berkeley National
+Laboratory, Berkeley, CA, USA</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-07-26">
+<day>26</day>
+<month>7</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>51</issue>
+<fpage>2412</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>tough2</kwd>
+<kwd>tough3</kwd>
+<kwd>preprocessing</kwd>
+<kwd>postprocessing</kwd>
+<kwd>io</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>TOUGH is a widely used general purpose numerical simulator designed
+  for fluid and heat flows of multiphase, multicomponent fluid mixtures
+  in porous and fractured media, which has been applied to many
+  real-world problems such as underground geological storage, geothermal
+  reservoir engineering or nuclear waste disposal, to name a few.</p>
+  <p>When setting up a model, the most time-consuming part is preparing
+  the input data required to run a TOUGH simulation due to its
+  error-prone text-based fixed-format input files and the lack of proper
+  built-in meshing tool to model complex geological structures. In
+  addition, a TOUGH mesh is optimally represented by a Voronoi graph as
+  TOUGH uses an integral finite-difference formulation
+  (<xref alt="Narasimhan &amp; Witherspoon, 1976" rid="ref-narasimhan_integrated_1976" ref-type="bibr">Narasimhan
+  &amp; Witherspoon, 1976</xref>) to solve the coupled fluid and heat
+  flow equations. A TOUGH mesh is only represented as a set of elements
+  and connections without any reference to a coordinate system usually
+  required for post-processing with common visualization softwares
+  (e.g. ParaView, Tecplot and VisIt).</p>
+</sec>
+<sec id="summary">
+  <title>Summary</title>
+  <p>In the recent years, many softwares have been developed and
+  published to address the lack of pre- and post-processing features of
+  TOUGH family of codes, mostly in the form of Graphical User Interfaces
+  (GUIs) such as (free) TIM
+  (<xref alt="Yeh et al., 2013" rid="ref-yeh_tim_2013" ref-type="bibr">Yeh
+  et al., 2013</xref>), TOUGH2Viewer
+  (<xref alt="Bondua et al., 2012" rid="ref-bondua_tough2viewerU003A_2012" ref-type="bibr">Bondua
+  et al., 2012</xref>), (commercial) Leapfrog
+  (<xref alt="Newson et al., 2012" rid="ref-newson_application_2012" ref-type="bibr">Newson
+  et al., 2012</xref>), mView
+  (<xref alt="Avis et al., 2012" rid="ref-avis_mview_2012" ref-type="bibr">Avis
+  et al., 2012</xref>) or PetraSim
+  (<xref alt="Yamamoto, 2008" rid="ref-yamamoto_petrasim_2008" ref-type="bibr">Yamamoto,
+  2008</xref>). While GUIs provide a convenient integrated working
+  environment since they do not require to have any programming
+  knowledge, users are often limited to the features implemented in the
+  softwares and pre- and post-processing outputs are hardly reproducible
+  due to closed or proprietary formats. Besides, automation of runs or
+  coupled simulations (e.g. with a mechanical simulator) cannot be
+  carried out through a GUI. All of the aforementioned issues can be
+  addressed by using a high level scripting language such as Python.</p>
+  <p><monospace>toughio</monospace> is a lightweight, object-oriented
+  and vectorized Python library that aims to provide user-friendly
+  routines to facilitate pre- and post-processing of a TOUGH simulation.
+  Currently, to the best of our knowledge, only PyTOUGH
+  (<xref alt="Croucher, 2011" rid="ref-croucher_pytough_2011" ref-type="bibr">Croucher,
+  2011</xref>) offers an exhaustive list of features to carry out a
+  complete TOUGH simulation using a scripting language.
+  <monospace>toughio</monospace> and PyTOUGH share the same objectives,
+  yet with different approaches. On the one hand, a PyTOUGH mesh is
+  represented as a <italic>MULGRAPH</italic> geometry where elements can
+  be unstructured horizontally but only layered vertically (usually
+  referred to as 2.5D). On the other hand, although it provides basic
+  meshing features, <monospace>toughio</monospace> mostly relies on
+  common third-party softwares (e.g. Abaqus, FLAC3D, Gmsh
+  (<xref alt="Geuzaine &amp; Remacle, 2009" rid="ref-geuzaine_gmshU003A_2009" ref-type="bibr">Geuzaine
+  &amp; Remacle, 2009</xref>), LaGriT) to generate the mesh by importing
+  and converting it to a TOUGH mesh, which also conveniently facilitates
+  the coupling of TOUGH with any other simulator that also supports the
+  same mesh formats. In addition, <monospace>toughio</monospace> mainly
+  targets the latest version TOUGH3
+  (<xref alt="Jung et al., 2017" rid="ref-jung_tough3_2017" ref-type="bibr">Jung
+  et al., 2017</xref>) and supports most of its new features such as the
+  new input data blocks, the new output formats, and variable length
+  element names. Nevertheless, <monospace>toughio</monospace> is
+  backward compatible with TOUGH2
+  (<xref alt="Pruess et al., 2012" rid="ref-pruess_tough2_2012" ref-type="bibr">Pruess
+  et al., 2012</xref>) and can read/write TOUGH2 input/output files.</p>
+  <p>Figure 1 shows the result of a sample CO2 sequestration simulation
+  where supercritical CO2 is continuously injected during 3 years in a
+  reservoir near a fault modeled as a finite-thickness element with high
+  permeability. The model has been entirely set up using
+  <monospace>toughio</monospace> with a mesh generated by Gmsh imported
+  and pre-processed in Python thanks to <monospace>meshio</monospace>
+  (<xref alt="Schlömer et al., 2020" rid="ref-nico_schlomer_2020_3888325" ref-type="bibr">Schlömer
+  et al., 2020</xref>). The conversion from a finite-element mesh to its
+  dual-graph representation as required by TOUGH is automatically
+  handled by <monospace>toughio</monospace> when exporting the mesh for
+  TOUGH. Outputs of the TOUGH simulation have been imported and remapped
+  into the original finite-element grid and directly visualized in
+  Python thanks to <monospace>pyvista</monospace>
+  (<xref alt="Sullivan &amp; Kaszynski, 2019" rid="ref-sullivan_pyvista_2019" ref-type="bibr">Sullivan
+  &amp; Kaszynski, 2019</xref>).</p>
+  <fig>
+    <caption><p>Example of simulation of CO2 upward leakage along a
+    fault completely developed with <monospace>toughio</monospace>. Mesh
+    has been generated with Gmsh and imported in Python by
+    <monospace>meshio</monospace>. Output figure has been prepared and
+    exported by <monospace>pyvista</monospace>.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="./figures/sample.png" xlink:title="" />
+  </fig>
+  <p><monospace>toughio</monospace> offers a complete set of features to
+  pre- and post-process a TOUGH simulation in Python. Finite-element
+  meshes generated by third-party softwares can be imported and
+  converted to a Voronoi graph for TOUGH, simulation parameters can be
+  defined using a human-readable and jsonable dictionary automatically
+  converted to a fixed-format input file for TOUGH, and simulation
+  results can be imported in Python for post-processing and
+  visualization.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This material is based upon work supported by Lawrence Berkeley
+  National Laboratory under U.S. Department of Energy Award
+  No. DE-AC02-05CH11231.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-yeh_tim_2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yeh</surname><given-names>Angus</given-names></name>
+          <name><surname>Croucher</surname><given-names>Adrian E.</given-names></name>
+          <name><surname>O’Sullivan</surname><given-names>Michael J.</given-names></name>
+        </person-group>
+        <article-title>Tim – Yet Another Graphical Tool for TOUGH2</article-title>
+        <source>35th New Zealand Geothermal Workshop: 2013 Proceedings</source>
+        <year iso-8601-date="2013">2013</year>
+        <issue>November</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-bondua_tough2viewerU003A_2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bondua</surname><given-names>S.</given-names></name>
+          <name><surname>Berry</surname><given-names>P.</given-names></name>
+          <name><surname>Bortolotti</surname><given-names>V.</given-names></name>
+          <name><surname>Cormio</surname><given-names>C.</given-names></name>
+        </person-group>
+        <article-title>TOUGH2Viewer: A post-processing tool for interactive 3D visualization of locally refined unstructured grids for TOUGH2</article-title>
+        <source>Computers &amp; Geosciences</source>
+        <year iso-8601-date="2012-09">2012</year><month>09</month>
+        <volume>46</volume>
+        <issn>00983004</issn>
+        <uri>https://linkinghub.elsevier.com/retrieve/pii/S0098300412001318</uri>
+        <pub-id pub-id-type="doi">10.1016/j.cageo.2012.04.008</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-newson_application_2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Newson</surname><given-names>J</given-names></name>
+          <name><surname>Mannington</surname><given-names>W</given-names></name>
+          <name><surname>Sepulveda</surname><given-names>F</given-names></name>
+          <name><surname>Lane</surname><given-names>R</given-names></name>
+          <name><surname>Pascoe</surname><given-names>R</given-names></name>
+          <name><surname>Clearwater</surname><given-names>E</given-names></name>
+          <name><surname>O’Sullivan</surname><given-names>M J</given-names></name>
+        </person-group>
+        <article-title>Application of 3D modelling and visualization software to reservoir simulation: Leapfrog Geothermal and TOUGH2</article-title>
+        <year iso-8601-date="2012">2012</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-avis_mview_2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Avis</surname><given-names>John</given-names></name>
+          <name><surname>Calder</surname><given-names>Nicola</given-names></name>
+          <name><surname>Walsh</surname><given-names>Robert</given-names></name>
+          <name><surname>Engineering</surname><given-names>Geofirma</given-names></name>
+        </person-group>
+        <article-title>mView - A powerful pre- and post-processor for TOUGH2</article-title>
+        <year iso-8601-date="2012">2012</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-yamamoto_petrasim_2008">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yamamoto</surname><given-names>Hajime</given-names></name>
+        </person-group>
+        <article-title>PetraSim : A Graphical User Interface for the TOUGH2 Family of Multiphase Flow and Transport Codes</article-title>
+        <source>Ground Water</source>
+        <year iso-8601-date="2008-07">2008</year><month>07</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-03-05">2020</year><month>03</month><day>05</day></date-in-citation>
+        <volume>46</volume>
+        <issue>4</issue>
+        <issn>0017467X, 17456584</issn>
+        <uri>http://doi.wiley.com/10.1111/j.1745-6584.2008.00462.x</uri>
+        <pub-id pub-id-type="doi">10.1111/j.1745-6584.2008.00462.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-jung_tough3_2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jung</surname><given-names>Yoojin</given-names></name>
+          <name><surname>Pau</surname><given-names>George Shu Heng</given-names></name>
+          <name><surname>Finsterle</surname><given-names>Stefan</given-names></name>
+          <name><surname>Pollyea</surname><given-names>Ryan M.</given-names></name>
+        </person-group>
+        <article-title>TOUGH3: A new efficient version of the TOUGH suite of multiphase flow and transport simulators</article-title>
+        <source>Computers &amp; Geosciences</source>
+        <year iso-8601-date="2017-11">2017</year><month>11</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-03-05">2020</year><month>03</month><day>05</day></date-in-citation>
+        <volume>108</volume>
+        <issn>00983004</issn>
+        <uri>https://linkinghub.elsevier.com/retrieve/pii/S0098300416304319</uri>
+        <pub-id pub-id-type="doi">10.1016/j.cageo.2016.09.009</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pruess_tough2_2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pruess</surname><given-names>K</given-names></name>
+          <name><surname>Oldenburg</surname><given-names>C</given-names></name>
+          <name><surname>Moridis</surname><given-names>G</given-names></name>
+        </person-group>
+        <article-title>TOUGH2 User’s guide</article-title>
+        <year iso-8601-date="2012">2012</year>
+        <issue>September</issue>
+        <uri>http://esd.lbl.gov/TOUGHPLUS/manuals/TOUGH2_V2_Users_Guide.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-croucher_pytough_2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Croucher</surname><given-names>Adrian</given-names></name>
+        </person-group>
+        <article-title>PyTOUGH: A Python scripting library for automating TOUGH2 simulations</article-title>
+        <source>New Zealand</source>
+        <year iso-8601-date="2011">2011</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-geuzaine_gmshU003A_2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Geuzaine</surname><given-names>Christophe</given-names></name>
+          <name><surname>Remacle</surname><given-names>Jean-François</given-names></name>
+        </person-group>
+        <article-title>Gmsh: A 3-D finite element mesh generator with built-in pre- and post-processing facilities</article-title>
+        <source>International Journal for Numerical Methods in Engineering</source>
+        <year iso-8601-date="2009-09">2009</year><month>09</month>
+        <volume>79</volume>
+        <issue>11</issue>
+        <issn>00295981</issn>
+        <uri>http://doi.wiley.com/10.1002/nme.2579</uri>
+        <pub-id pub-id-type="doi">10.1002/nme.2579</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-nico_schlomer_2020_3888325">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Schlömer</surname><given-names>Nico</given-names></name>
+          <name><surname>McBain</surname><given-names>Geordie</given-names></name>
+          <name><surname>Luu</surname><given-names>Keurfon</given-names></name>
+          <name><surname>Li</surname><given-names>Tianyi</given-names></name>
+          <name><surname>Tsolakis</surname><given-names>Christos</given-names></name>
+          <name><surname>Mataix Ferrándiz</surname><given-names>Vicente</given-names></name>
+          <name><surname>Barnes</surname><given-names>Chris</given-names></name>
+          <name><surname>Dalcin</surname><given-names>Lisandro</given-names></name>
+          <name><surname>Lukeš</surname><given-names>Vladimír</given-names></name>
+          <name><surname>Müller</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Schwarz</surname><given-names>Leo</given-names></name>
+          <name><surname>Blechta</surname><given-names>Jan</given-names></name>
+        </person-group>
+        <source>Nschloe/meshio v4.0.15</source>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://doi.org/10.5281/zenodo.3888325</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3888325</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sullivan_pyvista_2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sullivan</surname><given-names>C.</given-names></name>
+          <name><surname>Kaszynski</surname><given-names>Alexander</given-names></name>
+        </person-group>
+        <article-title>PyVista: 3D plotting and mesh analysis through a streamlined interface for the Visualization Toolkit (VTK)</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2019-05">2019</year><month>05</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-03-05">2020</year><month>03</month><day>05</day></date-in-citation>
+        <volume>4</volume>
+        <issue>37</issue>
+        <issn>2475-9066</issn>
+        <uri>http://joss.theoj.org/papers/10.21105/joss.01450</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.01450</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-narasimhan_integrated_1976">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Narasimhan</surname><given-names>T. N.</given-names></name>
+          <name><surname>Witherspoon</surname><given-names>P. A.</given-names></name>
+        </person-group>
+        <article-title>An integrated finite difference method for analyzing fluid flow in porous media</article-title>
+        <source>Water Resources Research</source>
+        <year iso-8601-date="1976-02">1976</year><month>02</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-06-16">2020</year><month>06</month><day>16</day></date-in-citation>
+        <volume>12</volume>
+        <issue>1</issue>
+        <issn>00431397</issn>
+        <uri>http://doi.wiley.com/10.1029/WR012i001p00057</uri>
+        <pub-id pub-id-type="doi">10.1029/WR012i001p00057</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

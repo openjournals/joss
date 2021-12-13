@@ -1,0 +1,1049 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3238</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03238</article-id>
+<title-group>
+<article-title>wbacon: Weighted BACON algorithms for multivariate
+outlier nomination (detection) and robust linear
+regression</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1640-3395</contrib-id>
+<string-name>Tobias Schoch</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>University of Applied Sciences and Arts Northwestern
+Switzerland, School of Business, Riggenbachstrasse 16, CH-4600 Olten,
+Switzerland</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-06-02">
+<day>2</day>
+<month>6</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>62</issue>
+<fpage>3238</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>outlier detection</kwd>
+<kwd>robustness</kwd>
+<kwd>survey</kwd>
+<kwd>linear regression</kwd>
+<kwd>bounded influence</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Outlier nomination (detection) and robust regression are
+  computationally hard problems. This is all the more true when the
+  number of variables and observations grow rapidly. Among all candidate
+  methods, the two BACON (blocked adaptive computationally efficient
+  outlier nominators) algorithms of Billor et al.
+  (<xref alt="2000" rid="ref-billoretal2000" ref-type="bibr">2000</xref>)
+  have favorable computational characteristics as they require only a
+  few model evaluations irrespective of the sample size. This makes them
+  popular algorithms for multivariate outlier nomination/detection and
+  robust linear regression (at the time of writing
+  <ext-link ext-link-type="uri" xlink:href="https://scholar.google.com">Google
+  Scholar</ext-link> reports more than 500 citations of the Billor et
+  al.
+  (<xref alt="2000" rid="ref-billoretal2000" ref-type="bibr">2000</xref>)
+  paper).</p>
+  <p><monospace>wbacon</monospace> is a package for the
+  <monospace>R</monospace> statistical software
+  (<xref alt="R Core Team, 2021" rid="ref-r2021" ref-type="bibr">R Core
+  Team, 2021</xref>). It is aimed at medium to large data sets that can
+  possibly have (sampling) weights (e.g., data from complex survey
+  samples). The package has a user-friendly <monospace>R</monospace>
+  interface (with plotting methods, etc.) and is written mainly in the
+  <monospace>C</monospace> language (with OpenMP support for
+  parallelization; see OpenMP Architecture Review Board
+  (<xref alt="2018" rid="ref-openmp2018" ref-type="bibr">2018</xref>))
+  for performance reasons.</p>
+</sec>
+<sec id="the-bacon-algorithms">
+  <title>The BACON algorithms</title>
+  <p>Technically, the BACON algorithms consist of the application of
+  series of simple statistical estimation methods such as
+  coordinate-wise means/medians, covariance matrix, Mahalanobis
+  distances, or least squares regression on subsets of the data. The
+  algorithms start from an initial small subset of non-outlying (“good”)
+  data and keep adding those observations to the subset whose distances
+  (or discrepancies in the case of the regression algorithm) are smaller
+  than a predefined threshold value. The algorithms terminate if the
+  subset cannot be increased further. The observations not in the final
+  subset are nominated as outliers. We follow Billor et al.
+  (<xref alt="2000" rid="ref-billoretal2000" ref-type="bibr">2000</xref>)
+  and use the term “nomination” of outliers instead of “detection” to
+  emphasize that the algorithms should not go beyond nominating
+  observations as potential outliers. It is left to the analyst to
+  finally label outlying observations as such.</p>
+  <p>The BACON algorithm for multivariate outlier nomination can be
+  initialized in two ways: version “V1” or “V2” (see
+  <xref alt="Billor et al., 2000" rid="ref-billoretal2000" ref-type="bibr">Billor
+  et al., 2000</xref>). In version V2, the algorithm is started from the
+  coordinate-wise median. As a consequence, the resulting estimators of
+  location and scatter are robust, i.e., the breakdown
+  point<xref ref-type="fn" rid="fn1">1</xref> is approximately 40%
+  (<xref alt="Billor et al., 2000" rid="ref-billoretal2000" ref-type="bibr">Billor
+  et al., 2000</xref>), but the estimators are not affine equivariant
+  estimators of the population location and scatter. However, Billor et
+  al.
+  (<xref alt="2000" rid="ref-billoretal2000" ref-type="bibr">2000</xref>)
+  show that the estimators are <italic>nearly</italic> affine
+  equivariant.</p>
+  <p>The initialization by version V1 yields estimators that are affine
+  equivariant by design because the algorithm is started from the
+  coordinate-wise mean, but the estimators have a very low breakdown
+  point.</p>
+  <p>A naive implementation of the BACON algorithms would call the
+  (simple) estimation methods iteratively on a sequence of growing
+  subsets of the data without bothering too much with reusing or
+  updating existing blocks of data. This leads to an excessively large
+  number of copy/modify operations and (unnecessary) recomputations.
+  Overall, we would end up with a computationally inefficient
+  implementation. For small data sets, the inefficiencies would likely
+  go unnoticed. With large amounts of data, however, the situation is
+  quite different.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>The two BACON algorithms are available from the package
+  <monospace>robustX</monospace>
+  (<xref alt="Maechler, Stahel, et al., 2021" rid="ref-robustx" ref-type="bibr">Maechler,
+  Stahel, et al., 2021</xref>) for the <monospace>R</monospace>
+  statistical software. The BACON algorithm for multivariate outlier
+  nomination has been extended to weighted problems (in the context of
+  survey sampling) and incomplete data by Béguin &amp; Hulliger
+  (<xref alt="2008" rid="ref-beguinhulliger2008" ref-type="bibr">2008</xref>).
+  The extended method is available from the <monospace>R</monospace>
+  package <monospace>modi</monospace>
+  (<xref alt="Hulliger &amp; Sterchi, 2020" rid="ref-modi" ref-type="bibr">Hulliger
+  &amp; Sterchi, 2020</xref>). Both implementations are not explicitly
+  targeted at large data sets. Our package fills this gap.</p>
+</sec>
+<sec id="what-the-package-offers">
+  <title>What the package offers</title>
+  <p>The implementation of the <monospace>wbacon</monospace> package is
+  targeted at medium to large data sets and is mainly implemented in the
+  <monospace>C</monospace> language. The code depends heavily on the
+  subroutines in the libraries <monospace>BLAS</monospace>
+  (<xref alt="Blackford et al., 2002" rid="ref-blas2002" ref-type="bibr">Blackford
+  et al., 2002</xref>) and <monospace>LAPACK</monospace>
+  (<xref alt="Anderson et al., 1999" rid="ref-lapack1999" ref-type="bibr">Anderson
+  et al., 1999</xref>). If computation time is of great importance, we
+  recommend replacing the reference implementation of the
+  <monospace>BLAS</monospace> library that ships with
+  <monospace>R</monospace> by a version that has been adapted to the
+  user’s hardware (see e.g.,
+  <ext-link ext-link-type="uri" xlink:href="http://www.openblas.net">OpenBLAS</ext-link>).
+  The non-<monospace>BLAS</monospace> components of
+  <monospace>wbacon</monospace> use multiple threads (if the compiler
+  supports <monospace>OpenMP</monospace>; see OpenMP Architecture Review
+  Board
+  (<xref alt="2018" rid="ref-openmp2018" ref-type="bibr">2018</xref>))
+  for the computations over the <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+  variables/columns because the computational time complexity is
+  dominated by <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>.
+  For instance, the time complexity of the BACON algorithm for
+  multivariate outlier nomination is dominated by the complexity of the
+  covariance matrix computation, which is of order
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{O}(np^2)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>𝒪</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>n</mml:mi><mml:msup><mml:mi>p</mml:mi><mml:mn>2</mml:mn></mml:msup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>,
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>
+  denotes the number of observations. The major improvements of
+  <monospace>wbacon</monospace> (in terms of computation time) over the
+  naive implementation, however, are achieved by using partial sorting
+  (in place of a full sort), reusing computed estimates, and employing
+  an up-/downdating scheme for the Cholesky and QR factorizations. The
+  computational costs of the up-/downdating schemes are far less than
+  recomputing the entire decomposition repeatedly.</p>
+</sec>
+<sec id="diagnostic-tools">
+  <title>Diagnostic tools</title>
+  <p>The BACON algorithms assume that the underlying model is an
+  appropriate description of the non-outlying observations. More
+  precisely
+  (<xref alt="Billor et al., 2000" rid="ref-billoretal2000" ref-type="bibr">Billor
+  et al., 2000</xref>),</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>the outlier nomination method assumes that the “good” data have
+      (roughly) an elliptically contoured distribution (this includes
+      the Gaussian distribution as a special case);</p>
+    </list-item>
+    <list-item>
+      <p>the regression method assumes that the non-outlying (“good”)
+      data are described by a linear (homoscedastic) regression model
+      and that the independent variables (having removed the regression
+      intercept/constant, if there is a constant) follow (roughly) an
+      elliptically contoured distribution.</p>
+    </list-item>
+  </list>
+  <p>We recommend that the users examine the data structure of the
+  “good” observations to verify that the assumptions hold. The following
+  quote from the authors of the BACON algorithms should be noted.</p>
+  <disp-quote>
+    <p>“Although the algorithms will often do something reasonable even
+    when these assumptions are violated, it is hard to say what the
+    results mean.”
+    (<xref alt="Billor et al., 2000, p. 289" rid="ref-billoretal2000" ref-type="bibr">Billor
+    et al., 2000, p. 289</xref>)</p>
+  </disp-quote>
+  <p>The <monospace>wbacon</monospace> package provides the analyst with
+  tools to identify potentially outlying observations. For multivariate
+  outlier nomination, the package implements several diagnostic plots.
+  Worth mentioning is the graph which plots the robust (Mahalanobis)
+  distances against the univariate projection of the data that maximizes
+  the separation criterion of Qiu &amp; Joe
+  (<xref alt="2006" rid="ref-qiujoe2006" ref-type="bibr">2006</xref>).
+  This kind of diagnostic graph attempts to separate outlying from
+  non-outlying observations as much as possible; see Willems et al.
+  (<xref alt="2009" rid="ref-willemsetal2009" ref-type="bibr">2009</xref>).
+  It is particularly helpful when the outliers are clustered or show
+  patterns. For robust linear regression, the package offers the
+  standard plotting methods that are available for objects of the class
+  <monospace>lm</monospace>. In addition, it implements the plot of the
+  robust distances of the (non-constant) design variables against the
+  standardized residuals. This diagnostic plot been proposed by
+  Rousseeuw &amp; Zomeren
+  (<xref alt="1990" rid="ref-rousseeuwvanzomeren1990" ref-type="bibr">1990</xref>).
+  All plotting methods can be displayed as hexagonally binned scatter
+  plots, using the functionality of the <monospace>hexbin</monospace>
+  (<xref alt="Carr et al., 2021" rid="ref-hexbin" ref-type="bibr">Carr
+  et al., 2021</xref>) package. This option is recommended for large
+  data sets.</p>
+</sec>
+<sec id="illustration">
+  <title>Illustration</title>
+  <p>In this section, we illustrate the use of the BACON algorithm for
+  robust linear regression. Our data are on education expenditures in 50
+  US states in 1975
+  (<xref alt="Chatterjee &amp; Hadi, 2006, Chapter 5.7" rid="ref-chatterjeehadi2006" ref-type="bibr">Chatterjee
+  &amp; Hadi, 2006, Chapter 5.7</xref>). The data can be loaded from the
+  <monospace>robustbase</monospace>
+  (<xref alt="Maechler, Rousseeuw, et al., 2021" rid="ref-robustbase" ref-type="bibr">Maechler,
+  Rousseeuw, et al., 2021</xref>) package.</p>
+  <code language="r script">library(wbacon)
+data(education, package = &quot;robustbase&quot;)
+
+names(education)[3:6] &lt;- c(&quot;RES&quot;, &quot;INC&quot;, &quot;YOUNG&quot;, &quot;EXP&quot;)
+head(education)</code>
+  <p>The variables are:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p><monospace>State</monospace>: State</p>
+    </list-item>
+    <list-item>
+      <p><monospace>Region</monospace>: group variable with outcomes:
+      1=Northeastern, 2=North central, 3=Southern, and 4=Western</p>
+    </list-item>
+    <list-item>
+      <p><monospace>RES</monospace>: Number of residents per thousand
+      residing in urban areas in 1970</p>
+    </list-item>
+    <list-item>
+      <p><monospace>INC</monospace>: Per capita personal income in 1973
+      ($US)</p>
+    </list-item>
+    <list-item>
+      <p><monospace>YOUNG</monospace>: Number of residents per thousand
+      under 18 years of age in 1974</p>
+    </list-item>
+    <list-item>
+      <p><monospace>EXP</monospace>: Per capita expenditure on public
+      education in a state ($US), projected for 1975</p>
+    </list-item>
+  </list>
+  <p>Our goal is to regress education expenditures
+  (<monospace>EXP</monospace>) on the variables
+  <monospace>RES</monospace>, <monospace>INC</monospace>, and
+  <monospace>YOUNG</monospace>. For the BACON robust linear regression
+  algorithm, we have</p>
+  <code language="r script">reg &lt;- wBACON_reg(EXP ~ RES + INC + YOUNG, data = education)
+
+reg
+
+#&gt; Call:
+#&gt; wBACON_reg(formula = EXP ~ RES + INC + YOUNG, data = education)
+#&gt;
+#&gt; Regression on the subset of 49 out of 50 observations (98%)
+#&gt;
+#&gt; Coefficients:
+#&gt; (Intercept)          RES          INC        YOUNG
+#&gt;  -277.57731      0.06679      0.04829      0.88693</code>
+  <p>By default, <monospace>wBACON_reg()</monospace> uses the
+  parametrization <monospace>alpha = 0.05</monospace>,
+  <monospace>collect = 4</monospace>, and
+  <monospace>version = &quot;V2&quot;</monospace>. These parameters are
+  used to call the <monospace>wBACON()</monospace> multivariate outlier
+  nomination/detection algorithm on the design matrix. Then, the same
+  parameters are used to compute the robust linear regression.</p>
+  <p>To ensure a high breakdown point,
+  <monospace>version = &quot;V2&quot;</monospace> should not be changed
+  to “V1” unless you have good reasons to do so. The main “turning knob”
+  to tune the regression algorithm is <monospace>alpha</monospace>,
+  which defines the <inline-formula><alternatives>
+  <tex-math><![CDATA[(1 - \alpha)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:mi>α</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+  quantile <inline-formula><alternatives>
+  <tex-math><![CDATA[t_{\alpha,\nu}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>t</mml:mi><mml:mrow><mml:mi>α</mml:mi><mml:mo>,</mml:mo><mml:mi>ν</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+  of the Student <inline-formula><alternatives>
+  <tex-math><![CDATA[t]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>t</mml:mi></mml:math></alternatives></inline-formula>-distribution
+  with <inline-formula><alternatives>
+  <tex-math><![CDATA[\nu]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ν</mml:mi></mml:math></alternatives></inline-formula>
+  degrees of freedom. In fact, the quantile
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[t_{\alpha/(2r + 2),r-p}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>t</mml:mi><mml:mrow><mml:mi>α</mml:mi><mml:mi>/</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>2</mml:mn><mml:mi>r</mml:mi><mml:mo>+</mml:mo><mml:mn>2</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mi>r</mml:mi><mml:mo>−</mml:mo><mml:mi>p</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+  is used as the cutoff value (see
+  <xref alt="Billor et al., 2000" rid="ref-billoretal2000" ref-type="bibr">Billor
+  et al., 2000</xref>), where <inline-formula><alternatives>
+  <tex-math><![CDATA[r]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>r</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+  denote, respectively, the number observations in the set of “good”
+  observations and the number of variables. All observations whose
+  discrepancies (defined as the scaled residuals on the set of “good”
+  observations and the scaled prediction error on the set of “bad”
+  observations) are smaller (in absolute value) than the cutoff value
+  are selected into the subset of “good” data [see document
+  <monospace>methods.pdf</monospace> in the folder
+  <monospace>inst/doc</monospace> of the source package]. By choosing
+  larger values for <monospace>alpha</monospace> (e.g., 0.2), more
+  observations are selected (ceteris paribus) into the subset of “good”
+  data (and vice versa).</p>
+  <p>The parameter <monospace>collect</monospace> specifies the size of
+  the initial subset, which is defined as <inline-formula><alternatives>
+  <tex-math><![CDATA[m = p \cdot collect]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>m</mml:mi><mml:mo>=</mml:mo><mml:mi>p</mml:mi><mml:mo>⋅</mml:mo><mml:mi>c</mml:mi><mml:mi>o</mml:mi><mml:mi>l</mml:mi><mml:mi>l</mml:mi><mml:mi>e</mml:mi><mml:mi>c</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.
+  It should be chosen such that <inline-formula><alternatives>
+  <tex-math><![CDATA[m]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>m</mml:mi></mml:math></alternatives></inline-formula>
+  is considerably smaller than the number of observations
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>.
+  Otherwise we are at risk of selecting too many “bad” observations into
+  the initial subset, which will eventually bias the regression
+  estimates.</p>
+  <p>The instance <monospace>reg</monospace> is an object of the class
+  <monospace>wbaconlm</monospace>. The printed output of
+  <monospace>wBACON_reg()</monospace> is identical with the one of the
+  <monospace>stats::lm()</monospace> function. In addition, we are told
+  the size of the subset on which the final regression has been
+  computed. The observations not in the subset are considered potential
+  outliers (here 1 out of 50 observations). The
+  <monospace>summary()</monospace> method can be used to summarize the
+  estimated model.</p>
+  <code language="r script">summary(reg)
+
+#&gt; Call:
+#&gt; wBACON_reg(formula = EXP ~ RES + INC + YOUNG, data = education)
+#&gt;
+#&gt; Residuals:
+#&gt;     Min      1Q  Median      3Q     Max
+#&gt; -81.128 -22.154  -7.542  22.542  80.890
+#&gt;
+#&gt; Coefficients:
+#&gt;               Estimate Std. Error t value Pr(&gt;|t|)
+#&gt; (Intercept) -277.57731  132.42286  -2.096 0.041724 *
+#&gt; RES            0.06679    0.04934   1.354 0.182591
+#&gt; INC            0.04829    0.01215   3.976 0.000252 ***
+#&gt; YOUNG          0.88693    0.33114   2.678 0.010291 *
+#&gt; ---
+#&gt; Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#&gt;
+#&gt; Residual standard error: 35.81 on 45 degrees of freedom
+#&gt; Multiple R-squared:  0.4967,    Adjusted R-squared:  0.4631
+#&gt; F-statistic:  14.8 on 3 and 45 DF,  p-value: 7.653e-07</code>
+  <p>The methods <monospace>coef()</monospace>,
+  <monospace>vcov()</monospace>, and <monospace>predict()</monospace>
+  work exactly the same as their <monospace>lm()</monospace>
+  counterparts. This is also true for the first three
+  <monospace>plot()</monospace> types, that is</p>
+  <list list-type="bullet">
+    <list-item>
+      <p><monospace>which = 1</monospace>: Residuals vs Fitted,</p>
+    </list-item>
+    <list-item>
+      <p><monospace>which = 2</monospace>: Normal Q-Q,</p>
+    </list-item>
+    <list-item>
+      <p><monospace>which = 3</monospace>: Scale-Location.</p>
+    </list-item>
+  </list>
+  <p>The plot types <monospace>4:6</monospace> of
+  <monospace>plot.lm()</monospace> are not implemented for objects of
+  the class <monospace>wbaconlm</monospace> because it is not sensible
+  to study the standard regression influence diagnostics in the presence
+  of outliers in the model’s design space (leverage observations).
+  Instead, type four (<monospace>which = 4</monospace>) plots the robust
+  Mahalanobis distances with respect to the non-constant design
+  variables against the standardized residual. This plot has been
+  proposed by Rousseeuw &amp; Zomeren
+  (<xref alt="1990" rid="ref-rousseeuwvanzomeren1990" ref-type="bibr">1990</xref>).
+  This plot method is also available in the package
+  <monospace>robustbase</monospace>
+  (<xref alt="Maechler, Rousseeuw, et al., 2021" rid="ref-robustbase" ref-type="bibr">Maechler,
+  Rousseeuw, et al., 2021</xref>) for robust regression estimators of
+  the class <monospace>lmrob</monospace>.</p>
+  <p>See vignette to learn more about the package.</p>
+</sec>
+<sec id="benchmarking">
+  <title>Benchmarking</title>
+  <p>We compare our implementation with
+  <monospace>robustX::BACON()</monospace> in terms of computational
+  time. First, we consider estimating a robust linear regression for a
+  Gaussian mixture distribution, where a proportion of
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[1- \epsilon]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:mi>ϵ</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  of the observations on the <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+  independent variables is generated by the Gaussian model, while a
+  proportion of <inline-formula><alternatives>
+  <tex-math><![CDATA[\epsilon]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϵ</mml:mi></mml:math></alternatives></inline-formula>
+  (the outliers) is generated by a shifted Gaussian distribution. For
+  the outlying observations (i.e., <inline-formula><alternatives>
+  <tex-math><![CDATA[\epsilon]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ϵ</mml:mi></mml:math></alternatives></inline-formula>
+  proportion of the data), the response variable is generated by a
+  regression coefficient which is 10 times larger than the coefficient
+  of the non-outlying observations. We choose
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\epsilon = 0.05]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>ϵ</mml:mi><mml:mo>=</mml:mo><mml:mn>0.05</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>;
+  see Appendix for more details on the setup. The number of variables
+  (<inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>)
+  and the number of observations (<inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>)
+  are varied.</p>
+  <p>For the regression exercise, our setup is intentionally
+  <italic>limited to single-threaded</italic> computations
+  (<monospace>n_threads = 1</monospace>; no OpenMP parallelization
+  support). It is clear that when the number of variables is large, the
+  parallelized computations are (usually) much faster. Table 1 shows the
+  ratio of average computation time of the two implementation for some
+  configurations of <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>.
+  A ratio <inline-formula><alternatives>
+  <tex-math><![CDATA[> 1.0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>&gt;</mml:mo><mml:mn>1.0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  (<inline-formula><alternatives>
+  <tex-math><![CDATA[< 1.0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>&lt;</mml:mo><mml:mn>1.0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>)
+  implies that <monospace>wBACON_reg()</monospace> is faster (slower)
+  than <monospace>robustX::BACON()</monospace>. The average ratio refers
+  to computation time averaged over repeated benchmarks using the R
+  package <monospace>microbenchmark</monospace>
+  (<xref alt="Mersmann et al., 2019" rid="ref-microbenchmark" ref-type="bibr">Mersmann
+  et al., 2019</xref>). It is evident from the results in Table 1 that
+  <monospace>wBACON_reg()</monospace> is considerably faster than its
+  competitor, e.g., <monospace>wBACON_reg()</monospace> is on average
+  4.4 times faster for the setup <inline-formula><alternatives>
+  <tex-math><![CDATA[p=5]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>=</mml:mo><mml:mn>5</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[n=100]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>n</mml:mi><mml:mo>=</mml:mo><mml:mn>100</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>.
+  More importantly, the differences become larger as we increase
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>
+  or <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>.
+  The differences in computation time are mainly due to the fact that
+  <monospace>wBACON_reg()</monospace> updates the regression estimates
+  as the subset of non-outlying observations grows, while
+  <monospace>robustX::BACON()</monospace> recomputes the estimates at
+  each iteration. When thread-level parallelism is enabled in
+  <monospace>wBACON_reg()</monospace>, the differences become even
+  larger (for <inline-formula><alternatives>
+  <tex-math><![CDATA[p \geq 20]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>≥</mml:mo><mml:mn>20</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[n \geq 10^3]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>n</mml:mi><mml:mo>≥</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>3</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>).</p>
+  <table-wrap>
+    <table>
+      <thead>
+        <tr>
+          <th align="left"></th>
+          <th align="right"><inline-formula><alternatives>
+          <tex-math><![CDATA[p=5]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>=</mml:mo><mml:mn>5</mml:mn></mml:mrow></mml:math></alternatives></inline-formula></th>
+          <th align="right"><inline-formula><alternatives>
+          <tex-math><![CDATA[p=10]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>=</mml:mo><mml:mn>10</mml:mn></mml:mrow></mml:math></alternatives></inline-formula></th>
+          <th align="right"><inline-formula><alternatives>
+          <tex-math><![CDATA[p=20]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>=</mml:mo><mml:mn>20</mml:mn></mml:mrow></mml:math></alternatives></inline-formula></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="left"><inline-formula><alternatives>
+          <tex-math><![CDATA[n=10^2]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>n</mml:mi><mml:mo>=</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>2</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula></td>
+          <td align="right">4.4</td>
+          <td align="right">5.3</td>
+          <td align="right">7.1</td>
+        </tr>
+        <tr>
+          <td align="left"><inline-formula><alternatives>
+          <tex-math><![CDATA[n=10^3]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>n</mml:mi><mml:mo>=</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>3</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula></td>
+          <td align="right">43.9</td>
+          <td align="right">52.5</td>
+          <td align="right">55.0</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p><italic>Table 1. Robust linear regression (single thread): Ratio of
+  average computation time. A ratio <inline-formula><alternatives>
+  <tex-math><![CDATA[> 1.0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>&gt;</mml:mo><mml:mn>1.0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  implies that <monospace>wBACON_reg()</monospace> is faster than
+  <monospace>robustX::BACON()</monospace></italic></p>
+  <p>In the second benchmark, we study the ratio of average computation
+  time of <monospace>wBACON()</monospace>
+  vs. <monospace>robustX::BACON()</monospace> for multivariate outlier
+  nomination; see Table 2. A ratio <inline-formula><alternatives>
+  <tex-math><![CDATA[> 1.0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>&gt;</mml:mo><mml:mn>1.0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  (<inline-formula><alternatives>
+  <tex-math><![CDATA[< 1.0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>&lt;</mml:mo><mml:mn>1.0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>)
+  implies that <monospace>wBACON()</monospace> is faster (slower) than
+  <monospace>robustX::BACON()</monospace>. In this benchmark,
+  <monospace>wBACON()</monospace> is set up with thread-level and
+  instruction-level parallelization:
+  <ext-link ext-link-type="uri" xlink:href="http://www.openblas.net">OpenBLAS</ext-link>
+  in place of the standard <monospace>BLAS</monospace> library and full
+  OpenMP
+  (<xref alt="OpenMP Architecture Review Board, 2018" rid="ref-openmp2018" ref-type="bibr">OpenMP
+  Architecture Review Board, 2018</xref>) support. For ease of
+  simplicity, we use a “plain vanilla” parallelization mode which spawns
+  all available cores/threads.</p>
+  <table-wrap>
+    <table>
+      <thead>
+        <tr>
+          <th align="left"></th>
+          <th align="right"><inline-formula><alternatives>
+          <tex-math><![CDATA[p=5]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>=</mml:mo><mml:mn>5</mml:mn></mml:mrow></mml:math></alternatives></inline-formula></th>
+          <th align="right"><inline-formula><alternatives>
+          <tex-math><![CDATA[p=10]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>=</mml:mo><mml:mn>10</mml:mn></mml:mrow></mml:math></alternatives></inline-formula></th>
+          <th align="right"><inline-formula><alternatives>
+          <tex-math><![CDATA[p=20]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>=</mml:mo><mml:mn>20</mml:mn></mml:mrow></mml:math></alternatives></inline-formula></th>
+          <th align="right"><inline-formula><alternatives>
+          <tex-math><![CDATA[p=30]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>=</mml:mo><mml:mn>30</mml:mn></mml:mrow></mml:math></alternatives></inline-formula></th>
+          <th align="right"><inline-formula><alternatives>
+          <tex-math><![CDATA[p=40]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>=</mml:mo><mml:mn>40</mml:mn></mml:mrow></mml:math></alternatives></inline-formula></th>
+          <th align="right"><inline-formula><alternatives>
+          <tex-math><![CDATA[p=50]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>=</mml:mo><mml:mn>50</mml:mn></mml:mrow></mml:math></alternatives></inline-formula></th>
+          <th align="right"><inline-formula><alternatives>
+          <tex-math><![CDATA[p=100]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>=</mml:mo><mml:mn>100</mml:mn></mml:mrow></mml:math></alternatives></inline-formula></th>
+          <th align="right"><inline-formula><alternatives>
+          <tex-math><![CDATA[p=200]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>=</mml:mo><mml:mn>200</mml:mn></mml:mrow></mml:math></alternatives></inline-formula></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="left"><inline-formula><alternatives>
+          <tex-math><![CDATA[n = 10^3]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>n</mml:mi><mml:mo>=</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>3</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula></td>
+          <td align="right">0.5</td>
+          <td align="right">1.0</td>
+          <td align="right">1.2</td>
+          <td align="right">1.4</td>
+          <td align="right">2.3</td>
+          <td align="right">2.7</td>
+          <td align="right">4.7</td>
+          <td align="right">9.0</td>
+        </tr>
+        <tr>
+          <td align="left"><inline-formula><alternatives>
+          <tex-math><![CDATA[n = 10^4]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>n</mml:mi><mml:mo>=</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>4</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula></td>
+          <td align="right">0.9</td>
+          <td align="right">1.1</td>
+          <td align="right">1.5</td>
+          <td align="right">1.7</td>
+          <td align="right">2.6</td>
+          <td align="right">3.0</td>
+          <td align="right">5.0</td>
+          <td align="right">8.3</td>
+        </tr>
+        <tr>
+          <td align="left"><inline-formula><alternatives>
+          <tex-math><![CDATA[n = 10^5]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>n</mml:mi><mml:mo>=</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>5</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula></td>
+          <td align="right">0.1</td>
+          <td align="right">0.6</td>
+          <td align="right">0.8</td>
+          <td align="right">1.3</td>
+          <td align="right">2.0</td>
+          <td align="right">2.3</td>
+          <td align="right">4.7</td>
+          <td align="right">9.9</td>
+        </tr>
+        <tr>
+          <td align="left"><inline-formula><alternatives>
+          <tex-math><![CDATA[n = 10^6]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>n</mml:mi><mml:mo>=</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>6</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula></td>
+          <td align="right">0.9</td>
+          <td align="right">1.5</td>
+          <td align="right">2.2</td>
+          <td align="right">2.8</td>
+          <td align="right">4.0</td>
+          <td align="right">4.1</td>
+          <td align="right">7.7</td>
+          <td align="right">13.7</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p><italic>Table 2. Multivariate outlier nomination/detection
+  (multithreading): Ratio of average computation time. A ratio
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[> 1.0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>&gt;</mml:mo><mml:mn>1.0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  (<inline-formula><alternatives>
+  <tex-math><![CDATA[< 1.0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>&lt;</mml:mo><mml:mn>1.0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>)
+  implies that <monospace>wBACON()</monospace> is faster (slower) than
+  <monospace>robustX::BACON()</monospace></italic></p>
+  <p>For very small data sets (e.g., <inline-formula><alternatives>
+  <tex-math><![CDATA[n=10^3]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>n</mml:mi><mml:mo>=</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>3</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[p=5]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>=</mml:mo><mml:mn>5</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>),
+  <monospace>wBACON()</monospace> is slower because parallelization
+  leads to computation overhead that dominates computation time.
+  Clearly, it would be more efficient to specify only 1 or 2 threads for
+  such small data sets. However, the differences in computation time are
+  hardly noticeable to the user (0.08 vs. 0.14 seconds). For larger data
+  sets (in terms of number of variables and observations),
+  <monospace>wBACON()</monospace> outperforms
+  <monospace>robustX::BACON()</monospace>; see Table 2. For instance,
+  <monospace>wBACON()</monospace> is 13.7 times faster for the setup
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[p=200]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>p</mml:mi><mml:mo>=</mml:mo><mml:mn>200</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[n=10^6]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>n</mml:mi><mml:mo>=</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>6</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>.
+  The differences in computation time between the two implementations
+  become larger as we increase <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>
+  or <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>I would like to acknowledge many fruitful discussions with Beat
+  Hulliger. This research did not receive any special grant from funding
+  agencies in the public, commercial, or not-for-profit sectors.</p>
+</sec>
+<sec id="appendix">
+  <title>Appendix</title>
+  <p>Consider the Gaussian mixture distribution
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[G = (1 - \epsilon) \cdot N(0 \cdot 1_p, I_p) + \epsilon \cdot N(4 \cdot 1_p, I_p)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>G</mml:mi><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:mi>ϵ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>⋅</mml:mo><mml:mi>N</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>0</mml:mn><mml:mo>⋅</mml:mo><mml:msub><mml:mn>1</mml:mn><mml:mi>p</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>I</mml:mi><mml:mi>p</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mi>ϵ</mml:mi><mml:mo>⋅</mml:mo><mml:mi>N</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>4</mml:mn><mml:mo>⋅</mml:mo><mml:msub><mml:mn>1</mml:mn><mml:mi>p</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>I</mml:mi><mml:mi>p</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>,
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[\epsilon = 0.05]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>ϵ</mml:mi><mml:mo>=</mml:mo><mml:mn>0.05</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>
+  (amount of contamination), <inline-formula><alternatives>
+  <tex-math><![CDATA[N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
+  is the cumulative distribution function of the
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>-variate
+  Gaussian distribution, <inline-formula><alternatives>
+  <tex-math><![CDATA[I_p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>I</mml:mi><mml:mi>p</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[1_p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mn>1</mml:mn><mml:mi>p</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+  are, respectively, the <inline-formula><alternatives>
+  <tex-math><![CDATA[(p \times p)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>p</mml:mi><mml:mo>×</mml:mo><mml:mi>p</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+  identity matrix and the <inline-formula><alternatives>
+  <tex-math><![CDATA[p]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>-vector
+  of ones. We generate the <inline-formula><alternatives>
+  <tex-math><![CDATA[(\lfloor \epsilon n\rfloor \times p)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mo stretchy="false" form="prefix">⌊</mml:mo><mml:mi>ϵ</mml:mi><mml:mi>n</mml:mi><mml:mo stretchy="false" form="postfix">⌋</mml:mo><mml:mo>×</mml:mo><mml:mi>p</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+  matrix <inline-formula><alternatives>
+  <tex-math><![CDATA[X_{good}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>X</mml:mi><mml:mrow><mml:mi>g</mml:mi><mml:mi>o</mml:mi><mml:mi>o</mml:mi><mml:mi>d</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+  of “good” observations from the <inline-formula><alternatives>
+  <tex-math><![CDATA[N(0 \cdot 1_p, I_p)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>N</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>0</mml:mn><mml:mo>⋅</mml:mo><mml:msub><mml:mn>1</mml:mn><mml:mi>p</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>I</mml:mi><mml:mi>p</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  distribution, where <inline-formula><alternatives>
+  <tex-math><![CDATA[n]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>
+  denotes the sample size. The matrix <inline-formula><alternatives>
+  <tex-math><![CDATA[X_{bad}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>X</mml:mi><mml:mrow><mml:mi>b</mml:mi><mml:mi>a</mml:mi><mml:mi>d</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+  consisting of <inline-formula><alternatives>
+  <tex-math><![CDATA[\lceil (1 - \epsilon) n \rceil]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">⌈</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:mi>ϵ</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>n</mml:mi><mml:mo stretchy="false" form="postfix">⌉</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+  “bad” observations is generated from the
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[N(4 \cdot 1_p, I_p)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>N</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>4</mml:mn><mml:mo>⋅</mml:mo><mml:msub><mml:mn>1</mml:mn><mml:mi>p</mml:mi></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>I</mml:mi><mml:mi>p</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+  distribution.</p>
+  <p>For the regression analysis, we generate the vectors of the
+  response variable <inline-formula><alternatives>
+  <tex-math><![CDATA[y_{good} = X_{good} 1_p + e]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>y</mml:mi><mml:mrow><mml:mi>g</mml:mi><mml:mi>o</mml:mi><mml:mi>o</mml:mi><mml:mi>d</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mrow><mml:mi>g</mml:mi><mml:mi>o</mml:mi><mml:mi>o</mml:mi><mml:mi>d</mml:mi></mml:mrow></mml:msub><mml:msub><mml:mn>1</mml:mn><mml:mi>p</mml:mi></mml:msub><mml:mo>+</mml:mo><mml:mi>e</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[y_{bad} = X_{bad} (10 \cdot 1_p) + e]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>y</mml:mi><mml:mrow><mml:mi>b</mml:mi><mml:mi>a</mml:mi><mml:mi>d</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:msub><mml:mi>X</mml:mi><mml:mrow><mml:mi>b</mml:mi><mml:mi>a</mml:mi><mml:mi>d</mml:mi></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>10</mml:mn><mml:mo>⋅</mml:mo><mml:msub><mml:mn>1</mml:mn><mml:mi>p</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mi>e</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>,
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[e]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>e</mml:mi></mml:math></alternatives></inline-formula>
+  is a random error with standard Gaussian distribution. In the
+  simulation, <inline-formula><alternatives>
+  <tex-math><![CDATA[y]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>y</mml:mi></mml:math></alternatives></inline-formula>
+  is regressed on <inline-formula><alternatives>
+  <tex-math><![CDATA[X]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>X</mml:mi></mml:math></alternatives></inline-formula>,
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[y = (y_{good}^T, y_{bad}^T)^T]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>y</mml:mi><mml:mo>=</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mi>y</mml:mi><mml:mrow><mml:mi>g</mml:mi><mml:mi>o</mml:mi><mml:mi>o</mml:mi><mml:mi>d</mml:mi></mml:mrow><mml:mi>T</mml:mi></mml:msubsup><mml:mo>,</mml:mo><mml:msubsup><mml:mi>y</mml:mi><mml:mrow><mml:mi>b</mml:mi><mml:mi>a</mml:mi><mml:mi>d</mml:mi></mml:mrow><mml:mi>T</mml:mi></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>T</mml:mi></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[X = (X_{good}^T, X_{bad}^T)^T]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>X</mml:mi><mml:mo>=</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msubsup><mml:mi>X</mml:mi><mml:mrow><mml:mi>g</mml:mi><mml:mi>o</mml:mi><mml:mi>o</mml:mi><mml:mi>d</mml:mi></mml:mrow><mml:mi>T</mml:mi></mml:msubsup><mml:mo>,</mml:mo><mml:msubsup><mml:mi>X</mml:mi><mml:mrow><mml:mi>b</mml:mi><mml:mi>a</mml:mi><mml:mi>d</mml:mi></mml:mrow><mml:mi>T</mml:mi></mml:msubsup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>T</mml:mi></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+  <p>Computing environment: R version 3.6.3 (x86_64-pc-linux-gnu, 64
+  bit, Ubuntu 20.04.2 LTS), Intel Core i7-10700K CPU (8 cores, 16
+  threads), 3.80 GHz base clock.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-beguinhulliger2008">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Béguin</surname><given-names>C.</given-names></name>
+          <name><surname>Hulliger</surname><given-names>B.</given-names></name>
+        </person-group>
+        <article-title>The BACON-EEM algorithm for multivariate outlier detection in incomplete survey data</article-title>
+        <source>Survey Methodology</source>
+        <year iso-8601-date="2008">2008</year>
+        <volume>34</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-billoretal2000">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Billor</surname><given-names>N.</given-names></name>
+          <name><surname>Hadi</surname><given-names>A. S.</given-names></name>
+          <name><surname>Vellemann</surname><given-names>P. F.</given-names></name>
+        </person-group>
+        <article-title>BACON: Blocked adaptive computationally-efficient outlier nominators</article-title>
+        <source>Computational Statistics and Data Analysis</source>
+        <year iso-8601-date="2000">2000</year>
+        <volume>34</volume>
+        <pub-id pub-id-type="doi">10.1016/S0167-9473(99)00101-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-chatterjeehadi2006">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Chatterjee</surname><given-names>S.</given-names></name>
+          <name><surname>Hadi</surname><given-names>A. H.</given-names></name>
+        </person-group>
+        <source>Regression analysis by example</source>
+        <publisher-name>John Wiley; Sons</publisher-name>
+        <publisher-loc>Hoboken (NJ)</publisher-loc>
+        <year iso-8601-date="2006">2006</year>
+        <pub-id pub-id-type="doi">10.1002/0470055464</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-blas2002">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Blackford</surname><given-names>L. S.</given-names></name>
+          <name><surname>Petitet</surname><given-names>A.</given-names></name>
+          <name><surname>Pozo</surname><given-names>R.</given-names></name>
+          <name><surname>Remington</surname><given-names>K.</given-names></name>
+          <name><surname>Whaley</surname><given-names>R. C.</given-names></name>
+          <name><surname>Demmel</surname><given-names>J.</given-names></name>
+          <name><surname>Dongarra</surname><given-names>J.</given-names></name>
+          <name><surname>Duff</surname><given-names>I.</given-names></name>
+          <name><surname>Hammarling</surname><given-names>S.</given-names></name>
+          <name><surname>Henry</surname><given-names>G.</given-names></name>
+          <name><surname>Heroux</surname><given-names>M.</given-names></name>
+          <name><surname>Kaufman</surname><given-names>L.</given-names></name>
+          <name><surname>Lumsdaine</surname><given-names>A.</given-names></name>
+        </person-group>
+        <article-title>An updated set of basic linear algebra subprograms (BLAS)</article-title>
+        <source>ACM Transactions on Mathematical Software</source>
+        <year iso-8601-date="2002">2002</year>
+        <volume>28</volume>
+        <pub-id pub-id-type="doi">10.1145/567806.567807</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hexbin">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Carr</surname><given-names>D.</given-names></name>
+          <name><surname>Lewin-Koh</surname><given-names>N.</given-names></name>
+          <name><surname>Maechler</surname><given-names>M.</given-names></name>
+        </person-group>
+        <source>Hexbin: Hexagonal binning routines</source>
+        <publisher-name>R package version 1.28.2. (The package contains copies of lattice functions written by Deepayan Sarkar)</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://CRAN.R-project.org/package=hexbin</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-lapack1999">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Anderson</surname><given-names>E.</given-names></name>
+          <name><surname>Bai</surname><given-names>Z.</given-names></name>
+          <name><surname>Bischof</surname><given-names>C.</given-names></name>
+          <name><surname>Blackford</surname><given-names>L. S.</given-names></name>
+          <name><surname>Demmel</surname><given-names>J.</given-names></name>
+          <name><surname>Dongarra</surname><given-names>J.</given-names></name>
+          <name><surname>Croz</surname><given-names>J. Du</given-names></name>
+          <name><surname>Greenhaum</surname><given-names>A.</given-names></name>
+          <name><surname>Hammarling</surname><given-names>S.</given-names></name>
+          <name><surname>McKenney</surname><given-names>A.</given-names></name>
+          <name><surname>Sorensen</surname><given-names>D.</given-names></name>
+        </person-group>
+        <source>LAPACK users’ guide</source>
+        <publisher-name>Society for Industrial; Applied Mathematics (SIAM)</publisher-name>
+        <publisher-loc>Philadelphia</publisher-loc>
+        <year iso-8601-date="1999">1999</year>
+        <pub-id pub-id-type="doi">10.1137/1.9780898719604</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-maronnaetal2018">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Maronna</surname><given-names>R. A.</given-names></name>
+          <name><surname>Martin</surname><given-names>R. D.</given-names></name>
+          <name><surname>Yohai</surname><given-names>V. J.</given-names></name>
+          <name><surname>Salibián-Barrera</surname><given-names>M.</given-names></name>
+        </person-group>
+        <source>Robust statistics: Theory and methods (with R)</source>
+        <publisher-name>John Wiley; Sons</publisher-name>
+        <publisher-loc>Hoboken (NJ)</publisher-loc>
+        <year iso-8601-date="2018">2018</year>
+        <pub-id pub-id-type="doi">10.1002/9781119214656</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-microbenchmark">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Mersmann</surname><given-names>O.</given-names></name>
+          <name><surname>Beleites</surname><given-names>C.</given-names></name>
+          <name><surname>Hurling</surname><given-names>R.</given-names></name>
+          <name><surname>Friedman</surname><given-names>A.</given-names></name>
+          <name><surname>Ulrich</surname><given-names>J. M.</given-names></name>
+        </person-group>
+        <source>Microbenchmark: Accurate timing functions</source>
+        <publisher-name>R package version 1.4-7</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://CRAN.R-project.org/package=microbenchmark</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-modi">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Hulliger</surname><given-names>B.</given-names></name>
+          <name><surname>Sterchi</surname><given-names>M.</given-names></name>
+        </person-group>
+        <source>Modi: Multivariate outlier detection and imputation for incomplete survey data</source>
+        <publisher-name>R package version 0.1-0</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://CRAN.R-project.org/package=modi</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-openmp2018">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>OpenMP Architecture Review Board</string-name>
+        </person-group>
+        <source>OpenMP application program interface</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://www.openmp.org</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-qiujoe2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Qiu</surname><given-names>Q.</given-names></name>
+          <name><surname>Joe</surname><given-names>H.</given-names></name>
+        </person-group>
+        <article-title>Separation index and partial membership for clustering</article-title>
+        <source>Computational Statistics and Data Analysis</source>
+        <year iso-8601-date="2006">2006</year>
+        <volume>50</volume>
+        <pub-id pub-id-type="doi">10.1016/j.csda.2004.09.009</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-r2021">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>R Core Team</string-name>
+        </person-group>
+        <source>R: A language and environment for statistical computing</source>
+        <publisher-name>R Foundation for Statistical Computing</publisher-name>
+        <publisher-loc>Vienna, Austria</publisher-loc>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://www.R-project.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-robustbase">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Maechler</surname><given-names>M.</given-names></name>
+          <name><surname>Rousseeuw</surname><given-names>P.</given-names></name>
+          <name><surname>Croux</surname><given-names>C.</given-names></name>
+          <name><surname>Todorov</surname><given-names>V.</given-names></name>
+          <name><surname>Ruckstuhl</surname><given-names>A.</given-names></name>
+          <name><surname>Salibian-Barrera</surname><given-names>M.</given-names></name>
+          <name><surname>Verbeke</surname><given-names>T.</given-names></name>
+          <name><surname>Koller</surname><given-names>M.</given-names></name>
+          <name><surname>Conceicao</surname><given-names>E. L. T.</given-names></name>
+          <name><surname>Palma</surname><given-names>M. A. di</given-names></name>
+        </person-group>
+        <source>Robustbase: Basic robust statistics</source>
+        <publisher-name>R package version 0.93-7</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://CRAN.R-project.org/package=robustbase</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-robustx">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Maechler</surname><given-names>M.</given-names></name>
+          <name><surname>Stahel</surname><given-names>W. A.</given-names></name>
+          <name><surname>Turner</surname><given-names>R.</given-names></name>
+          <name><surname>Oetliker</surname><given-names>U.</given-names></name>
+          <name><surname>Schoch</surname><given-names>T.</given-names></name>
+        </person-group>
+        <source>robustX: ’eXtra’ / ’eXperimental’ functionality for robust statistics</source>
+        <publisher-name>R package version 1.2.5</publisher-name>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://CRAN.R-project.org/package=robustX</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-rousseeuwvanzomeren1990">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rousseeuw</surname><given-names>P. J.</given-names></name>
+          <name><surname>Zomeren</surname><given-names>K. van</given-names></name>
+        </person-group>
+        <article-title>Unmasking multivariate outliers and leverage points</article-title>
+        <source>Journal of the American Statistical Association</source>
+        <year iso-8601-date="1990">1990</year>
+        <volume>411</volume>
+        <pub-id pub-id-type="doi">10.1080/01621459.1990.10474920</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-willemsetal2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Willems</surname><given-names>G.</given-names></name>
+          <name><surname>Joe</surname><given-names>H.</given-names></name>
+          <name><surname>Zamar</surname><given-names>R.</given-names></name>
+        </person-group>
+        <article-title>Diagnosing multivariate outliers detected by robust estimators</article-title>
+        <source>Journal of Computational and Graphical Statistics</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume>18</volume>
+        <pub-id pub-id-type="doi">10.1198/jcgs.2009.0005</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+<fn-group>
+  <fn id="fn1">
+    <label>1</label><p>Intuitively, the breakdown point of an estimator
+    is the proportion of outliers an estimator can handle before giving
+    a arbitrary or meaningless result; see Maronna et al.
+    (<xref alt="2018" rid="ref-maronnaetal2018" ref-type="bibr">2018</xref>)
+    for a rigorous definition.</p>
+  </fn>
+</fn-group>
+</back>
+</article>

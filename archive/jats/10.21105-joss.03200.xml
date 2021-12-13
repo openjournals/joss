@@ -1,0 +1,921 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3200</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03200</article-id>
+<title-group>
+<article-title>morse: an R-package to analyse toxicity test
+data</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<string-name>Virgile Baudrot</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-4604-0166</contrib-id>
+<string-name>Sandrine Charles</string-name>
+<email>sandrine.charles@univ-lyon1.fr</email>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="corresp" rid="cor-1"><sup>*</sup></xref>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>University of Lyon, University Lyon 1, CNRS UMR5558,
+Laboratory de Biometry and Evolutionary Biology, 69100 Villeurbanne,
+France.</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<author-notes>
+<corresp id="cor-1">* E-mail: <email>sandrine.charles@univ-lyon1.fr</email></corresp>
+</author-notes>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-04-07">
+<day>7</day>
+<month>4</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>68</issue>
+<fpage>3200</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>ecotoxicology</kwd>
+<kwd>dataviz</kwd>
+<kwd>dose-response</kwd>
+<kwd>GUTS</kwd>
+<kwd>TKTD</kwd>
+<kwd>Bayesian inference</kwd>
+<kwd>Survival</kwd>
+<kwd>Reproduction</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The <monospace>morse</monospace> package is used for the analysis
+  of experimental data collected from standard toxicity tests. It
+  provides ready-to-use functions to visualize a dataset and to estimate
+  several toxicity indices to be further used in support of
+  environmental risk assessment in full compliance with regulatory
+  requirements
+  (<xref alt="OECD, 2006" rid="ref-OECD2006" ref-type="bibr">OECD,
+  2006</xref>). Such toxicity indices are indeed typically requested by
+  standardized regulatory guidelines on which national agencies base
+  their evaluation of applications for regulatory approval of chemical
+  substances; see for example OECD toxicity testing guideline
+  (<xref alt="OECD, 2012" rid="ref-OECD2012" ref-type="bibr">OECD,
+  2012</xref>,
+  <xref alt="2016" rid="ref-OECD2016" ref-type="bibr">2016</xref>).
+  Tools gathered together within the <monospace>morse</monospace>
+  package involve the most advanced and innovative methods developed for
+  ecotoxicology, such as appropriate stochastic parts in dose-response
+  modelling
+  (<xref alt="Delignette-Muller et al., 2014" rid="ref-MLDM2014" ref-type="bibr">Delignette-Muller
+  et al., 2014</xref>), and the use of Bayesian statistics to get
+  parameter estimates as posterior probability distribution
+  (<xref alt="Billoir et al., 2008" rid="ref-Billoir2008" ref-type="bibr">Billoir
+  et al., 2008</xref>). Hence, these tools are easily accessible for
+  ecotoxicologists and regulators who do not need to deeply invest in
+  the underlying technicalities in order to perform a valuable
+  quantitative environmental risk assessment.</p>
+  <p>This paper provides an overview of a typical use of the
+  <monospace>morse</monospace> package with survival data collected over
+  time and at different increasing exposure concentrations. These data
+  are analysed with the reduced version of GUTS models based on the
+  stochastic death hypothesis (namely, the
+  <monospace>GUTS-RED-SD</monospace> model). This example can be
+  followed, step-by-step, to analyse any new dataset, as long as the
+  dataset format is respected.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>The <monospace>morse</monospace> package can be used to get
+  estimates of <inline-formula><alternatives>
+  <tex-math><![CDATA[LC_x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>L</mml:mi><mml:msub><mml:mi>C</mml:mi><mml:mi>x</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+  (<inline-formula><alternatives>
+  <tex-math><![CDATA[x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>%
+  Lethal Concentration) or <inline-formula><alternatives>
+  <tex-math><![CDATA[EC_x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>E</mml:mi><mml:msub><mml:mi>C</mml:mi><mml:mi>x</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+  (<inline-formula><alternatives>
+  <tex-math><![CDATA[x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>%
+  Effective Concentration) by fitting standard exposure-response or
+  effect models on toxicity test data. Toxicity indicator estimates as
+  well as model parameters are provided along with the quantification of
+  their uncertainty. The <monospace>morse</monospace> package can also
+  be used to get estimates of the <inline-formula><alternatives>
+  <tex-math><![CDATA[NEC]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>N</mml:mi><mml:mi>E</mml:mi><mml:mi>C</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  (No Effect Concentration) by fitting a toxicokinetic-toxicodynamic
+  (TKTD) model (namely <monospace>GUTS</monospace> models, that is
+  <italic>General Unified Threshold models of Survival</italic>). Using
+  <monospace>GUTS</monospace> models also allows a user to get estimates
+  of <inline-formula><alternatives>
+  <tex-math><![CDATA[LC_{(x,t)}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>L</mml:mi><mml:msub><mml:mi>C</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+  (whatever <inline-formula><alternatives>
+  <tex-math><![CDATA[x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[t]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>t</mml:mi></mml:math></alternatives></inline-formula>)
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[LP_{(x,t)}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>L</mml:mi><mml:msub><mml:mi>P</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+  the latter being defined by EFSA as the <inline-formula><alternatives>
+  <tex-math><![CDATA[x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>%
+  multiplication factor leading to an additional reduction of
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>%
+  in survival at the end of the exposure profile. Above all,
+  <monospace>GUTS</monospace> models can be used on data collected under
+  time-variable exposure profiles.</p>
+  <p>The <monospace>morse</monospace> package
+  (<xref alt="Baudrot et al., 2021" rid="ref-morse2021" ref-type="bibr">Baudrot
+  et al., 2021</xref>) has been tested using <monospace>R</monospace>
+  (version 3.5 and later) on macOS, Linux and Windows machines.
+  Regarding the particular case of TKTD models for survival, namely GUTS
+  models, the <monospace>morse</monospace> package was ring-tested
+  together with nine other <monospace>GUTS</monospace> implementations
+  under different software platforms; see Appendix A in Jager &amp;
+  Ashauer
+  (<xref alt="2018" rid="ref-Jager2018" ref-type="bibr">2018</xref>) for
+  details. Note that we were the only team to perform the ring-test
+  under a Bayesian framework. Other implementations were
+  <monospace>BYOM</monospace>, <monospace>DEBTOX</monospace>,
+  <monospace>DELPHI</monospace>, <monospace>EPYTOX</monospace>,
+  <monospace>GUTS-3S</monospace>, <monospace>MATHEMATICA</monospace>,
+  <monospace>MODELMAKER</monospace>, <monospace>OPENMODEL</monospace>,
+  <monospace>EASYGUTS</monospace> and <monospace>GATEAUX</monospace>,
+  all under a frequentist statistical framework. All participants to the
+  ring-test received the same datasets and tasks, carried out their
+  simulations independently from each other and sent the results back to
+  the coordinator for analysis. Output estimation was similar to other
+  implementations, therefore, package <monospace>morse</monospace> was
+  confirmed as fit-for-purpose in fitting GUTS models on survival
+  toxicity test data.</p>
+  <p>All functions in the <monospace>morse</monospace> package can be
+  used without a deep knowledge of their underlying probabilistic model
+  or inference methods. Rather, they are designed to behave as well as
+  possible, without requiring the user to provide values for some
+  parameters. Nevertheless, models implemented in
+  <monospace>morse</monospace> can also be used as a first step to
+  tailor new models for more specific situations.</p>
+  <p>Note that <monospace>morse</monospace> benefits from a web
+  interface, MOSAIC, from which the same analyses can be reproduced
+  directly on-line without having to implement them directly in
+  <monospace>R</monospace> programming. MOSAIC is freely available at
+  <ext-link ext-link-type="uri" xlink:href="https://mosaic.univ-lyon1.fr/">https://mosaic.univ-lyon1.fr/</ext-link>
+  (<xref alt="Charles et al., 2018" rid="ref-Charles2017" ref-type="bibr">Charles
+  et al., 2018</xref>) (Figure
+  <xref alt="1" rid="figU003Amosaic">1</xref>).</p>
+  <fig>
+    <caption><p>Homepage of the MOSAIC web platform
+    (https://mosaic.univ-lyon1.fr/)..<styled-content id="figU003Amosaic"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="figures/mosaic.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="availability">
+  <title>Availability</title>
+  <p>The <monospace>morse</monospace> package is available as an
+  <monospace>R</monospace> package; it can be directly downloaded from
+  CRAN
+  <ext-link ext-link-type="uri" xlink:href="https://CRAN.R-project.org/package=morse">https://CRAN.R-project.org/package=morse</ext-link>,
+  where package dependencies and system requirements are also
+  documented. The development version can be found on GitHub
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/pveber/morse">https://github.com/pveber/morse</ext-link>,
+  where code contributions, bug reports, fixes and feature requests are
+  more than welcome by opening issues and pull requests.</p>
+</sec>
+<sec id="main-features">
+  <title>Main features</title>
+  <p>The main functions in the <monospace>morse</monospace> package are
+  <monospace>survData()</monospace>, <monospace>reproData()</monospace>,
+  and <monospace>plotDoseResponse()</monospace> to visualize raw data.
+  The <monospace>survFitTT()</monospace>,
+  <monospace>reproFitTT()</monospace>, and
+  <monospace>survFit()</monospace> functions allow a user to fit a model
+  on data in order to estimate toxicity indicators, the choice of which
+  depends on the type of data. Fitting outputs can either be displayed
+  with <monospace>plot()</monospace> or synthesized with
+  <monospace>summary()</monospace>. Functions are available to check the
+  goodness-of-fit, namely <monospace>ppc()</monospace> and
+  <monospace>plot_prior_post()</monospace>. Predictions can be performed
+  with <monospace>predict()</monospace>,
+  <monospace>predict_ode()</monospace>,
+  <monospace>predict_Nsurv()</monospace>, and
+  <monospace>predict_Nsurv_ode()</monospace>. Finally, function
+  <monospace>LCx()</monospace>and <monospace>MFx()</monospace> allow a
+  user to get <inline-formula><alternatives>
+  <tex-math><![CDATA[x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>%
+  lethal concentrations or profiles, respectively.</p>
+  <p>The <monospace>morse</monospace> package currently handles binary
+  and count data, for example survival and reproduction data. Functions
+  dedicated to binary (respectively, count) data analysis start with a
+  <monospace>surv</monospace> (respectively,
+  <monospace>repro</monospace>) prefix. <monospace>morse</monospace>
+  provides a similar workflow in both cases:</p>
+  <list list-type="order">
+    <list-item>
+      <p>create and validate a dataset;</p>
+    </list-item>
+    <list-item>
+      <p>explore a dataset;</p>
+    </list-item>
+    <list-item>
+      <p>plot a dataset;</p>
+    </list-item>
+    <list-item>
+      <p>fit a model on data and get parameter estimates;</p>
+    </list-item>
+    <list-item>
+      <p>check goodness-of-fit with Posterior Predictive Check plot
+      (PPC).</p>
+    </list-item>
+  </list>
+  <p>In addition, for binary data handled with
+  <monospace>GUTS</monospace> models, the <monospace>morse</monospace>
+  package also allows a user to:</p>
+  <list list-type="order">
+    <list-item>
+      <p>calculate and plot <inline-formula><alternatives>
+      <tex-math><![CDATA[LC_{(x,t)}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>L</mml:mi><mml:msub><mml:mi>C</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+      and <inline-formula><alternatives>
+      <tex-math><![CDATA[LP_{(x,t)}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>L</mml:mi><mml:msub><mml:mi>P</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>;</p>
+    </list-item>
+    <list-item>
+      <p>compute goodness-of-fit criteria: the PPC percentage, the
+      Normalized Root Mean Square Error (NRMSE), and the Survival
+      Probability Prediction Error (SPPE) at the end of the exposure
+      profile.</p>
+    </list-item>
+  </list>
+  <p>See EFSA PPR Panel
+  (<xref alt="2018" rid="ref-EFSA2018" ref-type="bibr">2018</xref>) for
+  details.</p>
+  <p>Those steps are presented in depth in the
+  <monospace>Tutorial</monospace> available at
+  <ext-link ext-link-type="uri" xlink:href="https://cran.r-project.org/web/packages/morse/vignettes/tutorial.html">https://cran.r-project.org/web/packages/morse/vignettes/tutorial.html</ext-link>,
+  with all necessary details to implement all
+  <monospace>morse</monospace> features. A more formal description of
+  the models and the estimation procedures are provided in a document
+  called “Models in morse package” available at
+  <ext-link ext-link-type="uri" xlink:href="https://cran.r-project.org/web/packages/morse/vignettes/modelling.pdf">https://cran.r-project.org/web/packages/morse/vignettes/modelling.pdf</ext-link>.
+  Please refer to this documentation for further introduction to the use
+  of the <monospace>morse</monospace> package.</p>
+</sec>
+<sec id="minimal-working-example">
+  <title>Minimal Working Example</title>
+  <sec id="installation">
+    <title>Installation</title>
+    <sec id="jags">
+      <title>JAGS</title>
+      <p>The <monospace>morse</monospace> package is linked to JAGS
+      <ext-link ext-link-type="uri" xlink:href="http://mcmc-jags.sourceforge.net/">http://mcmc-jags.sourceforge.net/</ext-link>,
+      a Bayesian sampler used to perform inference with all implemented
+      models. So, you need to download and install JAGS at
+      <ext-link ext-link-type="uri" xlink:href="https://sourceforge.net/projects/mcmc-jags/">https://sourceforge.net/projects/mcmc-jags/</ext-link>.
+      Then you must test that your <monospace>R</monospace> graphical
+      user interface has access to JAGS, and, if not, to specify where
+      JAGS can be found on your computer. Indeed, once installed, JAGS
+      can be lost in the PATH. To help solve this issue, you can use
+      package <monospace>runjags</monospace> which is installed and
+      loaded as follows.</p>
+      <code language="r script">### install the `runjags` package, if needed
+if(is.element('runjags', installed.packages()[,1]) == FALSE){
+  install.packages('runjags')
+}
+### load the `runjags` package
+library(&quot;runjags&quot;)
+### run test
+testjags()</code>
+      <p>The output should look like this:</p>
+      <preformat>You are using R version 4.0.2 (2020-06-22) on a windows machine, with the RStudio GUI
+JAGS version 4.3.0 found successfully using the command
+'C:/Program Files/JAGS/JAGS-4.3.0/x64/bin/jags-terminal.exe'
+The rjags package is installed</preformat>
+      <p>Otherwise, you can specify to your <monospace>R</monospace>
+      graphical user interface where the JAGS executable is located in
+      your computer (somewhere in
+      <monospace>'C:/Program Files/JAGS/JAGS-4.3.0/x64/bin/jags-terminal.exe'</monospace>
+      on Windows machines):</p>
+      <code language="r script">testjags(jags=runjags.getOption('jagspath'))
+### replace `jagspath` by your own PATH to JAGS
+### For instance
+### 'C:/Program Files/JAGS/JAGS-4.3.0/x64/bin/jags-terminal.exe'</code>
+    </sec>
+    <sec id="loading-morse-and-its-dependencies">
+      <title>Loading <monospace>morse</monospace> and its
+      dependencies</title>
+      <p>In order to use the <monospace>morse</monospace> package, you
+      need to install it with all its dependencies on other R-packages:
+      mandatory ones (<monospace>coda</monospace>,
+      <monospace>deSolve</monospace>, <monospace>dplyr</monospace>,
+      <monospace>epitools</monospace>, <monospace>graphics</monospace>,
+      <monospace>grDevices</monospace>, <monospace>ggplot2</monospace>
+      (<inline-formula><alternatives>
+      <tex-math><![CDATA[\geqslant]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>≥</mml:mo></mml:math></alternatives></inline-formula>
+      2.1.0), <monospace>grid</monospace>,
+      <monospace>gridExtra</monospace>, <monospace>magrittr</monospace>,
+      <monospace>methods</monospace>, <monospace>reshape2</monospace>,
+      <monospace>rjags</monospace> (<inline-formula><alternatives>
+      <tex-math><![CDATA[\geqslant]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>≥</mml:mo></mml:math></alternatives></inline-formula>
+      4.0), <monospace>stats</monospace>, <monospace>tibble</monospace>,
+      <monospace>tidyr</monospace>, <monospace>zoo</monospace>) and
+      suggested ones (<monospace>knitr</monospace>,
+      <monospace>rmarkdown</monospace>,
+      <monospace>testthat</monospace>). For this purpose, you can use
+      the two classical <monospace>R</monospace> commands:</p>
+      <code language="r script">### install the `morse` package, if needed
+if(is.element('morse', installed.packages()[,1]) == FALSE){
+  install.packages('morse')
+}
+### load the `morse` package
+library(morse)</code>
+    </sec>
+    <sec id="c">
+      <title>C++</title>
+      <p>Note that the <monospace>morse</monospace> package is also
+      linked to C++. C++ is used for running simulations leading to
+      predictions. In <monospace>R</monospace>, you should not have
+      issues with C++ requirements since it is very well integrated
+      (many <monospace>R</monospace> functions are simple interfaces to
+      C++ functions). Feel free to report any trouble at
+      <ext-link ext-link-type="uri" xlink:href="https://github.com/pveber/morse/issues">https://github.com/pveber/morse/issues</ext-link>
+      by opening a new issue for the <monospace>morse</monospace>
+      package.</p>
+    </sec>
+  </sec>
+  <sec id="survival-analysis">
+    <title>Survival analysis</title>
+    <p>We assume hereafter that <monospace>morse</monospace> and all the
+    above dependencies have been corrected installed. To illustrate the
+    use of <monospace>morse</monospace>, we will use a standard survival
+    dataset coming from a chronic laboratory toxicity test with
+    <italic>Gammarus pulex</italic>, a freshwater invertebrate, exposed
+    to increasing concentrations of propiconazole (a fungicide) during
+    four days. Eight concentrations were tested with two replicates of
+    10 organisms per concentration. Survival was monitored at five time
+    points (at day 0, 1, 2, 3 and 4)
+    (<xref alt="Nyman et al., 2012" rid="ref-Nyman2012" ref-type="bibr">Nyman
+    et al., 2012</xref>).</p>
+    <p>We will use the reduced version of the GUTS model based on the
+    stochastic death hypothesis (namely, the
+    <monospace>GUTS-RED-SD</monospace> model), as recommended by the
+    <italic>European Food Safety Authority</italic> (EFSA) for the
+    environmental risk assessment (ERA) of plant protection products
+    potentially toxic for aquatic living organisms
+    (<xref alt="EFSA PPR Panel, 2018" rid="ref-EFSA2018" ref-type="bibr">EFSA
+    PPR Panel, 2018</xref>). This model can also be fitted on-line with
+    the MOSAIC web platform
+    (<xref alt="Baudrot, Veber, et al., 2018" rid="ref-Baudrot2018b" ref-type="bibr">Baudrot,
+    Veber, et al., 2018</xref>). Below is the <italic>modus
+    operandi</italic> with the <monospace>morse</monospace> package to
+    be followed step-by-step in order to be in full compliance with the
+    EFSA workflow for ERA
+    (<xref alt="EFSA PPR Panel, 2018" rid="ref-EFSA2018" ref-type="bibr">EFSA
+    PPR Panel, 2018</xref>).</p>
+    <sec id="calibration-step">
+      <title>Calibration step</title>
+      <code language="r script">### load package `morse`
+library(morse)
+### load a dataset
+data(&quot;propiconazole&quot;)
+### create a morse object for binary data analysis
+survData_PRZ &lt;- survData(propiconazole)
+### fit a reduced GUTS model (GUTS-RED) with option &quot;SD&quot; (Stochastic Death)
+fit_cstSD &lt;- survFit(survData_PRZ, model_type = &quot;SD&quot;)
+### plot the fitting result
+plot(fit_cstSD)</code>
+      <fig>
+        <caption><p>Fitting result with a GUTS-RED-SD model. The median
+        fitted curves are in orange and the 95% uncertainty bands in
+        gray. Black dots are observed data surrounded by their binomial
+        confidence
+        intervals.<styled-content id="figU003Afit"></styled-content></p></caption>
+        <graphic mimetype="image" mime-subtype="png" xlink:href="figures/fit.png" xlink:title="" />
+      </fig>
+    </sec>
+    <sec id="get-the-x-lethal-concentration">
+      <title>Get the <inline-formula><alternatives>
+      <tex-math><![CDATA[x]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>%
+      lethal concentration</title>
+      <p>Using a GUTS model with <monospace>morse</monospace> allows the
+      user to get a probability distribution on the
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[x]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>%
+      lethal concentration whatever the exposure duration
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[t]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>t</mml:mi></mml:math></alternatives></inline-formula>,
+      namely the <inline-formula><alternatives>
+      <tex-math><![CDATA[LC_{(x,t)}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>L</mml:mi><mml:msub><mml:mi>C</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>.
+      By default, <inline-formula><alternatives>
+      <tex-math><![CDATA[t]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>t</mml:mi></mml:math></alternatives></inline-formula>
+      corresponds to the last time point in the dataset and
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[x = 50]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>x</mml:mi><mml:mo>=</mml:mo><mml:mn>50</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>%.</p>
+      <code language="r script">### run function LCx()
+LCX_cstSD &lt;- LCx(fit_cstSD, X = 50)
+### plot the output as a concentration-response curve
+plot(LCX_cstSD)</code>
+      <fig>
+        <caption><p>Simulated concentration-response curve corresponding
+        to the previous fitting result on Figure
+        2.<styled-content id="figU003Alcx"></styled-content></p></caption>
+        <graphic mimetype="image" mime-subtype="png" xlink:href="figures/lcx.png" xlink:title="" />
+      </fig>
+    </sec>
+    <sec id="validation-step">
+      <title>Validation step</title>
+      <p>Validation consists in predicting the number of survivors over
+      time under pulsed-exposure profiles for which observations have
+      also been collected. Predictions are then compared to observations
+      and their adequacy is checked according to several validation
+      criteria defined by EFSA
+      (<xref alt="EFSA PPR Panel, 2018" rid="ref-EFSA2018" ref-type="bibr">EFSA
+      PPR Panel, 2018</xref>). The aim of this step is to choose an
+      appropriate model for the following step.</p>
+      <code language="r script">### load data collected under pulsed exposure profiles
+data(&quot;propiconazole_pulse_exposure&quot;)
+### predict the number of survivors for all profiles
+predict_Nsurv &lt;- predict_Nsurv_ode(
+  object = fit_cstSD,
+  data_predict = propiconazole_pulse_exposure
+)
+### plot results
+plot(predict_Nsurv)</code>
+      <fig>
+        <caption><p>Visual check of adequacy between predictions based
+        on the GUTS-RED-SD model with parameter values estimated in the
+        calibration step (median prediction in orange, uncertainty band
+        in gray), and observations (black
+        dots).<styled-content id="figU003Ansurv"></styled-content></p></caption>
+        <graphic mimetype="image" mime-subtype="png" xlink:href="figures/predict-nsurv.png" xlink:title="" />
+      </fig>
+      <p>Once the predictions are visually checked (Figure
+      <xref alt="4" rid="figU003Ansurv">4</xref>), quantitative
+      validation criteria need to be calculated.</p>
+      <code language="r script">### check for adequacy between predictions and observations
+predict_Nsurv_check(predict_Nsurv)
+
+check &lt;- predict_Nsurv_check(predict_Nsurv)
+check$Percent_PPC_global
+check$Percent_NRMSE_global</code>
+      <p>This reveals that, in total, 84% of the observations lie within
+      the uncertainty band of the predictions, while the global
+      variability of data around the predictions is 16.2%. For both
+      criteria, a maximum value of 50% is expected, what means here that
+      we do not expect specific risk for the species and the chemical
+      compound under consideration.</p>
+    </sec>
+    <sec id="prediction-step">
+      <title>Prediction step</title>
+      <p>Risk assessors are interested in testing various exposure
+      scenarios, having a certain environmental realism that is varying
+      over time. Risk assessors expect to evaluate the potential impact
+      of these profiles on survival of target species to protect.
+      Typically, they want to compute the multiplication factor
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[MF_{(x,t)}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>M</mml:mi><mml:msub><mml:mi>F</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+      that could be applied to the exposure profile without reducing
+      more than by <inline-formula><alternatives>
+      <tex-math><![CDATA[x]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>%
+      the survival probability at a specified test duration
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[t]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>t</mml:mi></mml:math></alternatives></inline-formula>
+      (default being the last time point of the exposure profile). This
+      is the so-called <inline-formula><alternatives>
+      <tex-math><![CDATA[x]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>%
+      lethal profile, denoted <inline-formula><alternatives>
+      <tex-math><![CDATA[LP_x]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>L</mml:mi><mml:msub><mml:mi>P</mml:mi><mml:mi>x</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+      and newly proposed by EFSA PPR Panel
+      (<xref alt="2018" rid="ref-EFSA2018" ref-type="bibr">2018</xref>).
+      This calculation is provided by function
+      <monospace>MFx()</monospace> in <monospace>morse</monospace>.</p>
+      <p>The mathematical definition of the
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[x]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>%
+      Multiplication Factor at time <inline-formula><alternatives>
+      <tex-math><![CDATA[t]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>t</mml:mi></mml:math></alternatives></inline-formula>
+      (at the end of a time series <inline-formula><alternatives>
+      <tex-math><![CDATA[T = \{0, …, t\}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>T</mml:mi><mml:mo>=</mml:mo><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:mi>…</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>)
+      is given by:</p>
+      <p><disp-formula><alternatives>
+      <tex-math><![CDATA[S\left(MF_{(x,t)} \times C_w(\tau \in T), t\right) = S( C_w(\tau \in T), t) \times \left(1-\frac{x}{100}\right)]]></tex-math>
+      <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>S</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>M</mml:mi><mml:msub><mml:mi>F</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msub><mml:mo>×</mml:mo><mml:msub><mml:mi>C</mml:mi><mml:mi>w</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>τ</mml:mi><mml:mo>∈</mml:mo><mml:mi>T</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>S</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>C</mml:mi><mml:mi>w</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>τ</mml:mi><mml:mo>∈</mml:mo><mml:mi>T</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>×</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:mfrac><mml:mi>x</mml:mi><mml:mn>100</mml:mn></mml:mfrac><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula></p>
+      <p>where <inline-formula><alternatives>
+      <tex-math><![CDATA[C_w(\tau \in T)]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>C</mml:mi><mml:mi>w</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>τ</mml:mi><mml:mo>∈</mml:mo><mml:mi>T</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+      is the original exposure profile, and expression
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[S\left(MF_{(x,t)} \times C_w(\tau \in T), t\right)]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>S</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>M</mml:mi><mml:msub><mml:mi>F</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msub><mml:mo>×</mml:mo><mml:msub><mml:mi>C</mml:mi><mml:mi>w</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>τ</mml:mi><mml:mo>∈</mml:mo><mml:mi>T</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+      the survival probability after the exposure profile has been
+      translated upward by a multiplication
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[MF_{(x,t)}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>M</mml:mi><mml:msub><mml:mi>F</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>;
+      the new exposure profile thus becomes equal to
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[MF_{(x,t)} \times C_w(\tau \in T)]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>M</mml:mi><mml:msub><mml:mi>F</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msub><mml:mo>×</mml:mo><mml:msub><mml:mi>C</mml:mi><mml:mi>w</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>τ</mml:mi><mml:mo>∈</mml:mo><mml:mi>T</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.</p>
+      <code language="r script">### define an exposure profile (here a theoretical one)
+data_4MFx &lt;- data.frame(time = 1:10,
+                        conc = c(0,0.5,8,3,0,0,0.5,8,3.5,0))
+### run function MFx()
+MFx_PRZ_cstSD &lt;- MFx(object = fit_cstSD, data_predict = data_4MFx, ode = TRUE)
+### plot the survival probability at the end of the exposure profile
+### according to a range of multiplication factors (log-scale)
+plot(MFx_PRZ_cstSD, log_scale = TRUE)</code>
+      <fig>
+        <caption><p>(left) Predicted survival probability according to a
+        range of multiplication factors (log-scale) at the end of a
+        theoretical exposure profile
+        (right).<styled-content id="figU003Amfx"></styled-content></p></caption>
+        <graphic mimetype="image" mime-subtype="png" xlink:href="figures/mfx-new.png" xlink:title="" />
+      </fig>
+    </sec>
+    <sec id="predict-survival-probability-under-any-exposure-profile">
+      <title>Predict survival probability under any exposure
+      profile</title>
+      <p>Finally, it may be useful to predict the survival probability
+      under any exposure profile (time-variable or not), for example
+      when designing new experiments or to better understand what
+      happens in field. Below are some examples that you can use to
+      build your own simulations.</p>
+      <code language="r script">### define an exposure profile (here a theoretical one)
+### note that here you need to specify a third column `replicate`
+data_example &lt;- data.frame(
+   time = c(1,1.9,2,15,15.1,20),
+   conc = c(0,0,20,20,0,0),
+   replicate = rep(&quot;Basic example&quot;, 6)
+)
+### perform basic prediction
+predict_example_NULL &lt;- predict_ode(
+  object = fit_cstSD,
+  data_predict = data_example,
+  mcmc_size = 10,
+  interpolate_length = NULL)
+### plot the result for only few exposure time points
+plot(predict_example_NULL)
+### define the same basic exposure profile
+### but by changing the `replicate` value
+data_example &lt;- data.frame(
+   time = c(1,1.9,2,15,15.1,20),
+   conc = c(0,0,20,20,0,0),
+   replicate = rep(&quot;Basic example (interpolation)&quot;, 6)
+)
+##### perform prediction with interpolation of the exposure profile
+predict_example_100 &lt;- predict_ode(
+  object = fit_cstSD,
+  data_predict = data_example,
+  mcmc_size = 10,
+  interpolate_length = 100)
+# plot the result
+plot(predict_example_100)
+### load an environmentally realistic profile
+data(&quot;FOCUSprofile&quot;)
+FOCUSprofile[,&quot;replicate&quot;] &lt;- &quot;FOCUS example&quot;
+### perform prediction
+predict_FOCUS &lt;- predict_ode(
+  object = fit_cstSD,
+  data_predict = FOCUSprofile,
+  mcmc_size = 10,
+  interpolate_length = NULL)
+### plot the result
+plot(predict_FOCUS)</code>
+      <fig>
+        <caption><p>(left) Basic exposure profile; (right)
+        Environmentally realistic exposure
+        profile.<styled-content id="figU003Aexamples"></styled-content></p></caption>
+        <graphic mimetype="image" mime-subtype="png" xlink:href="figures/examples.png" xlink:title="" />
+      </fig>
+      <fig>
+        <caption><p>(left) Predicted survival probability over time
+        under the basic exposure profile without interpolation; (middle)
+        Predicted survival probability over time under the basic
+        exposure profile with interpolation; (right) Predicted survival
+        probability over time under an environmentally realistic
+        exposure
+        profile.<styled-content id="figU003Apredict"></styled-content></p></caption>
+        <graphic mimetype="image" mime-subtype="png" xlink:href="figures/predictions.png" xlink:title="" />
+      </fig>
+    </sec>
+  </sec>
+</sec>
+<sec id="research-using-morse">
+  <title>Research using <monospace>morse</monospace></title>
+  <p>The <monospace>morse</monospace> package was recently used to
+  evaluate the added value of using TKTD models in comparison with
+  classical dose-response models, based on a case study with the snail
+  <italic>Limnaea stagnalis</italic> when exposed to increasing
+  concentrations of cadmium
+  (<xref alt="Baudrot, Preux, et al., 2018" rid="ref-baudrot2018a" ref-type="bibr">Baudrot,
+  Preux, et al., 2018</xref>). Also based on the
+  <monospace>morse</monospace> package, we proposed some recommendations
+  to address TKTD assessment using uncertainties in environmental risk
+  models
+  (<xref alt="Baudrot &amp; Charles, 2019" rid="ref-Baudrot2019" ref-type="bibr">Baudrot
+  &amp; Charles, 2019</xref>).</p>
+  <p>More recently, benefiting from our experience in developing the
+  <monospace>morse</monospace> package for ecotoxicology, we strongly
+  contributed to the new <monospace>rbioacc</monospace> package
+  <ext-link ext-link-type="uri" xlink:href="https://CRAN.R-project.org/package=rbioacc">https://CRAN.R-project.org/package=rbioacc</ext-link>,
+  a turn-key package providing bioaccumulation metrics (BCF/BMF/BSAF)
+  from a toxicokinetic (TK) model fitted to accumulation-depuration
+  data. The <monospace>rbioacc</monospace> package also supports the
+  MOSAIC<inline-formula><alternatives>
+  <tex-math><![CDATA[_{bioacc}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi></mml:mi><mml:mrow><mml:mi>b</mml:mi><mml:mi>i</mml:mi><mml:mi>o</mml:mi><mml:mi>a</mml:mi><mml:mi>c</mml:mi><mml:mi>c</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+  web platform
+  <ext-link ext-link-type="uri" xlink:href="https://mosaic.univ-lyon1.fr/bioacc">https://mosaic.univ-lyon1.fr/bioacc</ext-link>.
+  Last but not least, the ‘rDEBtktd’ package is currently under
+  development
+  <ext-link ext-link-type="uri" xlink:href="https://gitlab.in2p3.fr/sandrine.charles/rDEBtktd">https://gitlab.in2p3.fr/sandrine.charles/rDEBtktd</ext-link>
+  to complement the <monospace>morse</monospace> package in order to
+  fit, validate, and predict with TKTD models simultaneously describing
+  growth and reproduction dynamics of living organisms under chemical
+  pressure.</p>
+</sec>
+<sec id="data-availability">
+  <title>Data availability</title>
+  <p>A collection of eight datasets is made available directly in the
+  <monospace>morse</monospace> package (use function
+  <monospace>data()</monospace>). These datasets can also be downloaded
+  online from the MOSAIC web platform by visiting the different modules:
+  <ext-link ext-link-type="uri" xlink:href="https://mosaic.univ-lyon1.fr">https://mosaic.univ-lyon1.fr</ext-link>.</p>
+</sec>
+<sec id="author-contributions">
+  <title>Author contributions</title>
+  <p>V.B. (main developer of <monospace>morse</monospace>):
+  conceptualization, methodology, formal analysis, data curation,
+  visualization, writing manuscript. S.C.: supervision, funding
+  acquisition, project administration, formal analysis, data curation,
+  writing manuscript.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>We fully thank all contributors to the <monospace>morse</monospace>
+  package: Marie Laure Delignette-Muller, Wandrille Duchemin, Benoît
+  Goussen, Nils Kehrein, Guillaume Kon-Kam-King, Christelle Lopes,
+  Philippe Ruiz, Alexander Singer and Philippe Veber. We also thank the
+  French National Agency for Water and Aquatic Environments (ONEMA, now
+  the French Agency for Biodiversity) for its financial support to the
+  development of the <monospace>morse</monospace> package. Finally, we
+  thank a lot our reviewers, Tom Purucker and Peter Vermeiren, for their
+  helpful comments leading to improvements in the manuscript and
+  directly in the <monospace>morse</monospace> package, as well as
+  Kristina Riemer for the management of the review process and for being
+  so patient in finalizing this manuscript.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Billoir2008">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Billoir</surname><given-names>Elise</given-names></name>
+          <name><surname>Delignette-Muller</surname><given-names>Marie Laure</given-names></name>
+          <name><surname>Pery</surname><given-names>Alexandre R R</given-names></name>
+          <name><surname>Charles</surname><given-names>Sandrine</given-names></name>
+        </person-group>
+        <article-title>A Bayesian approach to analyzing ecotoxicological data</article-title>
+        <source>Environmental Science &amp; Technology</source>
+        <year iso-8601-date="2008-12">2008</year><month>12</month>
+        <volume>42</volume>
+        <issue>23</issue>
+        <issn>0013-936X</issn>
+        <pub-id pub-id-type="doi">10.1021/es801418x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MLDM2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Delignette-Muller</surname><given-names>Marie Laure</given-names></name>
+          <name><surname>Lopes</surname><given-names>Christelle</given-names></name>
+          <name><surname>Veber</surname><given-names>Philippe</given-names></name>
+          <name><surname>Charles</surname><given-names>Sandrine</given-names></name>
+        </person-group>
+        <article-title>Statistical handling of reproduction data for exposure-response modeling</article-title>
+        <source>Environmental Science &amp; Technology</source>
+        <year iso-8601-date="2014-07">2014</year><month>07</month>
+        <volume>48</volume>
+        <issue>13</issue>
+        <issn>1520-5851</issn>
+        <uri>http://www.ncbi.nlm.nih.gov/pubmed/24892187</uri>
+        <pub-id pub-id-type="doi">10.1021/es502009r</pub-id>
+        <pub-id pub-id-type="pmid">24892187</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-OECD2006">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>OECD</surname></name>
+        </person-group>
+        <source>Current approaches in the statistical analysis of ecotoxicity data</source>
+        <year iso-8601-date="2006">2006</year>
+        <pub-id pub-id-type="doi">10.1787/9789264085275-en</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-OECD2016">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>OECD</surname></name>
+        </person-group>
+        <source>Test no. 243: Lymnaea stagnalis reproduction test</source>
+        <year iso-8601-date="2016">2016</year>
+        <pub-id pub-id-type="doi">10.1787/9789264264335-en</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-OECD2012">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>OECD</surname></name>
+        </person-group>
+        <source>Daphnia magna reproduction test (OECD TG 211)</source>
+        <year iso-8601-date="2012">2012</year>
+        <pub-id pub-id-type="doi">10.1787/9789264304741-12-en</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Charles2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Charles</surname><given-names>Sandrine</given-names></name>
+          <name><surname>Delignette-Muller</surname><given-names>Marie Laure</given-names></name>
+          <name><surname>Veber</surname><given-names>Philippe</given-names></name>
+          <name><surname>Delignette-Muller</surname><given-names>Marie Laure</given-names></name>
+        </person-group>
+        <article-title>MOSAIC: A web-interface for statistical analyses in ecotoxicology</article-title>
+        <source>Environmental Science and Pollution Research</source>
+        <publisher-name>Environmental Science; Pollution Research</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>25</volume>
+        <isbn>1135601798</isbn>
+        <issn>0944-1344</issn>
+        <uri>http://link.springer.com/10.1007/s11356-017-9809-4</uri>
+        <pub-id pub-id-type="doi">10.1007/s11356-017-9809-4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-morse2021">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Baudrot</surname><given-names>Virgile</given-names></name>
+          <name><surname>Charles</surname><given-names>Sandrine</given-names></name>
+          <name><surname>Delignette-Muller</surname><given-names>Marie Laure</given-names></name>
+          <name><surname>Duchemin</surname><given-names>Wandrille</given-names></name>
+          <name><surname>Goussen</surname><given-names>Benoit</given-names></name>
+          <name><surname>Kehrein</surname><given-names>Nils</given-names></name>
+          <name><surname>Kon-Kam-King</surname><given-names>Guillaume</given-names></name>
+          <name><surname>Lopes</surname><given-names>Christelle</given-names></name>
+          <name><surname>Ruiz</surname><given-names>Philippe</given-names></name>
+          <name><surname>Singer</surname><given-names>Alexander</given-names></name>
+          <name><surname>Veber</surname><given-names>Philippe</given-names></name>
+        </person-group>
+        <source>Morse: Modelling tools for reproduction and survival data in ecotoxicology</source>
+        <year iso-8601-date="2021">2021</year>
+        <uri>https://CRAN.R-project.org/package=morse</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-baudrot2018a">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Baudrot</surname><given-names>Virgile</given-names></name>
+          <name><surname>Preux</surname><given-names>Sara</given-names></name>
+          <name><surname>Ducrot</surname><given-names>Virginie</given-names></name>
+          <name><surname>Pavé</surname><given-names>Alain</given-names></name>
+          <name><surname>Charles</surname><given-names>Sandrine</given-names></name>
+        </person-group>
+        <article-title>New insights to compare and choose TKTD models for survival based on an inter-laboratory study for Lymnaea stagnalis exposed to Cd</article-title>
+        <source>Environmental Science &amp; Technology</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>52</volume>
+        <issue>3</issue>
+        <uri>http://dx.doi.org/10.1021/acs.est.7b05464</uri>
+        <pub-id pub-id-type="doi">10.1021/acs.est.7b05464</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Baudrot2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Baudrot</surname><given-names>Virgile</given-names></name>
+          <name><surname>Charles</surname><given-names>Sandrine</given-names></name>
+        </person-group>
+        <article-title>Recommendations to address uncertainties in environmental risk assessment using toxicokinetics-toxicodynamics models</article-title>
+        <source>Scientific Reports, natureresearch</source>
+        <publisher-name>Springer US</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>9</volume>
+        <pub-id pub-id-type="doi">10.1038/s41598-019-47698-0</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Jager2018">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Jager</surname><given-names>Tjalling</given-names></name>
+          <name><surname>Ashauer</surname><given-names>Roman</given-names></name>
+        </person-group>
+        <source>Modelling survival under chemical stress. A comprehensive guide to the GUTS framework</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://leanpub.com/guts_book</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-EFSA2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <string-name>EFSA PPR Panel</string-name>
+        </person-group>
+        <article-title>Scientific opinion on the state of the art of toxicokinetic/toxicodynamic (TKTD) effect models for regulatory risk assessment of pesticides for aquatic organisms</article-title>
+        <source>EFSA Journal</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>16</volume>
+        <issue>8</issue>
+        <uri>http://doi.wiley.com/10.2903/j.efsa.2018.5125</uri>
+        <pub-id pub-id-type="doi">10.2903/j.efsa.2018.5377</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Baudrot2018b">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Baudrot</surname><given-names>Virgile</given-names></name>
+          <name><surname>Veber</surname><given-names>Philippe</given-names></name>
+          <name><surname>Gence</surname><given-names>Guillaume</given-names></name>
+          <name><surname>Charles</surname><given-names>Sandrine</given-names></name>
+        </person-group>
+        <article-title>Fit reduced GUTS models online: From theory to practice</article-title>
+        <source>Integrated Environmental Assessment and Management</source>
+        <year iso-8601-date="2018">2018</year>
+        <volume>14</volume>
+        <issue>5</issue>
+        <pub-id pub-id-type="doi">10.1002/ieam.4061</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Nyman2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Nyman</surname><given-names>A.-M.</given-names></name>
+          <name><surname>Schirmer</surname><given-names>Kristin</given-names></name>
+          <name><surname>Ashauer</surname><given-names>Roman</given-names></name>
+        </person-group>
+        <article-title>Toxicokinetic-toxicodynamic modelling of survival of Gammarus pulex in multiple pulse exposures to propiconazole: Model assumptions, calibration data requirements and predictive power</article-title>
+        <source>Ecotoxicology</source>
+        <year iso-8601-date="2012">2012</year>
+        <volume>21</volume>
+        <pub-id pub-id-type="doi">10.1007/s10646-012-0917-0</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

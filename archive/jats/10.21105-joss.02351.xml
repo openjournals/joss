@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2351</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02351</article-id>
+<title-group>
+<article-title>kiwiPy: Robust, high-volume, messaging for big-data and
+computational science workflows</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-6902-1289</contrib-id>
+<string-name>Martin Uhrin</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Sebastiaan P. Huber</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Energy Conversion and Storage, Technical
+University of Denmark, 2800 Kgs. Lyngby, Denmark</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>National Centre for Computational Design and Discovery of
+Novel Materials (MARVEL), École Polytechnique Fédérale de Lausanne,
+CH-1015 Lausanne, Switzerland</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Theory and Simulation of Materials (THEOS), Faculté des
+Sciences et Techniques de l’Ingénieur, École Polytechnique Fédérale de
+Lausanne, CH-1015 Lausanne, Switzerland</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-04-19">
+<day>19</day>
+<month>4</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>52</issue>
+<fpage>2351</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>python</kwd>
+<kwd>high-throughput computing</kwd>
+<kwd>message broker</kwd>
+<kwd>scientific workflows</kwd>
+<kwd>fault-tolerant computing</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The computational sciences have seen a huge increase in the use of
+  high-throughput, automated, workflows over the course of the last two
+  decades or so. Focusing on just our domain of computational materials
+  science, there have been several large scale initiatives to provide
+  high-quality results from standardised calculations
+  (<xref alt="Curtarolo et al., 2012" rid="ref-Curtarolo2012" ref-type="bibr">Curtarolo
+  et al., 2012</xref>;
+  <xref alt="Draxl &amp; Scheffler, 2019" rid="ref-Draxl2019a" ref-type="bibr">Draxl
+  &amp; Scheffler, 2019</xref>;
+  <xref alt="Jain et al., 2013" rid="ref-Jain2013" ref-type="bibr">Jain
+  et al., 2013</xref>;
+  <xref alt="Landis et al., 2012" rid="ref-Landis2012" ref-type="bibr">Landis
+  et al., 2012</xref>;
+  <xref alt="Saal et al., 2013" rid="ref-Saal2013" ref-type="bibr">Saal
+  et al., 2013</xref>;
+  <xref alt="Talirz et al., 2020" rid="ref-Talirz2020" ref-type="bibr">Talirz
+  et al., 2020</xref>). Almost all of these repositories are populated
+  using results from high-throughput quantum mechanical calculations
+  that rely on workflow frameworks
+  (<xref alt="Jain et al., 2015" rid="ref-Jain2015a" ref-type="bibr">Jain
+  et al., 2015</xref>;
+  <xref alt="Mortensen et al., 2020" rid="ref-Mortensen2020" ref-type="bibr">Mortensen
+  et al., 2020</xref>), including our own
+  <ext-link ext-link-type="uri" xlink:href="http://www.aiida.net/">AiiDA</ext-link>
+  (<xref alt="Huber et al., 2020" rid="ref-Huber2020" ref-type="bibr">Huber
+  et al., 2020</xref>;
+  <xref alt="Pizzi et al., 2016" rid="ref-Pizzi2016" ref-type="bibr">Pizzi
+  et al., 2016</xref>) which powers the
+  <ext-link ext-link-type="uri" xlink:href="https://www.materialscloud.org/">Materials
+  Cloud</ext-link>. One of the many challenges for such frameworks is
+  maximising fault-tolerance whilst simultaneously maintaining
+  high-throughput, often across several systems (typically the client
+  launching the tasks, the supercomputer carrying out the computations,
+  and the server hosting the database).</p>
+  <p>On the software level, these problems are perhaps best addressed by
+  using messaging brokers that take responsibility for guaranteeing the
+  durability (or persistence) and atomicity of messages and often enable
+  event-based communication. Indeed, solutions such as
+  <ext-link ext-link-type="uri" xlink:href="https://www.rabbitmq.com/">RabbitMQ</ext-link>,
+  see widespread adoption in industry. However, adoption in academia has
+  been more limited, with home-made queue data structures, race
+  condition susceptible locks and polling based solutions being
+  commonplace. This is likely due to message brokers typically having
+  complex APIs (which reflect the non-trivial nature of the underlying
+  protocol) as well as the lack of familiarity with event-based
+  programming in general within the community.
+  <ext-link ext-link-type="uri" xlink:href="https://kiwipy.readthedocs.io/en/latest/">KiwiPy</ext-link>
+  was designed specifically to address both these issues, by providing a
+  tool that enables building robust, event-based systems with an
+  interface that is as simple as possible.</p>
+  <p>In kiwiPy, all messages are saved to disk by RabbitMQ, meaning that
+  any or all systems involved in a workflow, including the broker, can
+  be shut down (abruptly or gracefully), and the previous state can be
+  recreated allowing the workflow to continue when the necessary
+  resources are brought back online. This is especially important for
+  long-running HPC jobs that may take days or weeks. This feature
+  differentiates kiwiPy from protocols such as MPI,
+  <ext-link ext-link-type="uri" xlink:href="https://zeromq.org/">ZeroMQ</ext-link>
+  or libraries such as
+  <ext-link ext-link-type="uri" xlink:href="https://docs.dask.org/en/latest/">Dask</ext-link>,
+  which do not persist their state.</p>
+  <p>A number of libraries for interacting directly with message brokers
+  exist, including
+  <ext-link ext-link-type="uri" xlink:href="https://pika.readthedocs.io/en/stable/">Pika</ext-link>,
+  <ext-link ext-link-type="uri" xlink:href="https://aio-pika.readthedocs.io/en/latest/index.html">aio-pika</ext-link>,
+  <ext-link ext-link-type="uri" xlink:href="https://barryp.org/software/py-amqplib">py-amqp</ext-link>,
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/celery/kombu">kombu</ext-link>
+  and others. These tend to be rather low-level and focus on channels,
+  exchanges, routing, sockets and so on. A comparison of the difference
+  in focus between Pika and kiwiPy can be found in the
+  <ext-link ext-link-type="uri" xlink:href="https://kiwipy.readthedocs.io/en/latest/">documentation</ext-link>.
+  At the other end of the spectrum are libraries such as
+  <ext-link ext-link-type="uri" xlink:href="https://docs.celeryproject.org/en/stable/getting-started/introduction.html">Celery</ext-link>,
+  <ext-link ext-link-type="uri" xlink:href="https://python-rq.org/">RQ</ext-link>
+  and
+  <ext-link ext-link-type="uri" xlink:href="https://www.fullstackpython.com/task-queues.html">others</ext-link>
+  that provide task queues and libraries such as
+  <ext-link ext-link-type="uri" xlink:href="https://rpyc.readthedocs.io/en/latest/">RPyC</ext-link>,
+  <ext-link ext-link-type="uri" xlink:href="http://spyne.io">Spyne</ext-link>,
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/alex-sherman/python-jrpc">Python-JRPC</ext-link>
+  and
+  <ext-link ext-link-type="uri" xlink:href="https://stackoverflow.com/questions/1879971/what-is-the-current-choice-for-doing-rpc-in-python">others</ext-link>
+  that enable remote procedure calls. In contrast, kiwiPy brings
+  together three commonly used message types (task queues, Remote
+  Procedure Calls (RPCs), and, broadcasts) in a single interface.</p>
+  <p>All messaging in kiwiPy is done in the
+  <monospace>Communicator</monospace> class, which can be trivially
+  constructed by providing a URI string pointing to the RabbitMQ server.
+  By default, kiwiPy creates a separate communication thread that the
+  user never sees, allowing them to interact with the communicator using
+  familiar Python syntax, without the need to be familiar with either
+  coroutines or multithreading. This has the additional advantage that
+  kiwiPy will maintain heartbeats (a periodic check to make sure the
+  connection is still alive) with the server whilst the user code can be
+  doing other things. Heartbeats are an essential part of RabbitMQ’s
+  fault tolerance; two missed checks will automatically trigger the
+  message to be requeued to be picked up by another client.</p>
+  <p>To demonstrate some of the possible usage scenarios, we briefly
+  outline the way kiwiPy is used in AiiDA. AiiDA, amongst other things,
+  manages the execution of complex workflows made up of processes that
+  may have checkpoints.</p>
+  <sec id="task-queues">
+    <title>Task queues</title>
+    <p>As is common for high-throughput workflow engines, AiiDA
+    maintains a task queue to which processes are submitted (typically
+    from the user’s workstation). These tasks are then consumed by
+    multiple daemon processes (which may also be on the user’s
+    workstation or remote) and will only be removed from the task queue
+    once they have been acknowledged to be completed by the consumer.
+    The daemon can be gracefully or abruptly shut down and no task will
+    be lost, since the task will simply be requeued by the broker once
+    it notices that the consumer has died. Furthermore, there are no
+    worries about race conditions between multiple daemon processes,
+    since the task queue is guaranteed to only distribute each task to,
+    at most, one consumer at a time.</p>
+  </sec>
+  <sec id="remote-procedure-calls">
+    <title>Remote Procedure Calls</title>
+    <p>These are used to control live processes. Each process has a
+    unique identifier and can be sent a <monospace>pause</monospace>,
+    <monospace>play</monospace>, or <monospace>kill</monospace> message,
+    the response to which is optionally sent back to the initiator to
+    indicate success or something else.</p>
+  </sec>
+  <sec id="broadcasts">
+    <title>Broadcasts</title>
+    <p>These currently serve two purposes: sending
+    <monospace>pause</monospace>, <monospace>play</monospace>, or
+    <monospace>kill</monospace> messages to all processes at once by
+    broadcasting the relevant message, and controlling the flow between
+    processes. If a parent process is waiting for a child to complete,
+    it will be informed of this via a broadcast message from the child
+    saying that its execution has terminated. This enables decoupling,
+    as the child need not know about the existence of the parent.</p>
+    <p>Together these three message types allow AiiDA to implement a
+    highly-decoupled, distributed, yet, reactive system that has proven
+    to be scalable from individual laptops to workstations, driving
+    simulations on high-performance supercomputers with workflows
+    consisting of varying durations, ranging from milliseconds up to
+    multiple days or weeks.</p>
+    <p>It is our hope that by lowering the barriers to adoption, kiwiPy
+    will bring the benefits of industry grade message brokers to
+    academia and beyond, ultimately making robust scientific software
+    easier to write and maintain.</p>
+  </sec>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We would like to thank Giovanni Pizzi, Nicola Marzari, and the
+  AiiDA team for their continuous coordination and development of the
+  project. We also thank Jason Yu for contributing the first version of
+  the documentation. This work is supported by the MARVEL National
+  Centre for Competency in Research funded by the Swiss National Science
+  Foundation (grant agreement ID 51NF40-182892) and the European
+  Materials Modelling Council-CSA funded by the European Union‘s Horizon
+  2020 research and innovation programme under Grant Agreement No
+  723867.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Jain2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jain</surname><given-names>Anubhav</given-names></name>
+          <name><surname>Ong</surname><given-names>Shyue Ping</given-names></name>
+          <name><surname>Hautier</surname><given-names>Geoffroy</given-names></name>
+          <name><surname>Chen</surname><given-names>Wei</given-names></name>
+          <name><surname>Richards</surname><given-names>William Davidson</given-names></name>
+          <name><surname>Dacek</surname><given-names>Stephen</given-names></name>
+          <name><surname>Cholia</surname><given-names>Shreyas</given-names></name>
+          <name><surname>Gunter</surname><given-names>Dan</given-names></name>
+          <name><surname>Skinner</surname><given-names>David</given-names></name>
+          <name><surname>Ceder</surname><given-names>Gerbrand</given-names></name>
+          <name><surname>Persson</surname><given-names>Kristin a.</given-names></name>
+        </person-group>
+        <article-title>The Materials Project: A materials genome approach to accelerating materials innovation</article-title>
+        <source>APL Materials</source>
+        <year iso-8601-date="2013">2013</year>
+        <volume>1</volume>
+        <issue>1</issue>
+        <issn>2166532X</issn>
+        <uri>http://link.aip.org/link/AMPADS/v1/i1/p011002/s1\&amp;Agg=doi</uri>
+        <pub-id pub-id-type="doi">10.1063/1.4812323</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Talirz2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Talirz</surname><given-names>Leopold</given-names></name>
+          <name><surname>Kumbhar</surname><given-names>Snehal</given-names></name>
+          <name><surname>Passaro</surname><given-names>Elsa</given-names></name>
+          <name><surname>Yakutovich</surname><given-names>Aliaksandr V.</given-names></name>
+          <name><surname>Granata</surname><given-names>Valeria</given-names></name>
+          <name><surname>Gargiulo</surname><given-names>Fernando</given-names></name>
+          <name><surname>Borelli</surname><given-names>Marco</given-names></name>
+          <name><surname>Uhrin</surname><given-names>Martin</given-names></name>
+          <name><surname>Huber</surname><given-names>Sebastiaan P.</given-names></name>
+          <name><surname>Zoupanos</surname><given-names>Spyros</given-names></name>
+          <name><surname>Adorf</surname><given-names>Carl S.</given-names></name>
+          <name><surname>Andersen</surname><given-names>Casper W.</given-names></name>
+          <name><surname>Schütt</surname><given-names>Ole</given-names></name>
+          <name><surname>Pignedoli</surname><given-names>Carlo A.</given-names></name>
+          <name><surname>Passerone</surname><given-names>Daniele</given-names></name>
+          <name><surname>VandeVondele</surname><given-names>Joost</given-names></name>
+          <name><surname>Schulthess</surname><given-names>Thomas C.</given-names></name>
+          <name><surname>Smit</surname><given-names>Berend</given-names></name>
+          <name><surname>Pizzi</surname><given-names>Giovanni</given-names></name>
+          <name><surname>Marzari</surname><given-names>Nicola</given-names></name>
+        </person-group>
+        <article-title>Materials Cloud, a platform for open computational science</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>http://arxiv.org/abs/2003.12510</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Saal2013">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Saal</surname><given-names>James E.</given-names></name>
+          <name><surname>Kirklin</surname><given-names>Scott</given-names></name>
+          <name><surname>Aykol</surname><given-names>Muratahan</given-names></name>
+          <name><surname>Meredig</surname><given-names>Bryce</given-names></name>
+          <name><surname>Wolverton</surname><given-names>Chris</given-names></name>
+        </person-group>
+        <article-title>Materials Design and Discovery with High-Throughput Density Functional Theory: The Open Quantum Materials Database (OQMD)</article-title>
+        <source>JOM</source>
+        <year iso-8601-date="2013-11">2013</year><month>11</month>
+        <volume>65</volume>
+        <issue>11</issue>
+        <isbn>1047-4838</isbn>
+        <issn>1047-4838</issn>
+        <uri>http://link.springer.com/10.1007/s11837-013-0755-4</uri>
+        <pub-id pub-id-type="doi">10.1007/s11837-013-0755-4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Curtarolo2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Curtarolo</surname><given-names>Stefano</given-names></name>
+          <name><surname>Setyawan</surname><given-names>Wahyu</given-names></name>
+          <name><surname>Hart</surname><given-names>Gus L. W.</given-names></name>
+          <name><surname>Jahnatek</surname><given-names>Michal</given-names></name>
+          <name><surname>Chepulskii</surname><given-names>Roman V.</given-names></name>
+          <name><surname>Taylor</surname><given-names>Richard H.</given-names></name>
+          <name><surname>Wang</surname><given-names>Shidong</given-names></name>
+          <name><surname>Xue</surname><given-names>Junkai</given-names></name>
+          <name><surname>Yang</surname><given-names>Kesong</given-names></name>
+          <name><surname>Levy</surname><given-names>Ohad</given-names></name>
+          <name><surname>Mehl</surname><given-names>Michael J.</given-names></name>
+          <name><surname>Stokes</surname><given-names>Harold T.</given-names></name>
+          <name><surname>Demchenko</surname><given-names>Denis O.</given-names></name>
+          <name><surname>Morgan</surname><given-names>Dane</given-names></name>
+        </person-group>
+        <article-title>AFLOW: An automatic framework for high-throughput materials discovery</article-title>
+        <source>Computational Materials Science</source>
+        <year iso-8601-date="2012-06">2012</year><month>06</month>
+        <volume>58</volume>
+        <isbn>0927-0256</isbn>
+        <issn>09270256</issn>
+        <uri>http://linkinghub.elsevier.com/retrieve/pii/S0927025612000717</uri>
+        <pub-id pub-id-type="doi">10.1016/j.commatsci.2012.02.005</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Draxl2019a">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Draxl</surname><given-names>Claudia</given-names></name>
+          <name><surname>Scheffler</surname><given-names>Matthias</given-names></name>
+        </person-group>
+        <article-title>The NOMAD laboratory: from data sharing to artificial intelligence</article-title>
+        <source>Journal of Physics: Materials</source>
+        <publisher-name>IOP Publishing</publisher-name>
+        <year iso-8601-date="2019-05">2019</year><month>05</month>
+        <volume>2</volume>
+        <issue>3</issue>
+        <issn>2515-7639</issn>
+        <uri>http://dx.doi.org/10.1088/2515-7639/ab13bb https://iopscience.iop.org/article/10.1088/2515-7639/ab13bb</uri>
+        <pub-id pub-id-type="doi">10.1088/2515-7639/ab13bb</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Landis2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Landis</surname><given-names>David D.</given-names></name>
+          <name><surname>Hummelshoj</surname><given-names>Jens S.</given-names></name>
+          <name><surname>Nestorov</surname><given-names>Svetlozar</given-names></name>
+          <name><surname>Greeley</surname><given-names>Jeff</given-names></name>
+          <name><surname>Dulak</surname><given-names>Marcin</given-names></name>
+          <name><surname>Bligaard</surname><given-names>Thomas</given-names></name>
+          <name><surname>Norskov</surname><given-names>Jens K.</given-names></name>
+          <name><surname>Jacobsen</surname><given-names>Karsten W.</given-names></name>
+        </person-group>
+        <article-title>The Computational Materials Repository</article-title>
+        <source>Computing in Science &amp; Engineering</source>
+        <year iso-8601-date="2012-11">2012</year><month>11</month>
+        <volume>14</volume>
+        <issue>6</issue>
+        <issn>1521-9615</issn>
+        <uri>http://ieeexplore.ieee.org/document/6143910/</uri>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2012.16</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Jain2015a">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jain</surname><given-names>Anubhav</given-names></name>
+          <name><surname>Ong</surname><given-names>Shyue Ping</given-names></name>
+          <name><surname>Chen</surname><given-names>Wei</given-names></name>
+          <name><surname>Medasani</surname><given-names>Bharat</given-names></name>
+          <name><surname>Qu</surname><given-names>Xiaohui</given-names></name>
+          <name><surname>Kocher</surname><given-names>Michael</given-names></name>
+          <name><surname>Brafman</surname><given-names>Miriam</given-names></name>
+          <name><surname>Petretto</surname><given-names>Guido</given-names></name>
+          <name><surname>Rignanese</surname><given-names>Gian-Marco</given-names></name>
+          <name><surname>Hautier</surname><given-names>Geoffroy</given-names></name>
+          <name><surname>Gunter</surname><given-names>Daniel</given-names></name>
+          <name><surname>Persson</surname><given-names>Kristin A.</given-names></name>
+        </person-group>
+        <article-title>FireWorks: a dynamic workflow system designed for high-throughput applications</article-title>
+        <source>Concurrency and Computation: Practice and Experience</source>
+        <year iso-8601-date="2015-12">2015</year><month>12</month>
+        <volume>27</volume>
+        <issue>17</issue>
+        <isbn>2007015102</isbn>
+        <issn>15320626</issn>
+        <uri>http://arxiv.org/abs/1302.5679 http://doi.wiley.com/10.1002/cpe.3505</uri>
+        <pub-id pub-id-type="doi">10.1002/cpe.3505</pub-id>
+        <pub-id pub-id-type="pmid">23335858</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Pizzi2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Pizzi</surname><given-names>Giovanni</given-names></name>
+          <name><surname>Cepellotti</surname><given-names>Andrea</given-names></name>
+          <name><surname>Sabatini</surname><given-names>Riccardo</given-names></name>
+          <name><surname>Marzari</surname><given-names>Nicola</given-names></name>
+          <name><surname>Kozinsky</surname><given-names>Boris</given-names></name>
+        </person-group>
+        <article-title>AiiDA: automated interactive infrastructure and database for computational science</article-title>
+        <source>Computational Materials Science</source>
+        <publisher-name>Elsevier B.V.</publisher-name>
+        <year iso-8601-date="2016-01">2016</year><month>01</month>
+        <volume>111</volume>
+        <issn>09270256</issn>
+        <uri>http://dx.doi.org/10.1016/j.commatsci.2015.09.013 http://linkinghub.elsevier.com/retrieve/pii/S0927025615005820</uri>
+        <pub-id pub-id-type="doi">10.1016/j.commatsci.2015.09.013</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Mortensen2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mortensen</surname><given-names>Jens</given-names></name>
+          <name><surname>Gjerding</surname><given-names>Morten</given-names></name>
+          <name><surname>Thygesen</surname><given-names>Kristian</given-names></name>
+        </person-group>
+        <article-title>MyQueue: Task and workflow scheduling system</article-title>
+        <source>Journal of Open Source Software</source>
+        <year iso-8601-date="2020-01">2020</year><month>01</month>
+        <volume>5</volume>
+        <issue>45</issue>
+        <issn>2475-9066</issn>
+        <uri>https://joss.theoj.org/papers/10.21105/joss.01844</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.01844</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Huber2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Huber</surname><given-names>Sebastiaan. P.</given-names></name>
+          <name><surname>Zoupanos</surname><given-names>Spyros</given-names></name>
+          <name><surname>Uhrin</surname><given-names>Martin</given-names></name>
+          <name><surname>Talirz</surname><given-names>Leopold</given-names></name>
+          <name><surname>Kahle</surname><given-names>Leonid</given-names></name>
+          <name><surname>Häuselmann</surname><given-names>Rico</given-names></name>
+          <name><surname>Gresch</surname><given-names>Dominik</given-names></name>
+          <name><surname>Müller</surname><given-names>Tiziano</given-names></name>
+          <name><surname>Yakutovich</surname><given-names>Aliaksandr V.</given-names></name>
+          <name><surname>Andersen</surname><given-names>Casper W.</given-names></name>
+          <name><surname>Ramirez</surname><given-names>Francisco F.</given-names></name>
+          <name><surname>Adorf</surname><given-names>Carl S.</given-names></name>
+          <name><surname>Gargiulo</surname><given-names>Fernando</given-names></name>
+          <name><surname>Kumbhar</surname><given-names>Snehal</given-names></name>
+          <name><surname>Passaro</surname><given-names>Elsa</given-names></name>
+          <name><surname>Johnston</surname><given-names>Conrad</given-names></name>
+          <name><surname>Merkys</surname><given-names>Andrius</given-names></name>
+          <name><surname>Cepellotti</surname><given-names>Andrea</given-names></name>
+          <name><surname>Mounet</surname><given-names>Nicolas</given-names></name>
+          <name><surname>Marzari</surname><given-names>Nicola</given-names></name>
+          <name><surname>Kozinsky</surname><given-names>Boris</given-names></name>
+          <name><surname>Pizzi</surname><given-names>Giovanni</given-names></name>
+        </person-group>
+        <article-title>AiiDA 1.0, a scalable computational infrastructure for automated reproducible workflows and data provenance</article-title>
+        <year iso-8601-date="2020">2020</year>
+        <uri>http://arxiv.org/abs/2003.12476</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

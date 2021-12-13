@@ -1,0 +1,823 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2562</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02562</article-id>
+<title-group>
+<article-title>biorbd: A C++, Python and MATLAB library to analyze and
+simulate the human body biomechanics</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-5031-1048</contrib-id>
+<string-name>Benjamin Michaud</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-4107-9160</contrib-id>
+<string-name>Mickaël Begon</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>École de Kinésiologie et de Sciences de l’Activité
+Physique, Université de Montréal</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<volume>6</volume>
+<issue>57</issue>
+<fpage>2562</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Biomechanics is at the interface of several fields of science, such
+  as mechanics, human physiology and robotics. Although this
+  transdisciplinarity encourages the emergence of new ideas, the variety
+  of data to analyze simultaneously can be overwhelming. Commonly
+  biomechanical datasets are composed of skin markers trajectories
+  (termed as markers), contact forces, electromyography (EMG) signal,
+  inertial measurement units (IMU) kinematics, etc., which by nature are
+  not straightforward to combine. It is at their meeting point—the body
+  movement—that <monospace>biorbd</monospace> steps in;
+  <monospace>bio</monospace> standing for biomechanics and
+  <monospace>rbd</monospace> for
+  <monospace>rigid body dynamics</monospace>.
+  <monospace>biorbd</monospace> is a <italic>feature-based
+  development</italic> library that targets the manipulation of
+  biomechanical data in a comprehensive and accessible manner. For a
+  given musculoskeletal model, it provides functions for inverse
+  flow—i.e., from markers to EMG—and direct flow—i.e., from EMG to
+  markers.</p>
+  <p>Since biomechanics often requires computationally expensive or
+  real-time computations, the core of <monospace>biorbd</monospace> is
+  written in C++. Although this language provides fast computations, it
+  lacks the flexibility of higher-level languages. To meet the needs of
+  the biomechanics community, Python and MATLAB binders are provided
+  with <monospace>biorbd</monospace>. As a result,
+  <monospace>biorbd</monospace> can elegantly be implemented to common
+  workflows of researchers without compromising the required speed.</p>
+  <p>Finally, biomechanical data are often multidimensional and almost
+  always time-dependent which can be challenging to visualize. To help
+  with that, <monospace>bioviz</monospace>
+  (<xref alt="Michaud &amp; Begon, 2018" rid="ref-Michaud2018bioviz" ref-type="bibr">Michaud
+  &amp; Begon, 2018</xref>), a Python visualizer, was purposely
+  designed. This visualizer allows animating the model, record videos,
+  and, for models that include muscles, plot muscular outputs against
+  various features of the movement.</p>
+</sec>
+<sec id="a-biorbd-overview-the-inverse-and-direct-flow">
+  <title>A <monospace>biorbd</monospace> overview, the inverse and
+  direct flow</title>
+  <p>Biomechanical analyses are usually based on one (or a mixture) of
+  the inverse or direct flow
+  (<xref alt="Kainz et al., 2016" rid="ref-kainzJointKinematicCalculation2016" ref-type="bibr">Kainz
+  et al., 2016</xref>). Briefly, the former uses measurements from a
+  movement (e.g., markers) and infers its cause, while the latter
+  assumes control (e.g., EMG) and outputs the resulting kinematics.</p>
+  <sec id="inverse-flow">
+    <title>Inverse flow</title>
+    <p><italic>Inverse kinematics</italic>: Estimates the generalized
+    coordinates (<inline-formula><alternatives>
+    <tex-math><![CDATA[q]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>q</mml:mi></mml:math></alternatives></inline-formula>)—i.e.,
+    the body kinematics—from body sensor measurements (e.g., markers,
+    IMU, etc.). The main algorithm implemented is the Extended Kalman
+    Filter
+    (<xref alt="Fohanno et al., 2010" rid="ref-fohannoEstimation3DKinematics2010a" ref-type="bibr">Fohanno
+    et al., 2010</xref>) which by design facilitates the merging of
+    multiple data sources and takes care of missing data.</p>
+    <p><italic>Inverse dynamics</italic>: Estimates the generalized
+    forces (<inline-formula><alternatives>
+    <tex-math><![CDATA[\tau]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>τ</mml:mi></mml:math></alternatives></inline-formula>)
+    producing a given generalized acceleration
+    (<inline-formula><alternatives>
+    <tex-math><![CDATA[\ddot{q}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>q</mml:mi><mml:mo accent="true">̈</mml:mo></mml:mover></mml:math></alternatives></inline-formula>)
+    (the second time derivative of <inline-formula><alternatives>
+    <tex-math><![CDATA[q]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>q</mml:mi></mml:math></alternatives></inline-formula>):
+    <disp-formula><alternatives>
+    <tex-math><![CDATA[
+    \tau = M(q)\ddot{q} + N(q, \dot{q})
+    ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>τ</mml:mi><mml:mo>=</mml:mo><mml:mi>M</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>q</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mover><mml:mi>q</mml:mi><mml:mo accent="true">̈</mml:mo></mml:mover><mml:mo>+</mml:mo><mml:mi>N</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>q</mml:mi><mml:mo>,</mml:mo><mml:mover><mml:mi>q</mml:mi><mml:mo accent="true">̇</mml:mo></mml:mover><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula>
+    where <inline-formula><alternatives>
+    <tex-math><![CDATA[\dot{q}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>q</mml:mi><mml:mo accent="true">̇</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+    is the generalized velocities, <inline-formula><alternatives>
+    <tex-math><![CDATA[M(q)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>M</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>q</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    is the mass matrix and <inline-formula><alternatives>
+    <tex-math><![CDATA[N(q, \dot{q})]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>N</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>q</mml:mi><mml:mo>,</mml:mo><mml:mover><mml:mi>q</mml:mi><mml:mo accent="true">̇</mml:mo></mml:mover><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    are the nonlinear effects.</p>
+    <p><italic>Static optimization</italic>: Estimates the muscle
+    activations (<inline-formula><alternatives>
+    <tex-math><![CDATA[\alpha]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>α</mml:mi></mml:math></alternatives></inline-formula>)
+    producing a given <inline-formula><alternatives>
+    <tex-math><![CDATA[\tau]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>τ</mml:mi></mml:math></alternatives></inline-formula>
+    (<xref alt="Anderson &amp; Pandy, 2001" rid="ref-andersonStaticDynamicOptimization2001" ref-type="bibr">Anderson
+    &amp; Pandy, 2001</xref>). It minimizes the muscle activation
+    <italic>p</italic>-norm (<inline-formula><alternatives>
+    <tex-math><![CDATA[p]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>p</mml:mi></mml:math></alternatives></inline-formula>
+    usually being <inline-formula><alternatives>
+    <tex-math><![CDATA[2]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mn>2</mml:mn></mml:math></alternatives></inline-formula>)
+    that matches a given <inline-formula><alternatives>
+    <tex-math><![CDATA[\tau]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>τ</mml:mi></mml:math></alternatives></inline-formula>
+    using nonlinear optimization (Ipopt,
+    <xref alt="Wächter &amp; Biegler, 2006" rid="ref-wachterImplementationInteriorpointFilter2006" ref-type="bibr">Wächter
+    &amp; Biegler, 2006</xref>). <disp-formula><alternatives>
+    <tex-math><![CDATA[
+    \begin{aligned}
+        & \underset{\alpha \in \mathbb{R}^m}{\text{minimize}}
+        & & \left\lVert\alpha\right\rVert_p \\
+        & \text{subject to}
+        & & \tau_{mus_i}(\alpha ,q, \dot{q}) - \tau_{kin_i}(q, \dot{q}, \ddot{q}) = 0, &\; i=1,\ldots,n \\
+        & & &  0 \leq \alpha_{t_j} \leq 1, &\; j=1,\ldots,m
+    \end{aligned}
+    ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtable><mml:mtr><mml:mtd columnalign="right"></mml:mtd><mml:mtd columnalign="left"><mml:munder><mml:mtext mathvariant="normal">minimize</mml:mtext><mml:mrow><mml:mi>α</mml:mi><mml:mo>∈</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:mi>m</mml:mi></mml:msup></mml:mrow></mml:munder></mml:mtd><mml:mtd columnalign="right"></mml:mtd><mml:mtd columnalign="left"><mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">∥</mml:mo><mml:mi>α</mml:mi><mml:mo stretchy="true" form="postfix">∥</mml:mo></mml:mrow><mml:mi>p</mml:mi></mml:msub></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"></mml:mtd><mml:mtd columnalign="left"><mml:mtext mathvariant="normal">subject to</mml:mtext></mml:mtd><mml:mtd columnalign="right"></mml:mtd><mml:mtd columnalign="left"><mml:msub><mml:mi>τ</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>u</mml:mi><mml:msub><mml:mi>s</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>α</mml:mi><mml:mo>,</mml:mo><mml:mi>q</mml:mi><mml:mo>,</mml:mo><mml:mover><mml:mi>q</mml:mi><mml:mo accent="true">̇</mml:mo></mml:mover><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:msub><mml:mi>τ</mml:mi><mml:mrow><mml:mi>k</mml:mi><mml:mi>i</mml:mi><mml:msub><mml:mi>n</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>q</mml:mi><mml:mo>,</mml:mo><mml:mover><mml:mi>q</mml:mi><mml:mo accent="true">̇</mml:mo></mml:mover><mml:mo>,</mml:mo><mml:mover><mml:mi>q</mml:mi><mml:mo accent="true">̈</mml:mo></mml:mover><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo></mml:mtd><mml:mtd columnalign="right"><mml:mspace width="0.278em"></mml:mspace><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>…</mml:mi><mml:mo>,</mml:mo><mml:mi>n</mml:mi></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"></mml:mtd><mml:mtd columnalign="left"></mml:mtd><mml:mtd columnalign="right"></mml:mtd><mml:mtd columnalign="left"><mml:mn>0</mml:mn><mml:mo>≤</mml:mo><mml:msub><mml:mi>α</mml:mi><mml:msub><mml:mi>t</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:msub><mml:mo>≤</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo></mml:mtd><mml:mtd columnalign="right"><mml:mspace width="0.278em"></mml:mspace><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn><mml:mo>,</mml:mo><mml:mi>…</mml:mi><mml:mo>,</mml:mo><mml:mi>m</mml:mi></mml:mtd></mml:mtr></mml:mtable></mml:math></alternatives></disp-formula>
+    where <inline-formula><alternatives>
+    <tex-math><![CDATA[\tau_{mus_i}(\alpha ,q, \dot{q})]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>τ</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>u</mml:mi><mml:msub><mml:mi>s</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>α</mml:mi><mml:mo>,</mml:mo><mml:mi>q</mml:mi><mml:mo>,</mml:mo><mml:mover><mml:mi>q</mml:mi><mml:mo accent="true">̇</mml:mo></mml:mover><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[\tau_{kin_i}(q, \dot{q}, \ddot{q})]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>τ</mml:mi><mml:mrow><mml:mi>k</mml:mi><mml:mi>i</mml:mi><mml:msub><mml:mi>n</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>q</mml:mi><mml:mo>,</mml:mo><mml:mover><mml:mi>q</mml:mi><mml:mo accent="true">̇</mml:mo></mml:mover><mml:mo>,</mml:mo><mml:mover><mml:mi>q</mml:mi><mml:mo accent="true">̈</mml:mo></mml:mover><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    are <inline-formula><alternatives>
+    <tex-math><![CDATA[\tau]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>τ</mml:mi></mml:math></alternatives></inline-formula>
+    computed from muscle forces (<inline-formula><alternatives>
+    <tex-math><![CDATA[F_{mus}(\alpha, q, \dot{q})]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>F</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>u</mml:mi><mml:mi>s</mml:mi></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>α</mml:mi><mml:mo>,</mml:mo><mml:mi>q</mml:mi><mml:mo>,</mml:mo><mml:mover><mml:mi>q</mml:mi><mml:mo accent="true">̇</mml:mo></mml:mover><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>)
+    and inverse dynamics, respectively.</p>
+  </sec>
+  <sec id="direct-flow">
+    <title>Direct flow</title>
+    <p><italic>Muscle activation dynamics</italic>: Estimates the muscle
+    activation derivative (<inline-formula><alternatives>
+    <tex-math><![CDATA[\dot{\alpha}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>α</mml:mi><mml:mo accent="true">̇</mml:mo></mml:mover></mml:math></alternatives></inline-formula>)
+    from the muscle excitation—that is the calcium release in the muscle
+    that triggers the muscle contraction. Multiple activation/excitation
+    dynamics are implemented (e.g.,
+    <xref alt="Manal &amp; Buchanan, 2003" rid="ref-manalOneparameterNeuralActivation2003" ref-type="bibr">Manal
+    &amp; Buchanan, 2003</xref>;
+    <xref alt="Thelen, 2003" rid="ref-thelenAdjustmentMuscleMechanics2003" ref-type="bibr">Thelen,
+    2003</xref>).</p>
+    <p><italic>Muscular joint torque</italic>: Estimates the
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\tau_{mus}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>τ</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>u</mml:mi><mml:mi>s</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+    from muscle forces (<inline-formula><alternatives>
+    <tex-math><![CDATA[F_{mus}(q, \dot{q}, \alpha)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>F</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>u</mml:mi><mml:mi>s</mml:mi></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>q</mml:mi><mml:mo>,</mml:mo><mml:mover><mml:mi>q</mml:mi><mml:mo accent="true">̇</mml:mo></mml:mover><mml:mo>,</mml:mo><mml:mi>α</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>)
+    (<xref alt="Sherman et al., 2010" rid="ref-shermanHowComputeMuscle2010" ref-type="bibr">Sherman
+    et al., 2010</xref>), estimated from <inline-formula><alternatives>
+    <tex-math><![CDATA[\alpha]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>α</mml:mi></mml:math></alternatives></inline-formula>
+    using a muscle model (e.g.,
+    <xref alt="Hill, 1938" rid="ref-hillHeatShorteningDynamic1938" ref-type="bibr">Hill,
+    1938</xref>;
+    <xref alt="Thelen, 2003" rid="ref-thelenAdjustmentMuscleMechanics2003" ref-type="bibr">Thelen,
+    2003</xref>): <disp-formula><alternatives>
+    <tex-math><![CDATA[
+    \tau_{mus} = J_{mus}(q)^T F_{mus}(q, \dot{q}, \alpha)
+    ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>τ</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>u</mml:mi><mml:mi>s</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:msub><mml:mi>J</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>u</mml:mi><mml:mi>s</mml:mi></mml:mrow></mml:msub><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>q</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>T</mml:mi></mml:msup><mml:msub><mml:mi>F</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>u</mml:mi><mml:mi>s</mml:mi></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>q</mml:mi><mml:mo>,</mml:mo><mml:mover><mml:mi>q</mml:mi><mml:mo accent="true">̇</mml:mo></mml:mover><mml:mo>,</mml:mo><mml:mi>α</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula>
+    where <inline-formula><alternatives>
+    <tex-math><![CDATA[J_{mus}(q)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>J</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>u</mml:mi><mml:mi>s</mml:mi></mml:mrow></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>q</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    is the muscle lengths Jacobian.</p>
+    <p><italic>Forward dynamics</italic>: Estimates the
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\ddot{q}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>q</mml:mi><mml:mo accent="true">̈</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+    from a given <inline-formula><alternatives>
+    <tex-math><![CDATA[\tau]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>τ</mml:mi></mml:math></alternatives></inline-formula>:
+    <disp-formula><alternatives>
+    <tex-math><![CDATA[
+    \ddot{q} = M(q)^{-1}\tau - N(q, \dot{q})
+    ]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>q</mml:mi><mml:mo accent="true">̈</mml:mo></mml:mover><mml:mo>=</mml:mo><mml:mi>M</mml:mi><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>q</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup><mml:mi>τ</mml:mi><mml:mo>−</mml:mo><mml:mi>N</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>q</mml:mi><mml:mo>,</mml:mo><mml:mover><mml:mi>q</mml:mi><mml:mo accent="true">̇</mml:mo></mml:mover><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula>
+    All the forward dynamics implemented in <monospace>RBDL</monospace>
+    (<xref alt="Felis, 2017" rid="ref-felisRBDLEfficientRigidbody2017" ref-type="bibr">Felis,
+    2017</xref>) are available.</p>
+    <p><italic>Forward kinematics</italic>: Estimates the model
+    kinematics outputs (e.g., markers, IMU) from a given
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[q]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>q</mml:mi></mml:math></alternatives></inline-formula>,
+    after integrating twice <inline-formula><alternatives>
+    <tex-math><![CDATA[\ddot{q}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>q</mml:mi><mml:mo accent="true">̈</mml:mo></mml:mover></mml:math></alternatives></inline-formula>.</p>
+  </sec>
+</sec>
+<sec id="the-dependencies">
+  <title>The dependencies</title>
+  <p><monospace>biorbd</monospace> takes advantage of efficient back
+  ends, especially the <monospace>RBDL</monospace> and
+  <monospace>CasADi</monospace> libraries. <monospace>RBDL</monospace>,
+  written by Martin Feliz
+  (<xref alt="Felis, 2017" rid="ref-felisRBDLEfficientRigidbody2017" ref-type="bibr">Felis,
+  2017</xref>), implements Featherstone equations of spatial geometry
+  (<xref alt="Featherstone &amp; Orin, 2000" rid="ref-featherstoneRobotDynamicsEquations2000" ref-type="bibr">Featherstone
+  &amp; Orin, 2000</xref>), successfully used in the field of robotics
+  (<xref alt="Diehl et al., 2006" rid="ref-diehlFastDirectMultiple2006" ref-type="bibr">Diehl
+  et al., 2006</xref>;
+  <xref alt="Kurfess, 2018" rid="ref-kurfessRoboticsAutomationHandbook2018" ref-type="bibr">Kurfess,
+  2018</xref>;
+  <xref alt="Macchietto et al., 2009" rid="ref-macchiettoMomentumControlBalance2009" ref-type="bibr">Macchietto
+  et al., 2009</xref>). <monospace>RBDL</monospace> provides the
+  computational core for body dynamics. <monospace>biorbd</monospace>
+  extends <monospace>RBDL</monospace> by giving commonly used
+  biomechanics nomenclature, and by adding biomechanical modules,
+  amongst others. <monospace>RBDL</monospace> is based on the highly
+  efficient C++ linear algebra library <monospace>Eigen</monospace>
+  (<xref alt="Guennebaud et al., 2010" rid="ref-guennebaud2010eigen" ref-type="bibr">Guennebaud
+  et al., 2010</xref>). Although <monospace>Eigen</monospace> is
+  flexible and fast enough for most of the common usage, it cannot
+  automatically provide derivatives of functions. Therefore,
+  <monospace>RBDL</monospace> was also augmented with the algorithmic
+  differentiation library <monospace>CasADi</monospace>
+  (<xref alt="Andersson et al., 2019" rid="ref-anderssonCasADiSoftwareFramework2019" ref-type="bibr">Andersson
+  et al., 2019</xref>). <monospace>CasADi</monospace> allows computing
+  at low cost the derivatives of almost all the functions in
+  <monospace>RBDL</monospace> and <monospace>biorbd</monospace>. This is
+  particularly useful when using <monospace>biorbd</monospace> in a
+  gradient-based optimization setting.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p><monospace>OpenSim</monospace>
+  (<xref alt="Seth et al., 2018" rid="ref-sethOpenSimSimulatingMusculoskeletal2018" ref-type="bibr">Seth
+  et al., 2018</xref>) and <monospace>Anybody</monospace>
+  (<xref alt="Damsgaard et al., 2006" rid="ref-damsgaardAnalysisMusculoskeletalSystems2006" ref-type="bibr">Damsgaard
+  et al., 2006</xref>) are state-of-the-art biomechanics software that
+  provides similar analysis flows with advanced user interface.
+  <monospace>Anybody</monospace> being a closed and proprietary
+  software, the reason to create another library for the open-source
+  community is self-explanatory. Conversely,
+  <monospace>OpenSim</monospace> is open-source and well established in
+  the biomechanics community.</p>
+  <p>Nevertheless, in line with the idea that simulation software in
+  biomechanics should be validated in multiple ways
+  (<xref alt="Hicks et al., 2015" rid="ref-hicksMyModelGood2015" ref-type="bibr">Hicks
+  et al., 2015</xref>), providing similar tools but different in their
+  approach allows the community to cross-validate the different
+  implementation of the algorithms. For instance, two papers
+  (<xref alt="Kim et al., 2018" rid="ref-kimSimilaritiesDifferencesMusculoskeletal2018" ref-type="bibr">Kim
+  et al., 2018</xref>;
+  <xref alt="Trinler et al., 2019" rid="ref-trinlerMuscleForceEstimation2019a" ref-type="bibr">Trinler
+  et al., 2019</xref>) recently compared the outputs of
+  <monospace>Anybody</monospace> and <monospace>OpenSim</monospace> and
+  came to different results. Although the authors provided plausible
+  explanations for these differences, due to the closed-source nature of
+  <monospace>Anybody</monospace>, they had to assume that the
+  implementation of the algorithms are flawless in both software.
+  However, since a direct comparison between the actual codes is
+  impossible, this is not verifiable. Having multiple open source
+  software that produces similar ends by different means is a quality
+  assurance for the end users: “Do not put all your eggs in one basket.”
+  To the best of our knowledge, there is no other open-source software
+  that provides a complete direct and inverse flow in biomechanics.
+  Therefore, in our opinion, <monospace>biorbd</monospace> and
+  <monospace>OpenSim</monospace> are complementary.</p>
+</sec>
+<sec id="previous-usage-of-biorbd">
+  <title>Previous usage of <monospace>biorbd</monospace></title>
+  <p><monospace>biorbd</monospace> was used in most of the project of
+  the <italic>Laboratoire de Simulation et Modélisation du
+  Mouvement</italic> (S2M); particularly in analysis settings
+  (<xref alt="Desmyttere et al., 2020" rid="ref-desmyttereEffect3DPrinted2020" ref-type="bibr">Desmyttere
+  et al., 2020</xref>;
+  <xref alt="Jackson et al., 2012" rid="ref-jacksonImprovementsMeasuringShoulder2012" ref-type="bibr">Jackson
+  et al., 2012</xref>;
+  <xref alt="Verdugo et al., 2020" rid="ref-verdugoEffectsTrunkMotion2020" ref-type="bibr">Verdugo
+  et al., 2020</xref>) and simulation settings
+  (<xref alt="Bélaise et al., 2018" rid="ref-belaiseEMGmarkerTrackingOptimisation2018" ref-type="bibr">Bélaise
+  et al., 2018</xref>;
+  <xref alt="Moissenet et al., 2019" rid="ref-moissenetOptimizationMethodTracking2019" ref-type="bibr">Moissenet
+  et al., 2019</xref>) for a wide variety of movements (walking, piano
+  playing, upper limb maximal exertions, etc.) More recently, an optimal
+  control framework for biomechanics (<monospace>bioptim</monospace>,
+  <xref alt="Michaud &amp; Begon, 2020" rid="ref-Michaud2018bioptim" ref-type="bibr">Michaud
+  &amp; Begon, 2020</xref>) based on Ipopt
+  (<xref alt="Wächter &amp; Biegler, 2006" rid="ref-wachterImplementationInteriorpointFilter2006" ref-type="bibr">Wächter
+  &amp; Biegler, 2006</xref>) and ACADOS
+  (<xref alt="Verschueren et al., 2019" rid="ref-Verschueren2019" ref-type="bibr">Verschueren
+  et al., 2019</xref>) was developed around
+  <monospace>biorbd</monospace>.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>A huge thanks to Ariane Dang for her patience and contribution to
+  writing the tests for <monospace>biorbd</monospace>!</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-andersonStaticDynamicOptimization2001">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Anderson</surname><given-names>Frank C.</given-names></name>
+          <name><surname>Pandy</surname><given-names>Marcus G.</given-names></name>
+        </person-group>
+        <article-title>Static and dynamic optimization solutions for gait are practically equivalent</article-title>
+        <source>Journal of Biomechanics</source>
+        <year iso-8601-date="2001-02">2001</year><month>02</month>
+        <volume>34</volume>
+        <issue>2</issue>
+        <issn>0021-9290</issn>
+        <pub-id pub-id-type="doi">10.1016/S0021-9290(00)00155-X</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-anderssonCasADiSoftwareFramework2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Andersson</surname><given-names>Joel A. E.</given-names></name>
+          <name><surname>Gillis</surname><given-names>Joris</given-names></name>
+          <name><surname>Horn</surname><given-names>Greg</given-names></name>
+          <name><surname>Rawlings</surname><given-names>James B.</given-names></name>
+          <name><surname>Diehl</surname><given-names>Moritz</given-names></name>
+        </person-group>
+        <article-title>CasADi: A software framework for nonlinear optimization and optimal control</article-title>
+        <source>Mathematical Programming Computation</source>
+        <year iso-8601-date="2019-03">2019</year><month>03</month>
+        <volume>11</volume>
+        <issue>1</issue>
+        <issn>1867-2957</issn>
+        <pub-id pub-id-type="doi">10.1007/s12532-018-0139-4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-belaiseEMGmarkerTrackingOptimisation2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bélaise</surname><given-names>Colombe</given-names></name>
+          <name><surname>Dal Maso</surname><given-names>Fabien</given-names></name>
+          <name><surname>Michaud</surname><given-names>Benjamin</given-names></name>
+          <name><surname>Mombaur</surname><given-names>Katja</given-names></name>
+          <name><surname>Begon</surname><given-names>Mickaël</given-names></name>
+        </person-group>
+        <article-title>An EMG-marker tracking optimisation method for estimating muscle forces</article-title>
+        <source>Multibody System Dynamics</source>
+        <year iso-8601-date="2018-02">2018</year><month>02</month>
+        <volume>42</volume>
+        <issue>2</issue>
+        <issn>1573-272X</issn>
+        <pub-id pub-id-type="doi">10.1007/s11044-017-9587-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-damsgaardAnalysisMusculoskeletalSystems2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Damsgaard</surname><given-names>Michael</given-names></name>
+          <name><surname>Rasmussen</surname><given-names>John</given-names></name>
+          <name><surname>Christensen</surname><given-names>Søren Tørholm</given-names></name>
+          <name><surname>Surma</surname><given-names>Egidijus</given-names></name>
+          <name><surname>de Zee</surname><given-names>Mark</given-names></name>
+        </person-group>
+        <article-title>Analysis of musculoskeletal systems in the AnyBody Modeling System</article-title>
+        <source>Simulation Modelling Practice and Theory</source>
+        <year iso-8601-date="2006-11">2006</year><month>11</month>
+        <volume>14</volume>
+        <issue>8</issue>
+        <issn>1569-190X</issn>
+        <pub-id pub-id-type="doi">10.1016/j.simpat.2006.09.001</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-desmyttereEffect3DPrinted2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Desmyttere</surname><given-names>Gauthier</given-names></name>
+          <name><surname>Leteneur</surname><given-names>Sébastien</given-names></name>
+          <name><surname>Hajizadeh</surname><given-names>Maryam</given-names></name>
+          <name><surname>Bleau</surname><given-names>Jacinte</given-names></name>
+          <name><surname>Begon</surname><given-names>Mickael</given-names></name>
+        </person-group>
+        <article-title>Effect of 3D printed foot orthoses stiffness and design on foot kinematics and plantar pressures in healthy people</article-title>
+        <source>Gait &amp; Posture</source>
+        <year iso-8601-date="2020-09">2020</year><month>09</month>
+        <volume>81</volume>
+        <issn>0966-6362</issn>
+        <pub-id pub-id-type="doi">10.1016/j.gaitpost.2020.07.146</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-diehlFastDirectMultiple2006">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Diehl</surname><given-names>M.</given-names></name>
+          <name><surname>Bock</surname><given-names>H. G.</given-names></name>
+          <name><surname>Diedam</surname><given-names>H.</given-names></name>
+          <name><surname>Wieber</surname><given-names>P.-B.</given-names></name>
+        </person-group>
+        <article-title>Fast Direct Multiple Shooting Algorithms for Optimal Robot Control</article-title>
+        <source>Fast Motions in Biomechanics and Robotics: Optimization and Feedback Control</source>
+        <person-group person-group-type="editor">
+          <name><surname>Diehl</surname><given-names>Moritz</given-names></name>
+          <name><surname>Mombaur</surname><given-names>Katja</given-names></name>
+        </person-group>
+        <publisher-name>Springer</publisher-name>
+        <publisher-loc>Berlin, Heidelberg</publisher-loc>
+        <year iso-8601-date="2006">2006</year>
+        <isbn>978-3-540-36119-0</isbn>
+        <pub-id pub-id-type="doi">10.1007/978-3-540-36119-0_4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-featherstoneRobotDynamicsEquations2000">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Featherstone</surname><given-names>R.</given-names></name>
+          <name><surname>Orin</surname><given-names>D.</given-names></name>
+        </person-group>
+        <article-title>Robot dynamics: Equations and algorithms</article-title>
+        <source>Proceedings 2000 ICRA. Millennium Conference. IEEE International Conference on Robotics and Automation. Symposia Proceedings (Cat. No.00CH37065)</source>
+        <year iso-8601-date="2000-04">2000</year><month>04</month>
+        <volume>1</volume>
+        <issn>1050-4729</issn>
+        <pub-id pub-id-type="doi">10.1109/ROBOT.2000.844153</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-felisRBDLEfficientRigidbody2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Felis</surname><given-names>Martin L.</given-names></name>
+        </person-group>
+        <article-title>RBDL: An efficient rigid-body dynamics library using recursive algorithms</article-title>
+        <source>Autonomous Robots</source>
+        <year iso-8601-date="2017-02">2017</year><month>02</month>
+        <volume>41</volume>
+        <issue>2</issue>
+        <issn>1573-7527</issn>
+        <pub-id pub-id-type="doi">10.1007/s10514-016-9574-0</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-fohannoEstimation3DKinematics2010a">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fohanno</surname><given-names>V.</given-names></name>
+          <name><surname>Colloud</surname><given-names>F.</given-names></name>
+          <name><surname>Begon</surname><given-names>M.</given-names></name>
+          <name><surname>Lacouture</surname><given-names>P.</given-names></name>
+        </person-group>
+        <article-title>Estimation of the 3D kinematics in kayak using an extended Kalman filter algorithm: A pilot study</article-title>
+        <source>Computer Methods in Biomechanics and Biomedical Engineering</source>
+        <publisher-name>Taylor &amp; Francis Journals</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <volume>13</volume>
+        <issue>S1</issue>
+        <pub-id pub-id-type="doi">10.1080/10255842.2010.491958</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-guennebaud2010eigen">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Guennebaud</surname><given-names>Gaël</given-names></name>
+          <name><surname>Jacob</surname><given-names>Benoît</given-names></name>
+          <name><surname>Avery</surname><given-names>Philip</given-names></name>
+          <name><surname>Bachrach</surname><given-names>Abraham</given-names></name>
+          <name><surname>Barthelemy</surname><given-names>Sebastien</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>Eigen V3</article-title>
+        <year iso-8601-date="2010">2010</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-hicksMyModelGood2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hicks</surname><given-names>Jennifer L.</given-names></name>
+          <name><surname>Uchida</surname><given-names>Thomas K.</given-names></name>
+          <name><surname>Seth</surname><given-names>Ajay</given-names></name>
+          <name><surname>Rajagopal</surname><given-names>Apoorva</given-names></name>
+          <name><surname>Delp</surname><given-names>Scott L.</given-names></name>
+        </person-group>
+        <article-title>Is My Model Good Enough? Best Practices for Verification and Validation of Musculoskeletal Models and Simulations of Movement</article-title>
+        <source>Journal of Biomechanical Engineering</source>
+        <publisher-name>American Society of Mechanical Engineers Digital Collection</publisher-name>
+        <year iso-8601-date="2015-02">2015</year><month>02</month>
+        <volume>137</volume>
+        <issue>2</issue>
+        <issn>0148-0731</issn>
+        <pub-id pub-id-type="doi">10.1115/1.4029304</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hillHeatShorteningDynamic1938">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hill</surname><given-names>Archibald Vivian</given-names></name>
+        </person-group>
+        <article-title>The heat of shortening and the dynamic constants of muscle | Proceedings of the Royal Society of London. Series B - Biological Sciences</article-title>
+        <source>Biological Science</source>
+        <year iso-8601-date="1938">1938</year>
+        <volume>126</volume>
+        <issue>843</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-jacksonImprovementsMeasuringShoulder2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jackson</surname><given-names>M.</given-names></name>
+          <name><surname>Michaud</surname><given-names>B.</given-names></name>
+          <name><surname>Tétreault</surname><given-names>P.</given-names></name>
+          <name><surname>Begon</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>Improvements in measuring shoulder joint kinematics</article-title>
+        <source>Journal of Biomechanics</source>
+        <year iso-8601-date="2012-08">2012</year><month>08</month>
+        <volume>45</volume>
+        <issue>12</issue>
+        <issn>0021-9290</issn>
+        <pub-id pub-id-type="doi">10.1016/j.jbiomech.2012.05.042</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kainzJointKinematicCalculation2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kainz</surname><given-names>H.</given-names></name>
+          <name><surname>Modenese</surname><given-names>L.</given-names></name>
+          <name><surname>Lloyd</surname><given-names>D. G.</given-names></name>
+          <name><surname>Maine</surname><given-names>S.</given-names></name>
+          <name><surname>Walsh</surname><given-names>H. P. J.</given-names></name>
+          <name><surname>Carty</surname><given-names>C. P.</given-names></name>
+        </person-group>
+        <article-title>Joint kinematic calculation based on clinical direct kinematic versus inverse kinematic gait models</article-title>
+        <source>Journal of Biomechanics</source>
+        <year iso-8601-date="2016-06">2016</year><month>06</month>
+        <volume>49</volume>
+        <issue>9</issue>
+        <issn>0021-9290</issn>
+        <pub-id pub-id-type="doi">10.1016/j.jbiomech.2016.03.052</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kimSimilaritiesDifferencesMusculoskeletal2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kim</surname><given-names>Younguk</given-names></name>
+          <name><surname>Jung</surname><given-names>Yihwan</given-names></name>
+          <name><surname>Choi</surname><given-names>Woosung</given-names></name>
+          <name><surname>Lee</surname><given-names>Kunwoo</given-names></name>
+          <name><surname>Koo</surname><given-names>Seungbum</given-names></name>
+        </person-group>
+        <article-title>Similarities and differences between musculoskeletal simulations of OpenSim and AnyBody modeling system</article-title>
+        <source>Journal of Mechanical Science and Technology</source>
+        <year iso-8601-date="2018-12">2018</year><month>12</month>
+        <volume>32</volume>
+        <issue>12</issue>
+        <issn>1976-3824</issn>
+        <pub-id pub-id-type="doi">10.1007/s12206-018-1154-0</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kurfessRoboticsAutomationHandbook2018">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Kurfess</surname><given-names>Thomas R.</given-names></name>
+        </person-group>
+        <source>Robotics and Automation Handbook</source>
+        <publisher-name>CRC Press</publisher-name>
+        <year iso-8601-date="2018-10">2018</year><month>10</month>
+        <isbn>978-1-315-22035-2</isbn>
+        <pub-id pub-id-type="doi">10.1201/9781315220352</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-macchiettoMomentumControlBalance2009">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Macchietto</surname><given-names>Adriano</given-names></name>
+          <name><surname>Zordan</surname><given-names>Victor</given-names></name>
+          <name><surname>Shelton</surname><given-names>Christian R.</given-names></name>
+        </person-group>
+        <article-title>Momentum control for balance</article-title>
+        <source>ACM SIGGRAPH 2009 papers</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New Orleans, Louisiana</publisher-loc>
+        <year iso-8601-date="2009-07">2009</year><month>07</month>
+        <isbn>978-1-60558-726-4</isbn>
+        <pub-id pub-id-type="doi">10.1145/1576246.1531386</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-manalOneparameterNeuralActivation2003">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Manal</surname><given-names>Kurt</given-names></name>
+          <name><surname>Buchanan</surname><given-names>Thomas S</given-names></name>
+        </person-group>
+        <article-title>A one-parameter neural activation to muscle activation model: Estimating isometric joint moments from electromyograms</article-title>
+        <source>Journal of Biomechanics</source>
+        <year iso-8601-date="2003-08">2003</year><month>08</month>
+        <volume>36</volume>
+        <issue>8</issue>
+        <issn>0021-9290</issn>
+        <pub-id pub-id-type="doi">10.1016/S0021-9290(03)00152-0</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Michaud2018bioptim">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Michaud</surname><given-names>Benjamin</given-names></name>
+          <name><surname>Begon</surname><given-names>Mickael</given-names></name>
+        </person-group>
+        <article-title>Bioptim: An optimal control framework for biomechanical analyses using biorbd</article-title>
+        <publisher-name>Web page</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://github.com/pyomeca/bioptim</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Michaud2018bioviz">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Michaud</surname><given-names>Benjamin</given-names></name>
+          <name><surname>Begon</surname><given-names>Mickael</given-names></name>
+        </person-group>
+        <article-title>Bioviz: A vizualization python toolbox for biorbd</article-title>
+        <publisher-name>Web page</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://github.com/pyomeca/bioviz</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-moissenetOptimizationMethodTracking2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Moissenet</surname><given-names>Florent</given-names></name>
+          <name><surname>Bélaise</surname><given-names>Colombe</given-names></name>
+          <name><surname>Piche</surname><given-names>Elodie</given-names></name>
+          <name><surname>Michaud</surname><given-names>Benjamin</given-names></name>
+          <name><surname>Begon</surname><given-names>Mickaël</given-names></name>
+        </person-group>
+        <article-title>An Optimization Method Tracking EMG, Ground Reactions Forces, and Marker Trajectories for Musculo-Tendon Forces Estimation in Equinus Gait</article-title>
+        <source>Frontiers in Neurorobotics</source>
+        <publisher-name>Frontiers</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>13</volume>
+        <issn>1662-5218</issn>
+        <pub-id pub-id-type="doi">10.3389/fnbot.2019.00048</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sethOpenSimSimulatingMusculoskeletal2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Seth</surname><given-names>Ajay</given-names></name>
+          <name><surname>Hicks</surname><given-names>Jennifer L.</given-names></name>
+          <name><surname>Uchida</surname><given-names>Thomas K.</given-names></name>
+          <name><surname>Habib</surname><given-names>Ayman</given-names></name>
+          <name><surname>Dembia</surname><given-names>Christopher L.</given-names></name>
+          <name><surname>Dunne</surname><given-names>James J.</given-names></name>
+          <name><surname>Ong</surname><given-names>Carmichael F.</given-names></name>
+          <name><surname>DeMers</surname><given-names>Matthew S.</given-names></name>
+          <name><surname>Rajagopal</surname><given-names>Apoorva</given-names></name>
+          <name><surname>Millard</surname><given-names>Matthew</given-names></name>
+          <name><surname>Hamner</surname><given-names>Samuel R.</given-names></name>
+          <name><surname>Arnold</surname><given-names>Edith M.</given-names></name>
+          <name><surname>Yong</surname><given-names>Jennifer R.</given-names></name>
+          <name><surname>Lakshmikanth</surname><given-names>Shrinidhi K.</given-names></name>
+          <name><surname>Sherman</surname><given-names>Michael A.</given-names></name>
+          <name><surname>Ku</surname><given-names>Joy P.</given-names></name>
+          <name><surname>Delp</surname><given-names>Scott L.</given-names></name>
+        </person-group>
+        <article-title>OpenSim: Simulating musculoskeletal dynamics and neuromuscular control to study human and animal movement</article-title>
+        <source>PLoS Computational Biology</source>
+        <publisher-name>Public Library of Science</publisher-name>
+        <year iso-8601-date="2018-07">2018</year><month>07</month>
+        <volume>14</volume>
+        <issue>7</issue>
+        <pub-id pub-id-type="doi">10.1371/journal.pcbi.1006223</pub-id>
+        <pub-id pub-id-type="pmid">30048444</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-shermanHowComputeMuscle2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sherman</surname><given-names>Michael</given-names></name>
+          <name><surname>Seth</surname><given-names>Ajay</given-names></name>
+          <name><surname>Delp</surname><given-names>Scott L.</given-names></name>
+        </person-group>
+        <article-title>How to compute muscle moment arm using generalized coordinates</article-title>
+        <source>Stanford University</source>
+        <publisher-loc>Stanford, CA</publisher-loc>
+        <year iso-8601-date="2010">2010</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-thelenAdjustmentMuscleMechanics2003">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Thelen</surname><given-names>Darryl G.</given-names></name>
+        </person-group>
+        <article-title>Adjustment of Muscle Mechanics Model Parameters to Simulate Dynamic Contractions in Older Adults</article-title>
+        <source>Journal of Biomechanical Engineering</source>
+        <publisher-name>American Society of Mechanical Engineers Digital Collection</publisher-name>
+        <year iso-8601-date="2003-02">2003</year><month>02</month>
+        <volume>125</volume>
+        <issue>1</issue>
+        <issn>0148-0731</issn>
+        <pub-id pub-id-type="doi">10.1115/1.1531112</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-trinlerMuscleForceEstimation2019a">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Trinler</surname><given-names>Ursula</given-names></name>
+          <name><surname>Schwameder</surname><given-names>Hermann</given-names></name>
+          <name><surname>Baker</surname><given-names>Richard</given-names></name>
+          <name><surname>Alexander</surname><given-names>Nathalie</given-names></name>
+        </person-group>
+        <article-title>Muscle force estimation in clinical gait analysis using AnyBody and OpenSim</article-title>
+        <source>Journal of Biomechanics</source>
+        <year iso-8601-date="2019-03">2019</year><month>03</month>
+        <volume>86</volume>
+        <issn>0021-9290</issn>
+        <pub-id pub-id-type="doi">10.1016/j.jbiomech.2019.01.045</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-verdugoEffectsTrunkMotion2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Verdugo</surname><given-names>Felipe</given-names></name>
+          <name><surname>Pelletier</surname><given-names>Justine</given-names></name>
+          <name><surname>Michaud</surname><given-names>Benjamin</given-names></name>
+          <name><surname>Traube</surname><given-names>Caroline</given-names></name>
+          <name><surname>Begon</surname><given-names>Mickaël</given-names></name>
+        </person-group>
+        <article-title>Effects of Trunk Motion, Touch, and Articulation on Upper-Limb Velocities and on Joint Contribution to Endpoint Velocities During the Production of Loud Piano Tones</article-title>
+        <source>Frontiers in Psychology</source>
+        <publisher-name>Frontiers</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>11</volume>
+        <issn>1664-1078</issn>
+        <pub-id pub-id-type="doi">10.3389/fpsyg.2020.01159</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Verschueren2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Verschueren</surname><given-names>Robin</given-names></name>
+          <name><surname>Frison</surname><given-names>Gianluca</given-names></name>
+          <name><surname>Kouzoupis</surname><given-names>Dimitris</given-names></name>
+          <name><surname>van Duijkeren</surname><given-names>Niels</given-names></name>
+          <name><surname>Zanelli</surname><given-names>Andrea</given-names></name>
+          <name><surname>Novoselnik</surname><given-names>Branimir</given-names></name>
+          <name><surname>Frey</surname><given-names>Jonathan</given-names></name>
+          <name><surname>Albin</surname><given-names>Thivaharan</given-names></name>
+          <name><surname>Quirynen</surname><given-names>Rien</given-names></name>
+          <name><surname>Diehl</surname><given-names>Moritz</given-names></name>
+        </person-group>
+        <article-title>Acados: A modular open-source framework for fast embedded optimal control</article-title>
+        <source>arXiv preprint</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://arxiv.org/abs/1910.13753</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-wachterImplementationInteriorpointFilter2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wächter</surname><given-names>Andreas</given-names></name>
+          <name><surname>Biegler</surname><given-names>Lorenz T.</given-names></name>
+        </person-group>
+        <article-title>On the implementation of an interior-point filter line-search algorithm for large-scale nonlinear programming</article-title>
+        <source>Mathematical Programming</source>
+        <year iso-8601-date="2006-03">2006</year><month>03</month>
+        <volume>106</volume>
+        <issue>1</issue>
+        <issn>1436-4646</issn>
+        <pub-id pub-id-type="doi">10.1007/s10107-004-0559-y</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

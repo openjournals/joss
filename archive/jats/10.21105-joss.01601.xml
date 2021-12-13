@@ -1,0 +1,661 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1601</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01601</article-id>
+<title-group>
+<article-title>greta: simple and scalable statistical modelling in
+R</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-8916-5570</contrib-id>
+<string-name>Nick Golding</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>School of BioSciences, University of
+Melbourne</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-06-27">
+<day>27</day>
+<month>6</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>40</issue>
+<fpage>1601</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>statistics</kwd>
+<kwd>statistical modelling</kwd>
+<kwd>bayesian statistics</kwd>
+<kwd>mcmc</kwd>
+<kwd>hamiltonian monte carlo</kwd>
+<kwd>tensorflow</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Statistical modelling is used throughout the sciences. Often,
+  statistical analyses require custom models that cannot be fitted using
+  off-the shelf statistical software. These models can be specified in a
+  statistical syntax and can then be automatically fit to data using
+  methods such as Markov Chain monte Carlo (MCMC) and maximum
+  likelihood. This lets users focus on the statistical nature of the
+  model, rather than implementation details and inference procedures.
+  Since the development of the widely successful WinBUGS (later
+  developed as OpenBUGS; Spiegelhalter et al.
+  (<xref alt="2014" rid="ref-openbugs" ref-type="bibr">2014</xref>)) a
+  number of alternative software packages for custom statistical
+  modelling have been introduced, including JAGS, Stan, and NIMBLE
+  (<xref alt="Carpenter et al., 2017" rid="ref-stan" ref-type="bibr">Carpenter
+  et al., 2017</xref>;
+  <xref alt="de Valpine et al., 2017" rid="ref-nimble" ref-type="bibr">de
+  Valpine et al., 2017</xref>;
+  <xref alt="Plummer et al., 2003" rid="ref-jags" ref-type="bibr">Plummer
+  et al., 2003</xref>). In these software packages, users typically
+  write out models in a domain-specific language, which is then compiled
+  into computational code. Though see the Python packages PyMC and
+  Edward
+  (<xref alt="Salvatier et al., 2016" rid="ref-pymc" ref-type="bibr">Salvatier
+  et al., 2016</xref>;
+  <xref alt="Tran et al., 2016" rid="ref-edward" ref-type="bibr">Tran et
+  al., 2016</xref>) in which models are specified in Python code.</p>
+  <p>With increasing quantities of data, complexity, and realism of
+  statistical models that users wish to build with these software, there
+  is a push for software that scales better with data size and model
+  complexity. More recently, custom statistical modelling software has
+  focussed on methods such as Hamiltonian Monte Carlo (rather than Gibbs
+  samplers) in order to improve to computational efficiency. This can be
+  seen for example in the development of Stan
+  (<xref alt="Carpenter et al., 2017" rid="ref-stan" ref-type="bibr">Carpenter
+  et al., 2017</xref>).</p>
+  <p>greta is an package for statistical modelling in R
+  (<xref alt="R Core Team, 2019" rid="ref-Rcore" ref-type="bibr">R Core
+  Team, 2019</xref>) that has three core differences to commonly used
+  statistical modelling software packages:</p>
+  <list list-type="order">
+    <list-item>
+      <p>greta models are written interactively in R code rather than in
+      a compiled domain specific language.</p>
+    </list-item>
+    <list-item>
+      <p>greta can be extended by other R packages; providing a
+      fully-featured package management system for extensions.</p>
+    </list-item>
+    <list-item>
+      <p>greta performs statistical inference using TensorFlow
+      (<xref alt="Abadi et al., 2015" rid="ref-tf" ref-type="bibr">Abadi
+      et al., 2015</xref>), enabling it to scale across modern
+      high-performance computing systems.</p>
+    </list-item>
+  </list>
+  <p>greta can be used to construct both Bayesian and non-Bayesian
+  statistical models, and perform inference via MCMC or optimisation
+  (for maximum likelihood or maximum <italic>a posteriori</italic>
+  estimation). The default MCMC algorithm is Hamiltonian Monte Carlo,
+  which is generally very efficient for Bayesian models with large
+  numbers of parameters or highly-correlated posteriors.</p>
+  <p>The project website
+  <ext-link ext-link-type="uri" xlink:href="https://greta-stats.org/">https://greta-stats.org/</ext-link>
+  hosts a <italic>getting started</italic> guide, worked examples of
+  analyses using greta, a catalogue of example models, documentation,
+  and a user forum.</p>
+  <p>The remainder of this paper provides an example of custom
+  statistical modelling in greta, discusses the computational
+  implementation of greta and how it can be extended, and highlights
+  features that are planned for inclusion in the package.</p>
+  <sec id="example">
+    <title>Example</title>
+    <p>The following illustrates a typical modelling session with greta,
+    using a Bayesian hierarchical model to estimate the treatment effect
+    of epilepsy medication using data provided in the MASS R package
+    (Venables &amp; Ripley
+    (<xref alt="2002" rid="ref-mass" ref-type="bibr">2002</xref>),
+    distributed with R) and analysed in the corresponding book.</p>
+    <p>Before we specify the greta model we format the data, adding a
+    numeric version of the treatment type and making a vector of the
+    (8-week) baseline counts for each subject (these counts are
+    replicated in the epil object).</p>
+    <code language="r script">library(MASS)
+epil$trt_id &lt;- as.numeric(epil$trt)
+baseline_y &lt;- epil$base[!duplicated(epil$subject)]</code>
+    <p>Next we load greta and start building our model, starting with a
+    random intercept model for the baseline (log-)seizure rates, to
+    account for the fact that each individual will have a different
+    seizure rate, irrespective of the treatment they receive. Variables
+    in greta models - like <monospace>subject_mean</monospace>, and
+    <monospace>baseline_effects</monospace> in the below code - are
+    represented by <monospace>greta_array</monospace> objects, which
+    have unknown values and are used to interactively build up the
+    statistical formulation of the model (see
+    <italic>Implementation</italic> for details).</p>
+    <code language="r script">library(greta)
+
+# priors
+subject_mean &lt;- normal(0, 10)
+subject_sd &lt;- cauchy(0, 1, truncation = c(0, Inf))
+
+# hierararchical model for baseline rates (transformed to be positive)
+subject_effects &lt;- normal(subject_mean, subject_sd, dim = 59)
+baseline_rates &lt;- exp(subject_effects)</code>
+    <p>Next we build a model for the effects (the ratio of
+    post-treatment to pre-treatment seizure rates) of the two
+    treatments: <italic>placebo</italic> and <italic>progabide</italic>.
+    We give these positive-truncated normal priors (they are
+    multiplicative effects, so must be positive), and centre them at 1
+    to represent a prior expectation of no effect. We multiply these
+    effects by the baseline rates to get the post-treatment rates for
+    each observation in the dataset.</p>
+    <code language="r script">treatment_effects &lt;- normal(1, 1, dim = 2, truncation = c(0, Inf))
+post_treatment_rates &lt;- treatment_effects[epil$trt_id] *
+  baseline_rates[epil$subject]</code>
+    <p>Finally we specify the distributions over the observed data. Here
+    we use two likelihoods: one for the baseline count (over an 8 week
+    period) and one for each of the post-treatment counts (over 2 week
+    periods). We multiply our modelled weekly rates by the number of
+    weeks the counts represent to get the appropriate rate for that
+    period.</p>
+    <code language="r script"># likelihood
+distribution(baseline_y) &lt;- poisson(baseline_rates * 8)  
+distribution(epil$y) &lt;- poisson(post_treatment_rates * 2)</code>
+    <p>Now we can create a model object using these greta arrays, naming
+    the parameters that we are most interested in, and then run 4 chains
+    of a Hamiltonian Monte Carlo sampler on the model, taking around 25
+    seconds on a laptop.</p>
+    <code language="r script">m &lt;- model(treatment_effects, subject_sd)
+draws &lt;- mcmc(m, chains = 4)</code>
+    <p>The <monospace>draws</monospace> object contains posterior
+    samples in an <monospace>mcmc.list</monospace> object from the coda
+    package
+    (<xref alt="Plummer et al., 2006" rid="ref-coda" ref-type="bibr">Plummer
+    et al., 2006</xref>), for which there are many packages and
+    utilities to summarise the posterior samples. Here we’ll use the
+    bayesplot package
+    (<xref alt="Gabry &amp; Mahr, 2018" rid="ref-bayesplot" ref-type="bibr">Gabry
+    &amp; Mahr, 2018</xref>) to create trace plots for the parameters of
+    interest, and the coda package to get <inline-formula><alternatives>
+    <tex-math><![CDATA[\hat{R}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>R</mml:mi><mml:mo accent="true">̂</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+    statistics to assess convergence of these parameters.</p>
+    <code language="r script">bayesplot::mcmc_trace(draws)</code>
+    <p><inline-graphic mimetype="image" mime-subtype="png" xlink:href="paper_files/figure-html/diagnostics-1.png" /></p>
+    <code language="r script">coda::gelman.diag(draws)</code>
+    <preformat>## Potential scale reduction factors:
+## 
+##                        Point est. Upper C.I.
+## treatment_effects[1,1]       1.01       1.04
+## treatment_effects[2,1]       1.01       1.05
+## subject_sd                   1.00       1.01
+## 
+## Multivariate psrf
+## 
+## 1.02</preformat>
+    <p>We can summarise the posterior samples to get the treatment
+    effect estimates for placebo and progabide, the first and second
+    elements of <monospace>treatment_effects</monospace>,
+    respectively.</p>
+    <code language="r script">summary(draws)$statistics</code>
+    <preformat>##                             Mean         SD     Naive SE Time-series SE
+## treatment_effects[1,1] 1.1211557 0.05246518 0.0008295473    0.001509931
+## treatment_effects[2,1] 1.0074123 0.04566422 0.0007220147    0.001395410
+## subject_sd             0.8003238 0.07867619 0.0012439797    0.001333331</preformat>
+    <p>These parameter estimates tell us the ratio of seizure rates
+    during and before the treatment period for both the drug and placebo
+    treatments. To calculate the effect of the drug relative to the
+    placebo, we would take the ratio of the seizure rates between the
+    drug treatment and the placebo treatment. We didn’t include that
+    term in our model, but fortunately there’s no need to re-fit the
+    model. greta’s <monospace>calculate()</monospace> function lets us
+    compute model quantities after model fitting.</p>
+    <code language="r script"># create a drug effect variable and calculate posterior samples
+drug_effect &lt;- treatment_effects[2] / treatment_effects[1]
+drug_effect_draws &lt;- calculate(drug_effect, draws)
+summary(drug_effect_draws)$statistics</code>
+    <preformat>##           Mean             SD       Naive SE Time-series SE 
+##   0.9004330745   0.0574290367   0.0009080328   0.0016683350</preformat>
+    <p><monospace>calculate()</monospace> can also be used for posterior
+    prediction: we can reuse greta arrays for model parameters in
+    combination with predictor variables to make a greta array for the
+    predicted values of the new observations, then use
+    <monospace>calculate()</monospace> to compute the posterior samples
+    for these predictions. This means greta can be used in a predictive
+    modelling workflow in which the data to predict to isn’t available
+    before model fitting, and without having to hand-code the
+    predictions for all posterior samples.</p>
+  </sec>
+  <sec id="implementation">
+    <title>Implementation</title>
+    <p>As in the example above, users of greta build up their models by
+    creating and manipulating <monospace>greta_array</monospace> objects
+    representing parameters of other quantities in the model.
+    <monospace>greta_array</monospace>s behave like R’s arrays, vectors
+    and scalars, but with unknown values. greta extends a number of R’s
+    mathematical functions and other operations to work with greta
+    arrays, so users can manipulate them as they would any other numeric
+    object in R.</p>
+    <p>Internally, each of these greta arrays is represented by an R6
+    object (<xref alt="Chang, 2019" rid="ref-r6" ref-type="bibr">Chang,
+    2019</xref>), with information on the greta arrays from which they
+    were created, or which re created with them. Together, these R6
+    objects constitute a directed acyclic graph (DAG), combining data,
+    operations, variables, and probability densities. This DAG is then
+    used to construct a function in TensorFlow code representing the
+    joint density of the model. This core computational functionality,
+    including optimisers and MCMC samplers, is provided by the
+    TensorFlow and TensorFlow Probability Python packages
+    (<xref alt="Abadi et al., 2015" rid="ref-tf" ref-type="bibr">Abadi
+    et al., 2015</xref>;
+    <xref alt="Dillon et al., 2017" rid="ref-tfp" ref-type="bibr">Dillon
+    et al., 2017</xref>), accessed from R via the tensorflow and
+    reticulate R packages
+    (<xref alt="Allaire &amp; Tang, 2019" rid="ref-r_tf" ref-type="bibr">Allaire
+    &amp; Tang, 2019</xref>;
+    <xref alt="Ushey et al., 2019" rid="ref-reticulate" ref-type="bibr">Ushey
+    et al., 2019</xref>).</p>
+  </sec>
+  <sec id="parallelisation">
+    <title>Parallelisation</title>
+    <p>Whereas most MCMC software packages enable parallelisation by
+    running each MCMC chain to run on a separate CPU, greta’s use of
+    TensorFlow means it can parallelise MCMC on a single chain across an
+    arbitrary number of CPUs. By installing the appropriate version of
+    TensorFlow, greta models can also be run on Graphics Processing
+    Units (GPUs). greta is also integrated with the future R package
+    (<xref alt="Bengtsson, 2019" rid="ref-future" ref-type="bibr">Bengtsson,
+    2019</xref>) for remote and parallel processing, providing a simple
+    interface to run inference for each chain of MCMC on a separate,
+    remote machine. As a consequence, inference on greta models can be
+    scaled up to make use of modern high-performance compute
+    systems.</p>
+  </sec>
+  <sec id="extending-greta">
+    <title>Extending greta</title>
+    <p>greta is not only designed to be extensible, but makes a
+    deliberately distinction between the API for <italic>users</italic>
+    who construct statistical models using existing functionality, and
+    <italic>developers</italic> who add new functionality. Rather than
+    letting users directly modify the inference target within a model
+    (which can be dangerous if used incorrectly), new probability
+    distributions and operations are created using a developer user
+    interface, exposed via the <monospace>.internals</monospace> object.
+    Once developed in this way, it becomes simple to distribute this new
+    functionality to other users via an R package that extends greta.
+    Linking to the well established R package mechanism means that greta
+    extensions automatically come with a fully-featured package
+    management system, with tooling for development and distribution via
+    CRAN or code sharing platforms.</p>
+    <p>Whilst anyone can write and distribute their own extension
+    package, an aim of the greta project is to maintain a set of
+    extension packages that meet software quality standards and are
+    completely interoperable, in a similar way to the ‘tidyverse’ of R
+    packages
+    (<xref alt="Wickham, 2017" rid="ref-tidyverse" ref-type="bibr">Wickham,
+    2017</xref>) for data manipulation. These packages will be hosted on
+    both the project GitHub organisation at
+    <ext-link ext-link-type="uri" xlink:href="https://github.com/greta-dev/">https://github.com/greta-dev/</ext-link>
+    and on CRAN. There are currently a number of extensions in prototype
+    form hosted on the GitHub organisation, including extensions to
+    facilitate Gaussian process modelling (greta.gp), modelling dynamic
+    systems (greta.dynamics) and generalised additive modelling
+    (greta.gam).</p>
+  </sec>
+  <sec id="future-work">
+    <title>Future work</title>
+    <p>greta is under active development, and a range of of new features
+    will be added to the core package and extension packages in the near
+    future. Two of the most significant expected changes are the ability
+    to perform inference on discrete-valued parameters, and to include
+    direct or approximate marginalisation of parameters as part of a
+    model.</p>
+    <sec id="discrete-parameters">
+      <title>Discrete parameters</title>
+      <p>greta currently only handles models with exclusively
+      continuous-valued parameters, since these models are compatible
+      with the most commonly used optimisation routines and the
+      efficient HMC sampler that is used by default. In the near future,
+      greta will be extended to enable users to perform inference on
+      models with discrete-valued parameters as required, in combination
+      with the (typically less efficient) samplers with which these
+      models are compatible.</p>
+    </sec>
+    <sec id="marginalisation">
+      <title>Marginalisation</title>
+      <p>Many common statistical modelling approaches, such as
+      hierarchical models, use unobserved <italic>latent</italic>
+      variables whose posterior distributions must be integrated over in
+      order to perform inference on parameters of interest. Whilst MCMC
+      is a general-purpose method for marginalising these parameters,
+      other methods are often better suited to the task in specific
+      models. For example where those latent variables are
+      discrete-valued and efficient samplers cannot be used, or when
+      deterministic numerical approximations such as a Laplace
+      approximation are more computationally-efficient. A simple user
+      interface to specifying these marginalisation schemes within a
+      greta model is planned. This will enable users to experiment with
+      combinations of different inference approaches without the need
+      delve into nuances of implementation.</p>
+    </sec>
+  </sec>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>I’d like to acknowledge direct contributions from Simon Dirmeier,
+  Adam Fleischhacker, Shirin Glander, Martin Ingram, Lee Hazel, Tiphaine
+  Martin, Matt Mulvahill, Michael Quinn, David Smith, Paul Teetor, and
+  Jian Yen, as well as Jeffrey Pullin and many others who have provided
+  feedback and suggestions on greta and its extensions. I would also
+  like to thank Nick Tierney for comments and edits on this manuscript.
+  greta was developed with support from both a McKenzie fellowship from
+  the University of Melbourne, and a DECRA fellowship from the
+  Australian Research Council (DE180100635).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-openbugs">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Spiegelhalter</surname><given-names>David</given-names></name>
+          <name><surname>Thomas</surname><given-names>Andrew</given-names></name>
+          <name><surname>Best</surname><given-names>Nicky</given-names></name>
+          <name><surname>Lunn</surname><given-names>Dave</given-names></name>
+        </person-group>
+        <article-title>OpenBUGS user manual, version 3.2.3</article-title>
+        <source>MRC Biostatistics Unit, Cambridge</source>
+        <year iso-8601-date="2014">2014</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-jags">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Plummer</surname><given-names>Martyn</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <article-title>JAGS: A program for analysis of bayesian graphical models using gibbs sampling</article-title>
+        <source>Proceedings of the 3rd international workshop on distributed statistical computing</source>
+        <publisher-name>Vienna, Austria.</publisher-name>
+        <year iso-8601-date="2003">2003</year>
+        <volume>124</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-nimble">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>de Valpine</surname><given-names>P.</given-names></name>
+          <name><surname>Turek</surname><given-names>D.</given-names></name>
+          <name><surname>Paciorek</surname><given-names>C. J.</given-names></name>
+          <name><surname>Anderson-Bergman</surname><given-names>C.</given-names></name>
+          <name><surname>Temple Lang</surname><given-names>D.</given-names></name>
+          <name><surname>Bodik</surname><given-names>R.</given-names></name>
+        </person-group>
+        <article-title>Programming with models: Writing statistical algorithms for general model structures with NIMBLE</article-title>
+        <source>Journal of Computational and Graphical Statistics</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>26</volume>
+        <pub-id pub-id-type="doi">10.1080/10618600.2016.1172487</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-stan">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Carpenter</surname><given-names>Bob</given-names></name>
+          <name><surname>Gelman</surname><given-names>Andrew</given-names></name>
+          <name><surname>Hoffman</surname><given-names>Matthew D</given-names></name>
+          <name><surname>Lee</surname><given-names>Daniel</given-names></name>
+          <name><surname>Goodrich</surname><given-names>Ben</given-names></name>
+          <name><surname>Betancourt</surname><given-names>Michael</given-names></name>
+          <name><surname>Brubaker</surname><given-names>Marcus</given-names></name>
+          <name><surname>Guo</surname><given-names>Jiqiang</given-names></name>
+          <name><surname>Li</surname><given-names>Peter</given-names></name>
+          <name><surname>Riddell</surname><given-names>Allen</given-names></name>
+        </person-group>
+        <article-title>Stan: A probabilistic programming language</article-title>
+        <source>Journal of statistical software</source>
+        <publisher-name>Columbia Univ., New York, NY (United States); Harvard Univ., Cambridge, MA …</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>76</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.18637/jss.v076.i01</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pymc">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Salvatier</surname><given-names>John</given-names></name>
+          <name><surname>Wiecki</surname><given-names>Thomas V.</given-names></name>
+          <name><surname>Fonnesbeck</surname><given-names>Christopher</given-names></name>
+        </person-group>
+        <article-title>Probabilistic programming in python using PyMC3</article-title>
+        <source>PeerJ Computer Science</source>
+        <publisher-name>PeerJ</publisher-name>
+        <year iso-8601-date="2016-04">2016</year><month>04</month>
+        <volume>2</volume>
+        <uri>https://doi.org/10.7717/peerj-cs.55</uri>
+        <pub-id pub-id-type="doi">10.7717/peerj-cs.55</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-edward">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tran</surname><given-names>Dustin</given-names></name>
+          <name><surname>Kucukelbir</surname><given-names>Alp</given-names></name>
+          <name><surname>Dieng</surname><given-names>Adji B.</given-names></name>
+          <name><surname>Rudolph</surname><given-names>Maja</given-names></name>
+          <name><surname>Liang</surname><given-names>Dawen</given-names></name>
+          <name><surname>Blei</surname><given-names>David M.</given-names></name>
+        </person-group>
+        <article-title>Edward: A library for probabilistic modeling, inference, and criticism</article-title>
+        <source>arXiv preprint arXiv:1610.09787</source>
+        <year iso-8601-date="2016">2016</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-tf">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Abadi</surname><given-names>Martín</given-names></name>
+          <name><surname>Agarwal</surname><given-names>Ashish</given-names></name>
+          <name><surname>Barham</surname><given-names>Paul</given-names></name>
+          <name><surname>Brevdo</surname><given-names>Eugene</given-names></name>
+          <name><surname>Chen</surname><given-names>Zhifeng</given-names></name>
+          <name><surname>Citro</surname><given-names>Craig</given-names></name>
+          <name><surname>Corrado</surname><given-names>Greg S.</given-names></name>
+          <name><surname>Davis</surname><given-names>Andy</given-names></name>
+          <name><surname>Dean</surname><given-names>Jeffrey</given-names></name>
+          <name><surname>Devin</surname><given-names>Matthieu</given-names></name>
+          <name><surname>Ghemawat</surname><given-names>Sanjay</given-names></name>
+          <name><surname>Goodfellow</surname><given-names>Ian</given-names></name>
+          <name><surname>Harp</surname><given-names>Andrew</given-names></name>
+          <name><surname>Irving</surname><given-names>Geoffrey</given-names></name>
+          <name><surname>Isard</surname><given-names>Michael</given-names></name>
+          <name><surname>Jia</surname><given-names>Yangqing</given-names></name>
+          <name><surname>Jozefowicz</surname><given-names>Rafal</given-names></name>
+          <name><surname>Kaiser</surname><given-names>Lukasz</given-names></name>
+          <name><surname>Kudlur</surname><given-names>Manjunath</given-names></name>
+          <name><surname>Levenberg</surname><given-names>Josh</given-names></name>
+          <name><surname>Mané</surname><given-names>Dan</given-names></name>
+          <name><surname>Monga</surname><given-names>Rajat</given-names></name>
+          <name><surname>Moore</surname><given-names>Sherry</given-names></name>
+          <name><surname>Murray</surname><given-names>Derek</given-names></name>
+          <name><surname>Olah</surname><given-names>Chris</given-names></name>
+          <name><surname>Schuster</surname><given-names>Mike</given-names></name>
+          <name><surname>Shlens</surname><given-names>Jonathon</given-names></name>
+          <name><surname>Steiner</surname><given-names>Benoit</given-names></name>
+          <name><surname>Sutskever</surname><given-names>Ilya</given-names></name>
+          <name><surname>Talwar</surname><given-names>Kunal</given-names></name>
+          <name><surname>Tucker</surname><given-names>Paul</given-names></name>
+          <name><surname>Vanhoucke</surname><given-names>Vincent</given-names></name>
+          <name><surname>Vasudevan</surname><given-names>Vijay</given-names></name>
+          <name><surname>Viégas</surname><given-names>Fernanda</given-names></name>
+          <name><surname>Vinyals</surname><given-names>Oriol</given-names></name>
+          <name><surname>Warden</surname><given-names>Pete</given-names></name>
+          <name><surname>Wattenberg</surname><given-names>Martin</given-names></name>
+          <name><surname>Wicke</surname><given-names>Martin</given-names></name>
+          <name><surname>Yu</surname><given-names>Yuan</given-names></name>
+          <name><surname>Zheng</surname><given-names>Xiaoqiang</given-names></name>
+        </person-group>
+        <article-title>TensorFlow: Large-scale machine learning on heterogeneous systems</article-title>
+        <year iso-8601-date="2015">2015</year>
+        <uri>http://tensorflow.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-mass">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Venables</surname><given-names>W. N.</given-names></name>
+          <name><surname>Ripley</surname><given-names>B. D.</given-names></name>
+        </person-group>
+        <source>Modern applied statistics with s</source>
+        <publisher-name>Springer</publisher-name>
+        <publisher-loc>New York</publisher-loc>
+        <year iso-8601-date="2002">2002</year>
+        <uri>http://www.stats.ox.ac.uk/pub/MASS4</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-coda">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Plummer</surname><given-names>Martyn</given-names></name>
+          <name><surname>Best</surname><given-names>Nicky</given-names></name>
+          <name><surname>Cowles</surname><given-names>Kate</given-names></name>
+          <name><surname>Vines</surname><given-names>Karen</given-names></name>
+        </person-group>
+        <article-title>CODA: Convergence diagnosis and output analysis for MCMC</article-title>
+        <source>R News</source>
+        <year iso-8601-date="2006">2006</year>
+        <volume>6</volume>
+        <issue>1</issue>
+        <uri>https://journal.r-project.org/archive/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-bayesplot">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Gabry</surname><given-names>Jonah</given-names></name>
+          <name><surname>Mahr</surname><given-names>Tristan</given-names></name>
+        </person-group>
+        <source>Bayesplot: Plotting for bayesian models</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://CRAN.R-project.org/package=bayesplot</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-r6">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Chang</surname><given-names>Winston</given-names></name>
+        </person-group>
+        <source>R6: Encapsulated classes with reference semantics</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://CRAN.R-project.org/package=R6</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-tfp">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dillon</surname><given-names>Joshua V</given-names></name>
+          <name><surname>Langmore</surname><given-names>Ian</given-names></name>
+          <name><surname>Tran</surname><given-names>Dustin</given-names></name>
+          <name><surname>Brevdo</surname><given-names>Eugene</given-names></name>
+          <name><surname>Vasudevan</surname><given-names>Srinivas</given-names></name>
+          <name><surname>Moore</surname><given-names>Dave</given-names></name>
+          <name><surname>Patton</surname><given-names>Brian</given-names></name>
+          <name><surname>Alemi</surname><given-names>Alex</given-names></name>
+          <name><surname>Hoffman</surname><given-names>Matt</given-names></name>
+          <name><surname>Saurous</surname><given-names>Rif A</given-names></name>
+        </person-group>
+        <article-title>Tensorflow distributions</article-title>
+        <source>arXiv preprint arXiv:1711.10604</source>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-reticulate">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Ushey</surname><given-names>Kevin</given-names></name>
+          <name><surname>Allaire</surname><given-names>JJ</given-names></name>
+          <name><surname>Tang</surname><given-names>Yuan</given-names></name>
+        </person-group>
+        <source>Reticulate: Interface to ’python’</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://CRAN.R-project.org/package=reticulate</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-r_tf">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Allaire</surname><given-names>JJ</given-names></name>
+          <name><surname>Tang</surname><given-names>Yuan</given-names></name>
+        </person-group>
+        <source>Tensorflow: R interface to ’TensorFlow’</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://CRAN.R-project.org/package=tensorflow</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-future">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Bengtsson</surname><given-names>Henrik</given-names></name>
+        </person-group>
+        <source>Future: Unified parallel and distributed processing in r for everyone</source>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://CRAN.R-project.org/package=future</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-tidyverse">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Wickham</surname><given-names>Hadley</given-names></name>
+        </person-group>
+        <source>Tidyverse: Easily install and load the ’tidyverse’</source>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://CRAN.R-project.org/package=tidyverse</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Rcore">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>R Core Team</string-name>
+        </person-group>
+        <source>R: A language and environment for statistical computing</source>
+        <publisher-name>R Foundation for Statistical Computing</publisher-name>
+        <publisher-loc>Vienna, Austria</publisher-loc>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://www.R-project.org/</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

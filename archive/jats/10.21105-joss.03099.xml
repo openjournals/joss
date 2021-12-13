@@ -1,0 +1,517 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3099</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03099</article-id>
+<title-group>
+<article-title>kuibit: Analyzing Einstein Toolkit simulations with
+Python</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-3696-6408</contrib-id>
+<string-name>Gabriele Bozzola</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Steward Observatory and Astronomy Department, University of
+Arizona</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-01-01">
+<day>1</day>
+<month>1</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>60</issue>
+<fpage>3099</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Python</kwd>
+<kwd>Einstein Toolkit</kwd>
+<kwd>Cactus</kwd>
+<kwd>numerical relativity</kwd>
+<kwd>astrophysics</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>kuibit</monospace>
+  <xref ref-type="fn" rid="fn1">1</xref> is a Python library for
+  analyzing simulations performed with the
+  <monospace>Einstein Toolkit</monospace><xref ref-type="fn" rid="fn2">2</xref>
+  Löffler et al.
+  (<xref alt="2012" rid="ref-einsteintoolkit2" ref-type="bibr">2012</xref>),
+  a free and open-source code for numerical relativity and relativistic
+  astrophysics. Over the past years, numerical simulations like the ones
+  enabled by the <monospace>Einstein Toolkit</monospace> have become a
+  critical tool in modeling, predicting, and understanding several
+  astrophysical phenomena, including binary black hole or neutron star
+  mergers. As a result of the recent detections of gravitational waves
+  by the LIGO-Virgo collaboration, these studies are at the forefront of
+  scientific research. The package presented in this paper,
+  <monospace>kuibit</monospace>, provides an intuitive infrastructure to
+  read and represent the output of the
+  <monospace>Einstein Toolkit</monospace>. This simplifies analyzing
+  simulations and significantly lowers the barrier in learning how to
+  use the tool.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>The <monospace>Einstein Toolkit</monospace> is a software for
+  numerical simulations based on the <monospace>Cactus</monospace>
+  computational framework
+  (<xref alt="Goodale et al., 2003" rid="ref-cactuscode" ref-type="bibr">Goodale
+  et al., 2003</xref>) and designed to be accessible for both users and
+  developers. Numerical-relativity simulations require large and complex
+  codes, which have to run on the world’s largest supercomputers.
+  <monospace>Einstein Toolkit</monospace> significantly reduces this
+  complexity and improves accessibility by splitting infrastructure code
+  from physics one. On one side, there is memory management,
+  parallelization, grid operations, and all the other low-level details
+  that are needed to successfully perform a simulation but do not
+  strictly depend on the physical system under consideration. On the
+  other, there are the physics modules, which implement the scientific
+  aspects of the simulation. Codes are developed by domain-experts and
+  researchers can focus on their goals without having to worry about the
+  technical details of the implementation. This makes the
+  <monospace>Einstein Toolkit</monospace> easier to use and extend.</p>
+  <p>Despite the advancements made by the
+  <monospace>Einstein Toolkit</monospace>, there is still a big leap
+  between running a simulation and obtaining scientific results. The
+  output from the <monospace>Einstein Toolkit</monospace> is a
+  collection of files with different formats and structures, with data
+  that is typically spread across multiple files (one or more for each
+  MPI process) in various directories (one per checkpoint). Reading the
+  simulation output and properly combining all the data is a challenging
+  task. Even once the output is read, traditional data structures are
+  not a good representation of the physical quantities. For instance,
+  representing variables defined on an adaptive-mesh-refined grid as
+  simple arrays completely ignores all the information on the grid
+  structure, making some operations impractical or impossible to
+  perform. The lack of suitable interfaces introduces significant
+  friction in exploring the scientific content of a simulation.
+  <monospace>kuibit</monospace> takes care of both the aspects of
+  reading the simulation data and of providing high-level
+  representations of the data that closely follows what researchers are
+  used to. In addition to this, <monospace>kuibit</monospace> also
+  includes a set of routines that are commonly used in the field: for
+  example, it handles unit conversion (including from geometrized units
+  to physical), it has the noise curves of known detectors, or it
+  computes gravitational-waves from simulation data.</p>
+  <p><monospace>kuibit</monospace> is based on the same design (and in
+  various cases, implementation details too) of a pre-existing package
+  named <monospace>PostCactus</monospace>
+  (<xref alt="Kastaun, n.d." rid="ref-pycactus" ref-type="bibr">Kastaun,
+  n.d.</xref>). Like <monospace>PostCactus</monospace>,
+  <monospace>kuibit</monospace> has two groups of modules. The first is
+  to define custom data-types for time series, Fourier spectra,
+  multipolar decompositions, and grid data (both on uniform grids and
+  mesh-refined ones). The second group consists of the readers, which
+  are a collection of tools to scan the simulation output and organize
+  it. The main reader is a class <monospace>SimDir</monospace> which
+  provides the interface to access all the data in the simulation. For
+  instance, the <monospace>timeseries</monospace> attribute in
+  <monospace>SimDir</monospace> is a dictionary-like object that
+  contains all the time series in the output. When reading data,
+  <monospace>kuibit</monospace> takes care of all the low-level details,
+  like handling transparently simulation restarts, or merging grid data
+  stored in different files. Therefore, users can easily access the data
+  regardless of how complicated the structure of the output is.
+  Moreover, <monospace>kuibit</monospace> does not assume any particular
+  organization of the output and uses regular expressions to find the
+  relevant information from filenames or metadata, allowing for
+  flexibility in the simulation workflow.</p>
+  <p>Currently, <monospace>kuibit</monospace> is the only available
+  package for quantitative analysis of simulations that is free to use
+  and that comes with documentation, tutorials, and examples. Tools like
+  <monospace>VisIt</monospace>
+  (<xref alt="Childs et al., 2012" rid="ref-visit" ref-type="bibr">Childs
+  et al., 2012</xref>) or <monospace>rugutils</monospace>
+  (<xref alt="Guercilena, n.d." rid="ref-rugutils" ref-type="bibr">Guercilena,
+  n.d.</xref>) focus only on visualizing grid data, while other packages
+  like <monospace>POWER</monospace>
+  (<xref alt="Johnson et al., 2018" rid="ref-POWER" ref-type="bibr">Johnson
+  et al., 2018</xref>), or <monospace>pyGWAnalysis</monospace>
+  (<xref alt="Reisswig, n.d." rid="ref-pyGWAnalysis" ref-type="bibr">Reisswig,
+  n.d.</xref>) only on gravitational-wave data. Capabilities similar to
+  those of <monospace>kuibit</monospace> are offered by
+  <monospace>SimulationTools</monospace>
+  (<xref alt="Hinder &amp; Wardell, 2012" rid="ref-simulationtools" ref-type="bibr">Hinder
+  &amp; Wardell, 2012</xref>), that runs on the proprietary Wolfram
+  Mathematica, and by <monospace>PostCactus</monospace>
+  (<xref alt="Kastaun, n.d." rid="ref-pycactus" ref-type="bibr">Kastaun,
+  n.d.</xref>) and <monospace>scidata</monospace>
+  (<xref alt="Radice, n.d." rid="ref-scidata" ref-type="bibr">Radice,
+  n.d.</xref>), which, at the moment, do not support Python3 and do not
+  have documentation. In addition to this, several research groups
+  develop their own private analysis software.</p>
+  <p><monospace>kuibit</monospace> embraces the core principles of the
+  <monospace>Einstein Toolkit</monospace>: On one side,
+  <monospace>kuibit</monospace> solves the engineering problems of
+  reading and representing <monospace>Einstein Toolkit</monospace> data,
+  so that researchers can directly pursue their scientific goals without
+  having to worry about how the data is stored. With
+  <monospace>kuibit</monospace>, the entry barrier into using the
+  <monospace>Einstein Toolkit</monospace> is the lowest it has ever
+  been, and students and researchers can inspect and visualize
+  simulations in just a few lines of code. On the other side,
+  <monospace>kuibit</monospace> is designed to be a code for the
+  community: it is free and does not require any proprietary software to
+  run, it is openly developed with an emphasis on readability and
+  maintainability, and it encourages contributions.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>Gabriele Bozzola is supported by by the Frontera Fellowship by the
+  Texas Advanced Computing Center (TACC). Frontera
+  (<xref alt="Stanzione et al., 2020" rid="ref-Frontera2020" ref-type="bibr">Stanzione
+  et al., 2020</xref>) is founded by NSF grant OAC-1818253. This work
+  was in part supported by NSF Grant PHY-1912619 to the University of
+  Arizona and made use of computational resources provided by the
+  Extreme Science and Engineering Discovery Environment (XSEDE) under
+  grant number TG-PHY190020. XSEDE is supported by the NSF grant
+  No. ACI-1548562. Gabriele Bozzola wishes to thank Wolfgang Kastaun for
+  publicly releasing his <monospace>PostCactus</monospace> package
+  (<xref alt="Kastaun, n.d." rid="ref-pycactus" ref-type="bibr">Kastaun,
+  n.d.</xref>) without which, <monospace>kuibit</monospace> would not
+  exist.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-einsteintoolkit">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Brandt</surname><given-names>Steven R.</given-names></name>
+          <name><surname>Brendal</surname><given-names>Brockton</given-names></name>
+          <name><surname>Gabella</surname><given-names>William E.</given-names></name>
+          <name><surname>Haas</surname><given-names>Roland</given-names></name>
+          <name><surname>Karakaş</surname><given-names>Beyhan</given-names></name>
+          <name><surname>Kedia</surname><given-names>Atul</given-names></name>
+          <name><surname>Rosofsky</surname><given-names>Shawn G.</given-names></name>
+          <name><surname>Schaffarczyk</surname><given-names>Alois Peter</given-names></name>
+          <name><surname>Alcubierre</surname><given-names>Miguel</given-names></name>
+          <name><surname>Alic</surname><given-names>Daniela</given-names></name>
+          <name><surname>Allen</surname><given-names>Gabrielle</given-names></name>
+          <name><surname>Ansorg</surname><given-names>Marcus</given-names></name>
+          <name><surname>Babiuc-Hamilton</surname><given-names>Maria</given-names></name>
+          <name><surname>Baiotti</surname><given-names>Luca</given-names></name>
+          <name><surname>Benger</surname><given-names>Werner</given-names></name>
+          <name><surname>Bentivegna</surname><given-names>Eloisa</given-names></name>
+          <name><surname>Bernuzzi</surname><given-names>Sebastiano</given-names></name>
+          <name><surname>Bode</surname><given-names>Tanja</given-names></name>
+          <name><surname>Bruegmann</surname><given-names>Bernd</given-names></name>
+          <name><surname>Campanelli</surname><given-names>Manuela</given-names></name>
+          <name><surname>Cipolletta</surname><given-names>Federico</given-names></name>
+          <name><surname>Corvino</surname><given-names>Giovanni</given-names></name>
+          <name><surname>Cupp</surname><given-names>Samuel</given-names></name>
+          <name><surname>Pietri</surname><given-names>Roberto De</given-names></name>
+          <name><surname>Diener</surname><given-names>Peter</given-names></name>
+          <name><surname>Dimmelmeier</surname><given-names>Harry</given-names></name>
+          <name><surname>Dooley</surname><given-names>Rion</given-names></name>
+          <name><surname>Dorband</surname><given-names>Nils</given-names></name>
+          <name><surname>Khamra</surname><given-names>Yaakoub El</given-names></name>
+          <name><surname>Etienne</surname><given-names>Zachariah</given-names></name>
+          <name><surname>Faber</surname><given-names>Joshua</given-names></name>
+          <name><surname>Font</surname><given-names>Toni</given-names></name>
+          <name><surname>Frieben</surname><given-names>Joachim</given-names></name>
+          <name><surname>Giacomazzo</surname><given-names>Bruno</given-names></name>
+          <name><surname>Goodale</surname><given-names>Tom</given-names></name>
+          <name><surname>Gundlach</surname><given-names>Carsten</given-names></name>
+          <name><surname>Hawke</surname><given-names>Ian</given-names></name>
+          <name><surname>Hawley</surname><given-names>Scott</given-names></name>
+          <name><surname>Hinder</surname><given-names>Ian</given-names></name>
+          <name><surname>Husa</surname><given-names>Sascha</given-names></name>
+          <name><surname>Iyer</surname><given-names>Sai</given-names></name>
+          <name><surname>Kellermann</surname><given-names>Thorsten</given-names></name>
+          <name><surname>Knapp</surname><given-names>Andrew</given-names></name>
+          <name><surname>Koppitz</surname><given-names>Michael</given-names></name>
+          <name><surname>Laguna</surname><given-names>Pablo</given-names></name>
+          <name><surname>Lanferman</surname><given-names>Gerd</given-names></name>
+          <name><surname>Löffler</surname><given-names>Frank</given-names></name>
+          <name><surname>Masso</surname><given-names>Joan</given-names></name>
+          <name><surname>Menger</surname><given-names>Lars</given-names></name>
+          <name><surname>Merzky</surname><given-names>Andre</given-names></name>
+          <name><surname>Miller</surname><given-names>Mark</given-names></name>
+          <name><surname>Moesta</surname><given-names>Philipp</given-names></name>
+          <name><surname>Montero</surname><given-names>Pedro</given-names></name>
+          <name><surname>Mundim</surname><given-names>Bruno</given-names></name>
+          <name><surname>Nerozzi</surname><given-names>Andrea</given-names></name>
+          <name><surname>Noble</surname><given-names>Scott C.</given-names></name>
+          <name><surname>Ott</surname><given-names>Christian</given-names></name>
+          <name><surname>Paruchuri</surname><given-names>Ravi</given-names></name>
+          <name><surname>Pollney</surname><given-names>Denis</given-names></name>
+          <name><surname>Radice</surname><given-names>David</given-names></name>
+          <name><surname>Radke</surname><given-names>Thomas</given-names></name>
+          <name><surname>Reisswig</surname><given-names>Christian</given-names></name>
+          <name><surname>Rezzolla</surname><given-names>Luciano</given-names></name>
+          <name><surname>Rideout</surname><given-names>David</given-names></name>
+          <name><surname>Ripeanu</surname><given-names>Matei</given-names></name>
+          <name><surname>Sala</surname><given-names>Lorenzo</given-names></name>
+          <name><surname>Schewtschenko</surname><given-names>Jascha A</given-names></name>
+          <name><surname>Schnetter</surname><given-names>Erik</given-names></name>
+          <name><surname>Schutz</surname><given-names>Bernard</given-names></name>
+          <name><surname>Seidel</surname><given-names>Ed</given-names></name>
+          <name><surname>Seidel</surname><given-names>Eric</given-names></name>
+          <name><surname>Shalf</surname><given-names>John</given-names></name>
+          <name><surname>Sible</surname><given-names>Ken</given-names></name>
+          <name><surname>Sperhake</surname><given-names>Ulrich</given-names></name>
+          <name><surname>Stergioulas</surname><given-names>Nikolaos</given-names></name>
+          <name><surname>Suen</surname><given-names>Wai-Mo</given-names></name>
+          <name><surname>Szilagyi</surname><given-names>Bela</given-names></name>
+          <name><surname>Takahashi</surname><given-names>Ryoji</given-names></name>
+          <name><surname>Thomas</surname><given-names>Michael</given-names></name>
+          <name><surname>Thornburg</surname><given-names>Jonathan</given-names></name>
+          <name><surname>Tobias</surname><given-names>Malcolm</given-names></name>
+          <name><surname>Tonita</surname><given-names>Aaryn</given-names></name>
+          <name><surname>Walker</surname><given-names>Paul</given-names></name>
+          <name><surname>Wan</surname><given-names>Mew-Bing</given-names></name>
+          <name><surname>Wardell</surname><given-names>Barry</given-names></name>
+          <name><surname>Witek</surname><given-names>Helvi</given-names></name>
+          <name><surname>Zilhão</surname><given-names>Miguel</given-names></name>
+          <name><surname>Zink</surname><given-names>Burkhard</given-names></name>
+          <name><surname>Zlochower</surname><given-names>Yosef</given-names></name>
+        </person-group>
+        <article-title>The einstein toolkit</article-title>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2020-05">2020</year><month>05</month>
+        <uri>https://doi.org/10.5281/zenodo.3866075</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3866075</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-simulationtools">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Hinder</surname><given-names>Ian</given-names></name>
+          <name><surname>Wardell</surname><given-names>Barry</given-names></name>
+        </person-group>
+        <article-title>SimulationTools</article-title>
+        <source>BitBucket repository</source>
+        <publisher-name>BitBucket</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <uri>https://simulationtools.org</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-pycactus">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Kastaun</surname><given-names>Wolfgang</given-names></name>
+        </person-group>
+        <article-title>PyCactus</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>GitHub</publisher-name>
+        <uri>https://github.com/wokast/PyCactus</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-cactuscode">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Goodale</surname><given-names>Tom</given-names></name>
+          <name><surname>Allen</surname><given-names>Gabrielle</given-names></name>
+          <name><surname>Lanfermann</surname><given-names>Gerd</given-names></name>
+          <name><surname>Massó</surname><given-names>Joan</given-names></name>
+          <name><surname>Radke</surname><given-names>Thomas</given-names></name>
+          <name><surname>Seidel</surname><given-names>Edward</given-names></name>
+          <name><surname>Shalf</surname><given-names>John</given-names></name>
+        </person-group>
+        <article-title>The Cactus framework and toolkit: Design and applications</article-title>
+        <source>Vector and parallel processing – VECPAR’2002, 5th international conference, lecture notes in computer science</source>
+        <publisher-name>Springer</publisher-name>
+        <publisher-loc>Berlin</publisher-loc>
+        <year iso-8601-date="2003">2003</year>
+        <pub-id pub-id-type="doi">10.1007/3-540-36569-9_13</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-einsteintoolkit2">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Löffler</surname><given-names>Frank</given-names></name>
+          <name><surname>Faber</surname><given-names>Joshua</given-names></name>
+          <name><surname>Bentivegna</surname><given-names>Eloisa</given-names></name>
+          <name><surname>Bode</surname><given-names>Tanja</given-names></name>
+          <name><surname>Diener</surname><given-names>Peter</given-names></name>
+          <name><surname>Haas</surname><given-names>Roland</given-names></name>
+          <name><surname>Hinder</surname><given-names>Ian</given-names></name>
+          <name><surname>Mundim</surname><given-names>Bruno C.</given-names></name>
+          <name><surname>Ott</surname><given-names>Christian D.</given-names></name>
+          <name><surname>Schnetter</surname><given-names>Erik</given-names></name>
+          <name><surname>Allen</surname><given-names>Gabrielle</given-names></name>
+          <name><surname>Campanelli</surname><given-names>Manuela</given-names></name>
+          <name><surname>Laguna</surname><given-names>Pablo</given-names></name>
+        </person-group>
+        <article-title>The Einstein Toolkit: A Community Computational Infrastructure for Relativistic Astrophysics</article-title>
+        <source>Class. Quantum Grav.</source>
+        <year iso-8601-date="2012">2012</year>
+        <volume>29</volume>
+        <issue>11</issue>
+        <pub-id pub-id-type="doi">doi:10.1088/0264-9381/29/11/115001</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-illinoisgrmhd">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Duez</surname><given-names>Matthew D.</given-names></name>
+          <name><surname>Liu</surname><given-names>Yuk Tung</given-names></name>
+          <name><surname>Shapiro</surname><given-names>Stuart L.</given-names></name>
+          <name><surname>Stephens</surname><given-names>Branson C.</given-names></name>
+        </person-group>
+        <article-title>Relativistic magnetohydrodynamics in dynamical spacetimes: Numerical methods and tests</article-title>
+        <source>Phys. Rev. D</source>
+        <year iso-8601-date="2005">2005</year>
+        <volume>72</volume>
+        <pub-id pub-id-type="doi">10.1103/PhysRevD.72.024028</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-rugutils">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Guercilena</surname><given-names>Federico</given-names></name>
+        </person-group>
+        <article-title>Rugutils</article-title>
+        <source>BitBucket repository</source>
+        <publisher-name>BitBucket</publisher-name>
+        <uri>https://bitbucket.org/relastro/rugutils</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-scidata">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Radice</surname><given-names>David</given-names></name>
+        </person-group>
+        <article-title>Scidata</article-title>
+        <source>BitBucket repository</source>
+        <publisher-name>BitBucket</publisher-name>
+        <uri>https://bitbucket.org/dradice/scidata</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-pyGWAnalysis">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Reisswig</surname><given-names>Christian</given-names></name>
+        </person-group>
+        <article-title>pyGWAnalysis</article-title>
+        <source>SVN repository</source>
+        <publisher-name>Einstein Toolkit</publisher-name>
+        <uri>https://svn.einsteintoolkit.org/pyGWAnalysis/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-visit">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Childs</surname><given-names>Hank</given-names></name>
+          <name><surname>Brugger</surname><given-names>Eric</given-names></name>
+          <name><surname>Whitlock</surname><given-names>Brad</given-names></name>
+          <name><surname>Meredith</surname><given-names>Jeremy</given-names></name>
+          <name><surname>Ahern</surname><given-names>Sean</given-names></name>
+          <name><surname>Pugmire</surname><given-names>David</given-names></name>
+          <name><surname>Biagas</surname><given-names>Kathleen</given-names></name>
+          <name><surname>Miller</surname><given-names>Mark</given-names></name>
+          <name><surname>Harrison</surname><given-names>Cyrus</given-names></name>
+          <name><surname>Weber</surname><given-names>Gunther H.</given-names></name>
+          <name><surname>Krishnan</surname><given-names>Hari</given-names></name>
+          <name><surname>Fogal</surname><given-names>Thomas</given-names></name>
+          <name><surname>Sanderson</surname><given-names>Allen</given-names></name>
+          <name><surname>Garth</surname><given-names>Christoph</given-names></name>
+          <name><surname>Bethel</surname><given-names>E. Wes</given-names></name>
+          <name><surname>Camp</surname><given-names>David</given-names></name>
+          <name><surname>Rübel</surname><given-names>Oliver</given-names></name>
+          <name><surname>Durant</surname><given-names>Marc</given-names></name>
+          <name><surname>Favre</surname><given-names>Jean M.</given-names></name>
+          <name><surname>Navrátil</surname><given-names>Paul</given-names></name>
+        </person-group>
+        <article-title>VisIt: An End-User Tool For Visualizing and Analyzing Very Large Data</article-title>
+        <source>High Performance Visualization–Enabling Extreme-Scale Scientific Insight</source>
+        <year iso-8601-date="2012-10">2012</year><month>10</month>
+      </element-citation>
+    </ref>
+    <ref id="ref-POWER">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Johnson</surname><given-names>Daniel</given-names></name>
+          <name><surname>Huerta</surname><given-names>E. A.</given-names></name>
+          <name><surname>Haas</surname><given-names>Roland</given-names></name>
+        </person-group>
+        <article-title>Python Open source Waveform ExtractoR (POWER): an open source, Python package to monitor and post-process numerical relativity simulations</article-title>
+        <source>Classical and Quantum Gravity</source>
+        <year iso-8601-date="2018-01">2018</year><month>01</month>
+        <volume>35</volume>
+        <issue>2</issue>
+        <uri>https://arxiv.org/abs/1708.02941</uri>
+        <pub-id pub-id-type="doi">10.1088/1361-6382/aa9cad</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Frontera2020">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Stanzione</surname><given-names>Dan</given-names></name>
+          <name><surname>West</surname><given-names>John</given-names></name>
+          <name><surname>Evans</surname><given-names>R. Todd</given-names></name>
+          <name><surname>Minyard</surname><given-names>Tommy</given-names></name>
+          <name><surname>Ghattas</surname><given-names>Omar</given-names></name>
+          <name><surname>Panda</surname><given-names>Dhabaleswar K.</given-names></name>
+        </person-group>
+        <article-title>Frontera: The evolution of leadership computing at the national science foundation</article-title>
+        <source>Practice and experience in advanced research computing</source>
+        <publisher-name>Association for Computing Machinery</publisher-name>
+        <publisher-loc>New York, NY, USA</publisher-loc>
+        <year iso-8601-date="2020">2020</year>
+        <isbn>9781450366892</isbn>
+        <uri>https://doi.org/10.1145/3311790.3396656</uri>
+        <pub-id pub-id-type="doi">10.1145/3311790.3396656</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+<fn-group>
+  <fn id="fn1">
+    <label>1</label><p>A kuibit (harvest pole) is the tool traditionally
+    used by the Tohono O’odham people to reach the fruit of the Saguaro
+    cacti during the harvesting season.</p>
+  </fn>
+  <fn id="fn2">
+    <label>2</label><p>While <monospace>kuibit</monospace> is designed
+    for the <monospace>Einstein Toolkit</monospace>, most of its
+    capabilities will work also for all the other codes based on
+    <monospace>Cactus</monospace>
+    (<xref alt="Goodale et al., 2003" rid="ref-cactuscode" ref-type="bibr">Goodale
+    et al., 2003</xref>). For instance, it is known that
+    <monospace>kuibit</monospace> can be used to analyze
+    <monospace>Illinois GRMHD</monospace>
+    (<xref alt="Duez et al., 2005" rid="ref-illinoisgrmhd" ref-type="bibr">Duez
+    et al., 2005</xref>) simulations.</p>
+  </fn>
+</fn-group>
+</back>
+</article>

@@ -1,0 +1,517 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1239</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01239</article-id>
+<title-group>
+<article-title>Ocellaris: a DG FEM solver for free-surface
+flows</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-5070-8056</contrib-id>
+<string-name>Tormod Landet</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Mathematics, University of Oslo</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-02-06">
+<day>6</day>
+<month>2</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>35</issue>
+<fpage>1239</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>DG FEM</kwd>
+<kwd>Navier--Stokes</kwd>
+<kwd>free-surface flow</kwd>
+<kwd>multi-phase flow</kwd>
+<kwd>incompressible</kwd>
+<kwd>FEniCS</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Free-surface flows are found wherever two immiscible fluids come
+  into contact, such as at the interface between water and air in the
+  ocean. Simulations of free-surface flows at high Reynolds numbers are
+  important for the design of coastal, bottom-fixed, and floating
+  structures exposed to ocean waves, as well as partially filled pipes
+  and tanks. The large difference in density between water and air poses
+  problems for numerical approximation across the interface, and the
+  highly non-linear behaviour of the free surface, which can break and
+  overturn, makes separating computations into two different fluid
+  domains difficult. As a model for free-surface flows, Ocellaris solves
+  the variable-density incompressible Navier–Stokes equations with
+  discontinuous density fields,</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[
+  \begin{aligned}
+  \rho \left( \frac{\partial{\boldsymbol{{u}}}}{\partial t} + ({\boldsymbol{{u}}}\cdot\nabla) {\boldsymbol{{u}}}\right) &= \nabla\cdot\mu\left(\nabla {\boldsymbol{{u}}}+ (\nabla{\boldsymbol{{u}}})^T\right) - \nabla p + \rho {\boldsymbol{{g}}},\\
+  \nabla\cdot {\boldsymbol{{u}}}&= 0,\\
+  \frac{\partial\rho}{\partial t} + {\boldsymbol{{u}}}\cdot\nabla \rho &= 0.
+  \end{aligned}
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtable><mml:mtr><mml:mtd columnalign="right"><mml:mi>ρ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mfrac><mml:mrow><mml:mi>∂</mml:mi><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle></mml:mrow><mml:mrow><mml:mi>∂</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:mfrac><mml:mo>+</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mo>⋅</mml:mo><mml:mi>∇</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:mi>∇</mml:mi><mml:mo>⋅</mml:mo><mml:mi>μ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>∇</mml:mi><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mo>+</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>∇</mml:mi><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>T</mml:mi></mml:msup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>−</mml:mo><mml:mi>∇</mml:mi><mml:mi>p</mml:mi><mml:mo>+</mml:mo><mml:mi>ρ</mml:mi><mml:mstyle mathvariant="bold"><mml:mi>𝐠</mml:mi></mml:mstyle><mml:mo>,</mml:mo></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"><mml:mi>∇</mml:mi><mml:mo>⋅</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"><mml:mfrac><mml:mrow><mml:mi>∂</mml:mi><mml:mi>ρ</mml:mi></mml:mrow><mml:mrow><mml:mi>∂</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:mfrac><mml:mo>+</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi></mml:mstyle><mml:mo>⋅</mml:mo><mml:mi>∇</mml:mi><mml:mi>ρ</mml:mi></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:mn>0</mml:mn><mml:mi>.</mml:mi></mml:mtd></mml:mtr></mml:mtable></mml:math></alternatives></disp-formula></p>
+  <p>Low-order finite-volume methods (FVM) are currently the most
+  popular methods for solving the above equations when simulating
+  free-surface flows at high Reynolds
+  numbers<xref ref-type="fn" rid="fn1">1</xref>. Open source FVM codes
+  include OpenFOAM
+  (<xref alt="Weller et al., 1998" rid="ref-weller_FOAM_1998" ref-type="bibr">Weller
+  et al., 1998</xref>) and Gerris
+  (<xref alt="Popinet, 2003" rid="ref-popinet_gerris_2003" ref-type="bibr">Popinet,
+  2003</xref>). Potential-flow methods are also used for simulation of
+  non-breaking ocean waves
+  (<xref alt="Tong et al., 2019" rid="ref-tong_numerical_2019" ref-type="bibr">Tong
+  et al., 2019</xref>), and ship-wave interaction
+  (<xref alt="Faltinsen, 2005" rid="ref-faltinsen_hispeed_2005" ref-type="bibr">Faltinsen,
+  2005</xref>;
+  <xref alt="Kring et al., 1997" rid="ref-kring_nonlinear_1997" ref-type="bibr">Kring
+  et al., 1997</xref>), but these methods require that viscous effects
+  and vorticity can be disregarded. Finite-volume methods are able to
+  include these effects, and can produce exactly incompressible velocity
+  fields. By this we mean that the velocity is pointwise
+  divergence-free, the velocity facet fluxes sum to zero for each cell,
+  and the velocity facet flux is continuous between neighbouring cells.
+  In the mentioned FVM programs, the free-surface advection is
+  implemented with the volume-of-fluid (VOF) method
+  (<xref alt="Hirt &amp; Nichols, 1981" rid="ref-hirt_volume_1981" ref-type="bibr">Hirt
+  &amp; Nichols, 1981</xref>), which requires that the advected
+  fluid-indicator function <inline-formula><alternatives>
+  <tex-math><![CDATA[c]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>c</mml:mi></mml:math></alternatives></inline-formula>
+  is bounded, <inline-formula><alternatives>
+  <tex-math><![CDATA[c\in[0,1]]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>c</mml:mi><mml:mo>∈</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.
+  Numerical VOF advection methods rely upon divergence-free velocity
+  fields to ensure mass conservation and bounded transport.</p>
+  <p>Due to the piecewise-constant discretisation, low-order FVM methods
+  do not suffer from Gibbs oscillations near the large jump in density
+  and momentum at the interface between the immiscible fluids, as long
+  as an appropriate flux limiter is applied
+  (<xref alt="Leonard, 1979" rid="ref-leonard_adjusted_1979" ref-type="bibr">Leonard,
+  1979</xref>). But there are some downsides to using low-order methods.
+  Increasing the approximation order is more computationally efficient
+  than increasing the mesh density in areas where the solution is
+  expected to be smooth, which for wave simulations is most of the
+  domain away from the free surface. Implementing higher-order FVM
+  methods is complicated on unstructured meshes, due to the need for
+  large reconstruction stencils in order to obtain higher-order
+  approximations. Higher-order finite-element methods (FEM), such as the
+  discontinuous Galerkin method (DG FEM), uses higher-order basis
+  functions in each cell to overcome this problem. The discontinuous
+  nature of DG FEM methods additionally allows more computation to be
+  performed locally with less coupling of cells, which can be beneficial
+  for the overall computational efficiency
+  (<xref alt="Kirby et al., 2012" rid="ref-Kirby12" ref-type="bibr">Kirby
+  et al., 2012</xref>; see e.g.
+  <xref alt="Kubatko et al., 2009" rid="ref-Kubatko09" ref-type="bibr">Kubatko
+  et al., 2009</xref>).</p>
+  <p>Ocellaris is an exactly incompressible Navier–Stokes solver for
+  free-surface flows with a DG FEM based numerical method that supports
+  higher-order finite elements and contains specially designed
+  slope-limiting stabilisation filters to be able to handle large
+  density transitions
+  (<xref alt="Landet et al., 2018" rid="ref-velslopelim" ref-type="bibr">Landet
+  et al., 2018</xref>;
+  <xref alt="Landet, 2019" rid="ref-OcellarisDoc" ref-type="bibr">Landet,
+  2019</xref>). Ocellaris is implemented in Python and C++ with FEniCS
+  (<xref alt="Alnæs et al., 2015" rid="ref-FEniCS1.5" ref-type="bibr">Alnæs
+  et al., 2015</xref>;
+  <xref alt="Logg et al., 2012" rid="ref-FEniCSBook" ref-type="bibr">Logg
+  et al., 2012</xref>) as the backend for the mesh and finite-element
+  assembly. PETSc is used for solving the resulting linear systems
+  (<xref alt="Balay et al., 1997" rid="ref-petsc-efficient" ref-type="bibr">Balay
+  et al., 1997</xref>,
+  <xref alt="2018" rid="ref-petsc-user-ref" ref-type="bibr">2018</xref>;
+  <xref alt="Dalcin et al., 2011" rid="ref-Dalcin2011" ref-type="bibr">Dalcin
+  et al., 2011</xref>;
+  <xref alt="Davis, 2004" rid="ref-davis2004algorithm" ref-type="bibr">Davis,
+  2004</xref>;
+  <xref alt="Hypre, n.d." rid="ref-hypre-web-page" ref-type="bibr"><italic><italic>Hypre</italic></italic>,
+  n.d.</xref>).</p>
+  <p>Ocellaris uses a YAML based input file format documented in the
+  user guide available at
+  <ext-link ext-link-type="uri" xlink:href="https://www.ocellaris.org">ocellaris.org</ext-link>.
+  The mesh geometry can be defined directly in the input file for simple
+  geometries, or it can be loaded from any file format supported by
+  meshio
+  (<xref alt="Schlömer, 2019" rid="ref-meshio" ref-type="bibr">Schlömer,
+  2019</xref>), as long as the unstructured meshes are simplicial;
+  triangles in 2D and tetrahedra in 3D. Due to the flexible nature of
+  the implementation, custom numerical models can be added to a
+  simulation by referencing external Python modules from the input file.
+  Ocellaris uses the XDMF file format
+  (<xref alt="The XDMF Format, 2019" rid="ref-xdmf" ref-type="bibr"><italic>The
+  XDMF Format</italic>, 2019</xref>) for visualisations and a custom
+  HDF5 format for restart files
+  (<xref alt="The Hdf5 Format, 2019" rid="ref-hdf5" ref-type="bibr"><italic>The
+  Hdf5 Format</italic>, 2019</xref>).</p>
+  <fig>
+    <caption><p>Cylinder in waves. Rendered in Blender after using
+    Paraview to extract the free surface from an Ocellaris
+    simulation.</p></caption>
+    <graphic mimetype="image" mime-subtype="jpeg" xlink:href="https://www.ocellaris.org/figures/cylinder_in_waves.jpg" xlink:title="" />
+  </fig>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-OcellarisDoc">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <name><surname>Landet</surname><given-names>Tormod</given-names></name>
+        </person-group>
+        <article-title>The ocellaris project web page, user guide and blog</article-title>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://www.ocellaris.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-velslopelim">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Landet</surname><given-names>Tormod</given-names></name>
+          <name><surname>Mardal</surname><given-names>Kent-Andre</given-names></name>
+          <name><surname>Mortensen</surname><given-names>Mikael</given-names></name>
+        </person-group>
+        <article-title>Slope limiting the velocity field in a discontinuous galerkin divergence free two-phase flow solver</article-title>
+        <source>arXiv:1803.06976 [physics]</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>http://arxiv.org/abs/1803.06976</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-weller_FOAM_1998">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Weller</surname><given-names>H. G.</given-names></name>
+          <name><surname>Tabor</surname><given-names>G.</given-names></name>
+          <name><surname>Jasak</surname><given-names>H.</given-names></name>
+          <name><surname>Fureby</surname><given-names>C.</given-names></name>
+        </person-group>
+        <article-title>A tensorial approach to computational continuum mechanics using object-oriented techniques</article-title>
+        <source>Computers in Physics</source>
+        <year iso-8601-date="1998">1998</year>
+        <volume>12</volume>
+        <issue>6</issue>
+        <pub-id pub-id-type="doi">10.1063/1.168744</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-popinet_gerris_2003">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Popinet</surname><given-names>Stéphane</given-names></name>
+        </person-group>
+        <article-title>Gerris: A tree-based adaptive solver for the incompressible euler equations in complex geometries</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="2003">2003</year>
+        <volume>190</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1016/S0021-9991(03)00298-5</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-tong_numerical_2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tong</surname><given-names>Chao</given-names></name>
+          <name><surname>Shao</surname><given-names>Yanlin</given-names></name>
+          <name><surname>Hanssen</surname><given-names>Finn-Christian W.</given-names></name>
+          <name><surname>Li</surname><given-names>Ye</given-names></name>
+          <name><surname>Xie</surname><given-names>Bin</given-names></name>
+          <name><surname>Lin</surname><given-names>Zhiliang</given-names></name>
+        </person-group>
+        <article-title>Numerical analysis on the generation, propagation and interaction of solitary waves by a Harmonic Polynomial Cell Method</article-title>
+        <source>Wave Motion</source>
+        <year iso-8601-date="2019-05">2019</year><month>05</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-03-19">2019</year><month>03</month><day>19</day></date-in-citation>
+        <volume>88</volume>
+        <issn>0165-2125</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S0165212518303615</uri>
+        <pub-id pub-id-type="doi">10.1016/j.wavemoti.2019.01.007</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-faltinsen_hispeed_2005">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Faltinsen</surname><given-names>Odd M.</given-names></name>
+        </person-group>
+        <source>Hydrodynamics of High-Speed Marine Vehicles</source>
+        <publisher-name>Cambridge University Press</publisher-name>
+        <year iso-8601-date="2005">2005</year>
+        <isbn>9780521178730</isbn>
+        <pub-id pub-id-type="doi">10.1017/CBO9780511546068</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-kring_nonlinear_1997">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Kring</surname><given-names>D</given-names></name>
+          <name><surname>Huang</surname><given-names>Y.-F.</given-names></name>
+          <name><surname>Sclavounos</surname><given-names>P.</given-names></name>
+          <name><surname>Vada</surname><given-names>T.</given-names></name>
+          <name><surname>Braathen</surname><given-names>A.</given-names></name>
+        </person-group>
+        <article-title>Nonlinear ship motions and wave-induced loads by a rankine method</article-title>
+        <source>Twenty-first symposium on naval hydrodynamics</source>
+        <publisher-name>The National Academies Press, Washington, DC</publisher-name>
+        <publisher-loc>Trondheim, Norway</publisher-loc>
+        <year iso-8601-date="1997">1997</year>
+        <pub-id pub-id-type="doi">10.17226/5870</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hirt_volume_1981">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hirt</surname><given-names>Cyril W.</given-names></name>
+          <name><surname>Nichols</surname><given-names>Billy D.</given-names></name>
+        </person-group>
+        <article-title>Volume of fluid (VOF) method for the dynamics of free boundaries</article-title>
+        <source>Journal of Computational Physics</source>
+        <year iso-8601-date="1981">1981</year>
+        <volume>39</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1016/0021-9991(81)90145-5</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-leonard_adjusted_1979">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Leonard</surname><given-names>Brian Phillip</given-names></name>
+        </person-group>
+        <article-title>Adjusted quadratic upstream algorithms for transient incompressible convection</article-title>
+        <source>4th Computational Fluid Dynamics Conference</source>
+        <publisher-name>American Institute of Aeronautics; Astronautics</publisher-name>
+        <publisher-loc>Williamsburg, VA, U.S.A</publisher-loc>
+        <year iso-8601-date="1979-07">1979</year><month>07</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-02-28">2019</year><month>02</month><day>28</day></date-in-citation>
+        <pub-id pub-id-type="doi">10.2514/6.1979-1469</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Kubatko09">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kubatko</surname><given-names>Ethan J.</given-names></name>
+          <name><surname>Bunya</surname><given-names>Shintaro</given-names></name>
+          <name><surname>Dawson</surname><given-names>Clint</given-names></name>
+          <name><surname>Westerink</surname><given-names>Joannes J.</given-names></name>
+          <name><surname>Mirabito</surname><given-names>Chris</given-names></name>
+        </person-group>
+        <article-title>A performance comparison of continuous and discontinuous finite element shallow water models</article-title>
+        <source>Journal of Scientific Computing</source>
+        <year iso-8601-date="2009">2009</year>
+        <volume>40</volume>
+        <issue>1</issue>
+        <issn>1573-7691</issn>
+        <pub-id pub-id-type="doi">10.1007/s10915-009-9268-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Kirby12">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Kirby</surname><given-names>Robert M.</given-names></name>
+          <name><surname>Sherwin</surname><given-names>Spencer J.</given-names></name>
+          <name><surname>Cockburn</surname><given-names>Bernardo</given-names></name>
+        </person-group>
+        <article-title>To CG or to HDG: A comparative study</article-title>
+        <source>Journal of Scientific Computing</source>
+        <year iso-8601-date="2012">2012</year>
+        <volume>51</volume>
+        <issue>1</issue>
+        <issn>1573-7691</issn>
+        <pub-id pub-id-type="doi">10.1007/s10915-011-9501-7</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-FEniCS1.5">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Alnæs</surname><given-names>Martin S.</given-names></name>
+          <name><surname>Blechta</surname><given-names>Jan</given-names></name>
+          <name><surname>Hake</surname><given-names>Johan</given-names></name>
+          <name><surname>Johansson</surname><given-names>August</given-names></name>
+          <name><surname>Kehlet</surname><given-names>Benjamin</given-names></name>
+          <name><surname>Logg</surname><given-names>Anders</given-names></name>
+          <name><surname>Richardson</surname><given-names>Chris</given-names></name>
+          <name><surname>Ring</surname><given-names>Johannes</given-names></name>
+          <name><surname>Rognes</surname><given-names>Marie E.</given-names></name>
+          <name><surname>Wells</surname><given-names>Garth N.</given-names></name>
+        </person-group>
+        <article-title>The FEniCS project version 1.5</article-title>
+        <source>Archive of Numerical Software</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>3</volume>
+        <issue>100</issue>
+        <pub-id pub-id-type="doi">10.11588/ans.2015.100.20553</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-FEniCSBook">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Logg</surname><given-names>Anders</given-names></name>
+          <name><surname>Mardal</surname><given-names>Kent-Andre</given-names></name>
+          <name><surname>Wells</surname><given-names>Garth N.</given-names></name>
+          <string-name>others</string-name>
+        </person-group>
+        <source>Automated solution of differential equations by the finite element method</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <isbn>978-3-642-23098-1</isbn>
+        <pub-id pub-id-type="doi">10.1007/978-3-642-23099-8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-meshio">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <name><surname>Schlömer</surname><given-names>Nico</given-names></name>
+        </person-group>
+        <article-title>Meshio</article-title>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://github.com/nschloe/meshio/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-xdmf">
+      <element-citation publication-type="webpage">
+        <article-title>The XDMF format</article-title>
+        <year iso-8601-date="2019">2019</year>
+        <uri>http://xdmf.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-hdf5">
+      <element-citation publication-type="webpage">
+        <article-title>The HDF5 format</article-title>
+        <year iso-8601-date="2019">2019</year>
+        <uri>https://www.hdfgroup.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-petsc-user-ref">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Balay</surname><given-names>Satish</given-names></name>
+          <name><surname>Abhyankar</surname><given-names>Shrirang</given-names></name>
+          <name><surname>Adams</surname><given-names>Mark F.</given-names></name>
+          <name><surname>Brown</surname><given-names>Jed</given-names></name>
+          <name><surname>Brune</surname><given-names>Peter</given-names></name>
+          <name><surname>Buschelman</surname><given-names>Kris</given-names></name>
+          <name><surname>Dalcin</surname><given-names>Lisandro</given-names></name>
+          <name><surname>Eijkhout</surname><given-names>Victor</given-names></name>
+          <name><surname>Gropp</surname><given-names>William D.</given-names></name>
+          <name><surname>Kaushik</surname><given-names>Dinesh</given-names></name>
+          <name><surname>Knepley</surname><given-names>Matthew G.</given-names></name>
+          <name><surname>May</surname><given-names>Dave A.</given-names></name>
+          <name><surname>McInnes</surname><given-names>Lois Curfman</given-names></name>
+          <name><surname>Mills</surname><given-names>Richard Tran</given-names></name>
+          <name><surname>Munson</surname><given-names>Todd</given-names></name>
+          <name><surname>Rupp</surname><given-names>Karl</given-names></name>
+          <name><surname>Sanan</surname><given-names>Patrick</given-names></name>
+          <name><surname>Smith</surname><given-names>Barry F.</given-names></name>
+          <name><surname>Zampini</surname><given-names>Stefano</given-names></name>
+          <name><surname>Zhang</surname><given-names>Hong</given-names></name>
+          <name><surname>Zhang</surname><given-names>Hong</given-names></name>
+        </person-group>
+        <article-title>PETSc users manual</article-title>
+        <publisher-name>Argonne National Laboratory</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <uri>http://www.mcs.anl.gov/petsc</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-petsc-efficient">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Balay</surname><given-names>Satish</given-names></name>
+          <name><surname>Gropp</surname><given-names>William D.</given-names></name>
+          <name><surname>McInnes</surname><given-names>Lois Curfman</given-names></name>
+          <name><surname>Smith</surname><given-names>Barry F.</given-names></name>
+        </person-group>
+        <article-title>Efficient management of parallelism in object oriented numerical software libraries</article-title>
+        <person-group person-group-type="editor">
+          <name><surname>Arge</surname><given-names>E.</given-names></name>
+          <name><surname>Bruaset</surname><given-names>A. M.</given-names></name>
+          <name><surname>Langtangen</surname><given-names>H. P.</given-names></name>
+        </person-group>
+        <publisher-name>Birkhäuser Press</publisher-name>
+        <year iso-8601-date="1997">1997</year>
+        <pub-id pub-id-type="doi">10.1007/978-1-4612-1986-6_8</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Dalcin2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Dalcin</surname><given-names>Lisandro D.</given-names></name>
+          <name><surname>Paz</surname><given-names>Rodrigo R.</given-names></name>
+          <name><surname>Kler</surname><given-names>Pablo A.</given-names></name>
+          <name><surname>Cosimo</surname><given-names>Alejandro</given-names></name>
+        </person-group>
+        <article-title>Parallel distributed computing using Python</article-title>
+        <source>Advances in Water Resources</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>34</volume>
+        <issue>9</issue>
+        <pub-id pub-id-type="doi">10.1016/j.advwatres.2011.04.013</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-davis2004algorithm">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Davis</surname><given-names>Timothy A</given-names></name>
+        </person-group>
+        <article-title>Algorithm 832: UMFPACK V4.3—an unsymmetric-pattern multifrontal method</article-title>
+        <source>ACM Transactions on Mathematical Software (TOMS)</source>
+        <publisher-name>ACM</publisher-name>
+        <year iso-8601-date="2004">2004</year>
+        <volume>30</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1145/992200.992206</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hypre-web-page">
+      <element-citation publication-type="webpage">
+        <article-title>hypre: High performance preconditioners</article-title>
+        <publisher-name>Lawrence Livermore National Laboratory</publisher-name>
+        <uri>http://www.llnl.gov/CASC/hypre/</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+<fn-group>
+  <fn id="fn1">
+    <label>1</label><p>FINE/Marine, FLOW-3D, Fluent, Orca3D, SHIPFLOW
+    XCHAP, and StarCCM+ are examples of proprietary FVM free surface
+    flow solvers used in the industry.</p>
+  </fn>
+</fn-group>
+</back>
+</article>

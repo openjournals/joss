@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1474</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01474</article-id>
+<title-group>
+<article-title>f90nml - A Python module for Fortran
+namelists</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-4944-7431</contrib-id>
+<string-name>Marshall L. Ward</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>NOAA Geophysical Fluid Dynamics Laboratory, Princeton, NJ,
+USA</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Australian National University, Canberra,
+Australia</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-05-22">
+<day>22</day>
+<month>5</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>38</issue>
+<fpage>1474</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>fortran</kwd>
+<kwd>namelist</kwd>
+<kwd>python</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>f90nml</monospace> is a Python module used for
+  importing, manipulating, and writing Fortran namelist files
+  (<xref alt="ISO, 2018" rid="ref-ISOU003A2018U003A1539U003A1" ref-type="bibr">ISO,
+  2018</xref>). The primary use case for this module is to read a
+  namelist file via the <monospace>Parser</monospace> and save its
+  contents into a <monospace>Namelist</monospace> data structure, which
+  is a case-insensitive subclass of a <monospace>dict</monospace>,
+  Python’s intrinsic associative array. The
+  <monospace>Namelist</monospace> object can be read and modified as a
+  standard Python <monospace>dict</monospace>, and its contents can be
+  saved as a formatted namelist file.</p>
+  <p>Fortran continues to be a dominant programming language in
+  high-performance scientific computing Méndez et al.
+  (<xref alt="2014" rid="ref-ClimateFortranDevU003A2014" ref-type="bibr">2014</xref>)
+  and namelists have been a part of the language for decades. Namelists
+  were an early method of serializing numerical data into a
+  human-readable format, although this has become less practical as data
+  sizes have increased. In more recent times, namelists have been more
+  commonly used for runtime configuration Allen et al.
+  (<xref alt="2019" rid="ref-UMU003A2019" ref-type="bibr">2019</xref>).
+  Much of the work associated with managing and documenting the runtime
+  parameters over a large ensemble of runs can in part be reduced to the
+  parsing, modifying, and storing of namelists.</p>
+  <p>Python has been a dominant programming language in the sciences in
+  recent years
+  (<xref alt="Nunez-Iglesias, 2019" rid="ref-PyAstroU003A2019" ref-type="bibr">Nunez-Iglesias,
+  2019</xref>), consistent with the overall trend across programming
+  (<xref alt="Robinson, 2017" rid="ref-PythonSOU003A2017" ref-type="bibr">Robinson,
+  2017</xref>), which has created a growing need for tools in Python
+  which can manage legacy data formats. Given the importance of Fortran
+  in both historical and modern scientific computing, the ability to
+  accurately read and manipulate namelists offers the ability to both
+  archive numerical results from the past and to automate the
+  configuration of future simulations.</p>
+  <p>An example namelist, such as the one shown below:</p>
+  <preformat>&amp;config_nml
+    input = 'wind.nc'
+    steps = 864
+    layout = 8, 16
+    visc = 1.0e-4
+    use_biharmonic = .false.
+/</preformat>
+  <p>would be stored as a <monospace>Namelist</monospace> which is
+  equivalent to the following <monospace>dict</monospace>:</p>
+  <preformat>nml = {
+    'config_nml': {
+        'input': 'wind.nc',
+        'steps': 864,
+        'layout': [8, 16],
+        'visc': 0.0001,
+        'use_biharmonic': False
+    }
+}</preformat>
+  <p>The module supports all intrinsic data types, as well as
+  user-defined types and multidimensional arrays. User-defined types are
+  interpreted as a hierarchical tree of
+  <monospace>Namelist</monospace>s. Multidimensional arrays are saved as
+  nested lists of lists, with the most innermost lists corresponding to
+  the first dimensional index in Fortran. This reverses the index order
+  in Python, but corresponds to the usual ordering in memory.</p>
+  <p>Because a value’s data type is assigned by the executable at
+  runtime and is not specified in the namelist, the data type of each
+  value must be inferred by the <monospace>Parser</monospace>, usually
+  based on the strictest interpretation of the value. Weak typing rules
+  within namelists, such as the optional use of string delimiters or the
+  multiple representations of logical values, can lead to further
+  ambiguity. <monospace>f90nml</monospace> provides various control
+  flags to manage these cases. A truly ambiguous value will typically be
+  interpreted as a literal string, rather than raise an error.</p>
+  <p>Another limitation of the namelist format is the use of a arbitrary
+  start index in a Fortran array, which may be assigned at runtime but
+  not specified in the namelist. For this reason, arrays are assumed to
+  begin at the lowest explicit index which is defined in the namelist,
+  and is stored as metadata. For example, if we parse the namelist
+  below:</p>
+  <preformat>    &amp;a_nml
+       x(3:4) = 1.0, 1.1
+       x(6:7) = 1.2, 1.3
+    /</preformat>
+  <p>then it would be saved internally as the following 0-based Python
+  list:</p>
+  <preformat>    nml = {
+        'a_nml': {
+            'x': [1.0, 1.1, None, 1.2, 1.3]
+         }
+         '_start_index': {'x': 3}
+    }</preformat>
+  <p>If the start index is unspecified, as in the first example, then
+  the index is also unspecified within the
+  <monospace>Namelist</monospace>, although the list remains 0-based
+  within the Python environment. Additional control flags are also
+  provided to control the start index.</p>
+  <p><monospace>f90nml</monospace> includes a
+  <monospace>patch</monospace> feature, which allows one to modify the
+  values of an existing namelist while retaining its comments or
+  existing whitespace formatting. There is some limited ability to add
+  or remove values during patching.</p>
+  <p><monospace>f90nml</monospace> also includes the following
+  additional features:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>A command line tool for working in a shell environment</p>
+    </list-item>
+    <list-item>
+      <p>Lossless conversion between <monospace>Namelist</monospace> and
+      <monospace>dict</monospace> types</p>
+    </list-item>
+    <list-item>
+      <p>Support for legacy Fortran namelist formats</p>
+    </list-item>
+    <list-item>
+      <p>Conversion between JSON and YAML output</p>
+    </list-item>
+    <list-item>
+      <p>Configuration of the output formatting rules</p>
+    </list-item>
+    <list-item>
+      <p>Handling of repeated groups within a single namelist</p>
+    </list-item>
+  </list>
+  <p>Development is supported by an extensive test suite with a very
+  high level of code coverage, ensuring compatibility of existing
+  namelists over future releases.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>Development of <monospace>f90nml</monospace> has been ongoing for
+  several years, and was created to support research activities of the
+  Australian Centre of Excellence in Climate System Science (ARCCSS) at
+  the Australian National University.</p>
+  <p>This project is sustained by the feedback from its users, and
+  continues to benefit from contributions from its userbase, for which
+  the author is immensely grateful.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-ISOU003A2018U003A1539U003A1">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>ISO</string-name>
+        </person-group>
+        <source>ISO/IEC 1539-1:2018: Information Technology – Programming languages – Fortran – Part 1: Base language</source>
+        <publisher-name>International Organization for Standardization</publisher-name>
+        <publisher-loc>Geneva, Switzerland</publisher-loc>
+        <year iso-8601-date="2018-11-28">2018</year><month>11</month><day>28</day>
+      </element-citation>
+    </ref>
+    <ref id="ref-SPECMPI2007U003A2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Müller</surname><given-names>Matthias</given-names></name>
+          <name><surname>Waveren</surname><given-names>Matthijs van</given-names></name>
+          <name><surname>Lieberman</surname><given-names>Ron</given-names></name>
+          <name><surname>Whitney</surname><given-names>Brian</given-names></name>
+          <name><surname>Saito</surname><given-names>Hideki</given-names></name>
+          <name><surname>Kumaran</surname><given-names>Kalyan</given-names></name>
+          <name><surname>Baron</surname><given-names>John</given-names></name>
+          <name><surname>Brantley</surname><given-names>William</given-names></name>
+          <name><surname>Parrott</surname><given-names>Chris</given-names></name>
+          <name><surname>Elken</surname><given-names>Tom</given-names></name>
+          <name><surname>Feng</surname><given-names>Huiyu</given-names></name>
+          <name><surname>Ponder</surname><given-names>Carl</given-names></name>
+        </person-group>
+        <article-title>SPEC MPI2007 – an application benchmark suite for parallel systems using MPI</article-title>
+        <source>Concurrency and Computation: Practice and Experience</source>
+        <year iso-8601-date="2010-02">2010</year><month>02</month>
+        <volume>22</volume>
+        <pub-id pub-id-type="doi">10.1002/cpe.1535</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ClimateFortranDevU003A2014">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Méndez</surname><given-names>Mariano</given-names></name>
+          <name><surname>Tinetti</surname><given-names>Fernando G.</given-names></name>
+          <name><surname>Overbey</surname><given-names>Jeffrey L.</given-names></name>
+        </person-group>
+        <article-title>Climate models: Challenges for Fortran development tools</article-title>
+        <source>Proceedings of the 2nd international workshop on software engineering for high performance computing in computational science and engineering</source>
+        <publisher-name>IEEE Press</publisher-name>
+        <publisher-loc>Piscataway, NJ, USA</publisher-loc>
+        <year iso-8601-date="2014">2014</year>
+        <isbn>978-1-4799-7035-3</isbn>
+        <uri>https://doi.org/10.1109/SE-HPCCSE.2014.7</uri>
+        <pub-id pub-id-type="doi">10.1109/SE-HPCCSE.2014.7</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-WRFU003A2019">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Skamarock</surname><given-names>William C.</given-names></name>
+          <name><surname>Klemp</surname><given-names>Joseph B.</given-names></name>
+          <name><surname>Dudhia</surname><given-names>Jimy</given-names></name>
+          <name><surname>Gill</surname><given-names>David O.</given-names></name>
+          <name><surname>Liu</surname><given-names>Zhiquan</given-names></name>
+          <name><surname>Berner</surname><given-names>Judith</given-names></name>
+          <name><surname>Wang</surname><given-names>Wei</given-names></name>
+          <name><surname>Powers</surname><given-names>Jordan G.</given-names></name>
+          <name><surname>Duda</surname><given-names>Michael G.</given-names></name>
+          <name><surname>Barker</surname><given-names>Dale M.</given-names></name>
+          <name><surname>Huang</surname><given-names>Xiang-Yu</given-names></name>
+        </person-group>
+        <article-title>A description of the Advanced Research WRF Version 4</article-title>
+        <year iso-8601-date="2019">2019</year>
+        <pub-id pub-id-type="doi">10.5065/1dfh-6p97</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MOM5U003A2012">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Griffies</surname><given-names>Stephen M.</given-names></name>
+        </person-group>
+        <article-title>Elements of the Modular Ocean Model (MOM)</article-title>
+        <publisher-name>NOAA/Geophysical Fluid Dynamics Laboratory</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-QUANTUMESPRESSOU003A2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Giannozzi</surname><given-names>Paolo</given-names></name>
+          <name><surname>Baroni</surname><given-names>Stefano</given-names></name>
+          <name><surname>Bonini</surname><given-names>Nicola</given-names></name>
+          <name><surname>Calandra</surname><given-names>Matteo</given-names></name>
+          <name><surname>Car</surname><given-names>Roberto</given-names></name>
+          <name><surname>Cavazzoni</surname><given-names>Carlo</given-names></name>
+          <name><surname>Ceresoli</surname><given-names>Davide</given-names></name>
+          <name><surname>Chiarotti</surname><given-names>Guido L</given-names></name>
+          <name><surname>Cococcioni</surname><given-names>Matteo</given-names></name>
+          <name><surname>Dabo</surname><given-names>Ismaila</given-names></name>
+          <name><surname>Corso</surname><given-names>Andrea Dal</given-names></name>
+          <name><surname>Gironcoli</surname><given-names>Stefano de</given-names></name>
+          <name><surname>Fabris</surname><given-names>Stefano</given-names></name>
+          <name><surname>Fratesi</surname><given-names>Guido</given-names></name>
+          <name><surname>Gebauer</surname><given-names>Ralph</given-names></name>
+          <name><surname>Gerstmann</surname><given-names>Uwe</given-names></name>
+          <name><surname>Gougoussis</surname><given-names>Christos</given-names></name>
+          <name><surname>Kokalj</surname><given-names>Anton</given-names></name>
+          <name><surname>Lazzeri</surname><given-names>Michele</given-names></name>
+          <name><surname>Martin-Samos</surname><given-names>Layla</given-names></name>
+          <name><surname>Marzari</surname><given-names>Nicola</given-names></name>
+          <name><surname>Mauri</surname><given-names>Francesco</given-names></name>
+          <name><surname>Mazzarello</surname><given-names>Riccardo</given-names></name>
+          <name><surname>Paolini</surname><given-names>Stefano</given-names></name>
+          <name><surname>Pasquarello</surname><given-names>Alfredo</given-names></name>
+          <name><surname>Paulatto</surname><given-names>Lorenzo</given-names></name>
+          <name><surname>Sbraccia</surname><given-names>Carlo</given-names></name>
+          <name><surname>Scandolo</surname><given-names>Sandro</given-names></name>
+          <name><surname>Sclauzero</surname><given-names>Gabriele</given-names></name>
+          <name><surname>Seitsonen</surname><given-names>Ari P</given-names></name>
+          <name><surname>Smogunov</surname><given-names>Alexander</given-names></name>
+          <name><surname>Umari</surname><given-names>Paolo</given-names></name>
+          <name><surname>Wentzcovitch</surname><given-names>Renata M</given-names></name>
+        </person-group>
+        <article-title>QUANTUM ESPRESSO: A modular and open-source software project for quantum simulations of materials</article-title>
+        <source>Journal of Physics: Condensed Matter</source>
+        <publisher-name>IOP Publishing</publisher-name>
+        <year iso-8601-date="2009-09">2009</year><month>09</month>
+        <volume>21</volume>
+        <issue>39</issue>
+        <uri>https://doi.org/10.1088%2F0953-8984%2F21%2F39%2F395502</uri>
+        <pub-id pub-id-type="doi">10.1088/0953-8984/21/39/395502</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-UMU003A2019">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Allen</surname><given-names>T.</given-names></name>
+          <name><surname>Bell</surname><given-names>V.</given-names></name>
+          <name><surname>Bellouin</surname><given-names>N.</given-names></name>
+          <name><surname>Bodas-Salcedo</surname><given-names>A.</given-names></name>
+          <name><surname>Cresswell</surname><given-names>P.</given-names></name>
+          <name><surname>Dadson</surname><given-names>S.</given-names></name>
+          <name><surname>Dalvi</surname><given-names>M.</given-names></name>
+          <name><surname>Edwards</surname><given-names>J. M.</given-names></name>
+          <name><surname>Faloon</surname><given-names>P.</given-names></name>
+          <name><surname>Foster</surname><given-names>M.</given-names></name>
+          <name><surname>Greed</surname><given-names>G.</given-names></name>
+          <name><surname>Hill</surname><given-names>R. S. R.</given-names></name>
+          <name><surname>Jones</surname><given-names>A.</given-names></name>
+          <name><surname>Jones</surname><given-names>R.</given-names></name>
+          <name><surname>Lock</surname><given-names>A.</given-names></name>
+          <name><surname>Macpherson</surname><given-names>B.</given-names></name>
+          <name><surname>Manners</surname><given-names>J.</given-names></name>
+          <name><surname>Morcrette</surname><given-names>C.</given-names></name>
+          <name><surname>Mullerworth</surname><given-names>S. D.</given-names></name>
+          <name><surname>Rae</surname><given-names>J. G. L.</given-names></name>
+          <name><surname>Reddy</surname><given-names>S.</given-names></name>
+          <name><surname>Roberts</surname><given-names>D. L.</given-names></name>
+          <name><surname>Rooney</surname><given-names>G.</given-names></name>
+          <name><surname>Savage</surname><given-names>N. H.</given-names></name>
+          <name><surname>Selwood</surname><given-names>P.</given-names></name>
+          <name><surname>Stratton</surname><given-names>R.</given-names></name>
+          <name><surname>Webster</surname><given-names>S.</given-names></name>
+          <name><surname>Wilkinson</surname><given-names>J. M.</given-names></name>
+          <name><surname>Wiltshire</surname><given-names>A.</given-names></name>
+          <name><surname>Wong</surname><given-names>R.</given-names></name>
+          <name><surname>Woodage</surname><given-names>M. J.</given-names></name>
+          <name><surname>Woodward</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>Unified Model documentation paper 000</article-title>
+        <publisher-name>Met Office</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-PyAstroU003A2019">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Nunez-Iglesias</surname><given-names>Juan</given-names></name>
+        </person-group>
+        <article-title>Counting programming language mentions in astronomy papers</article-title>
+        <year iso-8601-date="2019-04-12">2019</year><month>04</month><day>12</day>
+        <uri>https://github.com/jni/programming-languages-in-astronomy</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-PythonSOU003A2017">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Robinson</surname><given-names>David</given-names></name>
+        </person-group>
+        <article-title>The incredible growth of Python</article-title>
+        <year iso-8601-date="2017-09-06">2017</year><month>09</month><day>06</day>
+        <uri>https://stackoverflow.blog/2017/09/06/incredible-growth-python/</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

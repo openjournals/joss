@@ -1,0 +1,805 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2578</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02578</article-id>
+<title-group>
+<article-title>Off-resonance CorrecTion OPen soUrce Software
+(OCTOPUS)</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1141-2049</contrib-id>
+<string-name>Marina Manso Jimeno</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-6933-3757</contrib-id>
+<string-name>John Thomas Vaughan Jr.</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-3776-4114</contrib-id>
+<string-name>Sairam Geethanath</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Biomedical Engineering, Columbia University
+in the City of New York, USA</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Columbia Magnetic Resonance Research Center, Columbia
+University in the City of New York, USA</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-10-15">
+<day>15</day>
+<month>10</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>59</issue>
+<fpage>2578</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>MRI</kwd>
+<kwd>off-resonance correction</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>OCTOPUS</monospace> is a Python-based software for
+  correction of off-resonance artifacts in Magnetic Resonance (MR)
+  images. It implements three different methods for correction of both
+  Cartesian and non-Cartesian data: Conjugate Phase Reconstruction
+  (CPR), frequency-segmented CPR and Multi-Frequency Interpolation(MFI).
+  <monospace>OCTOPUS</monospace> is easy to integrate into other two and
+  three-dimensional reconstruction pipelines, which makes the tool
+  highly flexible and customizable.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Off-resonance is an MR artifact which occurs due to field
+  inhomogeneities, differences in tissue susceptibilities and chemical
+  shift
+  (<xref alt="Noll et al., 1991" rid="ref-Noll1991" ref-type="bibr">Noll
+  et al., 1991</xref>). These phenomena can cause the phase of
+  off-resonant spins to accumulate along the read-out direction, which
+  can turn into blurring, geometrical distortion and degradation in the
+  reconstructed image
+  (<xref alt="Luk-Pat &amp; Nishimura, 2001" rid="ref-LukPat2001" ref-type="bibr">Luk-Pat
+  &amp; Nishimura, 2001</xref>). Images acquired using long readout
+  trajectories and/or at high fields where the field homogeneity is
+  lower are more prone to this problem. However, such acquisition
+  scenarios also deliver desirable properties, such as short scanning
+  times, gradient efficiency, motion tolerance, and better
+  signal-to-noise ratio
+  (<xref alt="Chen &amp; Meyer, 2008" rid="ref-Chen2008" ref-type="bibr">Chen
+  &amp; Meyer, 2008</xref>).</p>
+  <p>Multiple successful off-resonance correction methods have been
+  reported in the literature
+  (<xref alt="Schomberg, 1999" rid="ref-Schomberg1999" ref-type="bibr">Schomberg,
+  1999</xref>). Most of them are based on Conjugate Phase Reconstruction
+  (CPR), a method that counteracts the accumulated phase by demodulating
+  k-space data with its conjugate
+  (<xref alt="Maeda et al., 1988" rid="ref-Maeda1988" ref-type="bibr">Maeda
+  et al., 1988</xref>). Faster and more efficient implementations that
+  the original CPR have been developed, such as frequency-segmented CPR
+  (<xref alt="Noll et al., 1992" rid="ref-Noll1992" ref-type="bibr">Noll
+  et al., 1992</xref>) and Multi-Frequency Interpolation (MFI)
+  (<xref alt="Man et al., 1997" rid="ref-Man1997" ref-type="bibr">Man et
+  al., 1997</xref>). Frequency-segmented CPR reconstructs the corrected
+  image by combining the pixels of “L” base images according to each
+  pixel value on a field map. Each base image corresponds to the data
+  demodulated at a fixed frequency, with the frequency values for each
+  base image equally spaced within the field map frequency range. MFI
+  works in a similar way as frequency-segmented CPR, with main
+  differences being that it requires a smaller number of base images (L)
+  and that these images are added together into the corrected image
+  using a set of linear coefficients derived from the field map.</p>
+  <p>One can find optimised off-resonance correction capabilities within
+  existing packages. Examples are: SPIRiT
+  (<xref alt="Lustig &amp; Pauly, 2010" rid="ref-Lustig2010" ref-type="bibr">Lustig
+  &amp; Pauly, 2010</xref>), a MATLAB-based approach for auto-calibrated
+  parallel imaging reconstruction; Ostenson’s MFI implementation for
+  Magnetic Resonance Fingerprinting (MRF)
+  (<xref alt="Ostenson et al., 2017" rid="ref-Ostenson2017" ref-type="bibr">Ostenson
+  et al., 2017</xref>); FUGUE, a tool for Echo-Planar Imaging (EPI)
+  distortion correction part of the FSL library
+  (<xref alt="Jenkinson et al., 2012" rid="ref-Jenkinson2012" ref-type="bibr">Jenkinson
+  et al., 2012</xref>); and the MIRT toolbox, a MATLAB-based MRI
+  reconstruction package that offers field inhomogeneity correction
+  using iterative reconstruction methods
+  (<xref alt="Fessler et al., 2005" rid="ref-Fessler2005" ref-type="bibr">Fessler
+  et al., 2005</xref>;
+  <xref alt="Sutton et al., 2003" rid="ref-Sutton2003" ref-type="bibr">Sutton
+  et al., 2003</xref>). Nylund’s thesis
+  (<xref alt="Nylund, 2014" rid="ref-Nylund2014" ref-type="bibr">Nylund,
+  2014</xref>) also contains source MATLAB code for fs-CPR and MFI
+  correction of spiral images.</p>
+  <p>All of these implementations are highly specific, defined for a
+  particular k-space trajectory or application, and/or include a single
+  correction method. SPIRiT is devoted to correct data acquired using
+  parallel imaging methods; Ostenson’s package only corrects MRF spiral
+  data and implements only one correction method; and FUGUE corrects
+  distortion solely on EPI images. These limitations typically lead
+  researchers to adapt their data in an attempt to fit them into the
+  available pipelines or to write their own version of the methods.
+  Either approach results in a significant investment of time and effort
+  and can generate isolated implementations and inconsistent results.
+  Furthermore, most of the available packages are also MATLAB-based,
+  which unlike Python, requires users to pay a license fee.</p>
+  <p><monospace>OCTOPUS</monospace> is aimed at filling this gap in MR
+  off-resonance correction packages. It provides Python open-source code
+  for three fundamental methods (CPR, fs-CPR, and MFI). The
+  implementation is independent of the application and the image
+  acquisition scheme, easing its integration into any reconstruction
+  pipeline. <monospace>OCTOPUS</monospace> can also run in the browser
+  through Google Colab, a freely hosted Jupyter notebook environment
+  that allows one to execute Python code in the browser. Given this
+  feature, <monospace>OCTOPUS</monospace> is the first zero-footprint
+  off-resonance correction software, meaning it doesn’t require software
+  download, installation, or configuration on a user’s local
+  machine.</p>
+</sec>
+<sec id="functionality-and-limitations">
+  <title>Functionality and limitations</title>
+  <p><monospace>OCTOPUS</monospace> is aimed at MR researchers working
+  with long-readout or field-inhomogeneity sensitive k-space
+  trajectories or MR acquisition methods. A short demo is provided in
+  the next section. <monospace>OCTOPUS</monospace> corrects or reduces
+  geometric distortion and/or blurring present in the images due to
+  off-resonance effects by leveraging other Python libraries,
+  specifically NumPy
+  (<xref alt="Harris et al., 2020" rid="ref-2020NumPy" ref-type="bibr">Harris
+  et al., 2020</xref>), SciPy
+  (<xref alt="Virtanen et al., 2020" rid="ref-2020SciPy" ref-type="bibr">Virtanen
+  et al., 2020</xref>), scikit-image
+  (<xref alt="Walt et al., 2014" rid="ref-scikit-image" ref-type="bibr">Walt
+  et al., 2014</xref>),
+  NiBabel(<xref alt="Brett et al., 2020" rid="ref-Nibabel" ref-type="bibr">Brett
+  et al., 2020</xref>), Matplotlib
+  (<xref alt="Hunter, 2007" rid="ref-Matplotlib" ref-type="bibr">Hunter,
+  2007</xref>), OpenCV
+  (<xref alt="Itseez, 2015" rid="ref-itseez2015opencv" ref-type="bibr">Itseez,
+  2015</xref>), Pydicom
+  (<xref alt="Mason et al., 2020" rid="ref-darcy_mason_2020_3891702" ref-type="bibr">Mason
+  et al., 2020</xref>), and
+  PyNUFFT(<xref alt="Lin, 2013–" rid="ref-pynufft" ref-type="bibr">Lin,
+  2013–</xref>). The expected output is an image with recovered, sharper
+  edges and undistorted shape.</p>
+  <p>Also, <monospace>OCTOPUS</monospace> corrects off-resonance
+  independently of whether the trajectory used to acquire the data was
+  Cartesian or non-Cartesian. The input of the correction methods can be
+  either image or raw data. However, using raw data as input is more
+  efficient and may avoid non Cartesian trajectory-dependent artifacts.
+  <monospace>OCTOPUS</monospace> is also able to correct 3D multi-slice
+  and multi-channel data by feeding it to the tool in a slice- and
+  channel-wise manner and then applying channel combination with the
+  user’s method of choice.</p>
+  <p>Presently, the software limitations include correction restricted
+  to data acquired in the absence of acceleration techniques, long
+  correction times for large datasets, and degraded correction quality
+  in the presence of highly-inhomogeneous fields. Additionally, the tool
+  has been only tested on Cartesian, EPI, and spiral data.</p>
+</sec>
+<sec id="short-demo">
+  <title>Short demo</title>
+  <p>To illustrate the usage of the package, we performed in silico
+  numerical simulations using a single-shot EPI trajectory, a
+  single-shot spiral trajectory and a simulated field map. For these
+  experiments we used a Shepp-Logan head phantom, which simulates a
+  section of the skull and is widely used to test reconstruction
+  algorithms
+  (<xref alt="Shepp &amp; Logan, 1974" rid="ref-Shepp1974" ref-type="bibr">Shepp
+  &amp; Logan, 1974</xref>). Figure 1 shows all inputs and outputs of
+  the experiment. The steps were:</p>
+  <list list-type="order">
+    <list-item>
+      <p>Forward model simulation of off-resonance effect on a 128x128
+      Shepp-Logan phantom and 256 mm2 FOV.</p>
+      <list list-type="bullet">
+        <list-item>
+          <p>Using single-shot EPI and spiral trajectories. Figure 1
+          shows simplified versions of both trajectories for
+          visualization purposes.</p>
+        </list-item>
+        <list-item>
+          <p>Using a simulated field map based on a blurred version of
+          the phantom image with frequency ranges of -/+ 100, -/+150 and
+          -/+200 Hz.</p>
+        </list-item>
+      </list>
+    </list-item>
+    <list-item>
+      <p>Correction of the results of the forward model with CPR, fs-CPR
+      and MFI .</p>
+    </list-item>
+  </list>
+  <fig>
+    <caption><p>Top row (left-right): Shepp-Logan phantom image
+    (128x128), Simplified single-shot EPI k-space trajectory, Simplified
+    single-shot spiral k-space trajectory, and simulated field map
+    (128x128). Bottom row (left-right): EPI experiment results and
+    Spiral experiment results.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="JOSS_figs/simfig.png" xlink:title="" />
+  </fig>
+  <p>In both experiments, ‘OCTOPUS’ successfully corrected the
+  off-resonance induced blurring and/or geometrical distortion. Note how
+  the EPI-corrupted images show geometric distortion in the phase-encode
+  direction while spiral corrupted images show blurred and distorted
+  edges.</p>
+  <p>To test the effect of noise on the correction performance we
+  introduced different levels of noise to a single-shot EPI
+  trajectory-based simulation and measured the peak signal-to-noise
+  ratio (pSNR) and Structural Similarity Index (SSIM).</p>
+  <fig>
+    <caption><p>Effect of different noise leves on OCTOPUS correction
+    performance measured using pSNR and SSIM.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="JOSS_figs/noise_sim_epi.png" xlink:title="" />
+  </fig>
+  <p>As expected, PSNR and SSIM are reduced as the off-resonance range
+  widens and the noise level in the original image increases.
+  Nevertheless, in all cases, the three implemented methods improve the
+  metrics with respect to the off-resonance corrupted image.</p>
+  <p>Finally, to demonstrate the correction capabilities in 3D
+  multi-slice and multi-channel data, we corrected phantom images of a
+  Stack-of-Spirals acquisition with matrix size of 72x72, FOV=240 mm2
+  and 54 slices. The images were acquired on a Siemens 3T Prisma scanner
+  using a 20-channel head coil. Figure 3 shows three representative
+  slices and their off-resonance corrected versions. The regions of the
+  images highlighted in red show improved image quality and enhaced
+  edges.</p>
+  <fig>
+    <caption><p>Off-resonance correction of three slices of a
+    Stack-of-Spirals 3D acquisition.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="JOSS_figs/SoS_ORC_v2.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This study was funded (in part) by the ‘MR Technology Development
+  Grant’ and the ‘Seed Grant Program for MR Studies’ of the Zuckerman
+  Mind Brain Behavior Institute at Columbia University (PI: Geethanath)
+  and the ‘Fast Functional MRI with sparse sampling and model-based
+  reconstruction’ of the National Institute of Biomedical Imaging and
+  Bioengineering (PI: Fessler and, supplement, sub-award to
+  Geethanath).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Noll1991">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Noll</surname><given-names>Douglas C.</given-names></name>
+          <name><surname>Meyer</surname><given-names>Craig H.</given-names></name>
+          <name><surname>Pauly</surname><given-names>John M.</given-names></name>
+          <name><surname>Nishimura</surname><given-names>Dwight G.</given-names></name>
+          <name><surname>Macovski</surname><given-names>Albert</given-names></name>
+        </person-group>
+        <article-title>A Homogeneity Correction Method for Magnetic Resonance Imaging with Time-Vaiying Gradients</article-title>
+        <source>IEEE Transactions on Medical Imaging</source>
+        <year iso-8601-date="1991">1991</year>
+        <volume>10</volume>
+        <issue>4</issue>
+        <issn>1558254X</issn>
+        <pub-id pub-id-type="doi">10.1109/42.108599</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-LukPat2001">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Luk-Pat</surname><given-names>Gerard T.</given-names></name>
+          <name><surname>Nishimura</surname><given-names>Dwight G.</given-names></name>
+        </person-group>
+        <article-title>Reducing off-resonance distortion by echo-time interpolation</article-title>
+        <source>Magnetic Resonance in Medicine</source>
+        <year iso-8601-date="2001">2001</year>
+        <volume>45</volume>
+        <issue>2</issue>
+        <issn>07403194</issn>
+        <pub-id pub-id-type="doi">10.1002/1522-2594(200102)45:2&lt;269::AID-MRM1036&gt;3.0.CO;2-5</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Chen2008">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Chen</surname><given-names>Weitian</given-names></name>
+          <name><surname>Meyer</surname><given-names>Craig H.</given-names></name>
+        </person-group>
+        <article-title>Semiautomatic off-resonance correction in spiral imaging</article-title>
+        <source>Magnetic Resonance in Medicine</source>
+        <year iso-8601-date="2008">2008</year>
+        <volume>59</volume>
+        <issn>07403194</issn>
+        <pub-id pub-id-type="doi">10.1002/mrm.21599</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Schomberg1999">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Schomberg</surname><given-names>Hermann</given-names></name>
+        </person-group>
+        <article-title>Off-resonance correction of MR images</article-title>
+        <source>IEEE Transactions on Medical Imaging</source>
+        <year iso-8601-date="1999">1999</year>
+        <volume>18</volume>
+        <issue>6</issue>
+        <issn>02780062</issn>
+        <pub-id pub-id-type="doi">10.1109/42.781014</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Maeda1988">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Maeda</surname><given-names>Akira</given-names></name>
+          <name><surname>Sano</surname><given-names>Koichi</given-names></name>
+          <name><surname>Yokoyama</surname><given-names>Tetsuo</given-names></name>
+        </person-group>
+        <article-title>Reconstruction by Weighted Correlation for MRI with Time-Varying Gradients</article-title>
+        <source>IEEE Transactions on Medical Imaging</source>
+        <year iso-8601-date="1988">1988</year>
+        <volume>7</volume>
+        <issue>1</issue>
+        <issn>1558254X</issn>
+        <pub-id pub-id-type="doi">10.1109/42.3926</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Noll1992">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Noll</surname><given-names>Douglas C.</given-names></name>
+          <name><surname>Pauly</surname><given-names>John M.</given-names></name>
+          <name><surname>Meyer</surname><given-names>Craig H.</given-names></name>
+          <name><surname>Nishimura</surname><given-names>Dwight G.</given-names></name>
+          <name><surname>Macovskj</surname><given-names>Albert</given-names></name>
+        </person-group>
+        <article-title>Deblurring for non‐2D fourier transform magnetic resonance imaging</article-title>
+        <source>Magnetic Resonance in Medicine</source>
+        <year iso-8601-date="1992">1992</year>
+        <volume>25</volume>
+        <issue>2</issue>
+        <issn>15222594</issn>
+        <pub-id pub-id-type="doi">10.1002/mrm.1910250210</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Man1997">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Man</surname><given-names>Lai Chee</given-names></name>
+          <name><surname>Pauly</surname><given-names>John M.</given-names></name>
+          <name><surname>Macovski</surname><given-names>Albert</given-names></name>
+        </person-group>
+        <article-title>Multifrequency interpolation for fast off-resonance correction</article-title>
+        <source>Magnetic Resonance in Medicine</source>
+        <year iso-8601-date="1997">1997</year>
+        <volume>37</volume>
+        <issue>5</issue>
+        <issn>07403194</issn>
+        <pub-id pub-id-type="doi">10.1002/mrm.1910370523</pub-id>
+        <pub-id pub-id-type="pmid">9126954</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Lustig2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lustig</surname><given-names>Michael</given-names></name>
+          <name><surname>Pauly</surname><given-names>John M.</given-names></name>
+        </person-group>
+        <article-title>SPIRiT: Iterative self-consistent parallel imaging reconstruction from arbitrary k-space</article-title>
+        <source>Magnetic Resonance in Medicine</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>64</volume>
+        <issue>2</issue>
+        <issn>07403194</issn>
+        <uri>https://people.eecs.berkeley.edu/{~}mlustig/Software.html</uri>
+        <pub-id pub-id-type="doi">10.1002/mrm.22428</pub-id>
+        <pub-id pub-id-type="pmid">20665790</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Ostenson2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ostenson</surname><given-names>Jason</given-names></name>
+          <name><surname>Robison</surname><given-names>Ryan K.</given-names></name>
+          <name><surname>Zwart</surname><given-names>Nicholas R.</given-names></name>
+          <name><surname>Welch</surname><given-names>E. Brian</given-names></name>
+        </person-group>
+        <article-title>Multi-frequency interpolation in spiral magnetic resonance fingerprinting for correction of off-resonance blurring</article-title>
+        <source>Magnetic Resonance Imaging</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>41</volume>
+        <issn>18735894</issn>
+        <uri>https://github.com/jostenson/MRI{\_}Ostenson{\_}MRF{\_}MFI</uri>
+        <pub-id pub-id-type="doi">10.1016/j.mri.2017.07.004</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Jenkinson2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Jenkinson</surname><given-names>Mark</given-names></name>
+          <name><surname>Beckmann</surname><given-names>Christian F</given-names></name>
+          <name><surname>Behrens</surname><given-names>Timothy E J</given-names></name>
+          <name><surname>Woolrich</surname><given-names>Mark W</given-names></name>
+          <name><surname>Smith</surname><given-names>Stephen M</given-names></name>
+        </person-group>
+        <article-title>Review FSL</article-title>
+        <source>NeuroImage</source>
+        <year iso-8601-date="2012">2012</year>
+        <volume>62</volume>
+        <issue>2</issue>
+        <uri>https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FUGUE</uri>
+        <pub-id pub-id-type="doi">10.1016/j.neuroimage.2011.09.015</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Sutton2003">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Sutton</surname><given-names>Bradley P.</given-names></name>
+          <name><surname>Noll</surname><given-names>Douglas C.</given-names></name>
+          <name><surname>Fessler</surname><given-names>Jeffrey A.</given-names></name>
+        </person-group>
+        <article-title>Fast, iterative image reconstruction for MRI in the presence of field inhomogeneities</article-title>
+        <source>IEEE Transactions on Medical Imaging</source>
+        <year iso-8601-date="2003">2003</year>
+        <volume>22</volume>
+        <issue>2</issue>
+        <issn>02780062</issn>
+        <uri>https://web.eecs.umich.edu/{~}fessler/code/</uri>
+        <pub-id pub-id-type="doi">10.1109/TMI.2002.808360</pub-id>
+        <pub-id pub-id-type="pmid">12715994</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Fessler2005">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fessler</surname><given-names>Jeffrey A.</given-names></name>
+          <name><surname>Lee</surname><given-names>Sangwoo</given-names></name>
+          <name><surname>Olafsson</surname><given-names>Valur T.</given-names></name>
+          <name><surname>Shi</surname><given-names>Hugo R.</given-names></name>
+          <name><surname>Noll</surname><given-names>Douglas C.</given-names></name>
+        </person-group>
+        <article-title>Toeplitz-based iterative image reconstruction for MRI with correction for magnetic field inhomogeneity</article-title>
+        <source>IEEE Transactions on Signal Processing</source>
+        <year iso-8601-date="2005">2005</year>
+        <volume>53</volume>
+        <issue>9</issue>
+        <issn>1053587X</issn>
+        <uri>https://web.eecs.umich.edu/{~}fessler/code/</uri>
+        <pub-id pub-id-type="doi">10.1109/TSP.2005.853152</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Nylund2014">
+      <element-citation publication-type="thesis">
+        <person-group person-group-type="author">
+          <name><surname>Nylund</surname><given-names>Andreas</given-names></name>
+        </person-group>
+        <article-title>Off-resonance correction for magnetic resonance imaging with spiral trajectories</article-title>
+        <publisher-name>KTH Royal Institute of Technology</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-2020NumPy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Harris</surname><given-names>Charles R.</given-names></name>
+          <name><surname>Millman</surname><given-names>K. Jarrod</given-names></name>
+          <name><surname>Walt</surname><given-names>Stéfan J van der</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Wieser</surname><given-names>Eric</given-names></name>
+          <name><surname>Taylor</surname><given-names>Julian</given-names></name>
+          <name><surname>Berg</surname><given-names>Sebastian</given-names></name>
+          <name><surname>Smith</surname><given-names>Nathaniel J.</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Picus</surname><given-names>Matti</given-names></name>
+          <name><surname>Hoyer</surname><given-names>Stephan</given-names></name>
+          <name><surname>Kerkwijk</surname><given-names>Marten H. van</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Haldane</surname><given-names>Allan</given-names></name>
+          <name><surname>Fernández del Río</surname><given-names>Jaime</given-names></name>
+          <name><surname>Wiebe</surname><given-names>Mark</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Gérard-Marchant</surname><given-names>Pierre</given-names></name>
+          <name><surname>Sheppard</surname><given-names>Kevin</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Abbasi</surname><given-names>Hameer</given-names></name>
+          <name><surname>Gohlke</surname><given-names>Christoph</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+        </person-group>
+        <article-title>Array programming with NumPy</article-title>
+        <source>Nature</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>585</volume>
+        <pub-id pub-id-type="doi">10.1038/s41586-020-2649-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-2020SciPy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+          <name><surname>Haberland</surname><given-names>Matt</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Burovski</surname><given-names>Evgeni</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Bright</surname><given-names>Jonathan</given-names></name>
+          <name><surname>van der Walt</surname><given-names>Stéfan J.</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Wilson</surname><given-names>Joshua</given-names></name>
+          <name><surname>Millman</surname><given-names>K. Jarrod</given-names></name>
+          <name><surname>Mayorov</surname><given-names>Nikolay</given-names></name>
+          <name><surname>Nelson</surname><given-names>Andrew R. J.</given-names></name>
+          <name><surname>Jones</surname><given-names>Eric</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Larson</surname><given-names>Eric</given-names></name>
+          <name><surname>Carey</surname><given-names>C J</given-names></name>
+          <name><surname>Polat</surname><given-names>İlhan</given-names></name>
+          <name><surname>Feng</surname><given-names>Yu</given-names></name>
+          <name><surname>Moore</surname><given-names>Eric W.</given-names></name>
+          <name><surname>VanderPlas</surname><given-names>Jake</given-names></name>
+          <name><surname>Laxalde</surname><given-names>Denis</given-names></name>
+          <name><surname>Perktold</surname><given-names>Josef</given-names></name>
+          <name><surname>Cimrman</surname><given-names>Robert</given-names></name>
+          <name><surname>Henriksen</surname><given-names>Ian</given-names></name>
+          <name><surname>Quintero</surname><given-names>E. A.</given-names></name>
+          <name><surname>Harris</surname><given-names>Charles R.</given-names></name>
+          <name><surname>Archibald</surname><given-names>Anne M.</given-names></name>
+          <name><surname>Ribeiro</surname><given-names>Antônio H.</given-names></name>
+          <name><surname>Pedregosa</surname><given-names>Fabian</given-names></name>
+          <name><surname>van Mulbregt</surname><given-names>Paul</given-names></name>
+          <string-name>SciPy 1.0 Contributors</string-name>
+        </person-group>
+        <article-title>SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python</article-title>
+        <source>Nature Methods</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>17</volume>
+        <pub-id pub-id-type="doi">10.1038/s41592-019-0686-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Nibabel">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Markiewicz</surname><given-names>Christopher J.</given-names></name>
+          <name><surname>Hanke</surname><given-names>Michael</given-names></name>
+          <name><surname>Côté</surname><given-names>Marc-Alexandre</given-names></name>
+          <name><surname>Cipollini</surname><given-names>Ben</given-names></name>
+          <name><surname>McCarthy</surname><given-names>Paul</given-names></name>
+          <name><surname>Cheng</surname><given-names>Christopher P.</given-names></name>
+          <name><surname>Halchenko</surname><given-names>Yaroslav O.</given-names></name>
+          <name><surname>Cottaar</surname><given-names>Michiel</given-names></name>
+          <name><surname>Ghosh</surname><given-names>Satrajit</given-names></name>
+          <name><surname>Larson</surname><given-names>Eric</given-names></name>
+          <name><surname>Wassermann</surname><given-names>Demian</given-names></name>
+          <name><surname>Gerhard</surname><given-names>Stephan</given-names></name>
+          <name><surname>Lee</surname><given-names>Gregory R.</given-names></name>
+          <name><surname>Wang</surname><given-names>Hao-Ting</given-names></name>
+          <name><surname>Kastman</surname><given-names>Erik</given-names></name>
+          <name><surname>Rokem</surname><given-names>Ariel</given-names></name>
+          <name><surname>Madison</surname><given-names>Cindee</given-names></name>
+          <name><surname>Morency</surname><given-names>Félix C.</given-names></name>
+          <name><surname>Moloney</surname><given-names>Brendan</given-names></name>
+          <name><surname>Goncalves</surname><given-names>Mathias</given-names></name>
+          <name><surname>Riddell</surname><given-names>Cameron</given-names></name>
+          <name><surname>Burns</surname><given-names>Christopher</given-names></name>
+          <name><surname>Millman</surname><given-names>Jarrod</given-names></name>
+          <name><surname>Gramfort</surname><given-names>Alexandre</given-names></name>
+          <name><surname>Leppäkangas</surname><given-names>Jaakko</given-names></name>
+          <name><surname>Markello</surname><given-names>Ross</given-names></name>
+          <name><surname>Bosch</surname><given-names>Jasper J. F. van den</given-names></name>
+          <name><surname>Vincent</surname><given-names>Robert D.</given-names></name>
+          <name><surname>Braun</surname><given-names>Henry</given-names></name>
+          <name><surname>Subramaniam</surname><given-names>Krish</given-names></name>
+          <name><surname>Jarecka</surname><given-names>Dorota</given-names></name>
+          <name><surname>Gorgolewski</surname><given-names>Krzysztof J.</given-names></name>
+          <name><surname>Raamana</surname><given-names>Pradeep Reddy</given-names></name>
+          <name><surname>Nichols</surname><given-names>B. Nolan</given-names></name>
+          <name><surname>Baker</surname><given-names>Eric M.</given-names></name>
+          <name><surname>Hayashi</surname><given-names>Soichi</given-names></name>
+          <name><surname>Pinsard</surname><given-names>Basile</given-names></name>
+          <name><surname>Haselgrove</surname><given-names>Christian</given-names></name>
+          <name><surname>Hymers</surname><given-names>Mark</given-names></name>
+          <name><surname>Esteban</surname><given-names>Oscar</given-names></name>
+          <name><surname>Koudoro</surname><given-names>Serge</given-names></name>
+          <name><surname>Oosterhof</surname><given-names>Nikolaas N.</given-names></name>
+          <name><surname>Amirbekian</surname><given-names>Bago</given-names></name>
+          <name><surname>Nimmo-Smith</surname><given-names>Ian</given-names></name>
+          <name><surname>Nguyen</surname><given-names>Ly</given-names></name>
+          <name><surname>Reddigari</surname><given-names>Samir</given-names></name>
+          <name><surname>St-Jean</surname><given-names>Samuel</given-names></name>
+          <name><surname>Panfilov</surname><given-names>Egor</given-names></name>
+          <name><surname>Garyfallidis</surname><given-names>Eleftherios</given-names></name>
+          <name><surname>Varoquaux</surname><given-names>Gael</given-names></name>
+          <name><surname>Kaczmarzyk</surname><given-names>Jakub</given-names></name>
+          <name><surname>Legarreta</surname><given-names>Jon Haitz</given-names></name>
+          <name><surname>Hahn</surname><given-names>Kevin S.</given-names></name>
+          <name><surname>Hinds</surname><given-names>Oliver P.</given-names></name>
+          <name><surname>Fauber</surname><given-names>Bennet</given-names></name>
+          <name><surname>Poline</surname><given-names>Jean-Baptiste</given-names></name>
+          <name><surname>Stutters</surname><given-names>Jon</given-names></name>
+          <name><surname>Jordan</surname><given-names>Kesshi</given-names></name>
+          <name><surname>Cieslak</surname><given-names>Matthew</given-names></name>
+          <name><surname>Moreno</surname><given-names>Miguel Estevan</given-names></name>
+          <name><surname>Haenel</surname><given-names>Valentin</given-names></name>
+          <name><surname>Schwartz</surname><given-names>Yannick</given-names></name>
+          <name><surname>Darwin</surname><given-names>Benjamin C</given-names></name>
+          <name><surname>Thirion</surname><given-names>Bertrand</given-names></name>
+          <name><surname>Papadopoulos Orfanos</surname><given-names>Dimitri</given-names></name>
+          <name><surname>Pérez-García</surname><given-names>Fernando</given-names></name>
+          <name><surname>Solovey</surname><given-names>Igor</given-names></name>
+          <name><surname>Gonzalez</surname><given-names>Ivan</given-names></name>
+          <name><surname>Palasubramaniam</surname><given-names>Jath</given-names></name>
+          <name><surname>Lecher</surname><given-names>Justin</given-names></name>
+          <name><surname>Leinweber</surname><given-names>Katrin</given-names></name>
+          <name><surname>Raktivan</surname><given-names>Konstantinos</given-names></name>
+          <name><surname>Fischer</surname><given-names>Peter</given-names></name>
+          <name><surname>Gervais</surname><given-names>Philippe</given-names></name>
+          <name><surname>Gadde</surname><given-names>Syam</given-names></name>
+          <name><surname>Ballinger</surname><given-names>Thomas</given-names></name>
+          <name><surname>Roos</surname><given-names>Thomas</given-names></name>
+          <name><surname>Reddam</surname><given-names>Venkateswara Reddy</given-names></name>
+          <name><surname>Baratz</surname><given-names>Zvi</given-names></name>
+          <name><surname>freec84</surname></name>
+        </person-group>
+        <source>Nipy/nibabel: 3.0.2</source>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2020-03">2020</year><month>03</month>
+        <uri>https://doi.org/10.5281/zenodo.3701467</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3701467</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Matplotlib">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hunter</surname><given-names>J. D.</given-names></name>
+        </person-group>
+        <article-title>Matplotlib: A 2D graphics environment</article-title>
+        <source>Computing in Science &amp; Engineering</source>
+        <publisher-name>IEEE COMPUTER SOC</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>9</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2007.55</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-itseez2015opencv">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Itseez</surname></name>
+        </person-group>
+        <article-title>Open source computer vision library</article-title>
+        <publisher-name>https://github.com/itseez/opencv</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-darcy_mason_2020_3891702">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Mason</surname><given-names>Darcy</given-names></name>
+          <name><surname>scaramallion</surname></name>
+          <name><surname>rhaxton</surname></name>
+          <name><surname>mrbean-bremen</surname></name>
+          <name><surname>Suever</surname><given-names>Jonathan</given-names></name>
+          <name><surname>Vanessasaurus</surname></name>
+          <name><surname>Lemaitre</surname><given-names>Guillaume</given-names></name>
+          <name><surname>Orfanos</surname><given-names>Dimitri Papadopoulos</given-names></name>
+          <name><surname>Panchal</surname><given-names>Aditya</given-names></name>
+          <name><surname>Rothberg</surname><given-names>Alex</given-names></name>
+          <name><surname>Massich</surname><given-names>Joan</given-names></name>
+          <name><surname>Kerns</surname><given-names>James</given-names></name>
+          <name><surname>Golen</surname><given-names>Korijn van</given-names></name>
+          <name><surname>Robitaille</surname><given-names>Thomas</given-names></name>
+          <name><surname>moloney</surname></name>
+          <name><surname>Shun-Shin</surname><given-names>Matthew</given-names></name>
+          <name><surname>pawelzajdel</surname></name>
+          <name><surname>Mattes</surname><given-names>Markus</given-names></name>
+          <name><surname>Conrad</surname><given-names>Blair</given-names></name>
+          <name><surname>Morency</surname><given-names>Félix C.</given-names></name>
+          <name><surname>Herrmann</surname><given-names>Markus D.</given-names></name>
+          <name><surname>Meine</surname><given-names>Hans</given-names></name>
+          <name><surname>Hahn</surname><given-names>Kevin S.</given-names></name>
+          <name><surname>Wada</surname><given-names>Masahiro</given-names></name>
+          <name><surname>colonelfazackerley</surname></name>
+          <name><surname>ferdymercury</surname></name>
+          <name><surname>huicpc0207</surname></name>
+          <name><surname>Klimont</surname><given-names>Adam</given-names></name>
+          <name><surname>Fedorov</surname><given-names>Andrey</given-names></name>
+          <name><surname>Bryant</surname><given-names>Callan</given-names></name>
+        </person-group>
+        <source>Pydicom/pydicom: Pydicom 2.0.0</source>
+        <publisher-name>Zenodo</publisher-name>
+        <year iso-8601-date="2020-05">2020</year><month>05</month>
+        <uri>https://doi.org/10.5281/zenodo.3891702</uri>
+        <pub-id pub-id-type="doi">10.5281/zenodo.3891702</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pynufft">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Lin</surname><given-names>Jyh-Miin</given-names></name>
+        </person-group>
+        <article-title>Pynufft: Python non-uniform fast Fourier transform</article-title>
+        <uri>https://github.com/jyhmiinlin/pynufft</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-scikit-image">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Walt</surname><given-names>Stéfan van der</given-names></name>
+          <name><surname>Schönberger</surname><given-names>Johannes L</given-names></name>
+          <name><surname>Nunez-Iglesias</surname><given-names>Juan</given-names></name>
+          <name><surname>Boulogne</surname><given-names>François</given-names></name>
+          <name><surname>Warner</surname><given-names>Joshua D</given-names></name>
+          <name><surname>Yager</surname><given-names>Neil</given-names></name>
+          <name><surname>Gouillart</surname><given-names>Emmanuelle</given-names></name>
+          <name><surname>Yu</surname><given-names>Tony</given-names></name>
+          <name><surname>contributors</surname><given-names>The scikit-image</given-names></name>
+        </person-group>
+        <article-title>scikit-image: image processing in {P}ython</article-title>
+        <source>PeerJ</source>
+        <year iso-8601-date="2014">2014</year>
+        <volume>2</volume>
+        <issn>2167-8359</issn>
+        <uri>https://doi.org/10.7717/peerj.453</uri>
+        <pub-id pub-id-type="doi">10.7717/peerj.453</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Shepp1974">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Shepp</surname><given-names>L. A.</given-names></name>
+          <name><surname>Logan</surname><given-names>Benjamin F.</given-names></name>
+        </person-group>
+        <article-title>FOURIER RECONSTRUCTION OF A HEAD SECTION.</article-title>
+        <source>IEEE Transactions on Nuclear Science</source>
+        <year iso-8601-date="1974">1974</year>
+        <volume>21</volume>
+        <issn>00189499</issn>
+        <pub-id pub-id-type="doi">10.1109/tns.1974.6499235</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

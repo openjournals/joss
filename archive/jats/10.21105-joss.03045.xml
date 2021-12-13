@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">3045</article-id>
+<article-id pub-id-type="doi">10.21105/joss.03045</article-id>
+<title-group>
+<article-title>Bayesian X-ray Analysis (BXA) v4.0</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-0426-6634</contrib-id>
+<string-name>Johannes Buchner</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-3"/>
+<xref ref-type="aff" rid="aff-4"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Max Planck Institute for Extraterrestrial Physics,
+Giessenbachstrasse, 85741 Garching, Germany</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Millenium Institute of Astrophysics, Vicuña MacKenna 4860,
+7820436 Macul, Santiago, Chile</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Pontificia Universidad Católica de Chile, Instituto de
+Astrofísica, Casilla 306, Santiago 22, Chile</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-4">
+<institution-wrap>
+<institution>Excellence Cluster Universe, Boltzmannstr. 2, D-85748,
+Garching, Germany</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-01-22">
+<day>22</day>
+<month>1</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>61</issue>
+<fpage>3045</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>X-rays</kwd>
+<kwd>Bayesian inference</kwd>
+<kwd>Nested Sampling</kwd>
+<kwd>Spectroscopy</kwd>
+<kwd>Bayes factors</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>BXA connects the X-ray spectral analysis environments Xspec
+  (<xref alt="Arnaud, 1996" rid="ref-XSPEC" ref-type="bibr">Arnaud,
+  1996</xref>) and Sherpa
+  (<xref alt="Freeman et al., 2001" rid="ref-Freeman2001" ref-type="bibr">Freeman
+  et al., 2001</xref>) with modern Bayesian inference algorithms based
+  on nested sampling. This allows estimation of parameter probability
+  distributions and model comparison with Bayes factors. Because BXA is
+  a plug-in, users can build and fit the full range of models available
+  in Xspec and Sherpa. BXA also comes with convenience functionality for
+  backgrounds of many X-ray missions, which allow extracting more
+  information from low-count data.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>In X-ray spectroscopy, the instrument responses are often not
+  trivial, which means that forward folding is required to test models
+  against data. Judging realistic physical models, which can be
+  degenerate, against data, which sometimes consist of few photon
+  counts, is a challenge. Bayesian inference provides a good solution in
+  this setting.</p>
+  <p>For parameter estimation, Bayesian inference updates an initial
+  state of information using the data and a model into a new state
+  (posterior probability distribution). In practice, Bayesian inference
+  algorithms approximate the posterior by Monte Carlo sampling. Before
+  BXA, Bayesian X-ray spectral analyses have been implemented with
+  Markov Chain Monte Carlo (MCMC). The variants include Metropolis
+  random walks (e.g.,
+  <xref alt="van Dyk et al., 2001" rid="ref-Dyk2001" ref-type="bibr">van
+  Dyk et al., 2001</xref>) and affine-invariant ensembles
+  (<xref alt="Goodman &amp; Weare, 2010" rid="ref-GoodmanWeare" ref-type="bibr">Goodman
+  &amp; Weare, 2010</xref>). These can be difficult to initialise and/or
+  tune, and require complicated checks of the chain convergence to
+  determine when to terminate the computation, and how to select good
+  posterior samples from the chain. The MCMC variants have limitations
+  when models have multiple posterior peaks. These are common in the
+  additive models typically considered in X-ray astronomy when combined
+  with data sets of low spectral quality. For these reasons, Bayesian
+  X-ray analyses, as implemented in existing popular packages, can be
+  unsatisfying.</p>
+  <p>BXA uses nested sampling
+  (<xref alt="Skilling, 2004" rid="ref-Skilling2004" ref-type="bibr">Skilling,
+  2004</xref>) to efficiently generate posterior samples. Nested
+  sampling performs a global scan of the parameter space, without
+  requiring a user-defined starting point. This makes it robust and easy
+  to use in large X-ray surveys with many objects, and in situations
+  where many models should be compared. Nested sampling can be
+  substantially more efficient than MCMC in low-dimensional settings
+  (<inline-formula><alternatives>
+  <tex-math><![CDATA[d<10]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>d</mml:mi><mml:mo>&lt;</mml:mo><mml:mn>10</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>)
+  (<xref alt="Speagle, 2020" rid="ref-Speagle2020" ref-type="bibr">Speagle,
+  2020</xref>).</p>
+  <p>Comparing astrophysical models is currently primarily performed
+  either using likelihood ratio tests (F-test) or Monte Carlo
+  simulations to evaluate goodness-of-fit measures. The former are often
+  invalid
+  (<xref alt="Protassov et al., 2002" rid="ref-Protassov2002" ref-type="bibr">Protassov
+  et al., 2002</xref>), while the latter are computationally very
+  expensive. Bayesian model comparison with posterior odds ratios,
+  provides an alternative approach, which is natural in Bayesian
+  inference. BXA (via nested sampling) makes Bayesian model comparison
+  computationally feasible to apply and calibrate with simulated data
+  (see e.g.,
+  <xref alt="J. Buchner et al., 2014" rid="ref-Buchner2014" ref-type="bibr">J.
+  Buchner et al., 2014</xref>).</p>
+</sec>
+<sec id="features">
+  <title>Features</title>
+  <p>BXA connects the X-ray spectral analysis environments Xspec/Sherpa
+  to the nested sampling algorithm UltraNest for Bayesian parameter
+  estimation and model comparison.</p>
+  <p>BXA provides the following features:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>parameter estimation in arbitrary dimensions, which
+      involves:</p>
+      <list list-type="bullet">
+        <list-item>
+          <p>finding the best fit</p>
+        </list-item>
+        <list-item>
+          <p>computing error bars</p>
+        </list-item>
+        <list-item>
+          <p>computing marginal probability distributions</p>
+        </list-item>
+        <list-item>
+          <p>parallelisation with MPI</p>
+        </list-item>
+      </list>
+    </list-item>
+    <list-item>
+      <p>plotting of spectral model vs. the data:</p>
+      <list list-type="bullet">
+        <list-item>
+          <p>for the best fit</p>
+        </list-item>
+        <list-item>
+          <p>for each of the solutions (posterior samples)</p>
+        </list-item>
+        <list-item>
+          <p>for each component</p>
+        </list-item>
+      </list>
+    </list-item>
+    <list-item>
+      <p>model selection:</p>
+      <list list-type="bullet">
+        <list-item>
+          <p>computing the Bayesian evidence for the considered model,
+          ready for use in Bayes factors</p>
+        </list-item>
+        <list-item>
+          <p>unlike likelihood-ratios, not limited to nested and linear
+          models</p>
+        </list-item>
+      </list>
+    </list-item>
+    <list-item>
+      <p>model discovery:</p>
+      <list list-type="bullet">
+        <list-item>
+          <p>visualize deviations between model and data with
+          binning-independent Quantile-Quantile (QQ) plots.</p>
+        </list-item>
+      </list>
+    </list-item>
+    <list-item>
+      <p>empirical background models:</p>
+      <list list-type="bullet">
+        <list-item>
+          <p>for getting more information out of low-count spectra</p>
+        </list-item>
+      </list>
+    </list-item>
+  </list>
+  <p>BXA shines especially</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>when systematically analysing a large data-set, or</p>
+    </list-item>
+    <list-item>
+      <p>when comparing multiple models</p>
+    </list-item>
+    <list-item>
+      <p>when analysing low counts data-set with realistic models</p>
+    </list-item>
+  </list>
+  <p>because its robust and unsupervised fitting algorithm explores even
+  complicated parameter spaces in an automated fashion. The user does
+  not need to initialise to good starting points. The algorithm
+  automatically runs until convergence, and slows down to sample
+  carefully if complicated parameter spaces are encountered. This allows
+  building automated analysis pipelines.</p>
+</sec>
+<sec id="methods">
+  <title>Methods</title>
+  <p>The methods and limitations of BXA were presented in more detail in
+  (<xref alt="J. Buchner et al., 2014" rid="ref-Buchner2014" ref-type="bibr">J.
+  Buchner et al., 2014</xref>). Until v3.0, BXA employed the Fortran
+  package MultiNest
+  (<xref alt="Feroz et al., 2009" rid="ref-Feroz2009" ref-type="bibr">Feroz
+  et al., 2009</xref>) to perform Bayesian inference. Since v4.0, BXA
+  uses the Python package UltraNest
+  (<xref alt="Johannes Buchner, 2018" rid="ref-ultranest" ref-type="bibr">Johannes
+  Buchner, 2018</xref>), which is easier to install.</p>
+  <p>For diagnosing the quality of BXA outputs, verifying the stability
+  over two or more runs is recommended, in particular of the marginal
+  posterior distributions and excess scatter of logZ
+  (<xref alt="Higson et al., 2019" rid="ref-Higson2019" ref-type="bibr">Higson
+  et al., 2019</xref>).</p>
+  <p>To determine reliable model selection thresholds, parametric
+  bootstrap is recommended. This involves simulating many data sets
+  under one model and deriving Bayes factor distributions with BXA runs
+  (e.g., Appendix of
+  <xref alt="J. Buchner et al., 2014" rid="ref-Buchner2014" ref-type="bibr">J.
+  Buchner et al., 2014</xref>).</p>
+</sec>
+<sec id="documentation">
+  <title>Documentation</title>
+  <p><ext-link ext-link-type="uri" xlink:href="https://johannesbuchner.github.io/BXA/">Extensive
+  documentation</ext-link> is available.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>I thank Antonis Georgakakis, Charlotte Simmonds, J. Michael Burgess
+  and Kirpal Nandra for insightful conversations. I thank Liu Zhu for
+  implementing empirical background models for XMM, and Liu Teng for
+  implementing the export of PCA-based background models as table
+  models.</p>
+  <p>Early versions of BXA for Sherpa were based on pyblocxs code
+  (<xref alt="CHASC Astro-Statistics Collaboration, 2011" rid="ref-pyblocxs" ref-type="bibr">CHASC
+  Astro-Statistics Collaboration, 2011</xref>).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Buchner2014">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Buchner</surname><given-names>J.</given-names></name>
+          <name><surname>Georgakakis</surname><given-names>A.</given-names></name>
+          <name><surname>Nandra</surname><given-names>K.</given-names></name>
+          <name><surname>Hsu</surname><given-names>L.</given-names></name>
+          <name><surname>Rangel</surname><given-names>C.</given-names></name>
+          <name><surname>Brightman</surname><given-names>M.</given-names></name>
+          <name><surname>Merloni</surname><given-names>A.</given-names></name>
+          <name><surname>Salvato</surname><given-names>M.</given-names></name>
+          <name><surname>Donley</surname><given-names>J.</given-names></name>
+          <name><surname>Kocevski</surname><given-names>D.</given-names></name>
+        </person-group>
+        <article-title>X-ray spectral modelling of the AGN obscuring region in the CDFS: Bayesian model selection and catalogue</article-title>
+        <source></source>
+        <year iso-8601-date="2014-04">2014</year><month>04</month>
+        <volume>564</volume>
+        <uri>https://arxiv.org/abs/1402.0004</uri>
+        <pub-id pub-id-type="doi">10.1051/0004-6361/201322971</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Feroz2009">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Feroz</surname><given-names>F.</given-names></name>
+          <name><surname>Hobson</surname><given-names>M. P.</given-names></name>
+          <name><surname>Bridges</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>MULTINEST: an efficient and robust Bayesian inference tool for cosmology and particle physics</article-title>
+        <source></source>
+        <year iso-8601-date="2009-10">2009</year><month>10</month>
+        <volume>398</volume>
+        <uri>https://arxiv.org/abs/0809.3437</uri>
+        <pub-id pub-id-type="doi">10.1111/j.1365-2966.2009.14548.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ultranest">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Buchner</surname><given-names>Johannes</given-names></name>
+        </person-group>
+        <article-title>UltraNest</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>GitHub</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://github.com/JohannesBuchner/UltraNest</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-XSPEC">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Arnaud</surname><given-names>K. A.</given-names></name>
+        </person-group>
+        <article-title>XSPEC: The First Ten Years</article-title>
+        <source>Astronomical data analysis software and systems v</source>
+        <person-group person-group-type="editor">
+          <name><surname>Jacoby</surname><given-names>G. H.</given-names></name>
+          <name><surname>Barnes</surname><given-names>J.</given-names></name>
+        </person-group>
+        <year iso-8601-date="1996">1996</year>
+        <volume>101</volume>
+        <uri>http://adsabs.harvard.edu/cgi-bin/nph-data_query?bibcode=1996ASPC..101...17A&amp;link_type=ARTICLE&amp;db_key=AST&amp;high=</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Freeman2001">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Freeman</surname><given-names>P.</given-names></name>
+          <name><surname>Doe</surname><given-names>S.</given-names></name>
+          <name><surname>Siemiginowska</surname><given-names>A.</given-names></name>
+        </person-group>
+        <article-title>Sherpa: a mission-independent data analysis application</article-title>
+        <source>Society of photo-optical instrumentation engineers (SPIE) conference series</source>
+        <person-group person-group-type="editor">
+          <name><surname>Starck</surname><given-names>J.-L.</given-names></name>
+          <name><surname>Murtagh</surname><given-names>F. D.</given-names></name>
+        </person-group>
+        <year iso-8601-date="2001-11">2001</year><month>11</month>
+        <volume>4477</volume>
+        <pub-id pub-id-type="doi">10.1117/12.447161</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Skilling2004">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Skilling</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>Nested sampling</article-title>
+        <source>AIP Conference Proceedings</source>
+        <person-group person-group-type="editor">
+          <name><surname>Rainer Fischer</surname><given-names>Roland Preuss</given-names></name>
+          <name><surname>Toussaint</surname><given-names>Udo von</given-names></name>
+        </person-group>
+        <publisher-name>AIP</publisher-name>
+        <publisher-loc>Garching, Germany</publisher-loc>
+        <year iso-8601-date="2004">2004</year>
+        <volume>735</volume>
+        <issue>1</issue>
+        <uri>http://proceedings.aip.org/resource/2/apcpcs/735/1/395_1</uri>
+        <pub-id pub-id-type="doi">10.1063/1.1835238</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Protassov2002">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Protassov</surname><given-names>R.</given-names></name>
+          <name><surname>van Dyk</surname><given-names>D. A.</given-names></name>
+          <name><surname>Connors</surname><given-names>A.</given-names></name>
+          <name><surname>Kashyap</surname><given-names>V. L.</given-names></name>
+          <name><surname>Siemiginowska</surname><given-names>A.</given-names></name>
+        </person-group>
+        <article-title>Statistics, Handle with Care: Detecting Multiple Model Components with the Likelihood Ratio Test</article-title>
+        <source></source>
+        <year iso-8601-date="2002-05">2002</year><month>05</month>
+        <volume>571</volume>
+        <pub-id pub-id-type="doi">10.1086/339856</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pyblocxs">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>CHASC Astro-Statistics Collaboration</string-name>
+        </person-group>
+        <article-title>pyblocxs</article-title>
+        <source>GitHub repository</source>
+        <publisher-name>GitHub</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <uri>https://github.com/brefsdal/pyblocxs</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Dyk2001">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>van Dyk</surname><given-names>D. A.</given-names></name>
+          <name><surname>Connors</surname><given-names>A.</given-names></name>
+          <name><surname>Kashyap</surname><given-names>V. L.</given-names></name>
+          <name><surname>Siemiginowska</surname><given-names>A.</given-names></name>
+        </person-group>
+        <article-title>Analysis of Energy Spectra with Low Photon Counts via Bayesian Posterior Simulation</article-title>
+        <source></source>
+        <year iso-8601-date="2001-02">2001</year><month>02</month>
+        <volume>548</volume>
+        <pub-id pub-id-type="doi">10.1086/318656</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-GoodmanWeare">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Goodman</surname><given-names>J.</given-names></name>
+          <name><surname>Weare</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>Ensemble samplers with affine invariance</article-title>
+        <source>Communications in Applied Mathematics and Computational Science, Vol. 5, No. 1, p. 65-80, 2010</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>5</volume>
+        <pub-id pub-id-type="doi">10.2140/camcos.2010.5.65</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Speagle2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Speagle</surname><given-names>Joshua S.</given-names></name>
+        </person-group>
+        <article-title>DYNESTY: a dynamic nested sampling package for estimating Bayesian posteriors and evidences</article-title>
+        <source></source>
+        <year iso-8601-date="2020-04">2020</year><month>04</month>
+        <volume>493</volume>
+        <issue>3</issue>
+        <uri>https://arxiv.org/abs/1904.02180</uri>
+        <pub-id pub-id-type="doi">10.1093/mnras/staa278</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Higson2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Higson</surname><given-names>Edward</given-names></name>
+          <name><surname>Handley</surname><given-names>Will</given-names></name>
+          <name><surname>Hobson</surname><given-names>Michael</given-names></name>
+          <name><surname>Lasenby</surname><given-names>Anthony</given-names></name>
+        </person-group>
+        <article-title>NESTCHECK: diagnostic tests for nested sampling calculations</article-title>
+        <source></source>
+        <year iso-8601-date="2019-02">2019</year><month>02</month>
+        <volume>483</volume>
+        <issue>2</issue>
+        <uri>https://arxiv.org/abs/1804.06406</uri>
+        <pub-id pub-id-type="doi">10.1093/mnras/sty3090</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

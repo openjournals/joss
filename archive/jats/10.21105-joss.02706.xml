@@ -1,0 +1,809 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2706</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02706</article-id>
+<title-group>
+<article-title>c212: An R Package for the Detection of Safety Signals in
+Clinical Trials Using Body-Systems (System Organ
+Classes)</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-0120-625X</contrib-id>
+<string-name>Raymond Carragher</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-4"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Chris Robertson</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="aff" rid="aff-3"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Strathclyde Institute of Pharmacy and Biomedical Sciences,
+University of Strathclyde, Glasgow, UK</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Department of Mathematics and Statistics, University of
+Strathclyde, Glasgow, UK</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-3">
+<institution-wrap>
+<institution>Health Protection Scotland, NHS National Services Scotland,
+Glasgow, UK</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-4">
+<institution-wrap>
+<institution>Health Data Research (UK), University of Strathclyde,
+Glasgow, UK</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<volume>5</volume>
+<issue>56</issue>
+<fpage>2706</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Adverse event</kwd>
+<kwd>Safety</kwd>
+<kwd>Pharmacovigilance</kwd>
+<kwd>Clinical trials</kwd>
+<kwd>False Discovery Rate</kwd>
+<kwd>Body-systems</kwd>
+<kwd>System organ classes</kwd>
+<kwd>Bayesian hierarchy</kwd>
+<kwd>Multiple comparisons.</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Safety in clinical trials may be characterised by the incidence or
+  occurrence of adverse events. The statistical analysis of this data is
+  complicated by the large number of adverse events recorded, with low
+  event rates, small effect sizes and low power all contributing to the
+  difficulty in determining a robust safety profile for a treatment
+  during the trial process.</p>
+  <p>In addition to end of trial analyses, a number of interim analyses
+  may take place at different time points during the trial lifecycle.
+  These offer the additional statistical challenge of testing
+  accumulating data, with possibly differing recruitment rates on trial
+  arms contributing to a lack of balance in the data.</p>
+  <p>Adverse events are typically defined by medical dictionaries, which
+  provide a common reference terminology for use in and between clinical
+  trials. There are a number of medical dictionaries in current use, all
+  of which provide similar services. One such dictionary is
+  <ext-link ext-link-type="uri" xlink:href="http://www.meddra.org/">MedDRA</ext-link>
+  (Medical Dictionary for Regulatory Activities), which was developed by
+  the
+  <ext-link ext-link-type="uri" xlink:href="http://www.ich.org/">ICH</ext-link>
+  (International Council for Harmonisation of Technical Requirements for
+  Pharmaceuticals for Human Use) and is widely used by regulatory
+  bodies, clinical research organisations (CROs), and pharmaceutical
+  companies. WHO-ART (World Health Organisation Adverse Reaction
+  Terminology) is a similar dictionary maintained by the
+  <ext-link ext-link-type="uri" xlink:href="http://www.umc-products.com">Uppsala
+  Monitoring Centre</ext-link> for the
+  <ext-link ext-link-type="uri" xlink:href="http://bioportal.bioontology.org/ontologies/WHO-ART">World
+  Health Organisation Collaborating Centre for International Drug
+  Monitoring</ext-link>. MedDRA and WHO-ART have a similar hierarchical
+  structure consisting of System Organ Classes (SOC) and various
+  grouping and descriptor terms.</p>
+  <p>The MedDRA hierarchical structure consists of five levels: System
+  Organ Class (SOC), High Level Group Terms (HLGT), High Level Terms
+  (HLT), Preferred Terms (PT), and Lower Level Terms (LLT). The PT is a
+  single medical description of a symptom or observation while the LLT
+  is how a patient or data recorder would describe a symptom or
+  observation. Each LLT belongs to one PT and, in general, data will be
+  recorded at the LLT level but reported at the PT level (the adverse
+  event). As of 2020 there are 27 SOCs and over 80,000 LLTs.</p>
+  <p>The grouping of adverse events by SOC (or body-system) provides for
+  possible relationships between the adverse events within a SOC. One
+  consequence of this is the possibility that, for treatments which may
+  affect a particular SOC, there may be raised rates for a number of
+  adverse events within that SOC. A number of methods have recently been
+  proposed to address the statistical issues in adverse event analysis
+  by using these groupings of adverse events by body-system or SOC,
+  taking into account the additional information provided by these
+  relationships to increase the power of detecting real adverse event
+  effects. These methods, which include both error controlling
+  procedures for multiple hypothesis testing
+  (<xref alt="Benjamini &amp; Hochberg, 1995" rid="ref-BH1995" ref-type="bibr">Benjamini
+  &amp; Hochberg, 1995</xref>;
+  <xref alt="Hu et al., 2010" rid="ref-HZZ2010" ref-type="bibr">Hu et
+  al., 2010</xref>;
+  <xref alt="Matthews, 2006" rid="ref-M2006" ref-type="bibr">Matthews,
+  2006</xref>;
+  <xref alt="Mehrotra &amp; Adewale, 2012" rid="ref-MA2012" ref-type="bibr">Mehrotra
+  &amp; Adewale, 2012</xref>;
+  <xref alt="Yekutieli, 2008" rid="ref-Y2008" ref-type="bibr">Yekutieli,
+  2008</xref>), and Bayesian modelling approaches
+  (<xref alt="Amy Xia et al., 2011" rid="ref-XMC2011" ref-type="bibr">Amy
+  Xia et al., 2011</xref>;
+  <xref alt="Berry &amp; Berry, 2004" rid="ref-BB2004" ref-type="bibr">Berry
+  &amp; Berry, 2004</xref>;
+  <xref alt="Carragher, 2017b" rid="ref-phdthesis" ref-type="bibr">Carragher,
+  2017b</xref>), are implemented in the <monospace>R</monospace> package
+  <monospace>c212</monospace> (Table
+  <xref alt="1" rid="tableU003A1">1</xref>).</p>
+  <table-wrap>
+    <caption>
+      <p>Methods in the c212 package.
+      <styled-content id="tableU003A1"></styled-content></p>
+    </caption>
+    <table>
+      <colgroup>
+        <col width="59%" />
+        <col width="41%" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Benjamini-Hochberg procedure
+          (<xref alt="Benjamini &amp; Hochberg, 1995" rid="ref-BH1995" ref-type="bibr">Benjamini
+          &amp; Hochberg, 1995</xref>)</td>
+          <td>Control of False Discovery Rate</td>
+        </tr>
+        <tr>
+          <td>Group Benjamini-Hochberg procedure
+          (<xref alt="Hu et al., 2010" rid="ref-HZZ2010" ref-type="bibr">Hu
+          et al., 2010</xref>)</td>
+          <td>Control of False Discovery Rate</td>
+        </tr>
+        <tr>
+          <td>Double false discovery rate
+          (<xref alt="Mehrotra &amp; Adewale, 2012" rid="ref-MA2012" ref-type="bibr">Mehrotra
+          &amp; Adewale, 2012</xref>)</td>
+          <td>Control of False Discovery Rate</td>
+        </tr>
+        <tr>
+          <td>Subset BH-procedure
+          (<xref alt="Yekutieli, 2008" rid="ref-Y2008" ref-type="bibr">Yekutieli,
+          2008</xref>)</td>
+          <td>Control of False Discovery Rate</td>
+        </tr>
+        <tr>
+          <td>Bonferroni correction
+          (<xref alt="Matthews, 2006" rid="ref-M2006" ref-type="bibr">Matthews,
+          2006</xref>)</td>
+          <td>Control of Familywise Error Rate</td>
+        </tr>
+        <tr>
+          <td>Berry and Berry model
+          (<xref alt="Berry &amp; Berry, 2004" rid="ref-BB2004" ref-type="bibr">Berry
+          &amp; Berry, 2004</xref>)</td>
+          <td>Bayesian model for end of trial data</td>
+        </tr>
+        <tr>
+          <td>Berry and Berry model without point-mass
+          (<xref alt="Amy Xia et al., 2011" rid="ref-XMC2011" ref-type="bibr">Amy
+          Xia et al., 2011</xref>)</td>
+          <td>Bayesian model for end of trial data</td>
+        </tr>
+        <tr>
+          <td>Interim analysis model
+          (<xref alt="Carragher, 2017b" rid="ref-phdthesis" ref-type="bibr">Carragher,
+          2017b</xref>)</td>
+          <td>Bayesian model for interim trial data</td>
+        </tr>
+        <tr>
+          <td>Interim analysis model without point-mass
+          (<xref alt="Carragher, 2017b" rid="ref-phdthesis" ref-type="bibr">Carragher,
+          2017b</xref>)</td>
+          <td>Bayesian model for interim trial data</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>The detection of safety issues in the post-marketing phase of a
+  treatment’s life cycle, as opposed to the trial phase, can have a
+  serious effect on the health of patients and also a financial impact
+  both for the companies developing the treatments, and the regulatory
+  bodies responsible for overseeing them.</p>
+  <p>The <monospace>R</monospace> package <monospace>c212</monospace>
+  provides a self-contained set of methods for clinical trial safety
+  investigators, statisticians and researchers, to aid in the early
+  detection of adverse events. It is designed to be easy to use with a
+  simple data input format and interface.</p>
+  <p>The primary use case for the software is in the statistical
+  analysis of adverse event incidence and occurrence data during
+  clinical trials. A second goal of the package is to provide reference
+  implementations of the methods in Table
+  <xref alt="1" rid="tableU003A1">1</xref> for use by researchers, both
+  in the area of safety in clinical trials, as well those developing or
+  testing methods for handling error rates when testing multiple
+  hypotheses. Beyond safety in clinical trials, the package will be
+  useful to any project which deals with multiple hypothesis testing, or
+  projects where two groups of comparative data may be modelled by
+  hierarchical Bayesian binomial or Poisson models, with recent
+  extensions of the Bayesian models to observational data being
+  developed
+  (<xref alt="Carragher et al., 2020" rid="ref-RC2020" ref-type="bibr">Carragher
+  et al., 2020</xref>).</p>
+  <p>The <monospace>c212</monospace> package is currently being used
+  both for clinical trial safety analysis
+  (<xref alt="Fries et al., 2016" rid="ref-FKL2016" ref-type="bibr">Fries
+  et al., 2016</xref>;
+  <xref alt="Munsaka, 2018" rid="ref-Munsaka2018" ref-type="bibr">Munsaka,
+  2018</xref>;
+  <xref alt="Wang et al., 2018" rid="ref-WWM2018" ref-type="bibr">Wang
+  et al., 2018</xref>) and as a research tool in the investigation and
+  development of new safety methods
+  (<xref alt="Tan et al., 2019" rid="ref-Tan2019" ref-type="bibr">Tan et
+  al., 2019</xref>,
+  <xref alt="2020" rid="ref-Tan2020" ref-type="bibr">2020</xref>). It
+  has also been
+  <ext-link ext-link-type="uri" xlink:href="https://visual-analytics.shinyapps.io/index/">implemented</ext-link>
+  as part of an
+  <ext-link ext-link-type="uri" xlink:href="https://community.amstat.org/biop/workinggroups/safety/safety-home">ASA
+  Biopharm Safety Working Group</ext-link> workstream.</p>
+</sec>
+<sec id="overview">
+  <title>Overview</title>
+  <p>The Bayesian models, under assumptions of conditional independence,
+  are fitted using a Gibbs sampling Markov Chain Monte-Carlo (MCMC)
+  method
+  (<xref alt="Robert &amp; Casella, 1999" rid="ref-RCR1999" ref-type="bibr">Robert
+  &amp; Casella, 1999</xref>). The posterior distributions of the model
+  parameters are used to assess which adverse events may have increased
+  rates on the treatment arm. In the case of the Berry and Berry model,
+  which is binomial, the <monospace>theta</monospace> model parameter,
+  representing the increase in the log-odds of an event occurring on the
+  treatment arm, is used for this purpose
+  (<xref alt="Berry &amp; Berry, 2004" rid="ref-BB2004" ref-type="bibr">Berry
+  &amp; Berry, 2004</xref>). For the interim analysis models, which are
+  Poisson based, the increase in the log rate of an event on the
+  treatment arm is used for adverse event assessment. As in the Berry
+  and Berry model this is represented by the parameter
+  <monospace>theta</monospace>
+  (<xref alt="Carragher, 2017b" rid="ref-phdthesis" ref-type="bibr">Carragher,
+  2017b</xref>). Functions for generating summary statistics and highest
+  probability intervals are provided using the services of the
+  <monospace>coda</monospace> package
+  (<xref alt="Plummer et al., 2006" rid="ref-coda2006" ref-type="bibr">Plummer
+  et al., 2006</xref>). The main convergence diagnostics available
+  directly within the package are the Gelman-Rubin and Geweke statistics
+  (<xref alt="Gelman et al., 2004" rid="ref-GCSR2004" ref-type="bibr">Gelman
+  et al., 2004</xref>), again from the <monospace>coda</monospace>
+  package. Access to the raw samples is available for further processing
+  should that be required. The error controlling procedures included in
+  the package follow exactly the method definitions in the papers which
+  introduced them
+  (<xref alt="Benjamini &amp; Hochberg, 1995" rid="ref-BH1995" ref-type="bibr">Benjamini
+  &amp; Hochberg, 1995</xref>;
+  <xref alt="Hu et al., 2010" rid="ref-HZZ2010" ref-type="bibr">Hu et
+  al., 2010</xref>;
+  <xref alt="Matthews, 2006" rid="ref-M2006" ref-type="bibr">Matthews,
+  2006</xref>;
+  <xref alt="Mehrotra &amp; Adewale, 2012" rid="ref-MA2012" ref-type="bibr">Mehrotra
+  &amp; Adewale, 2012</xref>;
+  <xref alt="Yekutieli, 2008" rid="ref-Y2008" ref-type="bibr">Yekutieli,
+  2008</xref>). The following sections contain examples which cover the
+  main uses of the software. The data sets and functions used are fully
+  documented in the package.</p>
+  <sec id="multiple-hypothesis-testing">
+    <title>Multiple Hypothesis Testing</title>
+    <p>The data set <monospace>c212.FDR.data</monospace> contains the
+    results from a set of multiple hypothesis tests for adverse events
+    grouped by body-system. The Group Benjamini-Hochberg procedure is
+    applied to the data with control of the False Discovery Rate set at
+    the 5% level. The <monospace>c212.err.cntrl</monospace> function,
+    which provides the interface to the error controlling methods,
+    returns the set of p-values/hypotheses deemed significant.</p>
+    <code language="r script">library(c212)
+data(c212.FDR.data, package=&quot;c212&quot;)
+head(c212.FDR.data, 2)
+B j AE p
+1 Bdy-sys_5 7 Adv-Ev_24 1.000000
+2 Bdy-sys_6 9 Adv-Ev_34 0.358949
+
+p.sig &lt;- c212.err.cntrl(c212.FDR.data, method = &quot;GBH&quot;, alpha = 0.05)
+print(p.sig)
+          B j         AE        p p_weighted
+1 Bdy-sys_3 6 Adv-Ev_911 0.000079   0.000000
+2 Bdy-sys_3 3   Adv-Ev_8 0.000021   0.000000
+3 Bdy-sys_3 1   Adv-Ev_6 0.000000   0.000000
+4 Bdy-sys_3 5 Adv-Ev_910 0.000039   0.000000
+5 Bdy-sys_3 2   Adv-Ev_7 0.000011   0.000000
+6 Bdy-sys_3 4   Adv-Ev_9 0.010411   0.000000
+7 Bdy-sys_3 7 Adv-Ev_912 0.003554   0.000000
+8 Bdy-sys_2 1   Adv-Ev_2 0.005333   0.005333
+9 Bdy-sys_2 2   Adv-Ev_3 0.016013   0.016013</code>
+  </sec>
+  <sec id="berry-and-berry-end-of-trial-analysis">
+    <title>Berry and Berry End of Trial Analysis</title>
+    <p>The data set <monospace>c212.trial.data</monospace> contains
+    sample end of trial adverse event incidence counts. The data is
+    modelled using the Berry and Berry model as follows:</p>
+    <code language="r script">library(c212)
+data(c212.trial.data, package=&quot;c212&quot;)
+head(c212.trial.data, 2)
+B j AE Group Count Total
+1 Bdy-sys_2 1 Adv-Ev_2 1 20 450
+2 Bdy-sys_2 4 Adv-Ev_5 2 21 450
+
+mod.BB &lt;- c212.BB(c212.trial.data)</code>
+    <p><monospace>mod.BB</monospace> contains the raw samples generated
+    from the model fitting procedure. To perform a convergence
+    check:</p>
+    <code language="r script">conv.BB = c212.convergence.diag(mod.BB)
+c212.print.convergence.summary(conv.BB)</code>
+    <p>In order to assess which adverse events may be associated with
+    treatment the function <monospace>c212.ptheta</monospace> is used.
+    This calculates the posterior probability of an increase in log-odds
+    of an event occurring on the treatment arm. A threshold may be used
+    to view the adverse events which exceed some defined level, for
+    example: 0.90:</p>
+    <code language="r script">theta.pos_BB &lt;- c212.ptheta(mode.BB)
+
+theta_pos.BB[theta_pos.BB$ptheta &gt; 0.9,]
+B AE ptheta
+2 Bdy-sys_2 Adv-Ev_2 0.9410417
+6 Bdy-sys_3 Adv-Ev_6 1.0000000
+7 Bdy-sys_3 Adv-Ev_7 1.0000000
+8 Bdy-sys_3 Adv-Ev_8 1.0000000
+9 Bdy-sys_3 Adv-Ev_9 0.9873500
+10 Bdy-sys_3 Adv-Ev_910 0.9999333
+11 Bdy-sys_3 Adv-Ev_911 0.9999917
+12 Bdy-sys_3 Adv-Ev_912 0.9964917</code>
+    <p>The high posterior probabilities may indicate a possible
+    association with treatment for these adverse events.</p>
+  </sec>
+  <sec id="interim-analysis">
+    <title>Interim Analysis</title>
+    <p>Apart from the function used to fit the model, the procedure for
+    fitting and accessing interim analysis data is exactly the same as
+    for the Berry and Berry model.</p>
+    <code language="r script">library(c212)
+data(c212.trial.interval.data1)
+head(c212.trial.interval.data1, 2)
+Interval I_index         B       AE Group Count Exposure
+0.0-180.0       0 Bdy-sys_1 Adv-Ev_1     1    87 160133.7
+0.0-180.0       0 Bdy-sys_1 Adv-Ev_1     2   103 163224.6
+mod.BB.interim &lt;- c212.BB.interim(c212.trial.interval.data1)</code>
+  </sec>
+</sec>
+<sec id="software-details-and-availability">
+  <title>Software Details and Availability</title>
+  <p>The <monospace>c212</monospace> package was initially released to
+  CRAN in 2017 and has been through a number of release cycles. Before
+  each release a full set of unit and functional tests are performed on
+  the package development system, including memory checks with valgrind
+  (<xref alt="Seward &amp; Nethercote, 2005" rid="ref-valgrind" ref-type="bibr">Seward
+  &amp; Nethercote, 2005</xref>) and Google address sanitizer
+  (<xref alt="Serebryany et al., 2012" rid="ref-asan" ref-type="bibr">Serebryany
+  et al., 2012</xref>). The package documentation also contains tests
+  and examples based on data included in the package.</p>
+  <p>The <monospace>c212</monospace> package is most easily downloaded
+  and installed directly from CRAN
+  (<xref alt="Carragher, 2017a" rid="ref-cran" ref-type="bibr">Carragher,
+  2017a</xref>) or, alternatively, from the corresponding GitHub
+  repository
+  (<xref alt="Carragher, 2020" rid="ref-github" ref-type="bibr">Carragher,
+  2020</xref>).</p>
+  <p>The authors are interested in extending the software to include new
+  methods, particularly in the area of safety analysis, and would
+  welcome collaborations in this area. Any support issues or questions
+  can be addressed directly to the corresponding author, through the
+  associated CRAN maintainer email address, or through the Github
+  repository.</p>
+  <sec id="performance">
+    <title>Performance</title>
+    <p>The Bayesian models are expensive to fit in terms of both
+    computation and memory. The main issue is the number of parameters
+    in the model. For the Berry and Berry model with
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[N]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
+    adverse events, and <inline-formula><alternatives>
+    <tex-math><![CDATA[B]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>B</mml:mi></mml:math></alternatives></inline-formula>
+    SOCs there are <inline-formula><alternatives>
+    <tex-math><![CDATA[(2 \times N + 5 \times B + 6)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>2</mml:mn><mml:mo>×</mml:mo><mml:mi>N</mml:mi><mml:mo>+</mml:mo><mml:mn>5</mml:mn><mml:mo>×</mml:mo><mml:mi>B</mml:mi><mml:mo>+</mml:mo><mml:mn>6</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+    parameters in total. With <inline-formula><alternatives>
+    <tex-math><![CDATA[C]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>C</mml:mi></mml:math></alternatives></inline-formula>
+    parallel MCMC chains and <inline-formula><alternatives>
+    <tex-math><![CDATA[I]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>I</mml:mi></mml:math></alternatives></inline-formula>
+    iterations of the MCMC sampler, this will require space for
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[C \times I \times (2 \times N + 5 \times B + 6)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>C</mml:mi><mml:mo>×</mml:mo><mml:mi>I</mml:mi><mml:mo>×</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>2</mml:mn><mml:mo>×</mml:mo><mml:mi>N</mml:mi><mml:mo>+</mml:mo><mml:mn>5</mml:mn><mml:mo>×</mml:mo><mml:mi>B</mml:mi><mml:mo>+</mml:mo><mml:mn>6</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    double precision numbers to store the samples. For larger datasets,
+    the calculation of the convergence diagnostics and summary
+    statistics may be time consuming as the samples are passed to the
+    <monospace>coda</monospace> package.</p>
+    <p><bold>Example:</bold> A trial with 23 SOCs and 497 AEs, 5
+    parallel chains and 40,000 iterations after burn-in, will require
+    space for 133,800,000 doubles, equating to approximately 1GB of
+    memory storage for the samples alone (assuming 8 bytes per
+    double).</p>
+    <p>It is recommended that at least twice the storage required for
+    the samples be available for fitting any of the Bayesian models.</p>
+  </sec>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This work was funded by the Engineering and Physical Sciences
+  Research Council (EPSRC) UK (award reference 1521741) and Frontier
+  Science (Scotland) Ltd.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-BH1995">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Benjamini</surname><given-names>Yoav</given-names></name>
+          <name><surname>Hochberg</surname><given-names>Yosef</given-names></name>
+        </person-group>
+        <article-title>Controlling the false discovery rate: A practical and powerful approach to multiple testing</article-title>
+        <source>Journal of the Royal Statistical Society. Series B (Methodological)</source>
+        <year iso-8601-date="1995">1995</year>
+        <volume>57</volume>
+        <issue>1</issue>
+        <issn>00359246</issn>
+        <uri>http://www.jstor.org/stable/2346101</uri>
+        <pub-id pub-id-type="doi">10.1111/j.2517-6161.1995.tb02031.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-HZZ2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hu</surname><given-names>J. X.</given-names></name>
+          <name><surname>Zhao</surname><given-names>H.</given-names></name>
+          <name><surname>Zhou</surname><given-names>H. H.</given-names></name>
+        </person-group>
+        <article-title>False discovery rate control with groups</article-title>
+        <source>Journal of the American Statistical Association</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>105</volume>
+        <issue>491</issue>
+        <issn>0162-1459 (Print)
+        0162-1459 (Linking)</issn>
+        <pub-id pub-id-type="doi">10.1198/jasa.2010.tm09329</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-MA2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mehrotra</surname><given-names>D. V.</given-names></name>
+          <name><surname>Adewale</surname><given-names>A. J.</given-names></name>
+        </person-group>
+        <article-title>Flagging clinical adverse experiences: Reducing false discoveries without materially compromising power for detecting true signals</article-title>
+        <source>Statistics in Medicine</source>
+        <year iso-8601-date="2012">2012</year>
+        <volume>31</volume>
+        <issue>18</issue>
+        <issn>1097-0258 (Electronic)
+        0277-6715 (Linking)</issn>
+        <pub-id pub-id-type="doi">10.1002/sim.5310</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Y2008">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Yekutieli</surname><given-names>Daniel</given-names></name>
+        </person-group>
+        <article-title>False discovery rate control for non-positively regression dependent test statistics</article-title>
+        <source>Journal of Statistical Planning and Inference</source>
+        <year iso-8601-date="2008">2008</year>
+        <volume>138</volume>
+        <issue>2</issue>
+        <issn>0378-3758</issn>
+        <uri>http://www.sciencedirect.com/science/article/pii/S0378375807002510</uri>
+        <pub-id pub-id-type="doi">10.1016/j.jspi.2007.06.006</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-M2006">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Matthews</surname><given-names>John N. S.</given-names></name>
+        </person-group>
+        <source>Introduction to randomized controlled clinical trials, second edition</source>
+        <publisher-name>Chapman &amp; Hall/CRC</publisher-name>
+        <year iso-8601-date="2006">2006</year>
+        <isbn>978-1-58488-624-2</isbn>
+        <pub-id pub-id-type="doi">doi:10.1201/9781420011302.fmatt</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-BB2004">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Berry</surname><given-names>Scott M.</given-names></name>
+          <name><surname>Berry</surname><given-names>Donald A.</given-names></name>
+        </person-group>
+        <article-title>Accounting for multiplicities in assessing drug safety: A three-level hierarchical mixture model</article-title>
+        <source>Biometrics</source>
+        <year iso-8601-date="2004">2004</year>
+        <volume>60</volume>
+        <issue>2</issue>
+        <issn>1541-0420</issn>
+        <uri>http://dx.doi.org/10.1111/j.0006-341X.2004.00186.x</uri>
+        <pub-id pub-id-type="doi">10.1111/j.0006-341X.2004.00186.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-XMC2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Amy Xia</surname><given-names>H.</given-names></name>
+          <name><surname>Ma</surname><given-names>Haijun</given-names></name>
+          <name><surname>Carlin</surname><given-names>Bradley P.</given-names></name>
+        </person-group>
+        <article-title>Bayesian hierarchical modeling for detecting safety signals in clinical trials</article-title>
+        <source>Journal of Biopharmaceutical Statistics</source>
+        <year iso-8601-date="2011">2011</year>
+        <volume>21</volume>
+        <issue>5</issue>
+        <issn>1054-3406</issn>
+        <uri>http://dx.doi.org/10.1080/10543406.2010.520181</uri>
+        <pub-id pub-id-type="doi">10.1080/10543406.2010.520181</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-phdthesis">
+      <element-citation publication-type="thesis">
+        <person-group person-group-type="author">
+          <name><surname>Carragher</surname><given-names>Raymond</given-names></name>
+        </person-group>
+        <article-title>Detecting safety signals in randomised controlled trials</article-title>
+        <publisher-name>University of Strathclyde</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-WWM2018">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wang</surname><given-names>William</given-names></name>
+          <name><surname>Whalen</surname><given-names>Ed</given-names></name>
+          <name><surname>Munsaka</surname><given-names>Melvin</given-names></name>
+          <name><surname>Li</surname><given-names>Judy</given-names></name>
+          <name><surname>Fries</surname><given-names>Michael</given-names></name>
+          <name><surname>Kracht</surname><given-names>Karolyn</given-names></name>
+          <name><surname>Sanchez-Kam</surname><given-names>Matilde</given-names></name>
+          <name><surname>Singh</surname><given-names>Krishan</given-names></name>
+          <name><surname>Zhou</surname><given-names>Kefei</given-names></name>
+        </person-group>
+        <article-title>On quantitative methods for clinical safety monitoring in drug development</article-title>
+        <source>Statistics in Biopharmaceutical Research</source>
+        <publisher-name>Taylor &amp; Francis</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>10</volume>
+        <issue>2</issue>
+        <uri>https://doi.org/10.1080/19466315.2017.1409134</uri>
+        <pub-id pub-id-type="doi">10.1080/19466315.2017.1409134</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Munsaka2018">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Munsaka</surname><given-names>Melvin S.</given-names></name>
+        </person-group>
+        <article-title>A question-based approach to the analysis of safety data</article-title>
+        <source>Biopharmaceutical applied statistics symposium : Volume 2 biostatistical analysis of clinical trials</source>
+        <person-group person-group-type="editor">
+          <name><surname>Peace</surname><given-names>Karl E.</given-names></name>
+          <name><surname>Chen</surname><given-names>Ding-Geng</given-names></name>
+          <name><surname>Menon</surname><given-names>Sandeep</given-names></name>
+        </person-group>
+        <publisher-name>Springer Singapore</publisher-name>
+        <publisher-loc>Singapore</publisher-loc>
+        <year iso-8601-date="2018">2018</year>
+        <isbn>978-981-10-7826-2</isbn>
+        <uri>https://doi.org/10.1007/978-981-10-7826-2_11</uri>
+        <pub-id pub-id-type="doi">10.1007/978-981-10-7826-2_11</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-FKL2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fries</surname><given-names>M</given-names></name>
+          <name><surname>Kracht</surname><given-names>K K</given-names></name>
+          <name><surname>Li</surname><given-names>J</given-names></name>
+          <name><surname>Munsaka</surname><given-names>M S</given-names></name>
+          <name><surname>Sanchez-Kam</surname><given-names>M</given-names></name>
+          <name><surname>Singh</surname><given-names>K P</given-names></name>
+          <name><surname>Wang</surname><given-names>W</given-names></name>
+          <name><surname>Whalen</surname><given-names>E</given-names></name>
+          <name><surname>Zhou</surname><given-names>K.</given-names></name>
+        </person-group>
+        <article-title>Safety monitoring methodology in the premarketing setting</article-title>
+        <source>JSM Proceedings, Biopharmaceutical Section</source>
+        <publisher-name>Google Scholar</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://ww2.amstat.org/MembersOnly/proceedings/2016/data/assets/pdf/389675.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-coda2006">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Plummer</surname><given-names>Martyn</given-names></name>
+          <name><surname>Best</surname><given-names>Nicky</given-names></name>
+          <name><surname>Cowles</surname><given-names>Kate</given-names></name>
+          <name><surname>Vines</surname><given-names>Karen</given-names></name>
+        </person-group>
+        <article-title>CODA: Convergence diagnosis and output analysis for MCMC</article-title>
+        <source>R News</source>
+        <year iso-8601-date="2006">2006</year>
+        <volume>6</volume>
+        <issue>1</issue>
+        <uri>http://CRAN.R-project.org/doc/Rnews/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-GCSR2004">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Gelman</surname><given-names>Andrew</given-names></name>
+          <name><surname>Carlin</surname><given-names>John B.</given-names></name>
+          <name><surname>Stern</surname><given-names>Hal S.</given-names></name>
+          <name><surname>Rubin</surname><given-names>Donald B.</given-names></name>
+        </person-group>
+        <source>Bayesian Data Analysis</source>
+        <publisher-name>Chapman &amp; Hall/CRC</publisher-name>
+        <year iso-8601-date="2004">2004</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-RCR1999">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Robert</surname><given-names>Christian P.</given-names></name>
+          <name><surname>Casella</surname><given-names>George</given-names></name>
+        </person-group>
+        <source>Monte Carlo statistical methods</source>
+        <publisher-name>Springer New York</publisher-name>
+        <year iso-8601-date="1999">1999</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-Tan2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tan</surname><given-names>Xianming</given-names></name>
+          <name><surname>Liu</surname><given-names>Guanghan F.</given-names></name>
+          <name><surname>Zeng</surname><given-names>Donglin</given-names></name>
+          <name><surname>Wang</surname><given-names>William</given-names></name>
+          <name><surname>Diao</surname><given-names>Guoqing</given-names></name>
+          <name><surname>Heyse</surname><given-names>Joseph F.</given-names></name>
+          <name><surname>Ibrahim</surname><given-names>Joseph G.</given-names></name>
+        </person-group>
+        <article-title>Controlling false discovery proportion in identification of drug-related adverse events from multiple system organ classes</article-title>
+        <source>Statistics in Medicine</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>38</volume>
+        <issue>22</issue>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.8304</uri>
+        <pub-id pub-id-type="doi">10.1002/sim.8304</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Tan2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tan</surname><given-names>Xianming</given-names></name>
+          <name><surname>Chen</surname><given-names>Bingshu E.</given-names></name>
+          <name><surname>Sun</surname><given-names>Jianping</given-names></name>
+          <name><surname>Patel</surname><given-names>Tejendra</given-names></name>
+          <name><surname>Ibrahim</surname><given-names>Joseph G.</given-names></name>
+        </person-group>
+        <article-title>A hierarchical testing approach for detecting safety signals in clinical trials</article-title>
+        <source>Statistics in Medicine</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>39</volume>
+        <issue>10</issue>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.8495</uri>
+        <pub-id pub-id-type="doi">10.1002/sim.8495</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-RC2020">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Carragher</surname><given-names>Raymond</given-names></name>
+          <name><surname>Mueller</surname><given-names>Tanja</given-names></name>
+          <name><surname>Bennie</surname><given-names>Marion</given-names></name>
+          <name><surname>Robertson</surname><given-names>Chris</given-names></name>
+        </person-group>
+        <article-title>A Bayesian hierarchical approach for multiple outcomes in routinely collected healthcare data</article-title>
+        <source>Statistics in Medicine</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>39</volume>
+        <uri>https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.8563</uri>
+        <pub-id pub-id-type="doi">10.1002/sim.8563</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-github">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Carragher</surname><given-names>Raymond</given-names></name>
+        </person-group>
+        <article-title>c212: Methods for detecting safety signals in clinical trials using body-systems (system organ classes)</article-title>
+        <source>​GitHub repository</source>
+        <publisher-name>​GitHub</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://github.com/rcarragh/c212</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-cran">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Carragher</surname><given-names>Raymond</given-names></name>
+        </person-group>
+        <article-title>c212: Methods for detecting safety signals in clinical trials using body-systems (system organ classes)</article-title>
+        <source>​CRAN repository</source>
+        <publisher-name>​CRAN</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <uri> https://CRAN.R-project.org/package=c212</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-valgrind">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Seward</surname><given-names>Julian</given-names></name>
+          <name><surname>Nethercote</surname><given-names>Nicholas</given-names></name>
+        </person-group>
+        <article-title>Using valgrind to detect undefined value errors with bit-precision</article-title>
+        <source>Proceedings of the annual conference on USENIX annual technical conference</source>
+        <publisher-name>USENIX Association</publisher-name>
+        <publisher-loc>USA</publisher-loc>
+        <year iso-8601-date="2005">2005</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-asan">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Serebryany</surname><given-names>Konstantin</given-names></name>
+          <name><surname>Bruening</surname><given-names>Derek</given-names></name>
+          <name><surname>Potapenko</surname><given-names>Alexander</given-names></name>
+          <name><surname>Vyukov</surname><given-names>Dmitry</given-names></name>
+        </person-group>
+        <article-title>AddressSanitizer: A fast address sanity checker</article-title>
+        <source>Proceedings of the 2012 USENIX conference on annual technical conference</source>
+        <publisher-name>USENIX Association</publisher-name>
+        <publisher-loc>USA</publisher-loc>
+        <year iso-8601-date="2012">2012</year>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

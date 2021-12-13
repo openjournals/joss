@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">988</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00988</article-id>
+<title-group>
+<article-title>ipc: An R Package for Inter-process
+Communication</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-1261-0925</contrib-id>
+<string-name>Ian E. Fellows</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Fellows Statistics, http://www.fellstat.com</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2018-09-04">
+<day>4</day>
+<month>9</month>
+<year>2018</year>
+</pub-date>
+<volume>3</volume>
+<issue>31</issue>
+<fpage>988</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>High Performance Computing</kwd>
+<kwd>Interactive Visualization</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Asynchronous processing is critical for performing a wide array of
+  tasks, from high performance computing to web services. Communication
+  between these disparate asynchronous processes is often required. The
+  <monospace>parallel</monospace> package, which is part of the R
+  computing environment
+  (<xref alt="R Core Team, 2018" rid="ref-parallel" ref-type="bibr">R
+  Core Team, 2018</xref>) allows the user to send computations to be
+  executed by idle worker processes, and the
+  <monospace>drake</monospace> package
+  (<xref alt="Landau, 2018a" rid="ref-drake" ref-type="bibr">Landau,
+  2018a</xref>) is a general purpose workflow manager, where tasks can
+  be executed in parallel. Several packages have been written to handle
+  the passing of text or binary data between processes (e.g.
+  (<xref alt="Landau, 2018b" rid="ref-txtq" ref-type="bibr">Landau,
+  2018b</xref>),
+  (<xref alt="Csárdi, 2017" rid="ref-liteq" ref-type="bibr">Csárdi,
+  2017</xref>), and
+  (<xref alt="Armstrong &amp; Ooms, 2017" rid="ref-rzmq" ref-type="bibr">Armstrong
+  &amp; Ooms, 2017</xref>)). Currently the statistical computing
+  language R provides no built in features to handle interprocess
+  communication between R processes while they are performing
+  computations. <monospace>ipc</monospace> allows you to easily pass R
+  objects between processes along with an associated signal, and have
+  handler functions automatically execute them in the receiving process.
+  In <monospace>ipc</monospace>, communication is backed either through
+  the file system or a database connection.</p>
+  <p>For example, one might signal for the execution of an expression in
+  one thread to set a variable <monospace>a</monospace>.</p>
+  <preformat>q &lt;- queue()
+q$producer$fireEval(a &lt;- 1)</preformat>
+  <p>Then in another thread, this signal can be processed, resulting in
+  the value <monospace>a</monospace> being set to 1 in the receiving
+  thread after calling the <monospace>consume</monospace> method.</p>
+  <preformat>q$consumer$consume()</preformat>
+  <p>This package can be applied to high performance computing
+  environments, easily allowing parallel worker processes to communicate
+  partial results or progress to the main thread. This functionality can
+  be used to supporting interactive diagnostics and progress for
+  parallelized functions. Particular focus is paid to the use case of
+  supporting asynchronous web based user interfaces
+  ((<xref alt="Chang et al., 2018" rid="ref-shiny" ref-type="bibr">Chang
+  et al., 2018</xref>)).</p>
+  <sec id="use-in-shiny">
+    <title>Use in Shiny</title>
+    <p>When building a Shiny interface that involves long running
+    processes, there are two major considerations that need to be
+    addressed:</p>
+    <list list-type="order">
+      <list-item>
+        <p>The server should not be blocked by the computation.</p>
+      </list-item>
+      <list-item>
+        <p>The user should be able to communicate to the computation
+        (e.g. stop it), and the computation should be able to
+        communicate with the user (e.g. display progress).</p>
+      </list-item>
+    </list>
+    <p>The first item is critical for scalable application development,
+    because if one user blocks the server, then the UI is unresponsive
+    for all other users of the application. Shiny’s new async
+    infrastructure addresses this by allowing long running operations to
+    be preformed in worker processes.</p>
+    <p>The second item is critical for developing responsive
+    applications. If a user interface is locked while a computation is
+    proceeding, the user is in the frustrating position of not being
+    able to cancel it and can’t know how long the computation will take
+    before they’ll be able to get their interface back. While async
+    solves the first consideration, inter-process communication is
+    needed to handle the second.</p>
+    <p>The ipc package provides an easy way to signal between the main
+    thread of your Shiny application and any workers that you create.
+    Intermediary results of the computation can be assigned to reactive
+    values, allowing the user to monitor the internal progress of the
+    operation. In fact, you can send any arbitrary computation from one
+    thread to another using the <monospace>fireEval</monospace> and
+    <monospace>fireCall</monospace> methods. Full details are outlined
+    in the package vignette.</p>
+  </sec>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We acknowledge the Center for Disease Control, and in particular
+  Ray Shiraishi for their support in the development of the
+  <monospace>ipc</monospace> package.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-shiny">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Chang</surname><given-names>Winston</given-names></name>
+          <name><surname>Cheng</surname><given-names>Joe</given-names></name>
+          <name><surname>Allaire</surname><given-names>JJ</given-names></name>
+          <name><surname>Xie</surname><given-names>Yihui</given-names></name>
+          <name><surname>McPherson</surname><given-names>Jonathan</given-names></name>
+        </person-group>
+        <source>Shiny: Web application framework for r</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://CRAN.R-project.org/package=shiny</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-txtq">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Landau</surname><given-names>William Michael</given-names></name>
+        </person-group>
+        <source>Txtq: A small message queue for parallel processes</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://CRAN.R-project.org/package=txtq</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-liteq">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Csárdi</surname><given-names>Gábor</given-names></name>
+        </person-group>
+        <source>Liteq: Lightweight portable message queue using ’SQLite’</source>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://CRAN.R-project.org/package=liteq</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-rzmq">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Armstrong</surname><given-names>Whit</given-names></name>
+          <name><surname>Ooms</surname><given-names>Jeroen</given-names></name>
+        </person-group>
+        <source>Rzmq: R bindings for ’ZeroMQ’</source>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://CRAN.R-project.org/package=rzmq</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-parallel">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>R Core Team</string-name>
+        </person-group>
+        <source>R: A language and environment for statistical computing</source>
+        <publisher-name>R Foundation for Statistical Computing</publisher-name>
+        <publisher-loc>Vienna, Austria</publisher-loc>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://www.R-project.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-drake">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Landau</surname><given-names>William Michael</given-names></name>
+        </person-group>
+        <source>Drake: A pipeline toolkit for reproducible computation at scale</source>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://CRAN.R-project.org/package=drake</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

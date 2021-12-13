@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">556</article-id>
+<article-id pub-id-type="doi">10.21105/joss.00556</article-id>
+<title-group>
+<article-title>CheckQC: Quick quality control of Illumina sequencing
+runs</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-2450-6415</contrib-id>
+<string-name>Matilda Åslin</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-8184-9465</contrib-id>
+<string-name>Monika Brandt</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-6962-1460</contrib-id>
+<string-name>Johan Dahlberg</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Department of Medical Sciences, Molecular Medicine and
+Science for Life Laboratory Uppsala University, Uppsala,
+Sweden</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2018-01-26">
+<day>26</day>
+<month>1</month>
+<year>2018</year>
+</pub-date>
+<volume>3</volume>
+<issue>22</issue>
+<fpage>556</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>illumina</kwd>
+<kwd>ngs</kwd>
+<kwd>quality control</kwd>
+<kwd>mps</kwd>
+<kwd>sequencing</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>The last quarter of 20th century has been marked by the drive to
+  decode genes and later whole genomes, giving rise to the field of
+  genomics
+  (<xref alt="Lander et al., 2001" rid="ref-Lander2001" ref-type="bibr">Lander
+  et al., 2001</xref>). In order to study the genome it is essential to
+  know the sequential order of nucleotides in the DNA sequence. The
+  process of determining this order is referred to as DNA sequencing.
+  These technologies are not limited to the study of DNA, but can also
+  be used in a wide variety of other applications such as studying the
+  transcriptome (RNA sequencing) and epigenetic modifications of the DNA
+  itself. One of the most widely used technologies for DNA sequencing is
+  the sequencing-by-synthesis solution provided by Illumina Inc
+  (<xref alt="Mardis, 2017" rid="ref-Mardis2017" ref-type="bibr">Mardis,
+  2017</xref>). Sequencing is typically carried out at sequencing core
+  facilities that offer sequencing as a service
+  (<xref alt="Spjuth et al., 2016" rid="ref-Spjuth2016" ref-type="bibr">Spjuth
+  et al., 2016</xref>).</p>
+  <p>CheckQC was created to quickly assess the quality of a sequencing
+  run specifically aimed at facilities using Illumina sequencing
+  technology. CheckQC requires that the raw data is processed by the
+  bcl2fastq software
+  (<xref alt="Bcl2fastq Conversion Software, n.d." rid="ref-bcl2fastq" ref-type="bibr"><italic>Bcl2fastq
+  Conversion Software</italic>, n.d.</xref>) provided by Illumina. In
+  just a few seconds, CheckQC gathers statistics from the sequencing run
+  and returns warnings about any metrics not fulfilling previously
+  specified quality control (QC) criteria. Furthermore, the exit code
+  returned by the program indicates whether all the criteria were met.
+  This feature makes it easy to plug CheckQC into a sequencing data
+  processing workflow, which can be aborted if quality criterias are not
+  met. The metrics to check and thresholds used for QC are specified in
+  a configuration file, making CheckQC easily adapted to the specific
+  needs of any user or core facility.</p>
+  <p>One widely used quality control software is FastqQC
+  (<xref alt="FastQC a Quality Control Tool for High Throughput Sequence Data, n.d." rid="ref-fastqc" ref-type="bibr"><italic>FastQC
+  a Quality Control Tool for High Throughput Sequence Data</italic>,
+  n.d.</xref>), which focus on assessing the quality of individual
+  samples. While CheckQC also evaluates criteria on a sample level, it
+  delivers two other perspectives on the data that are not addressed by
+  the existing software. Firstly, CheckQC evaluates criteria for the run
+  as a whole, which is generally important from a core facility
+  perspective. An example of this is that it provides confirmation that
+  a sequencing run as a whole has generated a sufficient amount of data
+  according to the pre-defined QC thresholds. Secondly, it contains a
+  feature of setting thresholds for different QC criteria based on
+  instrument and/or run type and evaluates these criteria automatically,
+  which to the best of our knowledge, is not supported by existing
+  software.</p>
+  <p>Another software library which focuses on working with Illumina
+  data from a sequencing run perspective is basecallQC
+  (<xref alt="Carroll &amp; Dore, 2017" rid="ref-basecallQC" ref-type="bibr">Carroll
+  &amp; Dore, 2017</xref>). This is a library for the R
+  (<xref alt="R Core Team, 2017" rid="ref-R" ref-type="bibr">R Core
+  Team, 2017</xref>) programming language, which allows the user to
+  perform utility actions related to a sequencing run, as well as create
+  summary reports. It does not, however, provide built in functionality
+  to assess whether quality control thresholds are fulfilled or not, nor
+  does it provide a commandline interface to the user.</p>
+</sec>
+<sec id="features">
+  <title>Features</title>
+  <list list-type="bullet">
+    <list-item>
+      <p>Support for the following Illumina instrument types: HiSeq2500,
+      HiSeqX, MiSeq and NovaSeq.</p>
+    </list-item>
+    <list-item>
+      <p>QC criteria are specified based on instrument type and/or run
+      configuration.</p>
+    </list-item>
+    <list-item>
+      <p>Thresholds are set on a error and/or warning level, where QC
+      evaluations only reporting warnings will result in a successful
+      run completion, while errors will not. This way CheckQC can easily
+      be incorporated in an automated workflow, e.g. that implemented
+      with Arteria
+      (<xref alt="Dahlberg et al., 2017" rid="ref-Dahlberg2017" ref-type="bibr">Dahlberg
+      et al., 2017</xref>), where the exit code can be examined to
+      decide whether to proceed in a workflow or not.</p>
+    </list-item>
+    <list-item>
+      <p>CheckQC can be run as a command-line application or as a web
+      service.</p>
+    </list-item>
+    <list-item>
+      <p>CheckQC currently supports parsing of Illumina InterOp files
+      and Stats.json (generated by Illumina software bcl2fastq2 since
+      version 2.18).</p>
+    </list-item>
+    <list-item>
+      <p>CheckQC is designed to be extendable, thus allowing new input
+      file formats to be parsed, and new types of criteria to be added
+      with ease.</p>
+    </list-item>
+  </list>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-bcl2fastq">
+      <element-citation>
+        <article-title>bcl2fastq conversion software</article-title>
+        <publisher-name>https://support.illumina.com/sequencing/sequencing_software/bcl2fastq-conversion-software.html</publisher-name>
+      </element-citation>
+    </ref>
+    <ref id="ref-Dahlberg2017">
+      <element-citation publication-type="manuscript">
+        <person-group person-group-type="author">
+          <name><surname>Dahlberg</surname><given-names>Johan</given-names></name>
+          <name><surname>Hermansson</surname><given-names>Johan</given-names></name>
+          <name><surname>Sturlaugsson</surname><given-names>Steinar</given-names></name>
+          <name><surname>Larsson</surname><given-names>Pontus</given-names></name>
+        </person-group>
+        <article-title>Arteria: An automation system for a sequencing core facility</article-title>
+        <source>bioRxiv</source>
+        <year iso-8601-date="2017-11">2017</year><month>11</month>
+      </element-citation>
+    </ref>
+    <ref id="ref-fastqc">
+      <element-citation>
+        <article-title>FastQC a quality control tool for high throughput sequence data</article-title>
+        <publisher-name>https://www.bioinformatics.babraham.ac.uk/projects/fastqc/</publisher-name>
+      </element-citation>
+    </ref>
+    <ref id="ref-Mardis2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mardis</surname><given-names>Elaine R</given-names></name>
+        </person-group>
+        <article-title>DNA sequencing technologies: 2006-2016</article-title>
+        <source>Nat. Protoc.</source>
+        <year iso-8601-date="2017-02">2017</year><month>02</month>
+        <volume>12</volume>
+        <issue>2</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-Spjuth2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Spjuth</surname><given-names>Ola</given-names></name>
+          <name><surname>Bongcam-Rudloff</surname><given-names>Erik</given-names></name>
+          <name><surname>Dahlberg</surname><given-names>Johan</given-names></name>
+          <name><surname>Dahlö</surname><given-names>Martin</given-names></name>
+          <name><surname>Kallio</surname><given-names>Aleksi</given-names></name>
+          <name><surname>Pireddu</surname><given-names>Luca</given-names></name>
+          <name><surname>Vezzi</surname><given-names>Francesco</given-names></name>
+          <name><surname>Korpelainen</surname><given-names>Eija</given-names></name>
+        </person-group>
+        <article-title>Recommendations on e-infrastructures for next-generation sequencing</article-title>
+        <source>Gigascience</source>
+        <year iso-8601-date="2016-06">2016</year><month>06</month>
+        <volume>5</volume>
+      </element-citation>
+    </ref>
+    <ref id="ref-Lander2001">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Lander</surname><given-names>E S</given-names></name>
+          <name><surname>Linton</surname><given-names>L M</given-names></name>
+          <name><surname>Birren</surname><given-names>B</given-names></name>
+          <name><surname>Nusbaum</surname><given-names>C</given-names></name>
+          <name><surname>Zody</surname><given-names>M C</given-names></name>
+          <name><surname>Baldwin</surname><given-names>J</given-names></name>
+          <name><surname>Devon</surname><given-names>K</given-names></name>
+          <name><surname>Dewar</surname><given-names>K</given-names></name>
+          <name><surname>Doyle</surname><given-names>M</given-names></name>
+          <name><surname>FitzHugh</surname><given-names>W</given-names></name>
+          <name><surname>Funke</surname><given-names>R</given-names></name>
+          <name><surname>Gage</surname><given-names>D</given-names></name>
+          <name><surname>Harris</surname><given-names>K</given-names></name>
+          <name><surname>Heaford</surname><given-names>A</given-names></name>
+          <name><surname>Howland</surname><given-names>J</given-names></name>
+          <name><surname>Kann</surname><given-names>L</given-names></name>
+          <name><surname>Lehoczky</surname><given-names>J</given-names></name>
+          <name><surname>LeVine</surname><given-names>R</given-names></name>
+          <name><surname>McEwan</surname><given-names>P</given-names></name>
+          <name><surname>McKernan</surname><given-names>K</given-names></name>
+          <name><surname>Meldrim</surname><given-names>J</given-names></name>
+          <name><surname>Mesirov</surname><given-names>J P</given-names></name>
+          <name><surname>Miranda</surname><given-names>C</given-names></name>
+          <name><surname>Morris</surname><given-names>W</given-names></name>
+          <name><surname>Naylor</surname><given-names>J</given-names></name>
+          <name><surname>Raymond</surname><given-names>C</given-names></name>
+          <name><surname>Rosetti</surname><given-names>M</given-names></name>
+          <name><surname>Santos</surname><given-names>R</given-names></name>
+          <name><surname>Sheridan</surname><given-names>A</given-names></name>
+          <name><surname>Sougnez</surname><given-names>C</given-names></name>
+          <name><surname>Stange-Thomann</surname><given-names>Y</given-names></name>
+          <name><surname>Stojanovic</surname><given-names>N</given-names></name>
+          <name><surname>Subramanian</surname><given-names>A</given-names></name>
+          <name><surname>Wyman</surname><given-names>D</given-names></name>
+          <name><surname>Rogers</surname><given-names>J</given-names></name>
+          <name><surname>Sulston</surname><given-names>J</given-names></name>
+          <name><surname>Ainscough</surname><given-names>R</given-names></name>
+          <name><surname>Beck</surname><given-names>S</given-names></name>
+          <name><surname>Bentley</surname><given-names>D</given-names></name>
+          <name><surname>Burton</surname><given-names>J</given-names></name>
+          <name><surname>Clee</surname><given-names>C</given-names></name>
+          <name><surname>Carter</surname><given-names>N</given-names></name>
+          <name><surname>Coulson</surname><given-names>A</given-names></name>
+          <name><surname>Deadman</surname><given-names>R</given-names></name>
+          <name><surname>Deloukas</surname><given-names>P</given-names></name>
+          <name><surname>Dunham</surname><given-names>A</given-names></name>
+          <name><surname>Dunham</surname><given-names>I</given-names></name>
+          <name><surname>Durbin</surname><given-names>R</given-names></name>
+          <name><surname>French</surname><given-names>L</given-names></name>
+          <name><surname>Grafham</surname><given-names>D</given-names></name>
+          <name><surname>Gregory</surname><given-names>S</given-names></name>
+          <name><surname>Hubbard</surname><given-names>T</given-names></name>
+          <name><surname>Humphray</surname><given-names>S</given-names></name>
+          <name><surname>Hunt</surname><given-names>A</given-names></name>
+          <name><surname>Jones</surname><given-names>M</given-names></name>
+          <name><surname>Lloyd</surname><given-names>C</given-names></name>
+          <name><surname>McMurray</surname><given-names>A</given-names></name>
+          <name><surname>Matthews</surname><given-names>L</given-names></name>
+          <name><surname>Mercer</surname><given-names>S</given-names></name>
+          <name><surname>Milne</surname><given-names>S</given-names></name>
+          <name><surname>Mullikin</surname><given-names>J C</given-names></name>
+          <name><surname>Mungall</surname><given-names>A</given-names></name>
+          <name><surname>Plumb</surname><given-names>R</given-names></name>
+          <name><surname>Ross</surname><given-names>M</given-names></name>
+          <name><surname>Shownkeen</surname><given-names>R</given-names></name>
+          <name><surname>Sims</surname><given-names>S</given-names></name>
+          <name><surname>Waterston</surname><given-names>R H</given-names></name>
+          <name><surname>Wilson</surname><given-names>R K</given-names></name>
+          <name><surname>Hillier</surname><given-names>L W</given-names></name>
+          <name><surname>McPherson</surname><given-names>J D</given-names></name>
+          <name><surname>Marra</surname><given-names>M A</given-names></name>
+          <name><surname>Mardis</surname><given-names>E R</given-names></name>
+          <name><surname>Fulton</surname><given-names>L A</given-names></name>
+          <name><surname>Chinwalla</surname><given-names>A T</given-names></name>
+          <name><surname>Pepin</surname><given-names>K H</given-names></name>
+          <name><surname>Gish</surname><given-names>W R</given-names></name>
+          <name><surname>Chissoe</surname><given-names>S L</given-names></name>
+          <name><surname>Wendl</surname><given-names>M C</given-names></name>
+          <name><surname>Delehaunty</surname><given-names>K D</given-names></name>
+          <name><surname>Miner</surname><given-names>T L</given-names></name>
+          <name><surname>Delehaunty</surname><given-names>A</given-names></name>
+          <name><surname>Kramer</surname><given-names>J B</given-names></name>
+          <name><surname>Cook</surname><given-names>L L</given-names></name>
+          <name><surname>Fulton</surname><given-names>R S</given-names></name>
+          <name><surname>Johnson</surname><given-names>D L</given-names></name>
+          <name><surname>Minx</surname><given-names>P J</given-names></name>
+          <name><surname>Clifton</surname><given-names>S W</given-names></name>
+          <name><surname>Hawkins</surname><given-names>T</given-names></name>
+          <name><surname>Branscomb</surname><given-names>E</given-names></name>
+          <name><surname>Predki</surname><given-names>P</given-names></name>
+          <name><surname>Richardson</surname><given-names>P</given-names></name>
+          <name><surname>Wenning</surname><given-names>S</given-names></name>
+          <name><surname>Slezak</surname><given-names>T</given-names></name>
+          <name><surname>Doggett</surname><given-names>N</given-names></name>
+          <name><surname>Cheng</surname><given-names>J F</given-names></name>
+          <name><surname>Olsen</surname><given-names>A</given-names></name>
+          <name><surname>Lucas</surname><given-names>S</given-names></name>
+          <name><surname>Elkin</surname><given-names>C</given-names></name>
+          <name><surname>Uberbacher</surname><given-names>E</given-names></name>
+          <name><surname>Frazier</surname><given-names>M</given-names></name>
+          <name><surname>Gibbs</surname><given-names>R A</given-names></name>
+          <name><surname>Muzny</surname><given-names>D M</given-names></name>
+          <name><surname>Scherer</surname><given-names>S E</given-names></name>
+          <name><surname>Bouck</surname><given-names>J B</given-names></name>
+          <name><surname>Sodergren</surname><given-names>E J</given-names></name>
+          <name><surname>Worley</surname><given-names>K C</given-names></name>
+          <name><surname>Rives</surname><given-names>C M</given-names></name>
+          <name><surname>Gorrell</surname><given-names>J H</given-names></name>
+          <name><surname>Metzker</surname><given-names>M L</given-names></name>
+          <name><surname>Naylor</surname><given-names>S L</given-names></name>
+          <name><surname>Kucherlapati</surname><given-names>R S</given-names></name>
+          <name><surname>Nelson</surname><given-names>D L</given-names></name>
+          <name><surname>Weinstock</surname><given-names>G M</given-names></name>
+          <name><surname>Sakaki</surname><given-names>Y</given-names></name>
+          <name><surname>Fujiyama</surname><given-names>A</given-names></name>
+          <name><surname>Hattori</surname><given-names>M</given-names></name>
+          <name><surname>Yada</surname><given-names>T</given-names></name>
+          <name><surname>Toyoda</surname><given-names>A</given-names></name>
+          <name><surname>Itoh</surname><given-names>T</given-names></name>
+          <name><surname>Kawagoe</surname><given-names>C</given-names></name>
+          <name><surname>Watanabe</surname><given-names>H</given-names></name>
+          <name><surname>Totoki</surname><given-names>Y</given-names></name>
+          <name><surname>Taylor</surname><given-names>T</given-names></name>
+          <name><surname>Weissenbach</surname><given-names>J</given-names></name>
+          <name><surname>Heilig</surname><given-names>R</given-names></name>
+          <name><surname>Saurin</surname><given-names>W</given-names></name>
+          <name><surname>Artiguenave</surname><given-names>F</given-names></name>
+          <name><surname>Brottier</surname><given-names>P</given-names></name>
+          <name><surname>Bruls</surname><given-names>T</given-names></name>
+          <name><surname>Pelletier</surname><given-names>E</given-names></name>
+          <name><surname>Robert</surname><given-names>C</given-names></name>
+          <name><surname>Wincker</surname><given-names>P</given-names></name>
+          <name><surname>Smith</surname><given-names>D R</given-names></name>
+          <name><surname>Doucette-Stamm</surname><given-names>L</given-names></name>
+          <name><surname>Rubenfield</surname><given-names>M</given-names></name>
+          <name><surname>Weinstock</surname><given-names>K</given-names></name>
+          <name><surname>Lee</surname><given-names>H M</given-names></name>
+          <name><surname>Dubois</surname><given-names>J</given-names></name>
+          <name><surname>Rosenthal</surname><given-names>A</given-names></name>
+          <name><surname>Platzer</surname><given-names>M</given-names></name>
+          <name><surname>Nyakatura</surname><given-names>G</given-names></name>
+          <name><surname>Taudien</surname><given-names>S</given-names></name>
+          <name><surname>Rump</surname><given-names>A</given-names></name>
+          <name><surname>Yang</surname><given-names>H</given-names></name>
+          <name><surname>Yu</surname><given-names>J</given-names></name>
+          <name><surname>Wang</surname><given-names>J</given-names></name>
+          <name><surname>Huang</surname><given-names>G</given-names></name>
+          <name><surname>Gu</surname><given-names>J</given-names></name>
+          <name><surname>Hood</surname><given-names>L</given-names></name>
+          <name><surname>Rowen</surname><given-names>L</given-names></name>
+          <name><surname>Madan</surname><given-names>A</given-names></name>
+          <name><surname>Qin</surname><given-names>S</given-names></name>
+          <name><surname>Davis</surname><given-names>R W</given-names></name>
+          <name><surname>Federspiel</surname><given-names>N A</given-names></name>
+          <name><surname>Abola</surname><given-names>A P</given-names></name>
+          <name><surname>Proctor</surname><given-names>M J</given-names></name>
+          <name><surname>Myers</surname><given-names>R M</given-names></name>
+          <name><surname>Schmutz</surname><given-names>J</given-names></name>
+          <name><surname>Dickson</surname><given-names>M</given-names></name>
+          <name><surname>Grimwood</surname><given-names>J</given-names></name>
+          <name><surname>Cox</surname><given-names>D R</given-names></name>
+          <name><surname>Olson</surname><given-names>M V</given-names></name>
+          <name><surname>Kaul</surname><given-names>R</given-names></name>
+          <name><surname>Raymond</surname><given-names>C</given-names></name>
+          <name><surname>Shimizu</surname><given-names>N</given-names></name>
+          <name><surname>Kawasaki</surname><given-names>K</given-names></name>
+          <name><surname>Minoshima</surname><given-names>S</given-names></name>
+          <name><surname>Evans</surname><given-names>G A</given-names></name>
+          <name><surname>Athanasiou</surname><given-names>M</given-names></name>
+          <name><surname>Schultz</surname><given-names>R</given-names></name>
+          <name><surname>Roe</surname><given-names>B A</given-names></name>
+          <name><surname>Chen</surname><given-names>F</given-names></name>
+          <name><surname>Pan</surname><given-names>H</given-names></name>
+          <name><surname>Ramser</surname><given-names>J</given-names></name>
+          <name><surname>Lehrach</surname><given-names>H</given-names></name>
+          <name><surname>Reinhardt</surname><given-names>R</given-names></name>
+          <name><surname>McCombie</surname><given-names>W R</given-names></name>
+          <name><surname>Bastide</surname><given-names>M de la</given-names></name>
+          <name><surname>Dedhia</surname><given-names>N</given-names></name>
+          <name><surname>Blöcker</surname><given-names>H</given-names></name>
+          <name><surname>Hornischer</surname><given-names>K</given-names></name>
+          <name><surname>Nordsiek</surname><given-names>G</given-names></name>
+          <name><surname>Agarwala</surname><given-names>R</given-names></name>
+          <name><surname>Aravind</surname><given-names>L</given-names></name>
+          <name><surname>Bailey</surname><given-names>J A</given-names></name>
+          <name><surname>Bateman</surname><given-names>A</given-names></name>
+          <name><surname>Batzoglou</surname><given-names>S</given-names></name>
+          <name><surname>Birney</surname><given-names>E</given-names></name>
+          <name><surname>Bork</surname><given-names>P</given-names></name>
+          <name><surname>Brown</surname><given-names>D G</given-names></name>
+          <name><surname>Burge</surname><given-names>C B</given-names></name>
+          <name><surname>Cerutti</surname><given-names>L</given-names></name>
+          <name><surname>Chen</surname><given-names>H C</given-names></name>
+          <name><surname>Church</surname><given-names>D</given-names></name>
+          <name><surname>Clamp</surname><given-names>M</given-names></name>
+          <name><surname>Copley</surname><given-names>R R</given-names></name>
+          <name><surname>Doerks</surname><given-names>T</given-names></name>
+          <name><surname>Eddy</surname><given-names>S R</given-names></name>
+          <name><surname>Eichler</surname><given-names>E E</given-names></name>
+          <name><surname>Furey</surname><given-names>T S</given-names></name>
+          <name><surname>Galagan</surname><given-names>J</given-names></name>
+          <name><surname>Gilbert</surname><given-names>J G</given-names></name>
+          <name><surname>Harmon</surname><given-names>C</given-names></name>
+          <name><surname>Hayashizaki</surname><given-names>Y</given-names></name>
+          <name><surname>Haussler</surname><given-names>D</given-names></name>
+          <name><surname>Hermjakob</surname><given-names>H</given-names></name>
+          <name><surname>Hokamp</surname><given-names>K</given-names></name>
+          <name><surname>Jang</surname><given-names>W</given-names></name>
+          <name><surname>Johnson</surname><given-names>L S</given-names></name>
+          <name><surname>Jones</surname><given-names>T A</given-names></name>
+          <name><surname>Kasif</surname><given-names>S</given-names></name>
+          <name><surname>Kaspryzk</surname><given-names>A</given-names></name>
+          <name><surname>Kennedy</surname><given-names>S</given-names></name>
+          <name><surname>Kent</surname><given-names>W J</given-names></name>
+          <name><surname>Kitts</surname><given-names>P</given-names></name>
+          <name><surname>Koonin</surname><given-names>E V</given-names></name>
+          <name><surname>Korf</surname><given-names>I</given-names></name>
+          <name><surname>Kulp</surname><given-names>D</given-names></name>
+          <name><surname>Lancet</surname><given-names>D</given-names></name>
+          <name><surname>Lowe</surname><given-names>T M</given-names></name>
+          <name><surname>McLysaght</surname><given-names>A</given-names></name>
+          <name><surname>Mikkelsen</surname><given-names>T</given-names></name>
+          <name><surname>Moran</surname><given-names>J V</given-names></name>
+          <name><surname>Mulder</surname><given-names>N</given-names></name>
+          <name><surname>Pollara</surname><given-names>V J</given-names></name>
+          <name><surname>Ponting</surname><given-names>C P</given-names></name>
+          <name><surname>Schuler</surname><given-names>G</given-names></name>
+          <name><surname>Schultz</surname><given-names>J</given-names></name>
+          <name><surname>Slater</surname><given-names>G</given-names></name>
+          <name><surname>Smit</surname><given-names>A F</given-names></name>
+          <name><surname>Stupka</surname><given-names>E</given-names></name>
+          <name><surname>Szustakowki</surname><given-names>J</given-names></name>
+          <name><surname>Thierry-Mieg</surname><given-names>D</given-names></name>
+          <name><surname>Thierry-Mieg</surname><given-names>J</given-names></name>
+          <name><surname>Wagner</surname><given-names>L</given-names></name>
+          <name><surname>Wallis</surname><given-names>J</given-names></name>
+          <name><surname>Wheeler</surname><given-names>R</given-names></name>
+          <name><surname>Williams</surname><given-names>A</given-names></name>
+          <name><surname>Wolf</surname><given-names>Y I</given-names></name>
+          <name><surname>Wolfe</surname><given-names>K H</given-names></name>
+          <name><surname>Yang</surname><given-names>S P</given-names></name>
+          <name><surname>Yeh</surname><given-names>R F</given-names></name>
+          <name><surname>Collins</surname><given-names>F</given-names></name>
+          <name><surname>Guyer</surname><given-names>M S</given-names></name>
+          <name><surname>Peterson</surname><given-names>J</given-names></name>
+          <name><surname>Felsenfeld</surname><given-names>A</given-names></name>
+          <name><surname>Wetterstrand</surname><given-names>K A</given-names></name>
+          <name><surname>Patrinos</surname><given-names>A</given-names></name>
+          <name><surname>Morgan</surname><given-names>M J</given-names></name>
+          <name><surname>Jong</surname><given-names>P de</given-names></name>
+          <name><surname>Catanese</surname><given-names>J J</given-names></name>
+          <name><surname>Osoegawa</surname><given-names>K</given-names></name>
+          <name><surname>Shizuya</surname><given-names>H</given-names></name>
+          <name><surname>Choi</surname><given-names>S</given-names></name>
+          <name><surname>Chen</surname><given-names>Y J</given-names></name>
+          <name><surname>Szustakowki</surname><given-names>J</given-names></name>
+          <string-name>International Human Genome Sequencing Consortium</string-name>
+        </person-group>
+        <article-title>Initial sequencing and analysis of the human genome</article-title>
+        <source>Nature</source>
+        <year iso-8601-date="2001-02">2001</year><month>02</month>
+        <volume>409</volume>
+        <issue>6822</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-basecallQC">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Carroll</surname><given-names>Thomas</given-names></name>
+          <name><surname>Dore</surname><given-names>Marian</given-names></name>
+        </person-group>
+        <source>basecallQC: Working with illumina basecalling and demultiplexing input and output files</source>
+        <year iso-8601-date="2017">2017</year>
+        <pub-id pub-id-type="doi">10.18129/B9.bioc.basecallQC</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-R">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>R Core Team</string-name>
+        </person-group>
+        <source>R: A language and environment for statistical computing</source>
+        <publisher-name>R Foundation for Statistical Computing</publisher-name>
+        <publisher-loc>Vienna, Austria</publisher-loc>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://www.R-project.org/</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

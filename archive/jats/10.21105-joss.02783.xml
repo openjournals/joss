@@ -1,0 +1,569 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2783</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02783</article-id>
+<title-group>
+<article-title>SLAM Toolbox: SLAM for the dynamic world</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-1090-7733</contrib-id>
+<string-name>Steve Macenski</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Ivona Jambrecic</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Open-Source Robotics Engineering Lead, Samsung
+Research</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Software Engineering Intern, Simbe Robotics</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-07-31">
+<day>31</day>
+<month>7</month>
+<year>2020</year>
+</pub-date>
+<volume>6</volume>
+<issue>61</issue>
+<fpage>2783</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>ROS</kwd>
+<kwd>ROS2</kwd>
+<kwd>robotics</kwd>
+<kwd>SLAM</kwd>
+<kwd>Lidar</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Developments in the field of mobile robotics and autonomous driving
+  have resulted in the use of robots and vehicles in retail stores,
+  hospitals, warehouses, on the roads, and on sidewalks. These deployed
+  areas are both dynamic and frequently massive in scale. The average
+  size of a Walmart store is over 16,000 <inline-formula><alternatives>
+  <tex-math><![CDATA[m^{2}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>m</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:math></alternatives></inline-formula>
+  (<xref alt="​Walmart, 2020" rid="ref-walmart" ref-type="bibr">​Walmart,
+  2020</xref>) and a single square block in Chicago is over 21,000
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[m^{2}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>m</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:math></alternatives></inline-formula>
+  (<xref alt="Heramb, 2007" rid="ref-chicago" ref-type="bibr">Heramb,
+  2007</xref>). Retail and warehouse spaces can change drastically
+  throughout the year and the state of roadways can be changing by the
+  hour. Much work has been made to address changing environments in
+  robot perception
+  (<xref alt="Macenski, Tsai, et al., 2020" rid="ref-stvl" ref-type="bibr">Macenski,
+  Tsai, et al., 2020</xref>), but less has been built in open-source to
+  represent maps of dynamic spaces.</p>
+  <p>For fully autonomous deployed systems to operate in these large and
+  changing environments, they require tools that can be used to
+  accurately map an area specified for their operation, update it over
+  time, and scale to handle mapping of some of the largest indoor and
+  outdoor spaces imaginable. The field of Simultaneous Localization and
+  Mapping (SLAM) aims to solve this problem using a variety of sensor
+  modalities, including: laser scanners, radars, cameras, encoders, gps
+  and IMUs. The most commonly used perception sensor used for
+  localization and mapping in industrial environments is the laser
+  scanner
+  (<xref alt="Chong et al., 2015" rid="ref-sensors" ref-type="bibr">Chong
+  et al., 2015</xref>). SLAM methods using laser scanners are generally
+  considered the most robust in the SLAM field and can provide accurate
+  positioning in the presence of dynamic obstacles and changing
+  environments
+  (<xref alt="Cole &amp; Newman, 2006" rid="ref-lidarslam" ref-type="bibr">Cole
+  &amp; Newman, 2006</xref>).</p>
+  <p>Previously existing open-source laser scanner SLAM algorithms
+  available to users in the popular Robot Operating System (ROS) include
+  GMapping, Karto, Cartographer, and Hector. However, few of these can
+  build accurate maps of large spaces on the scale of the average
+  Walmart store. Even fewer can do so in real-time using the mobile
+  processor typically found in mobile robot systems today. The only
+  package that could accomplish the above was Cartographer. However, it
+  was abandoned by Google and it is no longer maintained.</p>
+  <p>We propose a new fully open-source ROS package, SLAM Toolbox, to
+  solve this problem. SLAM Toolbox builds on the legacy of Open Karto
+  (<xref alt="Konolige et al., 2010" rid="ref-karto" ref-type="bibr">Konolige
+  et al., 2010</xref>), the open-source library from SRI International,
+  providing not only accurate mapping algorithms, but a variety of other
+  tools and improvements. SLAM Toolbox provides multiple modes of
+  mapping depending on need, synchronous and asynchronous, utilities
+  such as kinematic map merging, a localization mode, multi-session
+  mapping, improved graph optimization, substantially reduced compute
+  time, and prototype lifelong and distributed mapping applications.</p>
+  <p>This package, <monospace>slam_toolbox</monospace> is open-source
+  under an LGPLv2.1 at https://github.com/SteveMacenski/slam_toolbox.git
+  and is available in every current ROS distribution. It was also
+  selected as the new default SLAM vendor in ROS 2, the second
+  generation of robot operating systems, replacing GMapping. SLAM
+  Toolbox was integrated into the new ROS 2 Navigation2 project,
+  providing real-time positioning in dynamic environments for autonomous
+  navigation
+  (<xref alt="Macenski, Martín, et al., 2020" rid="ref-macenski2020marathon2" ref-type="bibr">Macenski,
+  Martín, et al., 2020</xref>). It has been shown to map spaces as large
+  as 24,000 <inline-formula><alternatives>
+  <tex-math><![CDATA[m^{2}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>m</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:math></alternatives></inline-formula>,
+  or 250,000 <inline-formula><alternatives>
+  <tex-math><![CDATA[ft^{2}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:msup><mml:mi>t</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>,
+  in real-time by non-expert technicians. An example map can be seen in
+  <xref alt="Figure 1" rid="figU003Astore_map">Figure 1</xref>.</p>
+  <fig>
+    <caption><p>Retail store map created using SLAM Toolbox
+    (<xref alt="Macenski, 2019" rid="ref-roscon" ref-type="bibr">Macenski,
+    2019</xref>).
+    <styled-content id="figU003Astore_map"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="store_map.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>This software package provides an approach for multi-session
+  mapping and localization. It also utilizes modern graph-optimization
+  techniques and provides first of its kind pose-graph manipulation
+  tools and demo applications. Below we discuss related work and how
+  <monospace>slam_toolbox</monospace> is meeting a currently unmet need
+  in the community.</p>
+  <sec id="related-work">
+    <title>Related Work</title>
+    <p>SLAM algorithms can be classified into two groups: the earlier
+    algorithms that use the Bayes-based filter approaches
+    (<xref alt="Thrun et al., 2005" rid="ref-thrun2005probabilistic" ref-type="bibr">Thrun
+    et al., 2005</xref>), and newer graph-based methods
+    (<xref alt="Thrun &amp; Montemerlo, 2006" rid="ref-graphslam" ref-type="bibr">Thrun
+    &amp; Montemerlo, 2006</xref>). Significant filter-based
+    implementations available as ROS packages are GMapping
+    (<xref alt="Grisetti et al., 2007" rid="ref-gmapping" ref-type="bibr">Grisetti
+    et al., 2007</xref>) and HectorSLAM
+    (<xref alt="Kohlbrecher et al., 2011" rid="ref-hector" ref-type="bibr">Kohlbrecher
+    et al., 2011</xref>). Cartographer
+    (<xref alt="Hess et al., 2016" rid="ref-cartographer" ref-type="bibr">Hess
+    et al., 2016</xref>) and KartoSLAM
+    (<xref alt="Konolige et al., 2010" rid="ref-karto" ref-type="bibr">Konolige
+    et al., 2010</xref>) are the major graph-based implementations
+    available.</p>
+    <p>GMapping is one of the most commonly used SLAM libraries,
+    presented in 2007. It uses a particle filter approach to SLAM for
+    the purpose of building grid maps from 2D lidar data. However,
+    GMapping is not well suited for large spaces and fails to accurately
+    close loops at an industrial scale. Additionally, filter-based
+    approaches cannot be easily reinitialized across multiple
+    sessions.</p>
+    <p>HectorSLAM relies on lidar scan matching and 3D navigation filter
+    based on EKF state estimation. This method focuses on real-time
+    robot pose estimation and generates 2D map with high update rate.
+    Unlike other mentioned methods, Hector does not use odometry data,
+    which can cause inaccurate pose and map updates when lidar scans
+    arrive at a lower rate, or when mapping large or featureless spaces.
+    HectorSLAM however does not provide loop closure capabilities,
+    making it unsuitable for reliable mapping of large spaces or when
+    using laser scanners with low update rates.</p>
+    <p>KartoSLAM and Cartographer are both graph-based algorithms that
+    store a graph of robot poses and features. Graph-based algorithms
+    have to maintain only the pose-graph, which usually makes it
+    efficient in handling resources, especially while building maps of a
+    large scale. KartoSLAM uses Sparse Bundle Adjustment for
+    loop-closure graph optimization. Cartographer consists of front-end,
+    which is in charge of scan matching and building trajectory and
+    submaps, and back-end that does the loop closure procedure. The
+    graph solver used in Cartographer is Google Ceres
+    (<xref alt="Agarwal et al., n.d." rid="ref-ceres-solver" ref-type="bibr">Agarwal
+    et al., n.d.</xref>). Cartographer provides pure localization mode,
+    when user has a satisfactory map for usage. It also provides data
+    serialization for storing processed submaps only. However,
+    Cartographer has stopped maintenance and support from Google and has
+    been largely abandoned. Further, it fails to build suitable maps for
+    annotation and localization with other localization software
+    packages on robotic platforms without exceptional odometry. The
+    software’s unusual complexity makes it challenging to modify or
+    resolve seemingly simple issues, making it not suitable for many
+    applications.</p>
+  </sec>
+</sec>
+<sec id="features">
+  <title>Features</title>
+  <p>SLAM Toolbox is able to map spaces effectively using mobile Intel
+  CPUs commonly found on robots well in excess of 100,000
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[ft^{2}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:msup><mml:mi>t</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>.
+  It can be done easily using untrained technicans typically hired to
+  deploy robot solutions or remotely using monitoring systems. Some
+  applications have been created to automatically map a space using SLAM
+  Toolbox as well as paired with exploration planners.</p>
+  <p>It can also serialize a current mapping session and deserialize it
+  at a later time to continue refining or expanding an existing map.
+  This serialization saves the complete raw data and pose-graph rather
+  than submaps, as in Cartographer, allowing a variety of novel tools to
+  be developed and more accurate multi-session mapping. These utilities
+  include manual pose-graph manipulation, whereas a user can manually
+  manipulate the pose-graph nodes and data to rotate a map or assist in
+  a challenging loop closure, shown in
+  <xref alt="Figure 2" rid="figU003Autils">Figure 2</xref>. It also
+  includes kinematic map merging, the process of merging multiple
+  serialized maps into a composite map. A 3D visualizer plugin was also
+  created to assist in utilization of these tools and the core SLAM
+  library capabilities. Many additional tools and utilities could be
+  developed using this representation as well.</p>
+  <fig>
+    <caption><p>Pose-graph manipulation in progress to manually match a
+    node’s laser scan to the map
+    (<xref alt="Macenski, 2019" rid="ref-roscon" ref-type="bibr">Macenski,
+    2019</xref>).
+    <styled-content id="figU003Autils"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="utils.png" xlink:title="" />
+  </fig>
+  <p>It provides 3 major operation modes and executables: synchronous
+  mapping, asynchronous mapping, and pure localization. Synchronous
+  mapping provides the ability to map and localize in a space keeping a
+  buffer of measurements to add to the SLAM problem. This can be
+  advantageous when the quality of the map is of particular importance
+  or when doing offline processing. By contrast, the asynchronous mode
+  will only process new measurements when the last measurement is
+  completed and the new update criteria are met. As a result, this will
+  never lag behind real-time when running complex loop closures.
+  However, the map may not include all valid measurements if processing
+  the last one takes too long. This mode is advantageous when the
+  quality of real-time localization is of particular importance. Both of
+  these modes can be used for multi-session SLAM, the process of
+  reloading a prior session and continuing to refine the pose-graph.
+  <xref alt="Figure 3" rid="figU003Acircuit">Figure 3</xref> shows a map
+  of a large office building created by partially mapping in one session
+  and completing the map in another session. This map has multiple loop
+  closures between the two datasets and was later used with the
+  pure-localization mode to navigate autonomously.</p>
+  <p>The pure localization mode cannot be used to persist changes in the
+  environment. Instead, it uses a rolling buffer of measurements in the
+  current session and matches them against the original session(s)
+  measurements and pose-graph. The current session’s measurements will
+  be added to the pose-graph with new constraints and nodes in the
+  graph. This allows changes in the environment to be embraced to
+  increase localization quality based on new features or moved objects.
+  Over time, the measurements in the rolling buffer will “expire” and be
+  removed from the pose-graph and localization problem, reverting the
+  pose-graph to its original state for that region. The authors refer to
+  this process as elastic pose-graph deformation. An interesting side
+  effect is that the pure-localization mode can be used for effective
+  lidar odometry when paired with no prior mapping session data. It will
+  simply match against its local buffer and keep only a recent view of
+  the environment, allowing lidar odometry to scale to infinite sized
+  spaces.</p>
+  <fig>
+    <caption><p>Large office building map created using multiple SLAM
+    sessions
+    (<xref alt="Macenski, 2019" rid="ref-roscon" ref-type="bibr">Macenski,
+    2019</xref>).
+    <styled-content id="figU003Acircuit"></styled-content></p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="circuit_launch.png" xlink:title="" />
+  </fig>
+  <p>Finally, many updates were made to the OpenKarto SLAM libary. The
+  measurement matching methods were restructured for a 10x speed-up
+  enabling multi-threaded processing. The provided Sparse Bundle
+  Adjustment optimization interface was replaced with Google Ceres,
+  providing faster and more flexible optimization settings.
+  Additionally, the optimizer interface was turned into a run-time
+  dynamically loaded plugin interface to allow future developers to use
+  the latest and greatest in optimization technologies without modifying
+  the original code. Serialization and deserializion support was enabled
+  to allow for saving and reloading mapping sessions. Finally, new
+  processing modes and K-D tree search were developed to process
+  measurements to enable localization and multi-session mapping. Various
+  smaller improvements and optimizations were also made but excluded for
+  brevity.</p>
+</sec>
+<sec id="robots-using-slam_toolbox">
+  <title>Robots Using <monospace>slam_toolbox</monospace></title>
+  <p>SLAM Toolbox has been integrated, tested, and deployed on a number
+  of robot platforms across the world by both industry and researchers.
+  It is also the default SLAM vendor for ROS 2.</p>
+  <p>A few known examples where SLAM Toolbox has been used or is being
+  used are:</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Simbe Robotics’ Tally</p>
+    </list-item>
+    <list-item>
+      <p>ROBOTIS’ Turtlebot3</p>
+    </list-item>
+    <list-item>
+      <p>Samsung Research America and Russia’s research teams</p>
+    </list-item>
+    <list-item>
+      <p>Rover Robotics’ Rover</p>
+    </list-item>
+    <list-item>
+      <p>Pal Robotics ARI</p>
+    </list-item>
+    <list-item>
+      <p>Intel’s Open Source Group</p>
+    </list-item>
+    <list-item>
+      <p>Queensland University of Technology researchers</p>
+    </list-item>
+    <list-item>
+      <p>Robosynthesis’ EXTRM SC2.0</p>
+    </list-item>
+    <list-item>
+      <p>Unbounded Robotics UBR-1</p>
+    </list-item>
+    <list-item>
+      <p>Byte Robotics’ Platform</p>
+    </list-item>
+    <list-item>
+      <p>Unmanned Life’s Platform</p>
+    </list-item>
+    <list-item>
+      <p>MT Robot AG</p>
+    </list-item>
+    <list-item>
+      <p>Magazino robot datasets</p>
+    </list-item>
+    <list-item>
+      <p>6 River Systems</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We acknowledge this work was largely developed at Simbe Robotics
+  and later continued open-source support and development at Samsung
+  Research.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-walmart">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>​Walmart</string-name>
+        </person-group>
+        <article-title>Walmart u.s. Our business</article-title>
+        <publisher-name>​Walmart</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-chicago">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Heramb</surname><given-names>C.</given-names></name>
+        </person-group>
+        <article-title>Street and site plan design standards</article-title>
+        <publisher-name>City of Chicago</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-stvl">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Macenski</surname><given-names>S.</given-names></name>
+          <name><surname>Tsai</surname><given-names>D.</given-names></name>
+          <name><surname>Feinberg</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>Spatio-temporal voxel layer: A view on robot perception for the dynamic world</article-title>
+        <source>International Journal of Advanced Robotic Systems</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>17</volume>
+        <issue>2</issue>
+        <uri>https://doi.org/10.1177/1729881420910530</uri>
+        <pub-id pub-id-type="doi">10.1177/1729881420910530</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-sensors">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Chong</surname><given-names>T. J.</given-names></name>
+          <name><surname>Tang</surname><given-names>X. J.</given-names></name>
+          <name><surname>Leng</surname><given-names>C. H.</given-names></name>
+          <name><surname>Yogeswaran</surname><given-names>Mohan</given-names></name>
+          <name><surname>Ng</surname><given-names>O. E.</given-names></name>
+          <name><surname>Yu Zheng</surname><given-names>CHONG</given-names></name>
+        </person-group>
+        <article-title>Sensor technologies and simultaneous localization and mapping (SLAM)</article-title>
+        <source>Procedia Computer Science</source>
+        <year iso-8601-date="2015-12">2015</year><month>12</month>
+        <volume>76</volume>
+        <pub-id pub-id-type="doi">10.1016/j.procs.2015.12.336</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-karto">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Konolige</surname><given-names>K.</given-names></name>
+          <name><surname>Grisetti</surname><given-names>G.</given-names></name>
+          <name><surname>Kümmerle</surname><given-names>R.</given-names></name>
+          <name><surname>Burgard</surname><given-names>W.</given-names></name>
+          <name><surname>Limketkai</surname><given-names>B.</given-names></name>
+          <name><surname>Vincent</surname><given-names>R.</given-names></name>
+        </person-group>
+        <article-title>Efficient sparse pose adjustment for 2D mapping</article-title>
+        <source>Proceedings of the IEEE/RSJ International Conference on Intelligent Robots and Systems. IEEE/RSJ International Conference on Intelligent Robots and Systems</source>
+        <year iso-8601-date="2010-10">2010</year><month>10</month>
+        <pub-id pub-id-type="doi">10.1109/IROS.2010.5649043</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ceres-solver">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Agarwal</surname><given-names>S.</given-names></name>
+          <name><surname>Mierle</surname><given-names>K.</given-names></name>
+          <name><surname>Others</surname></name>
+        </person-group>
+        <article-title>Ceres solver</article-title>
+        <uri>http://ceres-solver.org</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-macenski2020marathon2">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Macenski</surname><given-names>S.</given-names></name>
+          <name><surname>Martín</surname><given-names>F.</given-names></name>
+          <name><surname>White</surname><given-names>R.</given-names></name>
+          <name><surname>Ginés Clavero</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>The marathon 2: A navigation system</article-title>
+        <source>2020 IEEE/RSJ international conference on intelligent robots and systems (IROS)</source>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://github.com/ros-planning/navigation2</uri>
+        <pub-id pub-id-type="doi">10.1109/iros45743.2020.9341207</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-roscon">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Macenski</surname><given-names>S.</given-names></name>
+        </person-group>
+        <article-title>On use of SLAM toolbox</article-title>
+        <source>ROSCon</source>
+        <year iso-8601-date="2019">2019</year>
+        <pub-id pub-id-type="doi">10.36288/roscon2019-900903</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-cartographer">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Hess </surname><given-names>W.</given-names></name>
+          <name><surname>Kohler</surname><given-names>D.</given-names></name>
+          <name><surname>Rapp</surname><given-names>H.</given-names></name>
+          <name><surname>Andor</surname><given-names>D.</given-names></name>
+        </person-group>
+        <article-title>Real-time loop closure in 2D LIDAR SLAM</article-title>
+        <source>2016 IEEE international conference on robotics and automation (ICRA)</source>
+        <year iso-8601-date="2016">2016</year>
+        <pub-id pub-id-type="doi">10.1109/icra.2016.7487258</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-thrun2005probabilistic">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Thrun</surname><given-names>S.</given-names></name>
+          <name><surname>Burgard</surname><given-names>W.</given-names></name>
+          <name><surname>Fox</surname><given-names>D.</given-names></name>
+        </person-group>
+        <source>Probabilistic robotics</source>
+        <publisher-name>MIT Press</publisher-name>
+        <year iso-8601-date="2005">2005</year>
+        <isbn>0262201623 9780262201629</isbn>
+        <uri>http://www.amazon.de/gp/product/0262201623/102-8479661-9831324?v=glance&amp;n=283155&amp;n=507846&amp;s=books&amp;v=glance</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-graphslam">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Thrun</surname><given-names>S.</given-names></name>
+          <name><surname>Montemerlo</surname><given-names>M.</given-names></name>
+        </person-group>
+        <article-title>The graph SLAM algorithm with applications to large-scale mapping of urban structures</article-title>
+        <source>I. J. Robotic Res.</source>
+        <year iso-8601-date="2006-05">2006</year><month>05</month>
+        <volume>25</volume>
+        <pub-id pub-id-type="doi">10.1177/0278364906065387</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-lidarslam">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Cole</surname><given-names>D. M.</given-names></name>
+          <name><surname>Newman</surname><given-names>P. M.</given-names></name>
+        </person-group>
+        <article-title>Using laser range data for 3D SLAM in outdoor environments</article-title>
+        <source>Proceedings - IEEE International Conference on Robotics and Automation</source>
+        <year iso-8601-date="2006-06">2006</year><month>06</month>
+        <volume>2006</volume>
+        <pub-id pub-id-type="doi">10.1109/ROBOT.2006.1641929</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-gmapping">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Grisetti</surname><given-names>G.</given-names></name>
+          <name><surname>Stachniss</surname><given-names>C.</given-names></name>
+          <name><surname>Burgard</surname><given-names>W.</given-names></name>
+        </person-group>
+        <article-title>Improved techniques for grid mapping with rao-blackwellized particle filters</article-title>
+        <source>IEEE Transactions on Robotics</source>
+        <year iso-8601-date="2007">2007</year>
+        <volume>23</volume>
+        <issue>1</issue>
+        <uri>http://www.ros.org/wiki/gmapping</uri>
+        <pub-id pub-id-type="doi">10.1109/tro.2006.889486</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hector">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Kohlbrecher</surname><given-names>S.</given-names></name>
+          <name><surname>von Stryk</surname><given-names>O.</given-names></name>
+          <name><surname>Meyer</surname><given-names>J.</given-names></name>
+          <name><surname>Klingauf</surname><given-names>U.</given-names></name>
+        </person-group>
+        <article-title>A flexible and scalable SLAM system with full 3D motion estimation</article-title>
+        <source>2011 IEEE international symposium on safety, security, and rescue robotics</source>
+        <year iso-8601-date="2011">2011</year>
+        <uri>http://www.ros.org/wiki/hector_slam</uri>
+        <pub-id pub-id-type="doi">10.1109/ssrr.2011.6106777</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2978</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02978</article-id>
+<title-group>
+<article-title>Coral: a parallel spectral solver for fluid dynamics and
+partial differential equations</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-6283-0382</contrib-id>
+<string-name>Benjamin Miquel</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Université Paris-Saclay, CEA, CNRS, Service de Physique de
+l’Etat Condensé, 91191 Gif-sur-Yvette,France</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2021-01-07">
+<day>7</day>
+<month>1</month>
+<year>2021</year>
+</pub-date>
+<volume>6</volume>
+<issue>65</issue>
+<fpage>2978</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>fluid dynamics</kwd>
+<kwd>PDE</kwd>
+<kwd>fortran</kwd>
+<kwd>chebyshev</kwd>
+<kwd>plane layer</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>Coral</monospace> is a fast, flexible, and efficient
+  time-stepper for solving a large class of partial differential
+  equations, at the core of which are the Navier-Stokes equations that
+  govern fluid motions. Written in Fortran and employing the MPI
+  standard for parallelization, the scalability of
+  <monospace>Coral</monospace> allows the code to leverage the resources
+  of high-performance computing infrastructures (up to hundreds of
+  thousands of core, see Li &amp; Laizet
+  (<xref alt="2010" rid="ref-decomp2d" ref-type="bibr">2010</xref>)),
+  while running efficiently on laptops and workstations. Equations are
+  entered by the user in the form of a plain text file following a
+  simple and legible syntax. No coding proficiency in Fortran is
+  required. This flexibility makes <monospace>Coral</monospace> suitable
+  for both students and researchers with no coding experience.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Natural and industrial flows exist in numerous different flavours,
+  including homogeneous incompressible flows, shear flow, stably or
+  unstably stratified flows, rotating flows, and flows of an
+  electrically conducting fluid. These flows, however, have in common
+  that they can be modelled by sets of (quadratic) advection-diffusion
+  equations for the velocity, and possibly for the density, the
+  temperature, the salinity, the magnetic field, etc. Hard-coding the
+  sets of equations corresponding to each of these flow configurations
+  is complex, time-consuming, and error-prone. These difficulties impede
+  the development of new models. While <monospace>Coral</monospace> was
+  initially motivated by the study of <bold>Co</bold>nvection in
+  <bold>Ra</bold>pidly rotating <bold>L</bold>ayers, its scope has
+  broadened and now encompasses solving homogeneous quadratic partial
+  differential equations in a plane-layer geometry, i.e., a 3D domain
+  with periodic boundary conditions along the two horizontal directions
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[x]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[y]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>y</mml:mi></mml:math></alternatives></inline-formula>.
+  Internally, <monospace>Coral</monospace> expands the variables along
+  Fourier basis (horizontal directions) and Chebyshev polynomials
+  (vertical direction). Transforms from physical to spectral space and
+  domain decomposition are handled by the 2decomp&amp;fft library
+  (<xref alt="Li &amp; Laizet, 2010" rid="ref-decomp2d" ref-type="bibr">Li
+  &amp; Laizet, 2010</xref>). The quasi-inverse technique permits
+  employing an arbitrarily large numbers of Chebyshev polynomials,
+  resulting in the ability to resolve thin boundary layers
+  characteristic of turbulent flows without suffering from loss of
+  accuracy. Early versions of Coral have been used for studies
+  concerning the turbulent motion of convective flows in presence of
+  internal heat sources and sinks
+  (<xref alt="Miquel et al., 2019" rid="ref-miquelPRF19" ref-type="bibr">Miquel
+  et al., 2019</xref>,
+  <xref alt="2020" rid="ref-miquelJFM20" ref-type="bibr">2020</xref>).</p>
+</sec>
+<sec id="validation-and-examples">
+  <title>Validation and examples</title>
+  <p>Coral has been validated on a variety of test cases (gathered in
+  <monospace>etc/benchmarks</monospace>) found in the literature:
+  Rayleigh-Bénard convection
+  (<xref alt="Chandrasekhar, 1961" rid="ref-chandra" ref-type="bibr">Chandrasekhar,
+  1961</xref>), rotating convection
+  (<xref alt="Julien et al., 1996" rid="ref-julienJFM96" ref-type="bibr">Julien
+  et al., 1996</xref>), and convective dynamos
+  (<xref alt="Cooper et al., 2020" rid="ref-cooperPRF20" ref-type="bibr">Cooper
+  et al., 2020</xref>;
+  <xref alt="Stellmach &amp; Hansen, 2004" rid="ref-stellmachPRE04" ref-type="bibr">Stellmach
+  &amp; Hansen, 2004</xref>). Those accuracy benchmarks, bound to grow
+  in number, also constitute a library of examples for defining PDEs in
+  Coral.</p>
+</sec>
+<sec id="state-of-the-field">
+  <title>State of the field</title>
+  <p>Among the existing flexible spectral solvers for marching in time
+  PDEs in Cartesian geometries, alternatives to Coral include Dedalus
+  (<xref alt="Burns et al., 2020" rid="ref-dedalus" ref-type="bibr">Burns
+  et al., 2020</xref>), spectralDNS
+  (<xref alt="Mortensen, 2018" rid="ref-spectralDNS" ref-type="bibr">Mortensen,
+  2018</xref>), FluidDyn
+  (<xref alt="Augier et al., 2019" rid="ref-fluiddyn" ref-type="bibr">Augier
+  et al., 2019</xref>), and FluidSim
+  (<xref alt="Mohanan et al., 2019" rid="ref-fluidsim" ref-type="bibr">Mohanan
+  et al., 2019</xref>). For more complex geometries, options include
+  <monospace>nek5000</monospace>
+  (<xref alt="Fisher, n.d." rid="ref-nek5000" ref-type="bibr">Fisher,
+  n.d.</xref>), Nektar++
+  (<xref alt="Moxey et al., 2020" rid="ref-nektar" ref-type="bibr">Moxey
+  et al., 2020</xref>), Freefem++
+  (<xref alt="Hecht, 2012" rid="ref-freefem" ref-type="bibr">Hecht,
+  2012</xref>), and Fenics
+  (<xref alt="Alnæs et al., 2015" rid="ref-fenics" ref-type="bibr">Alnæs
+  et al., 2015</xref>).</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>The author warmly thanks Basile Gallet, Keith Julien, and Nick
+  Featherstone for discussions and encouragement during the genesis of
+  this project. This work was granted access to the HPC resources of
+  TGCC and CINES under the allocation 2020-A0082A10803 attributed by
+  GENCI (Grand Equipement National de Calcul Intensif). This work was
+  supported in part by the National Science Foundation under Grants
+  No. DMS-1317666, and No. NASA-NNX17AM01G.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-miquelJFM20">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Miquel</surname><given-names>B.</given-names></name>
+          <name><surname>Bouillaut</surname><given-names>V.</given-names></name>
+          <name><surname>Aumaître</surname><given-names>S.</given-names></name>
+          <name><surname>Gallet</surname><given-names>B.</given-names></name>
+        </person-group>
+        <article-title>On the role of the Prandtl number in convection driven by heat sources and sinks</article-title>
+        <source>J. Fluid Mech.</source>
+        <publisher-name>Cambridge University Press</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <volume>900</volume>
+        <pub-id pub-id-type="doi">10.1017/jfm.2020.485</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-miquelPRF19">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Miquel</surname><given-names>B.</given-names></name>
+          <name><surname>Lepot</surname><given-names>S.</given-names></name>
+          <name><surname>Bouillaut</surname><given-names>V.</given-names></name>
+          <name><surname>Gallet</surname><given-names>B.</given-names></name>
+        </person-group>
+        <article-title>Convection driven by internal heat sources and sinks: Heat transport beyond the mixing-length or ultimate scaling regime</article-title>
+        <source>Phys. Rev. Fluids</source>
+        <publisher-name>American Physical Society</publisher-name>
+        <year iso-8601-date="2019-12">2019</year><month>12</month>
+        <volume>4</volume>
+        <pub-id pub-id-type="doi">10.1103/physrevfluids.4.121501</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-decomp2d">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Li</surname><given-names>N.</given-names></name>
+          <name><surname>Laizet</surname><given-names>S</given-names></name>
+        </person-group>
+        <article-title>2DECOMP&amp;FFT – a highly scalable 2D decomposition library and FFT interface</article-title>
+        <source>Cray user group 2010 conference</source>
+        <publisher-name>Edinburgh</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <uri>http://www.2decomp.org/pdf/17B-CUG2010-paper-Ning_Li.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-chandra">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Chandrasekhar</surname><given-names>S.</given-names></name>
+        </person-group>
+        <source>Hydrodynamic and hydromagnetic stability</source>
+        <publisher-name>Clarendon Press: Oxford University Press</publisher-name>
+        <year iso-8601-date="1961">1961</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-julienJFM96">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Julien</surname><given-names>K.</given-names></name>
+          <name><surname>Legg</surname><given-names>S.</given-names></name>
+          <name><surname>McWilliams</surname><given-names>J.</given-names></name>
+          <name><surname>Werne</surname><given-names>J.</given-names></name>
+        </person-group>
+        <article-title>Rapidly rotating turbulent Rayleigh-Bénard convection</article-title>
+        <source>J. Fluid Mech.</source>
+        <publisher-name>Cambridge University Press</publisher-name>
+        <year iso-8601-date="1996">1996</year>
+        <volume>322</volume>
+        <pub-id pub-id-type="doi">10.1017/S0022112096002789</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-cooperPRF20">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cooper</surname><given-names>R. G.</given-names></name>
+          <name><surname>Bushby</surname><given-names>P. J.</given-names></name>
+          <name><surname>Guervilly</surname><given-names>C.</given-names></name>
+        </person-group>
+        <article-title>Subcritical dynamos in rapidly rotating planar convection</article-title>
+        <source>Phys. Rev. Fluids</source>
+        <publisher-name>American Physical Society</publisher-name>
+        <year iso-8601-date="2020-11">2020</year><month>11</month>
+        <volume>5</volume>
+        <pub-id pub-id-type="doi">10.1103/PhysRevFluids.5.113702</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-stellmachPRE04">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Stellmach</surname><given-names>Stephan</given-names></name>
+          <name><surname>Hansen</surname><given-names>Ulrich</given-names></name>
+        </person-group>
+        <article-title>Cartesian convection driven dynamos at low Ekman number</article-title>
+        <source>Phys. Rev. E</source>
+        <publisher-name>American Physical Society</publisher-name>
+        <year iso-8601-date="2004-11">2004</year><month>11</month>
+        <volume>70</volume>
+        <pub-id pub-id-type="doi">10.1103/PhysRevE.70.056312</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-dedalus">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Burns</surname><given-names>Keaton J.</given-names></name>
+          <name><surname>Vasil</surname><given-names>Geoffrey M.</given-names></name>
+          <name><surname>Oishi</surname><given-names>Jeffrey S.</given-names></name>
+          <name><surname>Lecoanet</surname><given-names>Daniel</given-names></name>
+          <name><surname>Brown</surname><given-names>Benjamin P.</given-names></name>
+        </person-group>
+        <article-title>Dedalus: A flexible framework for numerical simulations with spectral methods</article-title>
+        <source>Phys. Rev. Research</source>
+        <publisher-name>American Physical Society</publisher-name>
+        <year iso-8601-date="2020-04">2020</year><month>04</month>
+        <volume>2</volume>
+        <pub-id pub-id-type="doi">10.1103/PhysRevResearch.2.023068</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-nektar">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Moxey</surname><given-names>David</given-names></name>
+          <name><surname>Cantwell</surname><given-names>Chris D.</given-names></name>
+          <name><surname>Bao</surname><given-names>Yan</given-names></name>
+          <name><surname>Cassinelli</surname><given-names>Andrea</given-names></name>
+          <name><surname>Castiglioni</surname><given-names>Giacomo</given-names></name>
+          <name><surname>Chun</surname><given-names>Sehun</given-names></name>
+          <name><surname>Juda</surname><given-names>Emilia</given-names></name>
+          <name><surname>Kazemi</surname><given-names>Ehsan</given-names></name>
+          <name><surname>Lackhove</surname><given-names>Kilian</given-names></name>
+          <name><surname>Marcon</surname><given-names>Julian</given-names></name>
+          <name><surname>Mengaldo</surname><given-names>Gianmarco</given-names></name>
+          <name><surname>Serson</surname><given-names>Douglas</given-names></name>
+          <name><surname>Turner</surname><given-names>Michael</given-names></name>
+          <name><surname>Xu</surname><given-names>Hui</given-names></name>
+          <name><surname>Peiró</surname><given-names>Joaquim</given-names></name>
+          <name><surname>Kirby</surname><given-names>Robert M.</given-names></name>
+          <name><surname>Sherwin</surname><given-names>Spencer J.</given-names></name>
+        </person-group>
+        <article-title>Nektar++: Enhancing the capability and application of high-fidelity spectral/hp element methods</article-title>
+        <source>Computer Physics Communications</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>249</volume>
+        <issn>0010-4655</issn>
+        <pub-id pub-id-type="doi">10.1016/j.cpc.2019.107110</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-nek5000">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fisher</surname><given-names>Lottes</given-names><suffix>P. F.</suffix></name>
+        </person-group>
+        <uri>http://nek5000.mcs.anl.gov</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-spectralDNS">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mortensen</surname><given-names>Mikael</given-names></name>
+        </person-group>
+        <article-title>Shenfun: High performance spectral Galerkin computing platform</article-title>
+        <source>Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>3</volume>
+        <issue>31</issue>
+        <uri>https://doi.org/10.21105/joss.01071</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.01071</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-freefem">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hecht</surname><given-names>F.</given-names></name>
+        </person-group>
+        <article-title>New development in FreeFem++</article-title>
+        <source>J. Numer. Math.</source>
+        <year iso-8601-date="2012">2012</year>
+        <volume>20</volume>
+        <issue>3-4</issue>
+        <pub-id pub-id-type="doi">10.1515/jnum-2012-0013</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-fenics">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Alnæs</surname><given-names>M. S.</given-names></name>
+          <name><surname>Blechta</surname><given-names>J.</given-names></name>
+          <name><surname>Hake</surname><given-names>J.</given-names></name>
+          <name><surname>Johansson</surname><given-names>A.</given-names></name>
+          <name><surname>Kehlet</surname><given-names>B.</given-names></name>
+          <name><surname>Logg</surname><given-names>A.</given-names></name>
+          <name><surname>Richardson</surname><given-names>C.</given-names></name>
+          <name><surname>Ring</surname><given-names>J.</given-names></name>
+          <name><surname>Rognes</surname><given-names>M. E.</given-names></name>
+          <name><surname>Wells</surname><given-names>G. N.</given-names></name>
+        </person-group>
+        <article-title>The FEniCS project version 1.5</article-title>
+        <source>Archive of Numerical Software</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>3</volume>
+        <issue>100</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-fluiddyn">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Augier</surname><given-names>Pierre</given-names></name>
+          <name><surname>Mohanan</surname><given-names>Ashwin Vishnu</given-names></name>
+          <name><surname>Bonamy</surname><given-names>Cyrille</given-names></name>
+        </person-group>
+        <article-title>FluidDyn: A Python open-source framework for research and teaching in fluid dynamics by simulations, experiments and data processing</article-title>
+        <source>Journal of Open Research Software</source>
+        <publisher-name>Ubiquity Press, Ltd.</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>7</volume>
+        <pub-id pub-id-type="doi">10.5334/jors.237</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-fluidsim">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mohanan</surname><given-names>Ashwin Vishnu</given-names></name>
+          <name><surname>Bonamy</surname><given-names>Cyrille</given-names></name>
+          <name><surname>Linares</surname><given-names>Miguel Calpe</given-names></name>
+          <name><surname>Augier</surname><given-names>Pierre</given-names></name>
+        </person-group>
+        <article-title>FluidSim: Modular, object-oriented Python package for high-performance CFD simulations</article-title>
+        <source>Journal of Open Research Software</source>
+        <publisher-name>Ubiquity Press, Ltd.</publisher-name>
+        <year iso-8601-date="2019">2019</year>
+        <volume>7</volume>
+        <pub-id pub-id-type="doi">10.5334/jors.239</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

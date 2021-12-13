@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1816</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01816</article-id>
+<title-group>
+<article-title>OnlineStats.jl: A Julia package for statistics on data
+streams</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-7490-6986</contrib-id>
+<string-name>Josh Day</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0003-1320-7118</contrib-id>
+<string-name>Hua Zhou</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Loon Analytics, LLC</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>UCLA Biostatistics</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-09-02">
+<day>2</day>
+<month>9</month>
+<year>2019</year>
+</pub-date>
+<volume>5</volume>
+<issue>46</issue>
+<fpage>1816</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>statistics</kwd>
+<kwd>big data</kwd>
+<kwd>online algorithms</kwd>
+<kwd>streaming data</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>The growing prevalence of big and streaming data requires a new
+  generation of tools. Data often has infinite size in the sense that
+  new observations are continually arriving daily, hourly, etc. In
+  recent years, several new technologies such as Kafka
+  (<xref alt="Apache Software Foundation, n.d.-a" rid="ref-Kafka" ref-type="bibr">Apache
+  Software Foundation, n.d.-a</xref>) and Spark Streaming
+  (<xref alt="Apache Software Foundation, n.d.-b" rid="ref-SparkStreaming" ref-type="bibr">Apache
+  Software Foundation, n.d.-b</xref>) have been introduced for
+  processing streaming data. Statistical tools for data streams,
+  however, are under-developed and offer only basic functionality. The
+  majority of statistical software can only operate on finite batches
+  and require re-loading possibly large datasets for seemingly simple
+  tasks such as incorporating a few more observations into an
+  analysis.</p>
+  <p><monospace>OnlineStats</monospace> is a Julia
+  (<xref alt="Bezanson et al., 2017" rid="ref-Julia" ref-type="bibr">Bezanson
+  et al., 2017</xref>) package for high-performance online algorithms.
+  The <monospace>OnlineStats</monospace> framework is easily extensible,
+  includes a large catalog of algorithms, provides primitives for
+  parallel computing, and offers a weighting mechanism that allows new
+  observations have a higher relative influence over the value of the
+  statistic/model/visualization.</p>
+</sec>
+<sec id="interface">
+  <title>Interface</title>
+  <p>Each algorithm is associated with its own type
+  (e.g. <monospace>Mean</monospace>, <monospace>Variance</monospace>,
+  etc.). The <monospace>OnlineStats</monospace> interface is built on
+  several key functions from the <monospace>OnlineStatsBase</monospace>
+  package. A new type must provide implementations of these functions in
+  order to use the rest of the <monospace>OnlineStats</monospace>
+  framework.</p>
+  <sec id="updating">
+    <title>Updating</title>
+    <code language="julia">OnlineStatsBase._fit!(stat, y)</code>
+    <p>The <monospace>_fit!</monospace> method determines how the
+    statistic <monospace>stat</monospace> is updated with a single
+    observation <monospace>y</monospace>. Each OnlineStat is a concrete
+    subtype of <monospace>OnlineStat{T}</monospace>, where
+    <monospace>T</monospace> is the type of a single observation. The
+    <monospace>fit!(stat::OnlineStat{T}, y::T)</monospace> method simply
+    calls <monospace>_fit!</monospace>. When
+    <monospace>fit!(stat::OnlineStat{T}, y::S)</monospace> is called
+    (where <monospace>S</monospace> is not a subtype of
+    <monospace>T</monospace>), <monospace>y</monospace> is iterated
+    through and <monospace>fit!</monospace> is called on each
+    element.</p>
+    <sec id="update-weights">
+      <title>Update Weights</title>
+      <p>Many OnlineStats incorporate a weight function that determines
+      the influence of the next observation. For example, the online
+      update for a mean <inline-formula><alternatives>
+      <tex-math><![CDATA[\mu^{(t)}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>μ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msup></mml:math></alternatives></inline-formula>
+      given its current state <inline-formula><alternatives>
+      <tex-math><![CDATA[\mu^{(t-1)}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>μ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>−</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msup></mml:math></alternatives></inline-formula>
+      and new observation <inline-formula><alternatives>
+      <tex-math><![CDATA[y_t]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>y</mml:mi><mml:mi>t</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      is</p>
+      <p><disp-formula><alternatives>
+      <tex-math><![CDATA[
+      \mu^{(t)} = (1 - t^{-1}) \mu^{(t-1)} + t^{-1} y_t.
+      ]]></tex-math>
+      <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mi>μ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msup><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:msup><mml:mi>t</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:msup><mml:mi>μ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>−</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msup><mml:mo>+</mml:mo><mml:msup><mml:mi>t</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup><mml:msub><mml:mi>y</mml:mi><mml:mi>t</mml:mi></mml:msub><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+      <p><monospace>OnlineStats</monospace> generalizes this update to
+      use weights that are a function of <inline-formula><alternatives>
+      <tex-math><![CDATA[t]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>t</mml:mi></mml:math></alternatives></inline-formula>:</p>
+      <p><disp-formula><alternatives>
+      <tex-math><![CDATA[
+      \mu^{(t)} = [1 - w(t)] \mu^{(t-1)} + w(t) y_t.
+      ]]></tex-math>
+      <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mi>μ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msup><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:mi>w</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:msup><mml:mi>μ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>−</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msup><mml:mo>+</mml:mo><mml:mi>w</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:msub><mml:mi>y</mml:mi><mml:mi>t</mml:mi></mml:msub><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+      <p>Therefore, for example, <inline-formula><alternatives>
+      <tex-math><![CDATA[w(t) = t{-1}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>w</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>t</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+      returns the analytical mean and <inline-formula><alternatives>
+      <tex-math><![CDATA[w(t) = \lambda \; (0 < \lambda < 1)]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>w</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>λ</mml:mi><mml:mspace width="0.278em"></mml:mspace><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>0</mml:mn><mml:mo>&lt;</mml:mo><mml:mi>λ</mml:mi><mml:mo>&lt;</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+      returns an exponentially weighted mean.</p>
+    </sec>
+  </sec>
+  <sec id="merging">
+    <title>Merging</title>
+    <code language="julia">    OnlineStatsBase._merge!(stat1, stat2)</code>
+    <p>The <monospace>_merge!</monospace> function merges the state of
+    <monospace>stat2</monospace> into <monospace>stat1</monospace> and
+    facilitates parallel computation. This function is optional to
+    implement, as merging is not guaranteed to be well-defined for a
+    given statistic/algorithm. The default definition prints out a
+    warning that no merging occurred.</p>
+  </sec>
+  <sec id="returning-the-state">
+    <title>Returning the State</title>
+    <code language="julia">OnlineStatsBase.value(stat, args...; kw...)</code>
+    <p>The <monospace>value</monospace> function returns the value of
+    the estimator (optionally determined by positional arguments
+    <monospace>args</monospace> and keyword arguments
+    <monospace>kw</monospace>). Depending on the type, this may need to
+    be calculated from its state. By default, this returns the first
+    field of the type.</p>
+    <code language="julia">OnlineStatsBase.nobs(stat)</code>
+    <p>The <monospace>nobs</monospace> function returns the number of
+    observations that the statistic has seen. By default this returns
+    the <monospace>n</monospace> field from the algorithm’s type
+    (<monospace>stat.n</monospace>).</p>
+  </sec>
+</sec>
+<sec id="example">
+  <title>Example</title>
+  <p>The <monospace>Mean</monospace> type provides an easy-to-understand
+  full example of how to implement a new algorithm. The update formula,
+  as previously stated, is:</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[
+  \mu^{(t)} = [1 - w(t)] \mu^{(t-1)} + w(t) y_t.
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mi>μ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msup><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:mi>w</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:msup><mml:mi>μ</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>−</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msup><mml:mo>+</mml:mo><mml:mi>w</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:msub><mml:mi>y</mml:mi><mml:mi>t</mml:mi></mml:msub><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>The merge formula for two means, <inline-formula><alternatives>
+  <tex-math><![CDATA[\mu_1^{(t)}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mi>μ</mml:mi><mml:mn>1</mml:mn><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msubsup></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\mu_2^{(s)}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msubsup><mml:mi>μ</mml:mi><mml:mn>2</mml:mn><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>s</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msubsup></mml:math></alternatives></inline-formula>,
+  generalizes the above equation to:</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[
+  \mu_{merged}^{(t + s)} = [1 - s/(t+s)] \mu_1^{(t)} + [s/(t+s)] \mu_2^{(s)}.
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msubsup><mml:mi>μ</mml:mi><mml:mrow><mml:mi>m</mml:mi><mml:mi>e</mml:mi><mml:mi>r</mml:mi><mml:mi>g</mml:mi><mml:mi>e</mml:mi><mml:mi>d</mml:mi></mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>+</mml:mo><mml:mi>s</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msubsup><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mn>1</mml:mn><mml:mo>−</mml:mo><mml:mi>s</mml:mi><mml:mi>/</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>+</mml:mo><mml:mi>s</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:msubsup><mml:mi>μ</mml:mi><mml:mn>1</mml:mn><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msubsup><mml:mo>+</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mi>s</mml:mi><mml:mi>/</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo>+</mml:mo><mml:mi>s</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow><mml:msubsup><mml:mi>μ</mml:mi><mml:mn>2</mml:mn><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>s</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:msubsup><mml:mi>.</mml:mi></mml:mrow></mml:math></alternatives></disp-formula></p>
+  <p>Converting these formulas into <monospace>Julia</monospace> code,
+  we get the following implementation. Note that
+  <monospace>Mean</monospace> is parameterized by the data type that
+  stores the mean value so that non-standard types such as complex
+  numbers can be used.</p>
+  <code language="julia">mutable struct Mean{T,W} &lt;: OnlineStat{Number}
+    m::T
+    weight::W
+    n::Int
+end
+
+function Mean(T::Type{&lt;:Number} = Float64; weight = inv)
+    Mean(zero(T), weight, 0)
+end
+
+function _fit!(o::Mean{T}, x) where {T}
+    o.n += 1
+    w = T(o.weight(o.n))
+    o.m += w * (x - o.m)
+end
+
+function _merge!(o::Mean, o2::Mean)
+    o.n += o2.n
+    o.m += (o2.n / o.n) * (o2.m - o.m)
+end</code>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Julia">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Bezanson</surname><given-names>Jeff.</given-names></name>
+          <name><surname>Edelman</surname><given-names>Alan.</given-names></name>
+          <name><surname>Karpinski</surname><given-names>Stefan.</given-names></name>
+          <name><surname>Shah</surname><given-names>Viral B.</given-names></name>
+        </person-group>
+        <article-title>Julia: A fresh approach to numerical computing</article-title>
+        <source>SIAM Review</source>
+        <year iso-8601-date="2017">2017</year>
+        <volume>59</volume>
+        <issue>1</issue>
+        <uri> https://doi.org/10.1137/141000671</uri>
+        <pub-id pub-id-type="doi">10.1137/141000671</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Kafka">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>Apache Software Foundation</string-name>
+        </person-group>
+        <source>Kafka</source>
+        <uri>https://kafka.apache.org</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-SparkStreaming">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>Apache Software Foundation</string-name>
+        </person-group>
+        <source>Spark streaming</source>
+        <uri>https://spark.apache.org/streaming/</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

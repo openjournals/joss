@@ -1,0 +1,790 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2338</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02338</article-id>
+<title-group>
+<article-title>A parallel global multiobjective framework for
+optimization: pagmo</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<string-name>Francesco Biscani</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9846-8423</contrib-id>
+<string-name>Dario Izzo</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Max Planck Institute for Astronomy (Heidelberg,
+D)</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Advanced Concepts Team, European Space Research and
+Technology Center (Noordwijk, NL)</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-05-29">
+<day>29</day>
+<month>5</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>53</issue>
+<fpage>2338</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>C++</kwd>
+<kwd>Python</kwd>
+<kwd>optimization</kwd>
+<kwd>evolution</kwd>
+<kwd>island model</kwd>
+<kwd>meta-heuristics</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Mathematical optimization is pervasive in all quantitative
+  sciences. The ability to find good parameters values in a generic
+  numerical experiment while meeting complex constraints is of great
+  importance and, as such, has always been an active research topic of
+  mathematics, numerics and, more recently, artificial intelligence.</p>
+  <p>Given the vast amount and diversity of optimization problems, as
+  well as of solution approaches, and considering the need to be able to
+  exploit modern computational architectures, the development of a tool
+  able to help in such a pervasive task is not trivial.</p>
+  <p>In this paper we introduce <monospace>pagmo</monospace>, a C++
+  scientific library for massively parallel optimization.
+  <monospace>pagmo</monospace> is built around the idea of providing a
+  unified interface to optimization algorithms and problems, and to make
+  their deployment in massively parallel environments easy.</p>
+  <p>Efficient implementantions of bio-inspired and evolutionary
+  algorithms are sided to state-of-the-art optimization algorithms
+  (Simplex Methods, SQP methods, interior points methods, etc.) and can
+  be used concurrently (also together with algorithms coded by the user)
+  to build an optimization pipeline exploiting algorithmic cooperation
+  via the asynchronous, generalized island model
+  (<xref alt="Izzo et al., 2012" rid="ref-izzoU003A2012" ref-type="bibr">Izzo
+  et al., 2012</xref>).</p>
+  <p><monospace>pagmo</monospace> can be used to solve constrained,
+  unconstrained, single objective, multiple objectives, continuous and
+  integer optimization problems, stochastic and deterministic problems,
+  as well as to perform research on novel algorithms and paradigms and
+  easily compare them to state-of-the-art implementations of established
+  ones.</p>
+  <p>For users that are more comfortable with the Python language, the
+  package <monospace>pygmo</monospace> provides a complete set of Python
+  bindings for <monospace>pagmo</monospace> closely following the C++
+  API.</p>
+</sec>
+<sec id="the-optimization-problem">
+  <title>The optimization problem</title>
+  <p>In <monospace>pagmo</monospace> optimization problems are
+  considered to be in the form:</p>
+  <p><disp-formula><alternatives>
+  <tex-math><![CDATA[
+    \begin{array}{rl}
+    \mbox{find:}      & \mathbf {lb} \le \mathbf x \le \mathbf{ub}\\
+    \mbox{to minimize: } & \mathbf f(\mathbf x, s) \in \mathbb R^{n_{obj}}\\
+    \mbox{subject to:} & \mathbf {c}_e(\mathbf x, s) = 0 \\
+                       & \mathbf {c}_i(\mathbf x, s) \le 0
+    \end{array}
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtable><mml:mtr><mml:mtd columnalign="right"><mml:mtext mathvariant="normal">find:</mml:mtext></mml:mtd><mml:mtd columnalign="left"><mml:mstyle mathvariant="bold"><mml:mi>𝐥</mml:mi><mml:mi>𝐛</mml:mi></mml:mstyle><mml:mo>≤</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo>≤</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi><mml:mi>𝐛</mml:mi></mml:mstyle></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"><mml:mrow><mml:mtext mathvariant="normal">to minimize: </mml:mtext><mml:mspace width="0.333em"></mml:mspace></mml:mrow></mml:mtd><mml:mtd columnalign="left"><mml:mstyle mathvariant="bold"><mml:mi>𝐟</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo>,</mml:mo><mml:mi>s</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>∈</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>o</mml:mi><mml:mi>b</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub></mml:msup></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"><mml:mtext mathvariant="normal">subject to:</mml:mtext></mml:mtd><mml:mtd columnalign="left"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐜</mml:mi></mml:mstyle><mml:mi>e</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo>,</mml:mo><mml:mi>s</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mn>0</mml:mn></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"></mml:mtd><mml:mtd columnalign="left"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐜</mml:mi></mml:mstyle><mml:mi>i</mml:mi></mml:msub><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo>,</mml:mo><mml:mi>s</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>≤</mml:mo><mml:mn>0</mml:mn></mml:mtd></mml:mtr></mml:mtable></mml:math></alternatives></disp-formula>
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf x \in \mathbb R^{n_{cx}} \times \mathbb Z^{n_{ix}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo>∈</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>c</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:msup><mml:mo>×</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℤ</mml:mi></mml:mstyle><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>
+  is called a <italic>decision vector</italic> or
+  <italic>chromosome</italic>, and is made of
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[n_{cx}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>c</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+  real numbers and <inline-formula><alternatives>
+  <tex-math><![CDATA[n_{ix}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>
+  integers (all represented as doubles). The total problem dimension is
+  then indicated with <inline-formula><alternatives>
+  <tex-math><![CDATA[n_x = n_{cx} + n_{ix}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>n</mml:mi><mml:mi>x</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>c</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:msub><mml:mo>+</mml:mo><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>.
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf{lb}, \mathbf{ub} \in \mathbb R^{n_{cx}} \times \mathbb Z^{n_{ix}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐥</mml:mi><mml:mi>𝐛</mml:mi></mml:mstyle><mml:mo>,</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐮</mml:mi><mml:mi>𝐛</mml:mi></mml:mstyle><mml:mo>∈</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>c</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:msup><mml:mo>×</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℤ</mml:mi></mml:mstyle><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>
+  are the <italic>box-bounds</italic>, <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf f: \mathbb R^{n_{cx}} \times \mathbb Z^{n_{ix}} \rightarrow \mathbb R^{n_{obj}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐟</mml:mi></mml:mstyle><mml:mo>:</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>c</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:msup><mml:mo>×</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℤ</mml:mi></mml:mstyle><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:msup><mml:mo>→</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>o</mml:mi><mml:mi>b</mml:mi><mml:mi>j</mml:mi></mml:mrow></mml:msub></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>
+  define the <italic>objectives</italic>, <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf c_e: \mathbb R^{n_{cx}} \times \mathbb Z^{n_{ix}} \rightarrow \mathbb R^{n_{ec}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐜</mml:mi></mml:mstyle><mml:mi>e</mml:mi></mml:msub><mml:mo>:</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>c</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:msup><mml:mo>×</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℤ</mml:mi></mml:mstyle><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:msup><mml:mo>→</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>e</mml:mi><mml:mi>c</mml:mi></mml:mrow></mml:msub></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>
+  are nonlinear <italic>equality constraints</italic>, and
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf c_i: \mathbb R^{n_{cx}} \times \mathbb Z^{n_{ix}} \rightarrow \mathbb R^{n_{ic}}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐜</mml:mi></mml:mstyle><mml:mi>i</mml:mi></mml:msub><mml:mo>:</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>c</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:msup><mml:mo>×</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℤ</mml:mi></mml:mstyle><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:msup><mml:mo>→</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:msub><mml:mi>n</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>c</mml:mi></mml:mrow></mml:msub></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>
+  are nonlinear <italic>inequality constraints</italic>. Note that the
+  objectives and constraints also depend on an added value
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[s]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>s</mml:mi></mml:math></alternatives></inline-formula>
+  representing some stochastic variable. Both equality and inequality
+  constraints are considered as satisfied whenever their definition is
+  met within a tolerance <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathbf c_{tol}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mstyle mathvariant="bold"><mml:mi>𝐜</mml:mi></mml:mstyle><mml:mrow><mml:mi>t</mml:mi><mml:mi>o</mml:mi><mml:mi>l</mml:mi></mml:mrow></mml:msub></mml:math></alternatives></inline-formula>.</p>
+  <p>Note that there is no special treatment of a possible linear part
+  of the <italic>objectives</italic> or <italic>constraints</italic>,
+  and as such solvers in <monospace>pagmo</monospace> cannot take
+  advantage of the special structure of linear programming tasks.</p>
+  <p>Given the generic form used to represent a problem,
+  <monospace>pagmo</monospace> is suitable to solve a broad range of
+  optimization problems, ranging from single and multiobjective problems
+  to box-bounded and nonlinearly constrained problems to stochastic
+  problems to continuous, integer and mixed integer problems.</p>
+</sec>
+<sec id="the-pagmo-jargon">
+  <title>The pagmo jargon</title>
+  <p>The discussion on the relation between artificial evolution and
+  mathematical optimization is an interesting one
+  (<xref alt="Smith, 1978" rid="ref-smithU003A1978" ref-type="bibr">Smith,
+  1978</xref>). In <monospace>pagmo</monospace> optimization, of all
+  types, is regarded as a form of evolution. Solving an optimization
+  problem is, in <monospace>pagmo</monospace>, described as
+  <italic>evolving</italic> a <italic>population</italic>. Each
+  <italic>decision vector</italic> is thus referred to also as a
+  <italic>chromosome</italic> and its <italic>fitness</italic> is
+  defined as a vector containing <italic>objectives</italic>,
+  <italic>equality constraints</italic> and <italic>inequality
+  constraints</italic> in this order. Regardless of whether the user is
+  using, as a solver, a sequential quadratic programming approach, an
+  interior point optimizer, an evolutionary strategy or some
+  meta-heuristic, in <monospace>pagmo</monospace> the user will always
+  have to call a method called <italic>evolve</italic> to improve over
+  the initial solutions stored in a <italic>population</italic>. A
+  <italic>population</italic> may or may not live in an
+  <italic>island</italic>. When it does, its <italic>evolution</italic>
+  is delegated to a different computational unit (a process, thread or
+  remote CPU). Stretching this jargon even further, in
+  <monospace>pagmo</monospace> a set of <italic>islands</italic>
+  optimizing the same problem is called an <italic>archipelago</italic>.
+  When solutions are also exchanged among <italic>populations</italic>
+  living on the same <italic>archipelago</italic>, the quality of the
+  overall optimization is often improved
+  (<xref alt="Izzo et al., 2012" rid="ref-izzoU003A2012" ref-type="bibr">Izzo
+  et al., 2012</xref>). This exchange of information among different
+  solvers is referred to as <italic>migrations</italic> and the allowed
+  migration routes (affecting the overall process significantly
+  (<xref alt="Ruciński et al., 2010" rid="ref-rucinskiU003A2010" ref-type="bibr">Ruciński
+  et al., 2010</xref>)) as the <italic>topology</italic> of the
+  <italic>archipelago</italic>.</p>
+</sec>
+<sec id="exploiting-parallelism">
+  <title>Exploiting parallelism</title>
+  <p>Parallelizing optimization tasks in a generic fashion is one of the
+  leading software design principles of <monospace>pagmo</monospace>.
+  According to the type of optimization task, and in particular to the
+  computational weight of computing the problem <italic>fitness</italic>
+  function, a different granularity of the parallelization option may be
+  ideal.</p>
+  <sec id="island-model">
+    <title>Island Model</title>
+    <p>As a coarse-grained parallelism, <monospace>pagmo</monospace>
+    offers an implementation of the so-called generalized island model
+    (<xref alt="Izzo et al., 2012" rid="ref-izzoU003A2012" ref-type="bibr">Izzo
+    et al., 2012</xref>). Early ideas on distributing genetic algorithms
+    over multiple CPUs were developed in the early 90s by Reiko Tanese,
+    one of John Holland’s students
+    (<xref alt="Tanese, 1989" rid="ref-taneseU003A1989" ref-type="bibr">Tanese,
+    1989</xref>). The idea that migrations could improve the quality of
+    the solutions obtained for some optimization task as well as offer a
+    quasi-linear speedup was, though, confined mainly to genetic
+    algorithms and called island model. In <monospace>pagmo</monospace>
+    any solver, inspired by the Darwinian evolution paradigm, by swarm
+    intelligence, by any meta-heuristics or based on mathematical
+    optimality conditions is allowed to exchange information during an
+    <italic>evolution</italic> with other solvers connected to it via
+    defined <italic>migration</italic> paths.</p>
+  </sec>
+  <sec id="concurrent-fitness-evaluations">
+    <title>Concurrent fitness evaluations</title>
+    <p>In some situations it is preferable to parallelize the
+    <italic>evolution</italic> pipeline at a finer grain (e.g., if the
+    objective function evaluation is extremely costly). For this
+    purpose, <monospace>pagmo</monospace> provides a <italic>batch
+    fitness evaluation</italic> framework which can be used by selected
+    algorithms to perform in parallel the objective function evaluation
+    of multiple independent decision vectors. The parallel evaluation
+    can be performed by multiple threads, processes, nodes in an HPC
+    cluster or even by GPU devices (via, e.g., OpenCL or CUDA). In this
+    last case it is up to the user to code a user-defined batch fitness
+    evaluator.</p>
+  </sec>
+</sec>
+<sec id="related-projects-frameworks">
+  <title>Related projects / frameworks</title>
+  <p>A large number of projects, open source as well as commercial,
+  exist whose functionalities overlap, at least partially, with those of
+  <monospace>pagmo</monospace>. On the one hand, projects such as jMetal
+  (<xref alt="Durillo &amp; Nebro, 2011" rid="ref-durilloU003A2011" ref-type="bibr">Durillo
+  &amp; Nebro, 2011</xref>), DEAP
+  (<xref alt="Fortin et al., 2012" rid="ref-fortinU003A2012" ref-type="bibr">Fortin
+  et al., 2012</xref>), ParadisEO
+  (<xref alt="Cahon et al., 2004" rid="ref-cahonU003A2004" ref-type="bibr">Cahon
+  et al., 2004</xref>) and others originate from the metaheuristic
+  community and, essentially, offer implementations of a number of
+  derivative-free solvers suitable for multi-objective and
+  single-objective problems, some with (fine-grained) parallelization
+  capabilities. On the other hand, projects like AMPL
+  (<xref alt="Fourer et al., 2003" rid="ref-fourerU003A2003" ref-type="bibr">Fourer
+  et al., 2003</xref>) or GAMS originate from the operational research
+  community and offer modelling languages able to represent generic
+  optimization problems and to forward them, together with the jacobians
+  and hessians needed, to compatible solvers. A third type of projects,
+  like NLOpt
+  (<xref alt="Johnson, 2014" rid="ref-johnsonU003A2014" ref-type="bibr">Johnson,
+  2014</xref>) or the <monospace>Scipy</monospace>
+  (<xref alt="Virtanen et al., 2020" rid="ref-2020SciPy-NMeth" ref-type="bibr">Virtanen
+  et al., 2020</xref>) optimize module offer a number of solvers without
+  making much distinction between heuristic, derivative-free or local
+  deterministic solvers. The project <monospace>pagmo</monospace> has
+  most of the capabilities of the above mentioned software packages
+  integrated in the same ecosystem as it offers a large variety of
+  parallelization modes and, above all, the possibility to code and
+  easily wrap new (or third party) solvers, problems and parallelization
+  strategies. A unique characteristic of <monospace>pagmo</monospace> to
+  be highlighted here, is the presence of an island model implementation
+  (<xref alt="Izzo et al., 2012" rid="ref-izzoU003A2012" ref-type="bibr">Izzo
+  et al., 2012</xref>) that can flexibly distribute any solver,
+  original, user-implemented or third-party on multiple CPUs.</p>
+</sec>
+<sec id="code-design">
+  <title>Code Design</title>
+  <sec id="c">
+    <title>C++</title>
+    <p><monospace>pagmo</monospace> is written in standard-compliant
+    C++17, and it extensively employs modern programming techniques.
+    <italic>Type erasure</italic> is used pervasively throughout the
+    codebase to provide a form of runtime polymorphism which is safer
+    and more ergonomic than traditional object-oriented programming.
+    Template meta-programming techniques are used for compile-time
+    introspection, and, paired to sensible defaults, they help to reduce
+    the amount of boilerplate needed to define new optimisation
+    problems. <monospace>pagmo</monospace> is designed for extensive
+    customisation: any element of the framework (including solvers,
+    islands, batch fitness evaluators, archipelago topologies, migration
+    policies, etc.) can easily be replaced with custom implementations
+    tailored for specific needs.</p>
+  </sec>
+  <sec id="python">
+    <title>Python</title>
+    <p>In order to provide an interactive mode of usage (and in order to
+    participate in the ecosystem of what is arguably the most popular
+    language for scientific computing today),
+    <monospace>pagmo</monospace> provides a complete set of Python
+    bindings called <monospace>pygmo</monospace>, implemented via
+    <monospace>pybind11</monospace>
+    (<xref alt="Jakob et al., 2017" rid="ref-pybind11" ref-type="bibr">Jakob
+    et al., 2017</xref>). <monospace>pygmo</monospace> exposes all
+    <monospace>pagmo</monospace> features, including the ability to
+    implement new problems, solvers, batch evaluators, topologies etc.
+    in pure Python, using an API which closely matches the C++
+    <monospace>pagmo</monospace> API. Additionally,
+    <monospace>pygmo</monospace> offers Python-specific features, such
+    as the ability to use <monospace>ipyparallel</monospace>
+    (<xref alt="Ragan-Kelley, 2020" rid="ref-ipyparallel" ref-type="bibr">Ragan-Kelley,
+    2020</xref>) for cluster-level parallelisation, and wrappers to use
+    optimisation algorithms from <monospace>Scipy</monospace>
+    (<xref alt="Virtanen et al., 2020" rid="ref-2020SciPy-NMeth" ref-type="bibr">Virtanen
+    et al., 2020</xref>) as <monospace>pygmo</monospace> algorithms.</p>
+  </sec>
+  <sec id="testing-and-documentation">
+    <title>Testing and documentation</title>
+    <p>The <monospace>pagmo</monospace> development team places a strong
+    emphasis on automated testing. The code is fully covered by unit
+    tests, and the continuous integration pipeline checks that the code
+    compiles and runs correctly on a variety of operating systems
+    (Linux, OSX, Windows) using different compilers (GCC, Clang, MSVC).
+    Both the C++ and Python APIs are fully documented, and as a policy
+    we require that every PR to <monospace>pagmo</monospace> or
+    <monospace>pygmo</monospace> must not decrease testing or
+    documentation coverage.</p>
+  </sec>
+</sec>
+<sec id="some-api-examples">
+  <title>Some API examples</title>
+  <p>In this section, we will show how <monospace>pagmo</monospace> and
+  <monospace>pygmo</monospace> can be used to solve a very simple
+  optimisation problem using the Differential Evolution (DE) algorithm
+  (<xref alt="Storn &amp; Price, 1997" rid="ref-storn1997differential" ref-type="bibr">Storn
+  &amp; Price, 1997</xref>). The problem that we will solve is the
+  minimisation of the unidimensional sphere function,
+  <disp-formula><alternatives>
+  <tex-math><![CDATA[
+  f\left( x \right) = x^2,
+  ]]></tex-math>
+  <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:msup><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msup><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></disp-formula>
+  subject to the box bounds <inline-formula><alternatives>
+  <tex-math><![CDATA[x \in \left[0, 1 \right]]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>x</mml:mi><mml:mo>∈</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">[</mml:mo><mml:mn>0</mml:mn><mml:mo>,</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">]</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.
+  This is, of course, a trivial problem with solution
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[x=0]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>x</mml:mi><mml:mo>=</mml:mo><mml:mn>0</mml:mn></mml:mrow></mml:math></alternatives></inline-formula>,
+  and it is used here only for didactic purposes.</p>
+  <sec id="c-1">
+    <title>C++</title>
+    <code language="c++">#include &lt;iostream&gt;
+#include &lt;utility&gt;
+
+#include &lt;pagmo/algorithm.hpp&gt;
+#include &lt;pagmo/algorithms/de.hpp&gt;
+#include &lt;pagmo/population.hpp&gt;
+#include &lt;pagmo/problem.hpp&gt;
+#include &lt;pagmo/types.hpp&gt;
+
+using namespace pagmo;
+
+// Definition of the optimisation problem.
+struct sphere_1d
+{
+  // Definition of the box bounds.
+  std::pair&lt;vector_double, vector_double&gt; get_bounds() const
+  {
+    return {{0.}, {1.}};
+  }
+  // Definition of the objective function.
+  vector_double fitness(const vector_double &amp;dv) const
+  {
+    return {dv[0] * dv[0]};
+  }
+};
+
+int main()
+{
+  // Create a random population of 20 initial
+  // guesses for the sphere_1d problem.
+  population pop{sphere_1d{}, 20};
+
+  // Create the optimisation algorithm.
+  // We will use 500 generations.
+  algorithm algo{de{500}};
+
+  // Run the optimisation, which will
+  // produce a new &quot;evolved&quot; population.
+  auto new_pop = algo.evolve(pop);
+
+  // Print to screen the fitness of the
+  // best solution in the new population.
+  std::cout &lt;&lt; &quot;Fitness of the best solution: &quot;
+            &lt;&lt; new_pop.champion_f()[0] &lt;&lt; '\n';
+}</code>
+    <p>In <monospace>pagmo</monospace>, decision vectors and problem
+    bounds are represented via the
+    <monospace>pagmo::vector_double</monospace> type, which is currently
+    just an alias for <monospace>std::vector&lt;double&gt;</monospace>.
+    The fitness function also returns a
+    <monospace>vector_double</monospace>, because, generally-speaking,
+    the fitness vector must accommodate multiple scalar values to
+    represent multiple objectives and constraints. Here, however, the
+    <monospace>sphere_1d</monospace> problem is single-objective and
+    unconstrained, and thus the only element in the fitness vector will
+    be the value of the objective function.</p>
+    <p>In this example, 20 initial conditions for the optimisation are
+    randomly chosen within the problem bounds when creating the
+    <monospace>pop</monospace> object. It is of course possible to
+    explicitly set the initial conditions, if so desired. The
+    Differential Evolution algorithm object is then created, specifying
+    500 generations as a stopping criterion.</p>
+    <p>The initial population <monospace>pop</monospace> is then
+    evolved, and the result is a new population of optimised decision
+    vectors, <monospace>new_pop</monospace>. The fitness of the best
+    decision vector (the “champion”) is then printed to the screen.</p>
+    <p><monospace>sphere_1d</monospace>, as an unconstrained,
+    single-objective, continuous optimisation problem, is the simplest
+    optimisation problem type that can be defined in
+    <monospace>pagmo</monospace>. More complex problems can be defined
+    by adding new member functions to the problem class. For
+    instance:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p>by implementing the <monospace>get_nec()</monospace> and
+        <monospace>get_nic()</monospace> member functions, the user can
+        specify the number of, respectively, equality and inequality
+        constraints in the problem. If, like in the case of
+        <monospace>sphere_1d</monospace>, these functions are not
+        implemented, <monospace>pagmo</monospace> assumes that the
+        problem is unconstrained;</p>
+      </list-item>
+      <list-item>
+        <p>by implementing the <monospace>get_nobj()</monospace> member
+        function, the user can specify the number of objectives in the
+        optimisation problem. If this function is not implemented,
+        <monospace>pagmo</monospace> assumes that the problem is
+        single-objective.</p>
+      </list-item>
+    </list>
+  </sec>
+  <sec id="python-1">
+    <title>Python</title>
+    <code language="python">from pygmo import problem, algorithm, population, de
+
+# Definition of the optimisation problem.
+class sphere_1d:
+  # Definition of the box bounds.
+  def get_bounds(self):
+    return ([0], [1])
+  # Definition of the objective function.
+  def fitness(self, dv):
+    return [dv[0]**2]
+
+# Create a random population of 20 initial
+# guesses for the sphere_1d problem.
+pop = population(sphere_1d(), 20)
+
+# Create the optimisation algorithm.
+algo = algorithm(de(500))
+
+# Run the optimisation, which will
+# produce a new &quot;evolved&quot; population.
+new_pop = algo.evolve(pop)
+
+# Print to screen the fitness of the
+# best solution in the new population.
+print(new_pop.champion_f)</code>
+    <p>As shown in this example, the <monospace>pygmo</monospace> Python
+    API very closely follows the <monospace>pagmo</monospace> C++
+    API.</p>
+    <p><monospace>pygmo</monospace> seamlessly integrates with the wider
+    scientific Python ecosystem. For instance:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p>in addition to generic Python iterables (list, tuples, etc.),
+        NumPy arrays
+        (<xref alt="Walt et al., 2011" rid="ref-walt2011numpy" ref-type="bibr">Walt
+        et al., 2011</xref>) can be used as data types to represent
+        decision vectors, constraints, gradients, Hessians, etc.;</p>
+      </list-item>
+      <list-item>
+        <p>various optimisation analysis tools based on Matplotlib
+        (<xref alt="Hunter, 2007" rid="ref-mplotlib" ref-type="bibr">Hunter,
+        2007</xref>) are provided;</p>
+      </list-item>
+      <list-item>
+        <p>archipelago topologies can be exported, imported and studied
+        as NetworkX graph objects
+        (<xref alt="Hagberg et al., 2008" rid="ref-hagberg2008exploring" ref-type="bibr">Hagberg
+        et al., 2008</xref>).</p>
+      </list-item>
+    </list>
+  </sec>
+</sec>
+<sec id="availability">
+  <title>Availability</title>
+  <p>Both <monospace>pagmo</monospace> and <monospace>pygmo</monospace>
+  are available in the <monospace>conda</monospace> package manager
+  through the <monospace>conda-forge</monospace> community-driven
+  channel. Additionally, the core team also maintains
+  <monospace>pip</monospace> packages for Linux.</p>
+  <p>The wider <monospace>pagmo</monospace> user community provides also
+  additional packages for Arch Linux, OSX (via Homebrew) and
+  FreeBSD.</p>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>We acknowledge the support of the Google Summer of Code initiative,
+  the European Space Agency Summer of Code in Space and Dow Corporation
+  during different phases of the development. Many of our colleagues and
+  friends have, in the years, supported the project contributing to
+  evolve its code base and API to what we have today. We would like to
+  mention, in particular, Luís Felismino Simões, Marek Ruciński, Marcus
+  Märtens, Krzysztof Nowak, Giacomo Acciarini and Moritz v. Looz.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-izzoU003A2012">
+      <element-citation publication-type="chapter">
+        <person-group person-group-type="author">
+          <name><surname>Izzo</surname><given-names>Dario</given-names></name>
+          <name><surname>Ruciński</surname><given-names>Marek</given-names></name>
+          <name><surname>Biscani</surname><given-names>Francesco</given-names></name>
+        </person-group>
+        <article-title>The generalized island model</article-title>
+        <source>Parallel architectures and bioinspired algorithms</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <pub-id pub-id-type="doi">10.1007/978-3-642-28789-3_7</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-smithU003A1978">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Smith</surname><given-names>J Maynard</given-names></name>
+        </person-group>
+        <article-title>Optimization theory in evolution</article-title>
+        <source>Annual Review of Ecology and Systematics</source>
+        <publisher-name>Annual Reviews 4139 El Camino Way, PO Box 10139, Palo Alto, CA 94303-0139, USA</publisher-name>
+        <year iso-8601-date="1978">1978</year>
+        <volume>9</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1146/annurev.es.09.110178.000335</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-rucinskiU003A2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Ruciński</surname><given-names>Marek</given-names></name>
+          <name><surname>Izzo</surname><given-names>Dario</given-names></name>
+          <name><surname>Biscani</surname><given-names>Francesco</given-names></name>
+        </person-group>
+        <article-title>On the impact of the migration topology on the island model</article-title>
+        <source>Parallel Computing</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <volume>36</volume>
+        <issue>10-11</issue>
+        <pub-id pub-id-type="doi">10.1016/j.parco.2010.04.002</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-taneseU003A1989">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Tanese</surname><given-names>Reiko</given-names></name>
+        </person-group>
+        <article-title>Distributed genetic algorithms for function optimization</article-title>
+        <publisher-name>University of Michigan</publisher-name>
+        <year iso-8601-date="1989">1989</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-pybind11">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Jakob</surname><given-names>Wenzel</given-names></name>
+          <name><surname>Rhinelander</surname><given-names>Jason</given-names></name>
+          <name><surname>Moldovan</surname><given-names>Dean</given-names></name>
+        </person-group>
+        <article-title>pybind11 – seamless operability between c++11 and python</article-title>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://github.com/pybind/pybind11</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-johnsonU003A2014">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Johnson</surname><given-names>Steven G</given-names></name>
+        </person-group>
+        <article-title>The NLopt nonlinear-optimization package</article-title>
+        <year iso-8601-date="2014">2014</year>
+        <uri>http://github.com/stevengj/nlopt</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-ipyparallel">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Ragan-Kelley</surname><given-names>Min</given-names></name>
+        </person-group>
+        <article-title>Ipyparallel: Interactive parallel computing in python</article-title>
+        <source>​GitHub repository</source>
+        <publisher-name>​GitHub</publisher-name>
+        <year iso-8601-date="2020">2020</year>
+        <uri>https://github.com/ipython/ipyparallel</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-2020SciPy-NMeth">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Virtanen</surname><given-names>Pauli</given-names></name>
+          <name><surname>Gommers</surname><given-names>Ralf</given-names></name>
+          <name><surname>Oliphant</surname><given-names>Travis E.</given-names></name>
+          <name><surname>Haberland</surname><given-names>Matt</given-names></name>
+          <name><surname>Reddy</surname><given-names>Tyler</given-names></name>
+          <name><surname>Cournapeau</surname><given-names>David</given-names></name>
+          <name><surname>Burovski</surname><given-names>Evgeni</given-names></name>
+          <name><surname>Peterson</surname><given-names>Pearu</given-names></name>
+          <name><surname>Weckesser</surname><given-names>Warren</given-names></name>
+          <name><surname>Bright</surname><given-names>Jonathan</given-names></name>
+          <name><surname>van der Walt</surname><given-names>Stéfan J.</given-names></name>
+          <name><surname>Brett</surname><given-names>Matthew</given-names></name>
+          <name><surname>Wilson</surname><given-names>Joshua</given-names></name>
+          <name><surname>Jarrod Millman</surname><given-names>K.</given-names></name>
+          <name><surname>Mayorov</surname><given-names>Nikolay</given-names></name>
+          <name><surname>Nelson</surname><given-names>Andrew R. J.</given-names></name>
+          <name><surname>Jones</surname><given-names>Eric</given-names></name>
+          <name><surname>Kern</surname><given-names>Robert</given-names></name>
+          <name><surname>Larson</surname><given-names>Eric</given-names></name>
+          <name><surname>Carey</surname><given-names>CJ</given-names></name>
+          <name><surname>Polat</surname><given-names>İlhan</given-names></name>
+          <name><surname>Feng</surname><given-names>Yu</given-names></name>
+          <name><surname>Moore</surname><given-names>Eric W.</given-names></name>
+          <name><surname>Vand erPlas</surname><given-names>Jake</given-names></name>
+          <name><surname>Laxalde</surname><given-names>Denis</given-names></name>
+          <name><surname>Perktold</surname><given-names>Josef</given-names></name>
+          <name><surname>Cimrman</surname><given-names>Robert</given-names></name>
+          <name><surname>Henriksen</surname><given-names>Ian</given-names></name>
+          <name><surname>Quintero</surname><given-names>E. A.</given-names></name>
+          <name><surname>Harris</surname><given-names>Charles R</given-names></name>
+          <name><surname>Archibald</surname><given-names>Anne M.</given-names></name>
+          <name><surname>Ribeiro</surname><given-names>Antônio H.</given-names></name>
+          <name><surname>Pedregosa</surname><given-names>Fabian</given-names></name>
+          <name><surname>van Mulbregt</surname><given-names>Paul</given-names></name>
+          <name><surname>Contributors</surname><given-names>SciPy 1. 0</given-names></name>
+        </person-group>
+        <article-title>SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python</article-title>
+        <source>Nature Methods</source>
+        <year iso-8601-date="2020">2020</year>
+        <volume>17</volume>
+        <pub-id pub-id-type="doi">10.1038/s41592-019-0686-2</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-storn1997differential">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Storn</surname><given-names>Rainer</given-names></name>
+          <name><surname>Price</surname><given-names>Kenneth</given-names></name>
+        </person-group>
+        <article-title>Differential evolution–a simple and efficient heuristic for global optimization over continuous spaces</article-title>
+        <source>Journal of Global Optimization</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="1997">1997</year>
+        <volume>11</volume>
+        <issue>4</issue>
+        <pub-id pub-id-type="doi">10.1023/A:1008202821328</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-walt2011numpy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Walt</surname><given-names>Stéfan van der</given-names></name>
+          <name><surname>Colbert</surname><given-names>S Chris</given-names></name>
+          <name><surname>Varoquaux</surname><given-names>Gael</given-names></name>
+        </person-group>
+        <article-title>The NumPy array: A structure for efficient numerical computation</article-title>
+        <source>Computing in Science &amp; Engineering</source>
+        <publisher-name>IEEE Computer Society</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <volume>13</volume>
+        <issue>2</issue>
+        <pub-id pub-id-type="doi">10.1109/mcse.2011.37</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-mplotlib">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hunter</surname><given-names>J. D.</given-names></name>
+        </person-group>
+        <article-title>Matplotlib: A 2D graphics environment</article-title>
+        <source>Computing in Science &amp; Engineering</source>
+        <publisher-name>IEEE COMPUTER SOC</publisher-name>
+        <year iso-8601-date="2007">2007</year>
+        <volume>9</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2007.55</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hagberg2008exploring">
+      <element-citation publication-type="report">
+        <person-group person-group-type="author">
+          <name><surname>Hagberg</surname><given-names>Aric</given-names></name>
+          <name><surname>Swart</surname><given-names>Pieter</given-names></name>
+          <name><surname>S Chult</surname><given-names>Daniel</given-names></name>
+        </person-group>
+        <article-title>Exploring network structure, dynamics, and function using NetworkX</article-title>
+        <publisher-name>Los Alamos National Lab. (LANL), Los Alamos, NM (United States)</publisher-name>
+        <year iso-8601-date="2008">2008</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-durilloU003A2011">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Durillo</surname><given-names>Juan J</given-names></name>
+          <name><surname>Nebro</surname><given-names>Antonio J</given-names></name>
+        </person-group>
+        <article-title>jMetal: A java framework for multi-objective optimization</article-title>
+        <source>Advances in Engineering Software</source>
+        <publisher-name>Elsevier</publisher-name>
+        <year iso-8601-date="2011">2011</year>
+        <volume>42</volume>
+        <issue>10</issue>
+        <pub-id pub-id-type="doi">10.1016/j.advengsoft.2011.05.014</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-fortinU003A2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fortin</surname><given-names>Félix-Antoine</given-names></name>
+          <name><surname>De Rainville</surname><given-names>François-Michel</given-names></name>
+          <name><surname>Gardner</surname><given-names>Marc-André Gardner</given-names></name>
+          <name><surname>Parizeau</surname><given-names>Marc</given-names></name>
+          <name><surname>Gagné</surname><given-names>Christian</given-names></name>
+        </person-group>
+        <article-title>DEAP: Evolutionary algorithms made easy</article-title>
+        <source>The Journal of Machine Learning Research</source>
+        <publisher-name>JMLR. org</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>13</volume>
+        <issue>1</issue>
+      </element-citation>
+    </ref>
+    <ref id="ref-cahonU003A2004">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cahon</surname><given-names>Sébastien</given-names></name>
+          <name><surname>Melab</surname><given-names>Nordine</given-names></name>
+          <name><surname>Talbi</surname><given-names>E-G</given-names></name>
+        </person-group>
+        <article-title>Paradiseo: A framework for the reusable design of parallel and distributed metaheuristics</article-title>
+        <source>Journal of heuristics</source>
+        <publisher-name>Springer</publisher-name>
+        <year iso-8601-date="2004">2004</year>
+        <volume>10</volume>
+        <issue>3</issue>
+        <pub-id pub-id-type="doi">10.1023/B:HEUR.0000026900.92269.ec</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-fourerU003A2003">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Fourer</surname><given-names>Robert</given-names></name>
+          <name><surname>Gay</surname><given-names>David M</given-names></name>
+          <name><surname>Kernighan</surname><given-names>Brian W</given-names></name>
+        </person-group>
+        <article-title>AMPL. A modeling language for mathematical programming</article-title>
+        <publisher-name>Thomson</publisher-name>
+        <year iso-8601-date="2003">2003</year>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

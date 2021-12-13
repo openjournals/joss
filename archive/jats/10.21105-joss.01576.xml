@@ -1,0 +1,973 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1576</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01576</article-id>
+<title-group>
+<article-title>MemCNN: A Python/PyTorch package for creating
+memory-efficient invertible neural networks</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-6047-3051</contrib-id>
+<string-name>Sil C. van de Leemput</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Jonas Teuwen</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Bram van Ginneken</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<string-name>Rashindra Manniesing</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Radboud University Medical Center, Department of Radiology
+and Nuclear Medicine, Nijmegen, The Netherlands</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-06-28">
+<day>28</day>
+<month>6</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>39</issue>
+<fpage>1576</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>MemCNN</kwd>
+<kwd>PyTorch</kwd>
+<kwd>machine learning</kwd>
+<kwd>invertible networks</kwd>
+<kwd>deep learning</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Neural networks are computational models that were originally
+  inspired by biological neural networks like animal brains. These
+  networks are composed of many small computational units called neurons
+  that perform elementary calculations. Instead of explicitly
+  programming the behavior of neural networks, these models can be
+  trained to perform tasks, like classifying images, by presenting them
+  examples. Sufficiently complex neural networks can automatically
+  extract task-relevant characteristics from the presented examples
+  without having prior knowledge about the task domain, which makes them
+  attractive for many complicated real-world applications.</p>
+  <p>Reversible operations have recently been successfully applied to
+  classification problems to reduce memory requirements during neural
+  network training. This feature is accomplished by removing the need to
+  store the input activation for computing the gradients at the backward
+  pass and instead reconstruct them on demand. However, current
+  approaches rely on custom implementations of backpropagation, which
+  limits applicability and extendibility. We present MemCNN, a novel
+  PyTorch framework that simplifies the application of reversible
+  functions by removing the need for a customized backpropagation. The
+  framework contains a set of practical generalized tools, which can
+  wrap common operations like convolutions and batch normalization and
+  which take care of memory management. We validate the presented
+  framework by reproducing state-of-the-art experiments using MemCNN and
+  by comparing classification accuracy and training time on Cifar-10 and
+  Cifar-100. Our MemCNN implementations achieved similar classification
+  accuracy and faster training times while retaining compatibility with
+  the default backpropagation facilities of PyTorch.</p>
+</sec>
+<sec id="background">
+  <title>Background</title>
+  <p>Reversible functions, which allow exact retrieval of its input from
+  its output, can reduce memory overhead when used within the context of
+  training neural networks using backpropagation. That is since only the
+  output requires to be stored, intermediate feature maps can be freed
+  on the forward pass and recomputed from the output on the backward
+  pass when required. Recently, reversible functions have been used with
+  some success to extend the well established residual network (ResNet)
+  for image classification from He et al.
+  (<xref alt="2016" rid="ref-He2015" ref-type="bibr">2016</xref>) to
+  more memory efficient invertible convolutional neural networks
+  (<xref alt="Chang et al., 2017" rid="ref-Chang17" ref-type="bibr">Chang
+  et al., 2017</xref>;
+  <xref alt="Gomez et al., 2017" rid="ref-Gomez17" ref-type="bibr">Gomez
+  et al., 2017</xref>;
+  <xref alt="Jacobsen et al., 2018" rid="ref-jaco18" ref-type="bibr">Jacobsen
+  et al., 2018</xref>) showing competitive performance on datasets like
+  Cifar-10, Cifar-100
+  (<xref alt="Krizhevsky, 2009" rid="ref-krizhevsky2009learning" ref-type="bibr">Krizhevsky,
+  2009</xref>) and ImageNet
+  (<xref alt="Deng et al., 2009" rid="ref-imagenet_cvpr09" ref-type="bibr">Deng
+  et al., 2009</xref>). However, practical applicability and
+  extendibility of reversible functions for the reduction of memory
+  overhead have been limited, since current implementations require
+  customized backpropagation, which does not work conveniently with
+  modern deep learning frameworks and requires substantial manual
+  design.</p>
+  <p>The reversible residual network (RevNet) of Gomez et al.
+  (<xref alt="2017" rid="ref-Gomez17" ref-type="bibr">2017</xref>) is a
+  variant on ResNet, which hooks into its sequential structure of
+  residual blocks and replaces them with reversible blocks, that creates
+  an explicit inverse for the residual blocks based on the equations
+  from L. Dinh et al.
+  (<xref alt="2014" rid="ref-Dinh14" ref-type="bibr">2014</xref>) on
+  nonlinear independent components estimation. The reversible block
+  takes arbitrary nonlinear functions <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{F}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{G}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>𝒢</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  and renders them invertible. Their experiments show that RevNet scores
+  similar classification performance on Cifar-10, Cifar-100, and
+  ImageNet, with less memory overhead.</p>
+  <p>Reversible architectures like RevNet have subsequently been studied
+  in the framework of ordinary differential equations (ODE)
+  (<xref alt="Chang et al., 2017" rid="ref-Chang17" ref-type="bibr">Chang
+  et al., 2017</xref>). Three reversible neural networks based on
+  Hamiltonian systems are proposed, which are similar to the RevNet, but
+  have a specific choice for the nonlinear functions
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{F}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{G}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>𝒢</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+  which are shown stable during training within the ODE framework on
+  Cifar-10 and Cifar-100.</p>
+  <p>The i-RevNet architecture extends the RevNet architecture by also
+  making the downscale operations invertible
+  (<xref alt="Jacobsen et al., 2018" rid="ref-jaco18" ref-type="bibr">Jacobsen
+  et al., 2018</xref>), effectively creating a fully invertible
+  architecture up until the last layer, while still showing good
+  classification accuracy compared to ResNet on ImageNet. One
+  particularly interesting finding shows that bottlenecks are not a
+  necessary condition for training neural networks, which shows that the
+  study of invertible networks can lead to a better understanding of
+  neural network training in general.</p>
+  <p>The different reversible architectures proposed in the literature
+  (<xref alt="Chang et al., 2017" rid="ref-Chang17" ref-type="bibr">Chang
+  et al., 2017</xref>;
+  <xref alt="Gomez et al., 2017" rid="ref-Gomez17" ref-type="bibr">Gomez
+  et al., 2017</xref>;
+  <xref alt="Jacobsen et al., 2018" rid="ref-jaco18" ref-type="bibr">Jacobsen
+  et al., 2018</xref>) have all been modifications of the ResNet
+  architecture and all have been implemented in TensorFlow
+  (<xref alt="Abadi et al., 2015" rid="ref-TF2015" ref-type="bibr">Abadi
+  et al., 2015</xref>). However, these implementations rely on custom
+  backpropagation, which limits creating novel invertible networks and
+  application of the concepts beyond the application architecture. Our
+  proposed framework MemCNN overcomes this issue by being compatible
+  with the default backpropagation facilities of PyTorch. Furthermore,
+  PyTorch offers convenient features over other deep learning frameworks
+  like a dynamic computation graph and simple inspection of gradients
+  during backpropagation, which facilitates inspection of invertible
+  operations in neural networks.</p>
+</sec>
+<sec id="methods">
+  <title>Methods</title>
+  <sec id="the-reversible-block">
+    <title>The reversible block</title>
+    <p>The core operator of MemCNN is the reversible block which is an
+    operator which takes a function <inline-formula><alternatives>
+    <tex-math><![CDATA[f]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>
+    and outputs a function <inline-formula><alternatives>
+    <tex-math><![CDATA[R : X \to Y]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>R</mml:mi><mml:mo>:</mml:mo><mml:mi>X</mml:mi><mml:mo>→</mml:mo><mml:mi>Y</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>,
+    and an inverse function <inline-formula><alternatives>
+    <tex-math><![CDATA[R^{-1} : Y \rightarrow{X}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mi>R</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup><mml:mo>:</mml:mo><mml:mi>Y</mml:mi><mml:mo>→</mml:mo><mml:mi>X</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    which resembles an invertible version of
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[f]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>.
+    Here, <inline-formula><alternatives>
+    <tex-math><![CDATA[x\in X]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>x</mml:mi><mml:mo>∈</mml:mo><mml:mi>X</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[y\in Y]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>y</mml:mi><mml:mo>∈</mml:mo><mml:mi>Y</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    can be arbitrary tensors with the same size and number of dimension,
+    i.e.: <inline-formula><alternatives>
+    <tex-math><![CDATA[\operatorname{shape}(x)=\operatorname{shape}(y)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>shape</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>shape</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>y</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.
+    Additionally, it must be possible to partition the input
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[x=(x_1, x_2)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>x</mml:mi><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    and output tensors <inline-formula><alternatives>
+    <tex-math><![CDATA[y=(y_1, y_2)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>y</mml:mi><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    in half, where each partition has the same shape, i.e.:
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\operatorname{shape}(x_1) = \operatorname{shape}(x_2) = \operatorname{shape}(y_1) = \operatorname{shape}(y_2)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>shape</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>shape</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>shape</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>shape</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.
+    Formally, the reversible block operation (1), its inverse (2), and
+    its partition constraints (3) provide a sufficiently general
+    framework for implementing reversible operations.</p>
+    <p>For example, if one wants to create a reversible block performing
+    a convolution followed by a ReLu <inline-formula><alternatives>
+    <tex-math><![CDATA[f]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>,
+    the input <inline-formula><alternatives>
+    <tex-math><![CDATA[x \in X]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>x</mml:mi><mml:mo>∈</mml:mo><mml:mi>X</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    is partitioned in <inline-formula><alternatives>
+    <tex-math><![CDATA[(x_1, x_2)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+    of equal sizes to which this convolution block
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[f]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>
+    is applied twice (say <inline-formula><alternatives>
+    <tex-math><![CDATA[\mathcal{F}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[\mathcal{G}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>𝒢</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>).
+    The Reversible Block takes these two operators
+    (<inline-formula><alternatives>
+    <tex-math><![CDATA[\mathcal{F}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[\mathcal{G}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>𝒢</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>)
+    and outputs a “resblock”-like version <inline-formula><alternatives>
+    <tex-math><![CDATA[R]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>R</mml:mi></mml:math></alternatives></inline-formula>
+    of the operator and an explicit inverse
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[R^{-1}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>R</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:math></alternatives></inline-formula>.
+    Effectively the learnable function <inline-formula><alternatives>
+    <tex-math><![CDATA[f]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>
+    is replaced by a learnable approximation
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[R]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>R</mml:mi></mml:math></alternatives></inline-formula>
+    with an explicit inverse <inline-formula><alternatives>
+    <tex-math><![CDATA[R^{-1}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>R</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup></mml:math></alternatives></inline-formula>.</p>
+    <p><disp-formula><alternatives>
+    <tex-math><![CDATA[\quad R(x) = y]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mspace width="1.0em"></mml:mspace><mml:mi>R</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>y</mml:mi></mml:mrow></mml:math></alternatives></disp-formula>
+    <disp-formula><alternatives>
+    <tex-math><![CDATA[R^{-1}(y)  = x]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mi>R</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>y</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>x</mml:mi></mml:mrow></mml:math></alternatives></disp-formula>
+    with <disp-formula><alternatives>
+    <tex-math><![CDATA[\operatorname{shape}(x_i) = \operatorname{shape}(x_2) = \operatorname{shape}(y_1) = \operatorname{shape}(y_2)]]></tex-math>
+    <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>shape</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>shape</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>shape</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>shape</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></disp-formula></p>
+  </sec>
+  <sec id="couplings">
+    <title>Couplings</title>
+    <p>Using the above definitions we provide two different
+    implementations for the reversible block in MemCNN, which we will
+    call `couplings’. A coupling provides a reversible mapping from
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[(x_1, x_2)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+    to <inline-formula><alternatives>
+    <tex-math><![CDATA[(y_1, y_2)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>.
+    MemCNN supports two couplings: the additive coupling and the affine
+    coupling.</p>
+    <sec id="additive-coupling">
+      <title>Additive coupling</title>
+      <p>Equation 4 represents the additive coupling, which follows the
+      equations of L. Dinh et al.
+      (<xref alt="2014" rid="ref-Dinh14" ref-type="bibr">2014</xref>)
+      and Gomez et al.
+      (<xref alt="2017" rid="ref-Gomez17" ref-type="bibr">2017</xref>).
+      These support a reversible implementation through arbitrary
+      (nonlinear) functions <inline-formula><alternatives>
+      <tex-math><![CDATA[\mathcal{F}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+      and <inline-formula><alternatives>
+      <tex-math><![CDATA[\mathcal{G}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>𝒢</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>.
+      These functions can be convolutions, ReLus, etc., as long as they
+      have matching input and output shapes. The additive coupling is
+      obtained by first computing <inline-formula><alternatives>
+      <tex-math><![CDATA[y_1]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+      from input partitions <inline-formula><alternatives>
+      <tex-math><![CDATA[x_1, x_2]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+      and function <inline-formula><alternatives>
+      <tex-math><![CDATA[\mathcal{F}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+      and subsequently <inline-formula><alternatives>
+      <tex-math><![CDATA[y_2]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>y</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+      is computed from partitions <inline-formula><alternatives>
+      <tex-math><![CDATA[y_1, x_2]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+      and function <inline-formula><alternatives>
+      <tex-math><![CDATA[\mathcal{G}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>𝒢</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>.
+      Next, (4) can be rewritten to obtain an exact inverse function as
+      shown in (5). Figure 1 shows a graphical representation of the
+      additive coupling and its inverse.</p>
+      <fig>
+        <caption><p>Graphical representation of additive coupling. The
+        left graph shows the forward computations and the right graph
+        shows its inverse. First, input <inline-formula><alternatives>
+        <tex-math><![CDATA[x_1]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+        and <inline-formula><alternatives>
+        <tex-math><![CDATA[\mathcal{F}(x_2)]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+        are added to form <inline-formula><alternatives>
+        <tex-math><![CDATA[y_1]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>,
+        next <inline-formula><alternatives>
+        <tex-math><![CDATA[x_2]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+        and <inline-formula><alternatives>
+        <tex-math><![CDATA[\mathcal{G}(y_1)]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>𝒢</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+        are added to form <inline-formula><alternatives>
+        <tex-math><![CDATA[y_2]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>y</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>.
+        Going backwards, first, <inline-formula><alternatives>
+        <tex-math><![CDATA[\mathcal{G}(y_1)]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>𝒢</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+        is subtracted from <inline-formula><alternatives>
+        <tex-math><![CDATA[y_2]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>y</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+        to obtain <inline-formula><alternatives>
+        <tex-math><![CDATA[x_2]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>;
+        subsequently, <inline-formula><alternatives>
+        <tex-math><![CDATA[\mathcal{F}(x_2)]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+        is subtracted from <inline-formula><alternatives>
+        <tex-math><![CDATA[y_1]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+        to obtain <inline-formula><alternatives>
+        <tex-math><![CDATA[x_1]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>.
+        Here, <inline-formula><alternatives>
+        <tex-math><![CDATA[+]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>+</mml:mo></mml:math></alternatives></inline-formula>
+        and <inline-formula><alternatives>
+        <tex-math><![CDATA[-]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>−</mml:mo></mml:math></alternatives></inline-formula>
+        stand for respectively element-wise summation and element-wise
+        subtraction.</p></caption>
+        <graphic mimetype="application" mime-subtype="pdf" xlink:href="additive_005.pdf" xlink:title="" />
+      </fig>
+      <p><named-content id="eqU003Aadditiveforward" content-type="equation"><disp-formula><alternatives>
+      <tex-math><![CDATA[\label{eq:additiveforward}
+      \begin{split}
+      y_1 &= x_1 + \mathcal{F}(x_2), \\
+      y_2 &= x_2 + \mathcal{G}(y_1) \\
+      \end{split}]]></tex-math>
+      <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtable><mml:mtr><mml:mtd columnalign="right"><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>+</mml:mo><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"><mml:msub><mml:mi>y</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo>+</mml:mo><mml:mstyle mathvariant="script"><mml:mi>𝒢</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd></mml:mtr></mml:mtable></mml:math></alternatives></disp-formula></named-content>
+      <named-content id="eqU003Aadditivebackward" content-type="equation"><disp-formula><alternatives>
+      <tex-math><![CDATA[\label{eq:additivebackward}
+      \begin{split}
+      x_2 &= y_2 - \mathcal{G}(y_1), \\
+      x_1 &= y_1 - \mathcal{F}(x_2)
+      \end{split}]]></tex-math>
+      <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtable><mml:mtr><mml:mtd columnalign="right"><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo>−</mml:mo><mml:mstyle mathvariant="script"><mml:mi>𝒢</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>−</mml:mo><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd></mml:mtr></mml:mtable></mml:math></alternatives></disp-formula></named-content></p>
+    </sec>
+    <sec id="affine-coupling">
+      <title>Affine coupling</title>
+      <p>Equation (6) gives the affine coupling, introduced by Laurent
+      Dinh et al.
+      (<xref alt="2016" rid="ref-dinh2016density" ref-type="bibr">2016</xref>)
+      and later used by Kingma &amp; Dhariwal
+      (<xref alt="2018" rid="ref-kingma2018glow" ref-type="bibr">2018</xref>),
+      which is more expressive than the additive coupling. The affine
+      coupling, similar to the additive coupling, supports a reversible
+      implementations through arbitrary (nonlinear) functions
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[\mathcal{F}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+      and <inline-formula><alternatives>
+      <tex-math><![CDATA[\mathcal{G}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>𝒢</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>.
+      It also first computes <inline-formula><alternatives>
+      <tex-math><![CDATA[y_1]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+      from input partitions <inline-formula><alternatives>
+      <tex-math><![CDATA[x_1, x_2]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+      and function <inline-formula><alternatives>
+      <tex-math><![CDATA[\mathcal{F}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+      and subsequently it computes <inline-formula><alternatives>
+      <tex-math><![CDATA[y_2]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>y</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+      from partitions <inline-formula><alternatives>
+      <tex-math><![CDATA[y_1, x_2]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+      and function <inline-formula><alternatives>
+      <tex-math><![CDATA[\mathcal{G}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>𝒢</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>.
+      The difference with the additive coupling is that now the
+      functions <inline-formula><alternatives>
+      <tex-math><![CDATA[\mathcal{F}=(s,t)]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>s</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+      and <inline-formula><alternatives>
+      <tex-math><![CDATA[\mathcal{G}=(s',t')]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>𝒢</mml:mi></mml:mstyle><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>s</mml:mi><mml:mi>′</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mi>′</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+      each produce two equally sized partitions for scaling and
+      translation, so <inline-formula><alternatives>
+      <tex-math><![CDATA[\operatorname{shape}(x_1) = \operatorname{shape}(s) = \operatorname{shape}(t) = \operatorname{shape}(s') = \operatorname{shape}(t')]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>shape</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>shape</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>s</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>shape</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>shape</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>s</mml:mi><mml:mi>′</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mo>shape</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>t</mml:mi><mml:mi>′</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+      holds. These components are then used to compute the output using
+      element-wise product (<inline-formula><alternatives>
+      <tex-math><![CDATA[\odot]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>⊙</mml:mo></mml:math></alternatives></inline-formula>)
+      and element-wise exponentiation with base
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[e]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>e</mml:mi></mml:math></alternatives></inline-formula>
+      and element-wise addition (<inline-formula><alternatives>
+      <tex-math><![CDATA[+]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>+</mml:mo></mml:math></alternatives></inline-formula>).
+      Equation (6) can be rewritten to obtain an exact inverse function
+      as shown in (7), which uses element-wise division
+      (<inline-formula><alternatives>
+      <tex-math><![CDATA[/]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>/</mml:mi></mml:math></alternatives></inline-formula>)
+      and element-wise subtraction (<inline-formula><alternatives>
+      <tex-math><![CDATA[-]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>−</mml:mo></mml:math></alternatives></inline-formula>).
+      Figure 2 shows a graphical representation of the affine coupling
+      and its inverse.</p>
+      <fig>
+        <caption><p>Graphical representation of the affine coupling. The
+        left graph shows the forward computations and the right graph
+        shows its inverse. Here, <inline-formula><alternatives>
+        <tex-math><![CDATA[\odot, /, +, -,]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo>⊙</mml:mo><mml:mo>,</mml:mo><mml:mi>/</mml:mi><mml:mo>,</mml:mo><mml:mo>+</mml:mo><mml:mo>,</mml:mo><mml:mo>−</mml:mo><mml:mo>,</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+        and <inline-formula><alternatives>
+        <tex-math><![CDATA[e]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>e</mml:mi></mml:math></alternatives></inline-formula>
+        stand for element-wise multiplication, element-wise division,
+        element-wise addition, element-wise subtraction, and
+        element-wise exponentiation with base
+        <inline-formula><alternatives>
+        <tex-math><![CDATA[e]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>e</mml:mi></mml:math></alternatives></inline-formula>
+        respectively. First, <inline-formula><alternatives>
+        <tex-math><![CDATA[s, t]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>s</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+        are computed for <inline-formula><alternatives>
+        <tex-math><![CDATA[\mathcal{F}(x_2)]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>,
+        next input <inline-formula><alternatives>
+        <tex-math><![CDATA[x_1]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+        is element-wise multiplied with <inline-formula><alternatives>
+        <tex-math><![CDATA[e^{s}]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>e</mml:mi><mml:mi>s</mml:mi></mml:msup></mml:math></alternatives></inline-formula>
+        and added to <inline-formula><alternatives>
+        <tex-math><![CDATA[t]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>t</mml:mi></mml:math></alternatives></inline-formula>
+        to form <inline-formula><alternatives>
+        <tex-math><![CDATA[y_1]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>,
+        subsequently <inline-formula><alternatives>
+        <tex-math><![CDATA[s', t']]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>s</mml:mi><mml:mi>′</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mi>′</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+        are computed for <inline-formula><alternatives>
+        <tex-math><![CDATA[\mathcal{G}(y_1)]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>𝒢</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+        and then <inline-formula><alternatives>
+        <tex-math><![CDATA[x_2]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+        is element-wise multiplied with <inline-formula><alternatives>
+        <tex-math><![CDATA[e^{s'}]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>e</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mi>′</mml:mi></mml:mrow></mml:msup></mml:math></alternatives></inline-formula>
+        and added to <inline-formula><alternatives>
+        <tex-math><![CDATA[t']]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>t</mml:mi><mml:mi>′</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+        to form <inline-formula><alternatives>
+        <tex-math><![CDATA[y_2]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>y</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:math></alternatives></inline-formula>.</p></caption>
+        <graphic mimetype="application" mime-subtype="pdf" xlink:href="affine_005.pdf" xlink:title="" />
+      </fig>
+      <p><named-content id="eqU003Aaffineforward" content-type="equation"><disp-formula><alternatives>
+      <tex-math><![CDATA[\label{eq:affineforward}
+      \begin{split}
+      y_1 &= x_1 \odot e^{s} + t \;\;\;\;\, \text{with} \;\; \mathcal{F}(x_2) = (s, t)  \\
+      y_2 &= x_2 \odot e^{s'} + t' \;\;\, \text{with} \;\;\; \mathcal{G}(y_1) = (s', t')
+      \end{split}]]></tex-math>
+      <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtable><mml:mtr><mml:mtd columnalign="right"><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>⊙</mml:mo><mml:msup><mml:mi>e</mml:mi><mml:mi>s</mml:mi></mml:msup><mml:mo>+</mml:mo><mml:mi>t</mml:mi><mml:mspace width="0.278em"></mml:mspace><mml:mspace width="0.278em"></mml:mspace><mml:mspace width="0.278em"></mml:mspace><mml:mspace width="0.278em"></mml:mspace><mml:mspace width="0.167em"></mml:mspace><mml:mtext mathvariant="normal">with</mml:mtext><mml:mspace width="0.278em"></mml:mspace><mml:mspace width="0.278em"></mml:mspace><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>s</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"><mml:msub><mml:mi>y</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo>⊙</mml:mo><mml:msup><mml:mi>e</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mi>′</mml:mi></mml:mrow></mml:msup><mml:mo>+</mml:mo><mml:mi>t</mml:mi><mml:mi>′</mml:mi><mml:mspace width="0.278em"></mml:mspace><mml:mspace width="0.278em"></mml:mspace><mml:mspace width="0.167em"></mml:mspace><mml:mtext mathvariant="normal">with</mml:mtext><mml:mspace width="0.278em"></mml:mspace><mml:mspace width="0.278em"></mml:mspace><mml:mspace width="0.278em"></mml:mspace><mml:mstyle mathvariant="script"><mml:mi>𝒢</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>s</mml:mi><mml:mi>′</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mi>′</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd></mml:mtr></mml:mtable></mml:math></alternatives></disp-formula></named-content>
+      <named-content id="eqU003Aaffinebackward" content-type="equation"><disp-formula><alternatives>
+      <tex-math><![CDATA[\label{eq:affinebackward}
+      \begin{split}
+      x_2 &= (y_2 - t') / e^{s'} \;\;\, \text{with} \;\;\; \mathcal{G}(y_1) = (s', t') \\
+      x_1 &= (y_1 - t) / e^{s} \;\;\;\:\: \text{with} \;\; \mathcal{F}(x_2) = (s, t) 
+      \end{split}]]></tex-math>
+      <mml:math display="block" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mtable><mml:mtr><mml:mtd columnalign="right"><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo>−</mml:mo><mml:mi>t</mml:mi><mml:mi>′</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>/</mml:mi><mml:msup><mml:mi>e</mml:mi><mml:mrow><mml:mi>s</mml:mi><mml:mi>′</mml:mi></mml:mrow></mml:msup><mml:mspace width="0.278em"></mml:mspace><mml:mspace width="0.278em"></mml:mspace><mml:mspace width="0.167em"></mml:mspace><mml:mtext mathvariant="normal">with</mml:mtext><mml:mspace width="0.278em"></mml:mspace><mml:mspace width="0.278em"></mml:mspace><mml:mspace width="0.278em"></mml:mspace><mml:mstyle mathvariant="script"><mml:mi>𝒢</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>s</mml:mi><mml:mi>′</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mi>′</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd></mml:mtr><mml:mtr><mml:mtd columnalign="right"><mml:msub><mml:mi>x</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:mtd><mml:mtd columnalign="left"><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>y</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>−</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>/</mml:mi><mml:msup><mml:mi>e</mml:mi><mml:mi>s</mml:mi></mml:msup><mml:mspace width="0.278em"></mml:mspace><mml:mspace width="0.278em"></mml:mspace><mml:mspace width="0.278em"></mml:mspace><mml:mspace width="0.222em"></mml:mspace><mml:mspace width="0.222em"></mml:mspace><mml:mtext mathvariant="normal">with</mml:mtext><mml:mspace width="0.278em"></mml:mspace><mml:mspace width="0.278em"></mml:mspace><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:msub><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>s</mml:mi><mml:mo>,</mml:mo><mml:mi>t</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mtd></mml:mtr></mml:mtable></mml:math></alternatives></disp-formula></named-content></p>
+    </sec>
+  </sec>
+  <sec id="implementation-details">
+    <title>Implementation details</title>
+    <p>The reversible block has been implemented as a which wraps other
+    PyTorch modules of arbitrary complexity for coupling functions
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\mathcal{F}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>ℱ</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[\mathcal{G}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>𝒢</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>.
+    Each memory saving coupling is implemented using at least one ,
+    which provides a custom forward and backward pass that works with
+    the automatic differentiation system of PyTorch. Memory savings are
+    implemented at the level of the reversible block and are achieved by
+    setting the size of the underlying tensor storage to zero for inputs
+    on the forward pass and restoring the storage size to the original
+    size on the backward pass once it is required for computing
+    gradients.</p>
+  </sec>
+  <sec id="building-larger-networks">
+    <title>Building larger networks</title>
+    <p>The reversible block <inline-formula><alternatives>
+    <tex-math><![CDATA[R]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>R</mml:mi></mml:math></alternatives></inline-formula>
+    can be chained by subsequent reversible blocks, e.g.:
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[R_3 \circ R_2 \circ R_1]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>R</mml:mi><mml:mn>3</mml:mn></mml:msub><mml:mo>∘</mml:mo><mml:msub><mml:mi>R</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo>∘</mml:mo><mml:msub><mml:mi>R</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>
+    for reversible blocks <inline-formula><alternatives>
+    <tex-math><![CDATA[R_1, R_2, R_3]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>R</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>R</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>R</mml:mi><mml:mn>3</mml:mn></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>,
+    which creates a fully reversible chain of operations (see Figure 3).
+    Additionally, reversible blocks can be mixed with regular functions
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[f]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>,
+    e.g. <inline-formula><alternatives>
+    <tex-math><![CDATA[f \circ R]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mo>∘</mml:mo><mml:mi>R</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    or <inline-formula><alternatives>
+    <tex-math><![CDATA[R \circ f]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>R</mml:mi><mml:mo>∘</mml:mo><mml:mi>f</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    for reversible block <inline-formula><alternatives>
+    <tex-math><![CDATA[R]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>R</mml:mi></mml:math></alternatives></inline-formula>
+    and regular function <inline-formula><alternatives>
+    <tex-math><![CDATA[f]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi></mml:math></alternatives></inline-formula>.
+    Note that mixing regular functions with reversible blocks often
+    breaks the invertibility of reversible chains.</p>
+    <fig>
+      <caption><p>Graphical representation of chaining multiple
+      reversible block layers.</p></caption>
+      <graphic mimetype="application" mime-subtype="pdf" xlink:href="coupling_001.pdf" xlink:title="" />
+    </fig>
+  </sec>
+  <sec id="memory-savings">
+    <title>Memory savings</title>
+    <p><bold>Table 1:</bold> Comparison of memory and computational
+    complexity for training a residual network (ResNet) between various
+    memory saving techniques (extended table from Gomez et al.
+    (<xref alt="2017" rid="ref-Gomez17" ref-type="bibr">2017</xref>)).
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[L]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>L</mml:mi></mml:math></alternatives></inline-formula>
+    depicts the number of residual layers in the ResNet.</p>
+    <p>The reversible block model has an advantageous memory footprint
+    when chained in a sequence when training neural networks. After
+    computing each <inline-formula><alternatives>
+    <tex-math><![CDATA[R(x) = y]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>R</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>x</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>y</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    by (1) on the forward pass, input <inline-formula><alternatives>
+    <tex-math><![CDATA[x]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi></mml:math></alternatives></inline-formula>
+    can be freed from memory and be recomputed on the backward pass,
+    using the inverse function <inline-formula><alternatives>
+    <tex-math><![CDATA[R^{-1}(y)=x]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mi>R</mml:mi><mml:mrow><mml:mo>−</mml:mo><mml:mn>1</mml:mn></mml:mrow></mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>y</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>=</mml:mo><mml:mi>x</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    from (2). Once the input is restored, the gradients for the weights
+    and the inputs can be recomputed as normal using the PyTorch
+    `autograd’ solver. This effectively yields a memory complexity of
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[O(1)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>O</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+    in the number of chained reversible blocks. Table 1 shows a
+    comparison of memory versus computational complexity for different
+    memory saving techniques.</p>
+  </sec>
+</sec>
+<sec id="experiments-and-results">
+  <title>Experiments and results</title>
+  <p><bold>Table 2a:</bold> Accuracy comparison of the PyTorch
+  implementation (MemCNN) versus the Tensorflow implementation from
+  Gomez et al.
+  (<xref alt="2017" rid="ref-Gomez17" ref-type="bibr">2017</xref>) on
+  Cifar-10 and Cifar-100
+  (<xref alt="Krizhevsky, 2009" rid="ref-krizhevsky2009learning" ref-type="bibr">Krizhevsky,
+  2009</xref>). Accuracies were approximately similar between
+  implementations.</p>
+  <p><bold>Table 2b:</bold> Training time (in hours:minutes) comparison
+  of the PyTorch implementation (MemCNN) versus the Tensorflow
+  implementation from Gomez et al.
+  (<xref alt="2017" rid="ref-Gomez17" ref-type="bibr">2017</xref>) on
+  Cifar-10 and Cifar-100
+  (<xref alt="Krizhevsky, 2009" rid="ref-krizhevsky2009learning" ref-type="bibr">Krizhevsky,
+  2009</xref>). Training times were significantly less for the PyTorch
+  implementation than for the Tensorflow implementation.</p>
+  <p>To validate MemCNN, we reproduced the experiments from Gomez et al.
+  (<xref alt="2017" rid="ref-Gomez17" ref-type="bibr">2017</xref>) on
+  Cifar-10 and Cifar-100
+  (<xref alt="Krizhevsky, 2009" rid="ref-krizhevsky2009learning" ref-type="bibr">Krizhevsky,
+  2009</xref>) using their Tensorflow
+  (<xref alt="Abadi et al., 2015" rid="ref-TF2015" ref-type="bibr">Abadi
+  et al., 2015</xref>) implementation on GitHub, and made a direct
+  comparison with our PyTorch implementation on accuracy and train time.
+  We have tried to keep all the experimental settings, like data
+  loading, loss function, train procedure, and training parameters, as
+  similar as possible. All experiments were performed on a single NVIDIA
+  GeForce GTX 1080 with 8GB of RAM. The accuracies and training time
+  results are listed in respectively Table 2a and Table 2b. Model
+  performance of our PyTorch implementation obtained similar accuracy to
+  the TensorFlow implementation with less training time on Cifar-10 and
+  Cifar-100. All models and experiments are included in MemCNN and can
+  be rerun for reproducibility.</p>
+  <p>Table 3 shows memory usage statistics (parameters and activations)
+  during training for all PyTorch models. Here, the ResNet model uses a
+  conventional implementation and the RevNet model uses the reversible
+  blocks from MemCNN. The results show that significant activation
+  memory reduction was obtained using the reversible block
+  implementation (RevNet) when the number of layers of the models
+  increased.</p>
+  <p><bold>Table 3:</bold> Model statistics for all PyTorch model
+  implementations on memory usage (parameters and activations) in MB
+  during training and the number of layers and parameters. The ResNet
+  model was implemented using a conventional non-reversible
+  implementation while the RevNet model uses MemCNN with memory saving
+  reversible blocks. To facilitate comparison, each row lists the
+  statistics of one ResNet and one RevNet model which have a comparable
+  number of layers and number of parameters. Significant memory savings
+  for the activations were observed when using reversible operations
+  (RevNet) as the number of layers increased. Model parameter memory
+  usage stayed roughly the same between implementations.</p>
+</sec>
+<sec id="works-using-memcnn">
+  <title>Works using MemCNN</title>
+  <p>MemCNN has recently been used to create reversible GANs for
+  memory-efficient image-to-image translation by T. F. A. van der
+  Ouderaa &amp; Worrall
+  (<xref alt="2019" rid="ref-Ouderaa_2019_CVPR" ref-type="bibr">2019</xref>).
+  Image-to-image translation considers the problem of mapping both
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[X \rightarrow Y]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>X</mml:mi><mml:mo>→</mml:mo><mml:mi>Y</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[Y \rightarrow X]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>Y</mml:mi><mml:mo>→</mml:mo><mml:mi>X</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  given two image domains <inline-formula><alternatives>
+  <tex-math><![CDATA[X]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>X</mml:mi></mml:math></alternatives></inline-formula>
+  and <inline-formula><alternatives>
+  <tex-math><![CDATA[Y]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>Y</mml:mi></mml:math></alternatives></inline-formula>
+  using either paired or unpaired examples. In this work, the CycleGAN
+  (<xref alt="Zhu et al., 2017" rid="ref-zhu2017unpaired" ref-type="bibr">Zhu
+  et al., 2017</xref>) model has been enlarged and extended with an
+  invertible core using the reversible block, which they call RevGAN.
+  Since the invertible core is weight tied, training the model for the
+  mapping <inline-formula><alternatives>
+  <tex-math><![CDATA[X \rightarrow Y]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>X</mml:mi><mml:mo>→</mml:mo><mml:mi>Y</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  automatically trains the model for mapping
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[Y \rightarrow X]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>Y</mml:mi><mml:mo>→</mml:mo><mml:mi>X</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>.
+  They show similar or increased performance of RevGAN with respect to
+  similar non-invertible models like the CycleGAN with less memory
+  overhead during training. The RevGAN model has also been applied to
+  chest CT images
+  (<xref alt="T. F. A. van der Ouderaa et al., 2019" rid="ref-ouderaaU003AMIDLAbstract2019a" ref-type="bibr">T.
+  F. A. van der Ouderaa et al., 2019</xref>).</p>
+</sec>
+<sec id="conclusion">
+  <title>Conclusion</title>
+  <p>We have presented MemCNN, a novel PyTorch framework, for creating
+  and applying reversible operations for neural networks. It shows
+  similar accuracy on Cifar-10 and Cifar-100 datasets with the current
+  state-of-the-art method for reversible operations in Tensorflow and
+  provides overall faster training times. The main features of the
+  framework are smooth integration of reversible functions with other
+  non-reversible functions by removing the need for a custom
+  backpropagation and simple wrapping of arbitrary complex
+  non-invertible nonlinear functions. The presented framework is
+  intended to facilitate the study and application of invertible
+  functions in the context of neural networks.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>This work was supported by research grants from the Netherlands
+  Organization for Scientific Research (NWO), the Netherlands and Canon
+  Medical Systems Corporation, Japan.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Gomez17">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Gomez</surname><given-names>A. N.</given-names></name>
+          <name><surname>Ren</surname><given-names>M.</given-names></name>
+          <name><surname>Urtasun</surname><given-names>R.</given-names></name>
+          <name><surname>Grosse</surname><given-names>R. B.</given-names></name>
+        </person-group>
+        <article-title>The reversible residual network: Backpropagation without storing activations</article-title>
+        <publisher-name>arXiv:1707.04585 [cs.CV]</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://arxiv.org/abs/1707.04585</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Dinh14">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Dinh</surname><given-names>L.</given-names></name>
+          <name><surname>Krueger</surname><given-names>D.</given-names></name>
+          <name><surname>Bengio</surname><given-names>Y.</given-names></name>
+        </person-group>
+        <article-title>NICE: Non-linear independent components estimation</article-title>
+        <publisher-name>arXiv:1410.8516 [cs.LG]</publisher-name>
+        <year iso-8601-date="2014">2014</year>
+        <uri>https://arxiv.org/abs/1410.8516</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-He2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>He</surname><given-names>Kaiming</given-names></name>
+          <name><surname>Zhang</surname><given-names>Xiangyu</given-names></name>
+          <name><surname>Ren</surname><given-names>Shaoqing</given-names></name>
+          <name><surname>Sun</surname><given-names>Jian</given-names></name>
+        </person-group>
+        <article-title>Deep residual learning for image recognition</article-title>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2016-06">2016</year><month>06</month>
+        <pub-id pub-id-type="doi">10.1109/cvpr.2016.90</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Chang17">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Chang</surname><given-names>B.</given-names></name>
+          <name><surname>Meng</surname><given-names>L.</given-names></name>
+          <name><surname>Haber</surname><given-names>E.</given-names></name>
+          <name><surname>Ruthotto</surname><given-names>L.</given-names></name>
+          <name><surname>Begert</surname><given-names>D.</given-names></name>
+          <name><surname>Holtham</surname><given-names>E.</given-names></name>
+        </person-group>
+        <article-title>Reversible architectures for arbitrarily deep residual neural networks</article-title>
+        <publisher-name>arXiv:1709.03698 [cs.CV]</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <uri>https://arxiv.org/abs/1709.03698</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-krizhevsky2009learning">
+      <element-citation publication-type="thesis">
+        <person-group person-group-type="author">
+          <name><surname>Krizhevsky</surname><given-names>A.</given-names></name>
+        </person-group>
+        <article-title>Learning multiple layers of features from tiny images</article-title>
+        <publisher-name>University of Toronto</publisher-name>
+        <publisher-loc>Toronto, Ontario, Canada</publisher-loc>
+        <year iso-8601-date="2009-04">2009</year><month>04</month>
+      </element-citation>
+    </ref>
+    <ref id="ref-imagenet_cvpr09">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Deng</surname><given-names>Jia</given-names></name>
+          <name><surname>Dong</surname><given-names>Wei</given-names></name>
+          <name><surname>Socher</surname><given-names>Richard</given-names></name>
+          <name><surname>Li</surname><given-names>Li-Jia</given-names></name>
+          <name><surname>Li</surname><given-names>Kai</given-names></name>
+          <name><surname>Fei-Fei</surname><given-names>Li</given-names></name>
+        </person-group>
+        <article-title>ImageNet: A large-scale hierarchical image database</article-title>
+        <source>2009 IEEE conference on computer vision and pattern recognition</source>
+        <publisher-name>IEEE</publisher-name>
+        <year iso-8601-date="2009-06">2009</year><month>06</month>
+        <pub-id pub-id-type="doi">10.1109/cvprw.2009.5206848</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-jaco18">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Jacobsen</surname><given-names>J.-H.</given-names></name>
+          <name><surname>Smeulders</surname><given-names>A. W. M.</given-names></name>
+          <name><surname>Oyallon</surname><given-names>E.</given-names></name>
+        </person-group>
+        <article-title>i-RevNet: Deep invertible networks</article-title>
+        <source>ICLR</source>
+        <publisher-name>arXiv:1802.07088 [cs.LG]</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <uri>https://arxiv.org/abs/1802.07088</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-TF2015">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Abadi</surname><given-names>M.</given-names></name>
+          <name><surname>Agarwal</surname><given-names>A.</given-names></name>
+          <name><surname>Barham</surname><given-names>P.</given-names></name>
+          <name><surname>Brevdo</surname><given-names>E.</given-names></name>
+          <name><surname>Chen</surname><given-names>Z.</given-names></name>
+          <name><surname>Citro</surname><given-names>C.</given-names></name>
+          <name><surname>Corrado</surname><given-names>G. S..</given-names></name>
+          <name><surname>Davis</surname><given-names>A.</given-names></name>
+          <name><surname>Dean</surname><given-names>J.</given-names></name>
+          <name><surname>Devin</surname><given-names>M.</given-names></name>
+          <name><surname>Ghemawat</surname><given-names>S.</given-names></name>
+          <name><surname>Goodfellow</surname><given-names>I.</given-names></name>
+          <name><surname>Harp</surname><given-names>A.</given-names></name>
+          <name><surname>Irving</surname><given-names>G.</given-names></name>
+          <name><surname>Isard</surname><given-names>M.</given-names></name>
+          <name><surname>Y.Jia</surname></name>
+          <name><surname>Jozefowicz</surname><given-names>R.</given-names></name>
+          <name><surname>Kaiser</surname><given-names>L.</given-names></name>
+          <name><surname>Kudlur</surname><given-names>M.</given-names></name>
+          <name><surname>Levenberg</surname><given-names>J.</given-names></name>
+          <name><surname>Mané</surname><given-names>D.</given-names></name>
+          <name><surname>Monga</surname><given-names>R.</given-names></name>
+          <name><surname>Moore</surname><given-names>S.</given-names></name>
+          <name><surname>Murray</surname><given-names>D.</given-names></name>
+          <name><surname>Olah</surname><given-names>C.</given-names></name>
+          <name><surname>Schuster</surname><given-names>M.</given-names></name>
+          <name><surname>Shlens</surname><given-names>J.</given-names></name>
+          <name><surname>Steiner</surname><given-names>B.</given-names></name>
+          <name><surname>Sutskever</surname><given-names>I.</given-names></name>
+          <name><surname>Talwar</surname><given-names>K.</given-names></name>
+          <name><surname>Tucker</surname><given-names>P.</given-names></name>
+          <name><surname>Vanhoucke</surname><given-names>V.</given-names></name>
+          <name><surname>Vasudevan</surname><given-names>V.</given-names></name>
+          <name><surname>Viégas</surname><given-names>F.</given-names></name>
+          <name><surname>Vinyals</surname><given-names>O.</given-names></name>
+          <name><surname>Warden</surname><given-names>P.</given-names></name>
+          <name><surname>Wattenberg</surname><given-names>M.</given-names></name>
+          <name><surname>Wicke</surname><given-names>M.</given-names></name>
+          <name><surname>Yu</surname><given-names>Y.</given-names></name>
+          <name><surname>Zheng</surname><given-names>X.</given-names></name>
+        </person-group>
+        <article-title>TensorFlow: Large-scale machine learning on heterogeneous systems</article-title>
+        <year iso-8601-date="2015">2015</year>
+        <uri>http://tensorflow.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-kingma2018glow">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Kingma</surname><given-names>Durk P</given-names></name>
+          <name><surname>Dhariwal</surname><given-names>Prafulla</given-names></name>
+        </person-group>
+        <article-title>Glow: Generative flow with invertible 1x1 convolutions</article-title>
+        <source>Advances in neural information processing systems 31</source>
+        <person-group person-group-type="editor">
+          <name><surname>Bengio</surname><given-names>S.</given-names></name>
+          <name><surname>Wallach</surname><given-names>H.</given-names></name>
+          <name><surname>Larochelle</surname><given-names>H.</given-names></name>
+          <name><surname>Grauman</surname><given-names>K.</given-names></name>
+          <name><surname>Cesa-Bianchi</surname><given-names>N.</given-names></name>
+          <name><surname>Garnett</surname><given-names>R.</given-names></name>
+        </person-group>
+        <publisher-name>Curran Associates, Inc.</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <uri>http://papers.nips.cc/paper/8224-glow-generative-flow-with-invertible-1x1-convolutions.pdf</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-dinh2016density">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Dinh</surname><given-names>Laurent</given-names></name>
+          <name><surname>Sohl-Dickstein</surname><given-names>Jascha</given-names></name>
+          <name><surname>Bengio</surname><given-names>Samy</given-names></name>
+        </person-group>
+        <article-title>Density estimation using Real NVP</article-title>
+        <publisher-name>arXiv:1605.08803 [cs.LG]</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <uri>https://arxiv.org/abs/1605.08803</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Ouderaa_2019_CVPR">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Ouderaa</surname><given-names>Tycho F. A. van der</given-names></name>
+          <name><surname>Worrall</surname><given-names>Daniel E.</given-names></name>
+        </person-group>
+        <article-title>Reversible GANs for memory-efficient image-to-image translation</article-title>
+        <source>The IEEE Conference on Computer Vision and Pattern Recognition (CVPR)</source>
+        <publisher-name>arXiv:1902.02729 [cs.CV]</publisher-name>
+        <year iso-8601-date="2019-06">2019</year><month>06</month>
+        <uri>https://arxiv.org/abs/1902.02729</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-zhu2017unpaired">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Zhu</surname><given-names>Jun-Yan</given-names></name>
+          <name><surname>Park</surname><given-names>Taesung</given-names></name>
+          <name><surname>Isola</surname><given-names>Phillip</given-names></name>
+          <name><surname>Efros</surname><given-names>Alexei A</given-names></name>
+        </person-group>
+        <article-title>Unpaired image-to-image translation using cycle-consistent adversarial networks</article-title>
+        <source>Proceedings of the IEEE International Conference on Computer Vision</source>
+        <year iso-8601-date="2017">2017</year>
+        <pub-id pub-id-type="doi">10.1109/iccv.2017.244</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-ouderaaU003AMIDLAbstract2019a">
+      <element-citation publication-type="paper-conference">
+        <person-group person-group-type="author">
+          <name><surname>Ouderaa</surname><given-names>Tycho F. A. van der</given-names></name>
+          <name><surname>Worrall</surname><given-names>Daniel E.</given-names></name>
+          <name><surname>Ginneken</surname><given-names>Bram van</given-names></name>
+        </person-group>
+        <article-title>Chest CT super-resolution and domain-adaptation using memory-efficient 3D reversible GANs</article-title>
+        <source>International conference on medical imaging with deep learning</source>
+        <publisher-loc>London, United Kingdom</publisher-loc>
+        <year iso-8601-date="2019-07">2019</year><month>07</month>
+        <uri>https://openreview.net/forum?id=SkxueFsiFV</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

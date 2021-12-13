@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">1295</article-id>
+<article-id pub-id-type="doi">10.21105/joss.01295</article-id>
+<title-group>
+<article-title>NiBetaSeries: task related correlations in
+fMRI</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-4892-2659</contrib-id>
+<string-name>James D. Kent</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-9840-6257</contrib-id>
+<string-name>Peer Herholz</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Interdisciplinary Graduate Program in Neuroscience,
+University of Iowa, Iowa City, United states of America</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Montréal Neurological Institute, McGill University Health
+Centre, Montreal, Quebec, Canada</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2019-01-30">
+<day>30</day>
+<month>1</month>
+<year>2019</year>
+</pub-date>
+<volume>4</volume>
+<issue>41</issue>
+<fpage>1295</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>neuroscience</kwd>
+<kwd>neuroimaging</kwd>
+<kwd>BIDS</kwd>
+<kwd>fMRI</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="background">
+  <title>Background</title>
+  <p>You may not be aware of it, but your brain is orchestrating a
+  complex ballet of activity while reading this sentence. Whether it is
+  following a dot or reading a sentence; the brain is evaluating input
+  and sending motoric output to perform optimally/efficiently. We can
+  measure this flurry of activity using functional Magnetic Resonance
+  Imaging (fMRI). Traditional fMRI analysis emphasizes what regions are
+  “activated/deactivated” during a task, but it does not provide
+  information about which regions are acting in synchrony or are being
+  segregated. Knowing the synchronous/segregated brain regions during a
+  task gives insights on the potential organization of the brain.
+  <bold>NiBetaSeries seeks to provide information about the organization
+  of the brain by correlating activation/deactivation patterns between
+  brain regions during a task.</bold></p>
+  <p>To understand NiBetaSeries we need to answer two questions: what is
+  a “beta” (or parameter estimate) and how can we analyze a series of
+  betas? We have already mentioned betas by another name,
+  activation/deactivation. The term beta comes from its use in the
+  General Linear Model (GLM), which is an extension of linear
+  regression. fMRI signal evoked by a stimulus follows a relatively
+  stereotyped shape from the Blood Oxygen Level Dependent (BOLD)
+  response, which is reasonably modeled with a double-gamma function.
+  The overall amplitude (i.e., activation/deactivation) of the double
+  gamma function is determined by the beta coefficient. Thus larger
+  betas mean greater activation and smaller or negative betas mean less
+  activation or deactivation relative to a baseline. Traditional fMRI
+  analysis will group together all trials of a single type and give them
+  all one beta estimate, where variance between trials is treated as
+  noise. NiBetaSeries, on the other hand, gives each trial its own beta
+  estimate treating the variance between trials as the signal of
+  interest.</p>
+  <p>Two common methods for deriving single trial beta estimates are
+  least squares all (LSA) and least squares separate (LSS)
+  (<xref alt="Mumford et al., 2012" rid="ref-Mumford2012" ref-type="bibr">Mumford
+  et al., 2012</xref>;
+  <xref alt="Turner et al., 2012" rid="ref-Turner2012a" ref-type="bibr">Turner
+  et al., 2012</xref>). LSA places all the trials in the same GLM, where
+  each trial is a separate predictor. LSA works well when the trials are
+  far apart in time because the BOLD response takes a long time to
+  return to baseline. When the trials are close together, however, the
+  bold responses start to overlap and the GLM cannot accurately
+  attribute the variance in the fMRI data to a single trial, leading to
+  unreliable beta estimates. LSS tackles this problem by making as many
+  GLMs as there are trials. For each trial, a GLM is created with two
+  predictors: one is the trial of interest and the second is the
+  combination of all the other trials. LSS reduces the amount of overlap
+  (or more accurately correlation) between predictors, leading to more
+  reliable individual beta estimates. NiBetaSeries currently implements
+  LSS making the software a reasonable analysis choice for experiments
+  with trials that occur close together (e.g., 3-7 seconds apart on
+  average). The output of LSA or LSS is a beta series for each voxel in
+  the dataset.</p>
+  <p>There is a wealth of analysis methods applicable to beta series
+  datasets. To review the structure of our data, we have a beta estimate
+  for each trial within every voxel in the brain, resulting in a
+  4-dimensional (<monospace>4D</monospace>) dataset. The first three
+  dimensions represent the voxel dimensions, and the 4th dimension
+  represents the number of trials. For many intents and purposes, the
+  <monospace>4D</monospace> beta series can be analyzed similarly to a
+  <monospace>4D</monospace> resting state dataset where the 4th
+  dimension represents time. Traditional analysis strategies applied to
+  resting state such as seed based correlation, independent components
+  analysis, regional homogeneity, and graph theory can be applied to
+  beta series
+  (<xref alt="Cole et al., 2010" rid="ref-Cole2010" ref-type="bibr">Cole
+  et al., 2010</xref>;
+  <xref alt="Wijk et al., 2010" rid="ref-vanWijk2010" ref-type="bibr">Wijk
+  et al., 2010</xref>). Recycling these methods for beta series provides
+  a new lens to observe the organization of the brain during a task and
+  may lead to additional insights.</p>
+</sec>
+<sec id="software-overview">
+  <title>Software Overview</title>
+  <p>NiBetaSeries presents as a command line utility written in Python
+  following the template of a BIDS-App
+  (<xref alt="Gorgolewski et al., 2017" rid="ref-Gorgolewski2017" ref-type="bibr">Gorgolewski
+  et al., 2017</xref>). NiBetaSeries is available on
+  <ext-link ext-link-type="uri" xlink:href="https://pypi.org/project/nibetaseries/">pypi</ext-link>
+  and as an container on
+  <ext-link ext-link-type="uri" xlink:href="https://hub.docker.com/r/hbclab/nibetaseries">dockerhub</ext-link>
+  with
+  <ext-link ext-link-type="uri" xlink:href="https://nibetaseries.readthedocs.io/en/latest/">comprehensive
+  documentation</ext-link> complete with an interactive example. The
+  primary way to interact with NiBetaSeries is typing
+  <monospace>nibs</monospace> in the command line. The basic workflow of
+  NiBetaSeries follows these steps (the files can be found in the
+  <monospace>workflows</monospace> directory):</p>
+  <list list-type="order">
+    <list-item>
+      <label>1)</label>
+      <p><monospace>base.py</monospace>: Read and validate necessary
+      inputs (a minimally processed fMRI file, a brain mask, an events
+      file specifying the onsets, duration, and the trial type, an atlas
+      parcellation, and a table connecting the numbers in the atlas
+      parcellation with names of the regions).</p>
+    </list-item>
+    <list-item>
+      <label>2)</label>
+      <p><monospace>model.py</monospace>: Construct and execute GLMs
+      using LSS (with additional confound predictors optionally added)
+      generating a beta series (a list of betas for each voxel).</p>
+    </list-item>
+    <list-item>
+      <label>3)</label>
+      <p><monospace>analysis.py</monospace>: Apply atlas parcellation to
+      data averaging betas within regions for each trial.</p>
+    </list-item>
+    <list-item>
+      <label>4)</label>
+      <p><monospace>analysis.py</monospace>: Correlate each region’s
+      list of betas with every other region.</p>
+    </list-item>
+    <list-item>
+      <label>5)</label>
+      <p><monospace>analysis.py</monospace>: r-z transform the
+      correlations and output a symmetric correlation matrix in a
+      <monospace>tsv</monospace> file.</p>
+    </list-item>
+  </list>
+  <p>The correlation matrix from NiBetaSeries can be used for graph
+  theoretical applications, specific region-region correlations across
+  different trial types, and other analyses.</p>
+  <p>NiBetaSeries is not the first or only piece of software that
+  measures task related correlations in the brain. There are two other
+  packages known to the authors: BASCO and Pybetaseries
+  (<xref alt="Göttlich et al., 2015" rid="ref-Gottlich2015" ref-type="bibr">Göttlich
+  et al., 2015</xref>;
+  <xref alt="Poldrack, 2014" rid="ref-Poldrack2014" ref-type="bibr">Poldrack,
+  2014</xref>). BASCO (BetA Series COrrelations) is a Matlab toolbox
+  that calculates task correlations, but is designed for slow event
+  related designs (e.g., trials occur more than 10 seconds apart).
+  Pybetaseries is a Python script that is designed for fast event
+  related designs (like NiBetaSeries), but is no longer actively
+  maintained. Given the drawbacks of the alternatives, NiBetaSeries
+  justifies its existence and utility to the neuroscience field.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>Conceptualization of the BetaSeries Method is credited to Jesse
+  Rissman
+  (<xref alt="Rissman et al., 2004" rid="ref-Rissman2004" ref-type="bibr">Rissman
+  et al., 2004</xref>), and the LSS method to Benjamin Turner
+  (<xref alt="Turner et al., 2012" rid="ref-Turner2012a" ref-type="bibr">Turner
+  et al., 2012</xref>) with validation by Jeanette Mumford
+  (<xref alt="Mumford et al., 2012" rid="ref-Mumford2012" ref-type="bibr">Mumford
+  et al., 2012</xref>) and Hunar Abdulrahman
+  (<xref alt="Abdulrahman &amp; Henson, 2016" rid="ref-Abdulrahman2016" ref-type="bibr">Abdulrahman
+  &amp; Henson, 2016</xref>). Michelle Voss provided guidance over the
+  entirety of the project with funding from the National Institutes of
+  Health (5R01AG055500). The organization of the code is indebted to
+  <monospace>fmriprep</monospace> and their developers/maintainers for
+  inspiration
+  (<xref alt="Esteban et al., 2019" rid="ref-Esteban2019" ref-type="bibr">Esteban
+  et al., 2019</xref>). Thanks to Neurohackademy for providing new
+  contributors. Neurohackademy is funded by the National Institute of
+  Mental Health through a grant to Ariel Rokem and Tal Yarkoni
+  (R25MH112480). Finally, all the contributors listed in
+  <monospace>zenodo</monospace> and <monospace>github</monospace> have
+  contributed code and intellectual labor to NiBetaSeries pushing the
+  project to new heights.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-Gottlich2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Göttlich</surname><given-names>Martin</given-names></name>
+          <name><surname>Beyer</surname><given-names>Frederike</given-names></name>
+          <name><surname>Krämer</surname><given-names>Ulrike M.</given-names></name>
+        </person-group>
+        <article-title>BASCO: a toolbox for task-related functional connectivity</article-title>
+        <source>Frontiers in Systems Neuroscience</source>
+        <year iso-8601-date="2015">2015</year>
+        <volume>9</volume>
+        <issue>September</issue>
+        <isbn>1662-5137 (Electronic)$\backslash$r1662-5137 (Linking)</isbn>
+        <issn>1662-5137</issn>
+        <uri>http://journal.frontiersin.org/Article/10.3389/fnsys.2015.00126/abstract</uri>
+        <pub-id pub-id-type="doi">10.3389/fnsys.2015.00126</pub-id>
+        <pub-id pub-id-type="pmid">26441558</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Esteban2019">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Esteban</surname><given-names>Oscar</given-names></name>
+          <name><surname>Markiewicz</surname><given-names>Christopher J</given-names></name>
+          <name><surname>Blair</surname><given-names>Ross W</given-names></name>
+          <name><surname>Moodie</surname><given-names>Craig A</given-names></name>
+          <name><surname>Ayse</surname><given-names>I</given-names></name>
+          <name><surname>Erramuzpe</surname><given-names>Asier</given-names></name>
+          <name><surname>Kent</surname><given-names>James D</given-names></name>
+          <name><surname>Goncalves</surname><given-names>Mathias</given-names></name>
+          <name><surname>Dupre</surname><given-names>Elizabeth</given-names></name>
+          <name><surname>Snyder</surname><given-names>Madeleine</given-names></name>
+          <name><surname>Oya</surname><given-names>Hiroyuki</given-names></name>
+          <name><surname>Ghosh</surname><given-names>Satrajit S</given-names></name>
+          <name><surname>Wright</surname><given-names>Jessey</given-names></name>
+          <name><surname>Durnez</surname><given-names>Joke</given-names></name>
+          <name><surname>Poldrack</surname><given-names>Russell A</given-names></name>
+          <name><surname>Gorgolewski</surname><given-names>Krzysztof J</given-names></name>
+        </person-group>
+        <article-title>FMRIPrep : a robust preprocessing pipeline for functional MRI</article-title>
+        <source>Nature methods</source>
+        <year iso-8601-date="2019">2019</year>
+        <volume>16</volume>
+        <issue>1</issue>
+        <pub-id pub-id-type="doi">10.1038/s41592-018-0235-4</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Rissman2004">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Rissman</surname><given-names>Jesse</given-names></name>
+          <name><surname>Gazzaley</surname><given-names>Adam</given-names></name>
+          <name><surname>D’Esposito</surname><given-names>Mark</given-names></name>
+        </person-group>
+        <article-title>Measuring functional connectivity during distinct stages of a cognitive task</article-title>
+        <source>NeuroImage</source>
+        <year iso-8601-date="2004">2004</year>
+        <volume>23</volume>
+        <issue>2</issue>
+        <isbn>1053-8119 (Print)$\backslash$r1053-8119 (Linking)</isbn>
+        <issn>10538119</issn>
+        <pub-id pub-id-type="doi">10.1016/j.neuroimage.2004.06.035</pub-id>
+        <pub-id pub-id-type="pmid">15488425</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Mumford2012">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Mumford</surname><given-names>Jeanette A.</given-names></name>
+          <name><surname>Turner</surname><given-names>Benjamin O.</given-names></name>
+          <name><surname>Ashby</surname><given-names>F. Gregory</given-names></name>
+          <name><surname>Poldrack</surname><given-names>Russell A.</given-names></name>
+        </person-group>
+        <article-title>Deconvolving BOLD activation in event-related designs for multivoxel pattern classification analyses</article-title>
+        <source>NeuroImage</source>
+        <publisher-name>Elsevier Inc.</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>59</volume>
+        <issue>3</issue>
+        <isbn>1095-9572 (Electronic)$\backslash$r1053-8119 (Linking)</isbn>
+        <issn>10538119</issn>
+        <uri>http://dx.doi.org/10.1016/j.neuroimage.2011.08.076</uri>
+        <pub-id pub-id-type="doi">10.1016/j.neuroimage.2011.08.076</pub-id>
+        <pub-id pub-id-type="pmid">21924359</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Poldrack2014">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Poldrack</surname><given-names>Russell</given-names></name>
+        </person-group>
+        <article-title>pybetaseries</article-title>
+        <year iso-8601-date="2014">2014</year>
+        <uri>https://github.com/poldrack/pybetaseries</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Abdulrahman2016">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Abdulrahman</surname><given-names>Hunar</given-names></name>
+          <name><surname>Henson</surname><given-names>Richard N.</given-names></name>
+        </person-group>
+        <article-title>Effect of trial-to-trial variability on optimal event-related fMRI design: Implications for Beta-series correlation and multi-voxel pattern analysis</article-title>
+        <source>NeuroImage</source>
+        <publisher-name>The Authors</publisher-name>
+        <year iso-8601-date="2016">2016</year>
+        <volume>125</volume>
+        <issn>10959572</issn>
+        <uri>http://dx.doi.org/10.1016/j.neuroimage.2015.11.009</uri>
+        <pub-id pub-id-type="doi">10.1016/j.neuroimage.2015.11.009</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Turner2012a">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Turner</surname><given-names>Benjamin O.</given-names></name>
+          <name><surname>Mumford</surname><given-names>Jeanette A.</given-names></name>
+          <name><surname>Poldrack</surname><given-names>Russell A.</given-names></name>
+          <name><surname>Ashby</surname><given-names>F. Gregory</given-names></name>
+        </person-group>
+        <article-title>Spatiotemporal activity estimation for multivoxel pattern analysis with rapid event-related designs</article-title>
+        <source>NeuroImage</source>
+        <publisher-name>Elsevier Inc.</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <volume>62</volume>
+        <issue>3</issue>
+        <issn>10538119</issn>
+        <uri>http://dx.doi.org/10.1016/j.neuroimage.2012.05.057</uri>
+        <pub-id pub-id-type="doi">10.1016/j.neuroimage.2012.05.057</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Gorgolewski2017">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Gorgolewski</surname><given-names>Krzysztof J</given-names></name>
+          <name><surname>Alfaro-Almagro</surname><given-names>Fidel</given-names></name>
+          <name><surname>Auer</surname><given-names>Tibor</given-names></name>
+          <name><surname>Bellec</surname><given-names>Pierre</given-names></name>
+          <name><surname>Capotă</surname><given-names>Mihai</given-names></name>
+          <name><surname>Chakravarty</surname><given-names>M Mallar</given-names></name>
+          <name><surname>Churchill</surname><given-names>Nathan W</given-names></name>
+          <name><surname>Cohen</surname><given-names>Alexander Li</given-names></name>
+          <name><surname>Craddock</surname><given-names>R Cameron</given-names></name>
+          <name><surname>Devenyi</surname><given-names>Gabriel A</given-names></name>
+          <name><surname>Eklund</surname><given-names>Anders</given-names></name>
+          <name><surname>Esteban</surname><given-names>Oscar</given-names></name>
+          <name><surname>Flandin</surname><given-names>Guillaume</given-names></name>
+          <name><surname>Ghosh</surname><given-names>Satrajit S</given-names></name>
+          <name><surname>Guntupalli</surname><given-names>J Swaroop</given-names></name>
+          <name><surname>Jenkinson</surname><given-names>Mark</given-names></name>
+          <name><surname>Keshavan</surname><given-names>Anisha</given-names></name>
+          <name><surname>Kiar</surname><given-names>Gregory</given-names></name>
+          <name><surname>Liem</surname><given-names>Franziskus</given-names></name>
+          <name><surname>Raamana</surname><given-names>Pradeep Reddy</given-names></name>
+          <name><surname>Raffelt</surname><given-names>David</given-names></name>
+          <name><surname>Steele</surname><given-names>Christopher J</given-names></name>
+          <name><surname>Quirion</surname><given-names>Pierre-Olivier</given-names></name>
+          <name><surname>Smith</surname><given-names>Robert E</given-names></name>
+          <name><surname>Strother</surname><given-names>Stephen C</given-names></name>
+          <name><surname>Varoquaux</surname><given-names>Gaël</given-names></name>
+          <name><surname>Wang</surname><given-names>Yida</given-names></name>
+          <name><surname>Yarkoni</surname><given-names>Tal</given-names></name>
+          <name><surname>Poldrack</surname><given-names>Russell A</given-names></name>
+        </person-group>
+        <article-title>BIDS apps: Improving ease of use, accessibility, and reproducibility of neuroimaging data analysis methods</article-title>
+        <source>PLOS Computational Biology</source>
+        <publisher-name>Public Library of Science</publisher-name>
+        <year iso-8601-date="2017">2017</year>
+        <volume>13</volume>
+        <issue>3</issue>
+        <uri>https://doi.org/10.1371/journal.pcbi.1005209</uri>
+        <pub-id pub-id-type="doi">10.1371/journal.pcbi.1005209</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Cole2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Cole</surname><given-names>David</given-names></name>
+          <name><surname>Smith</surname><given-names>Stephen</given-names></name>
+          <name><surname>Beckmann</surname><given-names>Christian</given-names></name>
+        </person-group>
+        <article-title>Advances and pitfalls in the analysis and interpretation of resting-state FMRI data</article-title>
+        <source>Frontiers in Systems Neuroscience</source>
+        <year iso-8601-date="2010">2010</year>
+        <volume>4</volume>
+        <issn>1662-5137</issn>
+        <uri>https://www.frontiersin.org/article/10.3389/fnsys.2010.00008</uri>
+        <pub-id pub-id-type="doi">10.3389/fnsys.2010.00008</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-vanWijk2010">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Wijk</surname><given-names>Bernadette C M van</given-names></name>
+          <name><surname>Stam</surname><given-names>Cornelis J</given-names></name>
+          <name><surname>Daffertshofer</surname><given-names>Andreas</given-names></name>
+        </person-group>
+        <article-title>Comparing Brain Networks of Different Size and Connectivity Density Using Graph Theory</article-title>
+        <source>PLOS ONE</source>
+        <publisher-name>Public Library of Science</publisher-name>
+        <year iso-8601-date="2010">2010</year>
+        <volume>5</volume>
+        <issue>10</issue>
+        <uri>https://doi.org/10.1371/journal.pone.0013701</uri>
+        <pub-id pub-id-type="doi">10.1371/journal.pone.0013701</pub-id>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

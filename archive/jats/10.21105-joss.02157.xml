@@ -1,0 +1,622 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2157</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02157</article-id>
+<title-group>
+<article-title>pygen-structures: A Python package to generate 3D
+molecular structures for simulations using the CHARMM
+forcefield</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-0502-9596</contrib-id>
+<string-name>Travis Hesketh</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>University of Strathclyde, Department of Pure and Applied
+Chemistry</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-02-28">
+<day>28</day>
+<month>2</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>48</issue>
+<fpage>2157</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>python</kwd>
+<kwd>computational chemistry</kwd>
+<kwd>chemistry</kwd>
+<kwd>molecular dynamics</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="statement-of-need">
+  <title>Statement of Need</title>
+  <p>Forcefields used in molecular dynamics (MD) or Monte Carlo
+  simulations (such as the CHARMM forcefield, Huang &amp; MacKerell
+  (<xref alt="2013" rid="ref-charmm" ref-type="bibr">2013</xref>))
+  require a great deal of information in order to ensure that the
+  correct harmonic force constants are chosen for particular bonds or
+  angles. As such, protein structure files (PSF files), containing
+  information about connectivity and relevant parameters, are often used
+  by simulation packages to contain this information. These files are
+  typically generated using <italic>psfgen</italic>,
+  (<xref alt="Ribeiro et al., 2019" rid="ref-psfgen" ref-type="bibr">Ribeiro
+  et al., 2019</xref>) a Tcl package bundled with <italic>VMD</italic>
+  (<xref alt="Humphrey et al., 1996" rid="ref-vmd" ref-type="bibr">Humphrey
+  et al., 1996</xref>) which requires a fully annotated Protein Data
+  Bank (PDB) format file
+  (<xref alt="wwPDB, 2012" rid="ref-wwPDB2012" ref-type="bibr">wwPDB,
+  2012</xref>) with correct names for atoms and residues, as defined in
+  the forcefield. This annotation is challenging to do in an automated
+  fashion. For structures from the Protein Data Bank itself, this is
+  expected to some degree, as experimentally resolved structures are
+  often missing the coordinates of certain residues
+  (<xref alt="Brünger &amp; Nilges, 1993" rid="ref-Brunger1993" ref-type="bibr">Brünger
+  &amp; Nilges, 1993</xref>) and can contain bound ligands which may not
+  be parameterised in the forcefield. At present, the normal solution to
+  this problem is to download a structure from the database, manually
+  fix residue and atom names, and generate a PSF file using psfgen. In
+  other words, obtaining a 3D structure, annotating the structure and
+  generating an input file in the correct format for a simulation
+  package are treated as separate tasks.</p>
+  <p>For simulations involving combinatorial searches of smaller
+  sequences, however, the level of human intervention required can be
+  far greater. There may be no experimentally determined structures for
+  a given sequence, so these must be generated. Existing structure
+  generation tools must be applicable to more general chemistry than
+  molecular dynamics forcefields, and as a result are far less specific
+  about the identities of particular atoms. As such, these packages
+  often leave residue and atom names labelled as unknowns or element
+  symbols. Additionally, if structures are generated based only on
+  connectivity or drawn by the user, it can be challenging to ensure
+  that tetrahedral chirality (the <italic>handedness</italic> of carbon
+  centres with four different substituents) is properly respected. A
+  structure generation method for small molecules which is aware of the
+  forcefield is necessary in order to automate this process. The
+  workflow which <monospace>pygen-structures</monospace> hopes to
+  automate is shown in Figure 1. As with all structure generation
+  methods, applicability is limited to cases where secondary structure
+  is unimportant. Generation of 3D coordinates is currently limited to
+  structures with around 15 protein residues.</p>
+  <fig>
+    <caption><p>An example workflow used to prepare structures for
+    molecular dynamics or Monte Carlo simulation. For smaller polymeric
+    structures, <monospace>pygen-structures</monospace> can be used to
+    prevent the need for significant manual intervention.</p></caption>
+    <graphic mimetype="image" mime-subtype="png" xlink:href="Figures/WorkflowFlowchart.png" xlink:title="" />
+  </fig>
+</sec>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>pygen-structures</monospace> is an open source (3-clause
+  BSD license) Python library to generate 3 dimensional structures for
+  molecules from the CHARMM forcefield. Coordinates are generated using
+  an embedding method based on empirical data (Riniker &amp; Landrum
+  (<xref alt="2015" rid="ref-Riniker2015" ref-type="bibr">2015</xref>),
+  as implemented in the <italic>RDKit</italic>, The RDKit Contributors
+  (<xref alt="n.d." rid="ref-rdkit" ref-type="bibr">n.d.</xref>)), and
+  are written out as standard PSF and PDB files. The package contains
+  convenience functions for generating molecules from a collection of
+  CHARMM residues and patches, or from one letter amino acid codes
+  (usable by calling <monospace>pygen-structures</monospace> as a
+  command line application) and a series of classes and functions for
+  representing and manipulating CHARMM data. The chirality of
+  tetrahedral centres is set using internal coordinate data from the
+  residue topology file.</p>
+  <p>Classes provided by <monospace>pygen-structures</monospace> include
+  representations of CHARMM residue topology files, which contain
+  information about residues, their atoms and their connectivity; and
+  parameter files, containing the relevant force constants involving
+  sets of atoms. There are also classes which describe residues and
+  patches from topology files, and representations of atoms and
+  molecules. Residues from the forcefield (and molecules created from
+  those residues) can be represented as RDKit
+  <monospace>Mol</monospace>s, enabling pattern matching of residues to
+  molecules.</p>
+  <sec id="demonstrating-the-benefits-of-pygen-structures">
+    <title>Demonstrating the Benefits of
+    <monospace>pygen-structures</monospace></title>
+    <p>To illustrate the current necessity of human involvement in
+    annotation of small-molecule structures, it is useful to examine
+    structures which are created by other software packages. The
+    following is a PDB file generated by drawing the structure of
+    phenylalanine in <italic>MarvinSketch</italic> 20.3 and cleaning the
+    structure in 3D. This is representative of many chemical drawing
+    packages, which aim to work with as many areas of general chemistry
+    as possible. Similar behaviour is observed in PerkinElmer’s
+    ChemOffice suite (version 19),
+    (<xref alt="PerkinElmer Informatics, 2019" rid="ref-chemoffice" ref-type="bibr">PerkinElmer
+    Informatics, 2019</xref>) which does not write out residue names
+    upon PDB export. Avogadro 1.2.0
+    (<xref alt="Hanwell et al., 2012" rid="ref-avogadro" ref-type="bibr">Hanwell
+    et al., 2012</xref>) and PyMol 2.3.0
+    (<xref alt="Schrödinger LLC, 2019" rid="ref-pymol" ref-type="bibr">Schrödinger
+    LLC, 2019</xref>) cope better with biological molecules, and
+    annotate the residue and atom names for protein residues correctly
+    according to the PDB standard, but fail to differentiate between D
+    and L isomers.</p>
+    <preformat>HEADER    PROTEIN                                 25-FEB-20   NONE
+TITLE     NULL                                                        
+COMPND    NULL                                                        
+SOURCE    NULL                                                        
+KEYWDS    NULL                                                        
+EXPDTA    NULL                                                        
+AUTHOR    Marvin                                                      
+REVDAT   1   25-FEB-20         0                                  
+HETATM    1  C   UNK     0       1.322   4.682   0.738  0.00  0.00     \
+...      C+0
+HETATM    2  C   UNK     0      -0.092   4.630   0.732  0.00  0.00     \
+...      C+0
+HETATM    3  C   UNK     0      -0.852   5.626   1.374  0.00  0.00     \
+...      C+0
+HETATM    4  C   UNK     0      -0.210   6.682   2.043  0.00  0.00     \
+...      C+0
+HETATM    5  C   UNK     0       1.194   6.742   2.065  0.00  0.00     \
+...      C+0
+HETATM    6  C   UNK     0       1.956   5.751   1.415  0.00  0.00     \
+...      C+0
+HETATM    7  C   UNK     0       2.119   3.650   0.016  0.00  0.00     \
+...      C+0
+HETATM    8  C   UNK     0       2.390   4.043  -1.467  0.00  0.00     \
+...      C+0
+HETATM    9  C   UNK     0       3.204   3.058  -2.216  0.00  0.00     \
+...      C+0
+HETATM   10  N   UNK     0       1.121   4.261  -2.184  0.00  0.00     \
+...      N+1
+HETATM   11  O   UNK     0       3.531   3.283  -3.404  0.00  0.00     \
+...      O+0
+HETATM   12  O   UNK     0       3.645   1.907  -1.656  0.00  0.00     \
+...      O-1
+MASTER        0    0    0    0    0    0    0    0   12    0    0    0
+END</preformat>
+    <p>Note the lack of annotation in the PDB atom names (labelled as
+    their element symbol) and residue names
+    (‘<monospace>UNK</monospace>’). This information would need to be
+    annotated manually in order to run an MD simulation. In the RDKit,
+    structures for simple protein sequences can be generated by reading
+    an amino acid sequence:</p>
+    <code language="python">&gt;&gt;&gt; from rdkit import Chem
+&gt;&gt;&gt; from rdkit.Chem import AllChem
+&gt;&gt;&gt; mol = Chem.MolFromSequence('F')
+&gt;&gt;&gt; AllChem.EmbedMolecule(mol, AllChem.ETKDGv2())
+0
+&gt;&gt;&gt; print(Chem.MolToPDBBlock(mol))
+ATOM      1  N   PHE A   1      -2.664  -1.853   0.236  1.00  0.00     \
+...      N  
+ATOM      2  CA  PHE A   1      -1.340  -1.105   0.789  1.00  0.00     \
+...      C  
+ATOM      3  C   PHE A   1      -1.982   0.347   0.875  1.00  0.00     \
+...      C  
+ATOM      4  O   PHE A   1      -3.045   0.666   0.443  1.00  0.00     \
+...      O  
+ATOM      5  CB  PHE A   1      -0.777  -0.919  -0.748  1.00  0.00     \
+...      C  
+ATOM      6  CG  PHE A   1       0.505  -0.247  -0.694  1.00  0.00     \
+...      C  
+ATOM      7  CD1 PHE A   1       1.621  -1.079  -0.546  1.00  0.00     \
+...      C  
+ATOM      8  CD2 PHE A   1       0.787   1.081  -0.783  1.00  0.00     \
+...      C  
+ATOM      9  CE1 PHE A   1       2.896  -0.556  -0.497  1.00  0.00     \
+...      C  
+ATOM     10  CE2 PHE A   1       2.054   1.623  -0.737  1.00  0.00     \
+...      C  
+ATOM     11  CZ  PHE A   1       3.120   0.793  -0.592  1.00  0.00     \
+...      C  
+ATOM     12  OXT PHE A   1      -1.176   1.249   1.519  1.00  0.00     \
+...      O  
+CONECT    1    2
+CONECT    2    3    5
+CONECT    3    4    4   12
+CONECT    5    6
+CONECT    6    7    7    8
+CONECT    7    9
+CONECT    8   10   10
+CONECT    9   11   11
+CONECT   10   11
+END</code>
+    <p>The level of annotation is greater, but hydrogen atom positions
+    are not added (were these to be added using
+    <monospace>Chem.AddHs</monospace>, they would be incorrectly
+    annotated) and the atom names do not match the CHARMM atom names
+    exactly (though they do follow the standard PDB naming conventions,
+    so it would be trivial to correct them). psfgen is capable of
+    assigning the positions of hydrogen atoms and setting the correct
+    charge states, so this approach works reasonably well for simple
+    L-amino or D-amino sequences. It is, however, nontrivial to generate
+    mixtures of D and L amino acids, as acid chirality is set using a
+    flag argument to <monospace>Chem.MolFromSequence</monospace>. As
+    with Avogadro and PyMol, D-amino acids are labelled in the same way
+    as the corresponding L-amino acid.</p>
+    <p>With <monospace>pygen-structures</monospace>, it is easily
+    possible to generate the structures of free amino acids, peptides,
+    or more complex structures such as glycans and glycopeptides, in an
+    automated fashion. A significant advantage is that it is no longer
+    necessary to use psfgen to generate the PSF file. This greatly
+    simplifies combinatorial searches of small molecule sequences.</p>
+    <code language="python">&gt;&gt;&gt; from pygen_structures import (
+...     code_to_mol,
+...     sequence_to_mol,
+...     load_charmm_dir
+... )
+&gt;&gt;&gt; ## pygen_structures is distributed with the CHARMM35/36 files.
+&gt;&gt;&gt; rtf, prm = load_charmm_dir()
+&gt;&gt;&gt; mol = code_to_mol('AdAF', rtf, segid='PROT')  # L-ALA, D-ALA, L-PHE
+&gt;&gt;&gt; print(mol.to_pdb_block())
+COMPND    AdAF
+AUTHOR    pygen-structures v0.2.4
+REMARK  42
+REMARK  42 TOPOLOGY FILES USED
+REMARK  42     toppar_all36_prot_c36_d_aminoacids.str
+REMARK  42     top_all36_prot.rtf
+ATOM      1   N  ALA     1      -6.082  -0.735   1.391  1.00  0.00     \
+... PROT N1+
+ATOM      2  HT1 ALA     1      -5.807  -0.157   2.244  1.00  0.00     \
+... PROT H  
+ATOM      3  HT2 ALA     1      -7.098  -0.635   1.251  1.00  0.00     \
+... PROT H  
+ATOM      4  HT3 ALA     1      -5.757  -1.714   1.511  1.00  0.00     \
+... PROT H  
+ATOM      5  CA  ALA     1      -5.408  -0.121   0.253  1.00  0.00     \
+... PROT C  
+&lt;truncated&gt;
+&gt;&gt;&gt; patches = {&quot;RAFF&quot;, [0, 1, 2]}
+&gt;&gt;&gt; sequence = ['AGLC', 'BFRU', 'AGAL']
+&gt;&gt;&gt; mol = sequence_to_mol(
+...     sequence,
+...     rtf,
+...     patches=patches,
+...     name='Raffinose'
+...     segid=&quot;RAFF&quot;
+... )
+&gt;&gt;&gt; print(mol.to_pdb_block())
+COMPND    Raffinose
+AUTHOR    pygen-structures v0.2.4
+REMARK  42
+REMARK  42 TOPOLOGY FILES USED
+REMARK  42     top_all36_carb.rtf
+ATOM      1  C1  AGLC    1      -1.645  -0.345  -0.614  1.00  0.00     \
+... RAFF C  
+ATOM      2  H1  AGLC    1      -1.845   0.725  -0.413  1.00  0.00     \
+... RAFF H  
+ATOM      3  O1  AGLC    1      -2.764  -1.026  -0.170  1.00  0.00     \
+... RAFF O  
+ATOM      4  C5  AGLC    1       0.657  -0.321  -0.142  1.00  0.00     \
+... RAFF C  
+ATOM      5  H5  AGLC    1       1.185  -1.104  -0.707  1.00  0.00     \
+... RAFF H  
+&lt;truncated&gt;
+&gt;&gt;&gt; print(mol.to_psf_block())
+PSF EXT CMAP XPLOR
+
+         4 !NTITLE
+* Generated procedurally by pygen-structures v0.2.4
+* Molecule: Raffinose
+* Topology files used:
+* - top_all36_carb.rtf
+
+        66 !NATOM
+         1 RAFF     1        AGLC     C1       CC3162   0.290000       \
+...12.0110           0
+         2 RAFF     1        AGLC     H1       HCA1     0.090000       \
+... 1.0080           0
+         3 RAFF     1        AGLC     O1       OC302   -0.360000       \
+...15.9994           0
+         4 RAFF     1        AGLC     C5       CC3163   0.110000       \
+...12.0110           0
+         5 RAFF     1        AGLC     H5       HCA1     0.090000       \
+... 1.0080           0
+&lt;truncated&gt;</code>
+    <p>A downside to this approach is that knowledge of the available
+    CHARMM residues and the required patches is necessary, but this is
+    true of psfgen as well. Some initial work is always required to
+    discover whether CHARMM can represent a molecule of interest. This
+    could be improved through use of automated pattern matching from
+    provided structures, but is challenging due to the incomplete nature
+    of X-ray crystal data.</p>
+  </sec>
+  <sec id="future-work">
+    <title>Future Work</title>
+    <p><monospace>pygen-structures</monospace> is not yet a fully
+    featured replacement for psfgen. In particular, the present
+    structure generation method fails to fill coordinates for missing
+    residues or missing atoms of large structures (making it impractical
+    to use with protein structures from the PDB).</p>
+    <p>In future, the aim is to support all of psfgen’s current
+    functionality. Further advantageous features would include the
+    generation of simulation boxes containing water, the ability to
+    handle multiple molecules in a single system, and an automatic
+    bead-generating method for coarse-grained simulations.</p>
+    <p>Further documentation of the polymeric structures (and relevant
+    linkages) which are already parameterised in the CHARMM forcefield
+    would be advantageous to encourage further combinatorial work.</p>
+  </sec>
+  <sec id="dependencies">
+    <title>Dependencies</title>
+    <p><monospace>pygen-structures</monospace> depends upon the RDKit
+    for 3D coordinate generation and uses NumPy arrays for
+    representations of the molecular adjacency matrix
+    (<xref alt="Oliphant, 2015" rid="ref-numpyguide" ref-type="bibr">Oliphant,
+    2015</xref>;
+    <xref alt="van der Walt et al., 2011" rid="ref-numpy" ref-type="bibr">van
+    der Walt et al., 2011</xref>).</p>
+    <p>Unit and integration tests (using <italic>pytest</italic>, Krekel
+    et al.
+    (<xref alt="2004" rid="ref-pytest" ref-type="bibr">2004</xref>)) are
+    supplied to test the functionality provided by the package. Tests
+    can be run using
+    <monospace>pytest --pyargs pygen_structures</monospace>. Tests rely
+    upon <italic>OpenMM</italic>
+    (<xref alt="Eastman et al., 2017" rid="ref-openmm" ref-type="bibr">Eastman
+    et al., 2017</xref>) as an additional dependency.</p>
+    <p>Python 3.6 and 3.7 are supported, and pip can be used for
+    installation:
+    <monospace>pip install pygen-structures</monospace>.</p>
+  </sec>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>TH thanks the Strathclyde Computational and Theoretical Chemistry
+  Hub (SCoTCH) at the University of Strathclyde for helpful
+  conversations and enthusiasm, and those that are working to increase
+  recognition of research software engineers.</p>
+  <p>MarvinSketch was used for 3D coordinate generation in “Problems
+  with Current Workflows”, MarvinSketch 20.3, ChemAxon
+  (https://www.chemaxon.com).</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-avogadro">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Hanwell</surname><given-names>Marcus D.</given-names></name>
+          <name><surname>Curtis</surname><given-names>Donald E.</given-names></name>
+          <name><surname>Lonie</surname><given-names>David C.</given-names></name>
+          <name><surname>Vandermeersch</surname><given-names>Tim</given-names></name>
+          <name><surname>Zurek</surname><given-names>Eva</given-names></name>
+          <name><surname>Hutchison</surname><given-names>Geoffrey R.</given-names></name>
+        </person-group>
+        <article-title>Avogadro: An advanced semantic chemical editor, visualization, and analysis platform</article-title>
+        <source>Journal of Cheminformatics</source>
+        <year iso-8601-date="2012-08-13">2012</year><month>08</month><day>13</day>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-03-23">2020</year><month>03</month><day>23</day></date-in-citation>
+        <volume>4</volume>
+        <issue>1</issue>
+        <issn>1758-2946</issn>
+        <uri>https://doi.org/10.1186/1758-2946-4-17</uri>
+        <pub-id pub-id-type="doi">10.1186/1758-2946-4-17</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Brunger1993">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Brünger</surname><given-names>Axel T.</given-names></name>
+          <name><surname>Nilges</surname><given-names>Michael</given-names></name>
+        </person-group>
+        <article-title>Computational challenges for macromolecular structure determination by X-ray crystallography and solution NMRspectroscopy</article-title>
+        <source>Quarterly Reviews of Biophysics</source>
+        <year iso-8601-date="1993-02">1993</year><month>02</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-02-25">2020</year><month>02</month><day>25</day></date-in-citation>
+        <volume>26</volume>
+        <issue>1</issue>
+        <issn>1469-8994, 0033-5835</issn>
+        <uri>https://www.cambridge.org/core/journals/quarterly-reviews-of-biophysics/article/computational-challenges-for-macromolecular-structure-determination-by-xray-crystallography-and-solution-nmrspectroscopy/1EF4F138E8B6A1BC6924766F36BC52F6</uri>
+        <pub-id pub-id-type="doi">10.1017/S0033583500003966</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-charmm">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Huang</surname><given-names>Jing</given-names></name>
+          <name><surname>MacKerell</surname><given-names>Alexander D.</given-names></name>
+        </person-group>
+        <article-title>CHARMM36 all-atom additive protein force field: Validation based on comparison to NMR data</article-title>
+        <source>Journal of Computational Chemistry</source>
+        <year iso-8601-date="2013-09">2013</year><month>09</month>
+        <volume>34</volume>
+        <issue>25</issue>
+        <issn>01928651</issn>
+        <uri>http://www.ncbi.nlm.nih.gov/pubmed/23832629 http://www.pubmedcentral.nih.gov/articlerender.fcgi?artid=PMC3800559 http://doi.wiley.com/10.1002/jcc.23354</uri>
+        <pub-id pub-id-type="doi">10.1002/jcc.23354</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-chemoffice">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>PerkinElmer Informatics</string-name>
+        </person-group>
+        <source>The ChemOffice Suite</source>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-numpy">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>van der Walt</surname><given-names>Stefan</given-names></name>
+          <name><surname>Colbert</surname><given-names>S. Chris</given-names></name>
+          <name><surname>Varoquaux</surname><given-names>Gael</given-names></name>
+        </person-group>
+        <article-title>The NumPy Array: A Structure for Efficient Numerical Computation</article-title>
+        <source>Computing in Science Engineering</source>
+        <year iso-8601-date="2011-03">2011</year><month>03</month>
+        <volume>13</volume>
+        <issue>2</issue>
+        <issn>1558-366X</issn>
+        <pub-id pub-id-type="doi">10.1109/MCSE.2011.37</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-numpyguide">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <name><surname>Oliphant</surname><given-names>Travis</given-names></name>
+        </person-group>
+        <source>Guide to NumPy</source>
+        <publisher-name>CreateSpace Independent Publishing Platform</publisher-name>
+        <year iso-8601-date="2015">2015</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-03-17">2020</year><month>03</month><day>17</day></date-in-citation>
+        <isbn>978-1-5173-0007-4</isbn>
+        <uri>http://doi.org/10.5555/2886196</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-openmm">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Eastman</surname><given-names>Peter</given-names></name>
+          <name><surname>Swails</surname><given-names>Jason</given-names></name>
+          <name><surname>Chodera</surname><given-names>John D.</given-names></name>
+          <name><surname>McGibbon</surname><given-names>Robert T.</given-names></name>
+          <name><surname>Zhao</surname><given-names>Yutong</given-names></name>
+          <name><surname>Beauchamp</surname><given-names>Kyle A.</given-names></name>
+          <name><surname>Wang</surname><given-names>Lee-Ping</given-names></name>
+          <name><surname>Simmonett</surname><given-names>Andrew C.</given-names></name>
+          <name><surname>Harrigan</surname><given-names>Matthew P.</given-names></name>
+          <name><surname>Stern</surname><given-names>Chaya D.</given-names></name>
+          <name><surname>Wiewiora</surname><given-names>Rafal P.</given-names></name>
+          <name><surname>Brooks</surname><given-names>Bernard R.</given-names></name>
+          <name><surname>Pande</surname><given-names>Vijay S.</given-names></name>
+        </person-group>
+        <article-title>OpenMM 7: Rapid development of high performance algorithms for molecular dynamics</article-title>
+        <source>PLoS Computational Biology</source>
+        <publisher-name>Public Library of Science</publisher-name>
+        <year iso-8601-date="2017-07-26">2017</year><month>07</month><day>26</day>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-03-16">2020</year><month>03</month><day>16</day></date-in-citation>
+        <volume>13</volume>
+        <issue>7</issue>
+        <issn>1553-7358</issn>
+        <uri>https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005659</uri>
+        <pub-id pub-id-type="doi">10.1371/journal.pcbi.1005659</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-psfgen">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <name><surname>Ribeiro</surname><given-names>João V.</given-names></name>
+          <name><surname>Radak</surname><given-names>Brian</given-names></name>
+          <name><surname>Stone</surname><given-names>John</given-names></name>
+          <name><surname>Gullingsrud</surname><given-names>Justin</given-names></name>
+          <name><surname>Saam</surname><given-names>Jan</given-names></name>
+          <name><surname>Phillips</surname><given-names>Jim</given-names></name>
+        </person-group>
+        <article-title>VMD psfgen Plugin, Version 2.0</article-title>
+        <year iso-8601-date="2019-08-27">2019</year><month>08</month><day>27</day>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-02-25">2020</year><month>02</month><day>25</day></date-in-citation>
+        <uri>https://www.ks.uiuc.edu/Research/vmd/plugins/psfgen/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-pymol">
+      <element-citation publication-type="book">
+        <person-group person-group-type="author">
+          <string-name>Schrödinger LLC</string-name>
+        </person-group>
+        <source>The PyMOL Molecular Graphics System</source>
+        <year iso-8601-date="2019">2019</year>
+      </element-citation>
+    </ref>
+    <ref id="ref-pytest">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Krekel</surname><given-names>Holger</given-names></name>
+          <name><surname>Oliveira</surname><given-names>Bruno</given-names></name>
+          <name><surname>Pfannschmidt</surname><given-names>Ronny</given-names></name>
+          <name><surname>Bruynooghe</surname><given-names>Floris</given-names></name>
+          <name><surname>Laugher</surname><given-names>Brianna</given-names></name>
+          <name><surname>Bruhin</surname><given-names>Florian</given-names></name>
+        </person-group>
+        <article-title>Pytest 5.0</article-title>
+        <year iso-8601-date="2004">2004</year>
+        <uri>https://github.com/pytest-dev/pytest</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-rdkit">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <string-name>The RDKit Contributors</string-name>
+        </person-group>
+        <article-title>RDKit: Open-Source Cheminformatics Software</article-title>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-02-25">2020</year><month>02</month><day>25</day></date-in-citation>
+        <uri>https://www.rdkit.org/</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-Riniker2015">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Riniker</surname><given-names>Sereina</given-names></name>
+          <name><surname>Landrum</surname><given-names>Gregory A.</given-names></name>
+        </person-group>
+        <article-title>Better informed distance geometry: Using what we know to improve conformation generation</article-title>
+        <source>Journal of Chemical Information and Modeling</source>
+        <publisher-name>American Chemical Society</publisher-name>
+        <year iso-8601-date="2015-12">2015</year><month>12</month>
+        <volume>55</volume>
+        <issue>12</issue>
+        <issn>15205142</issn>
+        <pub-id pub-id-type="doi">10.1021/acs.jcim.5b00654</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-vmd">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Humphrey</surname><given-names>William</given-names></name>
+          <name><surname>Dalke</surname><given-names>Andrew</given-names></name>
+          <name><surname>Schulten</surname><given-names>Klaus</given-names></name>
+        </person-group>
+        <article-title>VMD - Visual Molecular Dynamics</article-title>
+        <source>Journal of Molecular Graphics</source>
+        <year iso-8601-date="1996">1996</year>
+        <volume>14</volume>
+        <pub-id pub-id-type="doi">10.1016/0263-7855(96)00018-5</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-wwPDB2012">
+      <element-citation>
+        <person-group person-group-type="author">
+          <string-name>wwPDB</string-name>
+        </person-group>
+        <article-title>Protein Data Bank Contents Guide, version 3.30</article-title>
+        <publisher-name>wwPDB</publisher-name>
+        <year iso-8601-date="2012">2012</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2020-02-25">2020</year><month>02</month><day>25</day></date-in-citation>
+        <uri>https://www.wwpdb.org/documentation/file-format</uri>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

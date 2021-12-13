@@ -1,0 +1,482 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">2430</article-id>
+<article-id pub-id-type="doi">10.21105/joss.02430</article-id>
+<title-group>
+<article-title>swiftsimio: A Python library for reading SWIFT
+data</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0002-1327-1921</contrib-id>
+<string-name>Josh Borrow</string-name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">0000-0001-6247-471X</contrib-id>
+<string-name>Alexei Borrisov</string-name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Institute for Computational Cosmology, Durham
+University</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>School of Physics and Astronomy, University of
+Edinburgh</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2020-06-26">
+<day>26</day>
+<month>6</month>
+<year>2020</year>
+</pub-date>
+<volume>5</volume>
+<issue>52</issue>
+<fpage>2430</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2021</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Python</kwd>
+<kwd>astronomy</kwd>
+<kwd>cosmology</kwd>
+<kwd>simulations</kwd>
+<kwd>i/o</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>swiftsimio</monospace> is a Python package for reading
+  data created by the SWIFT
+  (<xref alt="Schaller et al., 2016" rid="ref-SWIFT" ref-type="bibr">Schaller
+  et al., 2016</xref>) simulation code. SWIFT is designed to run
+  cosmological hydrodynamics simulations that produce petabytes of data,
+  and <monospace>swiftsimio</monospace> leverages the custom metadata
+  that SWIFT produces to allow for chunked loading of the particle data
+  and to enable integration with <monospace>unyt</monospace>
+  (<xref alt="Goldbaum et al., 2018" rid="ref-unyt" ref-type="bibr">Goldbaum
+  et al., 2018</xref>).</p>
+</sec>
+<sec id="background">
+  <title>Background</title>
+  <p>Cosmological galaxy formation simulations are used to track
+  simulated galaxies across cosmic time in an attempt to better
+  understand the process of galaxy formation and evolution. As time has
+  progressed, so has the scale of these simulations. The
+  state-of-the-art simulations planned for the next decade, using codes
+  like SWIFT, will generate petabytes of data thanks to their use of
+  hundreds of billions of particles. Analysing this data presents a
+  unique challenge, with the data reduction performed on either single
+  compute nodes or on individual desktop machines.</p>
+  <p>In the original EAGLE simulation
+  (<xref alt="Schaye et al., 2015" rid="ref-EAGLE" ref-type="bibr">Schaye
+  et al., 2015</xref>), just the co-ordinates of the gas particles in a
+  single snapshot used 82 Gb of storage space. State-of-the-art
+  simulations are now using at least 10 times as many particles as this,
+  making an analysis pipeline that reads the whole array each time
+  expensive in the best case and infeasible in the worst. There are two
+  useful properties of this data: it is stored in the HDF5 format
+  (<xref alt="The HDF Group, 1997" rid="ref-hdf5" ref-type="bibr">The
+  HDF Group, 1997</xref>), allowing for easy slicing, and usually users
+  are interested in a very small sub-set of the data, usually less than
+  1%, at a time.</p>
+  <p>This requirement to load less than 1% of the data at a time is
+  primarily due to the huge dynamic range present in these simulations
+  (<xref alt="Borrow et al., 2018" rid="ref-dynamicRange" ref-type="bibr">Borrow
+  et al., 2018</xref>). Although the simulation volume may be hundreds
+  of megaparsecs on a side, the objects that form under self-gravity are
+  typically less than a few megaparsecs in diameter, representing a very
+  small proportion of the total volume. Users are usually interested in
+  using the particle data present in a few objects (selected using
+  pre-computed data in ‘halo catalogues’) at any given time.</p>
+</sec>
+<sec id="structure-of-a-swift-snapshot">
+  <title>Structure of a SWIFT snapshot</title>
+  <p>At pre-determined times during a SWIFT simulation, a full particle
+  dump is performed. This particle dump is stored in the HDF5 format,
+  with arrays corresponding to different particle properties. The
+  overall structure of the file conforms to the Gadget-2 specification
+  (<xref alt="Springel, 2005" rid="ref-Gadget2" ref-type="bibr">Springel,
+  2005</xref>). This is to enable compatibility with previous analysis
+  pipelines.</p>
+  <p>The SWIFT snapshot files have main datasets called
+  <monospace>PartType{0,1,2,3,4,5}</monospace>, each with sub-datasets
+  such as <monospace>Coordinates</monospace>,
+  <monospace>Velocities</monospace>, etc. that contain the co-ordinates
+  and velocities for particles of that type respectively. When the file
+  is opened in <monospace>swiftsimio</monospace>, this is translated to
+  an object hierarchy, so that for a user to access the co-ordinates of
+  the gas particles they would use code similar to:</p>
+  <code language="python">from swiftsimio import load
+
+data = load(&quot;/path/to/snapshot.hdf5&quot;)
+coordinates = data.gas.coordinates</code>
+  <p>where here <monospace>coordinates</monospace> is an
+  <monospace>unyt</monospace> array containing the co-ordinates of all
+  of the gas particles in the file with appropriate units and cosmology
+  information attached. This data is loaded lazily, with an array only
+  loaded from file when it is requested for use by the user. This data
+  is then cached for future use.</p>
+  <p>The table below shows what each particle type corresponds to and
+  how it is accessed in <monospace>swiftsimio</monospace>.</p>
+  <table-wrap>
+    <table>
+      <thead>
+        <tr>
+          <th align="center">Particle type</th>
+          <th align="center"><monospace>swiftsimio</monospace> name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="center">0</td>
+          <td align="center"><monospace>gas</monospace></td>
+          <td>Gas particles, the only type of particles</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center"></td>
+          <td>to have hydrodynamics calculations</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center"></td>
+          <td>performed on them.</td>
+        </tr>
+        <tr>
+          <td align="center">1</td>
+          <td align="center"><monospace>dark_matter</monospace></td>
+          <td>Dark matter particles, only subject to</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center"></td>
+          <td>the force of gravity.</td>
+        </tr>
+        <tr>
+          <td align="center">2</td>
+          <td align="center"><monospace>boundary</monospace></td>
+          <td>Boundary particles; the same as dark</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center"></td>
+          <td>matter but typically more massive.</td>
+        </tr>
+        <tr>
+          <td align="center">3</td>
+          <td align="center"><monospace>second_boundary</monospace></td>
+          <td>Boundary particles; the same as dark</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center"></td>
+          <td>matter but typically more massive.</td>
+        </tr>
+        <tr>
+          <td align="center">4</td>
+          <td align="center"><monospace>stars</monospace></td>
+          <td>Star particles representing either</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center"></td>
+          <td>individual stars or a stellar population.</td>
+        </tr>
+        <tr>
+          <td align="center">5</td>
+          <td align="center"><monospace>black_holes</monospace></td>
+          <td>Black hole particles representing</td>
+        </tr>
+        <tr>
+          <td align="center"></td>
+          <td align="center"></td>
+          <td>individual black holes.</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+</sec>
+<sec id="solving-the-data-reduction-challenge">
+  <title>Solving the data reduction challenge</title>
+  <fig>
+    <caption><p>Pictorial representation of the top-level grid in SWIFT.
+    The background shows the distribution of matter in the snapshot,
+    with selected galaxies circled. <monospace>swiftsimio</monospace>
+    can load the data in the regions that these spheres overlap with,
+    only reading the appropriate particle data from file. Each coloured
+    region shows the top-level cells that would be loaded for the
+    corresponding circled galaxy.</p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="figure.pdf" xlink:title="" />
+  </fig>
+  <p>To solve the dynamic range problem, we can turn to the spatial
+  arrangement of the particle data. Simulations in SWIFT are performed
+  in a cuboid volume that is split into a fixed number of top-level
+  cells. When a snapshot of the simulation is dumped, each array is
+  written to disk top-level cell by top-level cell, ensuring a
+  well-characterised order. The order in which the data is stored is
+  then written as metadata in the <monospace>Cells</monospace> dataset
+  in the snapshot file. The <monospace>SWIFTMask</monospace> object
+  within <monospace>swiftsimio</monospace> uses this metadata to provide
+  a mask to be used with the <monospace>h5py</monospace> library to read
+  a sub-set of the particle data. This process ensures that as little
+  data is read from disk as possible.</p>
+  <p>The use of this masking functionality is unique to
+  <monospace>swiftsimio</monospace> and allows for significantly reduced
+  memory footprint and cost relative to reading the full snapshot. Other
+  libraries, such as <monospace>yt</monospace>
+  (<xref alt="Turk et al., 2011" rid="ref-yt" ref-type="bibr">Turk et
+  al., 2011</xref>) offer similar functionality through the creation of
+  a hashtable on the first read of the snapshot, but our approach
+  requires no extra computation or files to achieve.</p>
+</sec>
+<sec id="why-swiftsimio">
+  <title>Why swiftsimio?</title>
+  <p>There are many Python libraries that are able to read the
+  Gadget-style formatted HDF5 data that SWIFT outputs, not limited to
+  but including: <monospace>yt</monospace>
+  (<xref alt="Turk et al., 2011" rid="ref-yt" ref-type="bibr">Turk et
+  al., 2011</xref>), <monospace>pynbody</monospace>
+  (<xref alt="Pontzen et al., 2013" rid="ref-pynbody" ref-type="bibr">Pontzen
+  et al., 2013</xref>) and <monospace>pnbody</monospace>
+  (<xref alt="Revaz, 2013" rid="ref-pnbody" ref-type="bibr">Revaz,
+  2013</xref>). The other option is simply to use the
+  <monospace>h5py</monospace> library directly, and forgo any extra
+  processing of the data.</p>
+  <p><monospace>swiftsimio</monospace> was created because these
+  libraries either are too slow (usually performing significant
+  pre-calculation when loading a snapshot), provide too weak of a
+  connection to the data in the snapshot (e.g. reading the data in a
+  different order than it is stored in the file), or would have been
+  unable to integrate with the metadata that SWIFT outputs. To make full
+  use of the SWIFT metadata all of these packages would have had to have
+  significant re-writes of their internals, which would have taken
+  significantly more time (due to their more complex codebases) or would
+  have been unwelcome changes due to their impact on the users of other
+  simulation codes.</p>
+  <p>We can also ensure that <monospace>swiftsimio</monospace> remains
+  updated and constantly in-sync with the rapidly changing SWIFT code,
+  as well as ensure that extra routines that are part of the library
+  (e.g. visualisation) use the same definitions and functions that are
+  implemented in the main simulation code.</p>
+  <p>Finally, <monospace>swiftsimio</monospace> includes many other
+  features useful to users of the SWIFT cosmological simulation code,
+  such as parallel visualisation and data repackaging.</p>
+  <p>The <monospace>swiftsimio</monospace> package will enable the next
+  generation of cosmological simulations, ran with SWIFT, to be analysed
+  on substantially smaller machines than were previously required with
+  little extra effort from day-to-day users.</p>
+  <p><monospace>swiftsimio</monospace> is hosted on
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/swiftsim/swiftsimio">GitHub</ext-link>
+  and has documentation available through
+  <ext-link ext-link-type="uri" xlink:href="https://swiftsimio.readthedocs.io">ReadTheDocs</ext-link>.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>JB is supported by STFC studentship ST/R504725/1. AB is supported
+  by STFC grants ST/R001006/1 and ST/P002447/1 as part of the DiRAC RSE
+  team. This work used the DiRAC@Durham facility managed by the
+  Institute for Computational Cosmology on behalf of the STFC DiRAC HPC
+  Facility (www.dirac.ac.uk). The equipment was funded by BEIS capital
+  funding via STFC capital grants ST/K00042X/1, ST/P002293/1,
+  ST/R002371/1 and ST/S002502/1, Durham University and STFC operations
+  grant ST/R000832/1. DiRAC is part of the National e-Infrastructure. We
+  would like to extend our thanks specifically to Alastair Basden and
+  his team for managing the DiRAC Memory Intensive service.</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref-list>
+    <ref id="ref-yt">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Turk</surname><given-names>Matthew J.</given-names></name>
+          <name><surname>Smith</surname><given-names>Britton D.</given-names></name>
+          <name><surname>Oishi</surname><given-names>Jeffrey S.</given-names></name>
+          <name><surname>Skory</surname><given-names>Stephen</given-names></name>
+          <name><surname>Skillman</surname><given-names>Samuel W.</given-names></name>
+          <name><surname>Abel</surname><given-names>Tom</given-names></name>
+          <name><surname>Norman</surname><given-names>Michael L.</given-names></name>
+        </person-group>
+        <article-title>yt: A Multi-code Analysis Toolkit for Astrophysical Simulation Data</article-title>
+        <source>The Astrophysical Journal Supplement Series</source>
+        <year iso-8601-date="2011-01">2011</year><month>01</month>
+        <volume>192</volume>
+        <issue>1</issue>
+        <uri>https://arxiv.org/abs/1011.3514</uri>
+        <pub-id pub-id-type="doi">10.1088/0067-0049/192/1/9</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-Gadget2">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Springel</surname><given-names>Volker</given-names></name>
+        </person-group>
+        <article-title>The cosmological simulation code gadget-2</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <year iso-8601-date="2005-12">2005</year><month>12</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-06-03">2019</year><month>06</month><day>03</day></date-in-citation>
+        <volume>364</volume>
+        <issue>4</issue>
+        <issn>0035-8711, 1365-2966</issn>
+        <uri>https://academic.oup.com/mnras/article-lookup/doi/10.1111/j.1365-2966.2005.09655.x</uri>
+        <pub-id pub-id-type="doi">10.1111/j.1365-2966.2005.09655.x</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-pynbody">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Pontzen</surname><given-names>Andrew</given-names></name>
+          <name><surname>Roškar</surname><given-names>Rok</given-names></name>
+          <name><surname>Stinson</surname><given-names>Greg</given-names></name>
+          <name><surname>Woods</surname><given-names>Rory</given-names></name>
+        </person-group>
+        <article-title>pynbody: N-Body/SPH analysis for python</article-title>
+        <publisher-name>http://ascl.net/1305.002</publisher-name>
+        <year iso-8601-date="2013-05">2013</year><month>05</month>
+      </element-citation>
+    </ref>
+    <ref id="ref-pnbody">
+      <element-citation>
+        <person-group person-group-type="author">
+          <name><surname>Revaz</surname><given-names>Yves</given-names></name>
+        </person-group>
+        <article-title>pNbody: A python parallelized N-body reduction toolbox</article-title>
+        <publisher-name>http://ascl.net/1302.004</publisher-name>
+        <year iso-8601-date="2013-02">2013</year><month>02</month>
+      </element-citation>
+    </ref>
+    <ref id="ref-unyt">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Goldbaum</surname><given-names>Nathan</given-names></name>
+          <name><surname>ZuHone</surname><given-names>John</given-names></name>
+          <name><surname>Turk</surname><given-names>Matthew</given-names></name>
+          <name><surname>Kowalik</surname><given-names>Kacper</given-names></name>
+          <name><surname>Rosen</surname><given-names>Anna</given-names></name>
+        </person-group>
+        <article-title>Unyt: Handle, manipulate, and convert data with units in Python</article-title>
+        <source>Journal of Open Source Software</source>
+        <publisher-name>The Open Journal</publisher-name>
+        <year iso-8601-date="2018">2018</year>
+        <volume>3</volume>
+        <issue>28</issue>
+        <uri>https://doi.org/10.21105/joss.00809</uri>
+        <pub-id pub-id-type="doi">10.21105/joss.00809</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-SWIFT">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Schaller</surname><given-names>Matthieu</given-names></name>
+          <name><surname>Gonnet</surname><given-names>Pedro</given-names></name>
+          <name><surname>Chalk</surname><given-names>Aidan B. G.</given-names></name>
+          <name><surname>Draper</surname><given-names>Peter W.</given-names></name>
+        </person-group>
+        <article-title>SWIFT: Using task-based parallelism, fully asynchronous communication, and graph partition-based domain decomposition for strong scaling on more than 100,000 cores</article-title>
+        <source>Proceedings of the Platform for Advanced Scientific Computing Conference on - PASC ’16</source>
+        <year iso-8601-date="2016">2016</year>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-06-03">2019</year><month>06</month><day>03</day></date-in-citation>
+        <uri>http://arxiv.org/abs/1606.02738</uri>
+        <pub-id pub-id-type="doi">10.1145/2929908.2929916</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-dynamicRange">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Borrow</surname><given-names>Josh</given-names></name>
+          <name><surname>Bower</surname><given-names>Richard G.</given-names></name>
+          <name><surname>Draper</surname><given-names>Peter W.</given-names></name>
+          <name><surname>Gonnet</surname><given-names>Pedro</given-names></name>
+          <name><surname>Schaller</surname><given-names>Matthieu</given-names></name>
+        </person-group>
+        <article-title>SWIFT: Maintaining weak-scalability with a dynamic range of 10^4 in time-step size to harness extreme adaptivity</article-title>
+        <source>Proceedings of the 13th SPHERIC International Workshop, Galway, Ireland, June 26-28 2018</source>
+        <year iso-8601-date="2018-07">2018</year><month>07</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-06-11">2019</year><month>06</month><day>11</day></date-in-citation>
+        <uri>https://ui.adsabs.harvard.edu/abs/2018arXiv180701341B/abstract</uri>
+      </element-citation>
+    </ref>
+    <ref id="ref-EAGLE">
+      <element-citation publication-type="article-journal">
+        <person-group person-group-type="author">
+          <name><surname>Schaye</surname><given-names>Joop</given-names></name>
+          <name><surname>Crain</surname><given-names>Robert A.</given-names></name>
+          <name><surname>Bower</surname><given-names>Richard G.</given-names></name>
+          <name><surname>Furlong</surname><given-names>Michelle</given-names></name>
+          <name><surname>Schaller</surname><given-names>Matthieu</given-names></name>
+          <name><surname>Theuns</surname><given-names>Tom</given-names></name>
+          <name><surname>Dalla Vecchia</surname><given-names>Claudio</given-names></name>
+          <name><surname>Frenk</surname><given-names>Carlos S.</given-names></name>
+          <name><surname>McCarthy</surname><given-names>I. G.</given-names></name>
+          <name><surname>Helly</surname><given-names>John C.</given-names></name>
+          <name><surname>Jenkins</surname><given-names>Adrian</given-names></name>
+          <name><surname>Rosas-Guevara</surname><given-names>Y. M.</given-names></name>
+          <name><surname>White</surname><given-names>Simon D. M.</given-names></name>
+          <name><surname>Baes</surname><given-names>Maarten</given-names></name>
+          <name><surname>Booth</surname><given-names>C. M.</given-names></name>
+          <name><surname>Camps</surname><given-names>Peter</given-names></name>
+          <name><surname>Navarro</surname><given-names>Julio F.</given-names></name>
+          <name><surname>Qu</surname><given-names>Yan</given-names></name>
+          <name><surname>Rahmati</surname><given-names>Alireza</given-names></name>
+          <name><surname>Sawala</surname><given-names>Till</given-names></name>
+          <name><surname>Thomas</surname><given-names>Peter A.</given-names></name>
+          <name><surname>Trayford</surname><given-names>James</given-names></name>
+        </person-group>
+        <article-title>The EAGLE project: Simulating the evolution and assembly of galaxies and their environments</article-title>
+        <source>Monthly Notices of the Royal Astronomical Society</source>
+        <year iso-8601-date="2015-01">2015</year><month>01</month>
+        <date-in-citation content-type="access-date"><year iso-8601-date="2019-06-05">2019</year><month>06</month><day>05</day></date-in-citation>
+        <volume>446</volume>
+        <issue>1</issue>
+        <issn>1365-2966, 0035-8711</issn>
+        <uri>http://academic.oup.com/mnras/article/446/1/521/1316115/The-EAGLE-project-simulating-the-evolution-and</uri>
+        <pub-id pub-id-type="doi">10.1093/mnras/stu2058</pub-id>
+      </element-citation>
+    </ref>
+    <ref id="ref-hdf5">
+      <element-citation publication-type="webpage">
+        <person-group person-group-type="author">
+          <string-name>The HDF Group</string-name>
+        </person-group>
+        <article-title>Hierarchical Data Format, version 5</article-title>
+        <year iso-8601-date="1997">1997</year>
+      </element-citation>
+    </ref>
+  </ref-list>
+</ref-list>
+</back>
+</article>

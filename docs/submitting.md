@@ -193,12 +193,16 @@ For a quick reference, the following citation commands can be used:
 
 # Figures
 
+<!-- Warning: The JOSS GitHub action will fail here if the figure.png file is not available. -->
+<!--          The following code is included to illustrate how to insert figures.
+<!--
 Figures can be included like this:
 ![Caption for example figure.\label{fig:example}](figure.png)
 and referenced from text using \autoref{fig:example}.
 
 Figure sizes can be customized by adding an optional second parameter:
 ![Caption for example figure.](figure.png){ width=20% }
+-->
 
 # Acknowledgements
 

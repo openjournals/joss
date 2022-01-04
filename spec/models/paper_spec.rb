@@ -238,7 +238,7 @@ describe Paper do
     let(:kind) { nil }
     subject { paper.review_body("editor_name", "mickey,mouse") }
 
-    it { is_expected.to match /Reviewer:/ }
+    it { is_expected.to match /Reviewers:/ }
     it { is_expected.to match /\/papers\/#{paper.sha}/ }
     it { is_expected.to match /#{paper.repository_url}/ }
   end

@@ -90,7 +90,7 @@ class DispatchController < ApplicationController
   def api_start_review
     if params[:secret] == ENV['WHEDON_SECRET']
       @paper = Paper.find_by_meta_review_issue_id(params[:id])
-      if @paper.start_review!(params[:editor], params[:reviewers])
+      if @paper.start_review!(params[:editor], params[:reviewers], params[:branch])
         render json: @paper.to_json, status: '201'
       else
         head :unprocessable_entity

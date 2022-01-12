@@ -14,7 +14,7 @@ atom_feed do |feed|
 
   @papers.each do |paper|
     next if paper.invisible?
-    feed.entry(paper, url: paper.seo_url) do |entry|
+    feed.entry(paper, url: paper.seo_url, published: (paper.accepted? ? paper.accepted_at : paper.created_at)) do |entry|
       entry.title(paper.title)
       entry.content(type: "application/xml") do |content|
         entry.state(paper.state)

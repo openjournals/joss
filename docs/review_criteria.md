@@ -52,7 +52,7 @@ There should be sufficient documentation for you, the reviewer to understand the
 
 #### A statement of need
 
-The authors should clearly state what problems the software is designed to solve and who the target audience is.
+The authors should clearly state what problems the software is designed to solve, who the target audience is, and its relation to other work.
 
 #### Installation instructions
 

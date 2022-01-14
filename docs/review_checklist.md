@@ -40,7 +40,7 @@ Below is an example of the review checklist for the [Yellowbrick JOSS submission
 ### Software paper
 
 - **Summary:** Has a clear description of the high-level functionality and purpose of the software for a diverse, non-specialist audience been provided?
-- **A statement of need:** Does the paper have a section titled 'Statement of Need' that clearly states what problems the software is designed to solve and who the target audience is?
+- **A statement of need:** Does the paper have a section titled 'Statement of need' that clearly states what problems the software is designed to solve, who the target audience is, and its relation to other work?
 - **State of the field:** Do the authors describe how this software compares to other commonly-used packages?
 - **Quality of writing:** Is the paper well written (i.e., it does not require editing for structure, language, or writing quality)?
 - **References:** Is the list of references complete, and is everything cited appropriately that should be cited (e.g., papers, datasets, software)? Do references in the text use the proper [citation syntax]( https://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html#citation_syntax)?

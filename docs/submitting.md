@@ -104,7 +104,7 @@ tags:
   - milky way
 authors:
   - name: Adrian M. Price-Whelan^[co-first author] # note this makes a footnote saying 'co-first author'
-    orcid: 0000-0003-0872-7098
+    orcid: 0000-0000-0000-0000
     affiliation: "1, 2" # (Multiple affiliations must be quoted)
   - name: Author Without ORCID^[co-first author] # note this makes a footnote saying 'co-first author'
     affiliation: 2

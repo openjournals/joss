@@ -57,9 +57,9 @@ module HomeHelper
     capture do
       if !paper.activities['issues']['comments'].empty?
         if paper.activities['issues']['last_edits'] && paper.activities['issues']['last_edits'].keys.any?
-          non_whedon_activities = paper.activities['issues']['last_edits'].select {|user, time| user != "whedon"}
-          return "No activity" if non_whedon_activities.empty?
-          user, time = non_whedon_activities.first
+          non_editorial_bot_activities = paper.activities['issues']['last_edits'].select {|user, time| user != "whedon"}
+          return "No activity" if non_editorial_bot_activities.empty?
+          user, time = non_editorial_bot_activities.first
           concat(content_tag(:span, image_tag(avatar(user), size: "24x24", class: "avatar", title: user), class: "activity-avatar"))
           concat(content_tag(:span, style: "") do
             concat(content_tag(:span, "#{time_ago_in_words(time)} ago".html_safe, class: "time"))

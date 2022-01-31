@@ -6,7 +6,7 @@ atom_feed do |feed|
   feed.link(rel: 'previous', type: "application/atom+xml", href: url_for(params: url_params, format: 'atom', page: @papers.current_page - 1, only_path: false)) unless @papers.current_page == 1
   feed.link(rel: 'last', type: "application/atom+xml", href: url_for(params: url_params, format: 'atom', page: @papers.total_pages, only_path: false))
   feed.title(Rails.application.settings["name"])
-  feed.updated(@papers[0].created_at) if @papers.length > 0
+  feed.updated(@papers[0].accepted_at || @papers[0].created_at) if @papers.length > 0
   feed.author do |author|
     author.name(Rails.application.settings["name"])
     author.uri(Rails.application.settings["url"])
@@ -14,7 +14,7 @@ atom_feed do |feed|
 
   @papers.each do |paper|
     next if paper.invisible?
-    feed.entry(paper, url: paper.seo_url) do |entry|
+    feed.entry(paper, url: paper.seo_url, published: (paper.accepted? ? paper.accepted_at : paper.created_at)) do |entry|
       entry.title(paper.title)
       entry.content(type: "application/xml") do |content|
         entry.state(paper.state)

@@ -21,7 +21,7 @@ In addition, the software associated with your submission must:
 
 ### What we mean by research software
 
-JOSS publishes articles about research software. This definition includes software that: solves complex modeling problems in a scientific context (physics, mathematics, biology, medicine, social science, neuroscience, engineering); supports the functioning of research instruments or the execution of research experiments; extracts knowledge from large data sets; offers a mathematical library, or similar. While useful for many areas of research, pre-trained machine learning models are not in-scope for JOSS. 
+JOSS publishes articles about research software. This definition includes software that: solves complex modeling problems in a scientific context (physics, mathematics, biology, medicine, social science, neuroscience, engineering); supports the functioning of research instruments or the execution of research experiments; extracts knowledge from large data sets; offers a mathematical library, or similar. While useful for many areas of research, pre-trained machine learning models and notebooks are not in-scope for JOSS. 
 
 ### Substantial scholarly effort
 
@@ -104,7 +104,7 @@ tags:
   - milky way
 authors:
   - name: Adrian M. Price-Whelan^[co-first author] # note this makes a footnote saying 'co-first author'
-    orcid: 0000-0003-0872-7098
+    orcid: 0000-0000-0000-0000
     affiliation: "1, 2" # (Multiple affiliations must be quoted)
   - name: Author Without ORCID^[co-first author] # note this makes a footnote saying 'co-first author'
     affiliation: 2

@@ -86,7 +86,7 @@ If you do not already have access to these keys, you can simply ignore them for 
 
 ```eval_rst
 .. note::
-    One secret key we have not covered thus far is WHEDON_SECRET.
+    One secret key we have not covered thus far is BOT_SECRET.
     This is because it is not one that you obtain from a provide,
     but a secret key that you set yourself.
     We recommend using something like a random SHA1 string.
@@ -214,7 +214,7 @@ For a list of the expected secret key names, see the `app.json` file.
 Many of these will be re-used from deploying your JOSS application.
 
 Specifically, the `GH_TOKEN` should be the same personal access token as before.
-The `JOSS_API_KEY` should match the `WHEDON_SECRET` key that you created in your JOSS deployment.
+The `JOSS_API_KEY` should match the `BOT_SECRET` key that you created in your JOSS deployment.
 
 You'll also need to provide a `HEROKU_APP_NAME`, `HEROKU_CLI_TOKEN`, and `HEROKU_CLI_USER` that the `restart.sh` script can use when executing.
 You can find these directly from the heroku-cli as detailed in [their documentation](https://devcenter.heroku.com/articles/authentication).

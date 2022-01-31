@@ -167,7 +167,7 @@ describe DispatchController, type: :controller do
   end
 
   describe "POST #api_start_review" do
-    ENV["WHEDON_SECRET"] = "mooo"
+    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_start_review
@@ -248,7 +248,7 @@ describe DispatchController, type: :controller do
   end
 
   describe "POST #api_assign_editor" do
-    ENV["WHEDON_SECRET"] = "mooo"
+    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_assign_editor
@@ -296,7 +296,7 @@ describe DispatchController, type: :controller do
   end
 
   describe "POST #api_editor_invite" do
-    ENV["WHEDON_SECRET"] = "mooo"
+    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_editor_invite
@@ -323,7 +323,7 @@ describe DispatchController, type: :controller do
   end
 
   describe "POST #api_assign_reviewers" do
-    ENV["WHEDON_SECRET"] = "mooo"
+    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_assign_reviewers
@@ -358,7 +358,7 @@ describe DispatchController, type: :controller do
   end
 
   describe "PUT #api_reject" do
-    ENV["WHEDON_SECRET"] = "mooo"
+    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_reject
@@ -387,7 +387,7 @@ describe DispatchController, type: :controller do
   end
 
   describe "PUT #api_withdraw" do
-    ENV["WHEDON_SECRET"] = "mooo"
+    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_withdraw
@@ -416,7 +416,7 @@ describe DispatchController, type: :controller do
   end
 
   describe "POST #api_deposit" do
-    ENV["WHEDON_SECRET"] = "mooo"
+    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_deposit

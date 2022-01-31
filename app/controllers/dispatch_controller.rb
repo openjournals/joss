@@ -25,7 +25,7 @@ class DispatchController < ApplicationController
   end
 
   def api_assign_editor
-    if params[:secret] == ENV['WHEDON_SECRET']
+    if params[:secret] == ENV['BOT_SECRET']
       paper = Paper.find_by_meta_review_issue_id(params[:id])
       editor = Editor.find_by_login(params[:editor])
       return head :unprocessable_entity unless paper && editor
@@ -36,7 +36,7 @@ class DispatchController < ApplicationController
   end
 
   def api_editor_invite
-    if params[:secret] == ENV['WHEDON_SECRET']
+    if params[:secret] == ENV['BOT_SECRET']
       paper = Paper.find_by_meta_review_issue_id(params[:id])
       return head :unprocessable_entity unless paper
       if paper.invite_editor(params[:editor])
@@ -50,7 +50,7 @@ class DispatchController < ApplicationController
   end
 
   def api_assign_reviewers
-    if params[:secret] == ENV['WHEDON_SECRET']
+    if params[:secret] == ENV['BOT_SECRET']
       paper = Paper.find_by_meta_review_issue_id(params[:id])
       return head :unprocessable_entity unless paper
       paper.set_reviewers(params[:reviewers])
@@ -60,7 +60,7 @@ class DispatchController < ApplicationController
   end
 
   def api_reject
-    if params[:secret] == ENV['WHEDON_SECRET']
+    if params[:secret] == ENV['BOT_SECRET']
       paper = Paper.where('review_issue_id = ? OR meta_review_issue_id = ?', params[:id], params[:id]).first
       return head :unprocessable_entity unless paper
       if paper.reject!
@@ -74,7 +74,7 @@ class DispatchController < ApplicationController
   end
 
   def api_withdraw
-    if params[:secret] == ENV['WHEDON_SECRET']
+    if params[:secret] == ENV['BOT_SECRET']
       paper = Paper.where('review_issue_id = ? OR meta_review_issue_id = ?', params[:id], params[:id]).first
       return head :unprocessable_entity unless paper
       if paper.withdraw!
@@ -88,7 +88,7 @@ class DispatchController < ApplicationController
   end
 
   def api_start_review
-    if params[:secret] == ENV['WHEDON_SECRET']
+    if params[:secret] == ENV['BOT_SECRET']
       @paper = Paper.find_by_meta_review_issue_id(params[:id])
       if @paper.start_review!(params[:editor], params[:reviewers], params[:branch])
         render json: @paper.to_json, status: '201'
@@ -101,7 +101,7 @@ class DispatchController < ApplicationController
   end
 
   def api_deposit
-    if params[:secret] == ENV['WHEDON_SECRET']
+    if params[:secret] == ENV['BOT_SECRET']
       @paper = Paper.find_by_review_issue_id(params[:id])
 
       if params[:metadata]

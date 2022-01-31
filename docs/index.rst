@@ -46,10 +46,10 @@ JOSS is a proud affiliate of the `Open Source Initiative <https://opensource.org
   editing
 
 .. toctree::
-  :caption: The Whedon Editorial Bot
+  :caption: The Editorial Bot
   :maxdepth: 2
 
-  whedon
+  editorial_bot
 
 .. toctree::
   :caption: Developer Guides

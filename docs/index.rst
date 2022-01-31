@@ -1,8 +1,7 @@
 Journal of Open Source Software
 ===============================
 
-The `Journal of Open Source Software
-<http://joss.theoj.org/>`_ (JOSS) is a developer friendly journal for research software packages.
+The `Journal of Open Source Software <http://joss.theoj.org/>`_ (JOSS) is a developer friendly journal for research software packages.
 
 JOSS is an academic journal (ISSN 2475-9066) with a formal peer-review process that is designed to *improve the quality of the software submitted*. Upon acceptance into JOSS, we mint a CrossRef DOI for your paper and we list it on the `JOSS website <http://joss.theoj.org/>`_.
 
@@ -19,7 +18,7 @@ If you're interested in learning more about JOSS, you might want to read:
 - The `about page <http://joss.theoj.org/about>`_ on the main JOSS site
 
 Submitting a paper to JOSS
------------------------
+--------------------------
 
 If you'd like to submit a paper to JOSS, please read the author submission guidelines in the :doc:`submitting` section.
 

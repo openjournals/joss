@@ -1,4 +1,5 @@
-# Installing the JOSS application
+Installing the JOSS application
+===============================
 
 Any Open Journal (JOSS, JOSE, etc.) can be considered in three parts:
 

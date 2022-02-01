@@ -286,10 +286,10 @@ JOSS editors-in-chief can withdraw a submission with the following command:
 # Accept and publish the paper
 @editorialbot accept
 
-# Replies to query scope
+# Flag submission with questionable scope
 @editorialbot query scope
 
-# Replies to list reviewers
+# Get a link to the complete list of reviewers
 @editorialbot list reviewers
 
 # Open the review issue

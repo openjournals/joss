@@ -49,9 +49,12 @@ Rails.application.routes.draw do
   get '/papers/volume/:volume', to: "papers#filter", as: 'papers_by_volume'
   get '/papers/year/:year', to: "papers#filter", as: 'papers_by_year'
   get '/papers/:id/status.svg', to: "papers#status", format: "svg", as: 'status_badge'
-  get '/papers/:doi/status.svg', to: "papers#status", format: "svg", constraints: { doi: /10.21105\/joss\.\d{5}/}
-  get '/papers/:doi', to: "papers#show", constraints: { doi: /10.21105\/joss\.\d{5}/}
-  get '/papers/:doi.:format', to: "papers#show", constraints: { doi: /10.21105\/joss\.\d{5}/}
+
+  doi_prefix_name = Rails.application.settings[:abbreviation].downcase || "joss"
+
+  get '/papers/:doi/status.svg', to: "papers#status", format: "svg", constraints: { doi: /10.21105\/#{doi_prefix_name}\.\d{5}/}
+  get '/papers/:doi', to: "papers#show", constraints: { doi: /10.21105\/#{doi_prefix_name}\.\d{5}/}
+  get '/papers/:doi.:format', to: "papers#show", constraints: { doi: /10.21105\/#{doi_prefix_name}\.\d{5}/}
 
   get '/editor_profile', to: 'editors#profile', as: 'editor_profile'
   patch '/update_editor_profile', to: 'editors#update_profile', as: 'update_editor_profile'

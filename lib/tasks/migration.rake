@@ -130,13 +130,10 @@ namespace :migration do
       if header.start_with?("**Submitting author:** <!--author-handle-->")
         puts "    Issue already migrated! - Nothing done"
       elsif header.start_with?("**Submitting author:** @")
-        new_header = build_new_header(header, issue_type)
-
         puts "    Migrating info:"
-
+        new_header = build_new_header(header, issue_type)
         new_issue_body = issue_body.sub(header, "#{new_header}\n\n <!--\n#{header}\n-->\n\n")
         update_issue(issue_id, body: new_issue_body)
-
         puts "    Done!"
       else
         puts "    !! Error: unexpected issue header format - Nothing done"
@@ -144,5 +141,46 @@ namespace :migration do
     end
   rescue Octokit::NotFound
     puts "--!! No issue found with id #{args.issue_id} in #{reviews_repo}"
+  end
+
+  namespace :dry_run do
+    desc "Migrate a single issue to use the new bot system"
+    task :issue, [:issue_id] => :environment do |t, args|
+      if args.issue_id.blank?
+        puts "Missing issue id"
+        puts "Use: rake migration:dry_run:issue[issue-id]"
+      else
+        issue_id = args.issue_id
+        issue = get_issue(issue_id)
+
+        puts "-- Issue ##{issue_id} found: #{issue.title}\n"
+
+        issue_type = "pre-review" if issue.title.match(/\[PRE REVIEW\]/)
+        issue_type = "review" if issue.title.match(/\[REVIEW\]/)
+
+        issue_body = issue.body
+        header = get_header(issue_body)
+
+        if issue_type.nil?
+          puts "    !! Error: Issue is not a [REVIEW] or [PRE-REVIEW] - Nothing to do"
+          exit(0)
+        end
+
+        if header.start_with?("**Submitting author:** <!--author-handle-->")
+          puts "    Issue already migrated! - Nothing to do"
+        elsif header.start_with?("**Submitting author:** @")
+          puts "    Information extracted:"
+
+          new_header = build_new_header(header, issue_type)
+
+          puts "\n    New header would be changed to:"
+          puts "\n#{new_header}\n "
+        else
+          puts "    !! Error: unexpected issue header format - Nothing to do"
+        end
+      end
+    rescue Octokit::NotFound
+      puts "--!! No issue found with id #{args.issue_id} in #{reviews_repo}"
+    end
   end
 end

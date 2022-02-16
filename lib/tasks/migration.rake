@@ -54,7 +54,9 @@ def get_managing_eic(text)
 end
 
 def get_header(body)
-  body.match(/(.*)\*\*:warning: JOSS reduced service mode :warning:\*\*/m)[1]
+  # If covid warning is removed, "## Status" could be used
+  m = body.match(/(.*)\*\*:warning: JOSS reduced service mode :warning:\*\*/m)
+  m.nil? ? nil : m[1]
 end
 
 def build_new_header(header, issue_type)
@@ -127,6 +129,11 @@ namespace :migration do
         exit(0)
       end
 
+      if header.nil?
+        puts "    !! Error: Can't find header - Nothing to do"
+        exit(0)
+      end
+
       if header.start_with?("**Submitting author:** <!--author-handle-->")
         puts "    Issue already migrated! - Nothing done"
       elsif header.start_with?("**Submitting author:** @")
@@ -142,6 +149,48 @@ namespace :migration do
   rescue Octokit::NotFound
     puts "--!! No issue found with id #{args.issue_id} in #{reviews_repo}"
   end
+
+  desc "Migrate all open issues to the new bot system"
+    task all_issues: :environment do
+      raise("DO NOT MIGRATE YET!")
+      open_issues = get_open_issues
+      puts "#{open_issues.size} issues found!\n"
+      open_issues.each_with_index do |issue, i|
+
+        issue_id = issue.number
+        puts "-- #{i+1}) Issue ##{issue_id}: #{issue.title}\n"
+
+        issue_type = "pre-review" if issue.title.match(/\[PRE REVIEW\]/)
+        issue_type = "review" if issue.title.match(/\[REVIEW\]/)
+
+        issue_body = issue.body
+        header = get_header(issue_body)
+
+        if issue_type.nil?
+          puts "    !! Error: Issue is not a [REVIEW] or [PRE-REVIEW] - Nothing done"
+          next
+        end
+
+        if header.nil?
+          puts "    !! Error: Can't find header - Nothing to do"
+          next
+        end
+
+        if header.start_with?("**Submitting author:** <!--author-handle-->")
+          puts "    Issue already migrated! - Nothing done"
+        elsif header.start_with?("**Submitting author:** @")
+          puts "    Migrating info:"
+          new_header = build_new_header(header, issue_type)
+          new_issue_body = issue_body.sub(header, "#{new_header}\n\n <!--\n#{header}\n-->\n\n")
+          update_issue(issue_id, body: new_issue_body)
+          puts "    Done!"
+        else
+          puts "    !! Error: unexpected issue header format - Nothing done"
+        end
+      end
+    rescue Octokit::NotFound
+      puts "--!! No issue found with id #{args.issue_id} in #{reviews_repo}"
+    end
 
   namespace :dry_run do
     desc "Dry run of the migration of a single issue to the new bot system"
@@ -163,6 +212,11 @@ namespace :migration do
 
         if issue_type.nil?
           puts "    !! Error: Issue is not a [REVIEW] or [PRE-REVIEW] - Nothing to do"
+          exit(0)
+        end
+
+        if header.nil?
+          puts "    !! Error: Can't find header - Nothing to do"
           exit(0)
         end
 
@@ -202,7 +256,12 @@ namespace :migration do
 
         if issue_type.nil?
           puts "    !! Error: Issue is not a [REVIEW] or [PRE-REVIEW] - Nothing to do"
-          exit(0)
+          next
+        end
+
+        if header.nil?
+          puts "    !! Error: Can't find header - Nothing to do"
+          next
         end
 
         if header.start_with?("**Submitting author:** <!--author-handle-->")

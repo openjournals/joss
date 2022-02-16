@@ -1,5 +1,5 @@
 def gh
-  @gh ||= Octokit::Client.new(access_token: ENV["GH_TOKEN"])
+  @gh ||= GITHUB
 end
 
 def reviews_repo
@@ -144,7 +144,7 @@ namespace :migration do
   end
 
   namespace :dry_run do
-    desc "Migrate a single issue to use the new bot system"
+    desc "Dry run of the migration of a single issue to the new bot system"
     task :issue, [:issue_id] => :environment do |t, args|
       if args.issue_id.blank?
         puts "Missing issue id"
@@ -154,6 +154,45 @@ namespace :migration do
         issue = get_issue(issue_id)
 
         puts "-- Issue ##{issue_id} found: #{issue.title}\n"
+
+        issue_type = "pre-review" if issue.title.match(/\[PRE REVIEW\]/)
+        issue_type = "review" if issue.title.match(/\[REVIEW\]/)
+
+        issue_body = issue.body
+        header = get_header(issue_body)
+
+        if issue_type.nil?
+          puts "    !! Error: Issue is not a [REVIEW] or [PRE-REVIEW] - Nothing to do"
+          exit(0)
+        end
+
+        if header.start_with?("**Submitting author:** <!--author-handle-->")
+          puts "    Issue already migrated! - Nothing to do"
+        elsif header.start_with?("**Submitting author:** @")
+          puts "    Information extracted:"
+
+          new_header = build_new_header(header, issue_type)
+
+          puts "\n    New header would be changed to:"
+          puts "\n#{new_header}\n "
+        else
+          puts "    !! Error: unexpected issue header format - Nothing to do"
+        end
+      end
+    rescue Octokit::NotFound
+      puts "--!! No issue found with id #{args.issue_id} in #{reviews_repo}"
+    end
+
+
+    desc "Dry run of the migration of all open issues to the new bot system"
+    task all_issues: :environment do
+
+      open_issues = get_open_issues
+      puts "#{open_issues.size} issues found!\n"
+      open_issues.each_with_index do |issue, i|
+
+        issue_id = issue.number
+        puts "-- #{i+1}) Issue ##{issue_id}: #{issue.title}\n"
 
         issue_type = "pre-review" if issue.title.match(/\[PRE REVIEW\]/)
         issue_type = "review" if issue.title.match(/\[REVIEW\]/)

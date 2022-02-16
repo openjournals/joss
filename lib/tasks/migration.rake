@@ -48,11 +48,16 @@ def get_submitting_author(text)
   m.nil? ? [""] : [m[1], m[2]]
 end
 
+def get_managing_eic(text)
+  m = text.match(/Managing EiC:\*\*\s*(.*)\r?\n/)
+  m.nil? ? "" : m[1]
+end
+
 def get_header(body)
   body.match(/(.*)\*\*:warning: JOSS reduced service mode :warning:\*\*/m)[1]
 end
 
-def build_new_header(header)
+def build_new_header(header, issue_type)
   author_info = get_submitting_author(header)
 
   author_username = author_info[0]
@@ -62,15 +67,28 @@ def build_new_header(header)
   editor = get_editor(header)
   reviewers = get_reviewers(header)
   archive = get_archive(header)
+  eic = get_managing_eic(header)
 
   puts "      Submitting Author: #{author_username} - Extra info: #{author_link}"
   puts "      Repository URL: #{repository_url}"
   puts "      Version: #{version}"
   puts "      Editor: #{editor}"
   puts "      Reviewers: #{reviewers}"
-  puts "      Archive: #{archive}"
+  puts "      Archive: #{archive}" if issue_type == "review"
+  puts "      Managing EiC: #{eic}" if issue_type == "pre-review"
 
-  new_header = <<-NEWHEADER
+  if issue_type == "pre-review"
+    new_header = <<-NEWHEADERMETA
+**Submitting author:** <!--author-handle-->#{author_username}<!--end-author-handle--> #{author_link}
+**Repository:** <!--target-repository-->#{repository_url}<!--end-target-repository-->
+**Branch with paper.md** (empty if default branch): <!--branch--><!--end-branch-->
+**Version:** <!--version-->#{version}<!--end-version-->
+**Editor:** <!--editor-->#{editor}<!--end-editor-->
+**Reviewers:** <!--reviewers-list-->#{reviewers}<!--end-reviewers-list-->
+**Managing EiC:** #{eic}
+    NEWHEADERMETA
+  elsif issue_type == "review"
+    new_header = <<-NEWHEADER
 **Submitting author:** <!--author-handle-->#{author_username}<!--end-author-handle--> #{author_link}
 **Repository:** <!--target-repository-->#{repository_url}<!--end-target-repository-->
 **Branch with paper.md** (empty if default branch): <!--branch--><!--end-branch-->
@@ -78,7 +96,10 @@ def build_new_header(header)
 **Editor:** <!--editor-->#{editor}<!--end-editor-->
 **Reviewers:** <!--reviewers-list-->#{reviewers}<!--end-reviewers-list-->
 **Archive:** <!--archive-->#{archive}<!--end-archive-->
-  NEWHEADER
+    NEWHEADER
+  else
+    new_header = nil
+  end
 
   new_header
 end
@@ -93,16 +114,25 @@ namespace :migration do
       issue_id = args.issue_id
       issue = get_issue(issue_id)
 
-      puts "!! Issue ##{issue_id} found: #{issue.title}"
+      puts "-- Issue ##{issue_id} found: #{issue.title}"
+
+      issue_type = "pre-review" if issue.title.match(/\[PRE REVIEW\]/)
+      issue_type = "review" if issue.title.match(/\[REVIEW\]/)
+
       issue_body = issue.body
       header = get_header(issue_body)
+
+      if issue_type.nil?
+        puts "    !! Error: Issue is not a [REVIEW] or [PRE-REVIEW] - Nothing done"
+        exit(0)
+      end
 
       if header.start_with?("**Submitting author:** <!--author-handle-->")
         puts "    Issue already migrated! - Nothing done"
       elsif header.start_with?("**Submitting author:** @")
-        puts "    Migrating info:"
+        new_header = build_new_header(header, issue_type)
 
-        new_header = build_new_header(header)
+        puts "    Migrating info:"
 
         new_issue_body = issue_body.sub(header, "#{new_header}\n\n <!--\n#{header}\n-->\n\n")
         update_issue(issue_id, body: new_issue_body)
@@ -113,6 +143,6 @@ namespace :migration do
       end
     end
   rescue Octokit::NotFound
-    puts "No issue found with id #{args.issue_id} in #{reviews_repo}"
+    puts "--!! No issue found with id #{args.issue_id} in #{reviews_repo}"
   end
 end

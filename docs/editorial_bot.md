@@ -184,7 +184,7 @@ Editors can flag a paper with query-scope with the command:
 JOSS topic editors can recommend a paper for acceptance and ask for the final proofs to be created by EditorialBot with the following command:
 
 ```text
-@editorialbot recommend acceptance
+@editorialbot recommend-accept
 ```
 
 On issuing this command, EditorialBot will also check the references of the paper for any missing DOIs.
@@ -281,7 +281,7 @@ JOSS editors-in-chief can withdraw a submission with the following command:
 @editorialbot generate pdf
 
 # Recommends the submission for acceptance
-@editorialbot recommend acceptance
+@editorialbot recommend-accept
 
 # Accept and publish the paper
 @editorialbot accept

@@ -103,7 +103,7 @@ Pre-publication steps:
 - Check the archive deposit has the correct metadata (title and author list), and request the author edit it if it doesn’t match the paper.
 - Run `@editorialbot set <doi> as archive`.
 - Run `@editorialbot set <v1.x.x> as version` if the version was updated.
-- Run `@editorialbot recommend acceptance` to generate the final proofs, which has EditorialBot notify the `@openjournals/joss-eics` team that the paper is ready for final processing.
+- Run `@editorialbot recommend-accept` to generate the final proofs, which has EditorialBot notify the `@openjournals/joss-eics` team that the paper is ready for final processing.
 
 At this point, the EiC/AEiC will take over to make final checks and publish the paper.
 
@@ -295,7 +295,7 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 
 - Make a final check of the paper with `@editorialbot generate pdf` and that all references have DOIs (where appropriate) with `@editorialbot check references`.
 - If everything looks good, ask the author to make a new release (if possible) of the software being reviewed and deposit a new archive the software with Zenodo/figshare. Update the review thread with this archive DOI: `@editorialbot set 10.5281/zenodo.xxxxxx` as archive.
-- Finally, use `@editorialbot recommend acceptance` on the review thread to ping the `@openjournals/joss-eics` team letting them know the paper is ready to be accepted.
+- Finally, use `@editorialbot recommend-accept` on the review thread to ping the `@openjournals/joss-eics` team letting them know the paper is ready to be accepted.
 
 **Step 12: Celebrate publication! Tweet! Thank reviewers! Say thank you on issue.**
 

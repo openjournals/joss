@@ -1,23 +1,24 @@
-# Installing the JOSS application
+Installing the JOSS application
+===============================
 
 Any Open Journal (JOSS, JOSE, etc.) can be considered in three parts:
 
 1. The website
-2. The Whedon gem
-3. A thin API wrapper around the Whedon gem to interface with GitHub
+2. The Buffy gem to interface with GitHub
+3. Inara, a docker image to compile papers being used in GitHub actions and workflows
 
 For JOSS, these correspond to the:
 
 1. [JOSS](https://github.com/openjournals/joss),
-2. [Whedon](https://github.com/openjournals/whedon), and
-3. [Whedon-API](https://github.com/openjournals/whedon-api)
+2. [Buffy](https://github.com/openjournals/buffy), and
+3. [Inara](https://github.com/openjournals/inara)
 
 code bases.
 
 ## Setting up a local development environment
 
 All Open Journals are coded in Ruby,
-with the website and Whedon-API developed as
+with the website and Buffy developed as
 [Ruby on Rails](https://rubyonrails.org/inst) applications.
 
 If you'd like to develop these locally,
@@ -32,7 +33,7 @@ We also recommend you gather the following information
 before deploying your application to Heroku:
 
 1. A [public ORCID API](https://members.orcid.org/api/about-public-api) key
-1. A GitHub [Personal Access Token](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token) for the automated account that users will interact with (e.g., `@Whedon`, `@RoboNeuro`). In order to be able to send invitations to reviewers and collaborators, the automated GitHub account must be an admin of the organization the reviews take place at. And the Personal Access Token should include the `admin:org` scope.
+1. A GitHub [Personal Access Token](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token) for the automated account that users will interact with (e.g., `@editorialbot`, `@RoboNeuro`). In order to be able to send invitations to reviewers and collaborators, the automated GitHub account must be an admin of the organization the reviews take place at. And the Personal Access Token should include the `admin:org` scope.
 1. An email address registered on a domain you control (i.e., not `gmail` or a related service)
 
 ```eval_rst
@@ -85,13 +86,13 @@ If you do not already have access to these keys, you can simply ignore them for 
 
 ```eval_rst
 .. note::
-    One secret key we have not covered thus far is WHEDON_SECRET.
+    One secret key we have not covered thus far is BOT_SECRET.
     This is because it is not one that you obtain from a provide,
     but a secret key that you set yourself.
     We recommend using something like a random SHA1 string.
 
     It is important to remember this key,
-    as you will need it when deploying your Whedon-API application.
+    as you will need it when deploying your Buffy application.
 ```
 
 After pushing your application to Heroku, provisioning the appropriate add-ons,
@@ -181,54 +182,32 @@ In the same folder, `utils.rake` is currently hard-coded to alternate assignment
 You should modify this to either set a single editor-in-chief,
 or design your own scheme of alternating between members of your editorial board.
 
-## Deploying your Whedon-API Application
+## Deploying your Buffy Application
 
-Whedon-API can also be deployed on Heroku.
-Note that &mdash; for full functionality &mdash; Whedon-API must be deployed on [Hobby dynos](https://devcenter.heroku.com/articles/dyno-types), rather than free dynos.
-Hobby dynos allow the Whedon-API application to run continuously, without falling asleep after 30 minutes of inactivity;
-this means that Whedon-API can respond to activity on GitHub at any time.
-Whedon-API specifically requires two Hobby dynos: one for the `web` service and one for the `worker` service.
+Buffy can also be deployed on Heroku.
+Note that &mdash; for full functionality &mdash; Buffy must be deployed on [Hobby dynos](https://devcenter.heroku.com/articles/dyno-types), rather than free dynos.
+Hobby dynos allow the Buffy application to run continuously, without falling asleep after 30 minutes of inactivity;
+this means that Buffy can respond to activity on GitHub at any time.
+Buffy specifically requires two Hobby dynos: one for the `web` service and one for the `worker` service.
 
-On the Whedon-API Heroku deployment, you'll need to provision several [add-ons](https://elements.heroku.com/addons).
-Specifically, you'll need:
-
-1. [Cloudinary add-on](https://elements.heroku.com/addons/cloudinary)
-1. [Scheduler add-on](https://devcenter.heroku.com/articles/scheduler)
-1. [Redis To Go add-on](https://elements.heroku.com/addons/redistogo)
-
-For the scheduler add-on, you'll need to designate which tasks it should run and when.
-The only task that needs to be scheduled is the `restart.sh` script,
-which should be set to execute every hour.
-
-```eval_rst
-.. warn:
-    Cloudinary `does not allow free accounts to serve PDFs <https://cloudinary.com/blog/uploading_managing_and_delivering_pdfs#delivering_pdf_files>`_ by default.
-    This will prevent your application from offering a paper preview service, as in https://whedon.theoj.org
-    To have this restriction lifted, you will need to `contact Cloudinary customer support <https://support.cloudinary.com/hc/en-us/requests/new>`_ directly.
-```
+For a complete step-by-step guide on installing and deploying Buffy, you can read the [Buffy documentation](https://buffy.readthedocs.io).
 
 As before, once you've pushed your application to Heroku and provisioned the appropriate add-ons,
 you're ready to update your config with the appropriate secrets.
-For a list of the expected secret key names, see the `app.json` file.
-Many of these will be re-used from deploying your JOSS application.
 
-Specifically, the `GH_TOKEN` should be the same personal access token as before.
-The `JOSS_API_KEY` should match the `WHEDON_SECRET` key that you created in your JOSS deployment.
+Specifically, the `JOSS_API_KEY`env var in Heroku should match the `BOT_SECRET` key that you created in your JOSS deployment.
 
-You'll also need to provide a `HEROKU_APP_NAME`, `HEROKU_CLI_TOKEN`, and `HEROKU_CLI_USER` that the `restart.sh` script can use when executing.
-You can find these directly from the heroku-cli as detailed in [their documentation](https://devcenter.heroku.com/articles/authentication).
+## Modifying your Buffy deployment
 
-## Modifying your Whedon-API deployment
-
-Some times you may not want to launch an exact copy of the Whedon-API, but a modified version.
+Some times you may not want to launch an exact copy of the Buffy, but a modified version.
 This can be especially useful if you're planning to spin up your own platform based on the
 Open Journals framework.
-[RoboNeuro](https://github.com/roboneuro) is one such example use-case.
+[rOpenSci-review-bot](https://github.com/ropensci-review-bot) and [Scoobies](https://github.com/scoobies) are examples of use-cases.
 
-### Modifying your Whedon-API configuration
+### Modifying your Buffy configuration
 
 Similar to the JOSS deployment described above,
-the Whedon-API configuration is controlled through a series of YAML files included in the `config/` folder.
+the Buffy configuration is controlled through a series of YAML files included in the `config/` folder.
 Each of these files provide relevant configuration for a different development context.
 Specifically, two files are defined:
 
@@ -236,8 +215,6 @@ Specifically, two files are defined:
 1. `settings-production.yml`
 
 which can be used to define testing and production environment variables, respectively.
-Much of the information [previously defined for your JOSS deployment](#modifying-your-site-configuration) will carry over,
-including the editor team ID.
 
 Finally, you'll need to set up a [GitHub webhook](https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/about-webhooks) for your reviews repository.
 As a reminder, this should be a repository that you have write access to.

@@ -99,7 +99,7 @@ class HomeController < ApplicationController
           per_page: 20
         )
       else
-        @papers = Paper.unscoped.in_progress.where(editor: @editor).order(percent_complete: @order).paginate(
+        @papers = Paper.unscoped.in_progress.where(editor: @editor).order(created_at: @order).paginate(
           page: params[:page],
           per_page: 20
         )
@@ -139,7 +139,7 @@ class HomeController < ApplicationController
         per_page: 20
       )
     else
-      @papers = Paper.unscoped.in_progress.order(percent_complete: @order).paginate(
+      @papers = Paper.unscoped.in_progress.order(created_at: @order).paginate(
         page: params[:page],
         per_page: 20
       )
@@ -177,7 +177,7 @@ class HomeController < ApplicationController
         per_page: 20
       )
     else
-      @papers = Paper.unscoped.all.order(percent_complete: @order).paginate(
+      @papers = Paper.unscoped.all.order(created_at: @order).paginate(
         page: params[:page],
         per_page: 20
       )

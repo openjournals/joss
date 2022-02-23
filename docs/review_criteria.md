@@ -36,7 +36,7 @@ Reviewers should verify that the software represents substantial scholarly effor
 - Age of software (is this a well-established software project) / length of commit history.
 - Number of commits.
 - Number of authors.
-- Lines of code (LOC): These statistics are usually reported by Whedon in the `pre-review` issue thread.
+- Lines of code (LOC): These statistics are usually reported by EditorialBot in the `pre-review` issue thread.
 - Whether the software has already been cited in academic papers.
 - Whether the software is sufficiently useful that it is _likely to be cited_ by other researchers working in this domain.
 

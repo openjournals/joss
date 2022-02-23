@@ -1,5 +1,5 @@
 Review checklist
-===============
+================
 
 JOSS reviews are checklist-driven. That is, there is a checklist for each JOSS reviewer to work through when completing their review. A JOSS review is generally considered incomplete until the reviewer has checked off all of their checkboxes.
 

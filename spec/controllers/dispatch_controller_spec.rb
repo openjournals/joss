@@ -20,24 +20,24 @@ end
 describe DispatchController, type: :controller do
   render_views
 
-  let(:whedon_pre_review_opened) { json_fixture('whedon-pre-review-opened.json') }
-  let(:whedon_pre_review_comment) { json_fixture('whedon-pre-review-comment.json') }
+  let(:editorialbot_pre_review_opened) { json_fixture('editorialbot-pre-review-opened.json') }
+  let(:editorialbot_pre_review_comment) { json_fixture('editorialbot-pre-review-comment.json') }
   let(:editor_pre_review_comment) { json_fixture('editor-pre-review-comment.json') }
 
-  let(:whedon_review_opened) { json_fixture('whedon-review-opened.json') }
-  let(:whedon_review_comment) { json_fixture('whedon-review-comment.json') }
+  let(:editorialbot_review_opened) { json_fixture('editorialbot-review-opened.json') }
+  let(:editorialbot_review_comment) { json_fixture('editorialbot-review-comment.json') }
   let(:editor_review_comment) { json_fixture('editor-review-comment.json') }
-  let(:whedon_review_edit) { json_fixture('whedon-review-edit.json') }
+  let(:editorialbot_review_edit) { json_fixture('editorialbot-review-edit.json') }
 
-  let(:whedon_review_labeled) { json_fixture('whedon-review-labeled.json') }
+  let(:editorialbot_review_labeled) { json_fixture('editorialbot-review-labeled.json') }
 
-  let(:whedon_pre_review_comment_random) { json_fixture('whedon-pre-review-comment-random-review.json') }
+  let(:editorialbot_pre_review_comment_random) { json_fixture('editorialbot-pre-review-comment-random-review.json') }
 
   describe "POST #github_receiver for REVIEW with invalid HTTP_X_HUB_SIGNATURE", type: :request do
     before do
       wrong_payload = "foobarbaz"
       @paper = create(:paper, meta_review_issue_id: 78, review_issue_id: 79)
-      post '/dispatch', params: whedon_review_opened, headers: headers(:issues, wrong_payload)
+      post '/dispatch', params: editorialbot_review_opened, headers: headers(:issues, wrong_payload)
       @paper.reload
     end
 
@@ -51,7 +51,7 @@ describe DispatchController, type: :controller do
   describe "POST #github_receiver for PRE-REVIEW", type: :request do
     before do
       @paper = create(:paper, meta_review_issue_id: 78, review_issue_id: nil)
-      post '/dispatch', params: whedon_pre_review_opened, headers: headers(:issues, whedon_pre_review_opened)
+      post '/dispatch', params: editorialbot_pre_review_opened, headers: headers(:issues, editorialbot_pre_review_opened)
       @paper.reload
     end
 
@@ -61,22 +61,22 @@ describe DispatchController, type: :controller do
     end
 
     it "should UPDATE the activities when an issue is then commented on" do
-      post '/dispatch', params: whedon_pre_review_comment, headers: headers(:issue_comment, whedon_pre_review_comment)
+      post '/dispatch', params: editorialbot_pre_review_comment, headers: headers(:issue_comment, editorialbot_pre_review_comment)
       post '/dispatch', params: editor_pre_review_comment, headers: headers(:issue_comment, editor_pre_review_comment)
       @paper.reload
 
       expect(response).to be_ok
-      expect(@paper.activities['issues']['commenters']).to eq({"pre-review"=>{"whedon"=>1, "editor"=>1}, "review"=>{}})
+      expect(@paper.activities['issues']['commenters']).to eq({"pre-review"=>{"editorialbot"=>1, "editor"=>1}, "review"=>{}})
       expect(@paper.activities['issues']['comments'].length).to eq(2)
       expect(@paper.activities['issues']['last_comments']['editor']).to eq("2018-09-30T11:48:30Z")
-      expect(@paper.activities['issues']['last_comments']['whedon']).to eq("2018-09-30T11:48:40Z")
+      expect(@paper.activities['issues']['last_comments']['editorialbot']).to eq("2018-09-30T11:48:40Z")
     end
   end
 
   describe "POST #github_receiver for REVIEW with labeling event", type: :request do
     before do
       @paper = create(:paper, meta_review_issue_id: 78, review_issue_id: 79, labels: [{ "foo" => "efefef" }])
-      post '/dispatch', params: whedon_review_labeled, headers: headers(:issues, whedon_review_labeled)
+      post '/dispatch', params: editorialbot_review_labeled, headers: headers(:issues, editorialbot_review_labeled)
       @paper.reload
     end
 
@@ -91,7 +91,7 @@ describe DispatchController, type: :controller do
       build(:paper, meta_review_issue_id: 78, suggested_editor: nil, review_issue_id: 79, labels: [{ "foo" => "efefef" }]).save(validate: false)
       @paper = Paper.find_by_meta_review_issue_id(78)
 
-      post '/dispatch', params: whedon_review_labeled, headers: headers(:issues, whedon_review_labeled)
+      post '/dispatch', params: editorialbot_review_labeled, headers: headers(:issues, editorialbot_review_labeled)
       @paper.reload
     end
 
@@ -104,7 +104,7 @@ describe DispatchController, type: :controller do
   describe "POST #github_receiver for REVIEW - open", type: :request, vcr: true do
     before do
       @paper = create(:paper, meta_review_issue_id: 78, review_issue_id: 79)
-      post '/dispatch', params: whedon_review_opened, headers: headers(:issues, whedon_review_opened)
+      post '/dispatch', params: editorialbot_review_opened, headers: headers(:issues, editorialbot_review_opened)
       @paper.reload
     end
 
@@ -117,7 +117,7 @@ describe DispatchController, type: :controller do
   describe "POST #github_receiver for REVIEW", type: :request, vcr: true do
     before do
       @paper = create(:paper, meta_review_issue_id: 78, review_issue_id: 79)
-      post '/dispatch', params: whedon_review_edit, headers: headers(:issues, whedon_review_edit)
+      post '/dispatch', params: editorialbot_review_edit, headers: headers(:issues, editorialbot_review_edit)
       @paper.reload
     end
 
@@ -126,12 +126,8 @@ describe DispatchController, type: :controller do
       expect(@paper.activities).to eq({"issues"=>{"commenters"=>{"pre-review"=>{}, "review"=>{}}, "comments"=>[], "last_comments" => {}, "last_edits"=>{"comment-editor"=>"2018-10-06T16:18:56Z"}}})
     end
 
-    it "should update the percent_complete value" do
-      expect(@paper.percent_complete).to eq(0.9375)
-    end
-
     it "should update the last_activity field" do
-      github_updated_at = JSON.parse(whedon_review_edit)['issue']['updated_at'].to_datetime.strftime("%Y-%m-%dT%l:%M:%S%z")
+      github_updated_at = JSON.parse(editorialbot_review_edit)['issue']['updated_at'].to_datetime.strftime("%Y-%m-%dT%l:%M:%S%z")
       expect(@paper.last_activity.strftime('%Y-%m-%dT%l:%M:%S%z')).to eql(github_updated_at)
     end
   end
@@ -139,7 +135,7 @@ describe DispatchController, type: :controller do
   describe "POST #github_receiver", type: :request do
     it "shouldn't do anything if the payload is not for one of the papers" do
       random_paper = create(:paper, meta_review_issue_id: 1234)
-      post '/dispatch', params: whedon_pre_review_comment, headers: headers(:issue_comment, whedon_pre_review_comment)
+      post '/dispatch', params: editorialbot_pre_review_comment, headers: headers(:issue_comment, editorialbot_pre_review_comment)
       random_paper.reload
 
       expect(response).to be_ok
@@ -148,7 +144,7 @@ describe DispatchController, type: :controller do
 
     it "shouldn't do anything if a payload is received for the wrong repository" do
       paper = create(:paper, meta_review_issue_id: 78)
-      post '/dispatch', params: whedon_pre_review_comment_random, headers: headers(:issue_comment, whedon_pre_review_comment_random)
+      post '/dispatch', params: editorialbot_pre_review_comment_random, headers: headers(:issue_comment, editorialbot_pre_review_comment_random)
       paper.reload
 
       expect(response).to be_forbidden
@@ -157,21 +153,21 @@ describe DispatchController, type: :controller do
     end
 
     it "shouldn't care if an issue comment payload is received before the 'opened' payload" do
-      signature = set_signature(whedon_review_comment)
+      signature = set_signature(editorialbot_review_comment)
 
       paper = create(:paper, meta_review_issue_id: 78, review_issue_id: 79)
-      post '/dispatch', params: whedon_review_comment, headers: headers(:issue_comment, whedon_review_comment)
+      post '/dispatch', params: editorialbot_review_comment, headers: headers(:issue_comment, editorialbot_review_comment)
       paper.reload
 
       expect(response).to be_ok
-      expect(paper.activities['issues']['commenters']).to eq({"pre-review"=>{}, "review"=>{"whedon"=>1}})
+      expect(paper.activities['issues']['commenters']).to eq({"pre-review"=>{}, "review"=>{"editorialbot"=>1}})
       expect(paper.activities['issues']['comments'].length).to eq(1)
       expect(paper.activities['issues']['commenters']['reviews']).to be_nil
     end
   end
 
   describe "POST #api_start_review" do
-    ENV["WHEDON_SECRET"] = "mooo"
+    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_start_review
@@ -252,7 +248,7 @@ describe DispatchController, type: :controller do
   end
 
   describe "POST #api_assign_editor" do
-    ENV["WHEDON_SECRET"] = "mooo"
+    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_assign_editor
@@ -300,7 +296,7 @@ describe DispatchController, type: :controller do
   end
 
   describe "POST #api_editor_invite" do
-    ENV["WHEDON_SECRET"] = "mooo"
+    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_editor_invite
@@ -327,7 +323,7 @@ describe DispatchController, type: :controller do
   end
 
   describe "POST #api_assign_reviewers" do
-    ENV["WHEDON_SECRET"] = "mooo"
+    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_assign_reviewers
@@ -362,7 +358,7 @@ describe DispatchController, type: :controller do
   end
 
   describe "PUT #api_reject" do
-    ENV["WHEDON_SECRET"] = "mooo"
+    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_reject
@@ -391,7 +387,7 @@ describe DispatchController, type: :controller do
   end
 
   describe "PUT #api_withdraw" do
-    ENV["WHEDON_SECRET"] = "mooo"
+    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_withdraw
@@ -420,7 +416,7 @@ describe DispatchController, type: :controller do
   end
 
   describe "POST #api_deposit" do
-    ENV["WHEDON_SECRET"] = "mooo"
+    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_deposit

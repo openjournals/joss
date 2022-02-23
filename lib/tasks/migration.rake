@@ -152,7 +152,6 @@ namespace :migration do
 
   desc "Migrate all open issues to the new bot system"
     task all_issues: :environment do
-      raise("DO NOT MIGRATE YET!")
       open_issues = get_open_issues
       puts "#{open_issues.size} issues found!\n"
       open_issues.each_with_index do |issue, i|

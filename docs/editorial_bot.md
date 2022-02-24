@@ -32,10 +32,16 @@ Anyone can ask `@editorialbot` to compile the paper again (e.g. after a change h
 
 #### Compiling papers from a specific branch
 
-By default, EditorialBot will look for papers in the branch set in the body of the issue (or in the default git branch if none is present). If you want to compile a paper from a specific branch, this can be done as follows:
+By default, EditorialBot will look for papers in the branch set in the body of the issue (or in the default git branch if none is present). If you want to compile a paper from a specific branch (for instance: `my-custom-branch-name`), change that value with:
 
 ```text
-@editorialbot generate pdf from branch custom-branch-name
+@editorialbot set my-custom-branch-name as branch
+```
+
+And then compile the paper normally:
+
+```text
+@editorialbot generate pdf
 ```
 
 ### Finding reviewers
@@ -143,10 +149,10 @@ Sometimes the version of the software changes as a consequence of the review pro
 
 ### Changing the git branch
 
-Sometimes the paper-md file is located in a topic branch. In order to have the PDF compiled from that branch it shuold be added to the issue. To update the branch do the following:
+Sometimes the paper-md file is located in a topic branch. In order to have the PDF compiled from that branch it should be added to the issue. To update the branch value do the following (in the example, the name of the topic branch is _topic-branch-name_):
 
 ```text
-@editorialbot set custom-branch-with-paper as branch
+@editorialbot set topic-branch-name as branch
 ```
 
 ### Check references
@@ -249,12 +255,12 @@ JOSS editors-in-chief can withdraw a submission with the following command:
 # Check the references of the paper for missing DOIs
 # Optionally, it can be run on a non-default branch
 @editorialbot check references
-@editorialbot check references from custom-branch-name
+@editorialbot check references from branch custom-branch-name
 
 # Perform checks on the repository
 # Optionally, it can be run on a non-default branch
 @editorialbot check repository
-@editorialbot check repository from custom-branch-name
+@editorialbot check repository from branch custom-branch-name
 
 # Adds a checklist for the reviewer using this command
 @editorialbot generate my checklist

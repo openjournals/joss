@@ -54,8 +54,7 @@ def get_managing_eic(text)
 end
 
 def get_header(body)
-  # If covid warning is removed, "## Status" could be used
-  m = body.match(/(.*)\*\*:warning: JOSS reduced service mode :warning:\*\*/m)
+  m = body.match(/(.*)## Status/m)
   m.nil? ? nil : m[1]
 end
 

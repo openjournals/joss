@@ -253,14 +253,10 @@ JOSS editors-in-chief can withdraw a submission with the following command:
 @editorialbot remind @reviewer in 2 weeks
 
 # Check the references of the paper for missing DOIs
-# Optionally, it can be run on a non-default branch
 @editorialbot check references
-@editorialbot check references from branch custom-branch-name
 
 # Perform checks on the repository
-# Optionally, it can be run on a non-default branch
 @editorialbot check repository
-@editorialbot check repository from branch custom-branch-name
 
 # Adds a checklist for the reviewer using this command
 @editorialbot generate my checklist

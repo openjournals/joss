@@ -27,7 +27,8 @@ class DispatchController < ApplicationController
   def api_assign_editor
     if params[:secret] == ENV['BOT_SECRET']
       paper = Paper.find_by_meta_review_issue_id(params[:id])
-      editor = Editor.find_by_login(params[:editor])
+      editor_params = params[:editor].gsub(/^\@/, "")
+      editor = Editor.find_by_login(editor_params)
       return head :unprocessable_entity unless paper && editor
       paper.set_editor(editor)
     else

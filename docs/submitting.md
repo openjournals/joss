@@ -76,7 +76,7 @@ JOSS welcomes submissions from broadly diverse research areas. For this reason, 
 
 Your paper should include:
 
-- A list of the authors of the software and their affiliations, using the correct format (see the example below).
+- A list of the authors of the software and their affiliations, using the correct format (see the example below). The affiliations should be complete, including department (when appropriate), institution, city, state, and country (or similar). 
 - A summary describing the high-level functionality and purpose of the software for a diverse, *non-specialist audience*.
 - A *Statement of Need* section that clearly illustrates the research purpose of the software.
 - A list of key references, including to other software addressing related needs. Note that the references should include full names of venues, e.g., journals and conferences, not abbreviations only understood in the context of a specific discipline.
@@ -111,7 +111,7 @@ authors:
   - name: Author with no affiliation^[corresponding author]
     affiliation: 3
 affiliations:
- - name: Lyman Spitzer, Jr. Fellow, Princeton University
+ - name: Lyman Spitzer, Jr. Fellow, Princeton University, Princeton, NJ USA
    index: 1
  - name: Institution Name
    index: 2

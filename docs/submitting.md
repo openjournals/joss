@@ -279,12 +279,6 @@ Note that the paper ends with a References heading, and the references are built
 
 JOSS uses Pandoc to compile papers from their Markdown form into a PDF. There are a few different ways you can test that your paper is going to compile properly for JOSS:
 
-### JOSS paper preview service
-
-Visit [https://whedon.theoj.org](https://whedon.theoj.org) and enter your repository address (and custom branch if you're using one). Note that your repository must be world-readable (i.e., it cannot require a login to access).
-
-<img width="1348" alt="Screen Shot 2020-11-23 at 12 08 58 PM" src="https://user-images.githubusercontent.com/4483/99960475-b4f7be00-2d84-11eb-83bd-7784e9e23913.png">
-
 ### GitHub Action
 
 If you're using GitHub for your repository, you can use the [Open Journals GitHub Action](https://github.com/marketplace/actions/open-journals-pdf-generator) to automatically compile your paper each time you update your repository.
@@ -300,7 +294,7 @@ docker run --rm \
     --volume $PWD/paper:/data \
     --user $(id -u):$(id -g) \
     --env JOURNAL=joss \
-    openjournals/paperdraft
+    openjournals/inara
 ```
 
 ## Submitting your paper

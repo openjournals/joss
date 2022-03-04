@@ -115,7 +115,7 @@ describe PapersController, type: :controller do
       allow(controller).to receive_message_chain(:current_user).and_return(user)
       paper_count = Paper.count
 
-      paper_params = {title: "Yeah whateva", body: "something", repository_url: "", archive_doi: "https://doi.org/10.6084/m9.figshare.828487"}
+      paper_params = {title: "Yeah whateva", body: "something", repository_url: ""}
       post :create, params: {paper: paper_params}
 
       expect(response.body).to match /Your paper could not be saved/
@@ -128,7 +128,7 @@ describe PapersController, type: :controller do
       paper_count = Paper.count
       request.env["HTTP_REFERER"] = new_paper_path
 
-      paper_params = {title: "Yeah whateva", body: "something", repository_url: "https://github.com/foo/bar", archive_doi: "https://doi.org/10.6084/m9.figshare.828487", software_version: "v1.0.1"}
+      paper_params = {title: "Yeah whateva", body: "something", repository_url: "https://github.com/foo/bar", software_version: "v1.0.1"}
       post :create, params: {paper: paper_params}
       expect(response).to be_redirect # as it's redirected us
       expect(Paper.count).to eq(paper_count)

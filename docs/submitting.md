@@ -103,19 +103,19 @@ tags:
   - galactic dynamics
   - milky way
 authors:
-  - name: Adrian M. Price-Whelan^[co-first author] # note this makes a footnote saying 'co-first author'
+  - name: Adrian M. Price-Whelan^[Co-first author] # note this makes a footnote saying 'Co-first author'
     orcid: 0000-0000-0000-0000
     affiliation: "1, 2" # (Multiple affiliations must be quoted)
-  - name: Author Without ORCID^[co-first author] # note this makes a footnote saying 'co-first author'
+  - name: Author Without ORCID^[Co-first author] # note this makes a footnote saying 'Co-first author'
     affiliation: 2
-  - name: Author with no affiliation^[corresponding author]
+  - name: Author with no affiliation^[Corresponding author]
     affiliation: 3
 affiliations:
- - name: Lyman Spitzer, Jr. Fellow, Princeton University
+ - name: Lyman Spitzer, Jr. Fellow, Princeton University, USA
    index: 1
- - name: Institution Name
+ - name: Institution Name, Country
    index: 2
- - name: Independent Researcher
+ - name: Independent Researcher, Country
    index: 3
 date: 13 August 2017
 bibliography: paper.bib

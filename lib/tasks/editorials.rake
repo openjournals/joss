@@ -26,7 +26,7 @@ namespace :editorials do
   task send_query_scope_email: :environment do
     # We run this task daily on Heroku but only want the email
     # sent once per week (on a Monday)
-    if Time.now.sunday?
+    if Time.now.monday?
       reviews_repo = Rails.application.settings["reviews"]
       review_issues = ReviewIssue.download_review_issues(reviews_repo, 'query-scope')
 

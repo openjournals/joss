@@ -222,7 +222,13 @@ Many thanks!
 ```
 👋🏼 @authorname @reviewer1 @reviewer2 this is the review thread for the paper. All of our communications will happen here from now on.
 
-Both reviewers have checklists at the top of this thread with the JOSS requirements. As you go over the submission, please check any items that you feel have been satisfied. There are also links to the JOSS reviewer guidelines.
+As a reviewer, the first step is to create a checklist for your review by entering
+
+```@editorialbot generate my checklist```
+
+as a comment in this thread.
+
+These checklists contain the JOSS requirements. As you go over the submission, please check any items that you feel have been satisfied. The first comment in this thread also contains links to the JOSS reviewer guidelines.
 
 The JOSS review is different from most other journals. Our goal is to work with the authors to help them meet our criteria instead of merely passing judgment on the submission. As such, the reviewers are encouraged to submit issues and pull requests on the software repository. When doing so, please mention `openjournals/joss-reviews#REVIEW_NUMBER` so that a link is created to this thread (and I can keep an eye on what is happening). Please also feel free to comment and ask questions on this thread. In my experience, it is better to post comments/questions/suggestions as you come across them instead of waiting until you've reviewed the entire package.
 

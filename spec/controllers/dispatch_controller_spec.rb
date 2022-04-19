@@ -268,6 +268,19 @@ describe DispatchController, type: :controller do
       expect(paper.reload.editor).to eql(editor)
     end
 
+    it "with the correct API key and valid editor finding paper by review_issue" do
+      editor = create(:editor, login: "jimmy")
+      paper = create(:under_review_paper, state: "under_review", review_issue_id: 1234)
+
+      post :api_assign_editor, params: {secret: "mooo",
+                                        id: 1234,
+                                        editor: "jimmy"
+                                        }
+
+      expect(response).to be_successful
+      expect(paper.reload.editor).to eql(editor)
+    end
+
     it "with the correct API key and invalid editor" do
       editor = create(:editor, login: "jimmy")
       paper = create(:review_pending_paper, state: "review_pending", meta_review_issue_id: 1234)

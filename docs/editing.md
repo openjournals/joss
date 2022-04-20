@@ -226,7 +226,7 @@ As a reviewer, the first step is to create a checklist for your review by enteri
 
 ```@editorialbot generate my checklist```
 
-as a comment in this thread.
+as the top of a new comment in this thread.
 
 These checklists contain the JOSS requirements. As you go over the submission, please check any items that you feel have been satisfied. The first comment in this thread also contains links to the JOSS reviewer guidelines.
 

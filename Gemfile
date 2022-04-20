@@ -33,6 +33,7 @@ gem 'active_link_to'
 
  # Use Bootstrap for the front-end
 gem 'bootstrap', '~> 4.3.1'
+gem 'sprockets-rails'
 
 
 # Use jquery as the JavaScript library

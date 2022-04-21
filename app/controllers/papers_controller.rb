@@ -229,7 +229,7 @@ class PapersController < ApplicationController
       # By default we want people to use the URLs with the DOI in the path if
       # the paper is accepted.
       if @paper.accepted?
-        redirect_to @paper.seo_url, status: 301 and return
+        redirect_to @paper.seo_url, status: 301, allow_other_host: true and return
       end
     end
 

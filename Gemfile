@@ -7,16 +7,16 @@ gem 'bootsnap'
 gem 'dotenv', '~> 2.7.6'
 gem 'google_drive'
 gem 'groupdate'
-gem 'honeybadger', '~> 4.7.2'
-gem 'html-pipeline', '~> 2.14.0'
+gem 'honeybadger', '~> 4.12.1'
+gem 'html-pipeline', '~> 2.14.1'
 gem 'commonmarker', '~> 0.23.4'
 gem 'octicons_helper', '~> 11.3'
 gem 'omniauth-orcid', '~> 2.1.1'
 gem 'omniauth-rails_csrf_protection'
-gem 'octokit', '~> 4.21'
-gem 'pdf-reader', '~> 2.4.2'
-gem 'pg', '~> 1.2.3'
-gem 'will_paginate', '~> 3.3.0'
+gem 'octokit', '~> 4.22'
+gem 'pdf-reader', '~> 2.9.2'
+gem 'pg', '~> 1.3.5'
+gem 'will_paginate', '~> 3.3.1'
 gem 'rails', '7.0.2.3'
 gem 'responders'
 gem 'newrelic_rpm'
@@ -26,7 +26,7 @@ gem 'searchkick'
 gem 'elasticsearch', '<7.14'
 gem 'uglifier', '4.2.0'
 gem 'coffee-rails', '~> 5.0.0'
-gem 'jbuilder', '~> 2.7'
+gem 'jbuilder', '~> 2.11'
 gem 'issue'
 
 gem 'active_link_to'
@@ -40,30 +40,30 @@ gem 'sprockets-rails'
 gem 'jquery-rails', '~> 4.4.0'
 
 # Use Unicorn as the app server
-gem 'unicorn', '~> 5.8.0'
+gem 'unicorn', '~> 6.1.0'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'pry-byebug'
   gem 'capybara', '~> 3.36.0'
-  gem 'factory_bot_rails', '~> 6.1.0'
-  gem 'rspec-rails', '~> 5.0.0'
+  gem 'factory_bot_rails', '~> 6.2.0'
+  gem 'rspec-rails', '~> 5.1.1'
   gem 'rails-controller-testing', '~> 1.0.5'
   gem 'selenium-webdriver'
   gem 'webmock'
 end
 
 group :test do
-  gem 'vcr', '~> 6.0', '>= 6.0.0'
+  gem 'vcr', '~> 6.1', '>= 6.1.0'
 end
 
 group :development do
   # Access an IRB console on exception pages or by using <%= console %> in views
-  gem 'web-console', '~> 4.1.0'
+  gem 'web-console', '~> 4.2.0'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
   gem 'spring-commands-rspec', group: :development
-  gem 'guard', '~> 2.16'
+  gem 'guard', '~> 2.18'
   gem 'guard-livereload', require: false
   gem 'rack-livereload'
 end

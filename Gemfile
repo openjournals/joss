@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '3.0.3'
+ruby '3.1.2'
 
 gem 'aasm', '~> 5.2.0'
 gem 'chartkick'
@@ -28,11 +28,13 @@ gem 'uglifier', '4.2.0'
 gem 'coffee-rails', '~> 5.0.0'
 gem 'jbuilder', '~> 2.11'
 gem 'issue'
+gem 'net-ftp'
 
 gem 'active_link_to'
 
  # Use Bootstrap for the front-end
 gem 'bootstrap', '~> 4.3.1'
+gem 'mini_racer'
 gem 'sprockets-rails'
 
 

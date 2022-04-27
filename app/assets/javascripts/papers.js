@@ -37,7 +37,7 @@ $(function() {
   $("form#new_paper").submit(function() {
     e.preventDefault();
   });
-  if (typeof Clipboard !== 'undefined') {
-    clipboard = new Clipboard('.clippy');
+  if (typeof ClipboardJS !== 'undefined') {
+    clipboard = new ClipboardJS('.clippy');
   }
 });

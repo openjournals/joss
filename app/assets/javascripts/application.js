@@ -19,7 +19,7 @@
 //= require_tree .
 
 $(document).ready(function(){
-  var clipboard = new Clipboard('.clipboard-btn', {
+  var clipboard = new ClipboardJS('.clipboard-btn', {
     text: function(trigger) {
       if (trigger.getAttribute('data-clipboard-target')) {
         target = trigger.getAttribute('data-clipboard-target').substring(1);

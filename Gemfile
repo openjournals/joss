@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '3.0.3'
+ruby '3.1.2'
 
 gem 'aasm', '~> 5.2.0'
 gem 'chartkick'
@@ -10,7 +10,7 @@ gem 'groupdate'
 gem 'honeybadger', '~> 4.12.1'
 gem 'html-pipeline', '~> 2.14.1'
 gem 'commonmarker', '~> 0.23.4'
-gem 'octicons_helper', '~> 11.3'
+gem 'octicons_helper'
 gem 'omniauth-orcid', '~> 2.1.1'
 gem 'omniauth-rails_csrf_protection'
 gem 'octokit', '~> 4.22'
@@ -25,14 +25,15 @@ gem 'sass-rails', '~> 6.0.0'
 gem 'searchkick'
 gem 'elasticsearch', '<7.14'
 gem 'uglifier', '4.2.0'
-gem 'coffee-rails', '~> 5.0.0'
 gem 'jbuilder', '~> 2.11'
 gem 'issue'
+gem 'net-ftp'
 
 gem 'active_link_to'
 
  # Use Bootstrap for the front-end
 gem 'bootstrap', '~> 4.3.1'
+gem 'mini_racer'
 gem 'sprockets-rails'
 
 

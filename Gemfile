@@ -40,8 +40,8 @@ gem 'sprockets-rails'
 # Use jquery as the JavaScript library
 gem 'jquery-rails', '~> 4.4.0'
 
-# Use Unicorn as the app server
-gem 'unicorn', '~> 6.1.0'
+# Use Puma as the app server
+gem 'puma'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

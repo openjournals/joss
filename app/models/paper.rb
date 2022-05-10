@@ -12,6 +12,7 @@ class Paper < ApplicationRecord
              validate: true,
              foreign_key: "user_id"
 
+  belongs_to :track, optional: true
   belongs_to :editor, optional: true
   belongs_to :eic,
              class_name: 'Editor',

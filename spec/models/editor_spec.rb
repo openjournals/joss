@@ -35,6 +35,11 @@ RSpec.describe Editor, type: :model do
       association = Editor.reflect_on_association(:invitations)
       expect(association.macro).to eq(:has_many)
     end
+
+    it "has and belongs to many tracks" do
+      association = Editor.reflect_on_association(:tracks)
+      expect(association.macro).to eq(:has_and_belongs_to_many)
+    end
   end
 
   describe "#full_name" do

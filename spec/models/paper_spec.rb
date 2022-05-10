@@ -15,6 +15,11 @@ describe Paper do
     expect(association.macro).to eq(:belongs_to)
   end
 
+  it "belongs to a track" do
+    association = Paper.reflect_on_association(:track)
+    expect(association.macro).to eq(:belongs_to)
+  end
+
   it "has many invitations" do
     association = Paper.reflect_on_association(:invitations)
     expect(association.macro).to eq(:has_many)

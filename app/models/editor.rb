@@ -10,6 +10,7 @@ class Editor < ApplicationRecord
   has_many :votes
   has_many :invitations
   has_one :onboarding_invitation, dependent: :destroy
+  has_and_belongs_to_many :tracks
 
   before_save :clear_title, if: :board_removed?
   before_save :format_login, if: :login_changed?

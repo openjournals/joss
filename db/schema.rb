@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_05_12_081922) do
+ActiveRecord::Schema[7.0].define(version: 2022_05_12_083929) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
   enable_extension "plpgsql"
@@ -37,6 +37,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_05_12_081922) do
   create_table "editors_tracks", id: false, force: :cascade do |t|
     t.bigint "editor_id", null: false
     t.bigint "track_id", null: false
+    t.index ["editor_id"], name: "index_editors_tracks_on_editor_id"
+    t.index ["track_id"], name: "index_editors_tracks_on_track_id"
   end
 
   create_table "invitations", force: :cascade do |t|
@@ -123,6 +125,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_05_12_081922) do
     t.bigint "track_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["name", "track_id"], name: "index_subjects_on_name_and_track_id"
+    t.index ["track_id"], name: "index_subjects_on_track_id"
   end
 
   create_table "track_aeics", force: :cascade do |t|
@@ -130,6 +134,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_05_12_081922) do
     t.bigint "editor_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["editor_id"], name: "index_track_aeics_on_editor_id"
+    t.index ["track_id"], name: "index_track_aeics_on_track_id"
   end
 
   create_table "tracks", force: :cascade do |t|
@@ -138,6 +144,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_05_12_081922) do
     t.integer "code"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_tracks_on_name"
   end
 
   create_table "users", force: :cascade do |t|

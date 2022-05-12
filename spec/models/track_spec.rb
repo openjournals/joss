@@ -22,6 +22,11 @@ RSpec.describe Track, type: :model do
       association = Track.reflect_on_association(:aeics)
       expect(association.macro).to eq(:has_many)
     end
+
+    it "has many subjects" do
+      association = Track.reflect_on_association(:subjects)
+      expect(association.macro).to eq(:has_many)
+    end
   end
 
   describe "#full_name" do

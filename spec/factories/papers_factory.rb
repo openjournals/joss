@@ -8,6 +8,7 @@ FactoryBot.define do
     submitting_author { create(:user) }
     submission_kind   { 'new' }
     suggested_editor  { '@editor' }
+    track             { create(:track) }
 
     created_at  { Time.now }
     updated_at  { Time.now }

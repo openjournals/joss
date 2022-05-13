@@ -38,6 +38,25 @@ describe Paper do
     expect(paper.submitting_author).to eq(user)
   end
 
+  it "must have a track assigned on creation" do
+    no_track_params = { title: 'Test paper',
+                       body: 'A test paper description',
+                       repository_url: 'http://github.com/arfon/fidgit',
+                       software_version: 'v1.0.0',
+                       submitting_author: create(:user),
+                       submission_kind: 'new',
+                       suggested_editor: '@editor' }
+
+    valid_params = no_track_params.merge track: create(:track)
+
+    paper = Paper.create(no_track_params)
+    expect(paper).to_not be_valid
+    expect(paper.errors.full_messages.first).to eq("Track You must select a subject for the paper")
+
+    paper = Paper.create(valid_params)
+    expect(paper).to be_valid
+  end
+
   # Scopes
 
   it "should return recent" do
@@ -94,6 +113,18 @@ describe Paper do
     paper = create(:paper, review_issue_id: 999)
 
     expect(paper.review_url).to eq("https://github.com/#{Rails.application.settings["reviews"]}/issues/999")
+  end
+
+  describe "#set_track_id" do
+    it "should update paper's track_id" do
+      track1 = create(:track)
+      paper = create(:paper, track: track1)
+      track2 = create(:track)
+
+      expect(paper.track).to eq(track1)
+      paper.set_track_id track2.id
+      expect(paper.reload.track).to eq(track2)
+    end
   end
 
   describe "#set_editor" do
@@ -187,8 +218,8 @@ describe Paper do
     end
   end
 
-  context "when starting review" do
-    it "should initially change the paper state to review_pending" do
+  context "when starting meta-review" do
+    it "should change the paper state to review_pending" do
       editor = create(:editor, login: "arfon")
       user = create(:user, editor: editor)
       submitting_author = create(:user)
@@ -198,13 +229,49 @@ describe Paper do
       allow(fake_issue).to receive(:number).and_return(1)
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
-      paper.start_meta_review!('arfon', editor)
+      paper.start_meta_review!('arfon', editor, paper.track_id)
       expect(paper.state).to eq('review_pending')
       expect(paper.reload.editor).to be(nil)
       expect(paper.reload.eic).to eq(editor)
     end
 
-    it "should then allow for the paper to be moved into the under_review state" do
+    it "should allow to change paper's track" do
+      editor = create(:editor, login: "arfon")
+      user = create(:user, editor: editor)
+      submitting_author = create(:user)
+      track1 = create(:track)
+      track2 = create(:track)
+
+      paper = create(:submitted_paper_with_sha, submitting_author: submitting_author, track: track1)
+      fake_issue = Object.new
+      allow(fake_issue).to receive(:number).and_return(1)
+      allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
+
+      expect(paper.track).to eq(track1)
+      paper.start_meta_review!('arfon', editor, track2.id)
+      expect(paper.state).to eq('review_pending')
+      expect(paper.reload.track).to eq(track2)
+    end
+
+    it "should label GH issue with track label" do
+      editor = create(:editor, login: "arfon")
+      user = create(:user, editor: editor)
+      submitting_author = create(:user)
+
+      paper = create(:submitted_paper_with_sha, submitting_author: submitting_author)
+      fake_issue = Object.new
+      allow(fake_issue).to receive(:number).and_return(1)
+
+      track = create(:track)
+      expected_labels = { labels: "pre-review,#{track.label}" }
+      expect(GITHUB).to receive(:create_issue).with(anything, anything, anything, expected_labels).and_return(fake_issue)
+
+      paper.start_meta_review!('arfon', editor, track.id)
+    end
+  end
+
+  context "when starting review" do
+    it "should allow for the paper to be moved into the under_review state" do
       editor = create(:editor, login: "arfoneditor")
       user = create(:user, editor: editor)
       submitting_author = create(:user)

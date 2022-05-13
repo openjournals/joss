@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :track do
-    name { "Astronomy & Astrophysics" }
+    sequence(:name) { |n| "Astronomy & Astrophysics #{n}" }
     sequence(:code) { |n| n }
-    short_name { "a_and_a" }
+    sequence(:short_name) { |n|  "a_and_a_#{n}" }
   end
 end

@@ -180,7 +180,7 @@ class PapersController < ApplicationController
   def start_meta_review
     @paper = Paper.find_by_sha(params[:id])
 
-    if @paper.start_meta_review!(params[:editor], current_user.editor)
+    if @paper.start_meta_review!(params[:editor], current_user.editor, params[:track_id])
       flash[:notice] = "Review started"
       redirect_to paper_path(@paper)
     else
@@ -306,7 +306,7 @@ class PapersController < ApplicationController
   private
 
   def paper_params
-    params.require(:paper).permit(:title, :repository_url, :git_branch, :software_version, :suggested_editor, :body, :kind, :submission_kind)
+    params.require(:paper).permit(:title, :repository_url, :git_branch, :software_version, :suggested_editor, :body, :kind, :submission_kind, :track_id)
   end
 
   def can_see_hidden_paper?(paper)

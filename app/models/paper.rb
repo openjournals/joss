@@ -120,11 +120,12 @@ class Paper < ApplicationRecord
   before_create :set_sha, :set_last_activity
   after_create :notify_editors, :notify_author
 
-  validates_presence_of :title
+  validates_presence_of :title, message: "The paper must have a title"
   validates_presence_of :suggested_editor, on: :create, message: "You must suggest an editor to handle your submission"
   validates_presence_of :repository_url, message: "Repository address can't be blank"
   validates_presence_of :software_version, message: "Version can't be blank"
   validates_presence_of :body, message: "Description can't be blank"
+  validates_presence_of :track_id, on: :create, message: "You must select a subject for the paper"
   validates :kind, inclusion: { in: Rails.application.settings["paper_types"] }, allow_nil: true
   validates :submission_kind, inclusion: { in: SUBMISSION_KINDS, message: "You must select a submission type" }, allow_nil: false
   validate :check_repository_address, on: :create
@@ -398,13 +399,16 @@ class Paper < ApplicationRecord
   end
 
   # Create a review meta-issue for assigning reviewers
-  def create_meta_review_issue(editor_handle, eic)
+  def create_meta_review_issue(editor_handle, eic, new_track_id=nil)
     return false if meta_review_issue_id
+
+    set_track_id(new_track_id) if new_track_id.present?
+    new_labels = ["pre-review", self.track.label]
 
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[PRE REVIEW]: #{self.title}",
                                 meta_review_body(editor_handle, eic.full_name),
-                                { labels: "pre-review" })
+                                { labels: new_labels.join(",") })
 
     set_meta_review_issue(issue.number)
     set_meta_eic(eic)
@@ -417,6 +421,10 @@ class Paper < ApplicationRecord
 
   def set_meta_eic(eic)
     self.update_attribute(:eic_id, eic.id)
+  end
+
+  def set_track_id(new_track_id)
+    self.update_attribute(:track_id, new_track_id) if new_track_id != self.track_id
   end
 
   def meta_review_url

@@ -8,4 +8,8 @@ class Track < ApplicationRecord
   def full_name
     [code.to_s, name].join(" ")
   end
+
+  def label
+    "Track: #{code} (#{name})"
+  end
 end

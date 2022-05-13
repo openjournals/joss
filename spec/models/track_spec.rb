@@ -36,4 +36,12 @@ RSpec.describe Track, type: :model do
       expect(track.full_name).to eq "33 Earth sciences and Ecology"
     end
   end
+
+  describe "#label" do
+    it "includes code and name" do
+      track = create(:track, code: 33, name: "Earth sciences and Ecology", short_name: "ESE")
+
+      expect(track.label).to eq "Track: 33 (Earth sciences and Ecology)"
+    end
+  end
 end

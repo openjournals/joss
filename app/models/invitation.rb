@@ -7,6 +7,7 @@ class Invitation < ApplicationRecord
   scope :accepted, -> { where(state: "accepted") }
   scope :pending, -> { where(state: "pending") }
   scope :expired, -> { where(state: "expired") }
+  scope :by_track, -> (track_id) { joins(:paper).where("papers.track_id = ?", track_id) }
 
   def expired?
     state == "expired"

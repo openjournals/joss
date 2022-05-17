@@ -84,6 +84,18 @@ describe Paper do
     expect(Paper.invisible).to contain_exactly(rejected_paper, withdrawn_paper)
   end
 
+  it "should filter by track" do
+    track_A, track_B = create_list(:track, 2)
+    paper_A1, paper_A2 = create_list(:paper, 2, track: track_A)
+    paper_B1, paper_B2 = create_list(:paper, 2, track: track_B)
+    paper_C = create(:paper)
+
+    track_A_papers = Paper.by_track(track_A.id)
+    expect(track_A_papers.size).to eq(2)
+    expect(track_A_papers.include?(paper_A1)).to be true
+    expect(track_A_papers.include?(paper_A2)).to be true
+  end
+
   # GitHub stuff
   it "should know how to return a pretty repo name with owner" do
     paper = create(:paper, repository_url: "https://github.com/arfon/joss-reviews")

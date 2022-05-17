@@ -116,6 +116,7 @@ class Paper < ApplicationRecord
   scope :everything, lambda { where('state NOT IN (?)', ['rejected', 'withdrawn']) }
   scope :search_import, -> { where(state: VISIBLE_STATES) }
   scope :not_archived, -> { where('archived = ?', false) }
+  scope :by_track, -> (track_id) { where('track_id = ?', track_id) }
 
   before_create :set_sha, :set_last_activity
   after_create :notify_editors, :notify_author

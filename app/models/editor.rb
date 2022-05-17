@@ -29,6 +29,7 @@ class Editor < ApplicationRecord
   scope :pending, -> { where(kind: "pending") }
   scope :active, -> { where(kind: ACTIVE_EDITOR_STATES) }
   scope :since, -> (date) { where('created_at >= ?', date) }
+  scope :by_track, -> (track_id) { joins(:editors_tracks).where("editors_tracks.track_id = ?", track_id) }
 
   def category_list
     categories.join(", ")

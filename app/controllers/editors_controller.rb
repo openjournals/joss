@@ -3,10 +3,13 @@ class EditorsController < ApplicationController
   before_action :require_editor, only:[:profile, :update_profile]
   before_action :set_editor, only: [:show, :edit, :update, :destroy]
   before_action :set_current_editor, only: [:profile, :update_profile]
+  before_action :set_track, only: [:index]
 
   def index
-    @active_editors = Editor.active.order('last_name ASC')
-    @emeritus_editors = Editor.emeritus.order('last_name ASC')
+    scoped_editors = @track.present? ? Editor.by_track(@track.id) : Editor
+
+    @active_editors = scoped_editors.active.order('last_name ASC')
+    @emeritus_editors = scoped_editors.emeritus.order('last_name ASC')
     @assignment_by_editor = Paper.unscoped.in_progress.group(:editor_id).count
     @paused_by_editor = Paper.unscoped.in_progress.where("labels->>'paused' ILIKE '%'").group(:editor_id).count
     @pending_invitations_by_editor = Invitation.pending.group(:editor_id).count
@@ -73,6 +76,10 @@ class EditorsController < ApplicationController
   end
 
   private
+    def set_track
+      @track = Track.find(params[:track_id]) if params[:track_id].present?
+    end
+
     def set_editor
       @editor = Editor.find(params[:id])
     end

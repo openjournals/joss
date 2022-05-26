@@ -5,6 +5,8 @@ class Track < ApplicationRecord
   has_many :track_aeics, dependent: :destroy
   has_many :aeics, through: :track_aeics, source: :editor
 
+  validates_uniqueness_of :code
+
   def full_name
     [code.to_s, name].join(" ")
   end

@@ -20,4 +20,21 @@ namespace :tracks do
       f.write tracks_info.to_yaml
     end
   end
+
+  desc "Import tracks and subjects from the lib/tracks.yml file"
+  task import: :environment do
+    tracks_info = YAML.load_file(Rails.root + "lib/tracks.yml")
+    tracks_info["tracks"].each_pair do |k, v|
+      track = Track.find_or_initialize_by(name: v["name"])
+      track.code = v["code"]
+      track.short_name = v["short_name"]
+      track.save!
+
+      v["fields"].each do |subject|
+        s = Subject.find_or_initialize_by(name: subject)
+        s.track_id = track.id
+        s.save!
+      end
+    end
+  end
 end

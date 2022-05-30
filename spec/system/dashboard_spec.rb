@@ -133,7 +133,5 @@ feature "Dashboard" do
         expect(page).to_not have_content("Paper Rejected")
       end
     end
-
-
   end
 end

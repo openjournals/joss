@@ -32,12 +32,8 @@ $(window).resize(function() {
 });
 
 $(function() {
-  var clipboard;
   $("#joss-paper").on('load', setPaperSize());
   $("form#new_paper").submit(function() {
     e.preventDefault();
   });
-  if (typeof ClipboardJS !== 'undefined') {
-    clipboard = new ClipboardJS('.clippy');
-  }
 });

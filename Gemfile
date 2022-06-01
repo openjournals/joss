@@ -18,10 +18,10 @@ gem 'pdf-reader', '~> 2.9.2'
 gem 'pg', '~> 1.3.5'
 gem 'will_paginate', '~> 3.3.1'
 gem 'rails', '7.0.2.4'
+gem "importmap-rails"
 gem 'responders'
 gem 'newrelic_rpm'
 gem 'sanitize', '~> 6.0.0'
-gem 'sass-rails', '~> 6.0.0'
 gem 'searchkick'
 gem 'elasticsearch', '<7.14'
 gem 'uglifier', '4.2.0'
@@ -31,14 +31,12 @@ gem 'net-ftp'
 
 gem 'active_link_to'
 
- # Use Bootstrap for the front-end
-gem 'bootstrap', '~> 4.3.1'
 gem 'mini_racer'
 gem 'sprockets-rails'
 
+# Use Sass to process CSS
+gem "sassc-rails"
 
-# Use jquery as the JavaScript library
-gem 'jquery-rails', '~> 4.4.0'
 
 # Use Puma as the app server
 gem 'puma'

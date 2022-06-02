@@ -8,7 +8,6 @@ import "bootstrap"
 
 // Custom JOSS files
 import "custom/loading_jquery"
-import "custom/clipboards"
 import "custom/editors"
 import "custom/home"
 import "custom/papers"

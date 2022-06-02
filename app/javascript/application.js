@@ -3,27 +3,15 @@
 import "chartkick"
 import "Chart.bundle"
 
-// JQuery
-import jQuery from "jquery";
-import "jquery-ujs";
-// make jQuery global
-window.$ = window.jQuery = jQuery;
-
+// Bootstrap
 import "bootstrap"
 
-$(document).ready(function(){
-  var clipboard;
-  if (typeof ClipboardJS !== 'undefined') {
-    clipboard = new ClipboardJS('.clipboard-btn', {
-      text: function(trigger) {
-        if (trigger.getAttribute('data-clipboard-target')) {
-          var target = trigger.getAttribute('data-clipboard-target').substring(1);
-          return document.getElementById(target).innerHTML;
-        }
-        else if (trigger.getAttribute('data-clipboard-text')) {
-          return trigger.getAttribute('data-clipboard-text');
-        }
-      }
-    });
-  }
-});
+// Custom JOSS files
+import "custom/loading_jquery"
+import "custom/clipboards"
+import "custom/editors"
+import "custom/home"
+import "custom/papers"
+//import "custom/sortable"
+import "custom/turbolinks_transitions"
+

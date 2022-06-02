@@ -18,7 +18,7 @@
 
 var stIsIE = /*@cc_on!@*/false;
 
-sorttable = {
+var sorttable = {
   init: function() {
     // quit if this function has already been called
     if (arguments.callee.done) return;
@@ -56,7 +56,7 @@ sorttable = {
     // "total" rows, for example). This is B&R, since what you're supposed
     // to do is put them in a tfoot. So, if there are sortbottom rows,
     // for backwards compatibility, move them to tfoot (creating it if needed).
-    sortbottomrows = [];
+    var sortbottomrows = [];
     for (var i=0; i<table.rows.length; i++) {
       if (table.rows[i].className.search(/\bsortbottom\b/) != -1) {
         sortbottomrows[sortbottomrows.length] = table.rows[i];
@@ -71,11 +71,11 @@ sorttable = {
       for (var i=0; i<sortbottomrows.length; i++) {
         tfo.appendChild(sortbottomrows[i]);
       }
-      delete sortbottomrows;
+      sortbottomrows = null;
     }
 
     // work through each column and calculate its type
-    headrow = table.tHead.rows[0].cells;
+    var headrow = table.tHead.rows[0].cells;
     for (var i=0; i<headrow.length; i++) {
       // manually override the type with a sorttable_type attribute
       if (!headrow[i].className.match(/\bsorttable_nosort\b/)) { // skip this col
@@ -157,7 +157,7 @@ sorttable = {
 	          tb.appendChild(row_array[j][1]);
 	        }
 
-	        delete row_array;
+	        row_array = null;
 	      });
 	    }
     }
@@ -252,7 +252,7 @@ sorttable = {
     for (var i=newrows.length-1; i>=0; i--) {
        tbody.appendChild(newrows[i]);
     }
-    delete newrows;
+    newrows = null;
   },
 
   /* sort functions

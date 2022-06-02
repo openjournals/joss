@@ -13,5 +13,5 @@ import "custom/editors"
 import "custom/home"
 import "custom/papers"
 //import "custom/sortable"
-import "custom/turbolinks_transitions"
+import "custom/transitions"
 

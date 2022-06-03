@@ -11,6 +11,6 @@ import "custom/loading_jquery"
 import "custom/editors"
 import "custom/home"
 import "custom/papers"
-//import "custom/sortable"
+import "custom/sortable"
 import "custom/transitions"
 

@@ -47,7 +47,7 @@ class EditorsController < ApplicationController
     if @editor.save
       redirect_to @editor, notice: 'Editor was successfully created.'
     else
-      render :new
+      render :new, status: :unprocessable_entity
     end
   end
 
@@ -55,7 +55,7 @@ class EditorsController < ApplicationController
     if @editor.update(editor_params)
       redirect_to @editor, notice: 'Editor was successfully updated.'
     else
-      render :edit
+      render :edit, status: :unprocessable_entity
     end
   end
 
@@ -71,7 +71,7 @@ class EditorsController < ApplicationController
     if @editor.update(profile_params)
       redirect_to editor_profile_path, notice: 'Editor profile was successfully updated.'
     else
-      render :profile
+      render :profile, status: :unprocessable_entity
     end
   end
 

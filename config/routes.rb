@@ -24,6 +24,10 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :subjects, only: [] do
+    get 'search', on: :collection
+  end
+
   resources :onboardings, only: [:index, :create, :destroy] do
     member do
       post :resend_invitation

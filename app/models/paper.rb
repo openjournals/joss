@@ -126,7 +126,7 @@ class Paper < ApplicationRecord
   validates_presence_of :repository_url, message: "Repository address can't be blank"
   validates_presence_of :software_version, message: "Version can't be blank"
   validates_presence_of :body, message: "Description can't be blank"
-  validates_presence_of :track_id, on: :create, message: "You must select a subject for the paper"
+  validates_presence_of :track_id, on: :create, message: "You must select a valid subject for the paper"
   validates :kind, inclusion: { in: Rails.application.settings["paper_types"] }, allow_nil: true
   validates :submission_kind, inclusion: { in: SUBMISSION_KINDS, message: "You must select a submission type" }, allow_nil: false
   validate :check_repository_address, on: :create

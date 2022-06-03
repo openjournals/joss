@@ -18,3 +18,6 @@ pin "jquery-ujs", to: "https://ga.jspm.io/npm:jquery-ujs@1.2.3/src/rails.js", pr
 # Bootstrap
 pin "bootstrap", to: "https://ga.jspm.io/npm:bootstrap@4.3.1/dist/js/bootstrap.js", preload: true
 pin "popper.js", to: "https://ga.jspm.io/npm:popper.js@1.16.1/dist/umd/popper.js", preload: true
+
+# Autocomplete
+pin "stimulus-autocomplete", to: "https://ga.jspm.io/npm:stimulus-autocomplete@3.0.2/src/autocomplete.js"

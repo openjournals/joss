@@ -1,4 +1,7 @@
 // Configure your import map in config/importmap.rb. Read more: https://github.com/rails/importmap-rails
+import "@hotwired/turbo-rails"
+import "controllers"
+
 //Chartkick
 import "chartkick"
 import "Chart.bundle"
@@ -13,4 +16,3 @@ import "custom/home"
 import "custom/papers"
 import "custom/sortable"
 import "custom/transitions"
-

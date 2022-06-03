@@ -19,6 +19,8 @@ gem 'pg', '~> 1.3.5'
 gem 'will_paginate', '~> 3.3.1'
 gem 'rails', '7.0.2.4'
 gem "importmap-rails"
+gem "turbo-rails"
+gem "stimulus-rails"
 gem 'responders'
 gem 'newrelic_rpm'
 gem 'sanitize', '~> 6.0.0'
@@ -37,9 +39,11 @@ gem 'sprockets-rails'
 # Use Sass to process CSS
 gem "sassc-rails"
 
-
 # Use Puma as the app server
 gem 'puma'
+
+# Use Redis for Action Cable
+gem "redis", "~> 4.0"
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

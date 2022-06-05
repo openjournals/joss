@@ -38,7 +38,6 @@ module DispatchHelper
     @paper.activities['issues']['last_edits'] ||= {}
     @paper.activities['issues']['last_edits'][@context.sender] = updated_at
 
-    @paper.percent_complete = @paper.fraction_check_boxes_complete
     @paper.last_activity = updated_at
     @paper.save
   end

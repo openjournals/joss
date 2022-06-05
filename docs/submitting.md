@@ -21,7 +21,7 @@ In addition, the software associated with your submission must:
 
 ### What we mean by research software
 
-JOSS publishes articles about research software. This definition includes software that: solves complex modeling problems in a scientific context (physics, mathematics, biology, medicine, social science, neuroscience, engineering); supports the functioning of research instruments or the execution of research experiments; extracts knowledge from large data sets; offers a mathematical library, or similar. While useful for many areas of research, pre-trained machine learning models are not in-scope for JOSS. 
+JOSS publishes articles about research software. This definition includes software that: solves complex modeling problems in a scientific context (physics, mathematics, biology, medicine, social science, neuroscience, engineering); supports the functioning of research instruments or the execution of research experiments; extracts knowledge from large data sets; offers a mathematical library, or similar. While useful for many areas of research, pre-trained machine learning models and notebooks are not in-scope for JOSS. 
 
 ### Substantial scholarly effort
 
@@ -62,7 +62,7 @@ Authors wishing to make a pre-submission enquiry should [open an issue](https://
 Before you submit, you should:
 
 - Make your software available in an open repository (GitHub, Bitbucket, etc.) and include an [OSI approved open source license](https://opensource.org/licenses).
-- Make sure that the software complies with the [JOSS review criteria](review_criteria.html). In particular, your software should be full-featured, well-documented, and contain procedures (such as automated tests) for checking correctness.
+- Make sure that the software complies with the [JOSS review criteria](review_criteria). In particular, your software should be full-featured, well-documented, and contain procedures (such as automated tests) for checking correctness.
 - Write a short paper in Markdown format using `paper.md` as file name, including a title, summary, author names, affiliations, and key references. See our [example paper](#example-paper-and-bibliography) to follow the correct format.
 - (Optional) create a metadata file describing your software and include it in your repository. We provide [a script](https://gist.github.com/arfon/478b2ed49e11f984d6fb) that automates the generation of this metadata.
 
@@ -83,7 +83,7 @@ Your paper should include:
 - Mention (if applicable) a representative set of past or ongoing research projects using the software and recent scholarly publications enabled by it.
 - Acknowledgement of any financial support.
 
-As this short list shows, JOSS papers are only expected to contain a limited set of metadata (see example below), a Statement of need, Summary, Acknowledgements, and References sections. You can look at an [example accepted paper](http://bit.ly/2x22gxT). Given this format, a "full length" paper is not permitted, and software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation.
+As this short list shows, JOSS papers are only expected to contain a limited set of metadata (see example below), a Statement of need, Summary, Acknowledgements, and References sections. You can look at an [example accepted paper](#example-paper-and-bibliograph). Given this format, a "full length" paper is not permitted, and software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation.
 
 ```eval_rst
 .. important:: Your paper will be reviewed by two or more reviewers in a public GitHub issue. Take a look at the `review checklist <review_checklist.html>`_ and  `review criteria <review_criteria.html>`_ to better understand how your submission will be reviewed.
@@ -103,19 +103,22 @@ tags:
   - galactic dynamics
   - milky way
 authors:
-  - name: Adrian M. Price-Whelan^[co-first author] # note this makes a footnote saying 'co-first author'
-    orcid: 0000-0003-0872-7098
+  - name: Adrian M. Price-Whelan
+    orcid: 0000-0000-0000-0000
+    equal-contrib: true
     affiliation: "1, 2" # (Multiple affiliations must be quoted)
-  - name: Author Without ORCID^[co-first author] # note this makes a footnote saying 'co-first author'
+  - name: Author Without ORCID
+    equal-contrib: true # (This is how you can denote equal contributions between multiple authors)
     affiliation: 2
-  - name: Author with no affiliation^[corresponding author]
+  - name: Author with no affiliation
+    corresponding: true # (This is how to denote the corresponding author)
     affiliation: 3
 affiliations:
- - name: Lyman Spitzer, Jr. Fellow, Princeton University
+ - name: Lyman Spitzer, Jr. Fellow, Princeton University, USA
    index: 1
- - name: Institution Name
+ - name: Institution Name, Country
    index: 2
- - name: Independent Researcher
+ - name: Independent Researcher, Country
    index: 3
 date: 13 August 2017
 bibliography: paper.bib
@@ -273,17 +276,11 @@ Example `paper.bib` file:
 }
 ```
 
-Note that the paper ends with a References heading, and the references are built automatically from the content in the `.bib` file. You should enter in-text citations in the paper body following correct [Markdown citation syntax](https://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html#citation_syntax).  Also note that the references include full names of venues, e.g., journals and conferences, not abbreviations only understood in the context of a specific discipline.
+Note that the paper ends with a References heading, and the references are built automatically from the content in the `.bib` file. You should enter in-text citations in the paper body following correct [Markdown citation syntax](https://pandoc.org/MANUAL.html#extension-citations).  Also note that the references include full names of venues, e.g., journals and conferences, not abbreviations only understood in the context of a specific discipline.
 
 ## Checking that your paper compiles
 
 JOSS uses Pandoc to compile papers from their Markdown form into a PDF. There are a few different ways you can test that your paper is going to compile properly for JOSS:
-
-### JOSS paper preview service
-
-Visit [https://whedon.theoj.org](https://whedon.theoj.org) and enter your repository address (and custom branch if you're using one). Note that your repository must be world-readable (i.e., it cannot require a login to access).
-
-<img width="1348" alt="Screen Shot 2020-11-23 at 12 08 58 PM" src="https://user-images.githubusercontent.com/4483/99960475-b4f7be00-2d84-11eb-83bd-7784e9e23913.png">
 
 ### GitHub Action
 
@@ -300,7 +297,7 @@ docker run --rm \
     --volume $PWD/paper:/data \
     --user $(id -u):$(id -g) \
     --env JOURNAL=joss \
-    openjournals/paperdraft
+    openjournals/inara
 ```
 
 ## Submitting your paper
@@ -339,7 +336,7 @@ After submission:
 - After we assign a DOI for your accepted JOSS paper, its metadata is deposited with CrossRef and listed on the JOSS website.
 - The review issue will be closed, and an automatic tweet from [@JOSS_TheOJ](https://twitter.com/JOSS_TheOJ) will announce it!
 
-If you want to learn more details about the review process, take a look at the [reviewer guidelines](reviewer_guidelines.html).
+If you want to learn more details about the review process, take a look at the [reviewer guidelines](reviewer_guidelines).
 
 ## Confidential requests
 

@@ -36,7 +36,7 @@ Reviewers should verify that the software represents substantial scholarly effor
 - Age of software (is this a well-established software project) / length of commit history.
 - Number of commits.
 - Number of authors.
-- Lines of code (LOC): These statistics are usually reported by Whedon in the `pre-review` issue thread.
+- Lines of code (LOC): These statistics are usually reported by EditorialBot in the `pre-review` issue thread.
 - Whether the software has already been cited in academic papers.
 - Whether the software is sufficiently useful that it is _likely to be cited_ by other researchers working in this domain.
 
@@ -56,10 +56,10 @@ The authors should clearly state what problems the software is designed to solve
 
 #### Installation instructions
 
-Software dependencies should be clearly documented and their installation handled by an automated proceedure. Where possible, software installation should be managed with a package manager. However, this criterion depends upon the maturity and availability of software packaging and distribution in the programming language being used. For example, Python packages should be `pip install`able, and have adopted [packaging conventions](https://packaging.python.org), while Fortran submissions with a Makefile may be sufficient.
+Software dependencies should be clearly documented and their installation handled by an automated procedure. Where possible, software installation should be managed with a package manager. However, this criterion depends upon the maturity and availability of software packaging and distribution in the programming language being used. For example, Python packages should be `pip install`able, and have adopted [packaging conventions](https://packaging.python.org), while Fortran submissions with a Makefile may be sufficient.
 
 > **Good:** The software is simple to install, and follows established distribution and dependency management approaches for the language being used<br />
-> **OK:** A list of dependencies to install, together with some kind of script to handle their installation (e.g., a Makefile<br />
+> **OK:** A list of dependencies to install, together with some kind of script to handle their installation (e.g., a Makefile)<br />
 > **Bad (not acceptable):** Dependencies are unclear, and/or installation process lacks automation
 
 #### Example usage

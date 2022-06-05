@@ -10,14 +10,15 @@ namespace :permissions do
 
     active_reviewers = []
     open_issues.each do |issue|
-      active_reviewers << issue.body.match(/Reviewers?:\*\*\s*(.+?)\r?\n/)[1].split(", ").each(&:strip!).each(&:downcase!) - ["Pending"]
+      puts issue.number
+      active_reviewers << issue.body.match(/(?<=<!--reviewers-list-->)(\s*(.+?)\r?)(?=<!--end-reviewers-list-->)/)[1].split(", ").each(&:strip!).each(&:downcase!) - ["Pending"]
     end
 
     should_have_permissions = active_reviewers.flatten.uniq
 
     # Loop through each collaborator and check if they need permissions
     collaborator_logins.sort.each do |login|
-      next if login == 'whedon'
+      next if login == 'editorialbot'
 
       unless should_have_permissions.include?("@#{login}")
         GITHUB.remove_collaborator(reviews_repo, login)

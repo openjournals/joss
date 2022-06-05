@@ -125,7 +125,7 @@ class Paper < ApplicationRecord
   validates_presence_of :software_version, message: "Version can't be blank"
   validates_presence_of :body, message: "Description can't be blank"
   validates :kind, inclusion: { in: Rails.application.settings["paper_types"] }, allow_nil: true
-  validates :submission_kind, inclusion: { in: SUBMISSION_KINDS }, allow_nil: false
+  validates :submission_kind, inclusion: { in: SUBMISSION_KINDS, message: "You must select a submission type" }, allow_nil: false
   validate :check_repository_address, on: :create
 
   def notify_editors
@@ -332,19 +332,19 @@ class Paper < ApplicationRecord
   end
 
   # 'reviewers' should be a string (and may be comma-separated)
-  def review_body(editor, reviewers)
+  def review_body(editor, reviewers, branch=nil)
     reviewers = reviewers.split(',').each {|r| r.prepend('@')}
     ApplicationController.render(
       template: 'shared/review_body',
       formats: :text,
-      locals: { paper: self, editor: "@#{editor}", reviewers: reviewers }
+      locals: { paper: self, editor: "@#{editor}", reviewers: reviewers, branch: branch }
     )
   end
 
   # Create a review issue (we know the reviewer and editor at this point)
   # Return false if the review_issue_id is already set
   # Return false if the editor login doesn't match one of the known editors
-  def create_review_issue(editor_handle, reviewers)
+  def create_review_issue(editor_handle, reviewers, branch=nil)
     return false if review_issue_id
     return false unless editor = Editor.find_by_login(editor_handle)
 
@@ -357,7 +357,7 @@ class Paper < ApplicationRecord
 
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[REVIEW]: #{self.title}",
-                                review_body(editor_handle, reviewers),
+                                review_body(editor_handle, reviewers, branch),
                                 { assignees: [editor_handle],
                                   labels: new_labels.join(",") })
 
@@ -432,20 +432,6 @@ class Paper < ApplicationRecord
 
   def pretty_state
     state.humanize.downcase
-  end
-
-  def fraction_check_boxes_complete
-    return 0.0 if review_issue_id.nil?
-    issue = GITHUB.issue(Rails.application.settings["reviews"], review_issue_id)
-
-    checkbox_count = issue.body.scan(/(- \[ \]|- \[x\])/m).count
-    checked_checkbox_count = issue.body.scan(/(- \[x\])/m).count
-
-    return checked_checkbox_count.to_f / checkbox_count
-  end
-
-  def pretty_percentage
-    (percent_complete * 100).to_i
   end
 
   # Returns DOI with URL e.g. "https://doi.org/10.21105/joss.00001"

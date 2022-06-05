@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_07_06_101511) do
+ActiveRecord::Schema[6.1].define(version: 2022_03_04_092320) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
@@ -102,12 +102,11 @@ ActiveRecord::Schema.define(version: 2021_07_06_101511) do
     t.boolean "archived", default: false
     t.integer "eic_id"
     t.string "submission_kind"
-    t.float "percent_complete", default: 0.0
+    t.string "git_branch"
     t.index ["editor_id"], name: "index_papers_on_editor_id"
     t.index ["eic_id"], name: "index_papers_on_eic_id"
     t.index ["labels"], name: "index_papers_on_labels", using: :gin
     t.index ["last_activity"], name: "index_papers_on_last_activity"
-    t.index ["percent_complete"], name: "index_papers_on_percent_complete"
     t.index ["reviewers"], name: "index_papers_on_reviewers", using: :gin
     t.index ["sha"], name: "index_papers_on_sha"
     t.index ["user_id"], name: "index_papers_on_user_id"

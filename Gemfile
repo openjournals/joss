@@ -48,7 +48,7 @@ gem "redis", "~> 4.0"
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'pry-byebug'
-  gem 'capybara', '~> 3.36.0'
+  gem 'capybara', '~> 3.37'
   gem 'factory_bot_rails', '~> 6.2.0'
   gem 'rspec-rails', '~> 5.1.1'
   gem 'rails-controller-testing', '~> 1.0.5'

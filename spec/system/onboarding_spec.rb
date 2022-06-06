@@ -65,6 +65,9 @@ feature "Onboarding" do
 
       expect(page).to have_content("Onboarding invitation deleted")
       expect(page).to_not have_content("editor@dele.te")
+
+      visit onboardings_path
+      expect(page).to_not have_content("editor@dele.te")
     end
 
     scenario "Resend onboarding invitation" do

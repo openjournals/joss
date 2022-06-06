@@ -30,7 +30,6 @@ gem 'elasticsearch', '<7.14'
 gem 'uglifier', '4.2.0'
 gem 'jbuilder', '~> 2.11'
 gem 'issue'
-gem 'net-ftp'
 
 gem 'active_link_to'
 

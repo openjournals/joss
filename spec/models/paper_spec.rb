@@ -51,7 +51,7 @@ describe Paper do
 
     paper = Paper.create(no_track_params)
     expect(paper).to_not be_valid
-    expect(paper.errors.full_messages.first).to eq("Track You must select a subject for the paper")
+    expect(paper.errors.full_messages.first).to eq("Track You must select a valid subject for the paper")
 
     paper = Paper.create(valid_params)
     expect(paper).to be_valid

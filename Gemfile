@@ -10,6 +10,7 @@ gem 'groupdate'
 gem 'honeybadger', '~> 4.12.1'
 gem 'html-pipeline', '~> 2.14.1'
 gem 'commonmarker', '~> 0.23.4'
+gem 'net-sftp', '~> 2.1', '>= 2.1.2'
 gem 'octicons_helper'
 gem 'omniauth-orcid', '~> 2.1.1'
 gem 'omniauth-rails_csrf_protection'
@@ -17,7 +18,7 @@ gem 'octokit', '~> 4.22'
 gem 'pdf-reader', '~> 2.9.2'
 gem 'pg', '~> 1.3.5'
 gem 'will_paginate', '~> 3.3.1'
-gem 'rails', '7.0.2.4'
+gem 'rails', '7.0.3'
 gem "importmap-rails"
 gem "turbo-rails"
 gem "stimulus-rails"

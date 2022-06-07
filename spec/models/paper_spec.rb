@@ -44,8 +44,7 @@ describe Paper do
                        repository_url: 'http://github.com/arfon/fidgit',
                        software_version: 'v1.0.0',
                        submitting_author: create(:user),
-                       submission_kind: 'new',
-                       suggested_editor: '@editor' }
+                       submission_kind: 'new' }
 
     valid_params = no_track_params.merge track: create(:track)
 
@@ -348,7 +347,7 @@ describe Paper do
         is_expected.to match /Important Editor/
       end
 
-      it { is_expected.to match "The author's suggestion for the handling editor is @joss_editor" }
+      it { is_expected.to match "The AEiC suggestion for the handling editor is @joss_editor" }
     end
 
     context "with no editor" do

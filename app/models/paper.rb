@@ -122,7 +122,6 @@ class Paper < ApplicationRecord
   after_create :notify_editors, :notify_author
 
   validates_presence_of :title, message: "The paper must have a title"
-  validates_presence_of :suggested_editor, on: :create, message: "You must suggest an editor to handle your submission"
   validates_presence_of :repository_url, message: "Repository address can't be blank"
   validates_presence_of :software_version, message: "Version can't be blank"
   validates_presence_of :body, message: "Description can't be blank"

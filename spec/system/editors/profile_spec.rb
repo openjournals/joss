@@ -29,6 +29,10 @@ feature "Editor profile" do
 
     expect(first_name).to eq('Lorena')
     expect(description).to eq('Science testing editor')
+    expect(user_editor.editor.track_ids.size > 0).to be true
+    user_editor.editor.track_ids.each do |track_id|
+      expect(page).to have_checked_field("editor_track_ids_#{track_id}")
+    end
   end
 
 

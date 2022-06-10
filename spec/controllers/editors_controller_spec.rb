@@ -80,19 +80,22 @@ RSpec.describe EditorsController, type: :controller do
   describe "#create" do
     context "with valid params" do
       it "creates a new Editor" do
+        new_editor = build(:editor)
         expect {
-          post :create, params: {editor: build(:editor).attributes}
+          post :create, params: {editor: new_editor.attributes.merge(track_ids: new_editor.track_ids)}
         }.to change(Editor, :count).by(1)
       end
 
       it "assigns a newly created editor as @editor" do
-        post :create, params: {editor: build(:editor).attributes}
+        new_editor = build(:editor)
+        post :create, params: {editor: new_editor.attributes.merge(track_ids: new_editor.track_ids)}
         expect(assigns(:editor)).to be_a(Editor)
         expect(assigns(:editor)).to be_persisted
       end
 
       it "redirects to the created editor" do
-        post :create, params: {editor: build(:editor).attributes}
+        new_editor = build(:editor)
+        post :create, params: {editor: new_editor.attributes.merge(track_ids: new_editor.track_ids)}
         expect(response).to redirect_to(Editor.last)
       end
     end

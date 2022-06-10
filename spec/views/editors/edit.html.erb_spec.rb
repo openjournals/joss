@@ -21,6 +21,7 @@ RSpec.describe "editors/edit", type: :view do
       assert_select "input#editor_avatar_url[name=?]", "editor[avatar_url]"
       assert_select "input#editor_category_list[name=?]", "editor[category_list]"
       assert_select "input#editor_url[name=?]", "editor[url]"
+      assert_select "input[name=?]", "editor[track_ids][]"
       assert_select "textarea#editor_description[name=?]", "editor[description]"
     end
   end

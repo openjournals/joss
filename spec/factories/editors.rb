@@ -10,6 +10,7 @@ FactoryBot.define do
     url { "http://placekitten.com" }
     description { "Person McEditor is an editor" }
     availability_comment { "OOO until March 1" }
+    track_ids {[create(:track).id]}
 
     factory :board_editor do
       kind { "board" }

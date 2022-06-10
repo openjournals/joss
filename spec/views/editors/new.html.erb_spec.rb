@@ -6,7 +6,7 @@ RSpec.describe "editors/new", type: :view do
     allow(Repository).to receive(:editors).and_return %w(@user1 @user2 @user3)
   end
 
-  it "renders the edit editor form" do
+  it "renders the new editor form" do
     render
 
     assert_select "form[action=?][method=?]", editors_path, "post" do
@@ -19,6 +19,7 @@ RSpec.describe "editors/new", type: :view do
       assert_select "input#editor_avatar_url[name=?]", "editor[avatar_url]"
       assert_select "input#editor_category_list[name=?]", "editor[category_list]"
       assert_select "input#editor_url[name=?]", "editor[url]"
+      assert_select "input[name=?]", "editor[track_ids][]"
       assert_select "textarea#editor_description[name=?]", "editor[description]"
     end
   end

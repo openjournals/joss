@@ -24,6 +24,10 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :tracks do
+    get 'remove', on: :member
+  end
+
   resources :subjects, only: [] do
     get 'search', on: :collection
   end

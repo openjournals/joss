@@ -39,11 +39,14 @@ RSpec.describe EditorsController, type: :controller do
 
   describe "#index" do
     it "assigns editors to @active_editors and @emeritus_editors" do
-      editor = create(:editor)
+      track = current_user.editor.tracks.first
+      board = track.aeics.first
+      editor = create(:editor, track_ids: [track.id])
       emeritus = create(:editor, kind: "emeritus")
-      create(:editor, kind: "pending")
+      create(:editor, kind: "pending", track_ids: [track.id])
       get :index
-      expect(assigns(:active_editors)).to eq([current_user.editor, editor])
+
+      expect(assigns(:active_editors)).to eq([board, current_user.editor, editor])
       expect(assigns(:emeritus_editors)).to eq([emeritus])
     end
 

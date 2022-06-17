@@ -362,4 +362,57 @@ describe Paper do
       it { is_expected.to match "Currently, there isn't an JOSS editor assigned" }
     end
   end
+
+  describe "#move_to_track" do
+    before do
+      @track_1 = create(:track, name: "Astronomy", short_name: "ASTRO", code: "32")
+      @track_2 = create(:track, name: "Biology", short_name: "BIO", code: "33")
+      @paper = create(:paper, track_id: @track_1.id)
+    end
+
+    it "should recibe a new track to assign" do
+      expect(@paper).to_not receive(:track)
+      expect(@paper).to_not receive(:set_track_id)
+      @paper.move_to_track(nil)
+    end
+
+    it "should do nothing if track does not change" do
+      expect(@paper).to_not receive(:set_track_id)
+      expect_any_instance_of(Octokit::Client).to_not receive(:remove_label)
+      expect_any_instance_of(Octokit::Client).to_not receive(:add_labels_to_an_issue)
+      @paper.move_to_track(@track_1)
+    end
+
+    it "should update paper's track" do
+      allow_any_instance_of(Octokit::Client).to receive(:remove_label)
+      allow_any_instance_of(Octokit::Client).to receive(:add_labels_to_an_issue)
+
+      expect(@paper.track).to eq(@track_1)
+      @paper.move_to_track(@track_2)
+      expect(@paper.reload.track).to eq(@track_2)
+    end
+
+    it "should change labels if issues exist" do
+      @paper.meta_review_issue_id = 3333
+      @paper.review_issue_id = 4444
+
+      expect_any_instance_of(Octokit::Client).to receive(:remove_label).with(anything, 3333, @track_1.label)
+      expect_any_instance_of(Octokit::Client).to receive(:add_labels_to_an_issue).with(anything, 3333, [@track_2.label])
+      expect_any_instance_of(Octokit::Client).to receive(:remove_label).with(anything, 4444, @track_1.label)
+      expect_any_instance_of(Octokit::Client).to receive(:add_labels_to_an_issue).with(anything, 4444, [@track_2.label])
+
+      @paper.move_to_track(@track_2)
+    end
+
+    it "should not change labels if no issues created" do
+      @paper.meta_review_issue_id = nil
+      @paper.review_issue_id = nil
+      expect_any_instance_of(Octokit::Client).to_not receive(:remove_label)
+      expect_any_instance_of(Octokit::Client).to_not receive(:add_labels_to_an_issue)
+
+      expect(@paper.track).to eq(@track_1)
+      @paper.move_to_track(@track_2)
+      expect(@paper.reload.track).to eq(@track_2)
+    end
+  end
 end

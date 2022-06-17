@@ -24,8 +24,8 @@ feature "Manage Tracks" do
 
   feature "Logged as an admin" do
     before do
-      @eiac = create(:board_editor, first_name: "Testeditor", last_name: "In-chief")
-      @track = create(:track, name: "Testing track", short_name: "TE", code: "33", aeic_ids: [@eiac.id])
+      @aeic = create(:board_editor, first_name: "Testeditor", last_name: "In-chief")
+      @track = create(:track, name: "Testing track", short_name: "TE", code: "33", aeic_ids: [@aeic.id])
       login_as(admin_editor)
       visit tracks_path
     end
@@ -110,7 +110,7 @@ feature "Manage Tracks" do
 
     feature "Deleting a track" do
       before do
-        @other_track = create(:track, name: "New track", short_name: "NT", code: "7", aeic_ids: [@eiac.id])
+        @other_track = create(:track, name: "New track", short_name: "NT", code: "7", aeic_ids: [@aeic.id])
         @editor = create(:editor, first_name: "Testtopic", last_name: "Editorperson", track_ids: [@track.id, @other_track.id])
         @pending_paper = create(:submitted_paper, track: @track)
         @submitted_paper = create(:accepted_paper, track: @track)
@@ -160,8 +160,8 @@ feature "Manage Tracks" do
         expect(@editor.reload.tracks.size).to eq(1)
         expect(@editor.tracks.first).to eq(@other_track)
 
-        expect(@eiac.reload.managed_tracks.size).to eq(1)
-        expect(@eiac.managed_tracks.first).to eq(@other_track)
+        expect(@aeic.reload.managed_tracks.size).to eq(1)
+        expect(@aeic.managed_tracks.first).to eq(@other_track)
 
         tracks_after = Track.count
         subjects_after = Subject.count

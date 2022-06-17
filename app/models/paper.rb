@@ -427,6 +427,24 @@ class Paper < ApplicationRecord
     self.update_attribute(:track_id, new_track_id) if new_track_id != self.track_id
   end
 
+  def move_to_track(new_track)
+    return if new_track.nil?
+    current_label = self.track.present? ? self.track.label : ""
+    if current_label != new_track.label
+      set_track_id(new_track.id)
+
+      if self.meta_review_issue_id
+        GITHUB.remove_label(Rails.application.settings["reviews"], self.meta_review_issue_id, current_label) if current_label.present?
+        GITHUB.add_labels_to_an_issue(Rails.application.settings["reviews"], self.meta_review_issue_id, [new_track.label])
+      end
+
+      if self.review_issue_id
+        GITHUB.remove_label(Rails.application.settings["reviews"], self.review_issue_id, current_label) if current_label.present?
+        GITHUB.add_labels_to_an_issue(Rails.application.settings["reviews"], self.review_issue_id, [new_track.label])
+      end
+    end
+  end
+
   def meta_review_url
     "https://github.com/#{Rails.application.settings["reviews"]}/issues/#{self.meta_review_issue_id}"
   end

@@ -5,7 +5,7 @@ class PapersController < ApplicationController
 
   before_action :require_user, only: %w(new create update withdraw)
   before_action :require_complete_profile, only: %w(create)
-  before_action :require_admin_user, only: %w(start_meta_review archive reject)
+  before_action :require_admin_user, only: %w(start_meta_review archive reject change_track)
 
   def recent
     @papers = Paper.visible.paginate(
@@ -180,7 +180,7 @@ class PapersController < ApplicationController
   def start_meta_review
     @paper = Paper.find_by_sha(params[:id])
 
-    if @paper.start_meta_review!(params[:editor], current_user.editor, params[:track_id])
+    if @paper.start_meta_review!(params[:editor], current_user.editor)
       flash[:notice] = "Review started"
       redirect_to paper_path(@paper)
     else

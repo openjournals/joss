@@ -14,6 +14,7 @@
           <% paper.track.aeics.each do |aeic| %>
             <li><%= aeic.full_name %> (<%= aeic.login %>)</li>
           <% end %>
+          <%= "Track without AEiC" if paper.track.aeics.empty? %>
         </ul>
       </p>
     <% else %>
@@ -21,8 +22,35 @@
       This paper is <strong>not assigned to any track</strong>
       </p>
     <% end %>
+  <% else %>
+    <% if paper.suggested_subject %>
+      <p class="card-text">
+        Author suggested this paper' subject is <strong><%= paper.suggested_subject %></strong>
+      </p>
+    <% else %>
+      <p class="card-text">
+        Author didn't suggest any subject for this paper.
+      </p>
+    <% end %>
 
-    <div class="row">
+    <% if paper.track_id.present? %>
+      <p class="card-text">
+        This submission will be assigned to the track:  <strong><%= paper.track.name %></strong>
+      </p>
+      <p class="card-text">
+        <%= paper.track.aeics.empty? ? "Track without AEiC" : "Track managed by:" %>
+        <ul>
+          <% paper.track.aeics.each do |aeic| %>
+            <li><%= aeic.full_name %> (<%= aeic.login %>)</li>
+          <% end %>
+        </ul>
+      </p>
+      <% end %>
+  <% end %>
+
+  <%= link_to "Change track &raquo;".html_safe, "#changeTrack", title: "Change submission's track", data: { toggle: 'collapse'} %>
+
+    <div class="row collapse" id="changeTrack">
       <div class="col-md-6">
         <%= form_tag(change_track_paper_url(paper), class: "left") do %>
           <%= select_tag :track_id, options_from_collection_for_select(Track.where.not(id: paper.track_id), "id", "name"), prompt: "Select new track", class: "form-control left" %>
@@ -30,25 +58,6 @@
         <% end %>
       </div>
     </div>
-  <% else %>
-    <% if paper.suggested_subject %>
-      <p class="card-text">
-        Author suggested this paper' subject is <strong><%= paper.suggested_subject %></strong>
-      </p>
-      <p class="card-text">
-        The subject belongs to the track:  <strong><%= paper.track.name %></strong> <br>managed by:
-        <ul>
-          <% paper.track.aeics.each do |aeic| %>
-            <li><%= aeic.full_name %> (<%= aeic.login %>)</li>
-          <% end %>
-        </ul>
-      </p>
-    <% else %>
-      <p class="card-text">
-        Author didn't suggest any subject for this paper.
-      </p>
-    <% end %>
-  <% end %>
   </div>
 </div>
 <br />
@@ -68,7 +77,6 @@
           <div class="col-md-5">
             <%= form_tag(start_meta_review_paper_url(paper), class: "left") do %>
               Editor: <%= select_tag :editor, options_for_select(Repository.editors, selected: nil), prompt: "Suggest editor (optional)", class: "form-control left" %>
-              Track: <%= select_tag :track_id, options_from_collection_for_select(Track.all, "id", "name", paper.track_id), include_blank: false, class: "form-control left" %>
               <%= submit_tag "Start meta review", class: "btn btn-primary left start-review" %>
             <% end %>
           </div>

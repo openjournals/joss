@@ -54,18 +54,18 @@ feature "Paper's track info" do
           expect(page).to_not have_content("Author didn't suggest any subject for this paper.")
 
           expect(page).to have_content("Author suggested this paper' subject is Solar Astronomy")
-          expect(page).to have_content("The subject belongs to the track: Astrophysics")
+          expect(page).to have_content("This submission will be assigned to the track: Astrophysics")
         }
       end
 
-      scenario "Don't show form to change track" do
+      scenario "Show form to change track" do
         @paper.update!(suggested_subject: "Solar Astronomy", track_id: @track_1.id, meta_review_issue_id: nil)
 
         visit paper_path(@paper)
 
         within("#track-info"){
-          expect(page).to_not have_css("select#track_id")
-          expect(page).to_not have_css("input[type='submit']")
+          expect(page).to have_css("select#track_id")
+          expect(page).to have_css("input[type='submit']")
         }
       end
     end

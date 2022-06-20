@@ -20,9 +20,6 @@ var stIsIE = /*@cc_on!@*/false;
 
 var sorttable = {
   init: function() {
-    // kill the timer
-    if (_timer) clearInterval(_timer);
-
     if (!document.createElement || !document.getElementsByTagName) return;
 
     sorttable.DATE_RE = /^(\d\d?)[\/\.-](\d\d?)[\/\.-]((\d\d)?\d\d)$/;
@@ -311,37 +308,6 @@ var sorttable = {
    Supporting functions: bundled here to avoid depending on a library
    ****************************************************************** */
 
-// Dean Edwards/Matthias Miller/John Resig
-
-/* for Mozilla/Opera9 */
-if (document.addEventListener) {
-    document.addEventListener("DOMContentLoaded", sorttable.init, false);
-}
-
-/* for Internet Explorer */
-/*@cc_on @*/
-/*@if (@_win32)
-    document.write("<script id=__ie_onload defer src=javascript:void(0)><\/script>");
-    var script = document.getElementById("__ie_onload");
-    script.onreadystatechange = function() {
-        if (this.readyState == "complete") {
-            sorttable.init(); // call the onload handler
-        }
-    };
-/*@end @*/
-
-/* for Safari */
-if (/WebKit/i.test(navigator.userAgent)) { // sniff
-    var _timer = setInterval(function() {
-        if (/loaded|complete/.test(document.readyState)) {
-            sorttable.init(); // call the onload handler
-        }
-    }, 10);
-}
-
-/* for other browsers */
-window.onload = sorttable.init;
-
 // written by Dean Edwards, 2005
 // with input from Tino Zijdel, Matthias Miller, Diego Perini
 
@@ -466,3 +432,9 @@ var forEach = function(object, block, context) {
 		resolve.forEach(object, block, context);
 	}
 };
+
+
+// Run init (turbo:load fires once after the initial page load, and again after every Turbo visit)
+document.addEventListener("turbo:load", function() {
+  sorttable.init();
+})

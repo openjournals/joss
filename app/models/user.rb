@@ -43,7 +43,11 @@ class User < ApplicationRecord
   end
 
   def editor?
-    self.editor ? true:false
+    self.editor ? true : false
+  end
+
+  def aeic?
+    editor? && self.editor.board?
   end
 
   def pretty_github_username

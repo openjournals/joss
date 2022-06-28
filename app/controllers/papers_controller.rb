@@ -5,7 +5,7 @@ class PapersController < ApplicationController
 
   before_action :require_user, only: %w(new create update withdraw)
   before_action :require_complete_profile, only: %w(create)
-  before_action :require_admin_user, only: %w(start_meta_review archive reject change_track)
+  before_action :require_aeic, only: %w(start_meta_review archive reject change_track)
 
   def recent
     @papers = Paper.visible.paginate(
@@ -214,7 +214,7 @@ class PapersController < ApplicationController
   def withdraw
     @paper = Paper.find_by_sha(params[:id])
 
-    unless current_user.is_owner_of?(@paper) || current_user.admin?
+    unless current_user.is_owner_of?(@paper) || current_user.aeic?
       redirect_to paper_path(@paper) and return
     end
 
@@ -322,7 +322,7 @@ class PapersController < ApplicationController
   def can_see_hidden_paper?(paper)
     return false unless current_user
 
-    if current_user.admin? || current_user.is_owner_of?(paper)
+    if current_user.aeic? || current_user.is_owner_of?(paper) || current_user.admin?
       return true
     else
       return false

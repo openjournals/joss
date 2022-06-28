@@ -1,5 +1,5 @@
 class InvitationsController < ApplicationController
-  before_action :require_admin_user
+  before_action :require_aeic
   before_action :set_track, only: [:index]
 
   def index

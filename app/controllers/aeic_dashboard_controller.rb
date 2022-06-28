@@ -1,5 +1,5 @@
 class AeicDashboardController < ApplicationController
-  before_action :require_admin_user
+  before_action :require_aeic
 
   def index
     if params[:track_id].present?

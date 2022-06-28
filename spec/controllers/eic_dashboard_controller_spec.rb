@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe AeicDashboardController, type: :controller do
   render_views
-  let(:current_user) { create(:admin_user, editor: create(:editor)) }
+  let(:current_user) { create(:user, editor: create(:board_editor)) }
 
   before(:each) do
     allow(controller).to receive(:current_user).and_return(current_user)
@@ -17,8 +17,17 @@ RSpec.describe AeicDashboardController, type: :controller do
     end
   end
 
-  context "when logged in as a non-admin user" do
+  context "when logged in as a non-editor user" do
     let(:current_user) { create(:user) }
+    it "redirects to root with a not allowed message" do
+      get :index
+      expect(response).to redirect_to root_path
+      expect(flash[:error]).to eql "You are not permitted to view that page"
+    end
+  end
+
+  context "when logged in as a non-aeic editor" do
+    let(:current_user) { create(:user, editor: create(:editor)) }
     it "redirects to root with a not allowed message" do
       get :index
       expect(response).to redirect_to root_path

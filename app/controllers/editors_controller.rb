@@ -1,5 +1,5 @@
 class EditorsController < ApplicationController
-  before_action :require_admin_user, except: [:lookup, :profile, :update_profile]
+  before_action :require_aeic, except: [:lookup, :profile, :update_profile]
   before_action :require_editor, only:[:profile, :update_profile]
   before_action :set_editor, only: [:show, :edit, :update, :destroy]
   before_action :set_current_editor, only: [:profile, :update_profile]

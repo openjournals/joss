@@ -21,12 +21,11 @@ describe PapersController, type: :controller do
     end
 
     it "LOGGED IN and with correct params" do
-      admin_editor = create(:editor, login: "josseic")
-      admin_user = create(:admin_user, editor: admin_editor)
+      aeic_user = create(:user, editor: create(:board_editor, login: "jossaeic"))
       editor = create(:editor, login: "josseditor")
       editing_user = create(:user, editor: editor)
 
-      allow(controller).to receive_message_chain(:current_user).and_return(admin_user)
+      allow(controller).to receive_message_chain(:current_user).and_return(aeic_user)
 
       author = create(:user)
       paper = create(:paper, user_id: author.id)
@@ -39,19 +38,29 @@ describe PapersController, type: :controller do
 
       expect(response).to be_redirect
       expect(paper.reload.state).to eq('review_pending')
-      expect(paper.reload.eic).to eq(admin_editor)
+      expect(paper.reload.eic).to eq(aeic_user.editor)
     end
   end
 
   describe "Paper rejection" do
-    it "should work for an administrator" do
-      user = create(:admin_user)
-      allow(controller).to receive_message_chain(:current_user).and_return(user)
+    it "should work for an AEiC" do
+      aeic_user = create(:user, editor: create(:board_editor))
+      allow(controller).to receive_message_chain(:current_user).and_return(aeic_user)
       submitted_paper = create(:paper, state: 'submitted')
 
       post :reject, params: {id: submitted_paper.sha}
       expect(response).to be_redirect # as it's rejected the paper
       expect(Paper.rejected.count).to eq(1)
+    end
+
+    it "should fail for a standard editor" do
+      editor = create(:user, editor: create(:editor))
+      allow(controller).to receive_message_chain(:current_user).and_return(editor)
+      submitted_paper = create(:paper, state: 'submitted')
+
+      post :reject, params: {id: submitted_paper.sha}
+      expect(response).to be_redirect # as it's rejected the paper
+      expect(Paper.rejected.count).to eq(0)
     end
 
     it "should fail for a standard user" do
@@ -66,9 +75,9 @@ describe PapersController, type: :controller do
   end
 
   describe "Paper withdrawing" do
-    it "should work for an administrator" do
-      user = create(:admin_user)
-      allow(controller).to receive_message_chain(:current_user).and_return(user)
+    it "should work for an AEiC" do
+      aeic_user = create(:user, editor: create(:board_editor))
+      allow(controller).to receive_message_chain(:current_user).and_return(aeic_user)
       submitted_paper = create(:paper, state: 'submitted')
 
       post :withdraw, params: {id: submitted_paper.sha}
@@ -79,6 +88,16 @@ describe PapersController, type: :controller do
     it "should fail for a user who doesn't own the paper" do
       user = create(:user)
       allow(controller).to receive_message_chain(:current_user).and_return(user)
+      submitted_paper = create(:paper, state: 'submitted')
+
+      post :withdraw, params: {id: submitted_paper.sha}
+      expect(response).to be_redirect
+      expect(Paper.withdrawn.count).to eq(0)
+    end
+
+    it "should fail for editors" do
+      editor = create(:user, editor: create(:editor))
+      allow(controller).to receive_message_chain(:current_user).and_return(editor)
       submitted_paper = create(:paper, state: 'submitted')
 
       post :withdraw, params: {id: submitted_paper.sha}
@@ -192,6 +211,16 @@ describe PapersController, type: :controller do
       user = create(:user)
       admin = create(:user, admin: true)
       allow(controller).to receive_message_chain(:current_user).and_return(admin)
+      submitted_paper = create(:paper, state: 'submitted', submitting_author: user)
+
+      get :show, params: {id: submitted_paper.sha}, format: "html"
+      expect(response.status).to eq(200)
+    end
+
+    it "should be visible for an AEiC" do
+      user = create(:user)
+      aeic = create(:user, editor: create(:board_editor))
+      allow(controller).to receive_message_chain(:current_user).and_return(aeic)
       submitted_paper = create(:paper, state: 'submitted', submitting_author: user)
 
       get :show, params: {id: submitted_paper.sha}, format: "html"

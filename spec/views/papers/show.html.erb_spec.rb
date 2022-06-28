@@ -78,7 +78,8 @@ describe 'papers/show.html.erb' do
 
   context 'rendering admin partial' do
     it "displays buttons when there's no GitHub issue" do
-      user = create(:user, admin: true)
+      user = create(:user)
+      editor = create(:board_editor, user: user)
       author = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
       allow(view).to receive_message_chain(:current_editor).and_return(user)
@@ -105,9 +106,9 @@ describe 'papers/show.html.erb' do
       expect(rendered).to_not have_selector("input[type=submit][value='Start meta review']")
     end
 
-    it "shows the withdraw/reject/start-meta-review buttons button to admins" do
-      user = create(:user, admin: true)
-      editor = create(:editor, user: user)
+    it "shows the withdraw/reject/start-meta-review buttons button to AEiC" do
+      user = create(:user)
+      editor = create(:board_editor, user: user)
       author = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
       allow(view).to receive_message_chain(:current_editor).and_return(user)

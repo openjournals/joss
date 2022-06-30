@@ -276,7 +276,7 @@ describe Paper do
         is_expected.to match /#{Rails.application.settings['reviewers']}/
       end
 
-      it { is_expected.to match "Currently, there isn't an JOSS editor assigned" }
+      it { is_expected.to match "Currently, there isn't a JOSS editor assigned" }
     end
   end
 end

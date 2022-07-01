@@ -96,15 +96,19 @@ module HomeHelper
   end
 
   def comment_activity(paper)
-    return "No activity" if paper.activities.empty?
-    return "No activity" if paper.activities['issues']['commenters'].empty?
-    capture do
-      comment = paper.activities['issues']['comments'].first
-      concat(content_tag(:span, image_tag(avatar(comment['author']), size: "24x24", class: "avatar", title: comment['author']), class: "activity-avatar"))
-      concat(content_tag(:span, style: "") do
-        concat(content_tag(:span, "#{time_ago_in_words(comment['commented_at'])} ago".html_safe, class: "time"))
-        concat(content_tag(:span, "#{comment_link(comment)}".html_safe, class: "comment-link"))
-      end)
+    begin
+      return "No activity" if paper.activities.empty?
+      return "No activity" if paper.activities['issues']['commenters'].empty?
+      capture do
+        comment = paper.activities['issues']['comments'].first
+        concat(content_tag(:span, image_tag(avatar(comment['author']), size: "24x24", class: "avatar", title: comment['author']), class: "activity-avatar"))
+        concat(content_tag(:span, style: "") do
+          concat(content_tag(:span, "#{time_ago_in_words(comment['commented_at'])} ago".html_safe, class: "time"))
+          concat(content_tag(:span, "#{comment_link(comment)}".html_safe, class: "comment-link"))
+        end)
+      end
+    rescue 
+      return "Error returning latest status"
     end
   end
 

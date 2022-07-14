@@ -80,6 +80,7 @@ Rails.application.routes.draw do
   post '/papers/api_start_review', to: 'dispatch#api_start_review'
   post '/papers/api_deposit', to: 'dispatch#api_deposit'
   post '/papers/api_assign_editor', to: 'dispatch#api_assign_editor'
+  post '/papers/api_update_paper_info', to: 'dispatch#api_update_paper_info'
   post '/papers/api_assign_reviewers', to: 'dispatch#api_assign_reviewers'
   post '/papers/api_reject', to: 'dispatch#api_reject'
   post '/papers/api_withdraw', to: 'dispatch#api_withdraw'

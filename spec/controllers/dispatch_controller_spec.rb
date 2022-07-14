@@ -370,6 +370,39 @@ describe DispatchController, type: :controller do
     end
   end
 
+  describe "POST #api_update_paper_info" do
+    ENV["BOT_SECRET"] = "mooo"
+
+    it "with no API key" do
+      post :api_update_paper_info
+      expect(response).to be_forbidden
+    end
+
+    it "with the correct API key" do
+      paper = create(:review_pending_paper, state: "review_pending", meta_review_issue_id: 1234)
+
+      post :api_update_paper_info, params: {secret: "mooo",
+                                            id: 1234,
+                                            repository_url: "http://github.com/openjournals/new-repo-value"
+                                            }
+
+      expect(response).to be_successful
+      expect(paper.reload.repository_url).to eql("http://github.com/openjournals/new-repo-value")
+    end
+
+    it "with the correct API key and invalid paper" do
+      paper = create(:review_pending_paper, state: "review_pending", meta_review_issue_id: 1234)
+
+      post :api_update_paper_info, params: {secret: "mooo",
+                                            id: 12345,
+                                            repository_url: "http://github.com/openjournals/joss"
+                                            }
+
+      expect(response).to be_unprocessable
+      expect(paper.reload.editor).to be_nil
+    end
+  end
+
   describe "PUT #api_reject" do
     ENV["BOT_SECRET"] = "mooo"
 

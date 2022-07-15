@@ -3,7 +3,7 @@ JOSS Policies
 
 ## Animal research policy
 
-In the exceptional case a JOSS submission contains original data on animal research, the corresponding author must confirm that the data was collected in accordance with the latest guidelines and applicable regulations. The manuscript must include complete reporting of the data, including the ways that the study was approved and relevant details of the sample. Authors are required to report either the [ARRIVE](https://arriveguidelines.org/) or PREPARE guidelines for animal research in the submission. 
+In the exceptional case a JOSS submission contains original data on animal research, the corresponding author must confirm that the data was collected in accordance with the latest guidelines and applicable regulations. The manuscript must include complete reporting of the data, including the ways that the study was approved and relevant details of the sample. Authors are required to report either the [ARRIVE](https://arriveguidelines.org/) or [PREPARE](https://doi.org/10.1177/0023677217724823) guidelines for animal research in the submission. 
 
 We recommend that authors replace, reduce, and refine animal research as promoted by the [N3RS](https://www.nc3rs.org.uk/).
 

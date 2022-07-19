@@ -19,7 +19,7 @@ RSpec.describe do
 
   describe "JOSS tracks" do
     it "should have 7 top level tracks" do
-      expect(joss_tracks['tracks'].size).to eq(7)
+      expect(joss_tracks['tracks'].size).to eq(8)
     end
 
     it "should have the right structure" do

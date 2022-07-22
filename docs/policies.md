@@ -9,7 +9,10 @@ We recommend that authors replace, reduce, and refine animal research as promote
 
 ## Data sharing policy
 
-If any original data analysis results are provided within the submitted work, such results have to be entirely reproducible by reviewers, including accessing the data. Submissions are, by definition, contained within a repository and we require authors to archive their software before we accept.
+If any original data analysis results are provided within the submitted work, such results have to be entirely reproducible by reviewers, including accessing the data.
+
+Submissions are, by definition, contained within one or multiple repositories, which we require authors to archive before we accept the submission. Any data contained within the software is made available accordingly.
+
 
 ## Human participants research policy
 

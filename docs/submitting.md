@@ -141,7 +141,7 @@ Aside from toy problems and demonstrations, the majority of problems require
 efficient numerical tools, many of which require the same base code (e.g., for
 performing numerical orbit integration).
 
-# Statement of need
+# Statement of Need
 
 `Gala` is an Astropy-affiliated Python package for galactic dynamics. Python
 enables wrapping low-level languages (e.g., C) for speed without losing

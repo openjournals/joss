@@ -155,6 +155,15 @@ Sometimes the paper-md file is located in a topic branch. In order to have the P
 @editorialbot set topic-branch-name as branch
 ```
 
+### Changing the repository
+
+Sometimes authors will move their software repository during the review. To update the value of the repository URL do the following:
+
+```text
+@editorialbot set https://github.com/ORG/REPO as repository
+```
+
+
 ### Check references
 
 Editors can ask EditorialBot to check if the DOIs in the bib file are valid with the command:
@@ -269,6 +278,9 @@ JOSS editors-in-chief can withdraw a submission with the following command:
 
 # Set a value for branch
 @editorialbot set joss-paper as branch
+
+# Set a value for repository
+@editorialbot set https://github.com/org/repo as repository
 
 # Reject paper
 @editorialbot reject

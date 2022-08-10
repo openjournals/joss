@@ -4,6 +4,7 @@ describe PapersController, type: :controller do
   render_views
 
   before(:each) do
+    skip_paper_repo_url_check
     allow(Repository).to receive(:editors).and_return ["@user1", "@user2"]
   end
 
@@ -128,7 +129,7 @@ describe PapersController, type: :controller do
       allow(controller).to receive_message_chain(:current_user).and_return(user)
       paper_count = Paper.count
 
-      paper_params = {title: "Yeah whateva", body: "something", repository_url: ""}
+      paper_params = {title: "Yeah whateva", body: "something", repository_url: "wrong url!"}
       post :create, params: {paper: paper_params}
 
       expect(response.body).to match /Your paper could not be saved/

@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe Editor, type: :model do
+  before { skip_paper_repo_url_check }
+
   let(:editor) { create(:editor) }
 
   describe "#category_list" do

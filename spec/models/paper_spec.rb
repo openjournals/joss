@@ -2,6 +2,7 @@ require 'rails_helper'
 
 describe Paper do
   before(:each) do
+    skip_paper_repo_url_check
     Paper.destroy_all
   end
 
@@ -97,9 +98,9 @@ describe Paper do
 
   # GitHub stuff
   it "should know how to return a pretty repo name with owner" do
-    paper = create(:paper, repository_url: "https://github.com/arfon/joss-reviews")
+    paper = create(:paper, repository_url: "https://github.com/openjournals/joss-reviews")
 
-    expect(paper.pretty_repository_name).to eq("arfon / joss-reviews")
+    expect(paper.pretty_repository_name).to eq("openjournals / joss-reviews")
   end
 
   it 'should know how to return a pretty DOI' do

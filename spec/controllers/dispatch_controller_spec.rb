@@ -18,6 +18,7 @@ def headers(event, payload)
 end
 
 describe DispatchController, type: :controller do
+  before { skip_paper_repo_url_check }
   render_views
 
   let(:editorialbot_pre_review_opened) { json_fixture('editorialbot-pre-review-opened.json') }

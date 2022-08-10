@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe VotesController, type: :controller do
+  before { skip_paper_repo_url_check }
+
   it "LOGGED IN, not blank, responds with success" do
     editor = create(:editor, login: "josseditor")
     editing_user = create(:user, editor: editor)

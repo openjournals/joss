@@ -1,6 +1,7 @@
 require "rails_helper"
 
 feature "Dashboard" do
+  before { skip_paper_repo_url_check }
   let(:dashboard_paths) {[dashboard_all_path, dashboard_incoming_path, dashboard_in_progress_path, dashboard_path]}
   let(:user_editor) { create(:user, editor: create(:editor)) }
 

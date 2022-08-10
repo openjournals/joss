@@ -2,6 +2,7 @@ require 'rails_helper'
 
 describe 'papers/show.html.erb' do
   before(:each) do
+    skip_paper_repo_url_check
     allow(Repository).to receive(:editors).and_return ["@user1", "@user2"]
   end
 

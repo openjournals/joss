@@ -3,6 +3,7 @@ require "rails_helper"
 feature "Paper's track info" do
 
   before do
+    skip_paper_repo_url_check
     @track_1 = create(:track, name: "Astrophysics", short_name: "ASTRO", code: "42")
     @track_2 = create(:track, name: "Biology", short_name: "BIO", code: "34")
     @paper = create(:paper)

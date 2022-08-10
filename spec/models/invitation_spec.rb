@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 describe Invitation do
+  before { skip_paper_repo_url_check }
+
   it "at creation is not accepted" do
     invitation = Invitation.create!(paper: create(:paper), editor: create(:editor))
     expect(invitation).to_not be_accepted

@@ -1,6 +1,7 @@
 require "rails_helper"
 
 feature "Manage Tracks" do
+  before { skip_paper_repo_url_check }
   let(:user_editor) { create(:user, editor: create(:editor, first_name: "Lorena", description: "Science testing editor")) }
   let(:admin_editor) { create(:admin_user, editor: create(:board_editor)) }
 

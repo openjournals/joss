@@ -21,19 +21,24 @@ namespace :tracks do
     end
   end
 
-  desc "Import tracks and subjects from the lib/tracks.yml file"
-  task import: :environment do
-    tracks_info = YAML.load_file(Rails.root + "lib/tracks.yml")
-    tracks_info["tracks"].each_pair do |k, v|
-      track = Track.find_or_initialize_by(name: v["name"])
-      track.code = v["code"]
-      track.short_name = v["short_name"]
-      track.save!
+  namespace :import do
+    desc "Import subjects from the lib/tracks.yml file"
+    task subjects: :environment do
+      tracks_info = YAML.load_file(Rails.root + "lib/tracks.yml")
+      tracks_info["tracks"].each_pair do |k, v|
+        track = Track.find_by(name: v["name"].to_s.strip)
+        if track.nil?
+          puts "!! There is not a '#{v["name"]}' track. Please create it before importing the subjects."
+        else
+          track.subjects.delete_all
 
-      v["fields"].each do |subject|
-        s = Subject.find_or_initialize_by(name: subject)
-        s.track_id = track.id
-        s.save!
+          v["fields"].each do |subject|
+            s = Subject.find_or_initialize_by(name: subject)
+            s.track_id = track.id
+            s.save!
+          end
+          puts "- Track '#{v["name"]}': #{v['fields'].size} subjects imported"
+        end
       end
     end
   end

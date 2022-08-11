@@ -41,5 +41,18 @@ namespace :tracks do
         end
       end
     end
+
+    desc "Import tracks and subjects from the lib/tracks.yml file"
+    task dry_run: :environment do
+      tracks_info = YAML.load_file(Rails.root + "lib/tracks.yml")
+      tracks_info["tracks"].each_pair do |k, v|
+        track = Track.find_by(name: v["name"].to_s.strip)
+        if track.nil?
+          puts "!! There is not a '#{v["name"]}' track. Please create it before importing the subjects."
+        else
+          puts "- Track '#{v["name"]}': #{v['fields'].size} subjects will be imported"
+        end
+      end
+    end
   end
 end

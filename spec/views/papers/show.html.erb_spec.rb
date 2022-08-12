@@ -103,7 +103,7 @@ describe 'papers/show.html.erb' do
       render template: "papers/show", formats: :html
       expect(rendered).to have_selector("a[data-turbo-method=post]", text: "Withdraw paper")
       expect(rendered).to_not have_selector("a[data-turbo-method=post]", text: "Reject paper")
-      expect(rendered).to_not have_selector("input[type=submit][value='Start meta review']")
+      expect(rendered).to_not have_selector("input[type=submit][value='Start pre review']")
     end
 
     it "shows the withdraw/reject/start-meta-review buttons button to admins" do
@@ -119,7 +119,7 @@ describe 'papers/show.html.erb' do
       render template: "papers/show", formats: :html
       expect(rendered).to have_selector("a[data-turbo-method=post]", text: "Withdraw paper")
       expect(rendered).to have_selector("a[data-turbo-method=post]", text: "Reject paper")
-      expect(rendered).to have_selector("input[type=submit][value='Start meta review']")
+      expect(rendered).to have_selector("input[type=submit][value='Start pre review']")
       expect(rendered).to have_content(author.email)
     end
 
@@ -136,7 +136,7 @@ describe 'papers/show.html.erb' do
       render template: "papers/show", formats: :html
       expect(rendered).to_not have_selector("button[type=submit]", text: "Withdraw paper")
       expect(rendered).to_not have_selector("button[type=submit]", text: "Reject paper")
-      expect(rendered).to_not have_selector("input[type=submit][value='Start meta review']")
+      expect(rendered).to_not have_selector("input[type=submit][value='Start pre review']")
     end
 
     it "doesn't displays buttons when there's a GitHub issue" do

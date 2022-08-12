@@ -5,7 +5,7 @@ class PapersController < ApplicationController
 
   before_action :require_user, only: %w(new create update withdraw)
   before_action :require_complete_profile, only: %w(create)
-  before_action :require_admin_user, only: %w(start_meta_review archive reject)
+  before_action :require_admin_user, only: %w(start_meta_review archive reject change_track)
 
   def recent
     @papers = Paper.visible.paginate(
@@ -189,6 +189,16 @@ class PapersController < ApplicationController
     end
   end
 
+  def change_track
+    @paper = Paper.find_by_sha(params[:id])
+    track = Track.find(params[:track_id])
+
+    @paper.move_to_track(track)
+
+    flash[:notice] = "Track for the paper changed!"
+    redirect_to paper_path(@paper)
+  end
+
   def reject
     @paper = Paper.find_by_sha(params[:id])
 
@@ -225,7 +235,7 @@ class PapersController < ApplicationController
     if params[:doi] && valid_doi?
       @paper = Paper.find_by_doi!(params[:doi])
     else
-      @paper = Paper.includes(notes: :editor).find_by_sha!(params[:id])
+      @paper = Paper.includes(:votes, :editor, notes: :editor, track: :aeics).find_by_sha!(params[:id])
       # By default we want people to use the URLs with the DOI in the path if
       # the paper is accepted.
       if @paper.accepted?
@@ -278,7 +288,7 @@ class PapersController < ApplicationController
     if @paper.save
       redirect_to paper_path(@paper)
     else
-      render action: :new
+      render action: :new, status: :unprocessable_entity
     end
   end
 
@@ -306,7 +316,7 @@ class PapersController < ApplicationController
   private
 
   def paper_params
-    params.require(:paper).permit(:title, :repository_url, :git_branch, :software_version, :suggested_editor, :body, :kind, :submission_kind)
+    params.require(:paper).permit(:title, :repository_url, :git_branch, :software_version, :body, :kind, :submission_kind, :suggested_subject, :track_id)
   end
 
   def can_see_hidden_paper?(paper)

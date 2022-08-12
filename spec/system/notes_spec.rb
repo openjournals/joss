@@ -1,6 +1,7 @@
 require "rails_helper"
 
 feature "Editor notes on papers" do
+  before { skip_paper_repo_url_check }
   let(:paper) { create(:review_pending_paper) }
   let(:editor_user) { create(:user, editor: create(:editor)) }
 

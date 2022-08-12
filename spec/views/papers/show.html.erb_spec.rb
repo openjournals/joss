@@ -2,6 +2,7 @@ require 'rails_helper'
 
 describe 'papers/show.html.erb' do
   before(:each) do
+    skip_paper_repo_url_check
     allow(Repository).to receive(:editors).and_return ["@user1", "@user2"]
   end
 
@@ -88,10 +89,10 @@ describe 'papers/show.html.erb' do
 
       render template: "papers/show", formats: :html
 
-      expect(rendered).to have_selector("button[type=submit]", text: "Reject paper")
+      expect(rendered).to have_selector("a[data-turbo-method=post]", text: "Reject paper")
     end
 
-    it "shows the withdraw button to paper owners" do
+    it "shows only the withdraw to paper owners" do
       user = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
       allow(view).to receive_message_chain(:current_editor).and_return(user)
@@ -100,10 +101,12 @@ describe 'papers/show.html.erb' do
       assign(:paper, paper)
 
       render template: "papers/show", formats: :html
-      expect(rendered).to have_selector("button[type=submit]", text: "Withdraw paper")
+      expect(rendered).to have_selector("a[data-turbo-method=post]", text: "Withdraw paper")
+      expect(rendered).to_not have_selector("a[data-turbo-method=post]", text: "Reject paper")
+      expect(rendered).to_not have_selector("input[type=submit][value='Start meta review']")
     end
 
-    it "shows the withdraw button to admins" do
+    it "shows the withdraw/reject/start-meta-review buttons button to admins" do
       user = create(:user, admin: true)
       editor = create(:editor, user: user)
       author = create(:user)
@@ -114,8 +117,26 @@ describe 'papers/show.html.erb' do
       assign(:paper, paper)
 
       render template: "papers/show", formats: :html
-      expect(rendered).to have_selector("button[type=submit]", text: "Withdraw paper")
+      expect(rendered).to have_selector("a[data-turbo-method=post]", text: "Withdraw paper")
+      expect(rendered).to have_selector("a[data-turbo-method=post]", text: "Reject paper")
+      expect(rendered).to have_selector("input[type=submit][value='Start meta review']")
       expect(rendered).to have_content(author.email)
+    end
+
+    it "doesn't shows admin actions button to non-admins" do
+      user = create(:user)
+      editor = create(:editor, user: user)
+      author = create(:user)
+      allow(view).to receive_message_chain(:current_user).and_return(user)
+      allow(view).to receive_message_chain(:current_editor).and_return(user)
+
+      paper = create(:paper, state: "submitted", submitting_author: author)
+      assign(:paper, paper)
+
+      render template: "papers/show", formats: :html
+      expect(rendered).to_not have_selector("button[type=submit]", text: "Withdraw paper")
+      expect(rendered).to_not have_selector("button[type=submit]", text: "Reject paper")
+      expect(rendered).to_not have_selector("input[type=submit][value='Start meta review']")
     end
 
     it "doesn't displays buttons when there's a GitHub issue" do

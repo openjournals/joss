@@ -2,6 +2,7 @@ require 'rails_helper'
 
 describe Paper do
   before(:each) do
+    skip_paper_repo_url_check
     Paper.destroy_all
   end
 
@@ -12,6 +13,11 @@ describe Paper do
 
   it "belongs to the submitting author" do
     association = Paper.reflect_on_association(:submitting_author)
+    expect(association.macro).to eq(:belongs_to)
+  end
+
+  it "belongs to a track" do
+    association = Paper.reflect_on_association(:track)
     expect(association.macro).to eq(:belongs_to)
   end
 
@@ -31,6 +37,24 @@ describe Paper do
     paper = create(:paper, user_id: user.id)
 
     expect(paper.submitting_author).to eq(user)
+  end
+
+  it "must have a track assigned on creation" do
+    no_track_params = { title: 'Test paper',
+                       body: 'A test paper description',
+                       repository_url: 'http://github.com/arfon/fidgit',
+                       software_version: 'v1.0.0',
+                       submitting_author: create(:user),
+                       submission_kind: 'new' }
+
+    valid_params = no_track_params.merge track: create(:track)
+
+    paper = Paper.create(no_track_params)
+    expect(paper).to_not be_valid
+    expect(paper.errors.full_messages.first).to eq("Track You must select a valid subject for the paper")
+
+    paper = Paper.create(valid_params)
+    expect(paper).to be_valid
   end
 
   # Scopes
@@ -60,11 +84,23 @@ describe Paper do
     expect(Paper.invisible).to contain_exactly(rejected_paper, withdrawn_paper)
   end
 
+  it "should filter by track" do
+    track_A, track_B = create_list(:track, 2)
+    paper_A1, paper_A2 = create_list(:paper, 2, track: track_A)
+    paper_B1, paper_B2 = create_list(:paper, 2, track: track_B)
+    paper_C = create(:paper)
+
+    track_A_papers = Paper.by_track(track_A.id)
+    expect(track_A_papers.size).to eq(2)
+    expect(track_A_papers.include?(paper_A1)).to be true
+    expect(track_A_papers.include?(paper_A2)).to be true
+  end
+
   # GitHub stuff
   it "should know how to return a pretty repo name with owner" do
-    paper = create(:paper, repository_url: "https://github.com/arfon/joss-reviews")
+    paper = create(:paper, repository_url: "https://github.com/openjournals/joss-reviews")
 
-    expect(paper.pretty_repository_name).to eq("arfon / joss-reviews")
+    expect(paper.pretty_repository_name).to eq("openjournals / joss-reviews")
   end
 
   it 'should know how to return a pretty DOI' do
@@ -89,6 +125,18 @@ describe Paper do
     paper = create(:paper, review_issue_id: 999)
 
     expect(paper.review_url).to eq("https://github.com/#{Rails.application.settings["reviews"]}/issues/999")
+  end
+
+  describe "#set_track_id" do
+    it "should update paper's track_id" do
+      track1 = create(:track)
+      paper = create(:paper, track: track1)
+      track2 = create(:track)
+
+      expect(paper.track).to eq(track1)
+      paper.set_track_id track2.id
+      expect(paper.reload.track).to eq(track2)
+    end
   end
 
   describe "#set_editor" do
@@ -182,8 +230,8 @@ describe Paper do
     end
   end
 
-  context "when starting review" do
-    it "should initially change the paper state to review_pending" do
+  context "when starting meta-review" do
+    it "should change the paper state to review_pending" do
       editor = create(:editor, login: "arfon")
       user = create(:user, editor: editor)
       submitting_author = create(:user)
@@ -193,13 +241,49 @@ describe Paper do
       allow(fake_issue).to receive(:number).and_return(1)
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
-      paper.start_meta_review!('arfon', editor)
+      paper.start_meta_review!('arfon', editor, paper.track_id)
       expect(paper.state).to eq('review_pending')
       expect(paper.reload.editor).to be(nil)
       expect(paper.reload.eic).to eq(editor)
     end
 
-    it "should then allow for the paper to be moved into the under_review state" do
+    it "should allow to change paper's track" do
+      editor = create(:editor, login: "arfon")
+      user = create(:user, editor: editor)
+      submitting_author = create(:user)
+      track1 = create(:track)
+      track2 = create(:track)
+
+      paper = create(:submitted_paper_with_sha, submitting_author: submitting_author, track: track1)
+      fake_issue = Object.new
+      allow(fake_issue).to receive(:number).and_return(1)
+      allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
+
+      expect(paper.track).to eq(track1)
+      paper.start_meta_review!('arfon', editor, track2.id)
+      expect(paper.state).to eq('review_pending')
+      expect(paper.reload.track).to eq(track2)
+    end
+
+    it "should label GH issue with track label" do
+      editor = create(:editor, login: "arfon")
+      user = create(:user, editor: editor)
+      submitting_author = create(:user)
+
+      paper = create(:submitted_paper_with_sha, submitting_author: submitting_author)
+      fake_issue = Object.new
+      allow(fake_issue).to receive(:number).and_return(1)
+
+      track = create(:track)
+      expected_labels = { labels: "pre-review,#{track.label}" }
+      expect(GITHUB).to receive(:create_issue).with(anything, anything, anything, expected_labels).and_return(fake_issue)
+
+      paper.start_meta_review!('arfon', editor, track.id)
+    end
+  end
+
+  context "when starting review" do
+    it "should allow for the paper to be moved into the under_review state" do
       editor = create(:editor, login: "arfoneditor")
       user = create(:user, editor: editor)
       submitting_author = create(:user)
@@ -264,7 +348,7 @@ describe Paper do
         is_expected.to match /Important Editor/
       end
 
-      it { is_expected.to match "The author's suggestion for the handling editor is @joss_editor" }
+      it { is_expected.to match "The AEiC suggestion for the handling editor is @joss_editor" }
     end
 
     context "with no editor" do
@@ -277,6 +361,59 @@ describe Paper do
       end
 
       it { is_expected.to match "Currently, there isn't a JOSS editor assigned" }
+    end
+  end
+
+  describe "#move_to_track" do
+    before do
+      @track_1 = create(:track, name: "Astronomy", short_name: "ASTRO", code: "32")
+      @track_2 = create(:track, name: "Biology", short_name: "BIO", code: "33")
+      @paper = create(:paper, track_id: @track_1.id)
+    end
+
+    it "should recibe a new track to assign" do
+      expect(@paper).to_not receive(:track)
+      expect(@paper).to_not receive(:set_track_id)
+      @paper.move_to_track(nil)
+    end
+
+    it "should do nothing if track does not change" do
+      expect(@paper).to_not receive(:set_track_id)
+      expect_any_instance_of(Octokit::Client).to_not receive(:remove_label)
+      expect_any_instance_of(Octokit::Client).to_not receive(:add_labels_to_an_issue)
+      @paper.move_to_track(@track_1)
+    end
+
+    it "should update paper's track" do
+      allow_any_instance_of(Octokit::Client).to receive(:remove_label)
+      allow_any_instance_of(Octokit::Client).to receive(:add_labels_to_an_issue)
+
+      expect(@paper.track).to eq(@track_1)
+      @paper.move_to_track(@track_2)
+      expect(@paper.reload.track).to eq(@track_2)
+    end
+
+    it "should change labels if issues exist" do
+      @paper.meta_review_issue_id = 3333
+      @paper.review_issue_id = 4444
+
+      expect_any_instance_of(Octokit::Client).to receive(:remove_label).with(anything, 3333, @track_1.label)
+      expect_any_instance_of(Octokit::Client).to receive(:add_labels_to_an_issue).with(anything, 3333, [@track_2.label])
+      expect_any_instance_of(Octokit::Client).to receive(:remove_label).with(anything, 4444, @track_1.label)
+      expect_any_instance_of(Octokit::Client).to receive(:add_labels_to_an_issue).with(anything, 4444, [@track_2.label])
+
+      @paper.move_to_track(@track_2)
+    end
+
+    it "should not change labels if no issues created" do
+      @paper.meta_review_issue_id = nil
+      @paper.review_issue_id = nil
+      expect_any_instance_of(Octokit::Client).to_not receive(:remove_label)
+      expect_any_instance_of(Octokit::Client).to_not receive(:add_labels_to_an_issue)
+
+      expect(@paper.track).to eq(@track_1)
+      @paper.move_to_track(@track_2)
+      expect(@paper.reload.track).to eq(@track_2)
     end
   end
 end

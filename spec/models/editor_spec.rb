@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe Editor, type: :model do
+  before { skip_paper_repo_url_check }
+
   let(:editor) { create(:editor) }
 
   describe "#category_list" do
@@ -33,6 +35,21 @@ RSpec.describe Editor, type: :model do
 
     it "has many invitations" do
       association = Editor.reflect_on_association(:invitations)
+      expect(association.macro).to eq(:has_many)
+    end
+
+    it "has and belongs to many tracks" do
+      association = Editor.reflect_on_association(:tracks)
+      expect(association.macro).to eq(:has_and_belongs_to_many)
+    end
+
+    it "has many track_aeics" do
+      association = Editor.reflect_on_association(:track_aeics)
+      expect(association.macro).to eq(:has_many)
+    end
+
+    it "has many managed_tracks" do
+      association = Editor.reflect_on_association(:managed_tracks)
       expect(association.macro).to eq(:has_many)
     end
   end
@@ -106,15 +123,30 @@ RSpec.describe Editor, type: :model do
 
   describe "#active editors" do
     it "should exclude emeritus and pending" do
-      editor_1 = create(:editor, login: "@board1", kind: "board")
-      editor_2 = create(:editor, login: "@topic1", kind: "topic")
-      editor_3 = create(:editor, login: "@retired1", kind: "emeritus")
-      editor_3 = create(:editor, login: "@pending1", kind: "pending")
+      editor_in_chief = create(:editor, login: "@board1", kind: "board")
+      track = create(:track, aeic_ids: [editor_in_chief.id])
+      create(:editor, login: "@topic1", kind: "topic", track_ids: [track.id])
+      create(:editor, login: "@retired1", kind: "emeritus", track_ids: [track.id])
+      create(:editor, login: "@pending1", kind: "pending", track_ids: [track.id])
 
-      assert Editor.active.count == 2
+      expect(Editor.active.count).to eq(2)
       assert Editor.emeritus.count == 1
       assert Editor.pending.count == 1
     end
+  end
+
+  describe "#by_track" do
+    it "should filter by track" do
+    track_A, track_B = create_list(:track, 2)
+    editor_A = create(:editor, tracks: [track_A])
+    editor_AB = create(:editor, tracks: [track_A, track_B])
+    editor_B = create(:editor, tracks: [track_B])
+
+    track_A_editors = Editor.by_track(track_A.id)
+    expect(track_A_editors.size).to eq(2)
+    expect(track_A_editors.include?(editor_A)).to be true
+    expect(track_A_editors.include?(editor_AB)).to be true
+  end
   end
 
   describe "#accept!" do

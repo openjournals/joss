@@ -65,6 +65,9 @@ feature "Onboarding" do
 
       expect(page).to have_content("Onboarding invitation deleted")
       expect(page).to_not have_content("editor@dele.te")
+
+      visit onboardings_path
+      expect(page).to_not have_content("editor@dele.te")
     end
 
     scenario "Resend onboarding invitation" do
@@ -218,6 +221,8 @@ feature "Onboarding" do
     end
 
     scenario "Accepting invitations create a pending editor" do
+      track = create(:track)
+
       visit editor_onboardings_path(onboarding_invitation.token)
       fill_in :editor_first_name, with: "Eddie"
       fill_in :editor_last_name, with: "Tor"
@@ -226,6 +231,7 @@ feature "Onboarding" do
       fill_in :editor_url, with: "https://joss.theoj.org"
       fill_in :editor_category_list, with: "bioinformatics, open science"
       fill_in :editor_description, with: "I'm a great person"
+      check track.name
       click_on "Save editor data"
 
       expect(page).to have_content("Thanks! An editor in chief will review your info soon")
@@ -246,7 +252,8 @@ feature "Onboarding" do
       expect(user.editor.categories).to eq(["astrophysics", "galaxies"])
     end
 
-    scenario "Name, Email and GitHub username are mandatory" do
+    scenario "Name, Email, GitHub username are mandatory" do
+      track = create(:track)
       data = { editor_first_name: "Eddie",
                editor_last_name: "Tor",
                editor_email: "edi@tor.com",
@@ -256,12 +263,31 @@ feature "Onboarding" do
         visit editor_onboardings_path(onboarding_invitation.token)
         fields = data.keys - [field_name]
         fields.each do |field|
-          fill_in field, with: data[:field]
+          fill_in field, with: data[field]
         end
+        fill_in field_name, with: nil
+        check track.name
         click_on "Save editor data"
 
-        expect(page).to have_content("Error saving your data: Name, Email and GitHub username are mandatory")
+        expect(page).to have_content("Error saving your data: Name, Email, GitHub username and Tracks are mandatory")
       end
+    end
+
+    scenario "Tracks are mandatory" do
+      track = create(:track)
+      data = { editor_first_name: "Eddie",
+               editor_last_name: "Tor",
+               editor_email: "edi@tor.com",
+               editor_login: "@test" }
+
+      visit editor_onboardings_path(onboarding_invitation.token)
+      data.keys.each do |field|
+        fill_in field, with: data[field]
+      end
+      uncheck track.name
+      click_on "Save editor data"
+
+      expect(page).to have_content("Error saving your data: Name, Email, GitHub username and Tracks are mandatory")
     end
   end
 end

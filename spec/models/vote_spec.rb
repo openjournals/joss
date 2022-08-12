@@ -4,6 +4,8 @@ describe Vote do
   before(:each) do
     Paper.destroy_all
     Vote.destroy_all
+
+    skip_paper_repo_url_check
   end
 
   it "belongs_to a paper" do

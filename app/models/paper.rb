@@ -12,6 +12,7 @@ class Paper < ApplicationRecord
              validate: true,
              foreign_key: "user_id"
 
+  belongs_to :track, optional: true
   belongs_to :editor, optional: true
   belongs_to :eic,
              class_name: 'Editor',
@@ -115,15 +116,16 @@ class Paper < ApplicationRecord
   scope :everything, lambda { where('state NOT IN (?)', ['rejected', 'withdrawn']) }
   scope :search_import, -> { where(state: VISIBLE_STATES) }
   scope :not_archived, -> { where('archived = ?', false) }
+  scope :by_track, -> (track_id) { where('track_id = ?', track_id) }
 
   before_create :set_sha, :set_last_activity
   after_create :notify_editors, :notify_author
 
-  validates_presence_of :title
-  validates_presence_of :suggested_editor, on: :create, message: "You must suggest an editor to handle your submission"
+  validates_presence_of :title, message: "The paper must have a title"
   validates_presence_of :repository_url, message: "Repository address can't be blank"
   validates_presence_of :software_version, message: "Version can't be blank"
   validates_presence_of :body, message: "Description can't be blank"
+  validates_presence_of :track_id, on: :create, message: "You must select a valid subject for the paper"
   validates :kind, inclusion: { in: Rails.application.settings["paper_types"] }, allow_nil: true
   validates :submission_kind, inclusion: { in: SUBMISSION_KINDS, message: "You must select a submission type" }, allow_nil: false
   validate :check_repository_address, on: :create
@@ -397,13 +399,16 @@ class Paper < ApplicationRecord
   end
 
   # Create a review meta-issue for assigning reviewers
-  def create_meta_review_issue(editor_handle, eic)
+  def create_meta_review_issue(editor_handle, eic, new_track_id=nil)
     return false if meta_review_issue_id
+
+    set_track_id(new_track_id) if new_track_id.present?
+    new_labels = ["pre-review", self.track.label]
 
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[PRE REVIEW]: #{self.title}",
                                 meta_review_body(editor_handle, eic.full_name),
-                                { labels: "pre-review" })
+                                { labels: new_labels.join(",") })
 
     set_meta_review_issue(issue.number)
     set_meta_eic(eic)
@@ -416,6 +421,28 @@ class Paper < ApplicationRecord
 
   def set_meta_eic(eic)
     self.update_attribute(:eic_id, eic.id)
+  end
+
+  def set_track_id(new_track_id)
+    self.update_attribute(:track_id, new_track_id) if new_track_id != self.track_id
+  end
+
+  def move_to_track(new_track)
+    return if new_track.nil?
+    current_label = self.track.present? ? self.track.label : ""
+    if current_label != new_track.label
+      set_track_id(new_track.id)
+
+      if self.meta_review_issue_id
+        GITHUB.remove_label(Rails.application.settings["reviews"], self.meta_review_issue_id, current_label) if current_label.present?
+        GITHUB.add_labels_to_an_issue(Rails.application.settings["reviews"], self.meta_review_issue_id, [new_track.label])
+      end
+
+      if self.review_issue_id
+        GITHUB.remove_label(Rails.application.settings["reviews"], self.review_issue_id, current_label) if current_label.present?
+        GITHUB.add_labels_to_an_issue(Rails.application.settings["reviews"], self.review_issue_id, [new_track.label])
+      end
+    end
   end
 
   def meta_review_url

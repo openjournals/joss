@@ -1,6 +1,7 @@
 class HomeController < ApplicationController
   before_action :require_user, only: %w(profile update_profile)
   before_action :require_editor, only: %w(dashboard reviews incoming stats all in_progress)
+  before_action :set_track, only: %w(all incoming in_progress)
   # layout "dashboard", only:  %w(dashboard reviews incoming stats all in_progress)
 
   def index
@@ -31,44 +32,6 @@ class HomeController < ApplicationController
     @papers_last_3_months = Paper.unscoped.visible.since(3.months.ago).group(:editor_id).count
     @papers_last_year = Paper.unscoped.visible.since(1.year.ago).group(:editor_id).count
     @papers_all_time = Paper.unscoped.visible.since(100.year.ago).group(:editor_id).count
-  end
-
-  def incoming
-    sort = "complete"
-    case params[:order]
-    when "complete-desc"
-      @order = "desc"
-    when "complete-asc"
-      @order = "asc"
-    when "active-desc"
-      @order = "desc"
-      sort = "active"
-    when "active-asc"
-      @order = "asc"
-      sort = "active"
-    when nil
-      @order = "desc"
-    else
-      @order = "desc"
-    end
-
-    if sort == "active"
-      @papers = Paper.unscoped.in_progress.where(editor: nil).order(last_activity: @order).paginate(
-                  page: params[:page],
-                  per_page: 20
-                )
-    else
-      @papers = Paper.in_progress.where(editor: nil).paginate(
-        page: params[:page],
-        per_page: 20
-      )
-    end
-
-    load_pending_invitations_for_papers(@papers)
-
-    @editor = current_user.editor
-
-    render template: "home/reviews"
   end
 
   def reviews
@@ -112,34 +75,45 @@ class HomeController < ApplicationController
     end
   end
 
-  def in_progress
-    sort = "complete"
-    case params[:order]
-    when "complete-desc"
-      @order = "desc"
-    when "complete-asc"
-      @order = "asc"
-    when "active-desc"
-      @order = "desc"
-      sort = "active"
-    when "active-asc"
-      @order = "asc"
-      sort = "active"
-    when nil
-      @order = "desc"
+  def incoming
+    incoming_scope = Paper.unscoped.in_progress.where(editor: nil)
+    incoming_scope = incoming_scope.by_track(@track.id) if @track.present?
+
+    @order = params[:order].to_s.end_with?("-asc") ? "asc" : "desc"
+
+    if params[:order].to_s.include?("active-")
+      @papers = incoming_scope.order(last_activity: @order).paginate(
+                  page: params[:page],
+                  per_page: 20
+                )
     else
-      @order = "desc"
+      @papers = incoming_scope.order(created_at: @order).paginate(
+                  page: params[:page],
+                  per_page: 20
+                )
     end
+
+    load_pending_invitations_for_papers(@papers)
 
     @editor = current_user.editor
 
-    if sort == "active"
-      @papers = Paper.unscoped.in_progress.order(last_activity: @order).paginate(
+    render template: "home/reviews"
+  end
+
+  def in_progress
+    in_progress_scope = Paper.unscoped.in_progress
+    in_progress_scope = in_progress_scope.by_track(@track.id) if @track.present?
+
+    @editor = current_user.editor
+    @order = params[:order].to_s.end_with?("-asc") ? "asc" : "desc"
+
+    if params[:order].to_s.include?("active-")
+      @papers = in_progress_scope.order(last_activity: @order).paginate(
         page: params[:page],
         per_page: 20
       )
     else
-      @papers = Paper.unscoped.in_progress.order(created_at: @order).paginate(
+      @papers = in_progress_scope.order(created_at: @order).paginate(
         page: params[:page],
         per_page: 20
       )
@@ -151,33 +125,19 @@ class HomeController < ApplicationController
   end
 
   def all
-    sort = "complete"
-    case params[:order]
-    when "complete-desc"
-      @order = "desc"
-    when "complete-asc"
-      @order = "asc"
-    when "active-desc"
-      @order = "desc"
-      sort = "active"
-    when "active-asc"
-      @order = "asc"
-      sort = "active"
-    when nil
-      @order = "desc"
-    else
-      @order = "desc"
-    end
+    all_scope = Paper.unscoped.all
+    all_scope = Paper.unscoped.by_track(@track.id) if @track.present?
 
     @editor = current_user.editor
+    @order = params[:order].to_s.end_with?("-asc") ? "asc" : "desc"
 
-    if sort == "active"
-      @papers = Paper.unscoped.all.order(last_activity: @order).paginate(
+    if params[:order].to_s.include?("active-")
+      @papers = all_scope.order(last_activity: @order).paginate(
         page: params[:page],
         per_page: 20
       )
     else
-      @papers = Paper.unscoped.all.order(created_at: @order).paginate(
+      @papers = all_scope.order(created_at: @order).paginate(
         page: params[:page],
         per_page: 20
       )
@@ -218,4 +178,8 @@ private
   def load_pending_invitations_for_papers(papers)
     @pending_invitations = Invitation.includes(:editor).pending.where(paper: papers)
   end
+
+  def set_track
+      @track = Track.find(params[:track_id]) if params[:track_id].present?
+    end
 end

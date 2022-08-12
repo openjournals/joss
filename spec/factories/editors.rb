@@ -10,13 +10,16 @@ FactoryBot.define do
     url { "http://placekitten.com" }
     description { "Person McEditor is an editor" }
     availability_comment { "OOO until March 1" }
+    track_ids { ["board", "emeritus"].include?(kind) ? [] : [create(:track).id]}
 
     factory :board_editor do
       kind { "board" }
+      track_ids {[]}
     end
 
     factory :emeritus_editor do
       kind { "emeritus" }
+      track_ids {[]}
     end
 
     factory :pending_editor do

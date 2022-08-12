@@ -18,36 +18,37 @@ gem 'octokit', '~> 4.22'
 gem 'pdf-reader', '~> 2.9.2'
 gem 'pg', '~> 1.3.5'
 gem 'will_paginate', '~> 3.3.1'
-gem 'rails', '7.0.3'
+gem 'rails', '7.0.3.1'
+gem "importmap-rails"
+gem "turbo-rails"
+gem "stimulus-rails"
 gem 'responders'
 gem 'newrelic_rpm'
 gem 'sanitize', '~> 6.0.0'
-gem 'sass-rails', '~> 6.0.0'
 gem 'searchkick'
 gem 'elasticsearch', '<7.14'
 gem 'uglifier', '4.2.0'
 gem 'jbuilder', '~> 2.11'
 gem 'issue'
-gem 'net-ftp'
 
 gem 'active_link_to'
 
- # Use Bootstrap for the front-end
-gem 'bootstrap', '~> 4.3.1'
 gem 'mini_racer'
 gem 'sprockets-rails'
 
-
-# Use jquery as the JavaScript library
-gem 'jquery-rails', '~> 4.4.0'
+# Use Sass to process CSS
+gem "sassc-rails"
 
 # Use Puma as the app server
 gem 'puma'
 
+# Use Redis for Action Cable
+gem "redis", "~> 4.0"
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'pry-byebug'
-  gem 'capybara', '~> 3.36.0'
+  gem 'capybara', '~> 3.37'
   gem 'factory_bot_rails', '~> 6.2.0'
   gem 'rspec-rails', '~> 5.1.1'
   gem 'rails-controller-testing', '~> 1.0.5'

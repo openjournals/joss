@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 describe 'papers/submitted.html.erb' do
+  before { skip_paper_repo_url_check }
+
   context 'for submitted papers' do
     it "should show the correct number of papers" do
       user = create(:user)

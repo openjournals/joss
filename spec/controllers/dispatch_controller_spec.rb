@@ -18,6 +18,7 @@ def headers(event, payload)
 end
 
 describe DispatchController, type: :controller do
+  before { skip_paper_repo_url_check }
   render_views
 
   let(:editorialbot_pre_review_opened) { json_fixture('editorialbot-pre-review-opened.json') }
@@ -86,9 +87,9 @@ describe DispatchController, type: :controller do
     end
   end
 
-  describe "POST #github_receiver for REVIEW when a paper doesn't have a suggested_editor set", type: :request do
+  describe "POST #github_receiver for REVIEW", type: :request do
     before do
-      build(:paper, meta_review_issue_id: 78, suggested_editor: nil, review_issue_id: 79, labels: [{ "foo" => "efefef" }]).save(validate: false)
+      build(:paper, meta_review_issue_id: 78, review_issue_id: 79, labels: [{ "foo" => "efefef" }]).save(validate: false)
       @paper = Paper.find_by_meta_review_issue_id(78)
 
       post '/dispatch', params: editorialbot_review_labeled, headers: headers(:issues, editorialbot_review_labeled)

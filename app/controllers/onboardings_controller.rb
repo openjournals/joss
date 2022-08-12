@@ -2,7 +2,7 @@ class OnboardingsController < ApplicationController
   before_action :require_admin_user, except: [:editor, :add_editor]
   before_action :require_user, only: [:editor, :add_editor]
   before_action :check_invited_editor, only: [:editor, :add_editor]
-  before_action :load_editor, only: [:editor, :add_editor, ]
+  before_action :load_editor, only: [:editor, :add_editor]
 
   def editor
   end
@@ -13,7 +13,7 @@ class OnboardingsController < ApplicationController
       flash[:notice] = "Thanks! An editor in chief will review your info soon"
       redirect_to root_path
     else
-      flash[:error] = "Error saving your data: Name, Email and GitHub username are mandatory"
+      flash[:error] = "Error saving your data: Name, Email, GitHub username and Tracks are mandatory"
       redirect_to editor_onboardings_path(@onboarding.token)
     end
   end
@@ -91,6 +91,6 @@ class OnboardingsController < ApplicationController
   end
 
   def new_editor_params
-    params.require(:editor).permit(:first_name, :last_name, :login, :email, :category_list, :url, :description).merge(kind: "pending")
+    params.require(:editor).permit(:first_name, :last_name, :login, :email, :category_list, :url, :description, { track_ids: [] }).merge(kind: "pending")
   end
 end

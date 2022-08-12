@@ -72,25 +72,16 @@ module HomeHelper
   end
 
   def sort_activity(sort_order)
+    track_param = params[:track_id].present? ? "track_id=#{params[:track_id]}&" : ""
+    request_path = "#{request.path}?#{track_param}"
+
     capture do
       if sort_order == "active-desc"
-        concat(link_to octicon("chevron-up"), "#{request.path}?order=active-asc")
+        concat(link_to octicon("chevron-up"), "#{request_path}order=active-asc")
       elsif sort_order == "active-asc"
-        concat(link_to octicon("chevron-down"), "#{request.path}?order=active-desc")
+        concat(link_to octicon("chevron-down"), "#{request_path}order=active-desc")
       else
-        concat(link_to octicon("chevron-down"), "#{request.path}?order=active-desc")
-      end
-    end
-  end
-  
-  def sort_icon(sort_order)
-    capture do
-      if sort_order == "complete-desc"
-        concat(link_to octicon("chevron-up"), "#{request.path}?order=complete-asc")
-      elsif sort_order == "complete-asc"
-        concat(link_to octicon("chevron-down"), "#{request.path}?order=complete-desc")
-      else sort_order == "complete-asc"
-        concat(link_to octicon("chevron-down"), "#{request.path}?order=complete-desc")
+        concat(link_to octicon("chevron-down"), "#{request_path}order=active-desc")
       end
     end
   end

@@ -2,14 +2,18 @@ class Editor < ApplicationRecord
   validates :kind, presence: true, inclusion: { in: ["board", "topic", "emeritus", "pending"] }
   validates :first_name, presence: true
   validates :last_name, presence: true
-  validates :email, presence: true, unless: Proc.new { |editor| editor.kind == "emeritus"  }
-  validates :login, presence: true, unless: Proc.new { |editor| editor.kind == "emeritus"  }
+  validates :email, presence: true, unless: Proc.new { |editor| editor.kind == "emeritus" }
+  validates :login, presence: true, unless: Proc.new { |editor| editor.kind == "emeritus" }
+  validates :tracks, presence: true, unless: Proc.new { |editor| ["board", "emeritus"].include?(editor.kind) }
 
   belongs_to :user, optional: true
   has_many :papers
   has_many :votes
   has_many :invitations
   has_one :onboarding_invitation, dependent: :destroy
+  has_and_belongs_to_many :tracks
+  has_many :track_aeics, dependent: :destroy
+  has_many :managed_tracks, through: :track_aeics, source: :track
 
   before_save :clear_title, if: :board_removed?
   before_save :format_login, if: :login_changed?
@@ -26,6 +30,7 @@ class Editor < ApplicationRecord
   scope :pending, -> { where(kind: "pending") }
   scope :active, -> { where(kind: ACTIVE_EDITOR_STATES) }
   scope :since, -> (date) { where('created_at >= ?', date) }
+  scope :by_track, -> (track_id) { joins(:editors_tracks).where("editors_tracks.track_id = ?", track_id) }
 
   def category_list
     categories.join(", ")

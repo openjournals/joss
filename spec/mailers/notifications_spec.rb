@@ -1,6 +1,8 @@
 require "rails_helper"
 
 describe Notifications, type: :mailer do
+  before { skip_paper_repo_url_check }
+
   it "should include the idea text in the body" do
     paper = create(:paper, title: "Nice paper!")
     mail = Notifications.submission_email(paper)

@@ -1,6 +1,7 @@
 require "rails_helper"
 
 feature "Invitations list" do
+  before { skip_paper_repo_url_check }
   let(:user_editor) { create(:user, editor: create(:editor, first_name: "Lorena")) }
   let(:admin) { create(:admin_user) }
 

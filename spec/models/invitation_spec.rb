@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 describe Invitation do
+  before { skip_paper_repo_url_check }
+
   it "at creation is not accepted" do
     invitation = Invitation.create!(paper: create(:paper), editor: create(:editor))
     expect(invitation).to_not be_accepted
@@ -16,6 +18,21 @@ describe Invitation do
     invitation = Invitation.create!(paper: create(:paper), editor: create(:editor))
     invitation.expire!
     expect(invitation).to be_expired
+  end
+
+  it "can be filtered by paper's track" do
+    track_A = create(:track)
+    paper = create(:paper, track: track_A)
+
+    invitation_1_in_track_A = create(:invitation, paper: paper)
+    create_list(:invitation, 3)
+    invitation_2_in_track_A = create(:invitation, paper: paper)
+
+    invitations_in_track_A = Invitation.by_track(track_A.id)
+
+    expect(invitations_in_track_A.size).to eq(2)
+    expect(invitations_in_track_A.include?(invitation_1_in_track_A)).to be true
+    expect(invitations_in_track_A.include?(invitation_2_in_track_A)).to be true
   end
 
   describe ".resolve_pending" do

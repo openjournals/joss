@@ -4,6 +4,7 @@ describe PapersController, type: :controller do
   render_views
 
   before(:each) do
+    skip_paper_repo_url_check
     allow(Repository).to receive(:editors).and_return ["@user1", "@user2"]
   end
 
@@ -35,7 +36,7 @@ describe PapersController, type: :controller do
       allow(fake_issue).to receive(:number).and_return(1)
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
-      post :start_meta_review, params: {id: paper.sha, editor: "josseditor"}
+      post :start_meta_review, params: {id: paper.sha, editor: "josseditor", track_id: paper.track_id}
 
       expect(response).to be_redirect
       expect(paper.reload.state).to eq('review_pending')
@@ -104,7 +105,15 @@ describe PapersController, type: :controller do
       allow(controller).to receive_message_chain(:current_user).and_return(user)
       paper_count = Paper.count
 
-      paper_params = {title: "Yeah whateva", body: "something", repository_url: "https://github.com/openjournals/joss", git_branch: "joss-paper", software_version: "v1.0.1", submission_kind: "new", suggested_editor: "@editor"}
+      paper_params = { title: "Yeah whateva",
+                       body: "something",
+                       repository_url: "https://github.com/openjournals/joss",
+                       git_branch: "joss-paper",
+                       software_version: "v1.0.1",
+                       submission_kind: "new",
+                       suggested_subject: "Astronomy & astrophysics",
+                       track_id: create(:track).id
+                     }
       post :create, params: {paper: paper_params}
       expect(response).to be_redirect # as it's created the thing
       expect(Paper.count).to eq(paper_count + 1)
@@ -120,7 +129,7 @@ describe PapersController, type: :controller do
       allow(controller).to receive_message_chain(:current_user).and_return(user)
       paper_count = Paper.count
 
-      paper_params = {title: "Yeah whateva", body: "something", repository_url: ""}
+      paper_params = {title: "Yeah whateva", body: "something", repository_url: "wrong url!"}
       post :create, params: {paper: paper_params}
 
       expect(response.body).to match /Your paper could not be saved/

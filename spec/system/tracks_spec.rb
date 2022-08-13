@@ -3,21 +3,21 @@ require "rails_helper"
 feature "Manage Tracks" do
   before { skip_paper_repo_url_check }
   let(:user_editor) { create(:user, editor: create(:editor, first_name: "Lorena", description: "Science testing editor")) }
-  let(:admin_editor) { create(:admin_user, editor: create(:board_editor)) }
+  let(:admin_user) { create(:admin_user) }
 
   scenario "Is not public" do
     visit tracks_path
     expect(page).to have_content("Please login first")
   end
 
-  scenario "Is not available to non-eic users" do
+  scenario "Is not available to no-admin users" do
     login_as(user_editor)
     visit tracks_path
     expect(page).to have_content("You are not permitted to view that page")
   end
 
   scenario "Is visible to admins" do
-    login_as(admin_editor)
+    login_as(admin_user)
     visit tracks_path
     expect(page).to_not have_content("You are not permitted to view that page")
     expect(page).to have_content("Tracks")
@@ -27,7 +27,7 @@ feature "Manage Tracks" do
     before do
       @aeic = create(:board_editor, first_name: "Testeditor", last_name: "In-chief")
       @track = create(:track, name: "Testing track", short_name: "TE", code: "33", aeic_ids: [@aeic.id])
-      login_as(admin_editor)
+      login_as(admin_user)
       visit tracks_path
     end
 

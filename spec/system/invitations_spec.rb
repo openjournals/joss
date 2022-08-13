@@ -3,7 +3,7 @@ require "rails_helper"
 feature "Invitations list" do
   before { skip_paper_repo_url_check }
   let(:user_editor) { create(:user, editor: create(:editor, first_name: "Lorena")) }
-  let(:admin) { create(:admin_user) }
+  let(:aeic) { create(:user, editor: create(:board_editor)) }
 
   scenario "Is not public" do
     visit invitations_path
@@ -16,20 +16,20 @@ feature "Invitations list" do
     expect(page).to have_content("You are not permitted to view that page")
   end
 
-  scenario "Is visible to admins" do
-    login_as(admin)
+  scenario "Is visible to AEiCs" do
+    login_as(aeic)
     visit invitations_path
     expect(page).to_not have_content("You are not permitted to view that page")
   end
 
-  feature "Logged as an admin" do
+  feature "Logged as an AEiC" do
     before do
       create(:editor, first_name: "Tester",
                       login: "tester",
                       description: "Software testing editor",
                       categories: ["Computing", "Test systems"],
                       availability_comment: "Always available")
-      login_as(admin)
+      login_as(aeic)
     end
 
     scenario "show no invitations message" do

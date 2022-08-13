@@ -3,7 +3,7 @@ require "rails_helper"
 feature "Onboarding" do
   let(:user) { create(:user) }
   let(:user_editor) { create(:user, editor: create(:editor)) }
-  let(:admin) { create(:admin_user) }
+  let(:aeic) { create(:user, editor: create(:board_editor)) }
 
   scenario "Is not public" do
     visit onboardings_path
@@ -16,8 +16,8 @@ feature "Onboarding" do
     expect(page).to have_content("You are not permitted to view that page")
   end
 
-  scenario "Is visible to admins" do
-    login_as(admin)
+  scenario "Is visible to AEiC" do
+    login_as(aeic)
     visit onboardings_path
     expect(page).to_not have_content("You are not permitted to view that page")
     expect(page).to have_content("Invitations to join the editorial team")
@@ -25,7 +25,7 @@ feature "Onboarding" do
 
   feature "Manage invitations to join the editorial board" do
     before do
-      login_as(admin)
+      login_as(aeic)
     end
 
     scenario "Create onboarding invitation" do
@@ -101,7 +101,7 @@ feature "Onboarding" do
     let(:pending_editor) { create(:pending_editor, first_name: "Laura", last_name: "Edits", login: "lauraedits33") }
 
     before do
-      login_as(admin)
+      login_as(aeic)
       allow(Repository).to receive(:editors).and_return([""])
     end
 

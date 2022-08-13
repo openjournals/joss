@@ -24,7 +24,16 @@ class ApplicationController < ActionController::Base
 
   def require_editor
     require_user
-    if current_user && current_user.editor.nil?
+    if current_user && !current_user.editor?
+      flash[:error] = "You are not permitted to view that page"
+      redirect_to(:root)
+      false # throw :abort
+    end
+  end
+
+  def require_aeic
+    require_user
+    if current_user && !current_user.aeic?
       flash[:error] = "You are not permitted to view that page"
       redirect_to(:root)
       false # throw :abort

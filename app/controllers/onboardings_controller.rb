@@ -1,5 +1,5 @@
 class OnboardingsController < ApplicationController
-  before_action :require_admin_user, except: [:editor, :add_editor]
+  before_action :require_aeic, except: [:editor, :add_editor]
   before_action :require_user, only: [:editor, :add_editor]
   before_action :check_invited_editor, only: [:editor, :add_editor]
   before_action :load_editor, only: [:editor, :add_editor]

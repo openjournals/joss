@@ -20,6 +20,16 @@ describe User do
 
     expect(user.editor).to eq(editor)
     expect(user.editor?).to eq(true)
+    expect(user.aeic?).to eq(false)
+  end
+
+  it "should know who the associate editors in chief are" do
+    user = create(:user)
+    editor = create(:board_editor, user: user)
+
+    expect(user.editor).to eq(editor)
+    expect(user.editor?).to eq(true)
+    expect(user.aeic?).to eq(true)
   end
 
   it "should know how to parameterize itself properly" do

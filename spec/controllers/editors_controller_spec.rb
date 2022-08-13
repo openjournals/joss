@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe EditorsController, type: :controller do
-  let(:current_user) { create(:admin_user) }
+  let(:current_user) { create(:user, editor: create(:board_editor)) }
 
   before(:each) do
     allow(controller).to receive(:current_user).and_return(current_user)
@@ -24,8 +24,21 @@ RSpec.describe EditorsController, type: :controller do
     end
   end
 
-  context "when logged in as a non-admin user" do
+  context "when logged in as a simple user" do
     let(:current_user) { create(:user) }
+    it "redirects to the root" do
+      get :index
+      expect(response).to redirect_to root_path
+    end
+
+    it "sets the flash" do
+      get :index
+      expect(flash[:error]).to eql "You are not permitted to view that page"
+    end
+  end
+
+  context "when logged in as an editor" do
+    let(:current_user) { create(:user, editor: create(:editor)) }
     it "redirects to the root" do
       get :index
       expect(response).to redirect_to root_path
@@ -39,14 +52,14 @@ RSpec.describe EditorsController, type: :controller do
 
   describe "#index" do
     it "assigns editors to @active_editors and @emeritus_editors" do
-      track = current_user.editor.tracks.first
+      track = create(:track)
       board = track.aeics.first
       editor = create(:editor, track_ids: [track.id])
       emeritus = create(:editor, kind: "emeritus")
       create(:editor, kind: "pending", track_ids: [track.id])
       get :index
 
-      expect(assigns(:active_editors)).to eq([board, current_user.editor, editor])
+      expect(assigns(:active_editors)).to eq([current_user.editor, board, editor])
       expect(assigns(:emeritus_editors)).to eq([emeritus])
     end
 

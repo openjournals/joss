@@ -45,4 +45,12 @@ module ApplicationHelper
   def avatar(username)
     return "https://github.com/#{username.sub(/^@/, "")}.png"
   end
+
+  def scope_link_for_issue(github_issue)
+    id = github_issue.number
+    paper = Paper.where('review_issue_id = ? OR meta_review_issue_id = ?', id, id).first
+    
+    return "" unless paper
+    return url_for(paper)
+  end
 end

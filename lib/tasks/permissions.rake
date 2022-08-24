@@ -11,6 +11,7 @@ namespace :permissions do
     active_reviewers = []
     open_issues.each do |issue|
       puts issue.number
+      next if issue.number == 4682
       active_reviewers << issue.body.match(/(?<=<!--reviewers-list-->)(\s*(.+?)\r?)(?=<!--end-reviewers-list-->)/)[1].split(", ").each(&:strip!).each(&:downcase!) - ["Pending"]
     end
 

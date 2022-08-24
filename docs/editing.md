@@ -146,7 +146,6 @@ If a paper has already been reviewed and accepted by rOpenSci, the streamlined J
 - Start the review issue
 - Add a comment in the review issue pointing to the rOpenSci review
 - Compile the paper and check it looks ok
-- Tick off all the review checkboxes
 - Go to to the source code repo and grab the Zenodo DOI
 - Accept and publish the paper
 

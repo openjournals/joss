@@ -129,7 +129,7 @@ class DispatchController < ApplicationController
       @paper.update(
         doi: params[:doi],
         archive_doi: params[:archive_doi],
-        accepted_at: Time.now,
+        accepted_at: @paper.accepted_at.present? ? @paper.accepted_at : Time.now,
         citation_string: params[:citation_string],
         authors: params[:authors],
         title: params[:title],

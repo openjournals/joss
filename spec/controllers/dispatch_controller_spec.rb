@@ -488,7 +488,7 @@ describe DispatchController, type: :controller do
       paper = create(:accepted_paper, review_issue_id: 1234, accepted_at: 2.days.ago)
       expect(paper.state).to eql('accepted')
       expect(paper.accepted_at).to_not be_nil
-      initial_accepted_at = paper.accepted_at
+      initial_accepted_at = paper.reload.accepted_at
 
       metadata = { paper: {
                       title: "Foo, bar, baz",

@@ -168,7 +168,6 @@ describe DispatchController, type: :controller do
   end
 
   describe "POST #api_start_review" do
-    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_start_review
@@ -192,7 +191,7 @@ describe DispatchController, type: :controller do
 
       # Can't create review issue because editor is invalid
       expect {
-        post :api_start_review, params: {secret: "mooo", id: 1234, reviewers: "mickey", editor: "NOTmouse"}
+        post :api_start_review, params: {secret: "testBOTsecret", id: 1234, reviewers: "mickey", editor: "NOTmouse"}
       }.to raise_error(AASM::InvalidTransition)
 
       expect(editor.papers.count).to eq(0)
@@ -208,7 +207,7 @@ describe DispatchController, type: :controller do
       allow(fake_issue).to receive(:number).and_return(1)
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
-      post :api_start_review, params: {secret: "mooo", id: 1234, reviewers: "mickey", editor: "mouse"}
+      post :api_start_review, params: {secret: "testBOTsecret", id: 1234, reviewers: "mickey", editor: "mouse"}
 
       expect(response).to be_created
       expect(editor.papers.count).to eq(1)
@@ -225,7 +224,7 @@ describe DispatchController, type: :controller do
       allow(fake_issue).to receive(:number).and_return(1)
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
-      post :api_start_review, params: {secret: "mooo", id: 1234, reviewers: "mickey,minnie", editor: "mouse"}
+      post :api_start_review, params: {secret: "testBOTsecret", id: 1234, reviewers: "mickey,minnie", editor: "mouse"}
       expect(response).to be_created
       expect(editor.papers.count).to eq(1)
       expect(paper.reload.reviewers).to eq(['@mickey', '@minnie'])
@@ -241,7 +240,7 @@ describe DispatchController, type: :controller do
       allow(fake_issue).to receive(:number).and_return(1)
       allow(GITHUB).to receive(:create_issue).and_return(fake_issue)
 
-      post :api_start_review, params: {secret: "mooo", id: 1234, reviewers: "  white   ,space   ", editor: "mouse"}
+      post :api_start_review, params: {secret: "testBOTsecret", id: 1234, reviewers: "  white   ,space   ", editor: "mouse"}
       expect(response).to be_created
       expect(editor.papers.count).to eq(1)
       expect(paper.reload.reviewers).to eq(['@white', '@space'])
@@ -249,7 +248,6 @@ describe DispatchController, type: :controller do
   end
 
   describe "POST #api_assign_editor" do
-    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_assign_editor
@@ -260,7 +258,7 @@ describe DispatchController, type: :controller do
       editor = create(:editor, login: "jimmy")
       paper = create(:review_pending_paper, state: "review_pending", meta_review_issue_id: 1234)
 
-      post :api_assign_editor, params: {secret: "mooo",
+      post :api_assign_editor, params: {secret: "testBOTsecret",
                                         id: 1234,
                                         editor: "jimmy"
                                         }
@@ -273,7 +271,7 @@ describe DispatchController, type: :controller do
       editor = create(:editor, login: "jimmy")
       paper = create(:under_review_paper, state: "under_review", review_issue_id: 1234)
 
-      post :api_assign_editor, params: {secret: "mooo",
+      post :api_assign_editor, params: {secret: "testBOTsecret",
                                         id: 1234,
                                         editor: "jimmy"
                                         }
@@ -286,7 +284,7 @@ describe DispatchController, type: :controller do
       editor = create(:editor, login: "jimmy")
       paper = create(:review_pending_paper, state: "review_pending", meta_review_issue_id: 1234)
 
-      post :api_assign_editor, params: {secret: "mooo",
+      post :api_assign_editor, params: {secret: "testBOTsecret",
                                         id: 1234,
                                         editor: "joey"
                                         }
@@ -299,7 +297,7 @@ describe DispatchController, type: :controller do
       editor = create(:editor, login: "jimmy")
       paper = create(:review_pending_paper, state: "review_pending", meta_review_issue_id: 1234)
 
-      post :api_assign_editor, params: {secret: "mooo",
+      post :api_assign_editor, params: {secret: "testBOTsecret",
                                         id: 12345,
                                         editor: "jimmy"
                                         }
@@ -310,7 +308,6 @@ describe DispatchController, type: :controller do
   end
 
   describe "POST #api_editor_invite" do
-    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_editor_invite
@@ -320,7 +317,7 @@ describe DispatchController, type: :controller do
     it "with the correct API key and valid editor" do
       editor = create(:editor, login: "jimmy")
       paper = create(:review_pending_paper, state: "review_pending", meta_review_issue_id: 1234)
-      post_params = { secret: "mooo", id: 1234, editor: "jimmy" }
+      post_params = { secret: "testBOTsecret", id: 1234, editor: "jimmy" }
 
       expect { post :api_editor_invite, params: post_params }.to change { ActionMailer::Base.deliveries.count }.by(1)
       expect { post :api_editor_invite, params: post_params }.to change { editor.invitations.count }.by(1)
@@ -329,7 +326,7 @@ describe DispatchController, type: :controller do
 
     it "with the correct API key and invalid editor" do
       paper = create(:review_pending_paper, state: "review_pending", meta_review_issue_id: 1234)
-      post_params = { secret: "mooo", id: 1234, editor: "not-editor" }
+      post_params = { secret: "testBOTsecret", id: 1234, editor: "not-editor" }
       post :api_editor_invite, params: post_params
 
       expect(response).to be_unprocessable
@@ -337,7 +334,6 @@ describe DispatchController, type: :controller do
   end
 
   describe "POST #api_assign_reviewers" do
-    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_assign_reviewers
@@ -348,7 +344,7 @@ describe DispatchController, type: :controller do
       editor = create(:editor, login: "jimmy")
       paper = create(:review_pending_paper, state: "review_pending", meta_review_issue_id: 1234)
 
-      post :api_assign_reviewers, params: {secret: "mooo",
+      post :api_assign_reviewers, params: {secret: "testBOTsecret",
                                           id: 1234,
                                           reviewers: "joey, dave"
                                           }
@@ -361,7 +357,7 @@ describe DispatchController, type: :controller do
       editor = create(:editor, login: "jimmy")
       paper = create(:review_pending_paper, state: "review_pending", meta_review_issue_id: 1234)
 
-      post :api_assign_reviewers, params: {secret: "mooo",
+      post :api_assign_reviewers, params: {secret: "testBOTsecret",
                                           id: 12345,
                                           reviewers: "mike"
                                           }
@@ -372,7 +368,6 @@ describe DispatchController, type: :controller do
   end
 
   describe "POST #api_update_paper_info" do
-    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_update_paper_info
@@ -382,7 +377,7 @@ describe DispatchController, type: :controller do
     it "with the correct API key" do
       paper = create(:review_pending_paper, state: "review_pending", meta_review_issue_id: 1234)
 
-      post :api_update_paper_info, params: {secret: "mooo",
+      post :api_update_paper_info, params: {secret: "testBOTsecret",
                                             id: 1234,
                                             repository_url: "http://github.com/openjournals/new-repo-value"
                                             }
@@ -394,7 +389,7 @@ describe DispatchController, type: :controller do
     it "with the correct API key and invalid paper" do
       paper = create(:review_pending_paper, state: "review_pending", meta_review_issue_id: 1234)
 
-      post :api_update_paper_info, params: {secret: "mooo",
+      post :api_update_paper_info, params: {secret: "testBOTsecret",
                                             id: 12345,
                                             repository_url: "http://github.com/openjournals/joss"
                                             }
@@ -405,7 +400,6 @@ describe DispatchController, type: :controller do
   end
 
   describe "PUT #api_reject" do
-    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_reject
@@ -415,7 +409,7 @@ describe DispatchController, type: :controller do
     it "with the correct API key for a review_pending paper" do
       paper = create(:review_pending_paper, state: "review_pending", meta_review_issue_id: 1234)
 
-      post :api_reject, params: { secret: "mooo",
+      post :api_reject, params: { secret: "testBOTsecret",
                                   id: 1234}
 
       expect(response).to be_successful
@@ -425,7 +419,7 @@ describe DispatchController, type: :controller do
     it "with the correct API key for rejected paper" do
       paper = create(:rejected_paper, meta_review_issue_id: 1234)
 
-      post :api_reject, params: { secret: "mooo",
+      post :api_reject, params: { secret: "testBOTsecret",
                                   id: 1234}
 
       expect(response).to be_successful
@@ -434,7 +428,6 @@ describe DispatchController, type: :controller do
   end
 
   describe "PUT #api_withdraw" do
-    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_withdraw
@@ -444,7 +437,7 @@ describe DispatchController, type: :controller do
     it "with the correct API key for a review_pending paper" do
       paper = create(:review_pending_paper, state: "review_pending", meta_review_issue_id: 1234)
 
-      post :api_withdraw, params: { secret: "mooo",
+      post :api_withdraw, params: { secret: "testBOTsecret",
                                   id: 1234}
 
       expect(response).to be_successful
@@ -454,7 +447,7 @@ describe DispatchController, type: :controller do
     it "with the correct API key for rejected paper" do
       paper = create(:rejected_paper, meta_review_issue_id: 1234)
 
-      post :api_withdraw, params: { secret: "mooo",
+      post :api_withdraw, params: { secret: "testBOTsecret",
                                   id: 1234}
 
       expect(response).to be_successful
@@ -463,7 +456,6 @@ describe DispatchController, type: :controller do
   end
 
   describe "POST #api_deposit" do
-    ENV["BOT_SECRET"] = "mooo"
 
     it "with no API key" do
       post :api_deposit
@@ -475,7 +467,7 @@ describe DispatchController, type: :controller do
       paper = create(:under_review_paper, review_issue_id: 1234, user_id: user.id)
       encoded_metadata = "eyJwYXBlciI6eyJ0aXRsZSI6IkZpZGdpdDogQW4gdW5nb2RseSB1bmlvbiBv\nZiBHaXRIdWIgYW5kIGZpZ3NoYXJlIiwidGFncyI6WyJleGFtcGxlIiwidGFn\ncyIsImZvciB0aGUgcGFwZXIiXSwibGFuZ3VhZ2VzIjpbIlB5dGhvbiIsIlJ1\nc3QiLCJQZXJsIl0sImF1dGhvcnMiOlt7ImdpdmVuX25hbWUiOiJBcmZvbiIs\nIm1pZGRsZV9uYW1lIjoiTS4iLCJsYXN0X25hbWUiOiJTbWl0aCIsIm9yY2lk\nIjoiMDAwMC0wMDAyLTM5NTctMjQ3NCIsImFmZmlsaWF0aW9uIjoiR2l0SHVi\nIEluYy4sIERpc25leSBJbmMuIn0seyJnaXZlbl9uYW1lIjoiSmFtZXMiLCJt\naWRkbGVfbmFtZSI6IlAuIiwibGFzdF9uYW1lIjoidmFuIERpc2hvZWNrIiwi\nb3JjaWQiOiIwMDAwLTAwMDItMzk1Ny0yNDc0IiwiYWZmaWxpYXRpb24iOiJE\naXNuZXkgSW5jLiJ9XSwiZG9pIjoiMTAuMjExMDUvam9zcy4wMDAxNyIsImFy\nY2hpdmVfZG9pIjoiaHR0cDovL2R4LmRvaS5vcmcvMTAuNTI4MS96ZW5vZG8u\nMTM3NTAiLCJyZXBvc2l0b3J5X2FkZHJlc3MiOiJodHRwczovL2dpdGh1Yi5j\nb20vYXBwbGljYXRpb25za2VsZXRvbi9Ta2VsZXRvbiIsImVkaXRvciI6ImFy\nZm9uIiwicmV2aWV3ZXJzIjpbIkBqaW0iLCJAYm9iIl19fQ==\n"
 
-      post :api_deposit, params: {secret: "mooo",
+      post :api_deposit, params: {secret: "testBOTsecret",
                                   id: 1234,
                                   doi: "10.0001/joss.01234",
                                   archive_doi: "10.0001/zenodo.01234",

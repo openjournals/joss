@@ -21,4 +21,9 @@ class Track < ApplicationRecord
   def label
     "Track: #{code} (#{short_name})"
   end
+
+  def aeic_emails
+    return [] if aeics.empty?
+    aeics.collect { |e| e.email }
+  end
 end

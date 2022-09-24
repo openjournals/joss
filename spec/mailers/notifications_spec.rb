@@ -8,6 +8,7 @@ describe Notifications, type: :mailer do
     mail = Notifications.submission_email(paper)
 
     expect(mail.subject).to match /Nice paper/
+    expect(mail.recipients).to match_array paper.track.aeic_emails
   end
 
   it "should tell the submitting author to chill out" do

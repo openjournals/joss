@@ -44,4 +44,14 @@ RSpec.describe Track, type: :model do
       expect(track.label).to eq "Track: 33 (ESE)"
     end
   end
+
+  describe "#aeic_emails" do
+    it "returns an array of aeic emails" do
+      editor_1 = create(:board_editor, :email => "editor_1@example.com")
+      editor_2 = create(:board_editor, :email => "editor_2@example.com")
+      track = create(:track, :aeics => [editor_1, editor_2])
+
+      expect(track.aeic_emails).to eq ["editor_1@example.com", "editor_2@example.com"]
+    end
+  end
 end

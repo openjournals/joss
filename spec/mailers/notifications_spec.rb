@@ -7,8 +7,9 @@ describe Notifications, type: :mailer do
     paper = create(:paper, title: "Nice paper!")
     mail = Notifications.submission_email(paper)
 
+    expected_recipients = [paper.track.aeic_emails + Notifications::EDITOR_EMAILS].flatten
     expect(mail.subject).to match /Nice paper/
-    expect(mail.recipients).to match_array paper.track.aeic_emails
+    expect(mail.recipients).to match_array expected_recipients
   end
 
   it "should tell the submitting author to chill out" do

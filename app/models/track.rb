@@ -21,4 +21,8 @@ class Track < ApplicationRecord
   def label
     "Track: #{code} (#{short_name})"
   end
+
+  def name_with_short_name
+    "#{name} (#{short_name})"
+  end
 end

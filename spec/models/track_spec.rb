@@ -49,7 +49,7 @@ RSpec.describe Track, type: :model do
     it "includes name and short name" do
       track = create(:track, code: 33, name: "Earth sciences and Ecology", short_name: "ESE")
 
-      expect { track.name_with_short_name }.to eq "Earth sciences and Ecology (ESE)"
+      expect(track.name_with_short_name).to eq "Earth sciences and Ecology (ESE)"
     end
   end
 end

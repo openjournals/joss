@@ -429,9 +429,12 @@ class Paper < ApplicationRecord
 
   def move_to_track(new_track)
     return if new_track.nil?
+    old_track = self.track
     current_label = self.track.present? ? self.track.label : ""
     if current_label != new_track.label
       set_track_id(new_track.id)
+
+      Notifications.notify_new_aeic(self, old_track, new_track).deliver_now
 
       if self.meta_review_issue_id
         GITHUB.remove_label(Rails.application.settings["reviews"], self.meta_review_issue_id, current_label) if current_label.present?

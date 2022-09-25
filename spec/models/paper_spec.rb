@@ -371,12 +371,20 @@ describe Paper do
       @paper = create(:paper, track_id: @track_1.id)
     end
 
-    it "should recibe a new track to assign" do
+    it "should receive a new track to assign" do
       expect(@paper).to_not receive(:track)
       expect(@paper).to_not receive(:set_track_id)
       @paper.move_to_track(nil)
     end
 
+    it "should not send an email if the track does not change" do
+      expect { @paper.move_to_track(@track_1) }.to change { ActionMailer::Base.deliveries.count }.by(0)
+    end
+
+    it "should send an email if the track does change" do
+      expect { @paper.move_to_track(@track_2) }.to change { ActionMailer::Base.deliveries.count }.by(1)
+    end
+    
     it "should do nothing if track does not change" do
       expect(@paper).to_not receive(:set_track_id)
       expect_any_instance_of(Octokit::Client).to_not receive(:remove_label)

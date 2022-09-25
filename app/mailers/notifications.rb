@@ -8,6 +8,15 @@ class Notifications < ApplicationMailer
     mail(to: aeic_emails, cc: EDITOR_EMAILS, subject: "New submission: #{paper.title}")
   end
 
+  def notify_new_aeic(paper, old_track, new_track)
+    aeic_emails = new_track.aeic_emails
+    @url  = "#{Rails.application.settings["url"]}/papers/#{paper.sha}"
+    @paper = paper
+    @old_track = old_track
+    @new_track = new_track
+    mail(to: aeic_emails, cc: EDITOR_EMAILS, subject: "Track move for submission: #{paper.title}")
+  end
+
   def editor_invite_email(paper, editor)
     @paper = paper
     mail(to: editor.email, subject: "JOSS editorial invite: #{paper.title}")

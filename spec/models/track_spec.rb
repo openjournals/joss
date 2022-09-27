@@ -45,6 +45,7 @@ RSpec.describe Track, type: :model do
     end
   end
 
+
   describe "#aeic_emails" do
     it "returns an array of aeic emails" do
       editor_1 = create(:board_editor, :email => "editor_1@example.com")
@@ -52,6 +53,14 @@ RSpec.describe Track, type: :model do
       track = create(:track, :aeics => [editor_1, editor_2])
 
       expect(track.aeic_emails).to eq ["editor_1@example.com", "editor_2@example.com"]
+    end
+  end
+  
+  describe "#name_with_short_name" do
+    it "includes name and short name" do
+      track = create(:track, code: 33, name: "Earth sciences and Ecology", short_name: "ESE")
+
+      expect(track.name_with_short_name).to eq "Earth sciences and Ecology (ESE)"
     end
   end
 end

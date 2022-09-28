@@ -273,6 +273,25 @@ class PapersController < ApplicationController
     render json: response.to_json
   end
 
+  def lookup_track
+    paper = Paper.where('review_issue_id = ? OR meta_review_issue_id = ?', params[:id], params[:id]).first!
+    track = paper.track
+    response = {  name: nil,
+                  short_name: nil,
+                  code: nil,
+                  label: nil,
+                  parameterized: nil}
+    unless track.nil?
+      response[:name] = track.name
+      response[:short_name] = track.short_name
+      response[:code] = track.code
+      response[:label] = track.label
+      response[:parameterized] = track.parameterized_short_name
+    end
+
+    render json: response.to_json
+  end
+
   def valid_doi?
     if params[:doi] && params[:doi].include?("10.21105")
       return true

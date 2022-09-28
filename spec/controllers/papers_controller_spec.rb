@@ -264,6 +264,29 @@ describe PapersController, type: :controller do
     end
   end
 
+  describe "lookup_track" do
+    it "should return paper's track info" do
+      track = create(:track, name: "Test track", short_name: "Tes Tr", code: 22)
+      create(:paper, track: track, meta_review_issue_id: 123)
+
+      get :lookup_track, params: {id: 123}
+
+      track_info = JSON.parse(response.body)
+      expect(track_info['name']).to eq("Test track")
+      expect(track_info['short_name']).to eq("Tes Tr")
+      expect(track_info['code']).to eq(22)
+      expect(track_info['label']).to eq("Track: 22 (Tes Tr)")
+      expect(track_info['parameterized']).to eq("tes-tr")
+    end
+
+    it "should 404 when passed an invalid id" do
+      get :lookup_track, params: {id: 12345}
+
+      expect(response.body).to match /404 Not Found/
+      expect(response.status).to eq(404)
+    end
+  end
+
   describe "accepted papers" do
     it "should not redirect when accepting any content type" do
       paper = create(:accepted_paper)

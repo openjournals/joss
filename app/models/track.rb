@@ -25,4 +25,8 @@ class Track < ApplicationRecord
   def name_with_short_name
     "#{name} (#{short_name})"
   end
+
+  def parameterized_short_name
+    short_name.gsub(/[^a-z0-9\-_]+/i, "-").downcase
+  end
 end

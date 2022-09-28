@@ -230,11 +230,30 @@ describe PapersController, type: :controller do
   end
 
   describe "paper lookup" do
-    it "should return the created_at date for a paper" do
+    it "should return the created_at date for a submitted paper" do
       submitted_paper = create(:paper, state: 'submitted', created_at: 3.days.ago, meta_review_issue_id: 123)
 
       get :lookup, params: {id: 123}
-      expect(JSON.parse(response.body)['submitted']).to eq(3.days.ago.strftime('%d %B %Y'))
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response['submitted']).to eq(3.days.ago.strftime('%d %B %Y'))
+      expect(parsed_response['accepted']).to eq(nil)
+    end
+
+    it "should return the created_at and accepted_at dates for a published paper" do
+      submitted_paper = create(:accepted_paper, created_at: 3.days.ago, accepted_at: 2.days.ago, meta_review_issue_id: 123)
+
+      get :lookup, params: {id: 123}
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response['submitted']).to eq(3.days.ago.strftime('%d %B %Y'))
+      expect(parsed_response['accepted']).to eq(2.days.ago.strftime('%d %B %Y'))
+    end
+
+    it "should return paper's track short name" do
+      track = create(:track, name: "Test track", short_name: "Testtr")
+      submitted_paper = create(:paper, state: 'submitted', track: track, meta_review_issue_id: 123)
+
+      get :lookup, params: {id: 123}
+      expect(JSON.parse(response.body)['track']).to eq("Testtr")
     end
 
     it "should 404 when passed an invalid id" do

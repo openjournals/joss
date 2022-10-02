@@ -268,7 +268,27 @@ class PapersController < ApplicationController
     paper = Paper.where('review_issue_id = ? OR meta_review_issue_id = ?', params[:id], params[:id]).first!
     accepted_at = paper.accepted_at ? paper.accepted_at.strftime('%d %B %Y') : nil
     response = {  submitted: paper.created_at.strftime('%d %B %Y'),
-                  accepted: accepted_at }
+                  accepted: accepted_at,
+                  track: paper.track&.short_name }
+    render json: response.to_json
+  end
+
+  def lookup_track
+    paper = Paper.where('review_issue_id = ? OR meta_review_issue_id = ?', params[:id], params[:id]).first!
+    track = paper.track
+    response = {  name: nil,
+                  short_name: nil,
+                  code: nil,
+                  label: nil,
+                  parameterized: nil}
+    unless track.nil?
+      response[:name] = track.name
+      response[:short_name] = track.short_name
+      response[:code] = track.code
+      response[:label] = track.label
+      response[:parameterized] = track.parameterized_short_name
+    end
+
     render json: response.to_json
   end
 

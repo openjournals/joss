@@ -230,15 +230,57 @@ describe PapersController, type: :controller do
   end
 
   describe "paper lookup" do
-    it "should return the created_at date for a paper" do
+    it "should return the created_at date for a submitted paper" do
       submitted_paper = create(:paper, state: 'submitted', created_at: 3.days.ago, meta_review_issue_id: 123)
 
       get :lookup, params: {id: 123}
-      expect(JSON.parse(response.body)['submitted']).to eq(3.days.ago.strftime('%d %B %Y'))
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response['submitted']).to eq(3.days.ago.strftime('%d %B %Y'))
+      expect(parsed_response['accepted']).to eq(nil)
+    end
+
+    it "should return the created_at and accepted_at dates for a published paper" do
+      submitted_paper = create(:accepted_paper, created_at: 3.days.ago, accepted_at: 2.days.ago, meta_review_issue_id: 123)
+
+      get :lookup, params: {id: 123}
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response['submitted']).to eq(3.days.ago.strftime('%d %B %Y'))
+      expect(parsed_response['accepted']).to eq(2.days.ago.strftime('%d %B %Y'))
+    end
+
+    it "should return paper's track short name" do
+      track = create(:track, name: "Test track", short_name: "Testtr")
+      submitted_paper = create(:paper, state: 'submitted', track: track, meta_review_issue_id: 123)
+
+      get :lookup, params: {id: 123}
+      expect(JSON.parse(response.body)['track']).to eq("Testtr")
     end
 
     it "should 404 when passed an invalid id" do
       get :lookup, params: {id: 12345}
+
+      expect(response.body).to match /404 Not Found/
+      expect(response.status).to eq(404)
+    end
+  end
+
+  describe "lookup_track" do
+    it "should return paper's track info" do
+      track = create(:track, name: "Test track", short_name: "Tes Tr", code: 22)
+      create(:paper, track: track, meta_review_issue_id: 123)
+
+      get :lookup_track, params: {id: 123}
+
+      track_info = JSON.parse(response.body)
+      expect(track_info['name']).to eq("Test track")
+      expect(track_info['short_name']).to eq("Tes Tr")
+      expect(track_info['code']).to eq(22)
+      expect(track_info['label']).to eq("Track: 22 (Tes Tr)")
+      expect(track_info['parameterized']).to eq("tes-tr")
+    end
+
+    it "should 404 when passed an invalid id" do
+      get :lookup_track, params: {id: 12345}
 
       expect(response.body).to match /404 Not Found/
       expect(response.status).to eq(404)

@@ -63,4 +63,12 @@ RSpec.describe Track, type: :model do
       expect(track.name_with_short_name).to eq "Earth sciences and Ecology (ESE)"
     end
   end
+
+  describe "#parameterized_short_name" do
+    it "returns parameterized short name" do
+      track = create(:track, code: 33, name: "Earth sciences and Ecology", short_name: "Earth S.E")
+
+      expect(track.parameterized_short_name).to eq "earth-s-e"
+    end
+  end
 end

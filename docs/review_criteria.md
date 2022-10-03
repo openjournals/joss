@@ -119,3 +119,7 @@ We ask that reviewers grade submissions in one of three categories: 1) Accept 2)
 As outlined in our author guidelines, submissions that rely upon a proprietary/closed source language or development environment are acceptable provided that they meet the other submission requirements and that you, the reviewer, are able to install the software & verify the functionality of the submission as required by our reviewer guidelines.
 
 If an open source or free variant of the programming language exists, feel free to encourage the submitting author to consider making their software compatible with the open source/free variant.
+
+### Where can I host the repository?
+
+We ask that repositories are hosted at a location that allows outside users to freely open issues and make pull requests, such as BitBucket or GitHub. Submissions will not be accepted if the repository is at a location where users must pay to open issues or make pull requests, or where accounts must be manually approved, regardless of if this approval is done by the owners of the repository or some other entity. 

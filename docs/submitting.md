@@ -7,6 +7,7 @@ But please read these instructions carefully for a streamlined submission.
 ## Submission requirements
 
 - The software must be open source as per the [OSI definition](https://opensource.org/osd).
+- The software must be hosted at a location where users can open issues and submit pull requests for free and without manual approval of accounts.
 - The software must have an **obvious** research application.
 - You must be a major contributor to the software you are submitting, and have a GitHub account to participate in the review process.
 - Your paper must not focus on new research results accomplished with the software.

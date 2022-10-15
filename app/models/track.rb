@@ -22,6 +22,11 @@ class Track < ApplicationRecord
     "Track: #{code} (#{short_name})"
   end
 
+  def aeic_emails
+    return [] if aeics.empty?
+    aeics.collect { |e| e.email }
+  end
+  
   def name_with_short_name
     "#{name} (#{short_name})"
   end

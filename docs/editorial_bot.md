@@ -309,4 +309,7 @@ JOSS editors-in-chief can withdraw a submission with the following command:
 # Open the review issue
 @editorialbot start review
 
+# Ping the EiCs for the current track
+@editorialbot ping track-eic
+
 ```

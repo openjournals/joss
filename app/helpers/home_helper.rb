@@ -1,7 +1,10 @@
 module HomeHelper
   def pretty_labels_for(paper)
-    return nil unless paper.labels.any?
-
+    if paper.labels.empty?
+      return nil unless paper.track
+      concat content_tag(:span, paper.track.label, style: "padding: 3px; margin-right: 3px; border-radius: 2px; background-color: ##{paper.track.label_color}; color: #000000;")
+    end
+    
     capture do
       paper.labels.each do |label, colour|
         if label == "paused"

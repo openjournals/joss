@@ -31,6 +31,29 @@ class Track < ApplicationRecord
     "#{name} (#{short_name})"
   end
 
+  def label_color
+    case short_name.downcase
+    when "aass"
+      "D4C5F9"
+    when "bcm"
+      "44D276"
+    when "csism"
+      "2B613B"
+    when "dsais"
+      "fc7484"
+    when "ese"
+      "FBCA04"
+    when "misc"
+      "5AD5D0"
+    when "pe"
+      "D07786"
+    when "sbcs"
+      "e374fc"
+    else
+      "3c3c3c"
+    end
+  end
+
   def parameterized_short_name
     short_name.gsub(/[^a-z0-9\-_]+/i, "-").downcase
   end

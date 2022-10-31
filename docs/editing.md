@@ -316,7 +316,12 @@ As documented above, usually, papers will be assigned to you by one of the AEiCs
 
 ### Continued attention to assigned submissions
 
-As an editor, part of your role is to ensure that submissions you're responsible for are progressing smoothly through the editorial process. This means that once or twice per week we ask that you check your GitHub notifications and/or your editorial dashboard (e.g. `http://joss.theoj.org/dashboard/youreditorname`) for updates to the papers you are handling.
+As an editor, part of your role is to ensure that submissions you're responsible for are progressing smoothly through the editorial process. This means that:
+
+- During pre-review, and before reviewers have been identified, editors should be checking on their submissions twice per week to ensure reviewers are identified in a timely fashion. 
+- During review, editors should check on their submissions once or twice per week to see if their input is required.
+
+Your editorial dashboard (e.g. `https://joss.theoj.org/dashboard/youreditorname`) is the best place to check if there have been any updates to the papers you are editing.
 
 **If reviews go stale**
 

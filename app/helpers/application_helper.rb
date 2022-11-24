@@ -53,4 +53,11 @@ module ApplicationHelper
     return "" unless paper
     return url_for(paper)
   end
+
+  def social_media_links
+    links = []
+    links << link_to("Twitter", "https://twitter.com/#{setting(:twitter)}", target: "_blank").html_safe if setting(:twitter).present?
+    links << link_to("Mastodon", setting(:mastodon_url), target: "_blank", rel: "me").html_safe if setting(:mastodon_url).present?
+    links
+  end
 end

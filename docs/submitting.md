@@ -204,6 +204,30 @@ and referenced from text using \autoref{fig:example}.
 Figure sizes can be customized by adding an optional second parameter:
 ![Caption for example figure.](figure.png){ width=20% }
 
+You may use the `TiKZ` package as well, here is an example taken from 
+[the official pgfmanual](http://mirrors.ctan.org/graphics/pgf/base/doc/pgfmanual.pdf):
+
+\begin{figure}[h]
+  \centering
+  \usetikzlibrary {datavisualization.formats.functions}
+  \tikz \datavisualization [
+    scientific axes=clean,
+    y axis={ticks={style={
+    /pgf/number format/fixed,
+    /pgf/number format/fixed zerofill,
+    /pgf/number format/precision=2}}},
+    x axis={ticks={tick suffix=${}^\circ$}},
+    visualize as smooth line/.list={1,2,3,4,5,6},
+    style sheet=vary hue]
+  data [format=function] {
+  var set : {1,...,6};
+  var x : interval [0:50];
+  func y = sin(\value x * (\value{set}+10))/(\value{set}+5);
+  };
+  \caption{Example taken from the pgfmanual in section ``Providing Data for a Data Visualization''}
+\end{figure}
+
+
 # Acknowledgements
 
 We acknowledge contributions from Brigitta Sipocz, Syrtis Major, and Semyeong

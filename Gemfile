@@ -16,7 +16,7 @@ gem 'omniauth-orcid', '~> 2.1.1'
 gem 'omniauth-rails_csrf_protection'
 gem 'octokit', '~> 4.25'
 gem 'pdf-reader', '~> 2.9.2'
-gem 'pg', '~> 1.3.5'
+gem 'pg', '~> 1.4.5'
 gem 'will_paginate', '~> 3.3.1'
 gem 'rails', '7.0.4'
 gem "importmap-rails"

@@ -122,4 +122,4 @@ If an open source or free variant of the programming language exists, feel free 
 
 ### Where can I host the repository?
 
-Repositories must be hosted at a location that allows outside users to freely open issues and propose code changes, such as GitHub, GitLab, Bitbucket, etc. Submissions will not be accepted if the repository is hosted at a location where where accounts must be manually approved (or paid for), regardless of if this approval is done by the owners of the repository or some other entity. 
+Repositories must be hosted at a location that allows outside users to freely open issues and propose code changes, such as GitHub, GitLab, Bitbucket, etc. Submissions will not be accepted if the repository is hosted at a location where accounts must be manually approved (or paid for), regardless of if this approval is done by the owners of the repository or some other entity. 

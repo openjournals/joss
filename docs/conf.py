@@ -21,7 +21,7 @@ from recommonmark.transform import AutoStructify
 # -- Project information -----------------------------------------------------
 
 project = 'JOSS'
-copyright = '2018, Open Journals'
+copyright = '2023, Open Journals'
 author = 'Arfon Smith & Open Journals community'
 
 # The short X.Y version

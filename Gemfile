@@ -24,7 +24,7 @@ gem "turbo-rails"
 gem "stimulus-rails"
 gem 'responders'
 gem 'newrelic_rpm'
-gem 'sanitize', '~> 6.0.0'
+gem 'sanitize', '~> 6.0.1'
 gem 'searchkick'
 gem 'elasticsearch', '<7.14'
 gem 'uglifier', '4.2.0'

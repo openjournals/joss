@@ -46,6 +46,13 @@ module ApplicationHelper
     return "https://github.com/#{username.sub(/^@/, "")}.png"
   end
 
+  def paper_track_label(github_issue)
+    id = github_issue.number
+    paper = Paper.where('review_issue_id = ?', id).first
+    return "" unless paper && paper.track
+    content_tag(:span, paper.track.label, style: "padding: 3px; margin-right: 3px; border-radius: 2px; background-color: ##{paper.track.label_color}; color: #000000;")
+  end
+
   def scope_link_for_issue(github_issue)
     id = github_issue.number
     paper = Paper.where('review_issue_id = ? OR meta_review_issue_id = ?', id, id).first

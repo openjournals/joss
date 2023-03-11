@@ -11,7 +11,7 @@ JOSS editors manage the review workflow with the help of our bot, `@editorialbot
 
 ## Pre-review
 
-Once a submission comes in, it will be in the queue for a quick check by the Editor-in-chief (EiC). From there, it moves to a `PRE-REVIEW` issue, where the EiC will assign a handling editor, and the author can suggest reviewers. Initial direction to the authors for improving the paper can already happen here, especially if the paper lacks some requested sections.
+Once a submission comes in, it will be in the queue for a quick check by the Track Editor-in-chief (TEiC). From there, it moves to a `PRE-REVIEW` issue, where the TEiC will assign a handling editor, and the author can suggest reviewers. Initial direction to the authors for improving the paper can already happen here, especially if the paper lacks some requested sections.
 
 ```eval_rst
 .. important:: If the paper is out-of-scope for JOSS, editors assess this and notify the author in the ``PRE-REVIEW`` issue.
@@ -19,23 +19,23 @@ Once a submission comes in, it will be in the queue for a quick check by the Edi
 
 Editors can flag submissions of questionable scope using the command `@editorialbot query scope`.
 
-The EiC assigns an editor (or a volunteering editor self-assigns) with the command `@editorialbot assign @username as editor` in a comment.
+The TEiC assigns an editor (or a volunteering editor self-assigns) with the command `@editorialbot assign @username as editor` in a comment.
 
 ```eval_rst
-.. note:: If a paper is submitted without a recommended editor, it will show up in the weekly digest email under the category ‘Papers currently without an editor.’ Please review this weekly email and volunteer to edit papers that look to be in your domain. If you choose to be an editor in the issue thread type the command ``@editorialbot assign @yourhandle as editor`` or simply ``@editorialbot assign me as editor``
+.. note:: Please check in on the [dashboard](https://joss.theoj.org/dashboard/incoming) semi-regularly to see which papers are currently without an editor, and if possible, volunteer to edit papers that look to be in your domain. If you choose to be an editor in the issue thread type the command ``@editorialbot assign @yourhandle as editor`` or simply ``@editorialbot assign me as editor``
 ```
 
 ### How papers are assigned to editors
 
-By default, unless an editor volunteers, the Associated Editor-in-chief (AEiC) on duty will attempt to assign an incoming paper to the most suitable handling editor. While AEiCs will make every effort to match a submission with the most appropriate editor, there are a number of situations where an AEiC may assign a paper to an editor that doesn't fit entirely within the editor's research domains:
+By default, unless an editor volunteers, the Track Editor-in-chief (TEiC) on duty will attempt to assign an incoming paper to the most suitable handling editor. While TEiC will make every effort to match a submission with the most appropriate editor, there are a number of situations where an TEiC may assign a paper to an editor that doesn't fit entirely within the editor's research domains:
 
 - If there's no obvious fit to _any_ of the JOSS editors
 - If the most suitable editor is already handling a large number of papers
 - If the chosen editor has a lighter editorial load than other editors
 
-In most cases, an AEiC will ask one or more editors to edit a submission (e.g. `@editor1, @editor 2 - would one of you be willing to edit this submission for JOSS`). If the editor doesn't respond within ~3 working days, the AEiC may assign the paper to the editor regardless.
+In most cases, the TEiC will ask one or more editors to edit a submission (e.g. `@editor1, @editor 2 - would one of you be willing to edit this submission for JOSS`). If the editor doesn't respond within ~3 working days, the TEiC may assign the paper to the editor regardless.
 
-Editors may also be invited to edit over email when an AEiC runs the  command `@editorialbot invite @editor1 as editor`.
+Editors may also be invited to edit over email when an TEiC runs the  command `@editorialbot invite @editor1 as editor`.
 
 ### Finding reviewers
 
@@ -92,7 +92,7 @@ Sometimes you'll need to add a new reviewer once the main review (i.e. post pre-
 
 ## After reviewers recommend acceptance
 
-When a submission is ready to be accepted, we ask that the authors issue a new tagged release of the software (if changed), and archive it (on [Zenodo](https://zenodo.org/), [fig**share**](https://figshare.com/), or other). The authors then post the version number and archive DOI in the `REVIEW` issue. The handling editor executes the pre-publication steps, and pings the EiCs for final processing.
+When a submission is ready to be accepted, we ask that the authors issue a new tagged release of the software (if changed), and archive it (on [Zenodo](https://zenodo.org/), [fig**share**](https://figshare.com/), or other). The authors then post the version number and archive DOI in the `REVIEW` issue. The handling editor executes the pre-publication steps, and pings the Track Editor in Chief for final processing.
 
 Pre-publication steps:
 - Get a new proof with the `@editorialbot generate pdf` command.
@@ -136,16 +136,16 @@ aas-journal: Astrophysical Journal <- The name of the AAS journal.
 
 - Ask the EiC on rotation to publish the paper as normal (by tagging `@openjournals/joss-eics`).
 
-## Processing of rOpenSci-reviewed and accepted submissions
+## Processing of rOpenSci-reviewed or pyOpenSci-reviewed and accepted submissions
 
-If a paper has already been reviewed and accepted by rOpenSci, the streamlined JOSS review process is:
+If a paper has already been reviewed and accepted by rOpenSci or pyOpenSci, the streamlined JOSS review process is:
 
 - Assign yourself as editor and reviewer
-- Add a comment in the pre-review issue pointing to the rOpenSci review
-- Add the rOpenSci label to the pre-review issue
+- Add a comment in the pre-review issue pointing to the rOpenSci or pyOpenSci review
+- Add the rOpenSci/pyOpenSci label to the pre-review issue
 - Start the review issue
-- Add a comment in the review issue pointing to the rOpenSci review
-- Compile the paper and check it looks ok
+- Add a comment in the review issue pointing to the rOpenSci or pyOpenSci review
+- Compile the paper and check it looks OK
 - Go to to the source code repo and grab the Zenodo DOI
 - Accept and publish the paper
 
@@ -155,11 +155,15 @@ If you believe a submission should be rejected, for example, because it is out o
 
 - Ask EditorialBot to flag the submission as potentially out of scope with the command `@editorialbot query scope`. This command adds the `query-scope` label to the issue.
 - Mention to the author your reasons for flagging the submission as possibly out of scope, and give them an opportunity to defend their submission.
-- The EiC on rotation will make a final determination of whether a submission is in scope, taking into account the feedback of other editors.
+- The TEiC will make a final determination of whether a submission is in scope, taking into account the feedback of other editors.
 
 ### Voting on papers flagged as potentially out of scope
 
 Once per week, an email is sent to all JOSS editors with a summary of the papers that are currently flagged as potentially out of scope. Editors are asked to review these submissions and vote on the JOSS website if they have an opinion about a submission.
+
+```eval_rst
+.. important:: Your input (vote) on submissions that are undergoing a scope review is incredibly valuable to the EiC team. Please try and vote early, and often!
+```
 
 ## Sample messages for authors and reviewers
 
@@ -312,14 +316,14 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 
 ### Responding to editorial assignments
 
-As documented above, usually, papers will be assigned to you by one of the AEiCs. We ask that editors do their best to respond in a timely fashion (~ 3 working days) to invites to edit a new submission.
+As documented above, usually, papers will be assigned to you by one of the TEiCs. We ask that editors do their best to respond in a timely fashion (~ 3 working days) to invites to edit a new submission.
 
 ### Continued attention to assigned submissions
 
 As an editor, part of your role is to ensure that submissions you're responsible for are progressing smoothly through the editorial process. This means that:
 
 - During pre-review, and before reviewers have been identified, editors should be checking on their submissions twice per week to ensure reviewers are identified in a timely fashion. 
-- During review, editors should check on their submissions once or twice per week to see if their input is required.
+- During review, editors should check on their submissions once or twice per week (even for just a few minutes) to see if their input is required (e.g., if someone has asked a question that requires your input).
 
 Your editorial dashboard (e.g. `https://joss.theoj.org/dashboard/youreditorname`) is the best place to check if there have been any updates to the papers you are editing.
 
@@ -335,17 +339,7 @@ Sometimes reviews go quiet, either because a reviewer has failed to complete the
 
 ## Out of office
 
-Sometimes we need time away from our editing duties at JOSS. The [joss-reviews](https://github.com/openjournals/joss-reviews) repository has the [OoO bot](https://github.com/swinton/probot-ooo) installed which means you can mark yourself as out of the office (and unable to respond to reviews) for a period of time e.g.:
-
-Mark yourself as OoO in one of the reviews you're editing in the [joss-reviews](https://github.com/openjournals/joss-reviews) repository like this:
-
-```
-/ooo January 18 until February 2
-```
-
-Ooo bot will then respond to any mentions in the [joss-reviews](https://github.com/openjournals/joss-reviews) repository to let people know you're away.
-
-**Note, if you're planning on being out of the office for more than two weeks, please let the JOSS editorial team know.**
+Sometimes we need time away from our editing duties at JOSS. If you're planning on being out of the office for more than two weeks, please let the JOSS editorial team know.
 
 ## Editorial buddy
 

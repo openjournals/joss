@@ -186,6 +186,14 @@ A series of checks can be run on the submitted repository with the command:
 
 EditorialBot will report back with an analysis of the source code and list authorship, contributions and file types information. EditorialBot will also detect the languages used in the repository, will count the number of words in the paper file and will look for an Open Source License and for a *Statement of need* section in the paper.
 
+### Post-review checklist
+
+Editors can get a checklist to remind all steps to do after the reviewers have finished their reviews and recommended the paper for acceptance:
+
+```text
+@editorialbot create post-review checklist
+```
+
 ### Flag a paper with query-scope
 
 Editors can flag a paper with query-scope with the command:
@@ -293,6 +301,9 @@ JOSS editors-in-chief can withdraw a submission with the following command:
 
 # Generates the pdf paper
 @editorialbot generate pdf
+
+# Creates a post-review checklist with editor and authors tasks
+@editorialbot create post-review checklist
 
 # Recommends the submission for acceptance
 @editorialbot recommend-accept

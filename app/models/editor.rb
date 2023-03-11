@@ -45,7 +45,7 @@ class Editor < ApplicationRecord
     editor_ids = Editor.active.where("created_at <= ?", 3.months.ago).collect {|e| e.id}
     paper_count = Paper.visible.since(3.months.ago).where(editor_id: editor_ids).count
 
-    return sprintf("%.1f", paper_count / (3.0 * editor_ids.size))
+    return editor_ids.size > 0 ? sprintf("%.1f", paper_count / (3.0 * editor_ids.size)) : "0.0"
   end
 
   def retired?

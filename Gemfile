@@ -1,22 +1,22 @@
 source 'https://rubygems.org'
 ruby '3.2.1'
 
-gem 'aasm', '~> 5.2.0'
+gem 'aasm', '~> 5.5.0'
 gem 'chartkick'
 gem 'bootsnap'
-gem 'dotenv', '~> 2.7.6'
+gem 'dotenv', '~> 2.8.1'
 gem 'google_drive'
 gem 'groupdate'
-gem 'honeybadger', '~> 4.12.1'
-gem 'html-pipeline', '~> 2.14.1'
-gem 'commonmarker', '~> 0.23.7'
+gem 'honeybadger', '~> 5.2.0'
+gem 'html-pipeline', '~> 2.14.3'
+gem 'commonmarker', '~> 0.23.8'
 gem 'net-sftp', '~> 4.0'
 gem 'octicons_helper'
 gem 'omniauth-orcid', '~> 2.1.1'
 gem 'omniauth-rails_csrf_protection'
-gem 'octokit', '~> 4.25'
-gem 'pdf-reader', '~> 2.9.2'
-gem 'pg', '~> 1.4.5'
+gem 'octokit', '~> 6.0'
+gem 'pdf-reader', '~> 2.11.0'
+gem 'pg', '~> 1.4.6'
 gem 'will_paginate', '~> 3.3.1'
 gem 'rails', '7.0.4.2'
 gem "importmap-rails"
@@ -43,14 +43,14 @@ gem "sassc-rails"
 gem 'puma'
 
 # Use Redis for Action Cable
-gem "redis", "~> 4.0"
+gem "redis", "~> 5.0"
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'pry-byebug'
-  gem 'capybara', '~> 3.37'
+  gem 'capybara', '~> 3.38'
   gem 'factory_bot_rails', '~> 6.2.0'
-  gem 'rspec-rails', '~> 5.1.1'
+  gem 'rspec-rails', '~> 6.0.1'
   gem 'rails-controller-testing', '~> 1.0.5'
   gem 'selenium-webdriver'
   gem 'webmock'

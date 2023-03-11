@@ -52,10 +52,10 @@ To recruit reviewers, the handling editor can mention them in the `PRE-REVIEW` i
 
 Finding reviewers can be challenging, especially if a submission is outside of your immediate area of expertise. Some strategies you can use to identify potential candidates:
 
-- Search the [reviewer spreadsheet](https://bit.ly/joss-reviewers) of volunteer reviewers.
+- Search the [reviewer application](https://reviewers.joss.theoj.org) of volunteer reviewers.
   - When using this spreadsheet, pay attention to the number of reviews this individual is already doing to avoid overloading them.
   - It can be helpful to use the "Data > Filter Views" capability to temporarily filter the table view to include only people with language or domain expertise matching the paper.
-- Ask the author(s): You are free to ask the submitting author to suggest possible reviewers by using the [reviewer spreadsheet](https://bit.ly/joss-reviewers) and also people from their professional network. In this situation, the editor still needs to verify that their suggestions are appropriate.
+- Ask the author(s): You are free to ask the submitting author to suggest possible reviewers by using the [reviewer application](https://reviewers.joss.theoj.org) and also people from their professional network. In this situation, the editor still needs to verify that their suggestions are appropriate.
 - Use your professional network: You're welcome to invite people you know of who might be able to give a good review.
 - Search Google and GitHub for related work, and write to the authors of that related work.
   - You might like to try [this tool](https://github.com/dfm/joss-reviewer) from @dfm.

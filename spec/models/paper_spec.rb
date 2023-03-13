@@ -344,7 +344,8 @@ describe Paper do
       it "renders text" do
         is_expected.to match /#{paper.submitting_author.github_username}/
         is_expected.to match /#{paper.submitting_author.name}/
-        is_expected.to match /#{Rails.application.settings['reviewers']}/
+        is_expected.to match /#{Rails.application.settings['reviewers_url']}/
+        is_expected.to match /#{Rails.application.settings['reviewers_signup_url']}/
         is_expected.to match /Important Editor/
       end
 
@@ -357,7 +358,8 @@ describe Paper do
       it "renders text" do
         is_expected.to match /#{paper.submitting_author.github_username}/
         is_expected.to match /#{paper.submitting_author.name}/
-        is_expected.to match /#{Rails.application.settings['reviewers']}/
+        is_expected.to match /#{Rails.application.settings['reviewers_url']}/
+        is_expected.to match /#{Rails.application.settings['reviewers_signup_url']}/
       end
 
       it { is_expected.to match "Currently, there isn't a JOSS editor assigned" }

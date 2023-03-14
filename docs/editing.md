@@ -345,7 +345,7 @@ Sometimes we need time away from our editing duties at JOSS. If you're planning 
 
 New editors are assigned an editorial 'buddy' from the existing editorial team. The buddy is there to help the new editor onboard successfully and to provide a dedicated resource for any questions they might have but don't feel comfortable posting to the editor mailing list.
 
-Buddy assignments don't have a fixed term but generally require a committment for 1-2 months.
+Buddy assignments don't have a fixed term but generally require a commitment for 1-2 months.
 
 Some things you might need to do as a buddy for a new editor:
 

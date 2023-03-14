@@ -12,7 +12,7 @@ The Journal of Open Source Software (JOSS) is an academic journal with a formal 
 
 ### Don't we have enough journals already?
 
-Perhaps, and in a perfect world we'd rather papers about software weren't necessary but we recognize that for most researchers, papers and not software are the currency of academic research and that citations are required for a good career.
+In a perfect world, papers about software wouldn't be necessary. Unfortunately, for most researchers, academic currency relies on papers rather than software and citations are, thus, crucial for a successful career.
 
 We built this journal because we believe that after you've done the hard work of writing great software, it shouldn't take weeks and months to write a paper<sup>1</sup> about your work.
 

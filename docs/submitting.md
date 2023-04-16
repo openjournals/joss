@@ -60,7 +60,7 @@ Authors wishing to make a pre-submission enquiry should [open an issue](https://
 
 ## Conflict of Interest policy for authors
 
-Conflict of interest (COI) arises when an author has financial, personal, or other interests that may influence their research or the interpretation of its results. In order to maintain the integrity of the work published in JOSS, we require that authors disclose any potential conflicts of interest at submission time.
+An author conflict of interest (COI) arises when an author has financial, personal, or other interests that may influence their research or the interpretation of its results. In order to maintain the integrity of the work published in JOSS, we require that authors disclose any potential conflicts of interest at submission time.
 
 ### Policy
 

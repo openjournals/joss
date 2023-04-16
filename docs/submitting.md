@@ -72,7 +72,7 @@ An author conflict of interest (COI) arises when an author has financial, person
 
 **Mitigation of COI:** If a potential conflict of interest is identified, steps will be taken to mitigate the influence of the conflict, including but not limited to, disclosure in the manuscript and adjustment of the author's role in the research or removal of the author from the research entirely.
 
-**Compliance:** Authors who fail to comply with the COI policy may have their manuscript rejected or retracted if it is discovered after publication.
+**Compliance:** Authors who fail to comply with the COI policy may have their manuscript rejected or retracted if a conflict is discovered after publication.
 
 **Review and Update:** This COI policy will be reviewed and updated regularly to ensure it remains relevant and effective.
 

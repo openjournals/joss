@@ -66,7 +66,7 @@ An author conflict of interest (COI) arises when an author has financial, person
 
 **Disclosure:** All authors must disclose any potential conflicts of interest related to the research in their manuscript, including financial, personal, or professional relationships that may affect their objectivity. This includes any financial relationships, such as employment, consultancies, honoraria, stock ownership, or other financial interests that may be relevant to the research.
 
-**Acknowledgement:** Authors should acknowledge all sources of financial support for the research and include a statement indicating whether or not the sponsor had any involvement in the study design, data collection, analysis, or interpretation of the work.
+**Acknowledgement:** Authors should acknowledge all sources of financial support for the work and include a statement indicating whether or not the sponsor had any involvement in it.
 
 **Review process:** Editors and reviewers must be informed of any potential conflicts of interest before reviewing the manuscript to ensure unbiased evaluation of the research.
 

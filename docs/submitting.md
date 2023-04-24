@@ -349,4 +349,4 @@ Please write admin@theoj.org with confidential matters such as retraction reques
 
 In case of a name change, the DOI will be unchanged and the paper will be updated without publishing a correction notice or notifying co-authors.
 
-JOSS will also update CrosrRef metadata.
+JOSS will also update Crossref metadata.

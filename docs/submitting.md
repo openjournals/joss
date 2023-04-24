@@ -341,8 +341,6 @@ After submission:
 
 If you want to learn more details about the review process, take a look at the [reviewer guidelines](reviewer_guidelines).
 
-### A note about 
-
 ## Confidential requests
 
 Please write admin@theoj.org with confidential matters such as retraction requests, report of misconduct, and retroactive author name changes.

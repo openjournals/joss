@@ -252,7 +252,13 @@ At this point could you:
 I can then move forward with recommending acceptance of the submission.
 ```
 
-###
+### Rejection due to out of scope/failing substantial scholarly effort test
+
+```
+@authorname - thanks for your submission to JOSS. Unfortunately, after review by the JOSS editorial team we've determined that this submission doesn't meet our [substantial scholarly effort](https://joss.readthedocs.io/en/latest/submitting.html#substantial-scholarly-effort) criterion.
+
+One possible alternative to JOSS is to follow [GitHub's guide](https://guides.github.com/activities/citable-code/) on how to create a permanent archive and DOI for your software. This DOI can then be used by others to cite your work.
+```
 
 ## Overview of editorial process
 

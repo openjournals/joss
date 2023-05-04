@@ -186,6 +186,12 @@ A series of checks can be run on the submitted repository with the command:
 
 EditorialBot will report back with an analysis of the source code and list authorship, contributions and file types information. EditorialBot will also detect the languages used in the repository, will count the number of words in the paper file and will look for an Open Source License and for a *Statement of need* section in the paper.
 
+It is possible to run the checks on a specific git branch:
+
+```text
+@editorialbot check repository from branch <custom-branch-name>
+```
+
 ### Post-review checklist
 
 Editors can get a checklist to remind all steps to do after the reviewers have finished their reviews and recommended the paper for acceptance:

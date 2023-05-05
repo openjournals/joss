@@ -1,6 +1,6 @@
 require 'open3'
 
-class Paper < ActiveRecord::Base
+class Paper < ApplicationRecord
   searchkick index_name: "jose-production"
 
   include SettingsHelper

@@ -126,7 +126,7 @@ describe PapersController, type: :controller do
 
       paper_params = { title: "Yeah whateva",
                        body: "something",
-                       repository_url: "https://github.com/openjournals/joss",
+                       repository_url: "https://github.com/openjournals/jose",
                        git_branch: "joss-paper",
                        software_version: "v1.0.1",
                        submission_kind: "new",

@@ -98,9 +98,9 @@ describe Paper do
 
   # GitHub stuff
   it "should know how to return a pretty repo name with owner" do
-    paper = create(:paper, repository_url: "https://github.com/openjournals/joss-reviews")
+    paper = create(:paper, repository_url: "https://github.com/openjournals/jose-reviews")
 
-    expect(paper.pretty_repository_name).to eq("openjournals / joss-reviews")
+    expect(paper.pretty_repository_name).to eq("openjournals / jose-reviews")
   end
 
   it 'should know how to return a pretty DOI' do

@@ -50,7 +50,7 @@ describe 'papers/show.html.erb' do
       render template: "papers/show", formats: :html
 
       # Paper metadata
-      expect(rendered).to have_title("The Journal of Open Source Software: #{paper.scholar_title}")
+      expect(rendered).to have_title("Journal of Open Source Education: #{paper.scholar_title}")
 
       expect(rendered).to have_css("meta[name='citation_title']", visible: false)
       expect(rendered).to have_css("meta[content='#{paper.scholar_title}']", visible: false)

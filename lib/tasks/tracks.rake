@@ -42,7 +42,7 @@ namespace :tracks do
       end
     end
 
-    desc "Import tracks and subjects from the lib/tracks.yml file"
+    desc "Print info on what tracks and subjects will be imported when running the import:subjects task"
     task dry_run: :environment do
       tracks_info = YAML.load_file(Rails.root + "lib/tracks.yml")
       tracks_info["tracks"].each_pair do |k, v|

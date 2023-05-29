@@ -50,7 +50,7 @@ class Track < ApplicationRecord
     when "sbcs"
       "e374fc"
     else
-      "3c3c3c"
+      "E7E7E7"
     end
   end
 

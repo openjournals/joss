@@ -195,9 +195,9 @@ The goal of Open Journals is to provide authors with a seamless and pleasant wri
 
 Tables and figures can be referenced if they are given a *label* in the caption. In pure Markdown, this can be done by adding an empty span `[]{label="floatlabel"}` to the caption. LaTeX syntax is supported as well: `\label{floatlabel}`.
 
-Link to a float element, i.e., a table or figure, with `\ref{identifier}` or `\autoref{identifier}`, where `identifier` must be defined in the float's caption. The former command results in just the float's number, while the latter inserts the type and number of the referenced float. E.g., in this document `\autoref{proglangs}` yields "\autoref{proglangs}", while `\ref{proglangs}` gives "\ref{proglangs}".
+Link to a float element, i.e., a table or figure, with `\ref{identifier}` or `\autoref{identifier}`, where `identifier` must be defined in the float's caption. The former command results in just the float's number, while the latter inserts the type and number of the referenced float. E.g., in this document `\autoref{proglangs}` yields "Table 1", while `\ref{proglangs}` gives "1".
 
-: Comparison of programming languages used in the publishing tool. []{label="proglangs"}
+    : Comparison of programming languages used in the publishing tool. []{label="proglangs"}
 
     | Language | Typing          | Garbage Collected | Evaluation | Created |
     |----------|:---------------:|:-----------------:|------------|---------|
@@ -211,9 +211,7 @@ Cross-references to equations work similarly to those for floating elements. The
 
     $$a^n + b^n = c^n \label{fermat}$$
 
-Referencing, however, is identical, with `\autoref{eq:fermat}` resulting in "\autoref{eq:fermat}".
-
-$$a^n + b^n = c^n \label{eq:fermat}$$
+Referencing, however, is identical, with `\autoref{eq:fermat}` resulting in "Equation 1".
 
 Authors who do not wish to include the label directly in the formula can use a Markdown span to add the label:
 

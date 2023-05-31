@@ -125,7 +125,7 @@ class Paper < ApplicationRecord
   validates_presence_of :repository_url, message: "Repository address can't be blank"
   validates_presence_of :software_version, message: "Version can't be blank"
   validates_presence_of :body, message: "Description can't be blank"
-  validates_presence_of :track_id, on: :create, message: "You must select a valid subject for the paper"
+  validates_presence_of :track_id, on: :create, message: "You must select a valid subject for the paper", if: Proc.new { JournalFeatures.tracks? }
   validates :kind, inclusion: { in: Rails.application.settings["paper_types"] }, allow_nil: true
   validates :submission_kind, inclusion: { in: SUBMISSION_KINDS, message: "You must select a submission type" }, allow_nil: false
   validate :check_repository_address, on: :create
@@ -403,7 +403,8 @@ class Paper < ApplicationRecord
     return false if meta_review_issue_id
 
     set_track_id(new_track_id) if new_track_id.present?
-    new_labels = ["pre-review", self.track.label]
+    new_labels = ["pre-review"]
+    new_labels << self.track.label if self.track && JournalFeatures.tracks?
 
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[PRE REVIEW]: #{self.title}",

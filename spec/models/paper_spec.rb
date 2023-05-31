@@ -39,22 +39,38 @@ describe Paper do
     expect(paper.submitting_author).to eq(user)
   end
 
-  it "must have a track assigned on creation" do
-    no_track_params = { title: 'Test paper',
-                       body: 'A test paper description',
-                       repository_url: 'http://github.com/arfon/fidgit',
-                       software_version: 'v1.0.0',
-                       submitting_author: create(:user),
-                       submission_kind: 'new' }
+  it "must have a track assigned on creation if tracks are enabled" do
+    enable_feature(:tracks) do
+      no_track_params = { title: 'Test paper',
+                         body: 'A test paper description',
+                         repository_url: 'http://github.com/arfon/fidgit',
+                         software_version: 'v1.0.0',
+                         submitting_author: create(:user),
+                         submission_kind: 'new' }
 
-    valid_params = no_track_params.merge track: create(:track)
+      valid_params = no_track_params.merge track: create(:track)
 
-    paper = Paper.create(no_track_params)
-    expect(paper).to_not be_valid
-    expect(paper.errors.full_messages.first).to eq("Track You must select a valid subject for the paper")
+      paper = Paper.create(no_track_params)
+      expect(paper).to_not be_valid
+      expect(paper.errors.full_messages.first).to eq("Track You must select a valid subject for the paper")
 
-    paper = Paper.create(valid_params)
-    expect(paper).to be_valid
+      paper = Paper.create(valid_params)
+      expect(paper).to be_valid
+    end
+  end
+
+  it "does not have a track assigned on creation if tracks are disabled" do
+    disable_feature(:tracks) do
+      no_track_params = { title: 'Test paper',
+                         body: 'A test paper description',
+                         repository_url: 'http://github.com/arfon/fidgit',
+                         software_version: 'v1.0.0',
+                         submitting_author: create(:user),
+                         submission_kind: 'new' }
+
+      paper = Paper.create(no_track_params)
+      expect(paper).to be_valid
+    end
   end
 
   # Scopes
@@ -265,20 +281,39 @@ describe Paper do
       expect(paper.reload.track).to eq(track2)
     end
 
-    it "should label GH issue with track label" do
-      editor = create(:editor, login: "arfon")
-      user = create(:user, editor: editor)
-      submitting_author = create(:user)
+    it "should label GH issue with track label if tracks are enabled" do
+      enable_feature(:tracks) do
+        editor = create(:editor, login: "arfon")
+        user = create(:user, editor: editor)
+        submitting_author = create(:user)
 
-      paper = create(:submitted_paper_with_sha, submitting_author: submitting_author)
-      fake_issue = Object.new
-      allow(fake_issue).to receive(:number).and_return(1)
+        paper = create(:submitted_paper_with_sha, submitting_author: submitting_author)
+        fake_issue = Object.new
+        allow(fake_issue).to receive(:number).and_return(1)
 
-      track = create(:track)
-      expected_labels = { labels: "pre-review,#{track.label}" }
-      expect(GITHUB).to receive(:create_issue).with(anything, anything, anything, expected_labels).and_return(fake_issue)
+        track = create(:track)
+        expected_labels = { labels: "pre-review,#{track.label}" }
+        expect(GITHUB).to receive(:create_issue).with(anything, anything, anything, expected_labels).and_return(fake_issue)
 
-      paper.start_meta_review!('arfon', editor, track.id)
+        paper.start_meta_review!('arfon', editor, track.id)
+      end
+    end
+
+    it "should not label GH issue with track label if tracks are disabled" do
+      disable_feature(:tracks) do
+        editor = create(:editor, login: "arfon")
+        user = create(:user, editor: editor)
+        submitting_author = create(:user)
+
+        paper = create(:submitted_paper_with_sha, submitting_author: submitting_author)
+        fake_issue = Object.new
+        allow(fake_issue).to receive(:number).and_return(1)
+
+        expected_labels = { labels: "pre-review" }
+        expect(GITHUB).to receive(:create_issue).with(anything, anything, anything, expected_labels).and_return(fake_issue)
+
+        paper.start_meta_review!('arfon', editor)
+      end
     end
   end
 

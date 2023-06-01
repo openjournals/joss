@@ -84,7 +84,34 @@ feature "Dashboard" do
       expect(page).to have_content("Paper Rejected")
     end
 
-    feature "Filter by track" do
+    scenario "Dropdown is not visible if tracks are disabled" do
+      disable_feature(:tracks) do
+        expect(page).to_not have_css("select#track_id")
+
+        visit dashboard_incoming_path
+        expect(page).to_not have_css("select#track_id")
+
+        visit "/dashboard/#{Editor.last.login}"
+        expect(page).to_not have_css("select#track_id")
+
+        visit dashboard_in_progress_path
+        expect(page).to_not have_css("select#track_id")
+
+        visit "/dashboard"
+        expect(page).to_not have_css("select#track_id")
+
+        visit dashboard_all_path
+        expect(page).to_not have_css("select#track_id")
+      end
+    end
+
+    feature "Filter by track, if tracks are enabled" do
+      around(:example) do |ex|
+        enable_feature(:tracks) do
+          ex.run
+        end
+      end
+
       scenario "Dropdown is visible only in incoming/in_progress/all_papers tabs" do
         expect(page).to_not have_css("select#track_id")
 

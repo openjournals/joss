@@ -4,7 +4,7 @@ class Editor < ApplicationRecord
   validates :last_name, presence: true
   validates :email, presence: true, unless: Proc.new { |editor| editor.kind == "emeritus" }
   validates :login, presence: true, unless: Proc.new { |editor| editor.kind == "emeritus" }
-  validates :tracks, presence: true, unless: Proc.new { |editor| ["board", "emeritus"].include?(editor.kind) }
+  validates :tracks, presence: true, unless: Proc.new { |editor| ["board", "emeritus"].include?(editor.kind) || !JournalFeatures.tracks? }
 
   belongs_to :user, optional: true
   has_many :papers

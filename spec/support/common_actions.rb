@@ -20,4 +20,22 @@ module CommonActions
     allow(Open3).to receive(:capture3).with("git ls-remote https://github.com/openjournals/joss").and_return(["", "", ok ])
     allow(Open3).to receive(:capture3).with("git ls-remote https://github.com/openjournals/joss-reviews").and_return(["", "", ok ])
   end
+
+  def disable_feature(feat, &block)
+    previous_value = Rails.application.settings.dig(:features, feat.to_sym)
+    Rails.application.settings[:features][feat.to_sym] = false
+    if block_given?
+      yield
+      Rails.application.settings[:features][feat.to_sym] = previous_value
+    end
+  end
+
+  def enable_feature(feat, &block)
+    previous_value = Rails.application.settings.dig(:features, feat.to_sym)
+    Rails.application.settings[:features][feat.to_sym] = true
+    if block_given?
+      yield
+      Rails.application.settings[:features][feat.to_sym] = previous_value
+    end
+  end
 end

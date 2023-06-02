@@ -13,7 +13,12 @@ class OnboardingsController < ApplicationController
       flash[:notice] = "Thanks! An editor in chief will review your info soon"
       redirect_to root_path
     else
-      flash[:error] = "Error saving your data: Name, Email, GitHub username and Tracks are mandatory"
+      if JournalFeatures.tracks?
+        flash[:error] = "Error saving your data: Name, Email, GitHub username and Tracks are mandatory"
+      else
+        flash[:error] = "Error saving your data: Name, Email and GitHub username are mandatory"
+      end
+
       redirect_to editor_onboardings_path(@onboarding.token)
     end
   end

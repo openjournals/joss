@@ -17,24 +17,46 @@ feature "Editor profile" do
     expect(page).to_not have_content('Editor profile')
   end
 
-  scenario "Show editor's data" do
-    login_as(user_editor)
-    visit root_path
-    click_on 'My Profile'
-    click_on 'Editor profile'
-    expect(page.status_code).to eq(200)
+  scenario "Show editor's data, including tracks if tracks are enabled" do
+    enable_feature(:tracks) do
+      login_as(user_editor)
+      visit root_path
+      click_on 'My Profile'
+      click_on 'Editor profile'
+      expect(page.status_code).to eq(200)
 
-    first_name = find_field('First name').value
-    description = find_field('Description').value
+      first_name = find_field('First name').value
+      description = find_field('Description').value
 
-    expect(first_name).to eq('Lorena')
-    expect(description).to eq('Science testing editor')
-    expect(user_editor.editor.track_ids.size > 0).to be true
-    user_editor.editor.track_ids.each do |track_id|
-      expect(page).to have_checked_field("editor_track_ids_#{track_id}")
+      expect(first_name).to eq('Lorena')
+      expect(description).to eq('Science testing editor')
+
+      expect(user_editor.editor.track_ids.size > 0).to be true
+      expect(page).to have_content("Tracks")
+      user_editor.editor.track_ids.each do |track_id|
+        expect(page).to have_checked_field("editor_track_ids_#{track_id}")
+      end
     end
   end
 
+  scenario "Show editor's data, without tracks if tracks are disabled" do
+    disable_feature(:tracks) do
+      login_as(user_editor)
+      visit root_path
+      click_on 'My Profile'
+      click_on 'Editor profile'
+      expect(page.status_code).to eq(200)
+
+      first_name = find_field('First name').value
+      description = find_field('Description').value
+
+      expect(first_name).to eq('Lorena')
+      expect(description).to eq('Science testing editor')
+
+      expect(user_editor.editor.track_ids.size == 0).to be true
+      expect(page).to_not have_content("Tracks")
+    end
+  end
 
   scenario "Update editor's data" do
     login_as(user_editor)

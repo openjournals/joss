@@ -57,21 +57,12 @@ class HomeController < ApplicationController
       @editor = Editor.find_by_login(params[:editor])
 
       if sort == "active"
-        @papers = Paper.unscoped.in_progress.where(editor: @editor).order(last_activity: @order).paginate(
-          page: params[:page],
-          per_page: 20
-        )
+        @pagy, @papers = pagy(Paper.unscoped.in_progress.where(editor: @editor).order(last_activity: @order))
       else
-        @papers = Paper.unscoped.in_progress.where(editor: @editor).order(created_at: @order).paginate(
-          page: params[:page],
-          per_page: 20
-        )
+        @pagy, @papers = pagy(Paper.unscoped.in_progress.where(editor: @editor).order(created_at: @order))
       end
     else
-      @papers = Paper.everything.paginate(
-                  page: params[:page],
-                  per_page: 20
-                )
+      @pagy, @papers = pagy(Paper.everything)
     end
   end
 
@@ -82,15 +73,9 @@ class HomeController < ApplicationController
     @order = params[:order].to_s.end_with?("-asc") ? "asc" : "desc"
 
     if params[:order].to_s.include?("active-")
-      @papers = incoming_scope.order(last_activity: @order).paginate(
-                  page: params[:page],
-                  per_page: 20
-                )
+      @pagy, @papers = pagy(incoming_scope.order(last_activity: @order))
     else
-      @papers = incoming_scope.order(created_at: @order).paginate(
-                  page: params[:page],
-                  per_page: 20
-                )
+      @pagy, @papers = pagy(incoming_scope.order(created_at: @order))
     end
 
     load_pending_invitations_for_papers(@papers)
@@ -108,15 +93,9 @@ class HomeController < ApplicationController
     @order = params[:order].to_s.end_with?("-asc") ? "asc" : "desc"
 
     if params[:order].to_s.include?("active-")
-      @papers = in_progress_scope.order(last_activity: @order).paginate(
-        page: params[:page],
-        per_page: 20
-      )
+      @pagy, @papers = pagy(in_progress_scope.order(last_activity: @order))
     else
-      @papers = in_progress_scope.order(created_at: @order).paginate(
-        page: params[:page],
-        per_page: 20
-      )
+      @pagy, @papers = pagy(in_progress_scope.order(created_at: @order))
     end
 
     load_pending_invitations_for_papers(@papers)
@@ -132,15 +111,9 @@ class HomeController < ApplicationController
     @order = params[:order].to_s.end_with?("-asc") ? "asc" : "desc"
 
     if params[:order].to_s.include?("active-")
-      @papers = all_scope.order(last_activity: @order).paginate(
-        page: params[:page],
-        per_page: 20
-      )
+      @pagy, @papers = pagy(all_scope.order(last_activity: @order))
     else
-      @papers = all_scope.order(created_at: @order).paginate(
-        page: params[:page],
-        per_page: 20
-      )
+      @pagy, @papers = pagy(all_scope.order(created_at: @order))
     end
 
     load_pending_invitations_for_papers(@papers)

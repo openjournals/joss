@@ -5,6 +5,7 @@ describe 'papers/submitted.html.erb' do
 
   context 'submitted papers' do
     it "should not show" do
+      include Pagy::Backend
       user = create(:user)
 
       3.times do
@@ -13,7 +14,8 @@ describe 'papers/submitted.html.erb' do
 
       create(:paper, state: "submitted", submitting_author: user)
 
-      assign(:papers, Paper.submitted.paginate(page: 1, per_page: 10))
+      assign(:pagy, Pagy.new({count: Paper.submitted.count, page: 1}))
+      assign(:papers, Paper.submitted)
 
       render template: "papers/index", formats: :html
 

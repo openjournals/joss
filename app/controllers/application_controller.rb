@@ -1,4 +1,5 @@
 class ApplicationController < ActionController::Base
+  include Pagy::Backend
   rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
 
   # Prevent CSRF attacks by raising an exception.

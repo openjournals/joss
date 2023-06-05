@@ -44,6 +44,14 @@ And then compile the paper normally:
 @editorialbot generate pdf
 ```
 
+#### Compiling preprint files
+
+If you need a generic paper file suitable for preprint servers (arXiv-like) you can use the following command that will generate a LaTeX file:
+
+```text
+@editorialbot generate preprint
+```
+
 ### Finding reviewers
 
 Sometimes submitting authors suggest people the think might be appropriate to review their submission. If you want the link to the current list of JOSS reviewers, type the following in the review thread:
@@ -307,6 +315,9 @@ JOSS editors-in-chief can withdraw a submission with the following command:
 
 # Generates the pdf paper
 @editorialbot generate pdf
+
+# Generates a LaTeX preprint file
+@editorialbot generate preprint
 
 # Creates a post-review checklist with editor and authors tasks
 @editorialbot create post-review checklist

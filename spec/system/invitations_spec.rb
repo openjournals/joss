@@ -76,7 +76,7 @@ feature "Invitations list" do
       create_list(:invitation, 10, :expired)
       visit invitations_path
 
-      expect(page).to have_content("Displaying invitation 1 - 25 of 30 in total")
+      expect(page).to have_content("Displaying invitations 1 - 25 of 30 in total")
       expect(page).to have_link("Next →", href: invitations_path(page:2))
     end
 

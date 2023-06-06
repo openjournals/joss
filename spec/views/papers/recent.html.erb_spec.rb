@@ -10,7 +10,8 @@ describe 'papers/recent.html.erb' do
         create(:accepted_paper, submitting_author: user)
       end
 
-      assign(:papers, Paper.all.paginate(page: 1, per_page: 10))
+      assign(:pagy, Pagy.new({count: Paper.all.count, page: 1}))
+      assign(:papers, Paper.all)
 
       render template: "papers/index", formats: :html
 

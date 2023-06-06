@@ -1,5 +1,6 @@
 module ApplicationHelper
   include SettingsHelper
+  include Pagy::Frontend
 
   def flash_class_for(flash_level)
     case flash_level

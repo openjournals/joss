@@ -14,7 +14,7 @@ class PapersController < ApplicationController
 
     respond_to do |format|
       format.atom { render template: 'papers/index' }
-      format.json { render json: @papers }
+      format.json { render template: 'papers/index' }
       format.html { render template: 'papers/index' }
     end
   end
@@ -26,7 +26,7 @@ class PapersController < ApplicationController
 
     respond_to do |format|
       format.atom { render template: 'papers/index' }
-      format.json { render json: @papers }
+      format.json { render template: 'papers/index' }
       format.html { render template: 'papers/index' }
     end
   end
@@ -42,7 +42,7 @@ class PapersController < ApplicationController
 
     respond_to do |format|
       format.atom { render template: 'papers/index' }
-      format.json { render json: @papers }
+      format.json { render template: 'papers/index' }
       format.html { render template: 'papers/index' }
     end
   end
@@ -54,7 +54,7 @@ class PapersController < ApplicationController
 
     respond_to do |format|
       format.atom { render template: 'papers/index' }
-      format.json { render json: @papers }
+      format.json { render template: 'papers/index' }
       format.html { render template: 'papers/index' }
     end
   end
@@ -76,7 +76,7 @@ class PapersController < ApplicationController
 
     respond_to do |format|
       format.atom { render template: 'papers/index' }
-      format.json { render json: @papers }
+      format.json { render template: 'papers/index' }
       format.html { render template: 'papers/index' }
     end
   end
@@ -135,7 +135,7 @@ class PapersController < ApplicationController
 
     respond_to do |format|
       format.atom { render template: 'papers/index' }
-      format.json { render json: @papers }
+      format.json { render template: 'papers/index' }
       format.html { render template: 'papers/index' }
     end
   end

@@ -20,7 +20,7 @@ class PapersController < ApplicationController
   end
 
   def index
-    @pagy, @papers = pagy(Paper.public_everything, items: 3)
+    @pagy, @papers = pagy(Paper.public_everything, items: 10)
 
     @selected = "all"
 

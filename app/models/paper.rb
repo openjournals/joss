@@ -19,6 +19,16 @@ class Paper < ApplicationRecord
              optional: true,
              foreign_key: "eic_id"
 
+  belongs_to :retracted_paper,
+             class_name: 'Paper',
+             optional: true,
+             foreign_key: "retraction_for_id"
+
+  has_one :retraction_paper,
+          class_name: 'Paper',
+          foreign_key: "retraction_for_id",
+          inverse_of: :retracted_paper
+
   has_many :invitations
   has_many :notes
   has_many :votes
@@ -170,6 +180,10 @@ class Paper < ApplicationRecord
 
   def published?
     accepted? || retracted?
+  end
+
+  def is_a_retraction_notice?
+    retraction_for_id.present?
   end
 
   def invite_editor(editor_handle)

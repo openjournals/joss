@@ -21,5 +21,5 @@ if @paper.published?
   json.tags @paper.author_tags.join(', ')
   json.paper_review @paper.review_url
   json.pdf_url @paper.seo_pdf_url
-  json.software_archive @paper.clean_archive_doi
+  json.software_archive @paper.archive_doi_url
 end

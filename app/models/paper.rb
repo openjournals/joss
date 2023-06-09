@@ -268,36 +268,20 @@ class Paper < ApplicationRecord
     end
   end
 
-  def pretty_doi
-    return "DOI pending" unless archive_doi
-
-    matches = archive_doi.scan(/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/).flatten
-
-    if matches.any?
-      return matches.first
-    else
-      return archive_doi
-    end
-  end
-
   # Make sure that DOIs have a full http URL
   # e.g. turn 10.6084/m9.figshare.828487 into https://doi.org/10.6084/m9.figshare.828487
-  def doi_with_url
+  def archive_doi_url
     return "DOI pending" unless archive_doi
 
     bare_doi = archive_doi[/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/]
 
     if archive_doi.include?("https://doi.org/")
-      return archive_doi
+      return archive_doi.gsub(/\"/, "")
     elsif bare_doi
-      return "https://doi.org/#{bare_doi}"
+      return "https://doi.org/#{bare_doi}".gsub(/\"/, "")
     else
-      return archive_doi
+      return archive_doi.gsub(/\"/, "")
     end
-  end
-
-  def clean_archive_doi
-    doi_with_url.gsub(/\"/, "")
   end
 
   # A 5-figure integer used to produce the JOSS DOI

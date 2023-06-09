@@ -39,7 +39,7 @@ atom_feed do |feed|
             end
           end
           entry.doi(paper.doi)
-          entry.archive_doi(paper.clean_archive_doi)
+          entry.archive_doi(paper.archive_doi_url)
           entry.languages(paper.language_tags.join(', '))
           entry.pdf_url(paper.seo_pdf_url)
           entry.tags(paper.author_tags.join(', '))

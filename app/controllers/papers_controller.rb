@@ -223,8 +223,8 @@ class PapersController < ApplicationController
     if @paper.invisible?
       # Redirect to login if not logged in
       if !current_user
-        session[:redirect_to] = request.fullpath
-        redirect_to 'sessions#create', allow_other_host: true and return
+        flash[:notice] = "You need to log in before viewing this paper."
+        redirect_to root_path and return
       end
       
       # Redirect to root if not an admin or the submitting author

@@ -221,7 +221,18 @@ class PapersController < ApplicationController
     # Don't show the paper to anyone other than the submitting author or an
     # admin.
     if @paper.invisible?
-      head 404 and return unless can_see_hidden_paper?(@paper)
+      # Redirect to login if not logged in
+      if !current_user
+        session[:redirect_to] = request.fullpath
+        redirect_to 'sessions#create', allow_other_host: true and return
+      end
+      
+      # Redirect to root if not an admin or the submitting author
+      # With notice that the paper is not visible
+      unless can_see_hidden_paper?(@paper)
+        flash[:notice] = "You don't have the permissions to view this paper."
+        redirect_to root_path and return
+      end
     end
 
     # The behaviour here for PDFs is to make it possible for the PDF to appear

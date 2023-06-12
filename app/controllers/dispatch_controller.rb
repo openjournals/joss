@@ -145,4 +145,29 @@ class DispatchController < ApplicationController
       head :forbidden
     end
   end
+
+  def api_retract
+    if params[:secret] == ENV['BOT_SECRET']
+      @paper = Paper.find_by_review_issue_id!(params[:id])
+
+      retraction_paper = Paper.new
+      retraction_paper.doi = @paper.doi + "RN"
+      retraction_paper.retraction_for_id = @paper.id
+      retraction_paper.title = "Retraction paper for #{@paper.title}"
+      retraction_paper.body = "Retraction paper for #{@paper.title}"
+      retraction_paper.repository_url = @paper.repository_url
+      retraction_paper.software_version = @paper.software_version
+      retraction_paper.track_id = @paper.track_id
+      retraction_paper.submission_kind = "new"
+      retraction_paper.state = "accepted"
+
+      if retraction_paper.save!
+        @paper.update(retraction_notice: params[:retraction_notice]) if params[:retraction_notice].present?
+        @paper.retract!
+      end
+    else
+      head :forbidden
+    end
+  end
+
 end

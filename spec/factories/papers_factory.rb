@@ -9,8 +9,8 @@ FactoryBot.define do
     submission_kind   { 'new' }
     track             { create(:track) }
 
-    created_at  { Time.now }
-    updated_at  { Time.now }
+    created_at { Time.now }
+    updated_at { Time.now }
 
     factory :paper_with_sha do
       sha { '48d24b0158528e85ac7706aecd8cddc4' }
@@ -35,7 +35,7 @@ FactoryBot.define do
     end
 
     factory :resubmission_paper do
-      submission_kind   { 'resubmission' }
+      submission_kind { 'resubmission' }
     end
 
     factory :rejected_paper do

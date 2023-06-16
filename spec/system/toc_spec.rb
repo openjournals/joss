@@ -44,8 +44,10 @@ feature "Table of Contents" do
   scenario "index" do
     visit toc_index_path
 
-    expect(page).to have_content("Table of Contents")
-    expect(page).to_not have_link("Table of Contents")
+    within("#toc-header") do
+      expect(page).to have_content("Table of Contents")
+      expect(page).to_not have_link("Table of Contents")
+    end
 
     @volumes.each do |volume|
       expect(page).to have_link("Volume #{volume} (#{@years[@volumes.index(volume)]})", href: toc_volume_path(volume: volume))
@@ -60,15 +62,19 @@ feature "Table of Contents" do
 
   scenario "by year" do
     visit toc_year_path(year: @years.first)
-    expect(page).to have_content("Year #{@years.first}")
-    expect(page).to have_link("Table of Contents")
+    within("#toc-header") do
+      expect(page).to have_content("Year #{@years.first}")
+      expect(page).to have_link("Table of Contents")
+    end
     expect(page).to have_link(@first_accepted_paper.title, href: @first_accepted_paper.seo_url)
     expect(page).to_not have_link(@retracted_paper.title)
     expect(page).to_not have_link(@last_accepted_paper.title)
 
     visit toc_year_path(year: @years.last)
-    expect(page).to have_content("Year #{@years.last}")
-    expect(page).to have_link("Table of Contents")
+    within("#toc-header") do
+      expect(page).to have_content("Year #{@years.last}")
+      expect(page).to have_link("Table of Contents")
+    end
     expect(page).to have_link(@retracted_paper.title, href: @retracted_paper.seo_url)
     expect(page).to have_link(@last_accepted_paper.title, href: @last_accepted_paper.seo_url)
     expect(page).to_not have_link(@first_accepted_paper.title)
@@ -76,17 +82,21 @@ feature "Table of Contents" do
 
   scenario "by volume" do
     visit toc_volume_path(volume: 1)
-    expect(page).to have_content("Year #{@years.first}")
-    expect(page).to have_content("Volume 1")
-    expect(page).to have_link("Table of Contents")
+    within("#toc-header") do
+      expect(page).to have_content("Year #{@years.first}")
+      expect(page).to have_content("Volume 1")
+      expect(page).to have_link("Table of Contents")
+    end
     expect(page).to have_link(@first_accepted_paper.title, href: @first_accepted_paper.seo_url)
     expect(page).to_not have_link(@retracted_paper.title)
     expect(page).to_not have_link(@last_accepted_paper.title)
 
     visit toc_volume_path(volume: @volumes.last)
-    expect(page).to have_content("Year #{@years.last}")
-    expect(page).to have_content("Volume #{@volumes.last}")
-    expect(page).to have_link("Table of Contents")
+    within("#toc-header") do
+      expect(page).to have_content("Year #{@years.last}")
+      expect(page).to have_content("Volume #{@volumes.last}")
+      expect(page).to have_link("Table of Contents")
+    end
     expect(page).to have_link(@retracted_paper.title, href: @retracted_paper.seo_url)
     expect(page).to have_link(@last_accepted_paper.title, href: @last_accepted_paper.seo_url)
     expect(page).to_not have_link(@first_accepted_paper.title)
@@ -94,17 +104,21 @@ feature "Table of Contents" do
 
   scenario "by issue" do
     visit toc_issue_path(issue: 1)
-    expect(page).to have_content("#{Date::MONTHNAMES[@launch_month]} #{@years.first} Volume 1")
-    expect(page).to have_content("Issue 1")
-    expect(page).to have_link("Table of Contents")
+    within("#toc-header") do
+      expect(page).to have_content("#{Date::MONTHNAMES[@launch_month]} #{@years.first} Volume 1")
+      expect(page).to have_content("Issue 1")
+      expect(page).to have_link("Table of Contents")
+    end
     expect(page).to have_link(@first_accepted_paper.title, href: @first_accepted_paper.seo_url)
     expect(page).to_not have_link(@retracted_paper.title)
     expect(page).to_not have_link(@last_accepted_paper.title)
 
     visit toc_issue_path(issue: @issues.last)
-    expect(page).to have_content("#{Date::MONTHNAMES[@now.month]} #{@years.last} Volume #{@volumes.last}")
-    expect(page).to have_content("Issue #{@issues.last}")
-    expect(page).to have_link("Table of Contents")
+    within("#toc-header") do
+      expect(page).to have_content("#{Date::MONTHNAMES[@now.month]} #{@years.last} Volume #{@volumes.last}")
+      expect(page).to have_content("Issue #{@issues.last}")
+      expect(page).to have_link("Table of Contents")
+    end
     expect(page).to have_link(@retracted_paper.title, href: @retracted_paper.seo_url)
     expect(page).to have_link(@last_accepted_paper.title, href: @last_accepted_paper.seo_url)
     expect(page).to_not have_link(@first_accepted_paper.title)
@@ -118,9 +132,11 @@ feature "Table of Contents" do
 
   scenario "current issue" do
     visit toc_current_issue_path
-    expect(page).to have_content("Current issue")
-    expect(page).to have_content("Year #{@years.last} Volume #{@volumes.last} Issue #{@issues.last}")
-    expect(page).to have_link("Table of Contents")
+    within("#toc-header") do
+      expect(page).to have_content("Current issue")
+      expect(page).to have_content("Year #{@years.last} Volume #{@volumes.last} Issue #{@issues.last}")
+      expect(page).to have_link("Table of Contents")
+    end
     expect(page).to have_link(@retracted_paper.title, href: @retracted_paper.seo_url)
     expect(page).to have_link(@last_accepted_paper.title, href: @last_accepted_paper.seo_url)
     expect(page).to_not have_link(@first_accepted_paper.title)

@@ -174,7 +174,7 @@ describe PapersController, type: :controller do
     end
   end
 
-  describe "four oh four" do
+  describe "Paper visibility" do
     it "should 404 when passed an invalid sha" do
       get :show, params: {id: SecureRandom.hex}, format: "html"
       expect(response.body).to match /404 Not Found/
@@ -187,49 +187,71 @@ describe PapersController, type: :controller do
       expect(response.status).to eq(404)
     end
 
-    it "should 404 for a paper that has been rejected" do
-      rejected_paper = create(:paper, state: 'rejected')
-      get :show, params: {id: rejected_paper.sha}, format: "html"
-      expect(response.status).to eq(404)
+    describe "invisible (submitted/rejected/withdrawn) papers" do
+      before do
+        @invisible_papers = [
+          rejected_paper = create(:paper, state: 'rejected'),
+          submitted_paper = create(:paper, state: 'submitted'),
+          withdrawn_paper = create(:paper, state: 'withdrawn')
+        ]
+      end
+
+      it "should redirect home for not logged in users" do
+        @invisible_papers.each do |invisible_paper|
+          get :show, params: {id: invisible_paper.sha}, format: "html"
+          expect(response.status).to eq(302)
+          expect(response).to redirect_to(root_path)
+          expect(flash[:notice]).to eql "You need to log in before viewing this paper."
+        end
+      end
+
+      it "should redirect home for users with no permissions (not an admin or the submitting author)" do
+        user = create(:user)
+        allow(controller).to receive_message_chain(:current_user).and_return(user)
+
+        @invisible_papers.each do |invisible_paper|
+          get :show, params: {id: invisible_paper.sha}, format: "html"
+          expect(response.status).to eq(302)
+          expect(response).to redirect_to(root_path)
+          expect(flash[:notice]).to eql "You don't have the permissions to view this paper."
+        end
+      end
+
+      it "should be visible for a user who owns the paper" do
+        user = create(:user)
+        allow(controller).to receive_message_chain(:current_user).and_return(user)
+        submitted_paper = create(:paper, state: 'submitted', submitting_author: user)
+
+        get :show, params: {id: submitted_paper.sha}, format: "html"
+        expect(response.status).to eq(200)
+      end
+
+      it "should be visible for an admin" do
+        user = create(:user)
+        admin = create(:user, admin: true)
+        allow(controller).to receive_message_chain(:current_user).and_return(admin)
+        submitted_paper = create(:paper, state: 'submitted', submitting_author: user)
+
+        get :show, params: {id: submitted_paper.sha}, format: "html"
+        expect(response.status).to eq(200)
+      end
+
+      it "should be visible for an AEiC" do
+        user = create(:user)
+        aeic = create(:user, editor: create(:board_editor))
+        allow(controller).to receive_message_chain(:current_user).and_return(aeic)
+        submitted_paper = create(:paper, state: 'submitted', submitting_author: user)
+
+        get :show, params: {id: submitted_paper.sha}, format: "html"
+        expect(response.status).to eq(200)
+      end
     end
 
-    it "should 404 for a paper that has just been submitted" do
-      submitted_paper = create(:paper, state: 'submitted')
-      get :show, params: {id: submitted_paper.sha}, format: "html"
-      expect(response.status).to eq(404)
-    end
 
-    it "should be visible for a user who owns the paper" do
-      user = create(:user)
-      allow(controller).to receive_message_chain(:current_user).and_return(user)
-      submitted_paper = create(:paper, state: 'submitted', submitting_author: user)
 
-      get :show, params: {id: submitted_paper.sha}, format: "html"
-      expect(response.status).to eq(200)
-    end
-
-    it "should be visible for an admin" do
-      user = create(:user)
-      admin = create(:user, admin: true)
-      allow(controller).to receive_message_chain(:current_user).and_return(admin)
-      submitted_paper = create(:paper, state: 'submitted', submitting_author: user)
-
-      get :show, params: {id: submitted_paper.sha}, format: "html"
-      expect(response.status).to eq(200)
-    end
-
-    it "should be visible for an AEiC" do
-      user = create(:user)
-      aeic = create(:user, editor: create(:board_editor))
-      allow(controller).to receive_message_chain(:current_user).and_return(aeic)
-      submitted_paper = create(:paper, state: 'submitted', submitting_author: user)
-
-      get :show, params: {id: submitted_paper.sha}, format: "html"
-      expect(response.status).to eq(200)
-    end
   end
 
-  describe "paper lookup" do
+  describe "Paper lookup" do
     it "should return the created_at date for a submitted paper" do
       submitted_paper = create(:paper, state: 'submitted', created_at: 3.days.ago, meta_review_issue_id: 123)
 
@@ -264,7 +286,7 @@ describe PapersController, type: :controller do
     end
   end
 
-  describe "lookup_track" do
+  describe "#lookup_track" do
     it "should return paper's track info" do
       track = create(:track, name: "Test track", short_name: "Tes Tr", code: 22)
       create(:paper, track: track, meta_review_issue_id: 123)
@@ -287,7 +309,7 @@ describe PapersController, type: :controller do
     end
   end
 
-  describe "accepted papers" do
+  describe "Accepted papers" do
     it "should not redirect when accepting any content type" do
       paper = create(:accepted_paper)
       request.headers["HTTP_ACCEPT"] = "*/*"
@@ -318,7 +340,7 @@ describe PapersController, type: :controller do
     end
   end
 
-  describe "status badges" do
+  describe "Status badges" do
     it "should return the correct status badge for a submitted paper" do
       submitted_paper = create(:paper, state: 'submitted')
 

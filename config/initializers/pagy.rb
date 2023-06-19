@@ -7,7 +7,7 @@ Pagy::DEFAULT[:items] = 20
 Pagy::DEFAULT[:size] = []
 
 require 'pagy/extras/overflow'
-Pagy::DEFAULT[:overflow] = :last_page
+Pagy::DEFAULT[:overflow] = :empty_page
 
 
 # Elasticsearch Rails extra: Paginate `ElasticsearchRails::Results` objects

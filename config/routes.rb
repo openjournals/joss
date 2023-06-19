@@ -47,6 +47,12 @@ Rails.application.routes.draw do
     end
   end
 
+  get '/toc', to: "toc#index", as: :toc_index
+  get '/toc/current-issue', to: "toc#current_issue", as: :toc_current_issue
+  get '/toc/year/:year', to: "toc#year", as: :toc_year
+  get '/toc/volume/:volume', to: "toc#volume", as: :toc_volume
+  get '/toc/issue/:issue', to: "toc#issue", as: :toc_issue
+
   get '/aeic/', to: "aeic_dashboard#index", as: "aeic_dashboard"
   get '/editors/lookup/:login', to: "editors#lookup"
   get '/papers/lookup/:id', to: "papers#lookup"

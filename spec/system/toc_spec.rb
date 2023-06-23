@@ -54,7 +54,7 @@ feature "Table of Contents" do
     end
 
     @issues.each do |issue|
-      expect(page).to have_link("Issue #{issue}", href: toc_issue_path(issue: issue))
+      expect(page).to have_link("Issue #{issue.to_s.rjust(3, "0")}", href: toc_issue_path(issue: issue))
     end
 
     expect(page).to have_link("Current issue", href: toc_current_issue_path)

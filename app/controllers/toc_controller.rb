@@ -54,7 +54,7 @@ class TocController < ApplicationController
   def filter_papers(param, field)
     redirect_to(action: :index) and return if param.blank?
 
-    @papers = Paper.search(param.to_i, fields: [{field.to_sym => :exact}], order: { page: :asc },
+    @papers = Paper.search(param.to_i, fields: [{field.to_sym => :exact}], order: { accepted_at: :desc },
                 page: params[:page], per_page: 50)
     @pagy = Pagy.new_from_searchkick(@papers)
   end

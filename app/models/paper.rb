@@ -37,7 +37,7 @@ class Paper < ApplicationRecord
     state :review_pending
     state :under_review
     state :review_completed
-    state :superceded
+    state :superseded
     state :accepted
     state :rejected
     state :retracted
@@ -66,7 +66,7 @@ class Paper < ApplicationRecord
 
   VISIBLE_STATES = [
     "accepted",
-    "superceded",
+    "superseded",
     "retracted"
   ].freeze
 

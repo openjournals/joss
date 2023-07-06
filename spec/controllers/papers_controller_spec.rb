@@ -372,11 +372,11 @@ describe PapersController, type: :controller do
     end
 
     it "returns paper's metadata" do
-      paper = create(:retracted_paper, state: "superceded")
+      paper = create(:retracted_paper, state: "superseded")
       get :show, params: {doi: paper.doi}, format: "json"
       parsed_response = JSON.parse(response.body)
       expect(parsed_response["title"]).to eq(paper.title)
-      expect(parsed_response["state"]).to eq("superceded")
+      expect(parsed_response["state"]).to eq("superseded")
       expect(parsed_response["software_repository"]).to eq("http://github.com/arfon/fidgit")
       expect(parsed_response["doi"]).to be_nil
       expect(parsed_response["published_at"]).to be_nil

@@ -85,7 +85,7 @@ describe Paper do
   it "should return only visible papers" do
     hidden_paper = create(:paper, state: "submitted")
     visible_paper_1 = create(:accepted_paper)
-    visible_paper_2 = create(:paper, state: "superceded")
+    visible_paper_2 = create(:paper, state: "superseded")
 
     expect(Paper.visible).to contain_exactly(visible_paper_1, visible_paper_2)
     assert hidden_paper.invisible?

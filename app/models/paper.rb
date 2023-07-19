@@ -305,7 +305,7 @@ class Paper < ApplicationRecord
   # A 5-figure integer used to produce the JOSS DOI
   def joss_id
     id = "%05d" % review_issue_id
-    id += "RN" if self.is_a_retraction_notice?
+    id += "R" if self.is_a_retraction_notice?
     "#{setting(:abbreviation).downcase}.#{id}"
   end
 

@@ -151,7 +151,7 @@ class DispatchController < ApplicationController
       @paper = Paper.find_by_review_issue_id!(params[:id])
 
       retraction_paper = Paper.new
-      retraction_paper.doi = @paper.doi + "RN"
+      retraction_paper.doi = @paper.doi + "R"
       retraction_paper.retraction_for_id = @paper.id
       retraction_paper.title = "Retraction paper for #{@paper.title}"
       retraction_paper.body = "Retraction paper for #{@paper.title}"

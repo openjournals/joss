@@ -150,16 +150,24 @@ class DispatchController < ApplicationController
     if params[:secret] == ENV['BOT_SECRET']
       @paper = Paper.find_by_review_issue_id!(params[:id])
 
+      if params[:metadata]
+        metadata = JSON.parse(Base64.decode64(params[:metadata]))
+      else
+        metadata = nil
+      end
+
       retraction_paper = Paper.new
       retraction_paper.doi = @paper.doi + "R"
       retraction_paper.retraction_for_id = @paper.id
       retraction_paper.title = "Retraction paper for #{@paper.title}"
       retraction_paper.body = "Retraction paper for #{@paper.title}"
+      retraction_paper.authors = "Editorial Board"
       retraction_paper.repository_url = @paper.repository_url
       retraction_paper.software_version = @paper.software_version
       retraction_paper.track_id = @paper.track_id
       retraction_paper.submission_kind = "new"
       retraction_paper.state = "accepted"
+      retraction_paper.metadata = metadata
 
       if retraction_paper.save!
         @paper.update(retraction_notice: params[:retraction_notice]) if params[:retraction_notice].present?

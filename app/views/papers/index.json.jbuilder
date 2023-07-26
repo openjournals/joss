@@ -21,6 +21,7 @@ json.array! @papers do |paper|
     json.languages paper.language_tags.join(', ')
     json.tags paper.author_tags.join(', ')
     json.paper_review paper.review_url
+    json.meta_review_issue_id paper.meta_review_issue_id
     json.pdf_url paper.seo_pdf_url
     json.software_archive paper.archive_doi_url
   end

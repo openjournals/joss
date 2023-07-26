@@ -75,7 +75,7 @@ describe EditorsHelper do
       expect(availability_class(@editor)).to eq("")
     end
 
-    it "takes current assigments into account" do
+    it "takes current assignments into account" do
       @assignment_by_editor = { @editor.id => 4 }
       @paused_by_editor = { @editor.id => 1 }
 

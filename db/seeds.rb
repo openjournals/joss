@@ -151,7 +151,7 @@ Editor.create(
   categories: ["Computer Science"],
   url: "http://danielskatz.org/",
   description: <<-STR.strip_heredoc()
-    Works on computer, computational, and data reseach at
+    Works on computer, computational, and data research at
     <a href="http://www.ncsa.illinois.edu/">NCSA</a>,
     <a href="https://www.lis.illinois.edu">GSLIS</a>,
     and <a href="http://www.ece.illinois.edu">ECE</a> at

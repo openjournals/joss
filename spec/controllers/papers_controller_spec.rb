@@ -256,6 +256,7 @@ describe PapersController, type: :controller do
       parsed_response = JSON.parse(response.body)
       expect(parsed_response['submitted']).to eq(3.days.ago.strftime('%d %B %Y'))
       expect(parsed_response['accepted']).to eq(nil)
+      expect(parsed_response['doi']).to eq(nil)
     end
 
     it "should return the created_at and accepted_at dates for a published paper" do
@@ -265,6 +266,7 @@ describe PapersController, type: :controller do
       parsed_response = JSON.parse(response.body)
       expect(parsed_response['submitted']).to eq(3.days.ago.strftime('%d %B %Y'))
       expect(parsed_response['accepted']).to eq(2.days.ago.strftime('%d %B %Y'))
+      expect(parsed_response['doi']).to eq('10.21105/joss.00000')
     end
 
     it "should return paper's track short name" do
@@ -273,6 +275,19 @@ describe PapersController, type: :controller do
 
       get :lookup, params: {id: 123}
       expect(JSON.parse(response.body)['track']).to eq("Testtr")
+    end
+
+    it "should return paper's info" do
+      track = create(:track, name: "Test track", short_name: "Testtr")
+      paper = create(:under_review_paper, title: "Testing paper lookup", software_version: "3.3", track: track, meta_review_issue_id: 123)
+
+      get :lookup, params: {id: 123}
+      expect(JSON.parse(response.body)['title']).to eq("Testing paper lookup")
+      expect(JSON.parse(response.body)['doi']).to eq(nil)
+      expect(JSON.parse(response.body)['state']).to eq("under_review")
+      expect(JSON.parse(response.body)['review_issue_id']).to eq(101)
+      expect(JSON.parse(response.body)['software_version']).to eq("3.3")
+      expect(JSON.parse(response.body)['repository_url']).to eq("http://github.com/arfon/fidgit")
     end
 
     it "should 404 when passed an invalid id" do

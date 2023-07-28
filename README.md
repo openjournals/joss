@@ -46,7 +46,7 @@ Please adhere to this code of conduct in any interactions you have in the JOSS c
 
 ## ⚙️ Development
 
-[LiveReload](https://github.com/guard/guard-livereload) enables the browser to automatically refresh on change during development.
+[PostgreSQL](https://www.postgresql.org/) and [Elasticsearch](https://www.elastic.co/elasticsearch/) should be installed and running locally for JOSS to work
 
-1. Download the [LiveReload Chrome plugin](https://chrome.google.com/webstore/detail/livereload/jnihajbhpnppcggbcgedagnkighmdlei/)
-2. Run `bundle exec guard`
+1. Create the database with `bin/rails db:create`
+2. Run `bin/rails s`

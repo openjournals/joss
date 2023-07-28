@@ -253,7 +253,13 @@ class PapersController < ApplicationController
   def lookup
     paper = Paper.where('review_issue_id = ? OR meta_review_issue_id = ?', params[:id], params[:id]).first!
     accepted_at = paper.accepted_at ? paper.accepted_at.strftime('%d %B %Y') : nil
-    response = {  submitted: paper.created_at.strftime('%d %B %Y'),
+    response = {  title: paper.title,
+                  doi: paper.doi,
+                  state: paper.state,
+                  review_issue_id: paper.review_issue_id,
+                  software_version: paper.software_version,
+                  repository_url: paper.repository_url,
+                  submitted: paper.created_at.strftime('%d %B %Y'),
                   accepted: accepted_at,
                   track: paper.track&.short_name }
     render json: response.to_json

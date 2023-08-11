@@ -304,9 +304,12 @@ class Paper < ApplicationRecord
 
   # A 5-figure integer used to produce the JOSS DOI
   def joss_id
-    id = "%05d" % review_issue_id
-    id += "R" if self.is_a_retraction_notice?
-    "#{setting(:abbreviation).downcase}.#{id}"
+    if self.is_a_retraction_notice?
+      return retracted_paper.joss_id + "R"
+    else
+      id = "%05d" % review_issue_id
+      return "#{setting(:abbreviation).downcase}.#{id}"
+    end
   end
 
   # This URL returns the 'DOI optimized' representation of a URL for a paper

@@ -47,8 +47,7 @@ FactoryBot.define do
       state { 'retracted' }
       accepted_at { Time.now }
       review_issue_id { 0 }
-      retraction_paper { create(:paper) }
-      sequence(:doi) {|n| "10.21105/joss.0000#{n}" }
+      sequence(:doi) {|n| "10.21105/joss.4000#{n}" }
     end
 
     factory :submitted_paper_with_sha do

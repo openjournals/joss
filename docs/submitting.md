@@ -108,7 +108,9 @@ As this short list shows, JOSS papers are only expected to contain a limited set
 
 ## Example paper and bibliography
 
-This example `paper.md` is adapted from _Gala: A Python package for galactic dynamics_ by Adrian M. Price-Whelan [http://doi.org/10.21105/joss.00388](http://doi.org/10.21105/joss.00388):
+This example `paper.md` is adapted from _Gala: A Python package for galactic dynamics_ by Adrian M. Price-Whelan [http://doi.org/10.21105/joss.00388](http://doi.org/10.21105/joss.00388).
+
+For a complete description of available options to describe author names [see here](https://github.com/openjournals/inara/blob/main/docs/names.md).
 
 ```
 ---
@@ -129,6 +131,10 @@ authors:
     affiliation: 2
   - name: Author with no affiliation
     corresponding: true # (This is how to denote the corresponding author)
+    affiliation: 3
+  - given-names: Ludwig
+    dropping-particle: van
+    surname: Beethoven
     affiliation: 3
 affiliations:
  - name: Lyman Spitzer, Jr. Fellow, Princeton University, USA

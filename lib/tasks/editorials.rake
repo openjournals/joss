@@ -10,9 +10,9 @@ namespace :editorials do
 
       pending_issues = review_issues.select { |i| i.editor == "Pending" }
 
-      closed_issues = ReviewIssue.download_completed_reviews(reviews_repo)
+      # closed_issues = ReviewIssue.download_completed_reviews(reviews_repo)
 
-      recently_closed_issues = closed_issues.select { |i| i.closed_at > 1.week.ago }
+      recently_closed_issues = [] # closed_issues.select { |i| i.closed_at > 1.week.ago }
 
       # Loop through editors and send them their weekly email :-)
       Editor.active.each do |editor|

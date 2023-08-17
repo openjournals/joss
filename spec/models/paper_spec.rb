@@ -348,10 +348,11 @@ describe Paper do
       instance.save(validate: false)
       instance
     end
-    let(:kind) { nil }
+    let(:kind) { "learning module" }
     subject { paper.review_body("editor_name", "mickey,mouse") }
 
     it { is_expected.to match /Reviewers:/ }
+    it { is_expected.to match /<!--paper-kind-->learning module<!--end-paper-kind-->/ }
     it { is_expected.to match /\/papers\/#{paper.sha}/ }
     it { is_expected.to match /#{paper.repository_url}/ }
   end

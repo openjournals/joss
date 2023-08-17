@@ -19,6 +19,16 @@ class Paper < ApplicationRecord
              optional: true,
              foreign_key: "eic_id"
 
+  belongs_to :retracted_paper,
+             class_name: 'Paper',
+             optional: true,
+             foreign_key: "retraction_for_id"
+
+  has_one :retraction_paper,
+          class_name: 'Paper',
+          foreign_key: "retraction_for_id",
+          inverse_of: :retracted_paper
+
   has_many :invitations
   has_many :notes
   has_many :votes
@@ -61,6 +71,10 @@ class Paper < ApplicationRecord
 
     event :withdraw do
       transitions to: :withdrawn
+    end
+
+    event :retract do
+      transitions to: :retracted
     end
   end
 
@@ -128,14 +142,14 @@ class Paper < ApplicationRecord
   validates_presence_of :track_id, on: :create, message: "You must select a valid subject for the paper", if: Proc.new { JournalFeatures.tracks? }
   validates :kind, inclusion: { in: Rails.application.settings["paper_types"] }, allow_nil: true
   validates :submission_kind, inclusion: { in: SUBMISSION_KINDS, message: "You must select a submission type" }, allow_nil: false
-  validate :check_repository_address, on: :create
+  validate :check_repository_address, on: :create, unless: Proc.new {|paper| paper.is_a_retraction_notice?}
 
   def notify_editors
-    Notifications.submission_email(self).deliver_now
+    Notifications.submission_email(self).deliver_now unless self.is_a_retraction_notice?
   end
 
   def notify_author
-    Notifications.author_submission_email(self).deliver_now
+    Notifications.author_submission_email(self).deliver_now unless self.is_a_retraction_notice?
   end
 
   # Only index papers that are visible
@@ -170,6 +184,10 @@ class Paper < ApplicationRecord
 
   def published?
     accepted? || retracted?
+  end
+
+  def is_a_retraction_notice?
+    retraction_for_id.present?
   end
 
   def invite_editor(editor_handle)
@@ -286,8 +304,12 @@ class Paper < ApplicationRecord
 
   # A 5-figure integer used to produce the JOSS DOI
   def joss_id
-    id = "%05d" % review_issue_id
-    "#{setting(:abbreviation).downcase}.#{id}"
+    if self.is_a_retraction_notice?
+      return retracted_paper.joss_id + "R"
+    else
+      id = "%05d" % review_issue_id
+      return "#{setting(:abbreviation).downcase}.#{id}"
+    end
   end
 
   # This URL returns the 'DOI optimized' representation of a URL for a paper

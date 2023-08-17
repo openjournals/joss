@@ -21,6 +21,14 @@ describe Paper do
     expect(association.macro).to eq(:belongs_to)
   end
 
+  it "retraction paper belongs to a retracted paper" do
+    association = Paper.reflect_on_association(:retracted_paper)
+    expect(association.macro).to eq(:belongs_to)
+
+    association = Paper.reflect_on_association(:retraction_paper)
+    expect(association.macro).to eq(:has_one)
+  end
+
   it "has many invitations" do
     association = Paper.reflect_on_association(:invitations)
     expect(association.macro).to eq(:has_many)
@@ -73,43 +81,43 @@ describe Paper do
     end
   end
 
-  # Scopes
+  describe "Scopes" do
+    it "should return recent" do
+      old_paper = create(:paper, created_at: 2.weeks.ago)
+      new_paper = create(:paper)
 
-  it "should return recent" do
-    old_paper = create(:paper, created_at: 2.weeks.ago)
-    new_paper = create(:paper)
+      expect(Paper.recent).to eq([new_paper])
+    end
 
-    expect(Paper.recent).to eq([new_paper])
-  end
+    it "should return only visible papers" do
+      hidden_paper = create(:paper, state: "submitted")
+      visible_paper_1 = create(:accepted_paper)
+      visible_paper_2 = create(:paper, state: "superceded")
 
-  it "should return only visible papers" do
-    hidden_paper = create(:paper, state: "submitted")
-    visible_paper_1 = create(:accepted_paper)
-    visible_paper_2 = create(:paper, state: "superceded")
+      expect(Paper.visible).to contain_exactly(visible_paper_1, visible_paper_2)
+      assert hidden_paper.invisible?
+    end
 
-    expect(Paper.visible).to contain_exactly(visible_paper_1, visible_paper_2)
-    assert hidden_paper.invisible?
-  end
+    it "should exclude withdrawn and rejected papers" do
+      rejected_paper = create(:paper, state: "rejected")
+      withdrawn_paper = create(:paper, state: "withdrawn")
+      paper = create(:accepted_paper)
 
-  it "should exclude withdrawn and rejected papers" do
-    rejected_paper = create(:paper, state: "rejected")
-    withdrawn_paper = create(:paper, state: "withdrawn")
-    paper = create(:accepted_paper)
+      expect(Paper.everything).to contain_exactly(paper)
+      expect(Paper.invisible).to contain_exactly(rejected_paper, withdrawn_paper)
+    end
 
-    expect(Paper.everything).to contain_exactly(paper)
-    expect(Paper.invisible).to contain_exactly(rejected_paper, withdrawn_paper)
-  end
+    it "should filter by track" do
+      track_A, track_B = create_list(:track, 2)
+      paper_A1, paper_A2 = create_list(:paper, 2, track: track_A)
+      paper_B1, paper_B2 = create_list(:paper, 2, track: track_B)
+      paper_C = create(:paper)
 
-  it "should filter by track" do
-    track_A, track_B = create_list(:track, 2)
-    paper_A1, paper_A2 = create_list(:paper, 2, track: track_A)
-    paper_B1, paper_B2 = create_list(:paper, 2, track: track_B)
-    paper_C = create(:paper)
-
-    track_A_papers = Paper.by_track(track_A.id)
-    expect(track_A_papers.size).to eq(2)
-    expect(track_A_papers.include?(paper_A1)).to be true
-    expect(track_A_papers.include?(paper_A2)).to be true
+      track_A_papers = Paper.by_track(track_A.id)
+      expect(track_A_papers.size).to eq(2)
+      expect(track_A_papers.include?(paper_A1)).to be true
+      expect(track_A_papers.include?(paper_A2)).to be true
+    end
   end
 
   # GitHub stuff
@@ -198,6 +206,25 @@ describe Paper do
       expect(Invitation.exists?(paper: paper, editor:editor)).to be_falsy
       expect { paper.invite_editor(editor.login)}.to change { Invitation.count }.by(1)
       expect(Invitation.pending.exists?(paper: paper, editor:editor)).to be_truthy
+    end
+  end
+
+  describe "#is_a_retraction_notice?" do
+    it "should return true if paper is a retraction notice for another paper" do
+      retracted_paper = create(:paper)
+      paper = create(:paper, retracted_paper: retracted_paper)
+
+      expect(paper.retraction_for_id).to eq(retracted_paper.id)
+      expect(paper.retracted_paper).to eq(retracted_paper)
+      expect(paper.is_a_retraction_notice?).to be true
+    end
+
+    it "should return false oherwise" do
+      paper = create(:paper)
+
+      expect(paper.retraction_for_id).to be_nil
+      expect(paper.retracted_paper).to be_nil
+      expect(paper.is_a_retraction_notice?).to be false
     end
   end
 

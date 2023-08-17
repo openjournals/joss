@@ -17,8 +17,8 @@ if @paper.published?
     json.editor_orcid @paper.editor.orcid if @paper.editor.orcid
   end
   json.reviewers @paper.metadata_reviewers
-  json.languages @paper.language_tags.join(', ')
-  json.tags @paper.author_tags.join(', ')
+  json.languages @paper.language_tags
+  json.tags @paper.author_tags
   json.paper_review @paper.review_url
   json.meta_review_issue_id @paper.meta_review_issue_id
   json.pdf_url @paper.seo_pdf_url

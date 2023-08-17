@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_06_16_085520) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_09_104144) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
   enable_extension "plpgsql"
@@ -110,10 +110,12 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_16_085520) do
     t.string "git_branch"
     t.bigint "track_id"
     t.string "suggested_subject"
+    t.bigint "retraction_for_id"
     t.index ["editor_id"], name: "index_papers_on_editor_id"
     t.index ["eic_id"], name: "index_papers_on_eic_id"
     t.index ["labels"], name: "index_papers_on_labels", using: :gin
     t.index ["last_activity"], name: "index_papers_on_last_activity"
+    t.index ["retraction_for_id"], name: "index_papers_on_retraction_for_id"
     t.index ["reviewers"], name: "index_papers_on_reviewers", using: :gin
     t.index ["sha"], name: "index_papers_on_sha"
     t.index ["track_id"], name: "index_papers_on_track_id"
@@ -178,4 +180,5 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_16_085520) do
     t.index ["paper_id"], name: "index_votes_on_paper_id"
   end
 
+  add_foreign_key "papers", "papers", column: "retraction_for_id"
 end

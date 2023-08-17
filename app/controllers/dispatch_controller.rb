@@ -145,4 +145,53 @@ class DispatchController < ApplicationController
       head :forbidden
     end
   end
+
+  def api_retract
+    if params[:secret] == ENV['BOT_SECRET']
+      paper = Paper.find_by_doi!(params[:doi])
+      return head :unprocessable_entity if paper.retracted?
+
+      if params[:metadata]
+        metadata = JSON.parse(Base64.decode64(params[:metadata]))
+      else
+        metadata = {}
+      end
+
+      retraction_paper = Paper.new
+      retraction_paper.doi = metadata[:doi] || "#{paper.doi}R"
+      retraction_paper.retraction_for_id = paper.id
+      retraction_paper.title = metadata[:title] || "Retraction notice for: #{paper.title}"
+      retraction_paper.body = "Retraction notice for: #{paper.title}"
+      retraction_paper.authors = "Editorial Board"
+      retraction_paper.repository_url = paper.repository_url
+      retraction_paper.software_version = paper.software_version
+      retraction_paper.track_id = paper.track_id
+      retraction_paper.citation_string = params[:citation_string]
+      retraction_paper.submission_kind = "new"
+      retraction_paper.state = "accepted"
+      retraction_paper.metadata = metadata
+      retraction_paper.accepted_at = Time.now
+      retraction_paper.review_issue_id = paper.review_issue_id
+
+      if paper.track.nil?
+        submitting_author = Editor.includes(:user).board.select {|e| e.user.present? }.first.user
+      else
+        submitting_author = paper.track.aeics.select {|e| e.user.present? }.first.user
+      end
+      submitting_author = User.where(admin: true).first if submitting_author.nil?
+
+      retraction_paper.submitting_author = submitting_author
+
+      if retraction_paper.save! && retraction_paper.accept!
+        paper.update(retraction_notice: params[:retraction_notice]) if params[:retraction_notice].present?
+        paper.retract!
+        render json: retraction_paper.to_json, status: '201'
+      else
+        head :unprocessable_entity
+      end
+    else
+      head :forbidden
+    end
+  end
+
 end

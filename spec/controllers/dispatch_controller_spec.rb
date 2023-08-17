@@ -522,4 +522,65 @@ describe DispatchController, type: :controller do
       expect(paper.accepted_at).to eql(initial_accepted_at)
     end
   end
+
+  describe "POST #api_retract" do
+
+    it "with no API key" do
+      post :api_retract
+      expect(response).to be_forbidden
+    end
+
+    it "with the correct API key" do
+      user = create(:user)
+      paper = create(:accepted_paper, title: "Bad paper", review_issue_id: 1234, doi: "10.21105/test.00042")
+      track_editor = paper.track.aeics.first
+      track_editor.update(user: user)
+
+      expect(paper.accepted_at).to be_present
+      expect(paper.state).to eql('accepted')
+      encoded_metadata = "eyJwYXBlciI6eyJ0aXRsZSI6IkZpZGdpdDogQW4gdW5nb2RseSB1bmlvbiBv\nZiBHaXRIdWIgYW5kIGZpZ3NoYXJlIiwidGFncyI6WyJleGFtcGxlIiwidGFn\ncyIsImZvciB0aGUgcGFwZXIiXSwibGFuZ3VhZ2VzIjpbIlB5dGhvbiIsIlJ1\nc3QiLCJQZXJsIl0sImF1dGhvcnMiOlt7ImdpdmVuX25hbWUiOiJBcmZvbiIs\nIm1pZGRsZV9uYW1lIjoiTS4iLCJsYXN0X25hbWUiOiJTbWl0aCIsIm9yY2lk\nIjoiMDAwMC0wMDAyLTM5NTctMjQ3NCIsImFmZmlsaWF0aW9uIjoiR2l0SHVi\nIEluYy4sIERpc25leSBJbmMuIn0seyJnaXZlbl9uYW1lIjoiSmFtZXMiLCJt\naWRkbGVfbmFtZSI6IlAuIiwibGFzdF9uYW1lIjoidmFuIERpc2hvZWNrIiwi\nb3JjaWQiOiIwMDAwLTAwMDItMzk1Ny0yNDc0IiwiYWZmaWxpYXRpb24iOiJE\naXNuZXkgSW5jLiJ9XSwiZG9pIjoiMTAuMjExMDUvam9zcy4wMDAxNyIsImFy\nY2hpdmVfZG9pIjoiaHR0cDovL2R4LmRvaS5vcmcvMTAuNTI4MS96ZW5vZG8u\nMTM3NTAiLCJyZXBvc2l0b3J5X2FkZHJlc3MiOiJodHRwczovL2dpdGh1Yi5j\nb20vYXBwbGljYXRpb25za2VsZXRvbi9Ta2VsZXRvbiIsImVkaXRvciI6ImFy\nZm9uIiwicmV2aWV3ZXJzIjpbIkBqaW0iLCJAYm9iIl19fQ==\n"
+
+      post :api_retract, params: {secret: "testBOTsecret",
+                                  doi: "10.21105/test.00042",
+                                  citation_string: "Editorial Board, 2023, JOSS, Retraction etc.",
+                                  metadata: encoded_metadata
+                                  }
+
+      expect(response).to be_successful
+      expect(paper.reload.state).to eql("retracted")
+      expect(paper.retraction_paper).to be_present
+
+      retraction_notice = paper.retraction_paper
+
+      expect(retraction_notice.state).to eql("accepted")
+      expect(retraction_notice.retracted_paper).to eql(paper)
+      expect(retraction_notice.submitting_author).to eql(user)
+      expect(retraction_notice.doi).to eql("10.21105/test.00042R")
+      expect(retraction_notice.track_id).to eql(paper.track_id)
+      expect(Base64.encode64(retraction_notice.metadata.to_json)).to eql(encoded_metadata)
+      expect(retraction_notice.review_issue_id).to eql(paper.review_issue_id)
+      expect(retraction_notice.citation_string).to eql("Editorial Board, 2023, JOSS, Retraction etc.")
+      expect(retraction_notice.title).to eql("Retraction notice for: Bad paper")
+    end
+
+    it "should not retract papers twice" do
+      paper = create(:retracted_paper, title: "Bad paper", review_issue_id: 1234, doi: "10.21105/test.00042")
+      retraction_notice = paper.retraction_paper
+      expect(paper.accepted_at).to be_present
+      expect(paper.state).to eql('retracted')
+      encoded_metadata = "eyJwYXBlciI6eyJ0aXRsZSI6IkZpZGdpdDogQW4gdW5nb2RseSB1bmlvbiBv\nZiBHaXRIdWIgYW5kIGZpZ3NoYXJlIiwidGFncyI6WyJleGFtcGxlIiwidGFn\ncyIsImZvciB0aGUgcGFwZXIiXSwibGFuZ3VhZ2VzIjpbIlB5dGhvbiIsIlJ1\nc3QiLCJQZXJsIl0sImF1dGhvcnMiOlt7ImdpdmVuX25hbWUiOiJBcmZvbiIs\nIm1pZGRsZV9uYW1lIjoiTS4iLCJsYXN0X25hbWUiOiJTbWl0aCIsIm9yY2lk\nIjoiMDAwMC0wMDAyLTM5NTctMjQ3NCIsImFmZmlsaWF0aW9uIjoiR2l0SHVi\nIEluYy4sIERpc25leSBJbmMuIn0seyJnaXZlbl9uYW1lIjoiSmFtZXMiLCJt\naWRkbGVfbmFtZSI6IlAuIiwibGFzdF9uYW1lIjoidmFuIERpc2hvZWNrIiwi\nb3JjaWQiOiIwMDAwLTAwMDItMzk1Ny0yNDc0IiwiYWZmaWxpYXRpb24iOiJE\naXNuZXkgSW5jLiJ9XSwiZG9pIjoiMTAuMjExMDUvam9zcy4wMDAxNyIsImFy\nY2hpdmVfZG9pIjoiaHR0cDovL2R4LmRvaS5vcmcvMTAuNTI4MS96ZW5vZG8u\nMTM3NTAiLCJyZXBvc2l0b3J5X2FkZHJlc3MiOiJodHRwczovL2dpdGh1Yi5j\nb20vYXBwbGljYXRpb25za2VsZXRvbi9Ta2VsZXRvbiIsImVkaXRvciI6ImFy\nZm9uIiwicmV2aWV3ZXJzIjpbIkBqaW0iLCJAYm9iIl19fQ==\n"
+      total_papers = Paper.count
+
+      post :api_retract, params: {secret: "testBOTsecret",
+                                  doi: "10.21105/test.00042",
+                                  citation_string: "Editorial Board, 2023, JOSS, Retraction etc.",
+                                  metadata: encoded_metadata
+                                  }
+
+      expect(response.status).to eql(422)
+      expect(paper.reload.state).to eql("retracted")
+      expect(paper.reload.retraction_paper).to eql(retraction_notice)
+      expect(Paper.count).to eql(total_papers)
+    end
+  end
 end

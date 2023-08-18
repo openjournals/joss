@@ -9,7 +9,7 @@ gem 'google_drive'
 gem 'groupdate'
 gem 'honeybadger', '~> 5.2.0'
 gem 'html-pipeline', '~> 2.14.3'
-gem 'commonmarker', '~> 0.23.8'
+gem 'commonmarker', '~> 0.23.10'
 gem 'net-sftp', '~> 4.0'
 gem 'octicons_helper'
 gem 'omniauth-orcid', '~> 2.1.1'
@@ -18,7 +18,7 @@ gem 'octokit', '~> 6.0'
 gem 'pdf-reader', '~> 2.11.0'
 gem 'pg', '~> 1.4.6'
 gem 'pagy'
-gem 'rails', '7.0.6'
+gem 'rails', '7.0.7'
 gem "importmap-rails"
 gem "turbo-rails"
 gem "stimulus-rails"

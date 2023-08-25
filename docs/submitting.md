@@ -110,7 +110,7 @@ As this short list shows, JOSS papers are only expected to contain a limited set
 
 This example `paper.md` is adapted from _Gala: A Python package for galactic dynamics_ by Adrian M. Price-Whelan [http://doi.org/10.21105/joss.00388](http://doi.org/10.21105/joss.00388).
 
-For a complete description of available options to describe author names [see here](https://github.com/openjournals/inara/blob/main/docs/names.md).
+For a complete description of available options to describe author names [see here](https://github.com/openjournals/inara/blob/main/docs/names\.md).
 
 ```
 ---

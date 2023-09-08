@@ -1,9 +1,5 @@
 source 'https://rubygems.org'
-<<<<<<< HEAD
-ruby "2.7.2"
-=======
 ruby '3.2.2'
->>>>>>> origin/main
 
 gem 'aasm', '~> 5.5.0'
 gem 'chartkick'

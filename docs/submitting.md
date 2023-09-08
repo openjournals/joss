@@ -6,11 +6,12 @@ But please read these instructions carefully for a streamlined submission.
 
 ## Submission requirements
 
-- The software should be open source as per the [OSI definition](https://opensource.org/osd).
-- The software should have an **obvious** research application.
-- You should be a major contributor to the software you are submitting.
-- You paper should not focus on new research results accomplished with the software.
-- Your paper (`paper.md` and BibTeX files, plus any figures) must be hosted in a Git-based repository. Placing these items together with your software (rather than in a separate repository) is **strongly encouraged**.
+- The software must be open source as per the [OSI definition](https://opensource.org/osd).
+- The software must be hosted at a location where users can open issues and propose code changes without manual approval of (or payment for) accounts.
+- The software must have an **obvious** research application.
+- You must be a major contributor to the software you are submitting, and have a GitHub account to participate in the review process.
+- Your paper must not focus on new research results accomplished with the software.
+- Your paper (`paper.md` and BibTeX files, plus any figures) must be hosted in a Git-based repository together with your software (although they may be in a short-lived branch which is never merged with the default).
 
 In addition, the software associated with your submission must:
 
@@ -21,10 +22,9 @@ In addition, the software associated with your submission must:
 
 ### What we mean by research software
 
-JOSS publishes articles about research software. This definition includes software that: solves complex modeling problems in a scientific context (physics, mathematics, biology, medicine, social science, neuroscience, engineering); supports the functioning of research instruments or the execution of research experiments; extracts knowledge from large data sets; offers a mathematical library, or similar.
+JOSS publishes articles about research software. This definition includes software that: solves complex modeling problems in a scientific context (physics, mathematics, biology, medicine, social science, neuroscience, engineering); supports the functioning of research instruments or the execution of research experiments; extracts knowledge from large data sets; offers a mathematical library, or similar. While useful for many areas of research, pre-trained machine learning models and notebooks are not in-scope for JOSS. 
 
-
-### Substantial scholarly effort 
+### Substantial scholarly effort
 
 JOSS publishes articles about software that represent substantial scholarly effort on the part of the authors. Your software should be a significant contribution to the available open source software that either enables some new research challenges to be addressed or makes addressing research challenges significantly better (e.g., faster, easier, simpler).
 
@@ -37,7 +37,11 @@ As a rule of thumb, JOSS' minimum allowable contribution should represent **not 
 - Whether the software has already been cited in academic papers.
 - Whether the software is sufficiently useful that it is _likely to be cited_ by your peer group.
 
-In addition, JOSS requires that software should be feature-complete (i.e. no half-baked solutions) and designed for maintainable extension (not one-off modifications of existing tools). "Minor utility" packages, including "thin" API clients, and single-function packages are not acceptable.
+In addition, JOSS requires that software should be feature-complete (i.e., no half-baked solutions), packaged appropriately according to common community standards for the programming language being used (e.g., [Python](https://packaging.python.org), [R](https://r-pkgs.org/index.html)), and designed for maintainable extension (not one-off modifications of existing tools). "Minor utility" packages, including "thin" API clients, and single-function packages are not acceptable.
+
+### Co-publication of science, methods, and software
+
+Sometimes authors prepare a JOSS publication alongside a contribution describing a science application, details of algorithm development, and/or methods assessment. In this circumstance, JOSS considers submissions for which the implementation of the software itself reflects a substantial scientific effort. This may be represented by the design of the software, the implementation of the algorithms, creation of tutorials, or any other aspect of the software. We ask that authors indicate whether related publications (published, in review, or nearing submission) exist as part of submitting to JOSS.
 
 #### Other venues for reviewing and publishing software packages
 
@@ -46,17 +50,36 @@ Authors wishing to publish software deemed out of scope for JOSS have a few opti
 - Follow [GitHub's guide](https://guides.github.com/activities/citable-code/) on how to create a permanent archive and DOI for your software. This DOI can then be used by others to cite your work.
 - Enquire whether your software might be considered by communities such as [rOpenSci](https://ropensci.org) and [pyOpenSci](https://pyopensci.org).
 
-
 ### Should I write my own software or contribute to an existing package?
 
 While we are happy to review submissions in standalone repositories, we also review submissions that are significant contributions made to existing packages. It is often better to have an integrated library or package of methods than a large number of single-method packages.
+
+### Questions? Open an issue to ask.
+
+Authors wishing to make a pre-submission enquiry should [open an issue](https://github.com/openjournals/joss/issues/new?title=Pre-submission%20enquiry) on the JOSS repository.
+
+## Conflict of Interest policy for authors
+
+An author conflict of interest (COI) arises when an author has financial, personal, or other interests that may influence their research or the interpretation of its results. In order to maintain the integrity of the work published in JOSS, we require that authors disclose any potential conflicts of interest at submission time.
+
+### Policy
+
+**Disclosure:** All authors must disclose any potential conflicts of interest related to the research in their manuscript, including financial, personal, or professional relationships that may affect their objectivity. This includes any financial relationships, such as employment, consultancies, honoraria, stock ownership, or other financial interests that may be relevant to the research.
+
+**Acknowledgement:** Authors should acknowledge all sources of financial support for the work and include a statement indicating whether or not the sponsor had any involvement in it.
+
+**Review process:** Editors and reviewers must be informed of any potential conflicts of interest before reviewing the manuscript to ensure unbiased evaluation of the research.
+
+**Compliance:** Authors who fail to comply with the COI policy may have their manuscript rejected or retracted if a conflict is discovered after publication.
+
+**Review and Update:** This COI policy will be reviewed and updated regularly to ensure it remains relevant and effective.
 
 ## Typical paper submission flow
 
 Before you submit, you should:
 
 - Make your software available in an open repository (GitHub, Bitbucket, etc.) and include an [OSI approved open source license](https://opensource.org/licenses).
-- Make sure that the software complies with the [JOSS review criteria](review_criteria.html). In particular, your software should be full-featured, well-documented, and contain procedures (such as automated tests) for checking correctness.
+- Make sure that the software complies with the [JOSS review criteria](review_criteria). In particular, your software should be full-featured, well-documented, and contain procedures (such as automated tests) for checking correctness.
 - Write a short paper in Markdown format using `paper.md` as file name, including a title, summary, author names, affiliations, and key references. See our [example paper](#example-paper-and-bibliography) to follow the correct format.
 - (Optional) create a metadata file describing your software and include it in your repository. We provide [a script](https://gist.github.com/arfon/478b2ed49e11f984d6fb) that automates the generation of this metadata.
 
@@ -66,18 +89,18 @@ Before you submit, you should:
 .. important:: Begin your paper with a summary of the high-level functionality of your software for a non-specialist reader. Avoid jargon in this section.
 ```
 
-JOSS welcomes submissions from broadly diverse research areas. For this reason, we require that authors include in the paper some sentences that explain the software functionality and domain of use to a non-specialist reader. We also require that authors explain the research applications of the software. The paper should be between 250-1000 words.
+JOSS welcomes submissions from broadly diverse research areas. For this reason, we require that authors include in the paper some sentences that explain the software functionality and domain of use to a non-specialist reader. We also require that authors explain the research applications of the software. The paper should be between 250-1000 words. Authors submitting papers significantly longer than 1000 words may be asked to reduce the length of their paper.
 
 Your paper should include:
 
 - A list of the authors of the software and their affiliations, using the correct format (see the example below).
 - A summary describing the high-level functionality and purpose of the software for a diverse, *non-specialist audience*.
-- A clear *Statement of Need* that illustrates the research purpose of the software.
-- A list of key references, including to other software addressing related needs.
+- A *Statement of need* section that clearly illustrates the research purpose of the software and places it in the context of related work.
+- A list of key references, including to other software addressing related needs. Note that the references should include full names of venues, e.g., journals and conferences, not abbreviations only understood in the context of a specific discipline.
 - Mention (if applicable) a representative set of past or ongoing research projects using the software and recent scholarly publications enabled by it.
 - Acknowledgement of any financial support.
 
-As this short list shows, JOSS papers are only expected to contain a limited set of metadata (see example below), a Statement of Need, Summary, Acknowledgements, and References sections. You can look at an [example accepted paper](http://bit.ly/2x22gxT). Given this format, a "full length" paper is not permitted, and software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation.
+As this short list shows, JOSS papers are only expected to contain a limited set of metadata (see example below), a Statement of need, Summary, Acknowledgements, and References sections. You can look at an [example accepted paper](#example-paper-and-bibliography). Given this format, a "full length" paper is not permitted, and software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation.
 
 ```eval_rst
 .. important:: Your paper will be reviewed by two or more reviewers in a public GitHub issue. Take a look at the `review checklist <review_checklist.html>`_ and  `review criteria <review_criteria.html>`_ to better understand how your submission will be reviewed.
@@ -85,7 +108,9 @@ As this short list shows, JOSS papers are only expected to contain a limited set
 
 ## Example paper and bibliography
 
-This example `paper.md` is adapted from _Gala: A Python package for galactic dynamics_ by Adrian M. Price-Whelan [http://doi.org/10.21105/joss.00388](http://doi.org/10.21105/joss.00388):
+This example `paper.md` is adapted from _Gala: A Python package for galactic dynamics_ by Adrian M. Price-Whelan [http://doi.org/10.21105/joss.00388](http://doi.org/10.21105/joss.00388).
+
+For a complete description of available options to describe author names [see here](https://github.com/openjournals/inara/blob/main/docs/names\.md).
 
 ```
 ---
@@ -97,19 +122,26 @@ tags:
   - galactic dynamics
   - milky way
 authors:
-  - name: Adrian M. Price-Whelan^[Custom footnotes for e.g. denoting who the corresspoinding author is can be included like this.]
-    orcid: 0000-0003-0872-7098
+  - name: Adrian M. Price-Whelan
+    orcid: 0000-0000-0000-0000
+    equal-contrib: true
     affiliation: "1, 2" # (Multiple affiliations must be quoted)
   - name: Author Without ORCID
+    equal-contrib: true # (This is how you can denote equal contributions between multiple authors)
     affiliation: 2
   - name: Author with no affiliation
+    corresponding: true # (This is how to denote the corresponding author)
+    affiliation: 3
+  - given-names: Ludwig
+    dropping-particle: van
+    surname: Beethoven
     affiliation: 3
 affiliations:
- - name: Lyman Spitzer, Jr. Fellow, Princeton University
+ - name: Lyman Spitzer, Jr. Fellow, Princeton University, USA
    index: 1
- - name: Institution Name
+ - name: Institution Name, Country
    index: 2
- - name: Independent Researcher
+ - name: Independent Researcher, Country
    index: 3
 date: 13 August 2017
 bibliography: paper.bib
@@ -132,7 +164,7 @@ Aside from toy problems and demonstrations, the majority of problems require
 efficient numerical tools, many of which require the same base code (e.g., for
 performing numerical orbit integration).
 
-# Statement of need 
+# Statement of need
 
 `Gala` is an Astropy-affiliated Python package for galactic dynamics. Python
 enables wrapping low-level languages (e.g., C) for speed without losing
@@ -191,11 +223,8 @@ Figures can be included like this:
 ![Caption for example figure.\label{fig:example}](figure.png)
 and referenced from text using \autoref{fig:example}.
 
-Fenced code blocks are rendered with syntax highlighting:
-```python
-for n in range(10):
-    yield f(n)
-```	
+Figure sizes can be customized by adding an optional second parameter:
+![Caption for example figure.](figure.png){ width=20% }
 
 # Acknowledgements
 
@@ -203,14 +232,14 @@ We acknowledge contributions from Brigitta Sipocz, Syrtis Major, and Semyeong
 Oh, and support from Kathryn Johnston during the genesis of this project.
 
 # References
+
 ```
 
 Example `paper.bib` file:
 
 ```
 @article{Pearson:2017,
-  	Adsnote = {Provided by the SAO/NASA Astrophysics Data System},
-  	Adsurl = {http://adsabs.harvard.edu/abs/2017arXiv170304627P},
+  	url = {http://adsabs.harvard.edu/abs/2017arXiv170304627P},
   	Archiveprefix = {arXiv},
   	Author = {{Pearson}, S. and {Price-Whelan}, A.~M. and {Johnston}, K.~V.},
   	Eprint = {1703.04627},
@@ -222,8 +251,7 @@ Example `paper.bib` file:
 }
 
 @book{Binney:2008,
-  	Adsnote = {Provided by the SAO/NASA Astrophysics Data System},
-  	Adsurl = {http://adsabs.harvard.edu/abs/2008gady.book.....B},
+  	url = {http://adsabs.harvard.edu/abs/2008gady.book.....B},
   	Author = {{Binney}, J. and {Tremaine}, S.},
   	Booktitle = {Galactic Dynamics: Second Edition, by James Binney and Scott Tremaine.~ISBN 978-0-691-13026-2 (HB).~Published by Princeton University Press, Princeton, NJ USA, 2008.},
   	Publisher = {Princeton University Press},
@@ -234,7 +262,7 @@ Example `paper.bib` file:
 @article{gaia,
     author = {{Gaia Collaboration}},
     title = "{The Gaia mission}",
-    journal = {\aap},
+    journal = {Astronomy and Astrophysics},
     archivePrefix = "arXiv",
     eprint = {1609.04153},
     primaryClass = "astro-ph.IM",
@@ -243,13 +271,13 @@ Example `paper.bib` file:
     month = nov,
     volume = 595,
     doi = {10.1051/0004-6361/201629272},
-    adsurl = {http://adsabs.harvard.edu/abs/2016A%26A...595A...1G},
+    url = {http://adsabs.harvard.edu/abs/2016A%26A...595A...1G},
 }
 
 @article{astropy,
     author = {{Astropy Collaboration}},
     title = "{Astropy: A community Python package for astronomy}",
-    journal = {\aap},
+    journal = {Astronomy and Astrophysics},
     archivePrefix = "arXiv",
     eprint = {1307.6212},
     primaryClass = "astro-ph.IM",
@@ -258,24 +286,42 @@ Example `paper.bib` file:
     month = oct,
     volume = 558,
     doi = {10.1051/0004-6361/201322068},
-    adsurl = {http://adsabs.harvard.edu/abs/2013A%26A...558A..33A}
+    url = {http://adsabs.harvard.edu/abs/2013A%26A...558A..33A}
 }
 
 @misc{fidgit,
-  author = {​A. Smith},
+  author = {A. M. Smith and K. Thaney and M. Hahnel},
   title = {Fidgit: An ungodly union of GitHub and Figshare},
   year = {2020},
-  publisher = {​GitHub},
-  journal = {​GitHub repository},
-  url = {​https://github.com/arfon/fidgit}
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  url = {https://github.com/arfon/fidgit}
 }
 ```
 
-Note that the paper ends with a References heading, and the references are built automatically from the content in the `.bib` file. You should enter in-text citations in the paper body following correct [Markdown citation syntax](https://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html#citation_syntax).
+Note that the paper begins by a metadata section (the enclosing --- lines are mandatory) and ends with a References heading, and the references are built automatically from the content in the `.bib` file. You should enter in-text citations in the paper body following correct [Markdown citation syntax](https://pandoc.org/MANUAL.html#extension-citations).  Also note that the references include full names of venues, e.g., journals and conferences, not abbreviations only understood in the context of a specific discipline.
 
 ## Checking that your paper compiles
 
-JOSS uses Pandoc to compile papers from their Markdown form into a PDF. You can test that your paper is properly structured using the [JOSS paper preview service](https://whedon.theoj.org).
+JOSS uses Pandoc to compile papers from their Markdown form into a PDF. There are a few different ways you can test that your paper is going to compile properly for JOSS:
+
+### GitHub Action
+
+If you're using GitHub for your repository, you can use the [Open Journals GitHub Action](https://github.com/marketplace/actions/open-journals-pdf-generator) to automatically compile your paper each time you update your repository.
+
+The PDF is available via the Actions tab in your project and click on the latest workflow run. The zip archive file (including the `paper.pdf`) is listed in the run's Artifacts section.
+
+### Docker
+
+If you have Docker installed on your local machine, you can use the same Docker Image to compile a draft of your paper locally. In the example below, the `paper.md` file is in the `paper` directory. Upon successful execution of the command, the `paper.pdf` file will be created in the same location as the `paper.md` file:
+
+```text
+docker run --rm \
+    --volume $PWD/paper:/data \
+    --user $(id -u):$(id -g) \
+    --env JOURNAL=joss \
+    openjournals/inara
+```
 
 ## Submitting your paper
 
@@ -298,7 +344,7 @@ Submission to a preprint server is _not_ considered a previous publication.
 
 Purely financial (such as being named on an award) and organizational (such as general supervision of a research group) contributions are not considered sufficient for co-authorship of JOSS submissions, but active project direction and other forms of non-code contributions are. The authors themselves assume responsibility for deciding who should be credited with co-authorship, and co-authors must always agree to be listed. In addition, co-authors agree to be accountable for all aspects of the work, and to notify JOSS if any retraction or correction of mistakes are needed after publication.
 
-## Submissions using proprietary languages/dev environments
+## Submissions using proprietary languages/development environments
 
 We strongly prefer software that doesn't rely upon proprietary (paid for) development environments/programming languages. However, provided _your submission meets our requirements_ (including having a valid open source license) then we will consider your submission for review. Should your submission be accepted for review, we may ask you, the submitting author, to help us find reviewers who already have the required development environment installed.
 
@@ -308,9 +354,19 @@ After submission:
 
 - An Associate Editor-in-Chief will carry out an initial check of your submission, and proceed to assign a handling editor.
 - The handling editor will assign two or more JOSS reviewers, and the review will be carried out in the [JOSS reviews repository](https://github.com/openjournals/joss-reviews).
-- Authors will respond to reviewer-raised issues (if any are raised) on the submission repository's issue tracker. Reviewer and editor contributions, like any other contributions, should be acknowledged in the repository.
+- Authors will respond to reviewer-raised issues (if any are raised) on the submission repository's issue tracker. Reviewer and editor contributions, like any other contributions, should be acknowledged in the repository. 
+- **JOSS reviews are iterative and conversational in nature.** Reviewers are encouraged to post comments/questions/suggestions in the review thread as they arise, and authors are expected to respond in a timely fashion.
+- Authors and reviewers are asked to be patient when waiting for a response from an editor. Please allow a week for an editor to respond to a question before prompting them for further action.
 - Upon successful completion of the review, authors will make a tagged release of the software, and deposit a copy of the repository with a data-archiving service such as [Zenodo](https://zenodo.org/) or [figshare](https://figshare.com/), get a DOI for the archive, and update the review issue thread with the version number and DOI.
 - After we assign a DOI for your accepted JOSS paper, its metadata is deposited with CrossRef and listed on the JOSS website.
-- The review issue will be closed, and an automatic tweet from [@JOSS_TheOJ](https://twitter.com/JOSS_TheOJ) will announce it!
+- The review issue will be closed, and automatic posts from [@JOSS_TheOJ at Twitter](https://twitter.com/JOSS_TheOJ) and [@JOSS at Mastodon](https://fosstodon.org/@joss) will announce it!
 
-If you want to learn more details about the review process, take a look at the [reviewer guidelines](reviewer_guidelines.html).
+If you want to learn more details about the review process, take a look at the [reviewer guidelines](reviewer_guidelines).
+
+## Confidential requests
+
+Please write admin@theoj.org with confidential matters such as retraction requests, report of misconduct, and retroactive author name changes.
+
+In case of a name change, the DOI will be unchanged and the paper will be updated without publishing a correction notice or notifying co-authors.
+
+JOSS will also update Crossref metadata.

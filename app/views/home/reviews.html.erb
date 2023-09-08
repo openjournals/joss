@@ -4,7 +4,8 @@
       <div class="welcome">Welcome, <%= current_user.editor.full_name %></div>
       <div class="hero-small dashboard">
         <div class="hero-title">
-          <%= image_tag "icon_papers.svg", height: "32px" %><h1>Editor dashboard</h1>
+          <%= image_tag "icon_papers.svg", height: "32px" %>
+          <h1>Editor dashboard <%= " - @#{@editor.login}" if @editor != current_user.editor%></h1>
         </div>
       </div>
     </div>
@@ -40,13 +41,15 @@
   <table class="dashboard-table">
     <thead>
       <tr>
-        <th scope="col" width="13%">Status</th>
-        <th scope="col" width="23%">Paper title</th>
+        <th scope="col" width="11%">Status</th>
+        <th scope="col">Paper title</th>
+        <% unless params[:editor]%>
         <th scope="col" class="text-center" width="10%">Scope</th>
+        <th scope="col" class="text-center" width="10%">Invites</th>
+        <% end %>
         <th scope="col" class="text-center" width="10%">Reviews</th>
         <th class="mobile-hide text-center" scope="col" width="8%">Reviewers</th>
-        <th class="mobile-hide" scope="col" width="15%">Last comment</th>
-        <th scope="col" width="2%" style="padding:0 1em 0 0;"><%= sort_icon(@order) %></th>
+        <th class="mobile-hide" scope="col" width="11%">Last activity <%= sort_activity(params[:order]) %></th>
       </tr>
     </thead>
     <tbody>
@@ -54,7 +57,10 @@
       <tr>
         <td class="state"><%= paper.state.titleize %></td>
         <td><%= link_to paper.title, paper_url(paper), title: paper.title, class: "d-inline-block text-truncate", style: "max-width: 450px;" %><div class="time">Submitted <%= time_ago_in_words(paper.created_at) %> ago <%= pretty_labels_for(paper) %></div></td>
+        <% unless params[:editor]%>
         <td class="text-center"><%= vote_summary(paper).html_safe %></td>
+        <td class="text-center"><%= open_invites_for_paper(paper) %></td>   
+        <% end %>
         <td class="text-center"><%= review_issue_links(paper) %></td>
         <td class="text-center mobile-hide">
           <%- paper.reviewers.each do |reviewer| %>
@@ -62,14 +68,15 @@
           <%- end %>
         </td>
         <td class="mobile-hide"><%= comment_activity(paper) %></td>
-        <td style="display:none;"></td>
       </tr>
       <% end %>
     </tbody>
   </table>
 
   <div class="row">
-    <!-- :class not applying here? --> <div class="pagination_helper"><%= page_entries_info(@papers).capitalize.html_safe %></div>
-    <%= will_paginate @papers, inner_window: 3, outer_window: 0, page_links: false %>
+    <div class="pagination_helper">
+      <%== pagy_info(@pagy, i18n_key: "paper") %>
+    </div>
+    <%= pagy_pagination @pagy %>
   </div>
 </div>

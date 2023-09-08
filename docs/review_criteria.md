@@ -31,15 +31,16 @@ There should be an [OSI approved](https://opensource.org/licenses/alphabetical) 
 
 ### Substantial scholarly effort
 
-Reviewers should verify that the software represents substantial scholarly effort. As a rule of thumb, JOSS' minimum allowable contribution should represent **not less than** three months of work for an individual. Signals of effort include: 
+Reviewers should verify that the software represents substantial scholarly effort. As a rule of thumb, JOSS' minimum allowable contribution should represent **not less than** three months of work for an individual. Signals of effort may include: 
 
 - Age of software (is this a well-established software project) / length of commit history.
 - Number of commits.
 - Number of authors.
-- Lines of code (LOC): These statistics are usually reported by Whedon in the `pre-review` issue thread.
+- Lines of code (LOC): These statistics are usually reported by EditorialBot in the `pre-review` issue thread.
 - Whether the software has already been cited in academic papers.
 - Whether the software is sufficiently useful that it is _likely to be cited_ by other researchers working in this domain.
 
+These guidelines are not meant to be strictly prescriptive. Recently released software may not have been around long enough to gather citations in academic literature. While some authors contribute openly and accrue a long and rich commit history before submitting, others may upload their software to GitHub shortly before submitting their JOSS paper.  Reviewers should rely on their expert understanding of their domain to judge whether the software is of broad interest (_likely to be cited by other researchers_) or more narrowly focused around the needs of an individual researcher or lab.
 
 ```eval_rst
 .. note:: The decision on scholarly effort is ultimately one made by JOSS editors. Reviewers are asked to flag submissions of questionable scope during the review process so that the editor can bring this to the attention of the JOSS editorial team.
@@ -51,15 +52,15 @@ There should be sufficient documentation for you, the reviewer to understand the
 
 #### A statement of need
 
-The authors should clearly state what problems the software is designed to solve and who the target audience is.
+The authors should clearly state what problems the software is designed to solve, who the target audience is, and its relation to other work.
 
 #### Installation instructions
 
-There should be a clearly-stated list of dependencies. Ideally these should be handled with an automated package management solution.
+Software dependencies should be clearly documented and their installation handled by an automated procedure. Where possible, software installation should be managed with a package manager. However, this criterion depends upon the maturity and availability of software packaging and distribution in the programming language being used. For example, Python packages should be `pip install`able, and have adopted [packaging conventions](https://packaging.python.org), while Fortran submissions with a Makefile may be sufficient.
 
-> **Good:** A package management file such as a Gemfile or package.json or equivalent<br />
-> **OK:** A list of dependencies to install<br />
-> **Bad (not acceptable):** Reliance on other software not listed by the authors
+> **Good:** The software is simple to install, and follows established distribution and dependency management approaches for the language being used<br />
+> **OK:** A list of dependencies to install, together with some kind of script to handle their installation (e.g., a Makefile)<br />
+> **Bad (not acceptable):** Dependencies are unclear, and/or installation process lacks automation
 
 #### Example usage
 
@@ -93,7 +94,7 @@ Reviewers are expected to install the software they are reviewing and to verify 
 
 Authors are strongly encouraged to include an automated test suite covering the core functionality of their software.
 
-> **Good:** An automated test suite hooked up to an external service such as Travis-CI or similar<br />
+> **Good:** An automated test suite hooked up to continuous integration (GitHub Actions, Circle CI, or similar)<br />
 > **OK:** Documented manual steps that can be followed to objectively check the expected functionality of the software (e.g., a sample input file to assert behavior)<br />
 > **Bad (not acceptable):** No way for you, the reviewer, to objectively assess whether the software works
 
@@ -118,3 +119,7 @@ We ask that reviewers grade submissions in one of three categories: 1) Accept 2)
 As outlined in our author guidelines, submissions that rely upon a proprietary/closed source language or development environment are acceptable provided that they meet the other submission requirements and that you, the reviewer, are able to install the software & verify the functionality of the submission as required by our reviewer guidelines.
 
 If an open source or free variant of the programming language exists, feel free to encourage the submitting author to consider making their software compatible with the open source/free variant.
+
+### Where can I host the repository?
+
+Repositories must be hosted at a location that allows outside users to freely open issues and propose code changes, such as GitHub, GitLab, Bitbucket, etc. Submissions will not be accepted if the repository is hosted at a location where accounts must be manually approved (or paid for), regardless of if this approval is done by the owners of the repository or some other entity. 

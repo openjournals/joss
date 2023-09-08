@@ -2,6 +2,7 @@ require 'rails_helper'
 
 describe 'papers/show.html.erb' do
   before(:each) do
+    skip_paper_repo_url_check
     allow(Repository).to receive(:editors).and_return ["@user1", "@user2"]
   end
 
@@ -14,9 +15,9 @@ describe 'papers/show.html.erb' do
       paper = create(:paper, state: "submitted", submitting_author: user)
       assign(:paper, paper)
 
-      render template: "papers/show.html.erb"
+      render template: "papers/show", formats: :html
 
-      expect(rendered).to have_content("but the review hasn't started.", { normalize_ws: true })
+      expect(rendered).to have_content(:visible, "but the review hasn't started.", normalize_ws: true)
     end
 
     it "displays correctly for accepted paper" do
@@ -26,7 +27,7 @@ describe 'papers/show.html.erb' do
       paper = create(:accepted_paper)
       assign(:paper, paper)
 
-      render template: "papers/show.html.erb"
+      render template: "papers/show", formats: :html
 
       # Paper metadata
       # FIXME - these tests seem to be timezone sensitive??? i.e. can fail depending
@@ -45,7 +46,7 @@ describe 'papers/show.html.erb' do
       paper = create(:accepted_paper)
       assign(:paper, paper)
 
-      render template: "papers/show.html.erb"
+      render template: "papers/show", formats: :html
 
       # Paper metadata
       expect(rendered).to have_title("The Journal of Open Source Software: #{paper.scholar_title}")
@@ -77,7 +78,8 @@ describe 'papers/show.html.erb' do
 
   context 'rendering admin partial' do
     it "displays buttons when there's no GitHub issue" do
-      user = create(:user, admin: true)
+      user = create(:user)
+      editor = create(:board_editor, user: user)
       author = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
       allow(view).to receive_message_chain(:current_editor).and_return(user)
@@ -85,12 +87,12 @@ describe 'papers/show.html.erb' do
       paper = create(:paper, state: "submitted", review_issue_id: nil, submitting_author: author)
       assign(:paper, paper)
 
-      render template: "papers/show.html.erb"
+      render template: "papers/show", formats: :html
 
-      expect(rendered).to have_selector("input[type=submit][value='Reject paper']")
+      expect(rendered).to have_selector("a[data-turbo-method=post]", text: "Reject paper")
     end
 
-    it "shows the withdraw button to paper owners" do
+    it "shows does not show the withdraw (or other actions) to paper owners" do
       user = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
       allow(view).to receive_message_chain(:current_editor).and_return(user)
@@ -98,12 +100,31 @@ describe 'papers/show.html.erb' do
       paper = create(:paper, state: "submitted", submitting_author: user)
       assign(:paper, paper)
 
-      render template: "papers/show.html.erb"
-      expect(rendered).to have_selector("input[type=submit][value='Withdraw paper']")
+      render template: "papers/show", formats: :html
+      expect(rendered).to_not have_selector("a[data-turbo-method=post]", text: "Withdraw paper")
+      expect(rendered).to_not have_selector("a[data-turbo-method=post]", text: "Reject paper")
+      expect(rendered).to_not have_selector("input[type=submit][value='Start pre review']")
     end
 
-    it "shows the withdraw button to admins" do
-      user = create(:user, admin: true)
+    it "shows the withdraw/reject/start-meta-review buttons button to AEiC" do
+      user = create(:user)
+      editor = create(:board_editor, user: user)
+      author = create(:user)
+      allow(view).to receive_message_chain(:current_user).and_return(user)
+      allow(view).to receive_message_chain(:current_editor).and_return(user)
+
+      paper = create(:paper, state: "submitted", submitting_author: author)
+      assign(:paper, paper)
+
+      render template: "papers/show", formats: :html
+      expect(rendered).to have_selector("a[data-turbo-method=post]", text: "Withdraw paper")
+      expect(rendered).to have_selector("a[data-turbo-method=post]", text: "Reject paper")
+      expect(rendered).to have_selector("input[type=submit][value='Start pre review']")
+      expect(rendered).to have_content(author.email)
+    end
+
+    it "doesn't shows admin actions button to non-admins" do
+      user = create(:user)
       editor = create(:editor, user: user)
       author = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
@@ -112,9 +133,10 @@ describe 'papers/show.html.erb' do
       paper = create(:paper, state: "submitted", submitting_author: author)
       assign(:paper, paper)
 
-      render template: "papers/show.html.erb"
-      expect(rendered).to have_selector("input[type=submit][value='Withdraw paper']")
-      expect(rendered).to have_content(author.email)
+      render template: "papers/show", formats: :html
+      expect(rendered).to_not have_selector("button[type=submit]", text: "Withdraw paper")
+      expect(rendered).to_not have_selector("button[type=submit]", text: "Reject paper")
+      expect(rendered).to_not have_selector("input[type=submit][value='Start pre review']")
     end
 
     it "doesn't displays buttons when there's a GitHub issue" do
@@ -127,7 +149,7 @@ describe 'papers/show.html.erb' do
       paper = create(:resubmission_paper, state: "submitted", review_issue_id: 123, submitting_author: author)
       assign(:paper, paper)
 
-      render template: "papers/show.html.erb"
+      render template: "papers/show", formats: :html
 
       expect(rendered).to have_content "Paper review"
       expect(rendered).to have_content "Resubmission"
@@ -140,7 +162,7 @@ describe 'papers/show.html.erb' do
       paper = create(:retracted_paper, retraction_notice: "Reasons for retraction")
       assign(:paper, paper)
 
-      render template: "papers/show.html.erb"
+      render template: "papers/show", formats: :html
       expect(rendered).to have_content("Reasons for retraction")
     end
   end

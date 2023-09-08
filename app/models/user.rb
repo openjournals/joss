@@ -1,4 +1,4 @@
-class User < ActiveRecord::Base
+class User < ApplicationRecord
 
   has_many :papers
   has_one :editor
@@ -13,7 +13,7 @@ class User < ActiveRecord::Base
       user.extra = auth
       user.email = auth.info.email
       user.oauth_token = auth.credentials.token
-      user.oauth_expires_at = Time.at(auth.credentials.expires_at) if auth["provider"] == "facebook"
+      user.oauth_expires_at = Time.at(auth.credentials.expires_at) if (auth.credentials.expires && auth.credentials.expires_at.present?)
       user.save
     end
   end
@@ -43,7 +43,11 @@ class User < ActiveRecord::Base
   end
 
   def editor?
-    self.editor ? true:false
+    self.editor ? true : false
+  end
+
+  def aeic?
+    editor? && self.editor.board?
   end
 
   def pretty_github_username

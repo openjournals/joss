@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe EditorsController, type: :controller do
-  let(:current_user) { create(:admin_user) }
+  let(:current_user) { create(:user, editor: create(:board_editor)) }
 
   before(:each) do
     allow(controller).to receive(:current_user).and_return(current_user)
@@ -9,20 +9,22 @@ RSpec.describe EditorsController, type: :controller do
 
   context "when not logged in" do
     let(:current_user) { nil }
-    it "redirects to login" do
+    it "redirects to root with a login message" do
       get :index
-      expect(response).to redirect_to %r(test.host/auth/orcid)
+      expect(response).to redirect_to root_path
+      expect(flash[:error]).to eql "Please login first"
     end
 
     it "should allow the lookup of an editor" do
       editor = create(:editor)
       get :lookup, params: {login: editor.login }
+
       expect(JSON.parse(response.body)['name']).to eq('Person McEditor')
       expect(JSON.parse(response.body)['url']).to eq('http://placekitten.com')
     end
   end
 
-  context "when logged in as a non-admin user" do
+  context "when logged in as a simple user" do
     let(:current_user) { create(:user) }
     it "redirects to the root" do
       get :index
@@ -35,11 +37,36 @@ RSpec.describe EditorsController, type: :controller do
     end
   end
 
-  describe "#index" do
-    it "assigns all editors as @editors" do
-      editor = create(:editor)
+  context "when logged in as an editor" do
+    let(:current_user) { create(:user, editor: create(:editor)) }
+    it "redirects to the root" do
       get :index
-      expect(assigns(:editors)).to eq([editor])
+      expect(response).to redirect_to root_path
+    end
+
+    it "sets the flash" do
+      get :index
+      expect(flash[:error]).to eql "You are not permitted to view that page"
+    end
+  end
+
+  describe "#index" do
+    it "assigns editors to @active_editors and @emeritus_editors" do
+      track = create(:track)
+      board = track.aeics.first
+      editor = create(:editor, track_ids: [track.id])
+      emeritus = create(:editor, kind: "emeritus")
+      create(:editor, kind: "pending", track_ids: [track.id])
+      get :index
+
+      expect(assigns(:active_editors)).to eq([current_user.editor, board, editor])
+      expect(assigns(:emeritus_editors)).to eq([emeritus])
+    end
+
+    it "assigns grouped availability information" do
+      get :index
+      expect(assigns(:assignment_by_editor)).to be
+      expect(assigns(:paused_by_editor)).to be
     end
   end
 
@@ -69,19 +96,22 @@ RSpec.describe EditorsController, type: :controller do
   describe "#create" do
     context "with valid params" do
       it "creates a new Editor" do
+        new_editor = build(:editor)
         expect {
-          post :create, params: {editor: build(:editor).attributes}
+          post :create, params: {editor: new_editor.attributes.merge(track_ids: new_editor.track_ids)}
         }.to change(Editor, :count).by(1)
       end
 
       it "assigns a newly created editor as @editor" do
-        post :create, params: {editor: build(:editor).attributes}
+        new_editor = build(:editor)
+        post :create, params: {editor: new_editor.attributes.merge(track_ids: new_editor.track_ids)}
         expect(assigns(:editor)).to be_a(Editor)
         expect(assigns(:editor)).to be_persisted
       end
 
       it "redirects to the created editor" do
-        post :create, params: {editor: build(:editor).attributes}
+        new_editor = build(:editor)
+        post :create, params: {editor: new_editor.attributes.merge(track_ids: new_editor.track_ids)}
         expect(response).to redirect_to(Editor.last)
       end
     end
@@ -148,6 +178,27 @@ RSpec.describe EditorsController, type: :controller do
       editor = create(:editor)
       delete :destroy, params: {id: editor.to_param}
       expect(response).to redirect_to(editors_url)
+    end
+  end
+
+  describe "#lookup" do
+    it "returns nil orcid if no associated user" do
+      editor = create(:editor)
+      get :lookup, params: {login: editor.login }
+
+      expect(JSON.parse(response.body)['name']).to eq('Person McEditor')
+      expect(JSON.parse(response.body)['url']).to eq('http://placekitten.com')
+      expect(JSON.parse(response.body)['orcid']).to eq(nil)
+    end
+
+    it "includes editor's user orcid" do
+      editor = create(:editor, user: create(:user))
+
+      get :lookup, params: {login: editor.login }
+
+      expect(JSON.parse(response.body)['name']).to eq('Person McEditor')
+      expect(JSON.parse(response.body)['url']).to eq('http://placekitten.com')
+      expect(JSON.parse(response.body)['orcid']).to eq('0000-0000-0000-1234')
     end
   end
 end

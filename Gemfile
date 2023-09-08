@@ -1,64 +1,73 @@
 source 'https://rubygems.org'
+<<<<<<< HEAD
 ruby "2.7.2"
+=======
+ruby '3.2.2'
+>>>>>>> origin/main
 
-gem 'aasm', '~> 5.0.5'
+gem 'aasm', '~> 5.5.0'
 gem 'chartkick'
 gem 'bootsnap'
-gem 'dotenv', '~> 2.7.5'
-gem 'github-markdown', '~> 0.6.9'
+gem 'dotenv', '~> 2.8.1'
 gem 'google_drive'
 gem 'groupdate'
-gem 'honeybadger', '~> 4.5.1'
-gem 'html-pipeline', '~> 2.12.0'
-gem 'commonmarker', '~> 0.20.1'
-gem 'octicons_helper', '~> 9.1'
+gem 'honeybadger', '~> 5.2.0'
+gem 'html-pipeline', '~> 2.14.3'
+gem 'commonmarker', '~> 0.23.10'
+gem 'net-sftp', '~> 4.0'
+gem 'octicons_helper'
 gem 'omniauth-orcid', '~> 2.1.1'
-gem 'octokit', '~> 4.14'
-gem 'pdf-reader', '~> 2.2'
-gem 'pg', '~> 1.1.4'
-gem 'will_paginate', '~> 3.1.8'
-gem 'rails', '6.0.3.2'
+gem 'omniauth-rails_csrf_protection'
+gem 'octokit', '~> 6.0'
+gem 'pdf-reader', '~> 2.11.0'
+gem 'pg', '~> 1.4.6'
+gem 'pagy'
+gem 'rails', '7.0.7.2'
+gem "importmap-rails"
+gem "turbo-rails"
+gem "stimulus-rails"
 gem 'responders'
 gem 'newrelic_rpm'
-gem 'sanitize', '~> 5.2.1'
-gem 'sass-rails', '~> 6.0.0'
+gem 'sanitize', '~> 6.0.1'
 gem 'searchkick'
-gem 'uglifier', '4.1.20'
-gem 'coffee-rails', '~> 5.0.0'
+gem 'elasticsearch', '<7.14'
+gem 'uglifier', '4.2.0'
+gem 'jbuilder', '~> 2.11'
+gem 'issue'
 
 gem 'active_link_to'
 
- # Use Bootstrap for the front-end
-gem 'bootstrap', '~> 4.3.1'
+gem 'mini_racer'
+gem 'sprockets-rails'
 
+# Use Sass to process CSS
+gem "sassc-rails"
 
-# Use jquery as the JavaScript library
-gem 'jquery-rails', '~> 4.3.5'
+# Use Puma as the app server
+gem 'puma'
 
-gem 'custom_error_message', '~> 1.1.1'
-# Use Unicorn as the app server
-gem 'unicorn', '~> 5.5.1'
+# Use Redis for Action Cable
+gem "redis", "~> 5.0"
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'pry-byebug'
-  gem 'capybara', '~> 3.28.0'
-  gem 'factory_bot_rails', '~> 5.0.2'
-  gem 'rspec-rails', '~> 4.0.0.beta2'
-  gem 'rails-controller-testing', '~> 1.0.4'
+  gem 'capybara', '~> 3.38'
+  gem 'factory_bot_rails', '~> 6.2.0'
+  gem 'rspec-rails', '~> 6.0.1'
+  gem 'rails-controller-testing', '~> 1.0.5'
+  gem 'selenium-webdriver'
+  gem 'webmock'
 end
 
 group :test do
-  gem 'webmock', '~> 3.6.2'
+  gem 'vcr', '~> 6.1', '>= 6.1.0'
 end
 
 group :development do
   # Access an IRB console on exception pages or by using <%= console %> in views
-  gem 'web-console', '~> 4.0.1'
+  gem 'web-console', '~> 4.2.0'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
   gem 'spring-commands-rspec', group: :development
-  gem 'guard', '~> 2.15'
-  gem 'guard-livereload', require: false
-  gem 'rack-livereload'
 end

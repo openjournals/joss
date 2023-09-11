@@ -54,10 +54,6 @@ Authors wishing to publish software deemed out of scope for JOSS have a few opti
 
 While we are happy to review submissions in standalone repositories, we also review submissions that are significant contributions made to existing packages. It is often better to have an integrated library or package of methods than a large number of single-method packages.
 
-### Questions? Open an issue to ask.
-
-Authors wishing to make a pre-submission enquiry should [open an issue](https://github.com/openjournals/joss/issues/new?title=Pre-submission%20enquiry) on the JOSS repository.
-
 ## Conflict of Interest policy for authors
 
 An author conflict of interest (COI) arises when an author has financial, personal, or other interests that may influence their research or the interpretation of its results. In order to maintain the integrity of the work published in JOSS, we require that authors disclose any potential conflicts of interest at submission time.

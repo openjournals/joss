@@ -315,9 +315,20 @@ Cite a bibliography entry by referencing its identifier: `[@upper1974]` will cre
 
 #### Mathematical Formulæ
 
-Mark equations and other math content with dollar signs (`$`). Use a single dollar sign (`$`) for math that will appear directly within the text. Use two dollar signs (`$$`) when the formula is to be presented centered and on a separate line, in "display" style. The formula itself must be given using TeX syntax.
+Mark equations and other math content with dollar signs ($). Use a single dollar sign ($) for math that will appear directly within the text. Use two dollar signs ($$) when the formula is to be presented centered and on a separate line, in "display" style. The formula itself must be given using TeX syntax.
 
-To give some examples: When discussing a variable $x$ or a short formula like $\sin \frac{\pi}{2}$, we would write `$x$` and `$\sin \frac{\pi}{2}$`, respectively. However, for more complex formulæ, display style is more appropriate. Writing `$$\int_{-\infty}^{+\infty} e^{-x^2} \, dx = \sqrt{\pi}$$` will give us
+To give some examples: When discussing a variable $x$ or a short formula like
+
+```eval_rst
+.. math::
+    \sin \frac{\pi}{2}
+```
+
+we would write \$x\$ and $\sin \frac{\pi}{2}$, respectively. However, for more complex formulæ, display style is more appropriate. Writing
+
+    $$\int_{-\infty}^{+\infty} e^{-x^2} \, dx = \sqrt{\pi}$$
+
+will give us
 
 $$\int_{-\infty}^{+\infty} e^{-x^2} \, dx = \sqrt{\pi}$$
 

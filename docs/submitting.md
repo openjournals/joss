@@ -223,7 +223,7 @@ Authors who do not wish to include the label directly in the formula can use a M
 
 Readers may wonder about the reasons behind some of the choices made for paper writing. Most often, the decisions were driven by radical pragmatism. For example, Markdown is not only nearly ubiquitous in the realms of software, but it can also be converted into many different output formats. The archiving standard for scientific articles is JATS, and the most popular publishing format is PDF. Open Journals has built its pipeline based on [pandoc](https://pandoc.org), a universal document converter that can produce both of these publishing formats as well as many more.
 
-A common method for PDF generation is to go via LaTeX. However, support for tagging -- a requirement for accessible PDFs -- is not readily available for LaTeX. The current method used ConTeXt, to produce tagged PDF/A-3, a format suited for archiving [@pdfa3].
+A common method for PDF generation is to go via LaTeX. However, support for tagging -- a requirement for accessible PDFs -- is not readily available for LaTeX. The current method used ConTeXt, to produce tagged PDF/A-3.
 
 ### Markdown
 Markdown is a lightweight markup language used frequently in software development and online environments. Based on email conventions, it was developed in 2004 by John Gruber and Aaron Swartz. 
@@ -297,7 +297,7 @@ Sample grid table:
     | Footer                                               |
     +===================+============+=====================+
 
-#### Figures
+#### Figures and Images
 
 To create a figure, a captioned image must appear by itself in a paragraph. The Markdown syntax for a figure is a link, preceded by an exclamation point (!) and a description.  
 Example:  
@@ -305,26 +305,42 @@ Example:
 
 In order to create a figure rather than an image, there must be a description included and the figure syntax must be the only element in the paragraph, i.e., it must be surrounded by blank lines.
 
-Images that are larger than the text area are scaled to fit the page. You can give images an explicit height and/or width, e.g. when adding an image as part of a paragraph. The Markdown `![Nyan cat](nyan-cat.png){height="9pt"}` includes the image "nyan-cat.png" Nyan cat{height="9pt"} while scaling it to a height of 9 pt.
+Images that are larger than the text area are scaled to fit the page. You can give images an explicit height and/or width, e.g. when adding an image as part of a paragraph. The Markdown `![Nyan cat](nyan-cat.png){height="9pt"}` includes the image saved as `nyan-cat.png` while scaling it to a height of 9 pt.
 
 #### Citations
 
 Bibliographic data should be collected in a file `paper.bib`; it should be formatted in the BibLaTeX format, although plain BibTeX is acceptable as well. All major citation managers offer to export these formats.
 
-Cite a bibliography entry by referencing its identifier: `[@upper1974]` will create the reference "[@upper1974]". Omit the brackets when referring to the author as part of a sentence: "For a case study on writers block, see @upper1974." Please refer to the [pandoc manual](https://pandoc.org/MANUAL#extension-citations) for additional features, including page locators, prefixes, suffixes, and suppression of author names in citations.
+Cite a bibliography entry by referencing its identifier: `[@upper1974]`
+will create the reference "(Upper 1974)". Omit the brackets when
+referring to the author as part of a sentence: "For a case study on
+writers block, see Upper (1974)." Please refer to the [pandoc
+manual](https://pandoc.org/MANUAL#extension-citations) for additional
+features, including page locators, prefixes, suffixes, and suppression
+of author names in citations.
+
+The full citation will display as
+
+> Upper, D. 1974. "The Unsuccessful Self-Treatment of a Case of \"Writer's
+> Block\"." *Journal of Applied Behavior Analysis* 7 (3): 497.
+> <https://doi.org/10.1901/jaba.1974.7-497a>.
 
 #### Mathematical Formulæ
 
 Mark equations and other math content with dollar signs ($). Use a single dollar sign ($) for math that will appear directly within the text. Use two dollar signs ($$) when the formula is to be presented centered and on a separate line, in "display" style. The formula itself must be given using TeX syntax.
 
-To give some examples: When discussing a variable $x$ or a short formula like
+To give some examples: When discussing a variable *x* or a short formula like
 
 ```eval_rst
 .. math::
     \sin \frac{\pi}{2}
 ```
 
-we would write \$x\$ and $\sin \frac{\pi}{2}$, respectively. However, for more complex formulæ, display style is more appropriate. Writing
+we would write $x$ and
+
+    $\sin \frac{\pi}{2}$
+
+respectively. However, for more complex formulæ, display style is more appropriate. Writing
 
     $$\int_{-\infty}^{+\infty} e^{-x^2} \, dx = \sqrt{\pi}$$
 
@@ -334,7 +350,7 @@ $$\int_{-\infty}^{+\infty} e^{-x^2} \, dx = \sqrt{\pi}$$
 
 #### Footnotes
 
-Syntax for footnotes centers around the "caret" character `^`. The symbol is also used as a delimiter for superscript text and thereby mirrors the superscript numbers used to mark a footnote in the final text.[^markers]
+Syntax for footnotes centers around the "caret" character `^`. The symbol is also used as a delimiter for superscript text and thereby mirrors the superscript numbers used to mark a footnote in the final text.
 
 ``` markdown
 Articles are published under a Creative Commons license[^1].
@@ -345,13 +361,18 @@ Software should use an OSI-approved license.
 
 The above example results in the following output:
 
-> Articles are published under a Creative Commons license[^1]. Software should use an OSI-approved license.
+> ```eval_rst
 >
-> [^1]: An open license that allows reuse.
+> Articles are published under a Creative Commons license [#f1]_. Software should use an OSI-approved license.
+>
+> .. rubric:: Footnotes
+>
+> .. [#f1] An open license that allows reuse.
+>
+> ```
 
 Note: numbers do not have to be sequential, they will be reordered automatically in the publishing step. In fact, the identifier of a note can be any sequence of characters, like `[^marker]`, but may not contain whitespace characters.
 
-[^markers]: it should be noted that some publishers prefer symbols or letters as footnote markers.
 
 #### Blocks
 

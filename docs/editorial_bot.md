@@ -241,6 +241,17 @@ If everything looks good with the draft proofs from the `@editorialbot recommend
 
 EditorialBot will accept the paper, assign it a DOI, deposit it and publish the paper.
 
+### Updating an already accepted paper
+
+If the draft has been updated after a paper has been published, JOSS editors-in-chief can update the published info and PDF with the following command:
+
+```text
+@editorialbot reaccept
+```
+
+EditorialBot will update the published paper and re-deposit it.
+
+
 ### Rejecting a paper
 
 JOSS editors-in-chief can reject a submission with the following command:
@@ -304,12 +315,6 @@ JOSS editors-in-chief can withdraw a submission with the following command:
 # Set a value for repository
 @editorialbot set https://github.com/org/repo as repository
 
-# Reject paper
-@editorialbot reject
-
-# Withdraw paper
-@editorialbot withdraw
-
 # Invite an editor to edit a submission (sending them an email)
 @editorialbot invite @(.*) as editor
 
@@ -327,6 +332,15 @@ JOSS editors-in-chief can withdraw a submission with the following command:
 
 # Accept and publish the paper
 @editorialbot accept
+
+# Update an accepted paper
+@editorialbot reaccept
+
+# Reject paper
+@editorialbot reject
+
+# Withdraw paper
+@editorialbot withdraw
 
 # Flag submission with questionable scope
 @editorialbot query scope

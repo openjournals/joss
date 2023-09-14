@@ -118,6 +118,17 @@ describe Paper do
       expect(track_A_papers.include?(paper_A1)).to be true
       expect(track_A_papers.include?(paper_A2)).to be true
     end
+
+    it "should find query scoped papers" do
+      paper_1, paper_2, paper_3, paper_4, paper_5 = create_list(:paper, 5)
+      paper_2.update labels: {"query-scope" => "FF0000"}
+      paper_4.update labels: {"query-scope" => "CC00CC"}
+
+      query_scoped_papers = Paper.query_scoped
+      expect(query_scoped_papers.size).to eq(2)
+      expect(query_scoped_papers.include?(paper_2)).to be true
+      expect(query_scoped_papers.include?(paper_4)).to be true
+    end
   end
 
   # GitHub stuff

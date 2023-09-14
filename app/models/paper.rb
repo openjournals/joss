@@ -131,6 +131,7 @@ class Paper < ApplicationRecord
   scope :search_import, -> { where(state: VISIBLE_STATES) }
   scope :not_archived, -> { where('archived = ?', false) }
   scope :by_track, -> (track_id) { where('track_id = ?', track_id) }
+  scope :query_scoped, -> { where("labels->>'query-scope' IS NOT NULL") }
 
   before_create :set_sha, :set_last_activity
   after_create :notify_editors, :notify_author

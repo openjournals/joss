@@ -1,7 +1,7 @@
 class HomeController < ApplicationController
   before_action :require_user, only: %w(profile update_profile)
   before_action :require_editor, only: %w(dashboard reviews incoming stats all in_progress)
-  before_action :set_track, only: %w(all incoming in_progress)
+  before_action :set_track, only: %w(all incoming in_progress query_scoped)
   # layout "dashboard", only:  %w(dashboard reviews incoming stats all in_progress)
 
   def index
@@ -96,6 +96,24 @@ class HomeController < ApplicationController
       @pagy, @papers = pagy(in_progress_scope.order(last_activity: @order))
     else
       @pagy, @papers = pagy(in_progress_scope.order(created_at: @order))
+    end
+
+    load_pending_invitations_for_papers(@papers)
+
+    render template: "home/reviews"
+  end
+
+  def query_scoped
+    in_progress_query_scoped = Paper.unscoped.in_progress.query_scoped
+    in_progress_query_scoped = in_progress_query_scoped.by_track(@track.id) if @track.present?
+
+    @editor = current_user.editor
+    @order = params[:order].to_s.end_with?("-asc") ? "asc" : "desc"
+
+    if params[:order].to_s.include?("active-")
+      @pagy, @papers = pagy(in_progress_query_scoped.order(last_activity: @order))
+    else
+      @pagy, @papers = pagy(in_progress_query_scoped.order(created_at: @order))
     end
 
     load_pending_invitations_for_papers(@papers)

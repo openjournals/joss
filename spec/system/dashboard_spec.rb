@@ -44,7 +44,8 @@ feature "Dashboard" do
     before do
       editor = create(:editor, login: "editor1")
       @track = create(:track, name: "TestingTrack")
-      create(:paper, state: "submitted", title: "Paper Submitted", labels:{"query-scope" => "C0C"}, editor: nil)
+      query_scoped_paper = create(:paper, state: "submitted", title: "Paper Submitted", labels:{"query-scope" => "C0C"}, editor: nil)
+      create(:in_scope_vote, editor: editor, paper: query_scoped_paper)
       create(:paper, state: "under_review", title: "Paper Under Review", editor: editor)
       create(:paper, state: "review_pending", title: "Paper Review Pending No Editor", labels:{"query-scope" => "C0C"}, editor: nil, track: @track)
       create(:paper, state: "review_pending", title: "Paper Review Pending With Editor", editor: editor, track: @track)

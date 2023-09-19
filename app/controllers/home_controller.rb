@@ -78,9 +78,9 @@ class HomeController < ApplicationController
       @pagy, @papers = pagy(incoming_scope.order(created_at: @order))
     end
 
-    load_pending_invitations_for_papers(@papers)
-
     @editor = current_user.editor
+    set_votes_by_paper_from_editor(@editor, @papers)
+    load_pending_invitations_for_papers(@papers)
 
     render template: "home/reviews"
   end
@@ -98,6 +98,7 @@ class HomeController < ApplicationController
       @pagy, @papers = pagy(in_progress_scope.order(created_at: @order))
     end
 
+    set_votes_by_paper_from_editor(@editor, @papers)
     load_pending_invitations_for_papers(@papers)
 
     render template: "home/reviews"
@@ -116,6 +117,7 @@ class HomeController < ApplicationController
       @pagy, @papers = pagy(in_progress_query_scoped.order(created_at: @order))
     end
 
+    set_votes_by_paper_from_editor(@editor, @papers)
     load_pending_invitations_for_papers(@papers)
 
     render template: "home/reviews"
@@ -134,6 +136,7 @@ class HomeController < ApplicationController
       @pagy, @papers = pagy(all_scope.order(created_at: @order))
     end
 
+    set_votes_by_paper_from_editor(@editor, @papers)
     load_pending_invitations_for_papers(@papers)
 
     render template: "home/reviews"
@@ -171,6 +174,11 @@ private
   end
 
   def set_track
-      @track = Track.find(params[:track_id]) if params[:track_id].present?
-    end
+    @track = Track.find(params[:track_id]) if params[:track_id].present?
+  end
+
+  def set_votes_by_paper_from_editor(editor, papers)
+    in_scope_papers = papers.select {|p| p.labels.keys.include?("query-scope")}
+    @votes_by_paper_from_editor = in_scope_papers.any? ? Vote.where(editor: editor).where(paper: in_scope_papers).index_by(&:paper_id) : {}
+  end
 end

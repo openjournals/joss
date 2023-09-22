@@ -31,12 +31,14 @@ module HomeHelper
     if paper.labels.keys.include?("query-scope")
       summary = ""
       vote = votes_by_paper[paper.id]
-      summary = if vote.nil? || vote.comment?
+      summary = if vote.nil?
         content_tag(:small, "👍(#{paper.in_scope_votes.count}) / 👎 (#{paper.votes.out_of_scope.count})")
       elsif vote.in_scope?
         content_tag(:small, "👍(#{paper.in_scope_votes.count}) / <span class='grey-emoji'>👎</span> (#{paper.out_of_scope_votes.count})".html_safe)
       elsif vote.out_of_scope?
         content_tag(:small, "<span class='grey-emoji'>👍</span>(#{paper.in_scope_votes.count}) / 👎 (#{paper.out_of_scope_votes.count})".html_safe)
+      elsif vote.comment?
+        content_tag(:small, "<span class='grey-emoji'>👍</span>(#{paper.in_scope_votes.count}) / <span class='grey-emoji'>👎</span> (#{paper.out_of_scope_votes.count})".html_safe)
       end
       summary.html_safe
     else

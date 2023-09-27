@@ -36,6 +36,14 @@ class Editor < ApplicationRecord
     categories.join(", ")
   end
 
+  def status
+    if retired?
+      "Retired"
+    else
+      "Active"
+    end
+  end
+
   def three_month_average
     paper_count = self.papers.visible.since(3.months.ago).count
     return sprintf("%.1f", paper_count / 3.0)

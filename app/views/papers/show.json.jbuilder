@@ -12,6 +12,7 @@ if @paper.published?
   json.authors @paper.metadata_authors
   json.submitting_author @paper&.submitting_author&.pretty_github_username
   json.editor @paper.metadata_editor
+  json.editor_status @paper&.editor&.status
   if @paper.editor
     json.editor_name @paper.editor.full_name
     json.editor_url @paper.editor.url if @paper.editor.url

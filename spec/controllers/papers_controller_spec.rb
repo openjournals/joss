@@ -404,6 +404,7 @@ describe PapersController, type: :controller do
       expect(parsed_response["state"]).to eq("accepted")
       expect(parsed_response["software_repository"]).to eq("http://github.com/arfon/fidgit")
       expect(parsed_response["editor"]).to eq("@arfon")
+      expect(parsed_response["submitting_author"]).to eq("@foobar")
       expect(parsed_response["editor_name"]).to eq("Person McEditor")
       expect(parsed_response["editor_orcid"]).to eq("0000-0000-0000-1234")
       expect(parsed_response["doi"]).to eq("10.21105/joss.00000")

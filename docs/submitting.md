@@ -642,6 +642,10 @@ docker run --rm \
     openjournals/inara
 ```
 
+### Locally
+
+The materials for the `inara` container image above are themselves open source and available in [its own repository](https://github.com/openjournals/inara). You can clone that repository and run the `inara` script locally with `make` after installing the necessary dependencies, which can be inferred from the [`Dockerfile`](https://github.com/openjournals/inara/blob/main/Dockerfile).
+
 ## Submitting your paper
 
 Submission is as simple as:

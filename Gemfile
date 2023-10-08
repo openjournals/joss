@@ -18,7 +18,7 @@ gem 'octokit', '~> 6.0'
 gem 'pdf-reader', '~> 2.11.0'
 gem 'pg', '~> 1.4.6'
 gem 'pagy'
-gem 'rails', '7.0.8'
+gem 'rails', '7.1.0'
 gem "importmap-rails"
 gem "turbo-rails"
 gem "stimulus-rails"

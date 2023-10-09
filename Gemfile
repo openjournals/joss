@@ -18,7 +18,7 @@ gem 'octokit', '~> 6.0'
 gem 'pdf-reader', '~> 2.11.0'
 gem 'pg', '~> 1.4.6'
 gem 'pagy'
-gem 'rails', '7.0.8'
+gem 'rails', '7.1.0'
 gem "importmap-rails"
 gem "turbo-rails"
 gem "stimulus-rails"
@@ -48,9 +48,9 @@ gem "redis", "~> 5.0"
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'pry-byebug'
-  gem 'capybara', '~> 3.38'
+  gem 'capybara', '~> 3.39'
   gem 'factory_bot_rails', '~> 6.2.0'
-  gem 'rspec-rails', '~> 6.0.1'
+  gem 'rspec-rails', '~> 6.0.3'
   gem 'rails-controller-testing', '~> 1.0.5'
   gem 'selenium-webdriver'
   gem 'webmock'

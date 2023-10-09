@@ -4,8 +4,8 @@ class Paper < ApplicationRecord
   searchkick index_name: "joss-production"
 
   include SettingsHelper
-  serialize :activities, Hash
-  serialize :metadata, Hash
+  serialize :activities, type: Hash, coder: JSON
+  serialize :metadata, type: Hash, coder: JSON
 
   belongs_to :submitting_author,
              class_name: 'User',

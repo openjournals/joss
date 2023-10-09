@@ -4,7 +4,7 @@ Rails.application.routes.draw do
   resources :invitations, only: [:index] do
     put 'expire', on: :member
   end
-  resources :papers do
+  resources :papers, except: [:edit, :update, :destroy] do
     resources :votes, only: [:create]
     resources :notes, only: [:create, :destroy]
 

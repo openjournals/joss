@@ -3,9 +3,9 @@ require 'open-uri'
 class PapersController < ApplicationController
   include SettingsHelper
 
-  before_action :require_user, only: %w(new create update withdraw)
+  before_action :require_user, only: %w(new create withdraw)
   before_action :require_complete_profile, only: %w(create)
-  before_action :require_aeic, only: %w(start_meta_review archive reject change_track)
+  before_action :require_aeic, only: %w(start_meta_review reject change_track)
 
   def recent
     @pagy, @papers = pagy(Paper.visible, items: 10)

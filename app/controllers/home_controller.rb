@@ -1,6 +1,6 @@
 class HomeController < ApplicationController
   before_action :require_user, only: %w(profile update_profile)
-  before_action :require_editor, only: %w(dashboard reviews incoming stats all in_progress)
+  before_action :require_editor, only: %w(dashboard reviews incoming all in_progress)
   before_action :set_track, only: %w(all incoming in_progress query_scoped)
   # layout "dashboard", only:  %w(dashboard reviews incoming stats all in_progress)
 

@@ -303,10 +303,10 @@ class Paper < ApplicationRecord
     end
   end
 
-  # A 5-figure integer used to produce the JOSS DOI
-  def joss_id
+  # A 5-figure integer used to produce the Journal DOI
+  def journal_id
     if self.is_a_retraction_notice?
-      return retracted_paper.joss_id + "R"
+      return retracted_paper.journal_id + "R"
     else
       id = "%05d" % review_issue_id
       return "#{setting(:abbreviation).downcase}.#{id}"
@@ -320,7 +320,7 @@ class Paper < ApplicationRecord
   # version if no DOI is set.
   def seo_url
     if accepted?
-      "#{Rails.application.settings["url"]}/papers/10.21105/#{joss_id}"
+      "#{Rails.application.settings["url"]}/papers/10.21105/#{journal_id}"
     else
       "#{Rails.application.settings["url"]}/papers/#{to_param}"
     end
@@ -337,7 +337,7 @@ class Paper < ApplicationRecord
   def pdf_url
     doi_to_file = doi.gsub('/', '.')
 
-    "#{Rails.application.settings["papers_html_url"]}/#{joss_id}/#{doi_to_file}.pdf"
+    "#{Rails.application.settings["papers_html_url"]}/#{journal_id}/#{doi_to_file}.pdf"
   end
 
   # 'reviewers' should be a string (and may be comma-separated)
@@ -501,7 +501,7 @@ class Paper < ApplicationRecord
   end
 
   def status_badge_url
-    "#{Rails.application.settings["url"]}/papers/10.21105/#{joss_id}/status.svg"
+    "#{Rails.application.settings["url"]}/papers/10.21105/#{journal_id}/status.svg"
   end
 
   def markdown_code

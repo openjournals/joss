@@ -51,18 +51,17 @@ group :development, :test do
   gem 'capybara', '~> 3.39'
   gem 'factory_bot_rails', '~> 6.2.0'
   gem 'rspec-rails', '~> 6.0.3'
-  gem 'rails-controller-testing', '~> 1.0.5'
   gem 'selenium-webdriver'
   gem 'webmock'
 end
 
 group :test do
-  gem 'vcr', '~> 6.1', '>= 6.1.0'
+  gem 'vcr', '~> 6.2'
 end
 
 group :development do
   # Access an IRB console on exception pages or by using <%= console %> in views
-  gem 'web-console', '~> 4.2.0'
+  gem 'web-console', '~> 4.2.1'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
   gem 'spring-commands-rspec', group: :development

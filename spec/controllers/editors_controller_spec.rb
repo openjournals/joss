@@ -163,10 +163,11 @@ RSpec.describe EditorsController, type: :controller do
 
       it "goes back to the 'edit' form" do
         editor = create(:editor)
-        updated_at = editor.updated_at
+        editor_login = editor.login
         put :update, params: {id: editor.to_param, editor: {login: nil}}
+
         expect(response).to_not be_redirect
-        expect(editor.reload.updated_at).to eq(updated_at)
+        expect(editor.reload.login).to eq(editor_login)
       end
     end
   end

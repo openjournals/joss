@@ -15,8 +15,8 @@ class Editor < ApplicationRecord
   has_many :track_aeics, dependent: :destroy
   has_many :managed_tracks, through: :track_aeics, source: :track
 
+  normalizes :login, with: -> login { login.gsub(/^@/, "") }
   before_save :clear_title, if: :board_removed?
-  before_save :format_login, if: :login_changed?
   before_save :add_default_avatar_url
 
   ACTIVE_EDITOR_STATES = [
@@ -93,10 +93,6 @@ class Editor < ApplicationRecord
 
   def board_removed?
     kind_changed? && kind_was == "board"
-  end
-
-  def format_login
-    login.gsub!(/^@/, "")
   end
 
   def add_default_avatar_url

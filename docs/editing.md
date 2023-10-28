@@ -162,7 +162,7 @@ If you believe a submission should be rejected, for example, because it is out o
 
 **Scope reviews for resubmissions**
 
-In the case where an author re-submits a previously-rejected paper to JOSS, the TEiC will use their discretion on whether a further scope review is required by the full editorial team, or 1) whether the previous reasons to reject still stands, or 2) whether there have been sufficient updates to now send the submission out for review.
+In the event that an author re-submits a paper to JOSS that was previously rejected, the TEiC will use their discretion to determine: 1) whether a full scope review by the entire editorial team is necessary, 2) if the previous reasons for rejection remain valid, or 3) if there have been enough updates to warrant sending the submission out for review.
 
 ### Voting on papers flagged as potentially out of scope
 

@@ -140,26 +140,28 @@ aas-journal: Astrophysical Journal <- The name of the AAS journal.
 
 ## Processing of rOpenSci-reviewed or pyOpenSci-reviewed and accepted submissions
 
-If a paper has already been reviewed and accepted by rOpenSci or pyOpenSci, provided the submission also meets the JOSS [submission requirements](https://joss.readthedocs.io/en/latest/submitting.html#submission-requirements) the paper will go through a streamlined review process:
+If a paper has already been reviewed and accepted by rOpenSci or pyOpenSci, the streamlined JOSS review process is:
 
-- Assign yourself as editor.
-- Check the rOpenSci and pyOpenSci issue for the reviewer handles.
-- Assign the rOpenSci/pyOpenSci as the reviewers of the JOSS submission too (although they do *not* need to complete another review here).
-- Add a comment in the pre-review issue pointing to the rOpenSci or pyOpenSci review.
-- Add the rOpenSci/pyOpenSci label to the pre-review issue.
-- Start the review issue (make sure to tell the rOpenSci/pyOpenSci reviewers they are not required to complete an additional review here – we're just adding them for credit).
-- Add a comment in the review issue pointing to the rOpenSci or pyOpenSci review.
-- Compile the paper and check it looks OK. Ask the author to check too.
-- Go to to the source code repo and grab the Zenodo DOI.
-- Accept and publish the paper.
+- Assign yourself as editor and reviewer
+- Add a comment in the pre-review issue pointing to the rOpenSci or pyOpenSci review
+- Add the rOpenSci/pyOpenSci label to the pre-review issue
+- Start the review issue
+- Add a comment in the review issue pointing to the rOpenSci or pyOpenSci review
+- Compile the paper and check it looks OK
+- Go to to the source code repo and grab the Zenodo DOI
+- Accept and publish the paper
 
 ## Rejecting a paper
 
 If you believe a submission should be rejected, for example, because it is out of scope for JOSS, then you should:
 
 - Ask EditorialBot to flag the submission as potentially out of scope with the command `@editorialbot query scope`. This command adds the `query-scope` label to the issue.
-- Mention to the author your reasons for flagging the submission as possibly out of scope, and give them an opportunity to defend their submission.
+- Mention to the author your reasons for flagging the submission as possibly out of scope, and _optionally_ give them opportunity an defend their submission.
 - The TEiC will make a final determination of whether a submission is in scope, taking into account the feedback of other editors.
+
+**Scope reviews for resubmissions**
+
+In the case where an author re-submits a previously-rejected paper to JOSS, the TEiC will use their discretion on whether a further scope review is required by the full editorial team, or 1) whether the previous reasons to reject still stands, or 2) whether there have been sufficient updates to now send the submission out for review.
 
 ### Voting on papers flagged as potentially out of scope
 

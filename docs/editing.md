@@ -156,7 +156,7 @@ If a paper has already been reviewed and accepted by rOpenSci or pyOpenSci, the 
 If you believe a submission should be rejected, for example, because it is out of scope for JOSS, then you should:
 
 - Ask EditorialBot to flag the submission as potentially out of scope with the command `@editorialbot query scope`. This command adds the `query-scope` label to the issue.
-- Mention to the author your reasons for flagging the submission as possibly out of scope, and _optionally_ give them opportunity an defend their submission.
+- Mention to the author your reasons for flagging the submission as possibly out of scope, and _optionally_ give them an opportunity to defend their submission.
 - During the scope review process, the editorial team may ask the authors to provide additional information about their submission to assist the editorial board with their decision.
 - The TEiC will make a final determination of whether a submission is in scope, taking into account the feedback of other editors.
 

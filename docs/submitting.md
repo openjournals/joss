@@ -690,6 +690,6 @@ If you want to learn more details about the review process, take a look at the [
 
 Please write admin@theoj.org with confidential matters such as retraction requests, report of misconduct, and retroactive author name changes.
 
-In case of a name change, the DOI will be unchanged and the paper will be updated without publishing a correction notice or notifying co-authors.
+In the event of a name change request, the DOI will remain unchanged, and the paper will be updated without the publication of a correction notice. Please note that because JOSS submissions are managed publicly, updates to papers are visible in the public record (e.g., in the [JOSS papers repository](https://github.com/openjournals/joss-papers) commit history).
 
 JOSS will also update Crossref metadata.

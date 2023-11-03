@@ -8,12 +8,12 @@ RSpec.describe do
   end
 
   describe "Reference tracks" do
-    it "should be 344 in total" do
-      expect(reference_tracks.size).to eq(344)
+    it "should be 346 in total" do
+      expect(reference_tracks.size).to eq(346)
     end
 
     it "should be not have any dupes" do
-      expect(reference_tracks.uniq.size).to eq(344)
+      expect(reference_tracks.uniq.size).to eq(346)
     end
   end
 

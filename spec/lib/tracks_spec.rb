@@ -36,7 +36,7 @@ RSpec.describe do
     it "should have no dupes" do
       all_tracks = joss_tracks['tracks'].collect {|k,v| v['fields']}.flatten.uniq
 
-      expect(all_tracks.size).to eq(344)
+      expect(all_tracks.size).to eq(346)
     end
 
     it "should include all of the reference tracks" do

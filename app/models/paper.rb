@@ -114,7 +114,9 @@ class Paper < ApplicationRecord
     'Makefile',
     'HTML',
     'CSS',
-    'CMake'
+    'CMake',
+    'Dockerfile',
+    'Batchfile'
   ].freeze
 
   default_scope  { order(created_at: :desc) }

@@ -49,8 +49,8 @@ group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'pry-byebug'
   gem 'capybara', '~> 3.39'
-  gem 'factory_bot_rails', '~> 6.2.0'
-  gem 'rspec-rails', '~> 6.0.3'
+  gem 'factory_bot_rails', '~> 6.4.2'
+  gem 'rspec-rails', '~> 6.1.0'
   gem 'selenium-webdriver'
   gem 'webmock'
 end

@@ -47,14 +47,31 @@ describe Paper do
     expect(paper.submitting_author).to eq(user)
   end
 
+  it "should have a complete value for repository url" do
+    params = { title: 'Test paper',
+               body: 'A test paper description',
+               repository_url: 'github.com/arfon/fidgit',
+               software_version: 'v1.0.0',
+               submitting_author: create(:user),
+               submission_kind: 'new',
+               track: create(:track) }
+
+    paper = Paper.create(params)
+    expect(paper).to_not be_valid
+    expect(paper.errors.messages[:repository_url].first).to eq("Repository URL is missing the protocol segment (http/https)")
+
+    paper = Paper.create(params.merge(repository_url: 'http://github.com/arfon/fidgit'))
+    expect(paper).to be_valid
+  end
+
   it "must have a track assigned on creation if tracks are enabled" do
     enable_feature(:tracks) do
       no_track_params = { title: 'Test paper',
-                         body: 'A test paper description',
-                         repository_url: 'http://github.com/arfon/fidgit',
-                         software_version: 'v1.0.0',
-                         submitting_author: create(:user),
-                         submission_kind: 'new' }
+                          body: 'A test paper description',
+                          repository_url: 'http://github.com/arfon/fidgit',
+                          software_version: 'v1.0.0',
+                          submitting_author: create(:user),
+                          submission_kind: 'new' }
 
       valid_params = no_track_params.merge track: create(:track)
 

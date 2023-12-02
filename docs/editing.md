@@ -318,6 +318,7 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 
 - Make a final check of the paper with `@editorialbot generate pdf` and that all references have DOIs (where appropriate) with `@editorialbot check references`.
 - If everything looks good, ask the author to make a new release (if possible) of the software being reviewed and deposit a new archive the software with Zenodo/figshare. Update the review thread with this archive DOI: `@editorialbot set 10.5281/zenodo.xxxxxx as archive`.
+- Editors can get a checklist of the final steps using the `@editorialbot create post-review checklist` command
 - Finally, use `@editorialbot recommend-accept` on the review thread to ping the `@openjournals/joss-eics` team letting them know the paper is ready to be accepted.
 
 **Step 12: Celebrate publication! Tweet! Thank reviewers! Say thank you on issue.**

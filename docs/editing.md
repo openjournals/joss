@@ -22,7 +22,7 @@ Editors can flag submissions of questionable scope using the command `@editorial
 The TEiC assigns an editor (or a volunteering editor self-assigns) with the command `@editorialbot assign @username as editor` in a comment.
 
 ```eval_rst
-.. note:: Please check in on the [dashboard](https://joss.theoj.org/dashboard/incoming) semi-regularly to see which papers are currently without an editor, and if possible, volunteer to edit papers that look to be in your domain. If you choose to be an editor in the issue thread type the command ``@editorialbot assign @yourhandle as editor`` or simply ``@editorialbot assign me as editor``
+.. note:: Please check in on the `dashboard <https://joss.theoj.org/dashboard/incoming>`_ semi-regularly to see which papers are currently without an editor, and if possible, volunteer to edit papers that look to be in your domain. If you choose to be an editor in the issue thread type the command ``@editorialbot assign @yourhandle as editor`` or simply ``@editorialbot assign me as editor``
 ```
 
 ### How papers are assigned to editors
@@ -35,11 +35,11 @@ By default, unless an editor volunteers, the Track Editor-in-chief (TEiC) on dut
 
 In most cases, the TEiC will ask one or more editors to edit a submission (e.g. `@editor1, @editor 2 - would one of you be willing to edit this submission for JOSS`). If the editor doesn't respond within ~3 working days, the TEiC may assign the paper to the editor regardless.
 
-Editors may also be invited to edit over email when an TEiC runs the  command `@editorialbot invite @editor1 as editor`.
+Editors may also be invited to edit over email when an TEiC runs the command `@editorialbot invite @editor1 as editor`.
 
 ### Finding reviewers
 
-At this point, the handling editor's job is to identify reviewers who have sufficient expertise in the field of software and in the field of the submission. JOSS papers have to have a minimum of two reviewers per submission, except for papers that have previously been peer-reviewed via rOpenSci. In some cases, the editor also might want to formally add themself as one of the reviewers. If the editor feels particularly unsure of the submission, a third (or fourth) reviewer can be recruited.
+At this point, the handling editor's job is to identify reviewers who have sufficient expertise in the field of software and in the field of the submission. JOSS papers have to have a minimum of two reviewers per submission, except for papers that have previously been peer-reviewed via rOpenSci. In some cases, the editor also might want to formally add themselves as one of the reviewers. If the editor feels particularly unsure of the submission, a third (or fourth) reviewer can be recruited.
 
 To recruit reviewers, the handling editor can mention them in the `PRE-REVIEW` issue with their GitHub handle, ping them on Twitter, or email them. After expressing initial interest, candidate reviewers may need a longer explanation via email. See sample reviewer invitation email, below.
 
@@ -62,7 +62,7 @@ Finding reviewers can be challenging, especially if a submission is outside of y
 - Ask on social networks: Sometimes asking on Twitter for reviewers can identify good candidates.
 - Check the work being referenced in the submission:
   - Authors of software that is being built on might be interested in reviewing the submission.
-  - Users of the the software that is being submission be interested in reviewing the submission
+  - Users of the software that is being submission be interested in reviewing the submission
 - Avoid asking JOSS editors to review: If at all possible, avoid asking JOSS editors to review as they are generally very busy editing their own papers.
 
 Once a reviewer accepts, the handling editor runs the command `@editorialbot add @username as reviewer` in the `PRE-REVIEW` issue. Add more reviewers with the same command.
@@ -92,7 +92,7 @@ Sometimes you'll need to add a new reviewer once the main review (i.e. post pre-
 
 ## After reviewers recommend acceptance
 
-When a submission is ready to be accepted, we ask that the authors issue a new tagged release of the software (if changed), and archive it (on [Zenodo](https://zenodo.org/), [fig**share**](https://figshare.com/), or other). The authors then post the version number and archive DOI in the `REVIEW` issue. The handling editor executes the pre-publication steps, and pings the Track Editor in Chief for final processing.
+When a submission is ready to be accepted, we ask that the authors issue a new tagged release of the software (if changed), and archive it (on [Zenodo](https://zenodo.org/), [fig**share**](https://figshare.com/), or other). The authors then post the version number and archive DOI in the `REVIEW` issue. The handling editor executes the pre-publication steps, and pings the Track Editor-in-Chief for final processing.
 
 Optionally you can ask EditorialBot to generate a checklist with all the post-review steps running the command: `@editorialbot create post-review checklist`
 
@@ -156,8 +156,13 @@ If a paper has already been reviewed and accepted by rOpenSci or pyOpenSci, the 
 If you believe a submission should be rejected, for example, because it is out of scope for JOSS, then you should:
 
 - Ask EditorialBot to flag the submission as potentially out of scope with the command `@editorialbot query scope`. This command adds the `query-scope` label to the issue.
-- Mention to the author your reasons for flagging the submission as possibly out of scope, and give them an opportunity to defend their submission.
+- Mention to the author your reasons for flagging the submission as possibly out of scope, and _optionally_ give them an opportunity to defend their submission.
+- During the scope review process, the editorial team may ask the authors to provide additional information about their submission to assist the editorial board with their decision.
 - The TEiC will make a final determination of whether a submission is in scope, taking into account the feedback of other editors.
+
+**Scope reviews for resubmissions**
+
+In the event that an author re-submits a paper to JOSS that was previously rejected, the TEiC will use their discretion to determine: 1) whether a full scope review by the entire editorial team is necessary, 2) if the previous reasons for rejection remain valid, or 3) if there have been enough updates to warrant sending the submission out for review.
 
 ### Voting on papers flagged as potentially out of scope
 
@@ -286,7 +291,8 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 
 **Step 6: The editor finds >= 2 reviewers**
 
-- Use the list of reviewers: type the command `@editorialbot list reviewers` or look at list of reviewers in a Google [spreadsheet](https://docs.google.com/spreadsheets/d/1PAPRJ63yq9aPC1COLjaQp8mHmEq3rZUzwUYxTulyu78/edit?usp=sharing)
+- Use the list of reviewers: type the command `@editorialbot list reviewers` or
+  look at use the [Reviewers Management System](https://reviewers.joss.theoj.org)
 - If people are in the review list, the editor can @-mention them on the issue to see if they will review: e.g. `@person1 @person2 can you review this submission for JOSS?`
 - Or solicit reviewers outside the list. Send an email to people describing what JOSS is and asking if they would be interested in reviewing.
 - If you ask the author to suggest potential reviewers, please be sure to tell the author not to @-tag their suggestions.
@@ -312,6 +318,7 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 
 - Make a final check of the paper with `@editorialbot generate pdf` and that all references have DOIs (where appropriate) with `@editorialbot check references`.
 - If everything looks good, ask the author to make a new release (if possible) of the software being reviewed and deposit a new archive the software with Zenodo/figshare. Update the review thread with this archive DOI: `@editorialbot set 10.5281/zenodo.xxxxxx as archive`.
+- Editors can get a checklist of the final steps using the `@editorialbot create post-review checklist` command
 - Finally, use `@editorialbot recommend-accept` on the review thread to ping the `@openjournals/joss-eics` team letting them know the paper is ready to be accepted.
 
 **Step 12: Celebrate publication! Tweet! Thank reviewers! Say thank you on issue.**

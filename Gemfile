@@ -14,11 +14,11 @@ gem 'net-sftp', '~> 4.0'
 gem 'octicons_helper'
 gem 'omniauth-orcid', '~> 2.1.1'
 gem 'omniauth-rails_csrf_protection'
-gem 'octokit', '~> 6.0'
+gem 'octokit'
 gem 'pdf-reader', '~> 2.11.0'
 gem 'pg', '~> 1.4.6'
 gem 'pagy'
-gem 'rails', '7.0.8'
+gem 'rails', '7.1.2'
 gem "importmap-rails"
 gem "turbo-rails"
 gem "stimulus-rails"
@@ -48,21 +48,20 @@ gem "redis", "~> 5.0"
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'pry-byebug'
-  gem 'capybara', '~> 3.38'
-  gem 'factory_bot_rails', '~> 6.2.0'
-  gem 'rspec-rails', '~> 6.0.1'
-  gem 'rails-controller-testing', '~> 1.0.5'
+  gem 'capybara', '~> 3.39'
+  gem 'factory_bot_rails', '~> 6.4.2'
+  gem 'rspec-rails', '~> 6.1.0'
   gem 'selenium-webdriver'
   gem 'webmock'
 end
 
 group :test do
-  gem 'vcr', '~> 6.1', '>= 6.1.0'
+  gem 'vcr', '~> 6.2'
 end
 
 group :development do
   # Access an IRB console on exception pages or by using <%= console %> in views
-  gem 'web-console', '~> 4.2.0'
+  gem 'web-console', '~> 4.2.1'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
   gem 'spring-commands-rspec', group: :development

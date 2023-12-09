@@ -327,21 +327,24 @@ describe PapersController, type: :controller do
       request.headers["HTTP_ACCEPT"] = "*/*"
 
       get :show, params: {doi: paper.doi}
-      expect(response).to render_template("papers/show")
+      expect(response.status).to eq(200)
+      expect(response).to_not be_redirect
     end
 
     it "should not redirect for URLs with DOIs when asking for HTML response" do
       paper = create(:accepted_paper)
 
       get :show, params: {doi: paper.doi}, format: "html"
-      expect(response).to render_template("papers/show")
+      expect(response.status).to eq(200)
+      expect(response).to_not be_redirect
     end
 
     it "should not redirect for URLs with DOIs when asking for any response" do
       paper = create(:accepted_paper)
 
       get :show, params: {doi: paper.doi}
-      expect(response).to render_template("papers/show")
+      expect(response.status).to eq(200)
+      expect(response).to_not be_redirect
     end
 
     it "should redirect URLs with the paper SHA to the URL with the DOI in the path" do
@@ -378,7 +381,8 @@ describe PapersController, type: :controller do
       paper = create(:retracted_paper)
       get :show, params: {doi: paper.doi}, format: "json"
       expect(response).to be_successful
-      expect(response).to render_template("papers/show")
+      expect(response.body).to include(paper.title)
+      expect(response.body).to include("retracted")
       expect(response.media_type).to eq("application/json")
       expect { JSON.parse(response.body) }.not_to raise_error
     end
@@ -404,6 +408,7 @@ describe PapersController, type: :controller do
       expect(parsed_response["state"]).to eq("accepted")
       expect(parsed_response["software_repository"]).to eq("http://github.com/arfon/fidgit")
       expect(parsed_response["editor"]).to eq("@arfon")
+      expect(parsed_response["editor_status"]).to eq("Active")
       expect(parsed_response["submitting_author"]).to eq("@foobar")
       expect(parsed_response["editor_name"]).to eq("Person McEditor")
       expect(parsed_response["editor_orcid"]).to eq("0000-0000-0000-1234")
@@ -416,14 +421,12 @@ describe PapersController, type: :controller do
     it "returns an Atom feed for #index" do
       get :index, format: "atom"
       expect(response).to be_successful
-      expect(response).to render_template("papers/index")
       expect(response.media_type).to eq("application/atom+xml")
     end
 
     it "returns a valid Atom feed for #popular (published)" do
       get :popular, format: "atom"
       expect(response).to be_successful
-      expect(response).to render_template("papers/index")
       expect(response.media_type).to eq("application/atom+xml")
     end
   end

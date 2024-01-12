@@ -302,7 +302,7 @@ JOSS editors-in-chief can withdraw a submission with the following command:
 @editorialbot check references
 
 # Perform checks on the repository
-@editorialbot check repository
+@editorialbot check repository [from branch <custom-branch-name>]
 
 # Adds a checklist for the reviewer using this command
 @editorialbot generate my checklist

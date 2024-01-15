@@ -390,7 +390,7 @@ Please start headings on the first level. The maximum supported level is 5, but 
 
 ###### Deeper nesting
 
-Fourth- and fifth-level subsections – like this one and the following heading – are supported by the system; however, their use is discouraged. Use lists instead of forth- and fifth-level headings.
+Fourth- and fifth-level subsections – like this one and the following heading – are supported by the system; however, their use is discouraged. Use lists instead of fourth- and fifth-level headings.
 
 
 #### Lists

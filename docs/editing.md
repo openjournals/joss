@@ -374,16 +374,6 @@ Being on the JOSS editorial team means that there can be a _lot_ of notification
 
 ### Things you should do when joining the editorial team
 
-**Unsubscribe from the reviews repository on GitHub**
-
-When you're added to the editorial team on GitHub, you will almost certainly find yourself subscribed (watching) to the [`joss-reviews`](https://github.com/openjournals/joss-reviews) repository. The first thing you should do is set yourself to 'not watching':
-
-![Repository notifications settings](https://cloud.githubusercontent.com/assets/4483/20250593/64d7ce48-a9de-11e6-9225-d3dfb3e48e68.png)
-
-Please note, that by not watching the reviews repository, you will still receive notifications for issues (reviews) where you are `@mentioned`.
-
-Sometimes another editor might mention you in a review issue (for example to ask you a question). If you've responded and no-longer want to receive messages for that review, you can manually unsubscribe by clicking the button in the right-hand column on the review issue page.
-
 **Curate your GitHub notifications experience**
 
 GitHub has extensive documentation on [managing notifications](https://help.github.com/en/articles/managing-your-notifications) which explains when and why different notifications are sent from a repository.

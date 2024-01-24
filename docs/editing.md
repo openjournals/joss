@@ -455,7 +455,7 @@ All new editors at JOSS have an onboarding call with an Editor-in-Chief. You can
 - Welcome! Thank them for their application to join the team.
 - Point out that this isn't an interview. Rather, this is an informational call designed to give the candidate the information they need to make an informed decision about editing at JOSS.
 - 90-day trial period/try out. Editor or JOSS editorial board can decide to part ways after that period.
-- No strict term limits. Some editors have been with us for 7+ years, others do 1-2 years. Most important thing is to be proactive with your editing responsibilities.
+- No strict term limits. Some editors have been with us for 7+ years, others do 1-2 years. Most important thing is to be proactive with your editing responsibilities and communicating any issues with the EiCs.
 - Confirm with them their level of familiarity with JOSS/our review process.
 - Point out that they *do not* need to make a decision on the call today. They are welcome to have a think about joining and get back to us.
 

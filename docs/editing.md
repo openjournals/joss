@@ -486,7 +486,7 @@ All new editors at JOSS have an onboarding call with an Editor-in-Chief. You can
 - Once at least two reviewers are assigned, time to get going!
 - Encourage reviewers to complete their review in 4-6 weeks.
 - Make sure to check in on the review – if reviewers haven't started after ~1-2 weeks, time to remind them.
-- Your role as editor is not to do the review yourself, rather, your job is to ensure that both reviewers give a good review.
+- Your role as editor is not to do the review yourself, rather, your job is to ensure that both reviewers give a good review and to facilitate discussion and consensus on what the author needs to do.
 - Walk the editor through the various review artifacts: The checklist, comments/questions/discussion between reviewers and author, issues opened on the upstream repository (and cross-linked into the review thread). 
 - Point editors to the ['top tips'](editing.html#top-tips-for-joss-editors) section of our docs. Much of what makes an editor successful is regular check-ins on the review, and nudging people if nothing is happening.
 - Do *not* let a review go multiple weeks without checking in.

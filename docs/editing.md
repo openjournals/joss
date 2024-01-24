@@ -483,7 +483,7 @@ All new editors at JOSS have an onboarding call with an Editor-in-Chief. You can
 
 **The review**
 
-- Once both reviewers are assigned, time to get going!
+- Once at least two reviewers are assigned, time to get going!
 - Encourage reviewers to complete their review in 4-6 weeks.
 - Make sure to check in on the review – if reviewers haven't started after ~1-2 weeks, time to remind them.
 - Your role as editor is not to do the review yourself, rather, your job is to ensure that both reviewers give a good review.

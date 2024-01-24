@@ -493,7 +493,7 @@ All new editors at JOSS have an onboarding call with an Editor-in-Chief. You can
 
 **Wrapping up the review**
 
-- Once the review is wrapping up, show the candidate the checks that an editor should be doing (reading the paper, suggested edits, asking for an archive etc.).
+- Once the review is wrapping up, show the candidate the checks that an editor should be doing (reading the paper, suggested edits, asking for an archive etc.)
 - Show the `recommend-accept` step which is the formal hand-off between editor and editor-in-chief.
 
 **Show them the dashboard on the JOSS site**

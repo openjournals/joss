@@ -479,7 +479,7 @@ All new editors at JOSS have an onboarding call with an Editor-in-Chief. You can
 - Explain that this is one of the more time-intensive aspects of editing.
 - Explain where you can look for editors (your own professional network, asking the authors for recommendations, the [reviewers application](https://reviewers.joss.theoj.org/), similar papers identified by Editorialbot, )
 - Point out that we have a minimum of two reviewers, but if more than that accept (e.g., 3/4 then take them all – this gives you redundancy if one drops out).
-- Don't invite one reviewer at a time! If you do this, it may take many weeks to find two reviewers who accept. Try 3/4/5 invites simultaneously.
+- Don't invite only one reviewer at a time! If you do this, it may take many weeks to find two reviewers who accept. Try 3/4/5 invites simultaneously.
 
 **The review**
 

@@ -462,7 +462,7 @@ All new editors at JOSS have an onboarding call with an Editor-in-Chief. You can
 **Share your screen**
 
 - Visit JOSS (https://joss.theoj.org)
-- Pick a recently-published paper (you might want to identify this before the call).
+- Pick a recently-published paper (you might want to identify this before the call one that shows off the review process well).
 - Show the paper on the JOSS site, and then go to the linked review issue.
 - Explain that there are *two* issues per submission – the pre-review issue and the main review issue.
 

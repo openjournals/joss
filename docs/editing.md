@@ -329,6 +329,10 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 
 ## Expectations on JOSS editors
 
+### Editorial load
+
+Our goal is for editors to handle between 3-4 submissions at any one time, and 8-12 submissions per year. During the trial period for editors (usually the first 90 days), we recommend new editors handle 1-2 submissions as they learn the JOSS editorial system and processes.
+
 ### Responding to editorial assignments
 
 As documented above, usually, papers will be assigned to you by one of the TEiCs. We ask that editors do their best to respond in a timely fashion (~ 3 working days) to invites to edit a new submission.

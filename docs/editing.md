@@ -484,6 +484,7 @@ All new editors at JOSS have an onboarding call with an Editor-in-Chief. You can
 - Explain where you can look for editors (your own professional network, asking the authors for recommendations, the [reviewers application](https://reviewers.joss.theoj.org/), similar papers identified by Editorialbot, )
 - Point out that we have a minimum of two reviewers, but if more than that accept (e.g., 3/4 then take them all – this gives you redundancy if one drops out).
 - Don't invite only one reviewer at a time! If you do this, it may take many weeks to find two reviewers who accept. Try 3/4/5 invites simultaneously.
+- The [sample messages](editing.html#sample-messages-for-authors-and-reviewers) section of the documentation has some example language you can use.
 
 **The review**
 
@@ -499,6 +500,8 @@ All new editors at JOSS have an onboarding call with an Editor-in-Chief. You can
 
 - Once the review is wrapping up, show the candidate the checks that an editor should be doing (reading the paper, suggested edits, asking for an archive etc.)
 - Show the `recommend-accept` step which is the formal hand-off between editor and editor-in-chief.
+- The [sample messages](editing.html#sample-messages-for-authors-and-reviewers) section of the documentation has a checklist for the last steps of the review (for both authors and editors).
+
 
 **Show them the dashboard on the JOSS site**
 

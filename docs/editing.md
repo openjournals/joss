@@ -333,6 +333,16 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 
 Our goal is for editors to handle between 3-4 submissions at any one time, and 8-12 submissions per year. During the trial period for editors (usually the first 90 days), we recommend new editors handle 1-2 submissions as they learn the JOSS editorial system and processes.
 
+### Completing the trial period
+
+JOSS has a 90-day trial period for new editors. At the end of the trial, the editor or JOSS editorial board can decide to part ways if either party determines editing for JOSS isn't a good fit for the editor. The most important traits the editorial board will be looking for with new editors are:
+
+- Demonstrating professionalism in communications with authors, reviewers, and the wider editorial team.
+- Editorial responsibility, including [keeping up with their assigned submissions](editing.html#continued-attention-to-assigned-submissions).
+- Encouraging good social (software community) practices. For example, thanking reviewers and making them feel like they are part of a team working together.
+
+If you're struggling with your editorial work, please let your buddy or an EiC know.
+
 ### Responding to editorial assignments
 
 As documented above, usually, papers will be assigned to you by one of the TEiCs. We ask that editors do their best to respond in a timely fashion (~ 3 working days) to invites to edit a new submission.

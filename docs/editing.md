@@ -251,15 +251,17 @@ Please feel free to ping me (@editorname) if you have any questions/concerns.
 
 ```
 At this point could you:
-- [ ] Make a tagged release of your software, and list the version tag of the archived version here.
-- [ ] Archive the reviewed software in Zenodo or a similar service (e.g., figshare, an institutional repository)
-- [ ] Check the archival deposit (e.g., in Zenodo) has the correct metadata. This includes the title (should match the paper title) and author list (make sure the list is correct and people who only made a small fix are not on it). You may also add the authors' ORCID.
-- [ ] Please list the DOI of the archived version here.
+- Make a tagged release of your software, and list the version tag of the archived version here.
+- Archive the reviewed software in Zenodo or a similar service (e.g., figshare, an institutional repository)
+- Check the archival deposit (e.g., in Zenodo) has the correct metadata. This includes the title (should match the paper title) and author list (make sure the list is correct and people who only made a small fix are not on it). You may also add the authors' ORCID.
+- Please list the DOI of the archived version here.
 
 I can then move forward with recommending acceptance of the submission.
 ```
 
 ### Rejection due to out of scope/failing substantial scholarly effort test
+
+(Note that rejections are handled by EiCs and not individual editors).
 
 ```
 @authorname - thanks for your submission to JOSS. Unfortunately, after review by the JOSS editorial team we've determined that this submission doesn't meet our [substantial scholarly effort](https://joss.readthedocs.io/en/latest/submitting.html#substantial-scholarly-effort) criterion.

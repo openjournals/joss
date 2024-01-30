@@ -464,7 +464,7 @@ All new editors at JOSS have an onboarding call with an Editor-in-Chief. You can
 - Check on their research background (e.g., what tracks they might edit most actively in).
 - Make sure to send them the [editorial guide](https://joss.readthedocs.io/en/latest/editing.html) to read before the call.
 
-### The onboarding call
+### The onboarding call
 
 **Preamble/introductions**
 

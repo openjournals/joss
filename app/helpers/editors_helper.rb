@@ -26,6 +26,13 @@ module EditorsHelper
     "<span class='#{availability_class}' title='#{comment}' %>#{display_count}</span>".html_safe
   end
 
+  def availability_remaining(editor)
+    active_assignments = @assignment_by_editor[editor.id].to_i - @paused_by_editor[editor.id].to_i
+    availability = editor.max_assignments - active_assignments
+
+    return "#{availability}"
+  end
+
   def in_progress_for_editor(editor)
     paused_count = @paused_by_editor[editor.id].to_i
     total_paper_count = @assignment_by_editor[editor.id].to_i

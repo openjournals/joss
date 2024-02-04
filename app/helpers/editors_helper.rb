@@ -16,12 +16,13 @@ module EditorsHelper
 
     comment = "#{editor.max_assignments} max."
 
-    display_count = editor.max_assignments
+    display_count = "#{active_assignments} / #{editor.max_assignments}"
 
     if editor.availability_comment.present?
-      display_count = "#{display_count}*"
+      display_count = "#{active_assignments} / #{editor.max_assignments}*"
       comment += " : #{editor.availability_comment}"
     end
+    
 
     "<span class='#{availability_class}' title='#{comment}' %>#{display_count}</span>".html_safe
   end
@@ -31,6 +32,11 @@ module EditorsHelper
     availability = editor.max_assignments - active_assignments
 
     return "#{availability}"
+  end
+
+  def active_assignments_for_editor(editor)
+    active_assignments = @assignment_by_editor[editor.id].to_i - @paused_by_editor[editor.id].to_i
+    return "#{active_assignments}"
   end
 
   def in_progress_for_editor(editor)

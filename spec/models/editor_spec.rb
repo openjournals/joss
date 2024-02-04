@@ -135,17 +135,35 @@ RSpec.describe Editor, type: :model do
   end
 
   describe "#by_track" do
-    it "should filter by track" do
-    track_A, track_B = create_list(:track, 2)
-    editor_A = create(:editor, tracks: [track_A])
-    editor_AB = create(:editor, tracks: [track_A, track_B])
-    editor_B = create(:editor, tracks: [track_B])
+      it "should filter by track" do
+      track_A, track_B = create_list(:track, 2)
+      editor_A = create(:editor, tracks: [track_A])
+      editor_AB = create(:editor, tracks: [track_A, track_B])
+      editor_B = create(:editor, tracks: [track_B])
 
-    track_A_editors = Editor.by_track(track_A.id)
-    expect(track_A_editors.size).to eq(2)
-    expect(track_A_editors.include?(editor_A)).to be true
-    expect(track_A_editors.include?(editor_AB)).to be true
+      track_A_editors = Editor.by_track(track_A.id)
+      expect(track_A_editors.size).to eq(2)
+      expect(track_A_editors.include?(editor_A)).to be true
+      expect(track_A_editors.include?(editor_AB)).to be true
+    end
   end
+
+  describe "#status" do
+    it "should be Retired for emeritus editors" do
+      emeritus_editor = create(:editor, kind: "emeritus")
+
+      expect(emeritus_editor.status).to eq "Retired"
+    end
+
+    it "should be Active otherwise" do
+      board_editor = create(:editor, kind: "board")
+      topic_editor = create(:editor, kind: "topic")
+      pending_editor = create(:editor, kind: "pending")
+
+      expect(board_editor.status).to eq "Active"
+      expect(topic_editor.status).to eq "Active"
+      expect(pending_editor.status).to eq "Active"
+    end
   end
 
   describe "#accept!" do

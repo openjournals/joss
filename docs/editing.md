@@ -302,7 +302,7 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 **Step 7: Editor tells EditorialBot to assign the reviewers to the paper**
 
 - Use `@editorialbot add @reviewer as reviewer`
-- To add a second reviewer use `@editorialbot add @reviwer2 as reviewer`
+- To add a second reviewer use `@editorialbot add @reviewer2 as reviewer`
 
 **Step 8: Create the actual review issue**
 

@@ -1,29 +1,44 @@
-class Paper < ActiveRecord::Base
+require 'open3'
+
+class Paper < ApplicationRecord
   searchkick index_name: "jcon-production"
 
   include SettingsHelper
   serialize :activities, Hash
   serialize :metadata, Hash
 
-  belongs_to  :submitting_author,
-              class_name: 'User',
-              validate: true,
-              foreign_key: "user_id"
+  belongs_to :submitting_author,
+             class_name: 'User',
+             validate: true,
+             foreign_key: "user_id"
 
-  belongs_to  :editor, optional: true
-  belongs_to  :eic,
-              class_name: 'Editor',
-              optional: true,
-              foreign_key: "eic_id"
+  belongs_to :track, optional: true
+  belongs_to :editor, optional: true
+  belongs_to :eic,
+             class_name: 'Editor',
+             optional: true,
+             foreign_key: "eic_id"
 
-  has_many    :votes
-  has_many    :in_scope_votes,
-              -> { in_scope },
-              class_name: 'Vote'
+  belongs_to :retracted_paper,
+             class_name: 'Paper',
+             optional: true,
+             foreign_key: "retraction_for_id"
 
-  has_many    :out_of_scope_votes,
-              -> { out_of_scope },
-              class_name: 'Vote'
+  has_one :retraction_paper,
+          class_name: 'Paper',
+          foreign_key: "retraction_for_id",
+          inverse_of: :retracted_paper
+
+  has_many :invitations
+  has_many :notes
+  has_many :votes
+  has_many :in_scope_votes,
+           -> { in_scope },
+           class_name: 'Vote'
+
+  has_many :out_of_scope_votes,
+           -> { out_of_scope },
+           class_name: 'Vote'
 
   include AASM
 
@@ -39,7 +54,7 @@ class Paper < ActiveRecord::Base
     state :withdrawn
 
     event :reject do
-      transitions to: :rejected
+      transitions to: :rejected, after: :expire_invitations
     end
 
     event :start_meta_review do
@@ -56,6 +71,10 @@ class Paper < ActiveRecord::Base
 
     event :withdraw do
       transitions to: :withdrawn
+    end
+
+    event :retract do
+      transitions to: :retracted
     end
   end
 
@@ -105,7 +124,6 @@ class Paper < ActiveRecord::Base
 
   scope :since, -> (date) { where('accepted_at >= ?', date) }
   scope :in_progress, -> { where(state: IN_PROGRESS_STATES) }
-  scope :in_progress, -> { where(state: IN_PROGRESS_STATES) }
   scope :public_in_progress, -> { where(state: PUBLIC_IN_PROGRESS_STATES) }
   scope :visible, -> { where(state: VISIBLE_STATES) }
   scope :invisible, -> { where(state: INVISIBLE_STATES) }
@@ -113,23 +131,26 @@ class Paper < ActiveRecord::Base
   scope :everything, lambda { where('state NOT IN (?)', ['rejected', 'withdrawn']) }
   scope :search_import, -> { where(state: VISIBLE_STATES) }
   scope :not_archived, -> { where('archived = ?', false) }
+  scope :by_track, -> (track_id) { where('track_id = ?', track_id) }
 
   before_create :set_sha, :set_last_activity
   after_create :notify_editors, :notify_author
 
-  validates_presence_of :title
-  validates_presence_of :suggested_editor, on: :create, message: "^You must suggest an editor to handle your submission"
-  validates_presence_of :repository_url, message: "^Repository address can't be blank"
-  validates_presence_of :body, message: "^Description can't be blank"
+  validates_presence_of :title, message: "The paper must have a title"
+  validates_presence_of :repository_url, message: "Repository address can't be blank"
+  validates_presence_of :software_version, message: "Version can't be blank"
+  validates_presence_of :body, message: "Description can't be blank"
+  validates_presence_of :track_id, on: :create, message: "You must select a valid subject for the paper", if: Proc.new { JournalFeatures.tracks? }
   validates :kind, inclusion: { in: Rails.application.settings["paper_types"] }, allow_nil: true
-  validates :submission_kind, inclusion: { in: SUBMISSION_KINDS }, allow_nil: false
+  validates :submission_kind, inclusion: { in: SUBMISSION_KINDS, message: "You must select a submission type" }, allow_nil: false
+  validate :check_repository_address, on: :create, unless: Proc.new {|paper| paper.is_a_retraction_notice?}
 
   def notify_editors
-    Notifications.submission_email(self).deliver_now
+    Notifications.submission_email(self).deliver_now unless self.is_a_retraction_notice?
   end
 
   def notify_author
-    Notifications.author_submission_email(self).deliver_now
+    Notifications.author_submission_email(self).deliver_now unless self.is_a_retraction_notice?
   end
 
   # Only index papers that are visible
@@ -166,9 +187,18 @@ class Paper < ActiveRecord::Base
     accepted? || retracted?
   end
 
+  def is_a_retraction_notice?
+    retraction_for_id.present?
+  end
+
   def invite_editor(editor_handle)
     return false unless editor = Editor.find_by_login(editor_handle)
     Notifications.editor_invite_email(self, editor).deliver_now
+    invitations.create(editor: editor)
+  end
+
+  def expire_invitations
+    Invitation.expire_all_for_paper(self)
   end
 
   def scholar_title
@@ -257,42 +287,30 @@ class Paper < ActiveRecord::Base
     end
   end
 
-  def pretty_doi
-    return "DOI pending" unless archive_doi
-
-    matches = archive_doi.scan(/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/).flatten
-
-    if matches.any?
-      return matches.first
-    else
-      return archive_doi
-    end
-  end
-
   # Make sure that DOIs have a full http URL
   # e.g. turn 10.6084/m9.figshare.828487 into https://doi.org/10.6084/m9.figshare.828487
-  def doi_with_url
+  def archive_doi_url
     return "DOI pending" unless archive_doi
 
     bare_doi = archive_doi[/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/]
 
     if archive_doi.include?("https://doi.org/")
-      return archive_doi
+      return archive_doi.gsub(/\"/, "")
     elsif bare_doi
-      return "https://doi.org/#{bare_doi}"
+      return "https://doi.org/#{bare_doi}".gsub(/\"/, "")
     else
-      return archive_doi
+      return archive_doi.gsub(/\"/, "")
     end
-  end
-
-  def clean_archive_doi
-    doi_with_url.gsub(/\"/, "")
   end
 
   # A 5-figure integer used to produce the JOSS DOI
   def joss_id
-    id = "%05d" % review_issue_id
-    "#{setting(:abbreviation).downcase}.#{id}"
+    if self.is_a_retraction_notice?
+      return retracted_paper.joss_id + "R"
+    else
+      id = "%05d" % review_issue_id
+      return "#{setting(:abbreviation).downcase}.#{id}"
+    end
   end
 
   # This URL returns the 'DOI optimized' representation of a URL for a paper
@@ -323,19 +341,19 @@ class Paper < ActiveRecord::Base
   end
 
   # 'reviewers' should be a string (and may be comma-separated)
-  def review_body(editor, reviewers)
+  def review_body(editor, reviewers, branch=nil)
     reviewers = reviewers.split(',').each {|r| r.prepend('@')}
     ApplicationController.render(
       template: 'shared/review_body',
       formats: :text,
-      locals: { paper: self, editor: "@#{editor}", reviewers: reviewers }
+      locals: { paper: self, editor: "@#{editor}", reviewers: reviewers, branch: branch }
     )
   end
 
   # Create a review issue (we know the reviewer and editor at this point)
   # Return false if the review_issue_id is already set
   # Return false if the editor login doesn't match one of the known editors
-  def create_review_issue(editor_handle, reviewers)
+  def create_review_issue(editor_handle, reviewers, branch=nil)
     return false if review_issue_id
     return false unless editor = Editor.find_by_login(editor_handle)
 
@@ -344,11 +362,11 @@ class Paper < ActiveRecord::Base
     else
       new_labels = ["review"]
     end
-    
+
 
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[REVIEW]: #{self.title}",
-                                review_body(editor_handle, reviewers),
+                                review_body(editor_handle, reviewers, branch),
                                 { assignees: [editor_handle],
                                   labels: new_labels.join(",") })
 
@@ -366,6 +384,7 @@ class Paper < ActiveRecord::Base
   # Updated the paper with the editor_id
   def set_editor(editor)
     self.update_attribute(:editor_id, editor.id)
+    Invitation.resolve_pending(self, editor)
   end
 
   # Update the Paper review_issue_id field
@@ -387,13 +406,17 @@ class Paper < ActiveRecord::Base
   end
 
   # Create a review meta-issue for assigning reviewers
-  def create_meta_review_issue(editor_handle, eic)
+  def create_meta_review_issue(editor_handle, eic, new_track_id=nil)
     return false if meta_review_issue_id
+
+    set_track_id(new_track_id) if new_track_id.present?
+    new_labels = ["pre-review"]
+    new_labels << self.track.label if self.track && JournalFeatures.tracks?
 
     issue = GITHUB.create_issue(Rails.application.settings["reviews"],
                                 "[PRE REVIEW]: #{self.title}",
                                 meta_review_body(editor_handle, eic.full_name),
-                                { labels: "pre-review" })
+                                { labels: new_labels.join(",") })
 
     set_meta_review_issue(issue.number)
     set_meta_eic(eic)
@@ -406,6 +429,31 @@ class Paper < ActiveRecord::Base
 
   def set_meta_eic(eic)
     self.update_attribute(:eic_id, eic.id)
+  end
+
+  def set_track_id(new_track_id)
+    self.update_attribute(:track_id, new_track_id) if new_track_id != self.track_id
+  end
+
+  def move_to_track(new_track)
+    return if new_track.nil?
+    old_track = self.track
+    current_label = self.track.present? ? self.track.label : ""
+    if current_label != new_track.label
+      set_track_id(new_track.id)
+
+      Notifications.notify_new_aeic(self, old_track, new_track).deliver_now
+
+      if self.meta_review_issue_id
+        GITHUB.remove_label(Rails.application.settings["reviews"], self.meta_review_issue_id, current_label) if current_label.present?
+        GITHUB.add_labels_to_an_issue(Rails.application.settings["reviews"], self.meta_review_issue_id, [new_track.label])
+      end
+
+      if self.review_issue_id
+        GITHUB.remove_label(Rails.application.settings["reviews"], self.review_issue_id, current_label) if current_label.present?
+        GITHUB.add_labels_to_an_issue(Rails.application.settings["reviews"], self.review_issue_id, [new_track.label])
+      end
+    end
   end
 
   def meta_review_url
@@ -461,6 +509,15 @@ class Paper < ActiveRecord::Base
   end
 
 private
+
+  def check_repository_address
+    stdout_str, stderr_str, status = Open3.capture3("git ls-remote #{repository_url}")
+
+    if !status.success?
+      errors.add(:base, :invalid, message: "Invalid Git repository address. Check that the repository can be cloned using the value entered in the form, and that access doesn't require authentication.")
+      return false
+    end
+  end
 
   def set_sha
     self.sha ||= SecureRandom.hex

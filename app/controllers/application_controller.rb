@@ -1,4 +1,5 @@
 class ApplicationController < ActionController::Base
+  include Pagy::Backend
   rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
 
   # Prevent CSRF attacks by raising an exception.
@@ -7,8 +8,8 @@ class ApplicationController < ActionController::Base
 
   def require_user
     unless current_user
-      # Make sure we get redirected back to the page we were asking for.
-      redirect_to "/auth/orcid?origin=#{ENV['REQUEST_URI']}"
+      flash[:error] = "Please login first"
+      redirect_back fallback_location: :root
       false # throw :abort
     end
   end
@@ -24,7 +25,16 @@ class ApplicationController < ActionController::Base
 
   def require_editor
     require_user
-    if current_user && current_user.editor.nil?
+    if current_user && !current_user.editor?
+      flash[:error] = "You are not permitted to view that page"
+      redirect_to(:root)
+      false # throw :abort
+    end
+  end
+
+  def require_aeic
+    require_user
+    if current_user && !current_user.aeic?
       flash[:error] = "You are not permitted to view that page"
       redirect_to(:root)
       false # throw :abort
@@ -54,6 +64,3 @@ private
     render plain: "404 Not Found", status: 404
   end
 end
-
-
-

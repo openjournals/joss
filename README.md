@@ -1,6 +1,6 @@
 # The Journal of Open Source Software
 
-[![Build Status](https://travis-ci.org/openjournals/joss.svg?branch=master)](https://travis-ci.org/openjournals/joss)
+[![Build Status](https://github.com/openjournals/joss/actions/workflows/tests.yml/badge.svg)](https://github.com/openjournals/joss/actions/workflows/tests.yml)
 [![Powered by NumFOCUS](https://img.shields.io/badge/powered%20by-NumFOCUS-orange.svg?style=flat&colorA=E1523D&colorB=007D8A)](http://numfocus.org)
 [![Donate to JOSS](https://img.shields.io/badge/Donate-to%20JOSS-brightgreen.svg)](https://numfocus.org/donate-to-joss)
 
@@ -12,7 +12,7 @@ The Journal of Open Source Software (JOSS) is an academic journal with a formal 
 
 ### Don't we have enough journals already?
 
-Perhaps, and in a perfect world we'd rather papers about software weren't necessary but we recognize that for most researchers, papers and not software are the currency of academic research and that citations are required for a good career.
+In a perfect world, papers about software wouldn't be necessary. Unfortunately, for most researchers, academic currency relies on papers rather than software and citations are, thus, crucial for a successful career.
 
 We built this journal because we believe that after you've done the hard work of writing great software, it shouldn't take weeks and months to write a paper<sup>1</sup> about your work.
 
@@ -46,7 +46,7 @@ Please adhere to this code of conduct in any interactions you have in the JOSS c
 
 ## ⚙️ Development
 
-[LiveReload](https://github.com/guard/guard-livereload) enables the browser to automatically refresh on change during development.
+[PostgreSQL](https://www.postgresql.org/) and [Elasticsearch](https://www.elastic.co/elasticsearch/) should be installed and running locally for JOSS to work
 
-1. Download the [LiveReload Chrome plugin](https://chrome.google.com/webstore/detail/livereload/jnihajbhpnppcggbcgedagnkighmdlei/)
-2. Run `bundle exec guard`
+1. Create the database with `bin/rails db:create`
+2. Run `bin/rails s`

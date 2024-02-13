@@ -1,36 +1,10 @@
 module HomeHelper
-  # How many papers should we show for an editor on the dashboard?
-  def in_progress_for_editor(papers)
-    ignored_state = "paused"
-    ignored_count = 0
-    papers.each do |p|
-      if p.labels.any? && p.labels.keys.include?(ignored_state)
-        ignored_count += 1
-      end
-    end
-
-    if ignored_count > 0
-      return "#{papers.count - ignored_count} <span class='small font-italic'>(+ #{ignored_count} paused)</span>".html_safe
-    else
-      return "#{papers.count}"
-    end
-  end
-
-  def count_without_ignored(papers)
-    ignored_state = "paused"
-    ignored_count = 0
-    papers.each do |p|
-      if p.labels.any? && p.labels.keys.include?(ignored_state)
-        ignored_count += 1
-      end
-    end
-
-    return papers.count - ignored_count
-  end
-
   def pretty_labels_for(paper)
-    return nil unless paper.labels.any?
-
+    if paper.labels.empty?
+      return nil unless paper.track
+      concat content_tag(:span, paper.track.label, style: "padding: 3px; margin-right: 3px; border-radius: 2px; background-color: ##{paper.track.label_color}; color: #000000;")
+    end
+    
     capture do
       paper.labels.each do |label, colour|
         if label == "paused"
@@ -39,7 +13,10 @@ module HomeHelper
           concat content_tag(:span, label, style: "padding: 3px; margin-right: 3px; border-radius: 2px; background-color: ##{colour}; color: #000000;")
         elsif label == "query-scope"
           concat content_tag(:span, label, style: "padding: 3px; margin-right: 3px; border-radius: 2px; background-color: ##{colour}; color: #000000;")
-
+        elsif label == "waitlisted"
+          concat content_tag(:span, label, style: "padding: 3px; margin-right: 3px; border-radius: 2px; background-color: ##{colour}; color: #000000;")
+        elsif label.start_with?("Track: ")
+          concat content_tag(:span, label, style: "padding: 3px; margin-right: 3px; border-radius: 2px; background-color: ##{colour}; color: #000000;")
         end
       end
     end
@@ -85,9 +62,9 @@ module HomeHelper
     capture do
       if !paper.activities['issues']['comments'].empty?
         if paper.activities['issues']['last_edits'] && paper.activities['issues']['last_edits'].keys.any?
-          non_whedon_activities = paper.activities['issues']['last_edits'].select {|user, time| user != "whedon"}
-          return "No activity" if non_whedon_activities.empty?
-          user, time = non_whedon_activities.first
+          non_editorial_bot_activities = paper.activities['issues']['last_edits'].select {|user, time| user != Rails.application.settings["bot_username"]}
+          return "No activity" if non_editorial_bot_activities.empty?
+          user, time = non_editorial_bot_activities.first
           concat(content_tag(:span, image_tag(avatar(user), size: "24x24", class: "avatar", title: user), class: "activity-avatar"))
           concat(content_tag(:span, style: "") do
             concat(content_tag(:span, "#{time_ago_in_words(time)} ago".html_safe, class: "time"))
@@ -99,12 +76,17 @@ module HomeHelper
     end
   end
 
-  def sort_icon(sort_order)
+  def sort_activity(sort_order)
+    track_param = params[:track_id].present? ? "track_id=#{params[:track_id]}&" : ""
+    request_path = "#{request.path}?#{track_param}"
+
     capture do
-      if sort_order == "desc"
-        concat(link_to octicon("chevron-up"), "#{request.path}?order=asc")
-      elsif sort_order == "asc"
-        concat(link_to octicon("chevron-down"), "#{request.path}?order=desc")
+      if sort_order == "active-desc"
+        concat(link_to octicon("chevron-up"), "#{request_path}order=active-asc")
+      elsif sort_order == "active-asc"
+        concat(link_to octicon("chevron-down"), "#{request_path}order=active-desc")
+      else
+        concat(link_to octicon("chevron-down"), "#{request_path}order=active-desc")
       end
     end
   end
@@ -190,10 +172,5 @@ module HomeHelper
 
   def linked_reviewers(paper)
     paper.reviewers.map { |reviewer| github_user(reviewer.gsub('@', '')) }.join(', ').html_safe
-  end
-
-  def availability_class(editor)
-    return "" unless editor.availability?
-    "availability-" + editor.availability.downcase.gsub(' ', '-')
   end
 end

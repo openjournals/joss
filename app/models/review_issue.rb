@@ -51,7 +51,7 @@ class ReviewIssue
   def self.review_issues_for_editor(review_issues, editor_login)
     editor_issues = []
     review_issues.each do |issue|
-      if issue.body.match(/\*\*Editor:\*\*\s*(@\S*|Pending)/i)
+      if issue.body.match(/(?<=<!--editor-->)(@\S*|Pending)(?=<!--end-editor-->)/i)
         if issue.editor.downcase == "@#{editor_login.downcase}"
           comments = GITHUB.issue_comments(Rails.application.settings["reviews"], issue.number)
           issue.last_comment = comments.last
@@ -84,11 +84,11 @@ class ReviewIssue
 
   # Extract the Editor from the issue body
   def editor
-    body.match(/\*\*Editor:\*\*\s*(@\S*|Pending)/i)[1]
+    body.match(/(?<=<!--editor-->)(@\S*|Pending)(?=<!--end-editor-->)/i)[1]
   end
 
   # Extract the Reviewers from the issue body
   def reviewers
-    body.match(/Reviewers?:\*\*\s*(.+?)\r?\n/)[1].split(", ") - ["Pending"]
+    body.match(/(?<=<!--reviewers-list-->)(\s*(.+?)\r?)(?=<!--end-reviewers-list-->)/)[1].split(", ") - ["Pending"]
   end
 end

@@ -22,7 +22,7 @@ Editors can flag submissions of questionable scope using the command `@editorial
 The TEiC assigns an editor (or a volunteering editor self-assigns) with the command `@editorialbot assign @username as editor` in a comment.
 
 ```eval_rst
-.. note:: Please check in on the [dashboard](https://joss.theoj.org/dashboard/incoming) semi-regularly to see which papers are currently without an editor, and if possible, volunteer to edit papers that look to be in your domain. If you choose to be an editor in the issue thread type the command ``@editorialbot assign @yourhandle as editor`` or simply ``@editorialbot assign me as editor``
+.. note:: Please check in on the `dashboard <https://joss.theoj.org/dashboard/incoming>`_ semi-regularly to see which papers are currently without an editor, and if possible, volunteer to edit papers that look to be in your domain. If you choose to be an editor in the issue thread type the command ``@editorialbot assign @yourhandle as editor`` or simply ``@editorialbot assign me as editor``
 ```
 
 ### How papers are assigned to editors
@@ -35,11 +35,11 @@ By default, unless an editor volunteers, the Track Editor-in-chief (TEiC) on dut
 
 In most cases, the TEiC will ask one or more editors to edit a submission (e.g. `@editor1, @editor 2 - would one of you be willing to edit this submission for JOSS`). If the editor doesn't respond within ~3 working days, the TEiC may assign the paper to the editor regardless.
 
-Editors may also be invited to edit over email when an TEiC runs the  command `@editorialbot invite @editor1 as editor`.
+Editors may also be invited to edit over email when an TEiC runs the command `@editorialbot invite @editor1 as editor`.
 
 ### Finding reviewers
 
-At this point, the handling editor's job is to identify reviewers who have sufficient expertise in the field of software and in the field of the submission. JOSS papers have to have a minimum of two reviewers per submission, except for papers that have previously been peer-reviewed via rOpenSci. In some cases, the editor also might want to formally add themself as one of the reviewers. If the editor feels particularly unsure of the submission, a third (or fourth) reviewer can be recruited.
+At this point, the handling editor's job is to identify reviewers who have sufficient expertise in the field of software and in the field of the submission. JOSS papers have to have a minimum of two reviewers per submission, except for papers that have previously been peer-reviewed via rOpenSci. In some cases, the editor also might want to formally add themselves as one of the reviewers. If the editor feels particularly unsure of the submission, a third (or fourth) reviewer can be recruited.
 
 To recruit reviewers, the handling editor can mention them in the `PRE-REVIEW` issue with their GitHub handle, ping them on Twitter, or email them. After expressing initial interest, candidate reviewers may need a longer explanation via email. See sample reviewer invitation email, below.
 
@@ -62,7 +62,7 @@ Finding reviewers can be challenging, especially if a submission is outside of y
 - Ask on social networks: Sometimes asking on Twitter for reviewers can identify good candidates.
 - Check the work being referenced in the submission:
   - Authors of software that is being built on might be interested in reviewing the submission.
-  - Users of the the software that is being submission be interested in reviewing the submission
+  - Users of the software that is being submission be interested in reviewing the submission
 - Avoid asking JOSS editors to review: If at all possible, avoid asking JOSS editors to review as they are generally very busy editing their own papers.
 
 Once a reviewer accepts, the handling editor runs the command `@editorialbot add @username as reviewer` in the `PRE-REVIEW` issue. Add more reviewers with the same command.
@@ -92,7 +92,7 @@ Sometimes you'll need to add a new reviewer once the main review (i.e. post pre-
 
 ## After reviewers recommend acceptance
 
-When a submission is ready to be accepted, we ask that the authors issue a new tagged release of the software (if changed), and archive it (on [Zenodo](https://zenodo.org/), [fig**share**](https://figshare.com/), or other). The authors then post the version number and archive DOI in the `REVIEW` issue. The handling editor executes the pre-publication steps, and pings the Track Editor in Chief for final processing.
+When a submission is ready to be accepted, we ask that the authors issue a new tagged release of the software (if changed), and archive it (on [Zenodo](https://zenodo.org/), [fig**share**](https://figshare.com/), or other). The authors then post the version number and archive DOI in the `REVIEW` issue. The handling editor executes the pre-publication steps, and pings the Track Editor-in-Chief for final processing.
 
 Optionally you can ask EditorialBot to generate a checklist with all the post-review steps running the command: `@editorialbot create post-review checklist`
 
@@ -156,8 +156,13 @@ If a paper has already been reviewed and accepted by rOpenSci or pyOpenSci, the 
 If you believe a submission should be rejected, for example, because it is out of scope for JOSS, then you should:
 
 - Ask EditorialBot to flag the submission as potentially out of scope with the command `@editorialbot query scope`. This command adds the `query-scope` label to the issue.
-- Mention to the author your reasons for flagging the submission as possibly out of scope, and give them an opportunity to defend their submission.
+- Mention to the author your reasons for flagging the submission as possibly out of scope, and _optionally_ give them an opportunity to defend their submission.
+- During the scope review process, the editorial team may ask the authors to provide additional information about their submission to assist the editorial board with their decision.
 - The TEiC will make a final determination of whether a submission is in scope, taking into account the feedback of other editors.
+
+**Scope reviews for resubmissions**
+
+In the event that an author re-submits a paper to JOSS that was previously rejected, the TEiC will use their discretion to determine: 1) whether a full scope review by the entire editorial team is necessary, 2) if the previous reasons for rejection remain valid, or 3) if there have been enough updates to warrant sending the submission out for review.
 
 ### Voting on papers flagged as potentially out of scope
 
@@ -246,15 +251,17 @@ Please feel free to ping me (@editorname) if you have any questions/concerns.
 
 ```
 At this point could you:
-- [ ] Make a tagged release of your software, and list the version tag of the archived version here.
-- [ ] Archive the reviewed software in Zenodo or a similar service (e.g., figshare, an institutional repository)
-- [ ] Check the archival deposit (e.g., in Zenodo) has the correct metadata. This includes the title (should match the paper title) and author list (make sure the list is correct and people who only made a small fix are not on it). You may also add the authors' ORCID.
-- [ ] Please list the DOI of the archived version here.
+- Make a tagged release of your software, and list the version tag of the archived version here.
+- Archive the reviewed software in Zenodo or a similar service (e.g., figshare, an institutional repository)
+- Check the archival deposit (e.g., in Zenodo) has the correct metadata. This includes the title (should match the paper title) and author list (make sure the list is correct and people who only made a small fix are not on it). You may also add the authors' ORCID.
+- Please list the DOI of the archived version here.
 
 I can then move forward with recommending acceptance of the submission.
 ```
 
 ### Rejection due to out of scope/failing substantial scholarly effort test
+
+(Note that rejections are handled by EiCs and not individual editors).
 
 ```
 @authorname - thanks for your submission to JOSS. Unfortunately, after review by the JOSS editorial team we've determined that this submission doesn't meet our [substantial scholarly effort](https://joss.readthedocs.io/en/latest/submitting.html#substantial-scholarly-effort) criterion.
@@ -286,7 +293,8 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 
 **Step 6: The editor finds >= 2 reviewers**
 
-- Use the list of reviewers: type the command `@editorialbot list reviewers` or look at list of reviewers in a Google [spreadsheet](https://docs.google.com/spreadsheets/d/1PAPRJ63yq9aPC1COLjaQp8mHmEq3rZUzwUYxTulyu78/edit?usp=sharing)
+- Use the list of reviewers: type the command `@editorialbot list reviewers` or
+  look at use the [Reviewers Management System](https://reviewers.joss.theoj.org)
 - If people are in the review list, the editor can @-mention them on the issue to see if they will review: e.g. `@person1 @person2 can you review this submission for JOSS?`
 - Or solicit reviewers outside the list. Send an email to people describing what JOSS is and asking if they would be interested in reviewing.
 - If you ask the author to suggest potential reviewers, please be sure to tell the author not to @-tag their suggestions.
@@ -294,7 +302,7 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 **Step 7: Editor tells EditorialBot to assign the reviewers to the paper**
 
 - Use `@editorialbot add @reviewer as reviewer`
-- To add a second reviewer use `@editorialbot add @reviwer2 as reviewer`
+- To add a second reviewer use `@editorialbot add @reviewer2 as reviewer`
 
 **Step 8: Create the actual review issue**
 
@@ -312,6 +320,7 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 
 - Make a final check of the paper with `@editorialbot generate pdf` and that all references have DOIs (where appropriate) with `@editorialbot check references`.
 - If everything looks good, ask the author to make a new release (if possible) of the software being reviewed and deposit a new archive the software with Zenodo/figshare. Update the review thread with this archive DOI: `@editorialbot set 10.5281/zenodo.xxxxxx as archive`.
+- Editors can get a checklist of the final steps using the `@editorialbot create post-review checklist` command
 - Finally, use `@editorialbot recommend-accept` on the review thread to ping the `@openjournals/joss-eics` team letting them know the paper is ready to be accepted.
 
 **Step 12: Celebrate publication! Tweet! Thank reviewers! Say thank you on issue.**
@@ -321,6 +330,20 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 ![Editorial flow](images/JOSS-flowchart.png)
 
 ## Expectations on JOSS editors
+
+### Editorial load
+
+Our goal is for editors to handle between 3-4 submissions at any one time, and 8-12 submissions per year. During the trial period for editors (usually the first 90 days), we recommend new editors handle 1-2 submissions as they learn the JOSS editorial system and processes.
+
+### Completing the trial period
+
+JOSS has a 90-day trial period for new editors. At the end of the trial, the editor or JOSS editorial board can decide to part ways if either party determines editing for JOSS isn't a good fit for the editor. The most important traits the editorial board will be looking for with new editors are:
+
+- Demonstrating professionalism in communications with authors, reviewers, and the wider editorial team.
+- Editorial responsibility, including [keeping up with their assigned submissions](editing.html#continued-attention-to-assigned-submissions).
+- Encouraging good social (software community) practices. For example, thanking reviewers and making them feel like they are part of a team working together.
+
+If you're struggling with your editorial work, please let your buddy or an EiC know.
 
 ### Responding to editorial assignments
 
@@ -367,16 +390,6 @@ Being on the JOSS editorial team means that there can be a _lot_ of notification
 
 ### Things you should do when joining the editorial team
 
-**Unsubscribe from the reviews repository on GitHub**
-
-When you're added to the editorial team on GitHub, you will almost certainly find yourself subscribed (watching) to the [`joss-reviews`](https://github.com/openjournals/joss-reviews) repository. The first thing you should do is set yourself to 'not watching':
-
-![Repository notifications settings](https://cloud.githubusercontent.com/assets/4483/20250593/64d7ce48-a9de-11e6-9225-d3dfb3e48e68.png)
-
-Please note, that by not watching the reviews repository, you will still receive notifications for issues (reviews) where you are `@mentioned`.
-
-Sometimes another editor might mention you in a review issue (for example to ask you a question). If you've responded and no-longer want to receive messages for that review, you can manually unsubscribe by clicking the button in the right-hand column on the review issue page.
-
 **Curate your GitHub notifications experience**
 
 GitHub has extensive documentation on [managing notifications](https://help.github.com/en/articles/managing-your-notifications) which explains when and why different notifications are sent from a repository.
@@ -398,3 +411,135 @@ If you use Gmail:
 For papers that you are already assigned to edit, the dedicated JOSS dashboard aggregates notifications associated with each paper. The dashboard is available at: `https://joss.theoj.org/dashboard/<yourgithubusername>`
 
 Another tool you might want to try out is [Octobox](https://octobox.io/).
+
+## Top tips for JOSS editors
+
+**Aim for reviewer redundancy**  
+
+If you have 3 people agree to review, take them up on their offer(s), that way if one person drops out, you'll have a backup and won't have to look for more reviewers. Also, when sending invites, try pinging a number of people at the same time rather than doing it one-by-one.
+
+**Email is a good backup**  
+
+Email is often the most reliable way of contacting people. Whether it's inviting reviewers, following up with reviewers or authors etc., if you've not heard back from someone on GitHub, try emailing them (their email is often available on their GitHub profile page).
+
+**Default to over-communicating**   
+
+When you take an action (even if it isn't on GitHub), share on the review thready what you're up to. For example, if you're looking for reviewers and are sending emails – leave a note on the review thread saying as much. 
+
+**Use the JOSS Slack**  
+
+There's lots of historical knowledge in our Slack, and it's a great way to get questions answered. 
+
+**Ask reviewers to complete their review in 4-6 weeks**
+
+We aim for a total submission ... publication time of ~3 months. This means we ideally want reviewers to complete their review in 4-6 weeks (max).
+
+**Use saved replies on GitHub**
+
+[Saved replies](https://docs.github.com/en/get-started/writing-on-github/working-with-saved-replies/using-saved-replies) on GitHub can be a huge productivity boost. Try making some using the example messages listed above.
+
+**Ping reviewers if they’ve not started after 2 weeks** 
+
+If a reviewer hasn't started within 1-2 weeks, you should probably give them a nudge. People often agree to review, and then forget about the review.
+
+**Learn how to nudge gently, and often**
+
+One of your jobs as the editor is to ensure the review keeps moving at a reasonable pace. If nothing has happened for a week or so, consider nudging the author or reviewers (depending upon who you're waiting for). A friendly _"👋 reviewer, how are you getting along here"_ can often be sufficient to get things moving again. 
+
+**Check in twice a week**
+
+Try to check in on your JOSS submissions twice per week, even if only for 5 minutes. Use your dashboard to stay on top of the current status of your submissions (i.e., who was the last person to comment on the thread).
+
+**Leave feedback on reviewers**
+
+Leave feedback on the [reviewers application](https://reviewers.joss.theoj.org/) at the end of the review. This helps future editors when they're seeking out good reviewer candidates.
+
+## Onboarding a new JOSS editor
+
+All new editors at JOSS have an onboarding call with an Editor-in-Chief. You can use the structure below to make sure you highlight the most important aspects of being an editor.
+
+**Thing to check before the call**
+
+- Have they reviewed or published in JOSS before? If not, you'll need to spend significantly more time explaining how the review process works.
+- Check on their research background (e.g., what tracks they might edit most actively in).
+- Make sure to send them the [editorial guide](https://joss.readthedocs.io/en/latest/editing.html) to read before the call.
+
+### The onboarding call
+
+**Preamble/introductions**
+
+- Welcome! Thank them for their application to join the team.
+- Point out that this isn't an interview. Rather, this is an informational call designed to give the candidate the information they need to make an informed decision about editing at JOSS.
+- 90-day trial period/try out. Editor or JOSS editorial board can decide to part ways after that period.
+- No strict term limits. Some editors have been with us for 7+ years, others do 1-2 years. Most important thing is to be proactive with your editing responsibilities and communicating any issues with the EiCs.
+- Confirm with them their level of familiarity with JOSS/our review process.
+- Point out that they *do not* need to make a decision on the call today. They are welcome to have a think about joining and get back to us.
+
+**Share your screen**
+
+- Visit JOSS (https://joss.theoj.org)
+- Pick a recently-published paper (you might want to identify this before the call one that shows off the review process well).
+- Show the paper on the JOSS site, and then go to the linked review issue.
+- Explain that there are *two* issues per submission – the pre-review issue and the main review issue.
+
+**The pre-review issue**
+
+- The 'meeting room for the paper'. Where author meets editor, and reviewers are identified.
+- Note that the EiC may have initiated a scope review. The editor should not start editing until this has completed. Also, editors are able to query the scope (as are reviewers) if they think the EiC should have (but didn't). 
+- Walk them through what is happening in the pre-review issue...
+- Editor is invited (likely with GitHub mention but also via email invite (`@editorialbot invite @editor as editor`))
+- Once editor accepts they start looking for reviewers.
+
+**Finding reviewers**
+
+- Explain that this is one of the more time-intensive aspects of editing.
+- Explain where you can look for editors (your own professional network, asking the authors for recommendations, the [reviewers application](https://reviewers.joss.theoj.org/), similar papers identified by Editorialbot, )
+- Point out that we have a minimum of two reviewers, but if more than that accept (e.g., 3/4 then take them all – this gives you redundancy if one drops out).
+- Don't invite only one reviewer at a time! If you do this, it may take many weeks to find two reviewers who accept. Try 3/4/5 invites simultaneously.
+- The [sample messages](editing.html#sample-messages-for-authors-and-reviewers) section of the documentation has some example language you can use.
+
+**The review**
+
+- Once at least two reviewers are assigned, time to get going!
+- Encourage reviewers to complete their review in 4-6 weeks.
+- Make sure to check in on the review – if reviewers haven't started after ~1-2 weeks, time to remind them.
+- Your role as editor is not to do the review yourself, rather, your job is to ensure that both reviewers give a good review and to facilitate discussion and consensus on what the author needs to do.
+- Walk the editor through the various review artifacts: The checklist, comments/questions/discussion between reviewers and author, issues opened on the upstream repository (and cross-linked into the review thread). 
+- Point editors to the ['top tips'](editing.html#top-tips-for-joss-editors) section of our docs. Much of what makes an editor successful is regular check-ins on the review, and nudging people if nothing is happening.
+- Do *not* let a review go multiple weeks without checking in.
+
+**Wrapping up the review**
+
+- Once the review is wrapping up, show the candidate the checks that an editor should be doing (reading the paper, suggested edits, asking for an archive etc.)
+- Show the `recommend-accept` step which is the formal hand-off between editor and editor-in-chief.
+- The [sample messages](editing.html#sample-messages-for-authors-and-reviewers) section of the documentation has a checklist for the last steps of the review (for both authors and editors).
+
+
+**Show them the dashboard on the JOSS site**
+
+- Point out that this means you *do not* need to stay on top of all of your notifications (the dashboard has the latest information).
+- Highlight here that we ask editors to handle 8-12 submissions per year on average.
+- ...and that means 3-4 submissions on their desk at any one time (once they have completed their initial probationary period).
+- Show them the backlog for a track, and how they are welcome to pick papers from it (ideally oldest first).
+- Show them their profile page, and how they can list their tracks there, and also what their availability is.
+
+**Other important things to highlight**
+
+- Don't invite other editors as reviewers. We're all busy editing our own papers...
+- Please be willing to edit outside of your specialisms. This helps JOSS run smoothly – often we don't have the 'ideal' editor for a submission and someone has to take it.
+- Highlight that editors will have a buddy to work with for the first few months, and that it's very common for editors to ask questions in Slack (and people generally respond quickly).
+- Scope reviews only work if editors vote! Please respond and vote on the weekly scope review email if you can. The process is private (authors don't know what editors are saying). Detailed comments are really helpful for the EiCs.
+
+**Wrapping up**
+
+- Make sure you've highlighted everything in the ['top tips'](editing.html#top-tips-for-joss-editors) section of our docs.
+- Reinforce that this is a commitment, and thay regular attention to their submissions is absolutely critical (i.e., check in a couple of times per week).
+- Ask if they would like to move forward or would like time to consider the opportunity.
+- If they want to move forward, highlight they will receive a small number of invites: One to the JOSS editors GitHub team, a Slack invite, a Google Group invite, and an invite to the JOSS website to fill out their profile.
+- Thank them again, and welcome them to the team.
+
+**Communicate outcome to EiC**
+
+- Let the EiC know what the outcome was, and ask them to send out the invites to our various systems.
+- Work with EiC to identify onboarding buddy.
+- Decide who is going to identify the first couple of papers for the editor to work on.

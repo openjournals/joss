@@ -111,7 +111,7 @@ see [the official docs](https://devcenter.heroku.com/articles/heroku-postgresql#
 Some times you may not want to launch an exact copy of JOSS, but a modified version.
 This can be especially useful if you're planning to spin up your own platform based on the
 Open Journals framework.
-[NeuroLibre](https://neurolibre.herokuapp.com) is one such example use-case.
+[NeuroLibre](https://neurolibre.org/) is one such example use-case.
 
 ### Modifying your site configuration
 

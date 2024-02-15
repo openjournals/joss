@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_06_09_104144) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_09_210521) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
   enable_extension "plpgsql"
@@ -31,6 +31,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_09_104144) do
     t.integer "user_id"
     t.string "availability_comment"
     t.integer "max_assignments", default: 4, null: false
+    t.integer "buddy_id"
+    t.index ["buddy_id"], name: "index_editors_on_buddy_id"
     t.index ["user_id"], name: "index_editors_on_user_id"
   end
 
@@ -78,7 +80,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_09_104144) do
     t.index ["token"], name: "index_onboarding_invitations_on_token"
   end
 
-  create_table "papers", force: :cascade do |t|
+  create_table "papers", id: :serial, force: :cascade do |t|
     t.string "title"
     t.string "state"
     t.string "repository_url"
@@ -93,10 +95,10 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_09_104144) do
     t.string "doi"
     t.text "paper_body"
     t.integer "meta_review_issue_id"
-    t.string "kind"
     t.text "authors"
     t.text "citation_string"
     t.datetime "accepted_at", precision: nil
+    t.string "kind"
     t.integer "editor_id"
     t.string "reviewers", default: [], array: true
     t.text "activities"
@@ -149,7 +151,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_09_104144) do
     t.index ["name"], name: "index_tracks_on_name"
   end
 
-  create_table "users", force: :cascade do |t|
+  create_table "users", id: :serial, force: :cascade do |t|
     t.string "provider"
     t.string "uid"
     t.string "name"

@@ -10,6 +10,10 @@ The Open Journals' editorial bot or `@editorialbot` on GitHub, is our editorial 
 @editorialbot commands
 ```
 
+```eval_rst
+.. note:: EditorialBot commands must be placed in the first line of a comment. Other text can be added after the first line with the command. Multiple commands are not allowed in the same comment, only the first one will be interpreted.
+```
+
 ## Author and reviewers commands
 
 A subset of the EditorialBot commands are available to authors and reviewers:
@@ -298,7 +302,7 @@ JOSS editors-in-chief can withdraw a submission with the following command:
 @editorialbot check references
 
 # Perform checks on the repository
-@editorialbot check repository
+@editorialbot check repository [from branch <custom-branch-name>]
 
 # Adds a checklist for the reviewer using this command
 @editorialbot generate my checklist

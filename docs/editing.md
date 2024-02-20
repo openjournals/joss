@@ -101,7 +101,7 @@ Pre-publication steps:
 - Download the proof, check all references have DOIs, follow the links and check the references.
   - EditorialBot can help check references with the command `@editorialbot check references`
 - Proof-read the paper and ask authors to fix any remaining typos, badly formed citations, awkward wording, etc..
-- Ask the author to make a tagged release and archive, and report the version number and archive DOI in the review thread.
+- Ask the author to make a tagged release and archive, and report the version number and archive DOI in the review thread. Note that a new release is only necessary if the software changed during the course of the review. In particular, changes to the paper do not require creating a new release.
 - Check the archive deposit has the correct metadata (title and author list), and request the author edit it if it doesn’t match the paper.
 - Run `@editorialbot set <doi> as archive`.
 - Run `@editorialbot set <v1.x.x> as version` if the version was updated.

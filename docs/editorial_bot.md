@@ -196,13 +196,7 @@ A series of checks can be run on the submitted repository with the command:
 @editorialbot check repository
 ```
 
-EditorialBot will report back with an analysis of the source code and list authorship, contributions and file types information. EditorialBot will also detect the languages used in the repository, will count the number of words in the paper file and will look for an Open Source License and for a *Statement of need* section in the paper.
-
-It is possible to run the checks on a specific git branch:
-
-```text
-@editorialbot check repository from branch <custom-branch-name>
-```
+EditorialBot will report back with an analysis of the source code and list authorship, contributions and file types information. EditorialBot will also label the issue with the top languages used in the repository, will count the number of words in the paper file, will look for an Open Source License and for a *Statement of need* section in the paper.
 
 ### Post-review checklist
 
@@ -302,7 +296,7 @@ JOSS editors-in-chief can withdraw a submission with the following command:
 @editorialbot check references
 
 # Perform checks on the repository
-@editorialbot check repository [from branch <custom-branch-name>]
+@editorialbot check repository
 
 # Adds a checklist for the reviewer using this command
 @editorialbot generate my checklist

@@ -106,7 +106,7 @@ Pre-publication steps:
 - Check the archive deposit has the correct metadata (title and author list)
   - It is _preferred_ that the metadata author list matches the paper author list
     - Other contbutors can be present (and they should be marked as such, if possible)
-  - Check that the all authors of the papers are in the archive metadata
+  - Check that the all authors of the paper are in the archive metadata
   - Eventually, ask for the reason why the two lists differ
 - Run `@editorialbot set <doi> as archive`.
 - Run `@editorialbot set <v1.x.x> as version` if the version was updated.

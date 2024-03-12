@@ -1,5 +1,4 @@
-Installing the JOSS application
-===============================
+# Installing the JOSS application
 
 Any Open Journal (JOSS, JOSE, etc.) can be considered in three parts:
 
@@ -36,18 +35,17 @@ before deploying your application to Heroku:
 1. A GitHub [Personal Access Token](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token) for the automated account that users will interact with (e.g., `@editorialbot`, `@RoboNeuro`). In order to be able to send invitations to reviewers and collaborators, the automated GitHub account must be an admin of the organization the reviews take place at. And the Personal Access Token should include the `admin:org` scope.
 1. An email address registered on a domain you control (i.e., not `gmail` or a related service)
 
-```eval_rst
-.. warning::
-    Do not put these secrets directly into your code base!
-    It is important that these keys are not under version control.
+```{warning}
+Do not put these secrets directly into your code base!
+It is important that these keys are not under version control.
 
-    There are different ways to make sure your application has access to these keys,
-    depending on whether your code is being developed locally or on Heroku.
-    Locally, you can store these locally in a .env file.
-    The .gitignore in JOSS is already set to ignore this file type.
+There are different ways to make sure your application has access to these keys,
+depending on whether your code is being developed locally or on Heroku.
+Locally, you can store these locally in a .env file.
+The .gitignore in JOSS is already set to ignore this file type.
 
-    On Heroku, they will be config variables that you can set either with the Heroku CLI or directly on your application's dashboard.
-    See `this guide from Heroku <https://devcenter.heroku.com/articles/config-vars#managing-config-vars>`_ for more information.
+On Heroku, they will be config variables that you can set either with the Heroku CLI or directly on your application's dashboard.
+See [this guide from Heroku](https://devcenter.heroku.com/articles/config-vars#managing-config-vars) for more information.
 ```
 
 Assuming you [have forked the JOSS GitHub repository](https://docs.github.com/en/free-pro-team@latest/github/getting-started-with-github/fork-a-repo)
@@ -75,24 +73,22 @@ Once you've pushed your application to Heroku and provisioned the appropriate ad
 you're ready to update your config with the appropriate secrets.
 For a list of the expected secret key names, see the `app.json` file.
 
-```eval_rst
-.. warning::
-    One "gotcha" when provisioning the Bonsai add-on is that it may only set the BONSAI_URL variable.
-    Make sure that there is also an ELASTICSEARCH_URL which is set to the same address.
+```{warning}
+One "gotcha" when provisioning the Bonsai add-on is that it may only set the `BONSAI_URL` variable.
+Make sure that there is also an `ELASTICSEARCH_URL` which is set to the same address.
 ```
 
 We will not cover Portico, as this requires that your application is a part of the `openjournals` organization.
 If you do not already have access to these keys, you can simply ignore them for now.
 
-```eval_rst
-.. note::
-    One secret key we have not covered thus far is BOT_SECRET.
-    This is because it is not one that you obtain from a provide,
-    but a secret key that you set yourself.
-    We recommend using something like a random SHA1 string.
+```{note}
+One secret key we have not covered thus far is `BOT_SECRET`.
+This is because it is not one that you obtain from a provide,
+but a secret key that you set yourself.
+We recommend using something like a random SHA1 string.
 
-    It is important to remember this key,
-    as you will need it when deploying your Buffy application.
+It is important to remember this key,
+as you will need it when deploying your Buffy application.
 ```
 
 After pushing your application to Heroku, provisioning the appropriate add-ons,

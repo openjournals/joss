@@ -31,20 +31,31 @@ Sponsors and affiliates
 JOSS is a proud affiliate of the `Open Source Initiative <https://opensource.org/>`_. As such, we are committed to public support for open source software and the role OSI plays therein. In addition, Open Journals (the parent entity behind JOSS) is a `NumFOCUS-sponsored project <https://www.numfocus.org/project/open-journals>`_.
 
 .. toctree::
-  :caption: Author and Reviewer Guides
+  :caption: Author Guides
   :maxdepth: 5
 
   submitting
+  paper
+  example_paper
+  policies
+
+.. toctree::
+  :caption: Reviewer Guides
+  :maxdepth: 5
+
   reviewer_guidelines
   review_criteria
   review_checklist
-  policies
 
 .. toctree::
   :caption: Editor Guides
   :maxdepth: 2
 
   editing
+  expectations
+  editor_onboarding
+  editor_tips
+  sample_messages
 
 .. toctree::
   :caption: The Editorial Bot

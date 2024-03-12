@@ -1,5 +1,4 @@
-JOSS Policies
-==========================
+# JOSS Policies
 
 ## Animal research policy
 

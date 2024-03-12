@@ -38,7 +38,7 @@ release = ''
 # ones.
 extensions = [
     'sphinx.ext.mathjax',
-    'recommonmark',
+    'myst_parser',
     'sphinx_rtd_theme',
 ]
 
@@ -51,7 +51,7 @@ master_doc = 'index'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'venv']
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -126,11 +126,13 @@ texinfo_documents = [
 
 
 # -- Extension configuration -------------------------------------------------
-def setup(app):
-    app.add_config_value('recommonmark_config', {
-            'url_resolver': lambda url: github_doc_root + url,
-            'auto_toc_tree_section': 'Contents',
-            'enable_auto_toc_tree': True,
-            'enable_eval_rst': True,
-            }, True)
-    app.add_transform(AutoStructify)
+myst_heading_anchors=3
+
+# def setup(app):
+#     app.add_config_value('recommonmark_config', {
+#             'url_resolver': lambda url: github_doc_root + url,
+#             'auto_toc_tree_section': 'Contents',
+#             'enable_auto_toc_tree': True,
+#             'enable_eval_rst': True,
+#             }, True)
+#     app.add_transform(AutoStructify)

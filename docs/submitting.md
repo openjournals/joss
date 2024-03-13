@@ -662,12 +662,9 @@ Authors are welcome to submit their papers to a preprint server ([arXiv](https:/
 
 Submission to a preprint server is _not_ considered a previous publication.
 
-```eval_rst
-.. tip::
-
+```{tip}
     To generate a .tex version of your JOSS paper, use the `editorial bot <editorial_bot>`_'s `generate preprint` command from your review issue: ``@editorialbot generate preprint``
-
-````
+```
 
 ## Authorship
 

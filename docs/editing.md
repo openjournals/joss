@@ -57,7 +57,6 @@ Finding reviewers can be challenging, especially if a submission is outside of y
 - Ask the author(s): You are free to ask the submitting author to suggest possible reviewers by using the [reviewer application](https://reviewers.joss.theoj.org) and also people from their professional network. In this situation, the editor still needs to verify that their suggestions are appropriate.
 - Use your professional network: You're welcome to invite people you know of who might be able to give a good review.
 - Search Google and GitHub for related work, and write to the authors of that related work.
-  - You might like to try [this tool](https://github.com/dfm/joss-reviewer) from @dfm.
 - Ask on social networks: Sometimes asking on Twitter for reviewers can identify good candidates.
 - Check the work being referenced in the submission:
   - Authors of software that is being built on might be interested in reviewing the submission.

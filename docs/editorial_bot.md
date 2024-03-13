@@ -1,5 +1,4 @@
-Interacting with EditorialBot
-=============================
+# Interacting with EditorialBot
 
 The Open Journals' editorial bot or `@editorialbot` on GitHub, is our editorial bot that interacts with authors, reviewers, and editors on JOSS reviews.
 
@@ -10,8 +9,8 @@ The Open Journals' editorial bot or `@editorialbot` on GitHub, is our editorial 
 @editorialbot commands
 ```
 
-```eval_rst
-.. note:: EditorialBot commands must be placed in the first line of a comment. Other text can be added after the first line with the command. Multiple commands are not allowed in the same comment, only the first one will be interpreted.
+```{note}
+EditorialBot commands must be placed in the first line of a comment. Other text can be added after the first line with the command. Multiple commands are not allowed in the same comment, only the first one will be interpreted.
 ```
 
 ## Author and reviewers commands
@@ -24,8 +23,8 @@ When a `pre-review` or `review` issue is opened, `@editorialbot` will try to com
 
 If it can't find the `paper.md` file it will say as much in the review issue. If it can't compile the paper (i.e. there's some kind of Pandoc error), it will try and report that error back in the thread too.
 
-```eval_rst
-.. note:: To compile the papers ``@editorialbot`` is running this `Docker image <https://github.com/openjournals/inara>`_.
+```{note}
+To compile the papers ``@editorialbot`` is running this `Docker image <https://github.com/openjournals/inara>`_.
 ```
 
 Anyone can ask `@editorialbot` to compile the paper again (e.g. after a change has been made). To do this simply comment on the review thread as follows:
@@ -116,8 +115,8 @@ Once the reviewer(s) and editor have been assigned in the `pre-review` issue, th
 @editorialbot start review
 ```
 
-```eval_rst
-.. important:: If a reviewer recants their commitment or is unresponsive, editors can remove them with the command ``@editorialbot remove @username from reviewers``. You can then delete that reviewer's checklist. You can also add new reviewers in the ``REVIEW`` issue with the command ``@editorialbot add @username to reviewers``.
+```{important}
+If a reviewer recants their commitment or is unresponsive, editors can remove them with the command `@editorialbot remove @username from reviewers`. You can then delete that reviewer's checklist. You can also add new reviewers in the `REVIEW` issue with the command `@editorialbot add @username to reviewers`.
 ```
 
 ### Reminding reviewers and authors
@@ -139,8 +138,8 @@ EditorialBot can remind authors and reviewers after a specified amount of time t
 @editorialbot remind @author in two weeks
 ```
 
-```eval_rst
-.. note:: Most units of times are understood by EditorialBot e.g. `hour/hours/day/days/week/weeks`.
+```{note}
+Most units of times are understood by EditorialBot e.g. `hour/hours/day/days/week/weeks`.
 ```
 
 ### Setting the software archive
@@ -184,8 +183,8 @@ Editors can ask EditorialBot to check if the DOIs in the bib file are valid with
 @editorialbot check references
 ```
 
-```eval_rst
-.. note:: EditorialBot can verify that DOIs resolve, but cannot verify that the DOI associated with a paper is actually correct. In addition, DOI suggestions from EditorialBot are just that - i.e. they may not be correct.
+```{note}
+EditorialBot can verify that DOIs resolve, but cannot verify that the DOI associated with a paper is actually correct. In addition, DOI suggestions from EditorialBot are just that - i.e. they may not be correct.
 ```
 
 ### Repository checks

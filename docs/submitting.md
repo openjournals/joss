@@ -1,5 +1,4 @@
-Submitting a paper to JOSS
-==========================
+# Submitting a paper to JOSS
 
 If you've already developed a fully featured research code, released it under an [OSI-approved license](https://opensource.org/licenses), and written good documentation and tests, then we expect that it should take perhaps an hour or two to prepare and submit your paper to JOSS.
 But please read these instructions carefully for a streamlined submission.
@@ -81,8 +80,8 @@ Before you submit, you should:
 
 ## What should my paper contain?
 
-```eval_rst
-.. important:: Begin your paper with a summary of the high-level functionality of your software for a non-specialist reader. Avoid jargon in this section.
+```{important}
+Begin your paper with a summary of the high-level functionality of your software for a non-specialist reader. Avoid jargon in this section.
 ```
 
 JOSS welcomes submissions from broadly diverse research areas. For this reason, we require that authors include in the paper some sentences that explain the software functionality and domain of use to a non-specialist reader. We also require that authors explain the research applications of the software. The paper should be between 250-1000 words. Authors submitting papers significantly longer than 1000 words may be asked to reduce the length of their paper.
@@ -98,8 +97,8 @@ Your paper should include:
 
 As this short list shows, JOSS papers are only expected to contain a limited set of metadata (see example below), a Statement of need, Summary, Acknowledgements, and References sections. You can look at an [example accepted paper](#example-paper-and-bibliography). Given this format, a "full length" paper is not permitted, and software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation.
 
-```eval_rst
-.. important:: Your paper will be reviewed by two or more reviewers in a public GitHub issue. Take a look at the `review checklist <review_checklist.html>`_ and  `review criteria <review_criteria.html>`_ to better understand how your submission will be reviewed.
+```{important}
+Your paper will be reviewed by two or more reviewers in a public GitHub issue. Take a look at the [review checklist](review_checklist) and  [review criteria](review_criteria) to better understand how your submission will be reviewed.
 ```
 
 ## How should my paper be formatted?
@@ -108,6 +107,7 @@ Submitted articles must use Markdown and must provide a metadata section at the 
 
 ### Article metadata
 
+(author-names)=
 #### Names
 
 Providing an author name is straight-forward: just set the `name` attribute. However, sometimes more control over the name is required.
@@ -327,9 +327,8 @@ Mark equations and other math content with dollar signs ($). Use a single dollar
 
 To give some examples: When discussing a variable *x* or a short formula like
 
-```eval_rst
-.. math::
-    \sin \frac{\pi}{2}
+```{math}
+\sin \frac{\pi}{2}
 ```
 
 we would write $x$ and
@@ -357,7 +356,7 @@ Software should use an OSI-approved license.
 
 The above example results in the following output:
 
-> ```eval_rst
+> ```{eval-rst}
 >
 > Articles are published under a Creative Commons license [#f1]_. Software should use an OSI-approved license.
 >
@@ -429,9 +428,9 @@ Rendered:
 
 This example `paper.md` is adapted from _Gala: A Python package for galactic dynamics_ by Adrian M. Price-Whelan [http://doi.org/10.21105/joss.00388](http://doi.org/10.21105/joss.00388).
 
-For a complete description of available options to describe author names [see here](#names).
+For a complete description of available options to describe author names [see here](author-names).
 
-```
+```markdown
 ---
 title: 'Gala: A Python package for galactic dynamics'
 tags:

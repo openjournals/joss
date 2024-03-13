@@ -356,7 +356,7 @@ Software should use an OSI-approved license.
 
 The above example results in the following output:
 
-> ```{eval_rst}
+> ```{eval-rst}
 >
 > Articles are published under a Creative Commons license [#f1]_. Software should use an OSI-approved license.
 >

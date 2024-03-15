@@ -4,7 +4,7 @@ Rails.application.routes.draw do
   resources :invitations, only: [:index] do
     put 'expire', on: :member
   end
-  resources :papers do
+  resources :papers, except: [:edit, :update, :destroy] do
     resources :votes, only: [:create]
     resources :notes, only: [:create, :destroy]
 
@@ -78,6 +78,7 @@ Rails.application.routes.draw do
   get '/dashboard/all', to: "home#all", as: "dashboard_all"
   get '/dashboard/incoming', to: "home#incoming", as: "dashboard_incoming"
   get '/dashboard/in_progress', to: "home#in_progress", as: "dashboard_in_progress"
+  get '/dashboard/query_scoped', to: "home#query_scoped", as: "dashboard_query_scoped"
   get '/dashboard', to: "home#dashboard"
 
   get '/dashboard/*editor', to: "home#reviews"

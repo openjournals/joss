@@ -89,7 +89,7 @@ class EditorsController < ApplicationController
     end
 
     def editor_params
-      params.require(:editor).permit(:max_assignments, :availability_comment, :kind, :title, :first_name, :last_name, :login, :email, :avatar_url, :category_list, :url, :description, { track_ids: [] })
+      params.require(:editor).permit(:max_assignments, :availability_comment, :kind, :title, :first_name, :last_name, :buddy_id, :login, :email, :avatar_url, :category_list, :url, :description, { track_ids: [] })
     end
 
     def profile_params

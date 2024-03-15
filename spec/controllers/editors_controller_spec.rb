@@ -59,14 +59,14 @@ RSpec.describe EditorsController, type: :controller do
       create(:editor, kind: "pending", track_ids: [track.id])
       get :index
 
-      expect(assigns(:active_editors)).to eq([current_user.editor, board, editor])
-      expect(assigns(:emeritus_editors)).to eq([emeritus])
+      expect(@controller.view_assigns["active_editors"]).to eq([current_user.editor, board, editor])
+      expect(@controller.view_assigns["emeritus_editors"]).to eq([emeritus])
     end
 
     it "assigns grouped availability information" do
       get :index
-      expect(assigns(:assignment_by_editor)).to be
-      expect(assigns(:paused_by_editor)).to be
+      expect(@controller.view_assigns["assignment_by_editor"]).to be
+      expect(@controller.view_assigns["paused_by_editor"]).to be
     end
   end
 
@@ -74,14 +74,14 @@ RSpec.describe EditorsController, type: :controller do
     it "assigns the requested editor as @editor" do
       editor = create(:editor)
       get :show, params: {id: editor.to_param}
-      expect(assigns(:editor)).to eq(editor)
+      expect(@controller.view_assigns["editor"]).to eq(editor)
     end
   end
 
   describe "#new" do
     it "assigns a new editor as @editor" do
       get :new, params: {}
-      expect(assigns(:editor)).to be_a_new(Editor)
+      expect(@controller.view_assigns["editor"]).to be_a_new(Editor)
     end
   end
 
@@ -89,7 +89,7 @@ RSpec.describe EditorsController, type: :controller do
     it "assigns the requested editor as @editor" do
       editor = create(:editor)
       get :edit, params: {id: editor.to_param}
-      expect(assigns(:editor)).to eq(editor)
+      expect(@controller.view_assigns["editor"]).to eq(editor)
     end
   end
 
@@ -105,8 +105,8 @@ RSpec.describe EditorsController, type: :controller do
       it "assigns a newly created editor as @editor" do
         new_editor = build(:editor)
         post :create, params: {editor: new_editor.attributes.merge(track_ids: new_editor.track_ids)}
-        expect(assigns(:editor)).to be_a(Editor)
-        expect(assigns(:editor)).to be_persisted
+        expect(@controller.view_assigns["editor"]).to be_a(Editor)
+        expect(@controller.view_assigns["editor"]).to be_persisted
       end
 
       it "redirects to the created editor" do
@@ -119,12 +119,15 @@ RSpec.describe EditorsController, type: :controller do
     context "with invalid params" do
       it "assigns a newly created but unsaved editor as @editor" do
         post :create, params: {editor: {login: nil}}
-        expect(assigns(:editor)).to be_a_new(Editor)
+        expect(@controller.view_assigns["editor"]).to be_a_new(Editor)
       end
 
-      it "re-renders the 'new' template" do
+      it "goes back to the 'new' form" do
+        editor_count = Editor.count
         post :create, params: {editor: {login: nil}}
-        expect(response).to render_template("new")
+
+        expect(response).to_not be_redirect
+        expect(Editor.count).to eq(editor_count)
       end
     end
   end
@@ -141,7 +144,7 @@ RSpec.describe EditorsController, type: :controller do
       it "assigns the requested editor as @editor" do
         editor = create(:editor)
         put :update, params: {id: editor.to_param, editor: {first_name: "Different"}}
-        expect(assigns(:editor)).to eq(editor)
+        expect(@controller.view_assigns["editor"]).to eq(editor)
       end
 
       it "redirects to the editor" do
@@ -155,13 +158,16 @@ RSpec.describe EditorsController, type: :controller do
       it "assigns the editor as @editor" do
         editor = create(:editor)
         put :update, params: {id: editor.to_param, editor: {login: nil}}
-        expect(assigns(:editor)).to eq(editor)
+        expect(@controller.view_assigns["editor"]).to eq(editor)
       end
 
-      it "re-renders the 'edit' template" do
+      it "goes back to the 'edit' form" do
         editor = create(:editor)
+        editor_login = editor.login
         put :update, params: {id: editor.to_param, editor: {login: nil}}
-        expect(response).to render_template("edit")
+
+        expect(response).to_not be_redirect
+        expect(editor.reload.login).to eq(editor_login)
       end
     end
   end

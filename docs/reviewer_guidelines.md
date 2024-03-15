@@ -1,5 +1,4 @@
-Reviewing for JOSS
-=======================
+# Reviewing for JOSS
 
 Firstly, thank you so much for agreeing to review for the Journal of Open Source Software (JOSS), we're delighted to have your help. This document is designed to outline our editorial guidelines and help you understand our requirements for accepting a submission into the JOSS. Our review process is based on a tried-and-tested approach of the [rOpenSci collaboration](http://ropensci.org/blog/2016/03/28/software-review).
 
@@ -21,6 +20,6 @@ The definition of a conflict of Interest in peer review is a circumstance that m
 
 As a reviewer (or editor), COIs are your present or previous association with any authors of a submission: recent (past four years) collaborators in funded research or work that is published; and lifetime for the family members, business partners, and thesis student/advisor or mentor. In addition, your recent (past year) association with the same organization of a submitter is a COI, for example, being employed at the same institution.
 
-If you have a conflict of interest with a submission, you should disclose the specific reason to the submissions' editor (or to an EiC if you are an editor, or to the other EiCs if you are an EiC). This may lead to you not being able to review or edit the submission, but some conflicts may be recorded and then waived, and if you think you are able to make an impartial assessment of the work, you should request that the conflict be waived. For example, if you and a submitter were two of 2000 authors of a high energy physics paper but did not actually collaborate. Or if you and a submitter worked together 6 years ago, but due to delays in the publishing industry, a paper from that collaboration with both of you as authors was published 2 year ago. Or if you and a submitter are both employed by the same very large organization but in different units without any knowledge of each other.
+If you have a conflict of interest with a submission, you should disclose the specific reason to the submissions' editor (or to an EiC if you are an editor, or to the other EiCs if you are an EiC). This may lead to you not being able to review or edit the submission, but some conflicts may be recorded and then waived, and if you think you are able to make an impartial assessment of the work, you should request that the conflict be waived. For example, if you and a submitter were two of 2000 authors of a high energy physics paper but did not actually collaborate. Or if you and a submitter worked together 6 years ago, but due to delays in the publishing industry, a paper from that collaboration with both of you as authors was published 2 years ago. Or if you and a submitter are both employed by the same very large organization but in different units without any knowledge of each other.
 
 Declaring actual, perceived, and potential conflicts of interest is required under professional ethics. If in doubt: ask the editors.

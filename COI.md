@@ -1,6 +1,6 @@
 # JOSS Conflict of Interest Policy
 
-The definition of a conflict of Interest in peer review is a circumstance that makes you "unable to make an impartial scientific judgment or evaluation." ([PNAS Editorial Policies - Competing Interest](https://www.pnas.org/author-center/editorial-and-journal-policies#competing-interest)). JOSS is concerned with avoiding any actual conflicts of interest, and being sufficiently transparent that we avoid the appearance of conflicts of interest as well.
+The definition of a Conflict of Interest (COI) in peer review is a circumstance that makes you "unable to make an impartial scientific judgment or evaluation." ([PNAS Editorial Policies - Competing Interest](https://www.pnas.org/author-center/editorial-and-journal-policies#competing-interest)). JOSS is concerned with avoiding any actual conflicts of interest, and being sufficiently transparent that we avoid the appearance of conflicts of interest as well.
 
 As a reviewer, COIs are your present or previous association with any authors of a submission: recent (past four years) collaborators in funded research or work that is published; and lifetime for the family members, business partners, and thesis student/advisor or mentor. In addition, your recent (past year) association with the same organization of a submitter is a COI, for example, being employed at the same institution.
 

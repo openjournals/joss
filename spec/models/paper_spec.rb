@@ -47,14 +47,31 @@ describe Paper do
     expect(paper.submitting_author).to eq(user)
   end
 
+  it "should have a complete value for repository url" do
+    params = { title: 'Test paper',
+               body: 'A test paper description',
+               repository_url: 'github.com/arfon/fidgit',
+               software_version: 'v1.0.0',
+               submitting_author: create(:user),
+               submission_kind: 'new',
+               track: create(:track) }
+
+    paper = Paper.create(params)
+    expect(paper).to_not be_valid
+    expect(paper.errors.messages[:repository_url].first).to eq("Repository URL is missing the protocol segment (http/https)")
+
+    paper = Paper.create(params.merge(repository_url: 'http://github.com/arfon/fidgit'))
+    expect(paper).to be_valid
+  end
+
   it "must have a track assigned on creation if tracks are enabled" do
     enable_feature(:tracks) do
       no_track_params = { title: 'Test paper',
-                         body: 'A test paper description',
-                         repository_url: 'http://github.com/arfon/fidgit',
-                         software_version: 'v1.0.0',
-                         submitting_author: create(:user),
-                         submission_kind: 'new' }
+                          body: 'A test paper description',
+                          repository_url: 'http://github.com/arfon/fidgit',
+                          software_version: 'v1.0.0',
+                          submitting_author: create(:user),
+                          submission_kind: 'new' }
 
       valid_params = no_track_params.merge track: create(:track)
 
@@ -117,6 +134,17 @@ describe Paper do
       expect(track_A_papers.size).to eq(2)
       expect(track_A_papers.include?(paper_A1)).to be true
       expect(track_A_papers.include?(paper_A2)).to be true
+    end
+
+    it "should find query scoped papers" do
+      paper_1, paper_2, paper_3, paper_4, paper_5 = create_list(:paper, 5)
+      paper_2.update labels: {"query-scope" => "FF0000"}
+      paper_4.update labels: {"query-scope" => "CC00CC"}
+
+      query_scoped_papers = Paper.query_scoped
+      expect(query_scoped_papers.size).to eq(2)
+      expect(query_scoped_papers.include?(paper_2)).to be true
+      expect(query_scoped_papers.include?(paper_4)).to be true
     end
   end
 

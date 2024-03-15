@@ -1,5 +1,4 @@
-Interacting with EditorialBot
-=============================
+# Interacting with EditorialBot
 
 The Open Journals' editorial bot or `@editorialbot` on GitHub, is our editorial bot that interacts with authors, reviewers, and editors on JOSS reviews.
 
@@ -8,6 +7,10 @@ The Open Journals' editorial bot or `@editorialbot` on GitHub, is our editorial 
 
 ```text
 @editorialbot commands
+```
+
+```{note}
+EditorialBot commands must be placed in the first line of a comment. Other text can be added after the first line with the command. Multiple commands are not allowed in the same comment, only the first one will be interpreted.
 ```
 
 ## Author and reviewers commands
@@ -20,8 +23,8 @@ When a `pre-review` or `review` issue is opened, `@editorialbot` will try to com
 
 If it can't find the `paper.md` file it will say as much in the review issue. If it can't compile the paper (i.e. there's some kind of Pandoc error), it will try and report that error back in the thread too.
 
-```eval_rst
-.. note:: To compile the papers ``@editorialbot`` is running this `Docker image <https://github.com/openjournals/inara>`_.
+```{note}
+To compile the papers ``@editorialbot`` is running this `Docker image <https://github.com/openjournals/inara>`_.
 ```
 
 Anyone can ask `@editorialbot` to compile the paper again (e.g. after a change has been made). To do this simply comment on the review thread as follows:
@@ -112,8 +115,8 @@ Once the reviewer(s) and editor have been assigned in the `pre-review` issue, th
 @editorialbot start review
 ```
 
-```eval_rst
-.. important:: If a reviewer recants their commitment or is unresponsive, editors can remove them with the command ``@editorialbot remove @username from reviewers``. You can then delete that reviewer's checklist. You can also add new reviewers in the ``REVIEW`` issue with the command ``@editorialbot add @username to reviewers``.
+```{important}
+If a reviewer recants their commitment or is unresponsive, editors can remove them with the command `@editorialbot remove @username from reviewers`. You can then delete that reviewer's checklist. You can also add new reviewers in the `REVIEW` issue with the command `@editorialbot add @username to reviewers`.
 ```
 
 ### Reminding reviewers and authors
@@ -135,8 +138,8 @@ EditorialBot can remind authors and reviewers after a specified amount of time t
 @editorialbot remind @author in two weeks
 ```
 
-```eval_rst
-.. note:: Most units of times are understood by EditorialBot e.g. `hour/hours/day/days/week/weeks`.
+```{note}
+Most units of times are understood by EditorialBot e.g. `hour/hours/day/days/week/weeks`.
 ```
 
 ### Setting the software archive
@@ -180,8 +183,8 @@ Editors can ask EditorialBot to check if the DOIs in the bib file are valid with
 @editorialbot check references
 ```
 
-```eval_rst
-.. note:: EditorialBot can verify that DOIs resolve, but cannot verify that the DOI associated with a paper is actually correct. In addition, DOI suggestions from EditorialBot are just that - i.e. they may not be correct.
+```{note}
+EditorialBot can verify that DOIs resolve, but cannot verify that the DOI associated with a paper is actually correct. In addition, DOI suggestions from EditorialBot are just that - i.e. they may not be correct.
 ```
 
 ### Repository checks
@@ -192,13 +195,7 @@ A series of checks can be run on the submitted repository with the command:
 @editorialbot check repository
 ```
 
-EditorialBot will report back with an analysis of the source code and list authorship, contributions and file types information. EditorialBot will also detect the languages used in the repository, will count the number of words in the paper file and will look for an Open Source License and for a *Statement of need* section in the paper.
-
-It is possible to run the checks on a specific git branch:
-
-```text
-@editorialbot check repository from branch <custom-branch-name>
-```
+EditorialBot will report back with an analysis of the source code and list authorship, contributions and file types information. EditorialBot will also label the issue with the top languages used in the repository, will count the number of words in the paper file, will look for an Open Source License and for a *Statement of need* section in the paper.
 
 ### Post-review checklist
 
@@ -240,6 +237,17 @@ If everything looks good with the draft proofs from the `@editorialbot recommend
 ```
 
 EditorialBot will accept the paper, assign it a DOI, deposit it and publish the paper.
+
+### Updating an already accepted paper
+
+If the draft has been updated after a paper has been published, JOSS editors-in-chief can update the published info and PDF with the following command:
+
+```text
+@editorialbot reaccept
+```
+
+EditorialBot will update the published paper and re-deposit it.
+
 
 ### Rejecting a paper
 
@@ -304,12 +312,6 @@ JOSS editors-in-chief can withdraw a submission with the following command:
 # Set a value for repository
 @editorialbot set https://github.com/org/repo as repository
 
-# Reject paper
-@editorialbot reject
-
-# Withdraw paper
-@editorialbot withdraw
-
 # Invite an editor to edit a submission (sending them an email)
 @editorialbot invite @(.*) as editor
 
@@ -327,6 +329,15 @@ JOSS editors-in-chief can withdraw a submission with the following command:
 
 # Accept and publish the paper
 @editorialbot accept
+
+# Update an accepted paper
+@editorialbot reaccept
+
+# Reject paper
+@editorialbot reject
+
+# Withdraw paper
+@editorialbot withdraw
 
 # Flag submission with questionable scope
 @editorialbot query scope

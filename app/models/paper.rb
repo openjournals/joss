@@ -115,7 +115,7 @@ class Paper < ApplicationRecord
     'HTML',
     'CSS',
     'CMake',
-    'Ruby'
+    'Ruby',
     'Dockerfile',
     'Batchfile'
   ].freeze

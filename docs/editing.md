@@ -104,7 +104,7 @@ Pre-publication steps:
 - Proof-read the paper and ask authors to fix any remaining typos, badly formed citations, awkward wording, etc..
 - Ask the author to make a tagged release and archive, and report the version number and archive DOI in the review thread.
 - Check the archive deposit has the correct metadata (title and author list)
-  - It is _preferred_ that the metadata author list matches the paper author list
+  - In most situations, the two author lists should match. Authors and editors should review the two, and any differences need to be explained.
     - Other contbutors can be present (and they should be marked as such, if possible)
   - Check that the all authors of the paper are in the archive metadata
   - Eventually, ask for the reason why the two lists differ

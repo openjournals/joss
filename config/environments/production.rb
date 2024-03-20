@@ -94,7 +94,7 @@ Rails.application.configure do
     user_name: 'apikey',
     password: ENV["SENDGRID_API"],
     address: 'smtp.sendgrid.net',
-    domain: 'juliacon.org',
+    domain: 'julialang.org',
     port: 587,
     authentication: :plain,
     enable_starttls_auto: true

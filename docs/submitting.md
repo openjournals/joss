@@ -38,6 +38,10 @@ As a rule of thumb, JOSS' minimum allowable contribution should represent **not 
 
 In addition, JOSS requires that software should be feature-complete (i.e., no half-baked solutions), packaged appropriately according to common community standards for the programming language being used (e.g., [Python](https://packaging.python.org), [R](https://r-pkgs.org/index.html)), and designed for maintainable extension (not one-off modifications of existing tools). "Minor utility" packages, including "thin" API clients, and single-function packages are not acceptable.
 
+#### A note on web-based software
+
+Many web-based research tools are out of scope for JOSS due to a lack of modularity and challenges testing and maintaining the code. Web-based tools may be considered 'in scope' for JOSS, provided that they meet one or both of the following criteria: 1) they are exposing a 'core library' through a web-based experience (e.g., R/Shiny applications) or 2) the web application demonstrates a high-level of rigor with respect to domain modeling and testing (e.g., adopts and implements a standard design pattern such as [MVC](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller)).
+
 ### Co-publication of science, methods, and software
 
 Sometimes authors prepare a JOSS publication alongside a contribution describing a science application, details of algorithm development, and/or methods assessment. In this circumstance, JOSS considers submissions for which the implementation of the software itself reflects a substantial scientific effort. This may be represented by the design of the software, the implementation of the algorithms, creation of tutorials, or any other aspect of the software. We ask that authors indicate whether related publications (published, in review, or nearing submission) exist as part of submitting to JOSS.

@@ -40,7 +40,7 @@ In addition, JOSS requires that software should be feature-complete (i.e., no ha
 
 #### A note on web-based software
 
-Many web-based research tools are out of scope for JOSS due to a lack of modularity and challenges testing and maintaining the code. Web-based tools may be considered 'in scope' for JOSS, provided that they meet one or both of the following criteria: 1) they are exposing a 'core library' through a web-based experience (e.g., R/[Shiny](https://www.rstudio.com/products/shiny/) applications) or 2) the web application demonstrates a high-level of rigor with respect to domain modeling and testing (e.g., adopts and implements a design pattern such as [MVC](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) using a framework such as [Django](https://www.djangoproject.com/)).
+Many web-based research tools are out of scope for JOSS due to a lack of modularity and challenges testing and maintaining the code. Web-based tools may be considered 'in scope' for JOSS, provided that they meet one or both of the following criteria: 1) they are are built around and expose a 'core library' through a web-based experience (e.g., R/[Shiny](https://www.rstudio.com/products/shiny/) applications) or 2) the web application demonstrates a high-level of rigor with respect to domain modeling and testing (e.g., adopts and implements a design pattern such as [MVC](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) using a framework such as [Django](https://www.djangoproject.com/)).
 
 Similar to other categories of submission to JOSS, it's essential that any web-based tool can be tested easily by reviewers locally (i.e., on their local machine). 
 

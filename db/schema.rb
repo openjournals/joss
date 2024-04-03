@@ -116,7 +116,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_09_210521) do
     t.index ["editor_id"], name: "index_papers_on_editor_id"
     t.index ["eic_id"], name: "index_papers_on_eic_id"
     t.index ["labels"], name: "index_papers_on_labels", using: :gin
-    t.index ["languages"], name: "index_papers_on_languages", using: :gin
     t.index ["last_activity"], name: "index_papers_on_last_activity"
     t.index ["retraction_for_id"], name: "index_papers_on_retraction_for_id"
     t.index ["reviewers"], name: "index_papers_on_reviewers", using: :gin

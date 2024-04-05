@@ -266,7 +266,7 @@ describe PapersController, type: :controller do
       parsed_response = JSON.parse(response.body)
       expect(parsed_response['submitted']).to eq(3.days.ago.strftime('%d %B %Y'))
       expect(parsed_response['accepted']).to eq(2.days.ago.strftime('%d %B %Y'))
-      expect(parsed_response['doi']).to eq('10.21105/joss.00000')
+      expect(parsed_response['doi']).to eq('10.21105/jcon.00000')
     end
 
     it "should return paper's track short name" do
@@ -412,7 +412,7 @@ describe PapersController, type: :controller do
       expect(parsed_response["submitting_author"]).to eq("@foobar")
       expect(parsed_response["editor_name"]).to eq("Person McEditor")
       expect(parsed_response["editor_orcid"]).to eq("0000-0000-0000-1234")
-      expect(parsed_response["doi"]).to eq("10.21105/joss.00000")
+      expect(parsed_response["doi"]).to eq("10.21105/jcon.00000")
       expect(parsed_response["published_at"]).to_not be_nil
     end
   end

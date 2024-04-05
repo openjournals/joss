@@ -2,17 +2,17 @@ require "rails_helper"
 
 feature "Published paper's show page" do
   before do
-    @accepted_paper = create(:accepted_paper, title: "Astronomy paper", doi: "10.21105/joss.00001", review_issue_id: 1)
+    @accepted_paper = create(:accepted_paper, title: "Astronomy paper", doi: "10.21105/jcon.00001", review_issue_id: 1)
     @accepted_paper.metadata['paper']['title'] = "Astronomy paper"
     @accepted_paper.metadata['paper']['authors'] = [{'given_name' => "Vera", 'last_name' => "Rubin"}]
     @accepted_paper.metadata['paper']['tags'] = ["Galaxy rotation curves"]
     @accepted_paper.save!
 
-    @retracted_paper = create(:retracted_paper, title: "Bad paper", doi: "10.21105/joss.00002", review_issue_id: 2)
+    @retracted_paper = create(:retracted_paper, title: "Bad paper", doi: "10.21105/jcon.00002", review_issue_id: 2)
     @retracted_paper.metadata['paper']['title'] = "Bad paper"
     @retracted_paper.save!
 
-    @retraction_notice = create(:accepted_paper, title: "Retraction notice for: Bad paper", doi: "10.21105/joss.00002R")
+    @retraction_notice = create(:accepted_paper, title: "Retraction notice for: Bad paper", doi: "10.21105/jcon.00002R")
     @retraction_notice.update(retracted_paper: @retracted_paper)
   end
 

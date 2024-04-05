@@ -260,8 +260,8 @@ describe Paper do
     it "should know how to generate a PDF URL for Google Scholar" do
       paper = create(:accepted_paper)
 
-      expect(paper.seo_url).to eq('http://joss.theoj.org/papers/10.21105/joss.00000')
-      expect(paper.seo_pdf_url).to eq('http://joss.theoj.org/papers/10.21105/joss.00000.pdf')
+      expect(paper.seo_url).to eq('https://proceedings.juliacon.org/papers/10.21105/jcon.00000')
+      expect(paper.seo_pdf_url).to eq('https://proceedings.juliacon.org/papers/10.21105/jcon.00000.pdf')
     end
   end
 
@@ -269,8 +269,8 @@ describe Paper do
     it "should know how to generate a PDF URL for Google Scholar" do
       paper = create(:under_review_paper)
 
-      expect(paper.seo_url).to eq('http://joss.theoj.org/papers/48d24b0158528e85ac7706aecd8cddc4')
-      expect(paper.seo_pdf_url).to eq('http://joss.theoj.org/papers/48d24b0158528e85ac7706aecd8cddc4.pdf')
+      expect(paper.seo_url).to eq('https://proceedings.juliacon.org/papers/48d24b0158528e85ac7706aecd8cddc4')
+      expect(paper.seo_pdf_url).to eq('https://proceedings.juliacon.org/papers/48d24b0158528e85ac7706aecd8cddc4.pdf')
     end
   end
 
@@ -444,7 +444,7 @@ describe Paper do
         is_expected.to match /#{Rails.application.settings['reviewers_lookup_url']}/
       end
 
-      it { is_expected.to match "Currently, there isn't a JOSS editor assigned" }
+      it { is_expected.to match "Currently, there isn't a JCON editor assigned" }
     end
   end
 

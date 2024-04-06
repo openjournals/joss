@@ -54,7 +54,7 @@ RSpec.describe Repository do
 
     it "returns false invitation is not created" do
       expect(Octokit).to receive(:user).and_return(OpenStruct.new(id: 33))
-      expected_url = "https://api.github.com/orgs/openjournals/invitations"
+      expected_url = "https://api.github.com/orgs/JuliaCon/invitations"
       expected_params = {invitee_id: 33, team_ids: [1234]}
       exheaders = {"Authorization" => "token testGHtoken", "Content-Type" => "application/json", "Accept" => "application/vnd.github.v3+json"}
       expect(Faraday).to receive(:post).with(expected_url, expected_params.to_json, exheaders).and_return(OpenStruct.new(status: 404))
@@ -64,7 +64,7 @@ RSpec.describe Repository do
 
     it "returns true if invitation is created" do
       expect(Octokit).to receive(:user).and_return(OpenStruct.new(id: 42))
-      expected_url = "https://api.github.com/orgs/openjournals/invitations"
+      expected_url = "https://api.github.com/orgs/JuliaCon/invitations"
       expected_params = {invitee_id: 42, team_ids: [1234]}
       exheaders = {"Authorization" => "token testGHtoken", "Content-Type" => "application/json", "Accept" => "application/vnd.github.v3+json"}
       expect(Faraday).to receive(:post).with(expected_url, expected_params.to_json, exheaders).and_return(OpenStruct.new(status: 200))

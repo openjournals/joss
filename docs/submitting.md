@@ -10,7 +10,8 @@ But please read these instructions carefully for a streamlined submission.
 - The software must have an **obvious** research application.
 - You must be a major contributor to the software you are submitting, and have a GitHub account to participate in the review process.
 - Your paper must not focus on new research results accomplished with the software.
-- Your paper (`paper.md` and BibTeX files, plus any figures) must be hosted in a Git-based repository together with your software (although they may be in a short-lived branch which is never merged with the default).
+- Your paper (`paper.md` and BibTeX files, plus any figures) must be hosted in a Git-based repository together with your software.
+- The paper may be in a short-lived branch which is never merged with the default, although if you do this, make sure this branch is _created_ from the default so that it also includes the source code of your submission.
 
 In addition, the software associated with your submission must:
 

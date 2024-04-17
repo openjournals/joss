@@ -10,7 +10,8 @@ But please read these instructions carefully for a streamlined submission.
 - The software must have an **obvious** research application.
 - You must be a major contributor to the software you are submitting, and have a GitHub account to participate in the review process.
 - Your paper must not focus on new research results accomplished with the software.
-- Your paper (`paper.md` and BibTeX files, plus any figures) must be hosted in a Git-based repository together with your software (although they may be in a short-lived branch which is never merged with the default).
+- Your paper (`paper.md` and BibTeX files, plus any figures) must be hosted in a Git-based repository together with your software.
+- The paper may be in a short-lived branch which is never merged with the default, although if you do this, make sure this branch is _created_ from the default so that it also includes the source code of your submission.
 
 In addition, the software associated with your submission must:
 
@@ -37,6 +38,12 @@ As a rule of thumb, JOSS' minimum allowable contribution should represent **not 
 - Whether the software is sufficiently useful that it is _likely to be cited_ by your peer group.
 
 In addition, JOSS requires that software should be feature-complete (i.e., no half-baked solutions), packaged appropriately according to common community standards for the programming language being used (e.g., [Python](https://packaging.python.org), [R](https://r-pkgs.org/index.html)), and designed for maintainable extension (not one-off modifications of existing tools). "Minor utility" packages, including "thin" API clients, and single-function packages are not acceptable.
+
+#### A note on web-based software
+
+Many web-based research tools are out of scope for JOSS due to a lack of modularity and challenges testing and maintaining the code. Web-based tools may be considered 'in scope' for JOSS, provided that they meet one or both of the following criteria: 1) they are are built around and expose a 'core library' through a web-based experience (e.g., R/[Shiny](https://www.rstudio.com/products/shiny/) applications) or 2) the web application demonstrates a high-level of rigor with respect to domain modeling and testing (e.g., adopts and implements a design pattern such as [MVC](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) using a framework such as [Django](https://www.djangoproject.com/)).
+
+Similar to other categories of submission to JOSS, it's essential that any web-based tool can be tested easily by reviewers locally (i.e., on their local machine). 
 
 ### Co-publication of science, methods, and software
 
@@ -102,7 +109,6 @@ Submission is as simple as:
 ### No submission fees
 
 There are no fees for submitting or publishing in JOSS. You can read more about our [cost and sustainability model](http://joss.theoj.org/about#costs).
-
 
 ## Review Process
 

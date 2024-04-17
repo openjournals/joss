@@ -23,6 +23,16 @@ RSpec.describe Editor, type: :model do
   end
 
   describe "#associations" do
+    it "belongs to a user" do
+      association = Editor.reflect_on_association(:user)
+      expect(association.macro).to eq(:belongs_to)
+    end
+
+    it "has one buddy editor" do
+      association = Editor.reflect_on_association(:buddy_editor)
+      expect(association.macro).to eq(:has_one)
+    end
+
     it "has many votes" do
       association = Editor.reflect_on_association(:votes)
       expect(association.macro).to eq(:has_many)

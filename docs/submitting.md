@@ -1,5 +1,4 @@
-Submitting a paper to JOSS
-==========================
+# Submitting a paper to JOSS
 
 If you've already developed a fully featured research code, released it under an [OSI-approved license](https://opensource.org/licenses), and written good documentation and tests, then we expect that it should take perhaps an hour or two to prepare and submit your paper to JOSS.
 But please read these instructions carefully for a streamlined submission.
@@ -11,7 +10,8 @@ But please read these instructions carefully for a streamlined submission.
 - The software must have an **obvious** research application.
 - You must be a major contributor to the software you are submitting, and have a GitHub account to participate in the review process.
 - Your paper must not focus on new research results accomplished with the software.
-- Your paper (`paper.md` and BibTeX files, plus any figures) must be hosted in a Git-based repository together with your software (although they may be in a short-lived branch which is never merged with the default).
+- Your paper (`paper.md` and BibTeX files, plus any figures) must be hosted in a Git-based repository together with your software.
+- The paper may be in a short-lived branch which is never merged with the default, although if you do this, make sure this branch is _created_ from the default so that it also includes the source code of your submission.
 
 In addition, the software associated with your submission must:
 
@@ -38,6 +38,12 @@ As a rule of thumb, JOSS' minimum allowable contribution should represent **not 
 - Whether the software is sufficiently useful that it is _likely to be cited_ by your peer group.
 
 In addition, JOSS requires that software should be feature-complete (i.e., no half-baked solutions), packaged appropriately according to common community standards for the programming language being used (e.g., [Python](https://packaging.python.org), [R](https://r-pkgs.org/index.html)), and designed for maintainable extension (not one-off modifications of existing tools). "Minor utility" packages, including "thin" API clients, and single-function packages are not acceptable.
+
+#### A note on web-based software
+
+Many web-based research tools are out of scope for JOSS due to a lack of modularity and challenges testing and maintaining the code. Web-based tools may be considered 'in scope' for JOSS, provided that they meet one or both of the following criteria: 1) they are are built around and expose a 'core library' through a web-based experience (e.g., R/[Shiny](https://www.rstudio.com/products/shiny/) applications) or 2) the web application demonstrates a high-level of rigor with respect to domain modeling and testing (e.g., adopts and implements a design pattern such as [MVC](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) using a framework such as [Django](https://www.djangoproject.com/)).
+
+Similar to other categories of submission to JOSS, it's essential that any web-based tool can be tested easily by reviewers locally (i.e., on their local machine). 
 
 ### Co-publication of science, methods, and software
 
@@ -81,8 +87,8 @@ Before you submit, you should:
 
 ## What should my paper contain?
 
-```eval_rst
-.. important:: Begin your paper with a summary of the high-level functionality of your software for a non-specialist reader. Avoid jargon in this section.
+```{important}
+Begin your paper with a summary of the high-level functionality of your software for a non-specialist reader. Avoid jargon in this section.
 ```
 
 JOSS welcomes submissions from broadly diverse research areas. For this reason, we require that authors include in the paper some sentences that explain the software functionality and domain of use to a non-specialist reader. We also require that authors explain the research applications of the software. The paper should be between 250-1000 words. Authors submitting papers significantly longer than 1000 words may be asked to reduce the length of their paper.
@@ -98,8 +104,8 @@ Your paper should include:
 
 As this short list shows, JOSS papers are only expected to contain a limited set of metadata (see example below), a Statement of need, Summary, Acknowledgements, and References sections. You can look at an [example accepted paper](#example-paper-and-bibliography). Given this format, a "full length" paper is not permitted, and software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation.
 
-```eval_rst
-.. important:: Your paper will be reviewed by two or more reviewers in a public GitHub issue. Take a look at the `review checklist <review_checklist.html>`_ and  `review criteria <review_criteria.html>`_ to better understand how your submission will be reviewed.
+```{important}
+Your paper will be reviewed by two or more reviewers in a public GitHub issue. Take a look at the [review checklist](review_checklist) and  [review criteria](review_criteria) to better understand how your submission will be reviewed.
 ```
 
 ## How should my paper be formatted?
@@ -108,6 +114,7 @@ Submitted articles must use Markdown and must provide a metadata section at the 
 
 ### Article metadata
 
+(author-names)=
 #### Names
 
 Providing an author name is straight-forward: just set the `name` attribute. However, sometimes more control over the name is required.
@@ -327,9 +334,8 @@ Mark equations and other math content with dollar signs ($). Use a single dollar
 
 To give some examples: When discussing a variable *x* or a short formula like
 
-```eval_rst
-.. math::
-    \sin \frac{\pi}{2}
+```{math}
+\sin \frac{\pi}{2}
 ```
 
 we would write $x$ and
@@ -357,7 +363,7 @@ Software should use an OSI-approved license.
 
 The above example results in the following output:
 
-> ```eval_rst
+> ```{eval-rst}
 >
 > Articles are published under a Creative Commons license [#f1]_. Software should use an OSI-approved license.
 >
@@ -429,9 +435,9 @@ Rendered:
 
 This example `paper.md` is adapted from _Gala: A Python package for galactic dynamics_ by Adrian M. Price-Whelan [http://doi.org/10.21105/joss.00388](http://doi.org/10.21105/joss.00388).
 
-For a complete description of available options to describe author names [see here](#names).
+For a complete description of available options to describe author names [see here](author-names).
 
-```
+```markdown
 ---
 title: 'Gala: A Python package for galactic dynamics'
 tags:
@@ -662,6 +668,10 @@ There are no fees for submitting or publishing in JOSS. You can read more about 
 Authors are welcome to submit their papers to a preprint server ([arXiv](https://arxiv.org/), [bioRxiv](https://www.biorxiv.org/), [SocArXiv](https://socopen.org/), [PsyArXiv](https://psyarxiv.com/) etc.) at any point before, during, or after the submission and review process.
 
 Submission to a preprint server is _not_ considered a previous publication.
+
+```{tip}
+To generate a .tex version of your JOSS paper, use the [editorial bot](editorial_bot)'s `generate preprint` command from your review issue: ``@editorialbot generate preprint``
+```
 
 ## Authorship
 

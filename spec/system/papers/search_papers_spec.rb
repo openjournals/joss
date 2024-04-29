@@ -2,6 +2,7 @@ require "rails_helper"
 
 feature "Paper search" do
   before do
+    skip_paper_repo_url_check
     paper_1 = create(:accepted_paper, title: "Astronomy paper")
     paper_1.metadata['paper']['title'] = "Astronomy paper"
     paper_1.metadata['paper']['authors'] = [{'given_name' => "Vera", 'last_name' => "Rubin"}]

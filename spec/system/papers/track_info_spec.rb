@@ -3,15 +3,15 @@ require "rails_helper"
 feature "Paper's track info" do
   feature "When tracks feature is enabled" do
     before do
-      skip_paper_repo_url_check
       allow(Repository).to receive(:editors).and_return(["@editor_1", "@editor_2"])
+      skip_paper_repo_url_check
+      @paper = create(:paper)
     end
 
     around do |ex|
       enable_feature(:tracks) do
         @track_1 = create(:track, name: "Astrophysics", short_name: "ASTRO", code: "42")
         @track_2 = create(:track, name: "Biology", short_name: "BIO", code: "34")
-        @paper = create(:paper)
 
         ex.run
       end
@@ -36,6 +36,7 @@ feature "Paper's track info" do
 
     feature "Logged as an admin" do
       before do
+        skip_paper_repo_url_check
         @aeic = create(:admin_user, editor: create(:board_editor))
         @track = create(:track, name: "Testing track", short_name: "TE", code: "33")
         login_as(@aeic)

@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '3.3.0'
+ruby '3.3.1'
 
 gem 'aasm', '~> 5.5.0'
 gem 'chartkick'
@@ -23,7 +23,6 @@ gem "importmap-rails"
 gem "turbo-rails"
 gem "stimulus-rails"
 gem 'responders'
-gem 'newrelic_rpm'
 gem 'sanitize', '~> 6.0.1'
 gem 'searchkick'
 gem 'elasticsearch', '<7.14'

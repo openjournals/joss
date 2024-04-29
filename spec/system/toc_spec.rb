@@ -2,6 +2,8 @@ require "rails_helper"
 
 feature "Table of Contents" do
   before do
+    skip_paper_repo_url_check
+
     parsed_launch_date = Time.parse(Rails.application.settings[:launch_date])
     @launch_year = parsed_launch_date.year
     @launch_month = parsed_launch_date.month

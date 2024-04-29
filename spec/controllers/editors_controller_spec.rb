@@ -60,7 +60,7 @@ RSpec.describe EditorsController, type: :controller do
       get :index
 
       expect(@controller.view_assigns["active_editors"]).to eq([current_user.editor, board, editor])
-      expect(@controller.view_assigns["emeritus_editors"]).to eq([emeritus])
+      expect(@controller.view_assigns["emeritus_editors"].to_a).to eq([emeritus])
     end
 
     it "assigns grouped availability information" do

@@ -2,7 +2,7 @@
 
 ## The JOSS paper
 
-As outlined in the [submission guidelines provided to authors](submitting.md#what-should-my-paper-contain), the JOSS paper (the compiled PDF associated with this submission) should only include:
+As outlined in the [submission guidelines provided to authors](paper.md#what-should-my-paper-contain), the JOSS paper (the compiled PDF associated with this submission) should only include:
 
 - A list of the authors of the software and their affiliations.
 - A summary describing the high-level functionality and purpose of the software for a diverse, non-specialist audience.

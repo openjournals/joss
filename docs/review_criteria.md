@@ -119,6 +119,6 @@ As outlined in our author guidelines, submissions that rely upon a proprietary/c
 
 If an open source or free variant of the programming language exists, feel free to encourage the submitting author to consider making their software compatible with the open source/free variant.
 
-### Where can I host the repository?
+### Where can the repository be hosted?
 
 Repositories must be hosted at a location that allows outside users to freely open issues and propose code changes, such as GitHub, GitLab, Bitbucket, etc. Submissions will not be accepted if the repository is hosted at a location where accounts must be manually approved (or paid for), regardless of if this approval is done by the owners of the repository or some other entity. 

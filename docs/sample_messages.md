@@ -42,7 +42,7 @@ JOSS Editor.
 
 > - Your software should have an obvious research application
 
-Could you confirm here that there _is_ a research application for this software (and explain what that application is)? The section [_'what should my paper contain'_](https://joss.readthedocs.io/en/latest/submitting.html#what-should-my-paper-contain) has some guidance for the sort of content we're looking to be present in the `paper.md`.
+Could you confirm here that there _is_ a research application for this software (and explain what that application is)? The section [_'what should my paper contain'_](https://joss.readthedocs.io/en/latest/paper.html#what-should-my-paper-contain) has some guidance for the sort of content we're looking to be present in the `paper.md`.
 
 Many thanks!
 ```

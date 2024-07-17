@@ -113,15 +113,39 @@ The goal of Open Journals is to provide authors with a seamless and pleasant wri
 
 Tables and figures can be referenced if they are given a *label* in the caption. In pure Markdown, this can be done by adding an empty span `[]{label="floatlabel"}` to the caption. LaTeX syntax is supported as well: `\label{floatlabel}`.
 
-Link to a float element, i.e., a table or figure, with `\ref{identifier}` or `\autoref{identifier}`, where `identifier` must be defined in the float's caption. The former command results in just the float's number, while the latter inserts the type and number of the referenced float. E.g., in this document `\autoref{proglangs}` yields "\autoref{proglangs}", while `\ref{proglangs}` gives "\ref{proglangs}".
+For example:
 
-: Comparison of programming languages used in the publishing tool. []{label="proglangs"}
 
-    | Language | Typing          | Garbage Collected | Evaluation | Created |
-    |----------|:---------------:|:-----------------:|------------|---------|
-    | Haskell  | static, strong  | yes               | non-strict | 1990    |
-    | Lua      | dynamic, strong | yes               | strict     | 1993    |
-    | C        | static, weak    | no                | strict     | 1972    |
+```markdown
+: Comparison of programming languages used in the publishing tool. \label{proglangs}
+
+| Language | Typing          | Garbage Collected | Evaluation | Created |
+|----------|:---------------:|:-----------------:|------------|---------|
+| Haskell  | static, strong  | yes               | non-strict | 1990    |
+| Lua      | dynamic, strong | yes               | strict     | 1993    |
+| C        | static, weak    | no                | strict     | 1972    |
+```
+
+Makes:
+
+```{table} **Table 1:** Comparison of programming languages used in the publishing tool.
+:name: proglangs
+
+| Language | Typing          | Garbage Collected | Evaluation | Created |
+|----------|:---------------:|:-----------------:|------------|---------|
+| Haskell  | static, strong  | yes               | non-strict | 1990    |
+| Lua      | dynamic, strong | yes               | strict     | 1993    |
+| C        | static, weak    | no                | strict     | 1972    |
+```
+
+Link to a float element, i.e., a table or figure, with `\ref{identifier}` or `\autoref{identifier}`, where `identifier` must be defined in the float's caption. The former command results in just the float's number, while the latter inserts the type and number of the referenced float. E.g., for this example:
+
+
+
+* `\autoref{proglangs}` yields [Table 1](#proglangs)
+* `\ref{proglangs}` yields [1](#proglangs)
+
+
 
 ### Equations
 
@@ -129,8 +153,9 @@ Cross-references to equations work similarly to those for floating elements. The
 
     $$a^n + b^n = c^n \label{fermat}$$
 
-Referencing, however, is identical, with `\autoref{eq:fermat}` resulting in "\autoref{eq:fermat}".
+Referencing, however, is identical, with `\autoref{eq:fermat}` resulting in [Equation 1](#eq:fermat).
 
+(eq:fermat)=
 $$a^n + b^n = c^n \label{eq:fermat}$$
 
 Authors who do not wish to include the label directly in the formula can use a Markdown span to add the label:

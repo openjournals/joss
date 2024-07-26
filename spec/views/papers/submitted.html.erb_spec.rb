@@ -14,7 +14,7 @@ describe 'papers/submitted.html.erb' do
 
       create(:paper, state: "submitted", submitting_author: user)
 
-      assign(:pagy, Pagy.new({count: Paper.submitted.count, page: 1}))
+      assign(:pagy, Pagy.new(count: Paper.submitted.count, page: 1))
       assign(:papers, Paper.submitted)
 
       render template: "papers/index", formats: :html

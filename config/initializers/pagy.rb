@@ -1,10 +1,7 @@
 # frozen_string_literal: true
 
 # Default page size
-Pagy::DEFAULT[:items] = 20
-
-# No page links
-Pagy::DEFAULT[:size] = []
+Pagy::DEFAULT[:limit] = 20
 
 require 'pagy/extras/overflow'
 Pagy::DEFAULT[:overflow] = :empty_page

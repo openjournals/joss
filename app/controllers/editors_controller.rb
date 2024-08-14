@@ -24,7 +24,7 @@ class EditorsController < ApplicationController
   end
 
   def lookup
-    editor = Editor.find_by_login(params[:login])
+    editor = Editor.where("lower(login) = ?", params[:login].downcase).first
     if editor.url
       url = editor.url
     else

@@ -146,7 +146,7 @@ class Paper < ApplicationRecord
   validates :kind, inclusion: { in: Rails.application.settings["paper_types"] }, allow_nil: true
   validates :submission_kind, inclusion: { in: SUBMISSION_KINDS, message: "You must select a submission type" }, allow_nil: false
   validates_format_of :repository_url, with: /\Ahttps?:\/\//i, on: :create, message: "Repository URL is missing the protocol segment (http/https)"
-  validate :check_repository_address, on: :create, unless: Proc.new {|paper| paper.is_a_retraction_notice?}
+  validate :check_repository_address, on: :create, unless: Proc.new {|paper| Rails.env.development? || paper.is_a_retraction_notice?}
 
   def notify_editors
     Notifications.submission_email(self).deliver_now unless self.is_a_retraction_notice?

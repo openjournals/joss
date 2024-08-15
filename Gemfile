@@ -52,6 +52,7 @@ group :development, :test do
   gem 'rspec-rails', '~> 6.1.0'
   gem 'selenium-webdriver'
   gem 'webmock'
+  gem 'annotate'
 end
 
 group :test do

@@ -1,3 +1,30 @@
+# == Schema Information
+#
+# Table name: editors
+#
+#  id                   :integer          not null, primary key
+#  availability_comment :string
+#  avatar_url           :string
+#  categories           :string           default([]), is an Array
+#  description          :string           default("")
+#  email                :string
+#  first_name           :string           not null
+#  kind                 :string           default("topic"), not null
+#  last_name            :string           not null
+#  login                :string           not null
+#  max_assignments      :integer          default(4), not null
+#  title                :string
+#  url                  :string
+#  created_at           :datetime         not null
+#  updated_at           :datetime         not null
+#  buddy_id             :integer
+#  user_id              :integer
+#
+# Indexes
+#
+#  index_editors_on_buddy_id  (buddy_id)
+#  index_editors_on_user_id   (user_id)
+#
 class Editor < ApplicationRecord
   validates :kind, presence: true, inclusion: { in: ["board", "topic", "emeritus", "pending"] }
   validates :first_name, presence: true

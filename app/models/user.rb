@@ -1,3 +1,27 @@
+# == Schema Information
+#
+# Table name: users
+#
+#  id               :bigint           not null, primary key
+#  admin            :boolean          default(FALSE)
+#  email            :string
+#  extra            :hstore
+#  github_username  :string
+#  name             :string
+#  oauth_expires_at :string
+#  oauth_token      :string
+#  provider         :string
+#  sha              :string
+#  uid              :string
+#  created_at       :datetime         not null
+#  updated_at       :datetime         not null
+#
+# Indexes
+#
+#  index_users_on_email  (email)
+#  index_users_on_name   (name)
+#  index_users_on_sha    (sha)
+#
 class User < ApplicationRecord
 
   has_many :papers

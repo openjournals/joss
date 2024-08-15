@@ -1,3 +1,18 @@
+# == Schema Information
+#
+# Table name: tracks
+#
+#  id         :bigint           not null, primary key
+#  code       :integer
+#  name       :string
+#  short_name :string
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#
+# Indexes
+#
+#  index_tracks_on_name  (name)
+#
 class Track < ApplicationRecord
   has_many :papers
   has_many :subjects, inverse_of: :track, dependent: :destroy

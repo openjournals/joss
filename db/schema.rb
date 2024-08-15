@@ -80,7 +80,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_09_210521) do
     t.index ["token"], name: "index_onboarding_invitations_on_token"
   end
 
-  create_table "papers", id: :serial, force: :cascade do |t|
+  create_table "papers", force: :cascade do |t|
     t.string "title"
     t.string "state"
     t.string "repository_url"
@@ -95,10 +95,10 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_09_210521) do
     t.string "doi"
     t.text "paper_body"
     t.integer "meta_review_issue_id"
+    t.string "kind"
     t.text "authors"
     t.text "citation_string"
     t.datetime "accepted_at", precision: nil
-    t.string "kind"
     t.integer "editor_id"
     t.string "reviewers", default: [], array: true
     t.text "activities"
@@ -151,7 +151,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_09_210521) do
     t.index ["name"], name: "index_tracks_on_name"
   end
 
-  create_table "users", id: :serial, force: :cascade do |t|
+  create_table "users", force: :cascade do |t|
     t.string "provider"
     t.string "uid"
     t.string "name"

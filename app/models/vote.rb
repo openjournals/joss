@@ -1,3 +1,22 @@
+# == Schema Information
+#
+# Table name: votes
+#
+#  id         :bigint           not null, primary key
+#  comment    :text
+#  kind       :string
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#  editor_id  :integer
+#  paper_id   :integer
+#
+# Indexes
+#
+#  index_votes_on_editor_id               (editor_id)
+#  index_votes_on_editor_id_and_paper_id  (editor_id,paper_id) UNIQUE
+#  index_votes_on_kind                    (kind)
+#  index_votes_on_paper_id                (paper_id)
+#
 class Vote < ApplicationRecord
   belongs_to :paper
   belongs_to :editor

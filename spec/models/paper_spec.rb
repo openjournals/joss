@@ -1,3 +1,57 @@
+# == Schema Information
+#
+# Table name: papers
+#
+#  id                   :bigint           not null, primary key
+#  accepted_at          :datetime
+#  activities           :text
+#  archive_doi          :string
+#  archived             :boolean          default(FALSE)
+#  authors              :text
+#  body                 :text
+#  citation_string      :text
+#  doi                  :string
+#  git_branch           :string
+#  kind                 :string
+#  labels               :jsonb            not null
+#  last_activity        :datetime
+#  metadata             :text
+#  paper_body           :text
+#  repository_url       :string
+#  retraction_notice    :text
+#  reviewers            :string           default([]), is an Array
+#  sha                  :string
+#  software_version     :string
+#  state                :string
+#  submission_kind      :string
+#  suggested_subject    :string
+#  title                :string
+#  created_at           :datetime         not null
+#  updated_at           :datetime         not null
+#  editor_id            :integer
+#  eic_id               :integer
+#  meta_review_issue_id :integer
+#  retraction_for_id    :bigint
+#  review_issue_id      :integer
+#  track_id             :bigint
+#  user_id              :integer
+#
+# Indexes
+#
+#  index_papers_on_editor_id          (editor_id)
+#  index_papers_on_eic_id             (eic_id)
+#  index_papers_on_labels             (labels) USING gin
+#  index_papers_on_last_activity      (last_activity)
+#  index_papers_on_retraction_for_id  (retraction_for_id)
+#  index_papers_on_reviewers          (reviewers) USING gin
+#  index_papers_on_sha                (sha)
+#  index_papers_on_track_id           (track_id)
+#  index_papers_on_user_id            (user_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (retraction_for_id => papers.id)
+#
 require 'rails_helper'
 
 describe Paper do

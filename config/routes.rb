@@ -57,7 +57,7 @@ Rails.application.routes.draw do
   get '/editors/lookup/:login', to: "editors#lookup"
   get '/papers/lookup/:id', to: "papers#lookup"
   get '/papers/in/:language', to: "papers#filter", as: 'papers_by_language'
-  get '/papers/by/:author', to: "papers#filter", as: 'papers_by_author'
+  get '/papers/by/:author', to: "papers#filter", as: 'papers_by_author', constraints: { author: /.*(?<!\.html)(?<!\.json)(?<!\.atom)/ }
   get '/papers/edited_by/:editor', to: "papers#filter", as: 'papers_by_editor'
   get '/papers/reviewed_by/:reviewer', to: "papers#filter", as: 'papers_by_reviewer'
   get '/papers/tagged/:tag', to: "papers#filter", as: 'papers_by_tag'

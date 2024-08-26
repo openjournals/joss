@@ -9,6 +9,7 @@ gem 'google_drive'
 gem 'groupdate'
 gem 'honeybadger', '~> 5.2.0'
 gem 'html-pipeline', '~> 2.14.3'
+gem 'i18n'
 gem 'commonmarker', '~> 0.23.10'
 gem 'net-sftp', '~> 4.0'
 gem 'octicons_helper'
@@ -19,6 +20,7 @@ gem 'pdf-reader', '~> 2.11.0'
 gem 'pg', '~> 1.4.6'
 gem 'pagy'
 gem 'rails', '7.1.3.4'
+gem 'rails-i18n'
 gem "importmap-rails"
 gem "turbo-rails"
 gem "stimulus-rails"
@@ -64,4 +66,5 @@ group :development do
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
   gem 'spring-commands-rspec', group: :development
+  gem 'i18n-tasks', '~> 1.0', require: false
 end

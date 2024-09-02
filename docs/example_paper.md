@@ -31,6 +31,7 @@ authors:
 affiliations:
  - name: Lyman Spitzer, Jr. Fellow, Princeton University, USA
    index: 1
+   ror: 00hx57361
  - name: Institution Name, Country
    index: 2
  - name: Independent Researcher, Country

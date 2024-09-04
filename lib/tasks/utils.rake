@@ -283,7 +283,7 @@ namespace :utils do
 
       editor = review.editor.gsub('@', '')
 
-      # This is a pre-preview issue without an editor asssigned
+      # This is a pre-preview issue without an editor assigned
       if editor == "Pending" && review.pre_review?
         puts "Doing nothing for #{review.number}"
       else

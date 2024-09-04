@@ -433,35 +433,27 @@ describe PapersController, type: :controller do
 
   describe "Paper/by/{author} route" do
     it "handles author names with periods" do
-      {
-        :get => "/papers/by/Author%20T.%20Lastname"
-      }.should route_to(
-        controller: "papers",
-        action: "filter",
-        author: "Author T. Lastname"
-      )
+      assert_routing "/papers/by/Author%20T.%20Lastname", { controller: "papers", action: "filter", author: "Author T. Lastname" }
     end
 
     %w[json atom html].each do |format|
       it "still allows #{format} suffix to be interpreted as format" do
-        {
-          :get => "/papers/by/Author%20T.%20Lastname.#{format}"
-        }.should route_to(
-          controller: "papers",
-          action: "filter",
-          author: "Author T. Lastname",
-          format: format
-        )
+        assert_routing "/papers/by/Author%20T.%20Lastname.#{format}",
+          {
+            controller: "papers",
+            action: "filter",
+            author: "Author T. Lastname",
+            format: format
+          }
       end
 
       it "doesn't choke on #{format} in the middle of a name" do
-        {
-          :get => "/papers/by/Author.#{format}name%20T.%20Lastname"
-        }.should route_to(
-           controller: "papers",
-           action: "filter",
-           author: "Author.#{format}name T. Lastname",
-         )
+        assert_routing  "/papers/by/Author.#{format}name%20T.%20Lastname",
+          {
+            controller: "papers",
+            action: "filter",
+            author: "Author.#{format}name T. Lastname",
+          }
       end
     end
   end

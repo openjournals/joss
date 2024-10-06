@@ -24,7 +24,7 @@ When a `pre-review` or `review` issue is opened, `@editorialbot` will try to com
 If it can't find the `paper.md` file it will say as much in the review issue. If it can't compile the paper (i.e. there's some kind of Pandoc error), it will try and report that error back in the thread too.
 
 ```{note}
-To compile the papers ``@editorialbot`` is running this `Docker image <https://github.com/openjournals/inara>`_.
+To compile the papers ``@editorialbot`` is running [this Docker image](https://github.com/openjournals/inara).
 ```
 
 Anyone can ask `@editorialbot` to compile the paper again (e.g. after a change has been made). To do this simply comment on the review thread as follows:

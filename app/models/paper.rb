@@ -146,7 +146,7 @@ class Paper < ApplicationRecord
   validates :kind, inclusion: { in: Rails.application.settings["paper_types"] }, allow_nil: true
   validates :submission_kind, inclusion: { in: SUBMISSION_KINDS, message: "You must select a submission type" }, allow_nil: false
   validates_format_of :repository_url, with: /\Ahttps?:\/\//i, on: :create, message: "Repository URL is missing the protocol segment (http/https)"
-  validate :check_repository_address, on: :create, unless: Proc.new {|paper| paper.is_a_retraction_notice?}
+  validate :check_repository_address, on: :create, unless: Proc.new {|paper| Rails.env.development? || paper.is_a_retraction_notice?}
 
   def notify_editors
     Notifications.submission_email(self).deliver_now unless self.is_a_retraction_notice?
@@ -358,7 +358,7 @@ class Paper < ApplicationRecord
   # Return false if the editor login doesn't match one of the known editors
   def create_review_issue(editor_handle, reviewers, branch=nil)
     return false if review_issue_id
-    return false unless editor = Editor.find_by_login(editor_handle)
+    return false unless editor = Editor.where("lower(login) = ?", editor_handle.downcase).first
 
     if labels.any?
       new_labels = labels.keys + ["review"] - ["pre-review"]

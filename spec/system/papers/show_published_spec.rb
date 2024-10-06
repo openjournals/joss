@@ -2,6 +2,7 @@ require "rails_helper"
 
 feature "Published paper's show page" do
   before do
+    skip_paper_repo_url_check
     @accepted_paper = create(:accepted_paper, title: "Astronomy paper", doi: "10.21105/joss.00001", review_issue_id: 1)
     @accepted_paper.metadata['paper']['title'] = "Astronomy paper"
     @accepted_paper.metadata['paper']['authors'] = [{'given_name' => "Vera", 'last_name' => "Rubin"}]

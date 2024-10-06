@@ -1,5 +1,4 @@
-Reviewing for JOSS
-=======================
+# Reviewing for JOSS
 
 Firstly, thank you so much for agreeing to review for the Journal of Open Source Software (JOSS), we're delighted to have your help. This document is designed to outline our editorial guidelines and help you understand our requirements for accepting a submission into the JOSS. Our review process is based on a tried-and-tested approach of the [rOpenSci collaboration](http://ropensci.org/blog/2016/03/28/software-review).
 

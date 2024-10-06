@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '3.3.0'
+ruby '3.3.3'
 
 gem 'aasm', '~> 5.5.0'
 gem 'chartkick'
@@ -18,12 +18,11 @@ gem 'octokit'
 gem 'pdf-reader', '~> 2.11.0'
 gem 'pg', '~> 1.4.6'
 gem 'pagy'
-gem 'rails', '7.1.3'
+gem 'rails', '7.1.3.4'
 gem "importmap-rails"
 gem "turbo-rails"
 gem "stimulus-rails"
 gem 'responders'
-gem 'newrelic_rpm'
 gem 'sanitize', '~> 6.0.1'
 gem 'searchkick'
 gem 'elasticsearch', '<7.14'

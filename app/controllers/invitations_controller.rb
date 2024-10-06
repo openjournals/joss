@@ -5,7 +5,7 @@ class InvitationsController < ApplicationController
   def index
     invitations_scope = @track.present? ? Invitation.by_track(@track.id) : Invitation
 
-    @pagy, @invitations = pagy(invitations_scope.includes(:editor, :paper).order(created_at: :desc), items: 25)
+    @pagy, @invitations = pagy(invitations_scope.includes(:editor, :paper).order(created_at: :desc), limit: 25)
   end
 
   def expire

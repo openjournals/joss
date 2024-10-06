@@ -361,7 +361,7 @@ class Paper < ApplicationRecord
     return false unless editor = Editor.where("lower(login) = ?", editor_handle.downcase).first
 
     if labels.any?
-      new_labels = labels.keys + ["review"] - ["pre-review"]
+      new_labels = labels.keys + ["review"] - ["pre-review", "waitlisted"]
     else
       new_labels = ["review"]
     end

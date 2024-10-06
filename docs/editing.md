@@ -156,17 +156,21 @@ When a submission is ready to be accepted, we ask that the authors issue a new t
 Optionally you can ask EditorialBot to generate a checklist with all the post-review steps running the command: `@editorialbot create post-review checklist`
 
 Pre-publication steps:
+
 - (Optional) Run `@editorialbot create post-review checklist`
 - Get a new proof with the `@editorialbot generate pdf` command.
 - Download the proof, check all references have DOIs, follow the links and check the references.
   - EditorialBot can help check references with the command `@editorialbot check references`
 - Proof-read the paper and ask authors to fix any remaining typos, badly formed citations, awkward wording, etc..
 - Ask the author to make a tagged release and archive, and report the version number and archive DOI in the review thread.
+
+Note that a new release is only necessary if the software changed during the course of the review. In particular, changes to the paper do not require creating a new release.
+
 - Check the archive deposit has the correct metadata (title and author list)
   - In most situations, the two author lists should match. Authors and editors should review the two, and any differences need to be explained.
-    - Other contributors can be present (and they should be marked as such, if possible)
-  - Check that the all authors of the paper are in the archive metadata
-  - Eventually, ask for the reason why the two lists differ
+    - Other contributors can be present (and they should be marked as such, if possible).
+  - Check that the all authors of the paper are in the archive metadata.
+  - Eventually, ask for the reason why the two lists differ.
 - Run `@editorialbot set <doi> as archive`.
 - Run `@editorialbot set <v1.x.x> as version` if the version was updated.
 - Run `@editorialbot recommend-accept` to generate the final proofs, which has EditorialBot notify the `@openjournals/joss-eics` team that the paper is ready for final processing.

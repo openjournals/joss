@@ -48,5 +48,30 @@ Please adhere to this code of conduct in any interactions you have in the JOSS c
 
 [PostgreSQL](https://www.postgresql.org/) and [Elasticsearch](https://www.elastic.co/elasticsearch/) should be installed and running locally for JOSS to work
 
-1. Create the database with `bin/rails db:create`
-2. Run `bin/rails s`
+1. Install packages with bundler - `bundle install`
+2. Set rails env in your shell (or prepend to each command): `export RAILS_ENV=development`
+3. Create the database with `bin/rails db:create`
+4. Run any pending db migrations `bin/rails db:migrate`
+5. (Optional) seed the data with demo data (see `db/seeds.rb`) `bin/rails db:seed`
+6. After running elasticsearch, create an index with `curl -X PUT http://localhost:9200/joss-production`
+   Note - you may need to disable the default security settings of elasticsearch by editing your `config/elasticsearch.yml`
+7. Create search indexes: `bin/rails searchkick:reindex:all`
+8. Run `bin/rails s`
+
+### MacOS Notes
+
+You may encounter an error on startup like:
+
+```
+Started GET "/" for 127.0.0.1 at 2024-08-15 13:03:02 -0700
+objc[41226]: +[__NSCFConstantString initialize] may have been in progress in another thread when fork() was called.
+objc[41226]: +[__NSCFConstantString initialize] may have been in progress in another thread when fork() was called. We cannot safely call it or ignore it in the fork() child process. Crashing instead. Set a breakpoint on objc_initializeAfterForkError to debug.
+```
+
+To resolve it, either in your shell file or in the shell itself add:
+
+```azure
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+```
+
+See [rails#38560](https://github.com/rails/rails/issues/38560)

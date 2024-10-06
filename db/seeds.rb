@@ -354,3 +354,66 @@ Editor.create(
     science-focused Python packages.
   STR
 )
+
+case Rails.env
+when "development"
+  aeic = Editor.create!(
+    kind: "board",
+    first_name: "Editor In Chief",
+    last_name: "Fakington",
+    login: "aeicfake",
+    email: "aeicfake@example.com",
+    categories: ["Astronomy"]
+  )
+  track = Track.create!(
+    code: 0,
+    name: "Railroad",
+    short_name: "rail",
+    aeics: [aeic]
+  )
+  editor = Editor.create!(
+    kind: "topic",
+    first_name: "Lord",
+    last_name: "Fakington",
+    login: "lordfake",
+    email: "lordfake@example.com",
+    categories: ["Astronomy"],
+    tracks: [track]
+  )
+  user = User.create!(
+    name: "Sneakers T. Rat",
+    email: "sneakers@example.com",
+    github_username: "fakeuser_namedoesnt_exist"
+  )
+
+  paper = Paper.create!(
+    editor: editor,
+    submitting_author: user,
+    title: "On the mysteries of draperies and various such textiles",
+    metadata: {'paper' => {
+      'languages' => ["Ruby", "Rust"],
+      'editor' => '@lordfake',
+      'title' => 'mystery/textiles',
+      'reviewers' => ["@fakereviewer1", "@fakereviewer2"],
+      'authors' => [
+        {'given_name' =>  'Mickey', 'last_name' => 'Mouse', 'orcid' => '0000-0002-7736-0000'},
+        {'given_name' => 'Walt', 'middle_name' => 'Elias', 'last_name' => 'Disney', 'orcid' => '0000-0002-7736-000X'},
+        {'given_name' => 'Sneakers', 'middle_name' => 'T.', 'last_name' => 'Rat', 'orcid' => '0000-9992-7736-000X'}
+      ]
+    }},
+    state: "accepted",
+    accepted_at: Time.now,
+    review_issue_id: 0,
+    doi: '10.21105/joss.00000',
+    repository_url: "https://example.com/fakeuser/fakerepo",
+    software_version: "v1.0.0",
+    body: "I am a big old paper about something very cool",
+    track: track,
+    kind: "paper",
+    submission_kind: "new",
+
+  )
+
+else
+  # prod-only seed data
+end

@@ -111,4 +111,10 @@ Rails.application.configure do
   # ]
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+
+  ###
+  # Enables YJIT as of Ruby 3.3, to bring sizeable performance improvements. If you are
+  # deploying to a memory constrained environment you may want to set this to `false`.
+  #++
+  Rails.application.config.yjit = false
 end

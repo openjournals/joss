@@ -114,11 +114,11 @@ authors:
 
 affiliations:
   - index: 1
-    name: Open Journals
+    name: Laboratório Nacional de Luz Síncrotron, Brazil
   - index: 2
-    name: Pandoc Development Team
+    name: Gadjah Mada University, Indonesia
   - index: 3
-    name: Technische Universitaet Hamburg
+    name: Technische Universitaet Hamburg, Germany
     ror: 04bs1pb34
 ```
 

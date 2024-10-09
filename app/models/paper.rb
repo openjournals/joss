@@ -312,7 +312,7 @@ class Paper < ApplicationRecord
       return retracted_paper.journal_id + "R"
     else
       id = "%05d" % review_issue_id
-      return "#{setting(:abbreviation).downcase}.#{id}"
+      return "#{I18n.t('journal.abbreviation').downcase}.#{id}"
     end
   end
 
@@ -481,7 +481,7 @@ class Paper < ApplicationRecord
   end
 
   def status_badge
-    prefix = setting(:abbreviation)
+    prefix = I18n.t('journal.abbreviation')
 
     case self.state.to_s
     when "submitted"

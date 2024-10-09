@@ -40,7 +40,7 @@ module ApplicationHelper
   end
 
   def name_and_tagline
-    "#{setting(:name)} (#{setting(:abbreviation)}) is #{setting(:tagline)}".html_safe
+    "#{I18n.t :'journal.name'} (#{I18n.t :'journal.abbreviation'}) #{I18n.t :'journal.tagline'}".html_safe
   end
 
   def avatar(username)
@@ -57,7 +57,7 @@ module ApplicationHelper
   def scope_link_for_issue(github_issue)
     id = github_issue.number
     paper = Paper.where('review_issue_id = ? OR meta_review_issue_id = ?', id, id).first
-    
+
     return "" unless paper
     return url_for(paper)
   end

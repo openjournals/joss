@@ -98,6 +98,14 @@ authors:
   <!--     given-names: 瀧 -->
   <!--     surname: 立花 -->
 
+### Date
+
+The date must be specified using the following format: `%e %B %Y` 
+
+``` yaml
+date: 9 October 2024
+```
+
 ## Affiliations
 
 Each affiliation requires an `index` and `name`.

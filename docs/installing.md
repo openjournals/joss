@@ -64,6 +64,10 @@ For the scheduler add-on, you'll need to designate which tasks it should run and
 These can be found in the `lib/tasks` folder, and involve things such as sending out weekly reminder emails to editors.
 Each task should be scheduled as a separate job; for example, `rake send_weekly_emails`.
 
+```{warning}
+The JOSS application needs to be able to run Git commands on run time, but since the Heroku-24 stack Git is only available at build time so the APT buildpack and an Aptfile is needed, see [this section in the Heroku docs](https://devcenter.heroku.com/articles/heroku-24-stack#changes-to-git) for more information.
+```
+
 You can also optionally configure the following add-ons (or simply set their secret keys in your config variables):
 
 1. [SendGrid add-on](https://elements.heroku.com/addons/sendgrid) for sending emails

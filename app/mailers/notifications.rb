@@ -1,5 +1,5 @@
 class Notifications < ApplicationMailer
-  EDITOR_EMAILS = [Rails.application.settings["editor_email"], "gorjor@umich.edu"]
+  EDITOR_EMAILS = [Rails.application.settings["editor_email"]]
 
   def submission_email(paper)
     aeic_emails = paper.track.aeic_emails if paper.track.present?

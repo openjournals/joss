@@ -46,6 +46,8 @@ feature "Table of Contents" do
   scenario "index" do
     visit toc_index_path
 
+    expect(page.title).to eq("Table of Contents - The Journal of Open Source Software")
+
     within("#toc-header") do
       expect(page).to have_content("Table of Contents")
       expect(page).to_not have_link("Table of Contents")
@@ -64,6 +66,9 @@ feature "Table of Contents" do
 
   scenario "by year" do
     visit toc_year_path(year: @years.first)
+
+    expect(page.title).to eq("#{@years.first} - The Journal of Open Source Software")
+
     within("#toc-header") do
       expect(page).to have_content("Year #{@years.first}")
       expect(page).to have_link("Table of Contents")
@@ -84,6 +89,9 @@ feature "Table of Contents" do
 
   scenario "by volume" do
     visit toc_volume_path(volume: 1)
+
+    expect(page.title).to eq("Volume 1 - The Journal of Open Source Software")
+
     within("#toc-header") do
       expect(page).to have_content("Year #{@years.first}")
       expect(page).to have_content("Volume 1")
@@ -94,6 +102,9 @@ feature "Table of Contents" do
     expect(page).to_not have_link(@last_accepted_paper.title)
 
     visit toc_volume_path(volume: @volumes.last)
+
+    expect(page.title).to eq("Volume #{@volumes.last} - The Journal of Open Source Software")
+
     within("#toc-header") do
       expect(page).to have_content("Year #{@years.last}")
       expect(page).to have_content("Volume #{@volumes.last}")
@@ -106,6 +117,9 @@ feature "Table of Contents" do
 
   scenario "by issue" do
     visit toc_issue_path(issue: 1)
+
+    expect(page.title).to eq("Issue 1 - The Journal of Open Source Software")
+
     within("#toc-header") do
       expect(page).to have_content("#{Date::MONTHNAMES[@launch_month]} #{@years.first} Volume 1")
       expect(page).to have_content("Issue 1")
@@ -116,6 +130,9 @@ feature "Table of Contents" do
     expect(page).to_not have_link(@last_accepted_paper.title)
 
     visit toc_issue_path(issue: @issues.last)
+
+    expect(page.title).to eq("Issue #{@issues.last} - The Journal of Open Source Software")
+
     within("#toc-header") do
       expect(page).to have_content("#{Date::MONTHNAMES[@now.month]} #{@years.last} Volume #{@volumes.last}")
       expect(page).to have_content("Issue #{@issues.last}")

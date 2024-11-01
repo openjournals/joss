@@ -411,7 +411,7 @@ when "development"
     track: track,
     kind: "paper",
     submission_kind: "new",
-
+    reviewers: ["@fakereviewer1", "@fakereviewer2"],
   )
 
 else

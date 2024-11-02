@@ -37,3 +37,10 @@ $(function() {
     e.preventDefault();
   });
 });
+
+const copyText = (text) => {
+  navigator.clipboard.writeText(text)
+}
+window.copyText = copyText;
+
+$('[data-toggle="popover"]').popover()

@@ -46,9 +46,6 @@ class BadgesController < ApplicationController
   end
 
   def text_x_position(width, offset=0)
-    # See https://github.com/badges/shields/blob/master/badge-maker/lib/badge-renderers.js
-    puts "OFFSET"
-    puts offset
     SCALE_UP_FACTOR * (offset + PADDING + width * 0.5)
   end
 

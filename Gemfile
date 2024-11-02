@@ -44,6 +44,10 @@ gem 'puma'
 # Use Redis for Action Cable
 gem "redis", "~> 5.0"
 
+# Can remove when upgrading to 3.3.4
+# see: https://github.com/ruby/net-pop/issues/26
+gem 'net-pop', github: 'ruby/net-pop'
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'pry-byebug'

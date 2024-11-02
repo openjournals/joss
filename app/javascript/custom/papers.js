@@ -43,4 +43,6 @@ const copyText = (text) => {
 }
 window.copyText = copyText;
 
-$('[data-toggle="popover"]').popover()
+$('#badge-copy-button').popover({
+  placement: window.screen.width > 500 ? 'left' : 'bottom'
+})

@@ -29,7 +29,7 @@ authors:
     surname: Beethoven
     affiliation: 3
 affiliations:
- - name: Lyman Spitzer, Jr. Fellow, Princeton University, USA
+ - name: Lyman Spitzer, Jr. Fellow, Princeton University, United States
    index: 1
    ror: 00hx57361
  - name: Institution Name, Country

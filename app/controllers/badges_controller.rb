@@ -13,7 +13,7 @@ class BadgesController < ApplicationController
   }
 
   def reviewed_by
-    n_reviews = Paper.where(":reviewer = ANY (reviewers)", reviewer: params[:reviewer]).count
+    n_reviews = Paper.visible.where(":reviewer = ANY (reviewers)", reviewer: params[:reviewer]).count
     @key = string_item("JOSS Reviews", COLORS[:gray])
     @value = string_item(n_reviews.to_s, COLORS[:blue], @key[:outer_width])
     @badge_width = @key[:outer_width] + @value[:outer_width]

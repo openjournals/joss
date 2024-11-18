@@ -102,6 +102,7 @@ class PapersController < ApplicationController
                   page: params[:page],
                   per_page: 10)
       @term = "reviewed by #{params['reviewer']}"
+      @badge = {type: "reviewer", value: params['reviewer']}
     elsif params['tag']
       @papers = Paper.search(params['tag'], fields: [:tags, :title], order: { accepted_at: :desc },
                   page: params[:page],
@@ -226,7 +227,7 @@ class PapersController < ApplicationController
         flash[:notice] = "You need to log in before viewing this paper."
         redirect_to root_path and return
       end
-      
+
       # Redirect to root if not an admin or the submitting author
       # With notice that the paper is not visible
       unless can_see_hidden_paper?(@paper)

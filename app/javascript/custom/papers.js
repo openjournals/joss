@@ -37,3 +37,12 @@ $(function() {
     e.preventDefault();
   });
 });
+
+const copyText = (text) => {
+  navigator.clipboard.writeText(text)
+}
+window.copyText = copyText;
+
+$('#badge-copy-button').popover({
+  placement: window.screen.width > 500 ? 'left' : 'bottom'
+})

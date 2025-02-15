@@ -118,7 +118,7 @@ so ROR annotations are typically made to the top-level organization.
 ```yaml
 authors:
   - name: Albert Krewinkel
-    affiliation: [ 1, 2, 3 ]
+    affiliation: "1, 2, 3"
 
 affiliations:
   - index: 1

@@ -122,3 +122,7 @@ If an open source or free variant of the programming language exists, feel free 
 ### Where can the repository be hosted?
 
 Repositories must be hosted at a location that allows outside users to freely open issues and propose code changes, such as GitHub, GitLab, Bitbucket, etc. Submissions will not be accepted if the repository is hosted at a location where accounts must be manually approved (or paid for), regardless of if this approval is done by the owners of the repository or some other entity. 
+
+### Using AI to generate code
+
+JOSS does not require the authors to declare whether they have used AI to generate code. The AI tools are now often integrated in programming environments and it would be difficult to check for this. However, the authors should always check the code and be able to change it and adapt to reviewer's comments.

@@ -125,4 +125,4 @@ Repositories must be hosted at a location that allows outside users to freely op
 
 ### Using AI to generate code
 
-JOSS does not require the authors to declare whether they have used AI to generate code. The AI tools are now often integrated in programming environments and it would be difficult to check for this. However, the authors should always check the code and be able to change it and adapt to reviewer's comments.
+JOSS does not have a policy regarding the use of AI/LLMs yet, but authors are responsible for understanding and explaining submitted code and its provenance, and should respond in good faith to reviewer questions about LLM use as they would with any other topic.

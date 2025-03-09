@@ -22,9 +22,7 @@ module PapersHelper
     return "No comment" if vote.comment.empty?
 
     capture do
-      concat(content_tag(:span, class: "comment-preview", title: vote.comment) do
-        truncate(vote.comment)
-      end)
+      return vote.comment
     end
   end
 

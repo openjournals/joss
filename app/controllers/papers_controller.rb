@@ -335,7 +335,7 @@ class PapersController < ApplicationController
   def can_see_hidden_paper?(paper)
     return false unless current_user
 
-    if current_user.aeic? || current_user.is_owner_of?(paper) || current_user.admin?
+    if current_user.aeic? || current_user.is_owner_of?(paper) || current_user.admin? || current_user.editor?
       return true
     else
       return false

@@ -250,7 +250,7 @@ Cite a bibliography entry by referencing its identifier: `[@upper1974]`
 will create the reference "(Upper 1974)". Omit the brackets when
 referring to the author as part of a sentence: "For a case study on
 writers block, see Upper (1974)." Please refer to the [pandoc
-manual](https://pandoc.org/MANUAL#extension-citations) for additional
+manual](https://pandoc.org/MANUAL.html#extension-citations) for additional
 features, including page locators, prefixes, suffixes, and suppression
 of author names in citations.
 

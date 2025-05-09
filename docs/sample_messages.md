@@ -50,7 +50,7 @@ Many thanks!
 ## GitHub invite to potential reviewers
 
 ```
-:wave: @reviewer1 & @reviewer2, would any of you be willing to review this submission for JOSS? We carry out our checklist-driven reviews here in GitHub issues and follow these guidelines: https://joss.readthedocs.io/en/latest/review_criteria.html. Please be so kind to let me know even if you're not interested, so that I can start looking for other reviewers.
+:wave: @reviewer1, @reviewer2, @reviewer3, @reviewer4, would any of you be willing to review this submission for JOSS? We carry out our checklist-driven reviews here in GitHub issues and follow these guidelines: https://joss.readthedocs.io/en/latest/review_criteria.html. Please be so kind to let me know even if you're not interested, so that I can start looking for other reviewers.
 ```
 
 ## Message to reviewers at the start of a review

@@ -30,40 +30,76 @@
       </div>
 
       <script>
-        document.addEventListener('DOMContentLoaded', function() {
-          console.log('DOM Content Loaded - Initializing vote comment storage');
-          
-          const commentField = document.getElementById('vote-comment');
-          console.log('Comment field found:', commentField);
-          
-          const paperId = commentField.dataset.paperId;
-          console.log('Paper ID:', paperId);
-          
-          const storageKey = `vote_comment_${paperId}`;
-          console.log('Storage key:', storageKey);
+        (function() {
+          try {
+            console.log('Script starting - checking localStorage availability');
+            if (!window.localStorage) {
+              console.error('localStorage is not available in this browser');
+              return;
+            }
 
-          // Load saved comment if it exists
-          const savedComment = localStorage.getItem(storageKey);
-          console.log('Saved comment from storage:', savedComment);
-          
-          if (savedComment) {
-            commentField.value = savedComment;
-            console.log('Restored comment from storage');
+            document.addEventListener('DOMContentLoaded', function() {
+              console.log('DOM Content Loaded - Initializing vote comment storage');
+              
+              const commentField = document.getElementById('vote-comment');
+              if (!commentField) {
+                console.error('Could not find comment field with ID vote-comment');
+                return;
+              }
+              console.log('Comment field found:', commentField);
+              
+              const paperId = commentField.dataset.paperId;
+              if (!paperId) {
+                console.error('No paper ID found in data attributes');
+                return;
+              }
+              console.log('Paper ID:', paperId);
+              
+              const storageKey = `vote_comment_${paperId}`;
+              console.log('Storage key:', storageKey);
+
+              // Load saved comment if it exists
+              try {
+                const savedComment = localStorage.getItem(storageKey);
+                console.log('Saved comment from storage:', savedComment);
+                
+                if (savedComment) {
+                  commentField.value = savedComment;
+                  console.log('Restored comment from storage');
+                }
+              } catch (e) {
+                console.error('Error accessing localStorage:', e);
+              }
+
+              // Save comment on input
+              commentField.addEventListener('input', function() {
+                try {
+                  console.log('Input detected, saving comment:', this.value);
+                  localStorage.setItem(storageKey, this.value);
+                } catch (e) {
+                  console.error('Error saving to localStorage:', e);
+                }
+              });
+
+              // Clear storage when form is submitted
+              const form = commentField.closest('form');
+              if (form) {
+                form.addEventListener('submit', function() {
+                  try {
+                    console.log('Form submitted, clearing storage');
+                    localStorage.removeItem(storageKey);
+                  } catch (e) {
+                    console.error('Error clearing localStorage:', e);
+                  }
+                });
+              } else {
+                console.error('Could not find parent form element');
+              }
+            });
+          } catch (e) {
+            console.error('Error in vote comment storage script:', e);
           }
-
-          // Save comment on input
-          commentField.addEventListener('input', function() {
-            console.log('Input detected, saving comment:', this.value);
-            localStorage.setItem(storageKey, this.value);
-          });
-
-          // Clear storage when form is submitted
-          const form = commentField.closest('form');
-          form.addEventListener('submit', function() {
-            console.log('Form submitted, clearing storage');
-            localStorage.removeItem(storageKey);
-          });
-        });
+        })();
       </script>
 
       <div class="form-group">

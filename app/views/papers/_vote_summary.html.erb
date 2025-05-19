@@ -9,7 +9,8 @@
       <div class="form-group">
         <div class="row">
           <div class="col">
-            <%= f.text_area :comment, class: "form-control", placeholder: "Include a comment with your vote (required)" %>
+            <%= f.text_area :comment, class: "form-control", placeholder: "Include a comment with your vote (required)", 
+                data: { paper_id: @paper.id }, id: "vote-comment" %>
           </div>
         </div>
       </div>
@@ -27,6 +28,72 @@
           </div>
         </div>
       </div>
+
+      <script>
+        (function() {
+          try {
+            if (!window.localStorage) {
+              console.error('localStorage is not available in this browser');
+              return;
+            }
+
+            function initializeStorage() {
+              const commentField = document.getElementById('vote-comment');
+              if (!commentField) {
+                console.error('Could not find comment field with ID vote-comment');
+                return;
+              }
+              
+              const paperId = commentField.dataset.paperId;
+              if (!paperId) {
+                console.error('No paper ID found in data attributes');
+                return;
+              }
+              
+              const storageKey = `vote_comment_${paperId}`;
+
+              try {
+                const savedComment = localStorage.getItem(storageKey);
+                if (savedComment) {
+                  commentField.value = savedComment;
+                }
+              } catch (e) {
+                console.error('Error accessing localStorage:', e);
+              }
+
+              commentField.addEventListener('input', function() {
+                try {
+                  localStorage.setItem(storageKey, this.value);
+                } catch (e) {
+                  console.error('Error saving to localStorage:', e);
+                }
+              });
+
+              const form = commentField.closest('form');
+              if (form) {
+                form.addEventListener('submit', function() {
+                  try {
+                    localStorage.removeItem(storageKey);
+                  } catch (e) {
+                    console.error('Error clearing localStorage:', e);
+                  }
+                });
+              } else {
+                console.error('Could not find parent form element');
+              }
+            }
+
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+              initializeStorage();
+            }
+
+            document.addEventListener('DOMContentLoaded', initializeStorage);
+
+          } catch (e) {
+            console.error('Error in vote comment storage script:', e);
+          }
+        })();
+      </script>
 
       <div class="form-group">
         <%= link_to "View vote summary &raquo;".html_safe, "#voteSummary", class: 'tooltips', title: 'View vote summary', data: { toggle: 'collapse'} %>

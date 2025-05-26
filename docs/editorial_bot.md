@@ -144,7 +144,7 @@ Most units of times are understood by EditorialBot e.g. `hour/hours/day/days/wee
 
 ### Setting the software archive
 
-When a submission is accepted, we ask that the authors to create an archive (on [Zenodo](https://zenodo.org/) or other) and post the archive DOI in the `REVIEW` issue. The editor should ask `@editorialbot` to add the archive to the issue as follows:
+When a submission is accepted, we ask that the authors to create an archive and post the archive DOI in the `REVIEW` issue. The editor should ask `@editorialbot` to add the archive to the issue as follows:
 
 ```text
 @editorialbot set 10.0000/zenodo.00000 as archive

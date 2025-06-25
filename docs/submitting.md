@@ -16,7 +16,7 @@ But please read these instructions carefully for a streamlined submission.
 In addition, the software associated with your submission must:
 
 - Be stored in a repository that can be cloned without registration.
-- Be stored in a repository that is browsable online without registration.
+- Be stored in a repository where the software source files are browsable online without registration.
 - Have an issue tracker that is readable without registration.
 - Permit individuals to create issues/file tickets against your repository.
 

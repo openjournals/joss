@@ -216,7 +216,14 @@ class Paper < ApplicationRecord
 
   def bibtex_authors
     return nil unless published?
-    metadata['paper']['authors'].collect {|a| "#{a['given_name']} #{a['middle_name']} #{a['last_name']}".squish}.join(' and ')
+    metadata['paper']['authors'].collect do |a|
+      given_parts = [a['given_name'], a['middle_name']].compact.join(' ')
+      if given_parts.present?
+        "#{a['last_name']}, #{given_parts}"
+      else
+        a['last_name']
+      end
+    end.join(' and ')
   end
 
   def bibtex_key

@@ -508,4 +508,42 @@ describe Paper do
       expect(@paper.reload.track).to eq(@track_2)
     end
   end
+
+  describe "#bibtex_authors" do
+    it "should format author names correctly for BibTeX" do
+      paper = create(:accepted_paper)
+      paper.metadata['paper']['authors'] = [
+        {'given_name' => 'Rhoslyn', 'last_name' => 'Roebuck Williams'},
+        {'given_name' => 'Harry', 'middle_name' => 'J.', 'last_name' => 'Stroud'},
+        {'given_name' => 'Ludwig', 'last_name' => 'van Beethoven'}
+      ]
+      paper.save!
+
+      expected_bibtex = "Roebuck Williams, Rhoslyn and Stroud, Harry J. and van Beethoven, Ludwig"
+      expect(paper.bibtex_authors).to eq(expected_bibtex)
+    end
+
+    it "should handle authors with no given name" do
+      paper = create(:accepted_paper)
+      paper.metadata['paper']['authors'] = [
+        {'given_name' => 'John', 'last_name' => 'Smith'},
+        {'last_name' => 'Collective'}
+      ]
+      paper.save!
+
+      expected_bibtex = "Smith, John and Collective"
+      expect(paper.bibtex_authors).to eq(expected_bibtex)
+    end
+
+    it "should handle authors with only middle name" do
+      paper = create(:accepted_paper)
+      paper.metadata['paper']['authors'] = [
+        {'middle_name' => 'J.', 'last_name' => 'Smith'}
+      ]
+      paper.save!
+
+      expected_bibtex = "Smith, J."
+      expect(paper.bibtex_authors).to eq(expected_bibtex)
+    end
+  end
 end

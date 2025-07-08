@@ -106,7 +106,7 @@ To recruit reviewers, the handling editor can mention them in the `PRE-REVIEW` i
 **Reviewer Considerations**
 
 - It is rare that all reviewers have the expertise to cover all aspects of a submission (e.g., knows the language really well and knows the scientific discipline well). As such, a good practice is to try and make sure that between the two or three reviewers, all aspects of the submission are covered.
-- Selection and assignment of reviewers should adhere to the [JOSS COI policy](https://joss.theoj.org/about#ethics).
+- Selection and assignment of reviewers should adhere to the [JOSS COI policy](https://joss.readthedocs.io/en/latest/reviewer_guidelines.html#joss-conflict-of-interest-policy).
 
 **Potential ways to find reviewers**
 

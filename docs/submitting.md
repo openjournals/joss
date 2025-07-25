@@ -119,7 +119,7 @@ After submission:
 - Authors will respond to reviewer-raised issues (if any are raised) on the submission repository's issue tracker. Reviewer and editor contributions, like any other contributions, should be acknowledged in the repository. 
 - **JOSS reviews are iterative and conversational in nature.** Reviewers are encouraged to post comments/questions/suggestions in the review thread as they arise, and authors are expected to respond in a timely fashion.
 - Authors and reviewers are asked to be patient when waiting for a response from an editor. Please allow a week for an editor to respond to a question before prompting them for further action.
-- Upon successful completion of the review, authors will make a tagged release of the software, and deposit a copy of the repository with a data-archiving service such as [Zenodo](https://zenodo.org/) or [figshare](https://figshare.com/), get a DOI for the archive, and update the review issue thread with the version number and DOI.
+- Upon successful completion of the review, authors will make a tagged release of the software, and deposit a copy of the repository with a data-archiving service, get a DOI for the archive, and update the review issue thread with the version number and DOI.
 - After we assign a DOI for your accepted JOSS paper, its metadata is deposited with CrossRef and listed on the JOSS website.
 - The review issue will be closed, and an automatic post from [@JOSS at Mastodon](https://fosstodon.org/@joss) will announce it!
 

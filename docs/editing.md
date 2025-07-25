@@ -58,7 +58,7 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 **Step 11: The editor pings the EiC team to get the paper published**
 
 - Make a final check of the paper with `@editorialbot generate pdf` and that all references have DOIs (where appropriate) with `@editorialbot check references`.
-- If everything looks good, ask the author to make a new release (if possible) of the software being reviewed and deposit a new archive the software with Zenodo/figshare. Update the review thread with this archive DOI: `@editorialbot set 10.5281/zenodo.xxxxxx as archive`.
+- If everything looks good, ask the author to make a new release (if possible) of the software being reviewed and deposit a new archive the software with Zenodo. Update the review thread with this archive DOI: `@editorialbot set 10.5281/zenodo.xxxxxx as archive`.
 - Editors can get a checklist of the final steps using the `@editorialbot create post-review checklist` command
 - Finally, use `@editorialbot recommend-accept` on the review thread to ping the `@openjournals/joss-eics` team letting them know the paper is ready to be accepted.
 
@@ -151,7 +151,7 @@ Sometimes you'll need to add a new reviewer once the main review (i.e. post pre-
 
 ## Post-review
 
-When a submission is ready to be accepted, we ask that the authors issue a new tagged release of the software (if changed), and archive it (on [Zenodo](https://zenodo.org/), [fig**share**](https://figshare.com/), or other). The authors then post the version number and archive DOI in the `REVIEW` issue. The handling editor executes the pre-publication steps, and pings the Track Editor-in-Chief for final processing.
+When a submission is ready to be accepted, we ask that the authors issue a new tagged release of the software (if changed), and archive it on a service that ideally supports key features such as software licenses, author ORCIDs, and version tagging aligned with the actual content (rather than merely reflecting the number of archive deposits). One suitable example is [Zenodo](https://zenodo.org/). The authors then post the version number and archive DOI in the `REVIEW` issue. The handling editor executes the pre-publication steps, and pings the Track Editor-in-Chief for final processing.
 
 Optionally you can ask EditorialBot to generate a checklist with all the post-review steps running the command: `@editorialbot create post-review checklist`
 

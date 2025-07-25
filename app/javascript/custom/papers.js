@@ -4,7 +4,7 @@ var authorCheck, setPaperSize;
 authorCheck = function() {
   var checkBoxCount;
   checkBoxCount = $(".pre-check:checked").length;
-  if (checkBoxCount === 3) {
+  if (checkBoxCount === 2) {
     $("#author-submit").removeClass('disabled');
     $("#author-submit").prop('disabled', false);
   } else {

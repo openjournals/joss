@@ -39,6 +39,14 @@ As a rule of thumb, JOSS' minimum allowable contribution should represent **not 
 
 In addition, JOSS requires that software should be feature-complete (i.e., no half-baked solutions), packaged appropriately according to common community standards for the programming language being used (e.g., [Python](https://packaging.python.org), [R](https://r-pkgs.org/index.html)), and designed for maintainable extension (not one-off modifications of existing tools). "Minor utility" packages, including "thin" API clients, and single-function packages are not acceptable.
 
+#### Interim position on AI-enabled software 
+
+While JOSS develops comprehensive guidelines for AI-assisted software development, please note that **submissions that appear to be generated wholly or in large part through AI assistance may be determined to be out of scope, even if they appear substantial**. The ability to generate extensive codebases through AI prompts alone does not necessarily constitute the scholarly contribution that warrants publication in JOSS.
+
+The Editors-in-Chief have always maintained discretion in determining whether submissions are appropriate for JOSS, considering factors beyond our published criteria when evaluating scholarly merit. This discretion is particularly important as we navigate the implications of AI-assisted development.
+
+This interim measure will remain in place while we work with our community to develop policies that appropriately recognize meaningful scholarly contributions in an era of AI-assisted software development.
+
 #### A note on web-based software
 
 Many web-based research tools are out of scope for JOSS due to a lack of modularity and challenges testing and maintaining the code. Web-based tools may be considered 'in scope' for JOSS, provided that they meet one or both of the following criteria: 1) they are built around and expose a 'core library' through a web-based experience (e.g., R/[Shiny](https://www.rstudio.com/products/shiny/) applications) or 2) the web application demonstrates a high-level of rigor with respect to domain modeling and testing (e.g., adopts and implements a design pattern such as [MVC](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) using a framework such as [Django](https://www.djangoproject.com/)).

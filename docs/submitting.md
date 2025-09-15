@@ -45,7 +45,7 @@ While JOSS develops comprehensive guidelines for AI-assisted software developmen
 
 The Editors-in-Chief have always maintained discretion in determining whether submissions are appropriate for JOSS, considering factors beyond our published criteria when evaluating scholarly merit. This discretion is particularly important as we navigate the implications of AI-assisted development.
 
-This interim measure will remain in place while we work with our community to develop policies that appropriately recognize meaningful scholarly contributions in an era of AI-assisted software development.
+This interim measure will remain in place while we work with our community to develop policies that appropriately determine meaningful scholarly contributions in an era of AI-assisted software development.
 
 #### A note on web-based software
 

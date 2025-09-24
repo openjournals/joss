@@ -66,7 +66,7 @@ class Paper < ApplicationRecord
     end
 
     event :accept do
-      transitions to: :accepted
+      transitions to: :accepted, after: :post_reviews_to_orcid
     end
 
     event :withdraw do
@@ -535,5 +535,23 @@ private
 
   def set_last_activity
     self.last_activity = Time.now
+  end
+
+  # Post review activities to reviewers' ORCID profiles
+  def post_reviews_to_orcid
+    return unless Rails.env.production? # Only post in production
+    
+    orcid_service = OrcidService.new
+    
+    # Post review activities to reviewers' ORCID profiles
+    if reviewers.present?
+      reviewers.each do |reviewer_handle|
+        reviewer = Reviewer.find_by(github_username: reviewer_handle.gsub(/^@/, ''))
+        if reviewer&.has_orcid_authentication?
+          review_url = "https://github.com/#{Rails.application.settings['reviews']}/issues/#{review_issue_id}"
+          orcid_service.post_review_to_reviewer(reviewer, self, review_url)
+        end
+      end
+    end
   end
 end

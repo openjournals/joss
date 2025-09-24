@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
 
   resources :editors
+  resources :reviewers
   resources :invitations, only: [:index] do
     put 'expire', on: :member
   end

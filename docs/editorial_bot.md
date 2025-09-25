@@ -121,7 +121,7 @@ If a reviewer recants their commitment or is unresponsive, editors can remove th
 
 ### Reminding reviewers and authors
 
-EditorialBot can remind authors, reviewers and the editor after a specified amount of time to return to the review issue. Reminders can only be set by editors. For example:
+EditorialBot can remind authors, reviewers and the editor after a specified amount of time to return to the pre-review or review issue. Reminders can only be set by editors. For example:
 
 ```text
 # Remind the reviewer in two weeks to return to the review

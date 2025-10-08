@@ -35,6 +35,7 @@ As a rule of thumb, JOSS' minimum allowable contribution should represent **not 
 - Number of authors.
 - Total lines of code (LOC). Submissions under 1000 LOC will usually be flagged, those under 300 LOC will be desk rejected.
 - Whether the software has already been cited in academic papers.
+- Whether a potential user can easily install, understand, and test the software. (If your software is new, please be sure a colleague has tried it.) 
 - Whether the software is sufficiently useful that it is _likely to be cited_ by your peer group.
 
 In addition, JOSS requires that software should be feature-complete (i.e., no half-baked solutions), packaged appropriately according to common community standards for the programming language being used (e.g., [Python](https://packaging.python.org), [R](https://r-pkgs.org/index.html)), and designed for maintainable extension (not one-off modifications of existing tools). "Minor utility" packages, including "thin" API clients, and single-function packages are not acceptable.

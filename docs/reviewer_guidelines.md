@@ -16,7 +16,7 @@ You can include in your review links to any new issues that you the reviewer bel
 
 ## Time Expectations
 
-We aim for reviews to be completed within about 2-4 weeks. Please let the editor know if you require more time. It is best to be up front and clear about your availability. The more the editor knows, the more they can help work with you and the authors to get the papers through the process.
+We aim for the first pass of reviews to be completed within about 2-4 weeks. Please let the editor know if you require more time. It is best to be up front and clear about your availability. The more the editor knows, the more they can help work with you and the authors to get the papers through the process.
 
 You can also use EditorialBot (our bot) to set automatic reminders if you know you'll be away for a known period of time.
 

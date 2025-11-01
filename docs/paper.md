@@ -127,7 +127,7 @@ affiliations:
     name: Gadjah Mada University, Indonesia
   - index: 3
     name: Technische Universitaet Hamburg, Germany
-    ror: 04bs1pb34
+    ror: "04bs1pb34"
 ```
 
 ## Internal references

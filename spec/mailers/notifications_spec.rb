@@ -18,4 +18,13 @@ describe Notifications, type: :mailer do
 
     expect(mail.text_part.body).to match /is currently awaiting triage by our managing editor/
   end
+
+  it "should warn authors not to reply to the email" do
+    paper = create(:paper, title: "Nice paper!")
+    mail = Notifications.author_submission_email(paper)
+
+    expect(mail.text_part.body).to match /Please do not reply to this email/
+    expect(mail.text_part.body).to match /admin@theoj\.org.*is unmonitored/
+    expect(mail.text_part.body).to match /GitHub issue will be opened/
+  end
 end

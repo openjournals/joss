@@ -37,6 +37,17 @@ Sometimes reviews go quiet, either because a reviewer has failed to complete the
 @editorialbot remind @reviewer in five days
 ```
 
+**Managing author timeliness**
+
+Just as we expect reviewers to complete their reviews in 4-6 weeks, authors should respond to reviewer feedback within 2 weeks and complete requested changes within 4-6 weeks. If an author becomes unresponsive for more than 2 weeks without communication, editors should:
+
+1. Send a friendly reminder to the author
+2. Request a commitment to a response timeline
+3. If there's no response after 4 weeks without explanation, warn the author that their paper may be rejected due to lack of engagement
+4. Escalate to the Track Editor-in-Chief for a decision on whether to reject the submission
+
+This ensures reviewers' time is respected and prevents reviews from stalling indefinitely.
+
 ## Out of office
 
 Sometimes we need time away from our editing duties at JOSS. If you're planning on being out of the office for more than two weeks, please let the JOSS editorial team know.

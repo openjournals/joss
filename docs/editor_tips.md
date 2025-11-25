@@ -34,7 +34,7 @@ One of your jobs as the editor is to ensure the review keeps moving at a reasona
 
 **Manage author responsiveness**
 
-We generally ask authors to respond to reviewer feedback within 2 weeks and complete requested changes within 4-6 weeks, matching the timeliness we expect from reviewers, unless otherwise negotiated with you (the editor). Use your judgment about when to follow up with authors—for example, if the changes requested are particularly substantial, you may want to allow more time. If you haven't heard from them in a while (often around 2 weeks), give them a friendly nudge. If there's no response after a reasonable period (typically 4 weeks) without clear communication about delays, warn the author that their paper may be rejected due to lack of engagement and escalate to your Track Editor-in-Chief. This ensures reviewers' time is respected and prevents reviews from stalling indefinitely. 
+We generally ask authors to respond to reviewer feedback within 2 weeks and complete requested changes within 4-6 weeks, matching the timeliness we expect from reviewers, unless otherwise negotiated with you (the editor). Use your judgment about when to follow up with authors; for example, if the changes requested are particularly substantial, you may want to allow more time. If you haven't heard from them in a while (often around 2 weeks), give them a friendly nudge. If there's no response after a reasonable period (typically 4 weeks) without clear communication about delays, warn the author that their paper may be rejected due to lack of engagement and escalate to your Track Editor-in-Chief. This ensures reviewers' time is respected and prevents reviews from stalling indefinitely. 
 
 **Check in twice a week**
 

@@ -30,7 +30,11 @@ If a reviewer hasn't started within 1-2 weeks, you should probably give them a n
 
 **Learn how to nudge gently, and often**
 
-One of your jobs as the editor is to ensure the review keeps moving at a reasonable pace. If nothing has happened for a week or so, consider nudging the author or reviewers (depending upon who you're waiting for). A friendly _"👋 reviewer, how are you getting along here"_ can often be sufficient to get things moving again. 
+One of your jobs as the editor is to ensure the review keeps moving at a reasonable pace. If nothing has happened for a week or so, consider nudging the author or reviewers (depending upon who you're waiting for). A friendly _"👋 reviewer, how are you getting along here"_ can often be sufficient to get things moving again.
+
+**Manage author responsiveness**
+
+We generally ask authors to respond to reviewer feedback within 2 weeks and complete requested changes within 4-6 weeks, matching the timeliness we expect from reviewers, unless otherwise negotiated with you (the editor). Use your judgment about when to follow up with authors; for example, if the changes requested are particularly substantial, you may want to allow more time. If you haven't heard from them in a while (often around 2 weeks), give them a friendly nudge. If there's no response after a reasonable period (typically 4 weeks) without clear communication about delays, warn the author that their paper may be rejected due to lack of engagement and escalate to your Track Editor-in-Chief. This ensures reviewers' time is respected and prevents reviews from stalling indefinitely. 
 
 **Check in twice a week**
 

@@ -8,6 +8,8 @@ We like to think of JOSS as a 'developer friendly' journal. That is, if the subm
 
 For those submissions that don't quite meet the bar, please try to give clear feedback on how authors could improve their submission. A key goal of JOSS is to raise the quality of research software generally and you (the experienced reviewer) are well placed to give this feedback.
 
+We ask reviewers to complete their reviews in 4-6 weeks, and we generally ask the same commitment from authors: they should respond to your feedback within 2 weeks and complete requested changes within 4-6 weeks, unless otherwise negotiated with the editor (for example, if the changes requested are particularly substantial). If an author becomes unresponsive, the editor will follow up to keep the review moving forward.
+
 A JOSS review involves checking submissions against a checklist of essential software features and details in the submitted paper. This should be objective, not subjective; it should be based on the materials in the submission as perceived without distortion by personal feelings, prejudices, or interpretations.
 
 We encourage reviewers to file issues against the submitted repository's issue tracker. **When you have completed your review, please leave a comment in the review issue saying so.**

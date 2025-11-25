@@ -39,7 +39,7 @@ Sometimes reviews go quiet, either because a reviewer has failed to complete the
 
 **Managing author timeliness**
 
-Just as we expect reviewers to complete their reviews in 4-6 weeks, authors should respond to reviewer feedback within 2 weeks and complete requested changes within 4-6 weeks. If an author becomes unresponsive for more than 2 weeks without communication, editors should:
+Just as we expect reviewers to complete their reviews in 4-6 weeks, authors should respond to reviewer feedback within 2 weeks and complete requested changes within 4-6 weeks, unless otherwise negotiated with the editor. If an author becomes unresponsive for more than 2 weeks without communication, editors should:
 
 1. Send a friendly reminder to the author
 2. Request a commitment to a response timeline

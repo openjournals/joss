@@ -16,6 +16,12 @@ We encourage reviewers to file issues against the submitted repository's issue t
 
 You can include in your review links to any new issues that you the reviewer believe to be impeding the acceptance of the repository. (Similarly, if the submitted repository is a GitHub repository, mentioning the review issue URL in the submitted repository's issue tracker will create a mention in the review issue's history.)
 
+## Time Expectations
+
+We aim for the first pass of reviews to be completed within about 2-4 weeks. Please let the editor know if you require more time. It is best to be up front and clear about your availability. The more the editor knows, the more they can help work with you and the authors to get the papers through the process.
+
+You can also use EditorialBot (our bot) to set automatic reminders if you know you'll be away for a known period of time.
+
 ## JOSS Conflict of Interest Policy
 
 The definition of a conflict of Interest in peer review is a circumstance that makes you "unable to make an impartial scientific judgment or evaluation." ([PNAS Conflict of Interest Policy](http://www.pnas.org/site/authors/coi.xhtml)). JOSS is concerned with avoiding any actual conflicts of interest, and being sufficiently transparent that we avoid the appearance of conflicts of interest as well.

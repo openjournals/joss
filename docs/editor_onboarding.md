@@ -1,5 +1,47 @@
 # Editor Onboarding
 
+## JOSS: Nominate (and onboard) a new editor
+
+JOSS submissions continue to grow across domains. To keep reviews timely and reduce our backlog of submissions, we're adding a fast, relationship‑based nomination route alongside our continual open‑call. Both routes feed a single intake, use the same standards, and converge on the same 90‑day buddy onboarding. A light oversight review protects quality and helps us broaden representation (discipline, region, language, time zone, career stage).
+
+**What editors commit to**
+
+- Nominating people you know and will personally vouch for.
+- Confirm the nominee's consent before proposing them.
+- Serve as their *onboarding buddy* for ~90 days (quick check‑ins; help with first 1–3 papers).
+
+**What new editor candidates commit to**
+
+- That they have read our [editorial guide](https://joss.readthedocs.io/en/latest/editing.html#) and can meet our [documented expectations of JOSS editors](https://joss.readthedocs.io/en/latest/expectations.html#expectations-on-joss-editors) (including ultimately editing up to 5 papers simultaneously).
+- Agreeing to serve an initial term of at least 12 months as a JOSS editor following the trial period.
+- Consistently upholding JOSS's standards, including following our [Code of Conduct](https://joss.theoj.org/about#code_of_conduct) and [Ethics Guidelines](https://joss.theoj.org/about#ethics) in all editorial work and community interactions.
+
+### How this works
+
+1. An existing JOSS editor nominates someone they know and will vouch for, and agree to be their onboarding buddy for ~90 days.
+2. Incoming nominations go through a light review by the EiC team to maintain quality and diversity balance.
+3. If selected, the EiC runs a short info call with the candidate and the nominating editor, after which we set them up and begin buddy‑supported onboarding.
+
+### How to nominate
+
+Use the Google form pinned in the #joss channel on Slack, which requires the following information:
+
+- **Candidate details:** name, email, GitHub handle, affiliation, country/time zone.
+- **Area fit:** Which JOSS track(s) you think they could edit in and a few keywords for expertise.
+- **Why this person:** 2–4 sentences on judgment, reliability, responsiveness, and collaboration
+- **Experience**: any reviewing/editing background; JOSS roles (author/reviewer) if applicable.
+- **Capacity:** realistic availability over the next 6–12 months.
+- **Diversity note (optional):** any context that helps broaden representation/coverage.
+- **Professional connection:** how do you know this person?
+- **Consent:** confirm the candidate agreed to be nominated.
+- **Buddy:** confirm that you (or another editor who is willing) will serve as their onboarding buddy for ~90 days
+
+### What happens next
+
+- Acknowledgement: EiC confirms receipt.
+- Review: Brief portfolio‑aware review (quality + diversity).
+- Informational call (for suitable candidates): Short informational call with EiC, nominee, and editor → access/setup → buddy‑guided onboarding.
+
 ## Onboarding a new JOSS editor
 
 All new editors at JOSS have an onboarding call with an Editor-in-Chief. You can use the structure below to make sure you highlight the most important aspects of being an editor.

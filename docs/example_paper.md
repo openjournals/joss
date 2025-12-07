@@ -113,13 +113,13 @@ curricula at multiple institutions [@Binney:2008].
 The package's impact extends beyond direct citations through enabling new research
 methodologies. `Gala`'s fast orbit integration and coordinate transformation capabilities
 have become critical infrastructure for analyzing data from the *Gaia* space mission [@gaia],
-which has delivered positions and velocities for over 1 billion stars. Several research
-groups have contributed extensions, including new gravitational potential models and
-integration schemes, demonstrating community adoption and collaborative development.
-The package has been downloaded over 100,000 times from PyPI and conda-forge, with active
-usage indicated by sustained issue reporting and feature requests from researchers across
-multiple institutions and countries. This broad adoption validates `Gala`'s role as essential
-infrastructure for the galactic dynamics research community.
+which has delivered positions and velocities for over 1 billion stars. The package has been
+adopted by the broader community for diverse applications, from analyzing stellar streams
+and dark matter distribution to modeling binary stellar evolution in galactic contexts
+[@Hunt:2025]. The package has been downloaded over 100,000 times from PyPI and conda-forge,
+with active usage indicated by sustained issue reporting and feature requests from researchers
+across multiple institutions and countries. This broad adoption validates `Gala`'s role as
+essential infrastructure for the galactic dynamics research community.
 
 # Mathematics
 
@@ -227,6 +227,16 @@ Example `paper.bib` file:
     volume = 558,
     doi = {10.1051/0004-6361/201322068},
     url = {http://adsabs.harvard.edu/abs/2013A%26A...558A..33A}
+}
+
+@article{Hunt:2025,
+  author = {{Hunt}, Jason A.~S. and {Vasiliev}, Eugene},
+  title = {Milky Way dynamics in light of Gaia},
+  journal = {New Astronomy Reviews},
+  year = 2025,
+  volume = 98,
+  doi = {10.1016/j.newar.2024.101721},
+  url = {https://www.sciencedirect.com/science/article/pii/S1387647324000289}
 }
 
 @misc{fidgit,

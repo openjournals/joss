@@ -90,11 +90,13 @@ while maintaining the flexibility and ease of use that makes Python attractive
 for research.
 
 Rather than contributing to existing packages like `galpy` or `SciPy`, we built
-`Gala` to address specific architectural needs: (1) tight integration with Astropy's
-unit and coordinate systems, enabling seamless transformation between reference frames;
-(2) a composable potential framework allowing users to combine multiple gravitational
-components programmatically; and (3) a class-based API design that balances object-oriented
-extensibility with functional programming patterns common in numerical computing. While
+`Gala` to address specific architectural needs: 
+
+1. tight integration with Astropy's unit and coordinate systems, enabling seamless transformation between reference frames;
+2. a composable potential framework allowing users to combine multiple gravitational components programmatically; and 
+3. a class-based API design that balances object-oriented extensibility with functional programming patterns common in numerical computing. 
+
+While
 `galpy` provides excellent tools for Milky Way modeling, its callback-based potential
 system and limited coordinate frame support made it unsuitable for our use cases involving
 complex multi-component systems and coordinate transformations. `Gala`'s design philosophy

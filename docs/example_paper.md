@@ -79,7 +79,7 @@ design, and support for Astropy functionality in `Gala` will enable exciting
 scientific explorations of forthcoming data releases from the *Gaia* mission
 [@gaia] by students and experts alike.
 
-# Software Design
+# Software design
 
 `Gala`'s architecture reflects several key design decisions balancing performance,
 usability, and extensibility. We chose a hybrid Python/C implementation strategy:

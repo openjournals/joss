@@ -40,13 +40,22 @@ As a rule of thumb, JOSS' minimum allowable contribution should represent **not 
 
 In addition, JOSS requires that software should be feature-complete (i.e., no half-baked solutions), packaged appropriately according to common community standards for the programming language being used (e.g., [Python](https://packaging.python.org), [R](https://r-pkgs.org/index.html)), and designed for maintainable extension (not one-off modifications of existing tools). "Minor utility" packages, including "thin" API clients, and single-function packages are not acceptable.
 
-#### Interim position on AI-enabled software 
+#### AI Usage Policy
 
-While JOSS develops comprehensive guidelines for AI-assisted software development, please note that **submissions that appear to be generated wholly or in large part through AI assistance may be determined to be out of scope, even if they appear substantial**. The ability to generate extensive codebases through AI prompts alone does not necessarily constitute the scholarly contribution that warrants publication in JOSS.
+**Author use:** The use of generative AI is permitted for most aspects of a JOSS submission (e.g., software creation and review, generating documentation, assisting with paper authoring), however all such use must be disclosed in an "AI usage disclosure" statement which includes:
 
-The Editors-in-Chief have always maintained discretion in determining whether submissions are appropriate for JOSS, considering factors beyond our published criteria when evaluating scholarly merit. This discretion is particularly important as we navigate the implications of AI-assisted development.
+- **Tool use:** The tools/models used (and versions) and where they were used (code, paper text, docs).
+- **The nature and scope of assistance:** e.g., code generation, refactoring, test scaffolding, copy-editing, drafting.
+- **Confirmation of review:** Authors must assert that human authors reviewed, edited, validated all AI-assisted outputs and made the core design decisions.
 
-This interim measure will remain in place while we work with our community to develop policies that appropriately determine meaningful scholarly contributions in an era of AI-assisted software development.
+AI is not allowed for conversational interactions between authors and editors or reviewers unless it is being used for translation purposes.
+
+Authors remain fully responsible for the accuracy, originality, licensing, and ethical/legal compliance of all submitted materials. Failure to provide a complete and accurate disclosure of AI usage may be considered an ethical breach. Consequences can include desk rejection, mandatory revisions, and post-publication correction or withdrawal. In cases of intentional misrepresentation or non-disclosure, JOSS reserves the right to notify the authors' institutions, funders, and/or relevant professional or scholarly societies in accordance with standard research-integrity practices.
+
+**Reviewer use:** Reviewers may use generative AI tools to assist with non-substantive tasks (e.g., grammar checks of their review text, contextualizing public materials and code snippets) and must disclose this briefly at the end of their review.
+
+- **Accountability:** The reviewer – not the AI – owns the evaluation. All judgements, recommendations, and technical claims must be the reviewer's and verified by them.
+- **Human-only judgements:** When reviewing JOSS submissions (code or papers), all evaluative decisions – scoring, accept/reject recommendations, and assessments of originality, novelty, correctness, significance, and policy/ethics compliance – must be made by the human reviewer. AI tools may assist with analysis, but they must not render or determine any verdicts.
 
 #### A note on web-based software
 

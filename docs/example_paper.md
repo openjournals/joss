@@ -79,6 +79,48 @@ design, and support for Astropy functionality in `Gala` will enable exciting
 scientific explorations of forthcoming data releases from the *Gaia* mission
 [@gaia] by students and experts alike.
 
+# Software Design
+
+`Gala`'s architecture reflects several key design decisions balancing performance,
+usability, and extensibility. We chose a hybrid Python/C implementation strategy:
+performance-critical numerical operations (orbit integration, force calculations)
+are implemented in C and Cython, while the user-facing API remains pure Python.
+This trade-off prioritizes computational efficiency for large-scale simulations
+while maintaining the flexibility and ease of use that makes Python attractive
+for research.
+
+Rather than contributing to existing packages like `galpy` or `SciPy`, we built
+`Gala` to address specific architectural needs: (1) tight integration with Astropy's
+unit and coordinate systems, enabling seamless transformation between reference frames;
+(2) a composable potential framework allowing users to combine multiple gravitational
+components programmatically; and (3) a class-based API design that balances object-oriented
+extensibility with functional programming patterns common in numerical computing. While
+`galpy` provides excellent tools for Milky Way modeling, its callback-based potential
+system and limited coordinate frame support made it unsuitable for our use cases involving
+complex multi-component systems and coordinate transformations. `Gala`'s design philosophy
+prioritizes making common operations simple while still enabling complex workflows through
+composition rather than configuration.
+
+# Research Impact Statement
+
+`Gala` has demonstrated substantial research impact since its initial release. The package
+has been used in over 50 peer-reviewed publications spanning diverse topics in galactic
+dynamics, including studies of tidal streams [@Pearson:2017], dark matter substructure
+detection, and the dynamics of stellar systems. External adoption includes integration
+into the Astropy ecosystem as an affiliated package and incorporation into graduate-level
+curricula at multiple institutions [@Binney:2008].
+
+The package's impact extends beyond direct citations through enabling new research
+methodologies. `Gala`'s fast orbit integration and coordinate transformation capabilities
+have become critical infrastructure for analyzing data from the *Gaia* space mission [@gaia],
+which has delivered positions and velocities for over 1 billion stars. Several research
+groups have contributed extensions, including new gravitational potential models and
+integration schemes, demonstrating community adoption and collaborative development.
+The package has been downloaded over 100,000 times from PyPI and conda-forge, with active
+usage indicated by sustained issue reporting and feature requests from researchers across
+multiple institutions and countries. This broad adoption validates `Gala`'s role as essential
+infrastructure for the galactic dynamics research community.
+
 # Mathematics
 
 Single dollars ($) are required for inline mathematics e.g. $f(x) = e^{\pi/x}$
@@ -118,6 +160,11 @@ and referenced from text using \autoref{fig:example}.
 
 Figure sizes can be customized by adding an optional second parameter:
 ![Caption for example figure.](figure.png){ width=20% }
+
+# AI usage disclosure
+
+No generative AI tools were used in the development of this software, the writing
+of this manuscript, or the preparation of supporting materials.
 
 # Acknowledgements
 

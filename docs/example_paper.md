@@ -81,27 +81,7 @@ scientific explorations of forthcoming data releases from the *Gaia* mission
 
 # Software design
 
-`Gala`'s architecture reflects several key design decisions balancing performance,
-usability, and extensibility. We chose a hybrid Python/C implementation strategy:
-performance-critical numerical operations (orbit integration, force calculations)
-are implemented in C and Cython, while the user-facing API remains pure Python.
-This trade-off prioritizes computational efficiency for large-scale simulations
-while maintaining the flexibility and ease of use that makes Python attractive
-for research.
-
-Rather than contributing to existing packages like `galpy` or `SciPy`, we built
-`Gala` to address specific architectural needs: 
-
-1. tight integration with Astropy's unit and coordinate systems, enabling seamless transformation between reference frames;
-2. a composable potential framework allowing users to combine multiple gravitational components programmatically; and 
-3. a class-based API design that balances object-oriented extensibility with functional programming patterns common in numerical computing. 
-
-While
-`galpy` provides excellent tools for Milky Way modeling, its callback-based potential
-system and limited coordinate frame support made it unsuitable for our use cases involving
-complex multi-component systems and coordinate transformations. `Gala`'s design philosophy
-prioritizes making common operations simple while still enabling complex workflows through
-composition rather than configuration.
+`Gala`'s design philosophy is based on three core principles: (1) to provide a user-friendly, modular, object-oriented API, (2) to use community tools and standards (e.g., Astropy for coordinates and units handling), and (3) to use low-level code (C/C++/Cython) for performance while keeping the user interface in Python. Within each of the main subpackages in `gala` (`gala.potential`, `gala.dynamics`, `gala.integrate`, etc.), we try to maintain a consistent API for classes and functions. For example, all potential classes share a common base class and implement methods for computing the potential, forces, density, and other derived quantities at given positions. This also works for compositions of potentials (i.e., multi-component potential models), which share the potential base class but also act as a dictionary-like container for different potential components. As another example, all integrators implement a common interface for numerically integrating orbits. The integrators and core potential functions are all implemented in C without support for units, but the Python layer handles unit conversions and prepares data to dispatch to the C layer appropriately.Within the coordinates subpackage, we extend Astropy's coordinate classes to add more specialized coordinate frames and transformations that are relevant for Galactic dynamics and Milky Way research.
 
 # Research impact statement
 

@@ -1,8 +1,12 @@
 # Top tips for JOSS editors
 
-**Aim for reviewer redundancy**  
+**Aim for reviewer redundancy**
 
 If you have 3 people agree to review, take them up on their offer(s), that way if one person drops out, you'll have a backup and won't have to look for more reviewers. Also, when sending invites, try pinging a number of people at the same time rather than doing it one-by-one.
+
+**Check development history early**
+
+When reviewing submissions, check the repository's development history early in the process. Look for sustained development over time, evidence of open development practices, and collaborative effort. If you have concerns about whether the software meets the development practice criteria (timeline, open development, collaboration), raise these with the authors or EiC early rather than late in the review.
 
 **Email is a good backup**  
 

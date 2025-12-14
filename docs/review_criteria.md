@@ -28,22 +28,77 @@ There should be an [OSI approved](https://opensource.org/licenses/alphabetical) 
 > **Acceptable:** A plain-text LICENSE or COPYING file with the contents of an OSI approved license<br />            
 > **Not acceptable:** A phrase such as 'MIT license' in a README file
 
-### Substantial scholarly effort
+### Scope and significance
 
-Reviewers should verify that the software represents substantial scholarly effort. As a rule of thumb, JOSS' minimum allowable contribution should represent **not less than** three months of work for an individual. Signals of effort may include: 
+Reviewers should verify that the software demonstrates clear research impact or credible scholarly significance. The submission should show evidence of meaningful contribution to the research community rather than being a one-off tool for a single analysis.
 
-- Age of software (is this a well-established software project) / length of commit history.
-- Number of commits.
-- Number of authors.
-- Lines of code (LOC): These statistics are usually reported by EditorialBot in the `pre-review` issue thread.
-- Whether the software has already been cited in academic papers.
-- Whether the software is sufficiently useful that it is _likely to be cited_ by other researchers working in this domain.
+Signals of research impact or scholarly significance may include:
 
-These guidelines are not meant to be strictly prescriptive. Recently released software may not have been around long enough to gather citations in academic literature. While some authors contribute openly and accrue a long and rich commit history before submitting, others may upload their software to GitHub shortly before submitting their JOSS paper.  Reviewers should rely on their expert understanding of their domain to judge whether the software is of broad interest (_likely to be cited by other researchers_) or more narrowly focused around the needs of an individual researcher or lab.
+- Published research citing or using the software
+- Evidence of adoption by other research groups
+- Integration into established research workflows or pipelines
+- Demonstrated performance improvements or novel capabilities compared to alternatives
+- Clear potential for reuse and citation by other researchers in the domain
 
 ```{note}
-The decision on scholarly effort is ultimately one made by JOSS editors. Reviewers are asked to flag submissions of questionable scope during the review process so that the editor can bring this to the attention of the JOSS editorial team.
+The decision on scope and significance is ultimately one made by JOSS editors. Reviewers are asked to flag submissions of questionable scope during the review process so that the editor can bring this to the attention of the JOSS editorial team.
 ```
+
+### Development history and open-source practice
+
+Beyond the immediate research contribution, reviewers should evaluate whether the software represents a sustained, collaborative effort that follows good open-source practices:
+
+#### Development timeline
+
+The project should show evidence of sustained development over time (preferably months or years) rather than rapid, recent code generation. Look for:
+
+- Commit history spanning an extended period
+- Iterative improvements and refinements
+- Evolution of features and capabilities
+
+> **Good:** Commits distributed over 6+ months showing gradual feature development<br />
+> **Concerning:** All or most commits concentrated in the last few weeks before submission
+
+#### Open development
+
+The software should have been developed openly from early stages. For projects with recently created public repositories, there should be at least six months of public development history with:
+
+- Evidence of releases or version tags
+- Public issues and/or pull requests
+- Ideally, external engagement from users or contributors outside the core team
+
+> **Good:** Repository public from inception with documented releases and community interaction<br />
+> **OK:** Repository made public 6+ months ago with clear evidence of ongoing development<br />
+> **Concerning:** Repository made public immediately before submission with limited public development history
+
+```{note}
+Software previously developed privately may be acceptable if authors can demonstrate that the work represents substantial effort and the software has been publicly available with demonstrated use for at least six months.
+```
+
+#### Collaborative effort
+
+The commit history should show contributions from multiple developers and evidence of iterative refinement through community feedback:
+
+- Multiple contributors to the codebase
+- Code review through pull requests
+- Responses to issues and feature requests
+- Evidence of community-driven improvements
+
+Single-author projects may be acceptable if they show other evidence of community engagement (extensive issues/discussions, external feature requests, documented users).
+
+#### Good practices
+
+The project should demonstrate that it is a reusable, non-throwaway research software project that follows good open-source practices:
+
+- **License:** OSI-approved license (required)
+- **Documentation:** README, installation instructions, usage examples, API documentation
+- **Quality assurance:** Automated tests, continuous integration, and/or documented verification processes
+- **Releases:** Tagged versions or formal release process
+- **Community pathways:** Clear contribution guidelines and support channels
+
+> **Good:** All elements present and well-maintained<br />
+> **OK:** Core elements present (license, docs, tests, contribution guidelines)<br />
+> **Bad (not acceptable):** Missing critical elements or appears to be a one-time code dump
 
 ### Documentation
 
@@ -96,6 +151,84 @@ Authors are strongly encouraged to include an automated test suite covering the 
 > **Good:** An automated test suite hooked up to continuous integration (GitHub Actions, Circle CI, or similar)<br />
 > **OK:** Documented manual steps that can be followed to objectively check the expected functionality of the software (e.g., a sample input file to assert behavior)<br />
 > **Bad (not acceptable):** No way for you, the reviewer, to objectively assess whether the software works
+
+### Software paper content
+
+The JOSS paper must include specific required sections beyond the basic summary and references. Reviewers should verify that all required sections are present and substantive.
+
+#### Statement of Need (required)
+
+The paper must have a clearly labeled "Statement of need" section that:
+
+- Clearly states what problems the software is designed to solve
+- Identifies who the target audience is
+- Explains the software's relation to other work in the field
+
+This section should make a compelling case for why the software is needed and what gap it fills in the research ecosystem.
+
+> **Good:** Clear problem statement, well-defined target audience, and context within the broader field<br />
+> **OK:** Addresses the key elements but could be more specific about audience or context<br />
+> **Bad (not acceptable):** Vague about the problem being solved, unclear target audience, or missing context
+
+#### State of the field (required)
+
+Authors must describe how their software compares to other commonly-used packages in the research area. When related tools exist, authors must provide a clear "build vs. contribute" justification explaining:
+
+- Their unique scholarly contribution
+- Why existing alternatives are insufficient for their research needs
+- What gap their software fills
+
+> **Good:** Thorough comparison with existing tools and clear explanation of why a new tool was necessary<br />
+> **OK:** Identifies related work and explains key differences<br />
+> **Bad (not acceptable):** Ignores existing similar tools or fails to justify why contributing to existing projects wasn't appropriate
+
+#### Software Design (required)
+
+The paper must include a section explaining the architectural choices made:
+
+- Trade-offs considered during design
+- The design/architecture chosen and why
+- Why these choices matter for the research application
+
+The content should be compelling and demonstrate meaningful design thinking, not just a superficial description of the code structure.
+
+> **Good:** Thoughtful discussion of design decisions and their implications<br />
+> **OK:** Clear explanation of architecture with some rationale<br />
+> **Bad (not acceptable):** Generic code structure description without explaining design reasoning
+
+#### Research Impact Statement (required)
+
+The paper must provide evidence of either:
+
+**Realized impact:**
+- Publications using the software
+- Evidence of external use and adoption
+- Integration with other research tools or workflows
+
+**OR credible near-term significance:**
+- Benchmark results demonstrating improvements
+- Reproducible research materials showing capabilities
+- Community-readiness signals (e.g., requests from other groups, presentations at relevant venues)
+
+The evidence should be compelling and specific, not aspirational.
+
+> **Good:** Multiple citations, documented external users, or strong benchmark results with reproducible materials<br />
+> **OK:** Some evidence of use beyond the authors' group or solid benchmarks<br />
+> **Bad (not acceptable):** Only statements about potential future use without concrete evidence
+
+#### AI usage disclosure (required)
+
+The paper must include a section that transparently discloses any use of generative AI in:
+
+- Software creation or development
+- Documentation writing
+- Paper authoring
+
+If no AI tools were used, this should be explicitly stated. If AI tools were used, authors should describe how they were used and how the quality and correctness of AI-generated content was verified.
+
+> **Good:** Clear, specific disclosure of AI tool usage and verification methods<br />
+> **OK:** Statement that no AI tools were used, or general disclosure of AI assistance<br />
+> **Bad (not acceptable):** Missing section or vague/evasive language about AI usage
 
 ## Other considerations
 

@@ -21,6 +21,14 @@ Note this section of our documentation only describes the JOSS review checklist.
 - **Repository:** Is the source code for this software available at the <a target="_blank" href="https://github.com/DistrictDataLabs/yellowbrick">repository url</a>?
 - **License:** Does the repository contain a plain-text LICENSE file with the contents of an [OSI approved](https://opensource.org/licenses/alphabetical) software license?
 - **Contribution and authorship:** Has the submitting author made major contributions to the software? Does the full list of paper authors seem appropriate and complete?
+- **Scope and significance:** Does this submission demonstrate clear research impact or credible scholarly significance as described in the [JOSS guidelines](https://joss.readthedocs.io/en/latest/submitting.html)?
+
+## Development history and open-source practice
+
+- **Development timeline:** Does the project show evidence of sustained development over time (preferably months or years) rather than rapid, recent code generation?
+- **Open development:** Was the software developed openly from early stages? For projects with recent public repositories, is there at least six months of public development history with evidence of releases, public issues/pull requests, and ideally external engagement?
+- **Collaborative effort:** Does the commit history show contributions from multiple developers and evidence of iterative refinement through community feedback?
+- **Good practices:** Does the project follow good open-source practices (license, documentation, tests and/or verification processes, releases, and clear contribution/support pathways)?
 
 ## Functionality
 
@@ -39,8 +47,11 @@ Note this section of our documentation only describes the JOSS review checklist.
 
 ## Software paper
 
-- **Summary:** Has a clear description of the high-level functionality and purpose of the software for a diverse, non-specialist audience been provided?
-- **A statement of need:** Does the paper have a section titled 'Statement of need' that clearly states what problems the software is designed to solve, who the target audience is, and its relation to other work?
-- **State of the field:** Do the authors describe how this software compares to other commonly-used packages?
+- **Summary (required section):** Has a clear description of the high-level functionality and purpose of the software for a diverse, non-specialist audience been provided?
+- **A statement of need (required section):** Does the paper have a section titled 'Statement of need' that clearly states what problems the software is designed to solve, who the target audience is, and its relation to other work?
+- **State of the field (required section):** Do the authors describe how this software compares to other commonly-used packages? If related tools exist, do they provide a clear "build vs. contribute" justification explaining their unique scholarly contribution and why alternatives are insufficient?
+- **Software Design (required section):** Does the paper include a "Software Design" section that explains the trade-offs weighed, the design/architecture chosen, and why it matters? Is the content compelling and does it demonstrate meaningful design thinking?
+- **Research Impact Statement (required section):** Does the paper include a "Research Impact Statement" section providing evidence of realized impact (publications, external use, integrations) or credible near-term significance (benchmarks, reproducible materials, community-readiness signals)? Is the evidence presented compelling?
+- **AI usage disclosure (required section):** Does the paper include an "AI usage disclosure" section that transparently discloses any use of generative AI in the software creation, documentation, or paper authoring?
 - **Quality of writing:** Is the paper well written (i.e., it does not require editing for structure, language, or writing quality)?
 - **References:** Is the list of references complete, and is everything cited appropriately that should be cited (e.g., papers, datasets, software)? Do references in the text use the proper [citation syntax]( https://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html#citation_syntax)?

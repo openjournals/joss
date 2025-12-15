@@ -75,7 +75,7 @@ All new editors at JOSS have an onboarding call with an Editor-in-Chief. You can
 - The 'meeting room for the paper'. Where author meets editor, and reviewers are identified.
 - Note that the EiC may have initiated a scope review. The editor should not start editing until this has completed. Also, editors are able to query the scope (as are reviewers) if they think the EiC should have (but didn't). 
 - Walk them through what is happening in the pre-review issue...
-- Editor is invited (likely with GitHub mention but also via email invite (`@editorialbot invite @editor as editor`))
+- Editor is invited (likely with GitHub mention but also via email invite (`@editorialbot invite @editor as editor`)
 - Once editor accepts they start looking for reviewers.
 
 **Finding reviewers**

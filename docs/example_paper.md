@@ -85,24 +85,11 @@ scientific explorations of forthcoming data releases from the *Gaia* mission
 
 # Research impact statement
 
-`Gala` has demonstrated substantial research impact since its initial release. The package
-has been used in over 50 peer-reviewed publications spanning diverse topics in galactic
-dynamics, including studies of tidal streams [@Pearson:2017], dark matter substructure
-detection, and the dynamics of stellar systems. External adoption includes integration
-into the Astropy ecosystem as an affiliated package and incorporation into graduate-level
-curricula at multiple institutions [@Binney:2008].
+`Gala` has demonstrated significant research impact and grown both its user base and contributor community since its initial release. The package has evolved through contributions from over 18 developers beyond the original core developer (@adrn), with community members adding new features, reporting bugs, and suggesting new features. 
 
-The package's impact extends beyond direct citations through enabling new research
-methodologies. `Gala`'s fast orbit integration and coordinate transformation capabilities
-have become critical infrastructure for analyzing data from the *Gaia* space mission [@gaia],
-which has delivered positions and velocities for over 1 billion stars. The package has been
-adopted by the broader community for diverse applications, from analyzing stellar streams
-and dark matter distribution to modeling binary stellar evolution in galactic contexts
-[@Hunt:2025]. The package has been downloaded over 100,000 times from PyPI and conda-forge,
-with active usage indicated by sustained issue reporting and feature requests from researchers
-across multiple institutions and countries. This broad adoption validates `Gala`'s role as
-essential infrastructure for the galactic dynamics research community.
+While `Gala` started as a tool primarily to support the core developer's research, it has expanded organically to support a range of applications across domains in astrophysics related to Milky Way and galactic dynamics. The package has been used in over 400 publications (according to Google Scholar) spanning topics in galactic dynamics such as modeling stellar streams [@Pearson:2017], Milky Way mass modeling, and interpreting kinematic and stellar population trends in the Galaxy. `Gala` is integrated within the Astropy ecosystem as an affiliated package and has built functionality that extends the widely-used `astropy.units` and `astropy.coordinates` subpackages. `Gala`'s impact extends beyond citations in research: Because of its focus on usability and user interface design, `Gala` has also been incorporated into graduate-level galactic dynamics curricula at multiple institutions. 
 
+`Gala` has been downloaded over 100,000 times from PyPI and conda-forge yearly (or ~2,000 downloads per week) over the past few years, demonstrating a broad and active user community. Users span career stages from graduate students to faculty and other established researchers and represent institutions around the world. This broad adoption and active participation validate `Gala`'s role as core community infrastructure for galactic dynamics research.
 # Mathematics
 
 Single dollars ($) are required for inline mathematics e.g. $f(x) = e^{\pi/x}$

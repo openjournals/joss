@@ -40,6 +40,12 @@ We generally ask authors to respond to reviewer feedback within 2 weeks and comp
 
 Try to check in on your JOSS submissions twice per week, even if only for 5 minutes. Use your dashboard to stay on top of the current status of your submissions (i.e., who was the last person to comment on the thread).
 
+**Use editorialbot's reminders**
+
+Make frequent use of the editorialbot [remind](https://joss.readthedocs.io/en/latest/editorial_bot.html#reminding-reviewers-and-authors) function to remind yourself to check on the status of a review after a week or two, to check on if an author responds to a message, to make sure you're staying on top of looking for reviewers, etc.
+
+<!--
 **Leave feedback on reviewers**
 
 Leave feedback on the [reviewers application](https://reviewers.joss.theoj.org/) at the end of the review. This helps future editors when they're seeking out good reviewer candidates.
+-->

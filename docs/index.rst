@@ -68,3 +68,4 @@ JOSS is a proud affiliate of the `Open Source Initiative <https://opensource.org
   :maxdepth: 2
 
   installing
+  translating

@@ -19,8 +19,8 @@ JOSS submissions continue to grow across domains. To keep reviews timely and red
 ### How this works
 
 1. An existing JOSS editor nominates someone they know and will vouch for, and agree to be their onboarding buddy for ~90 days.
-2. Incoming nominations go through a light review by the EiC team to maintain quality and diversity balance.
-3. If selected, the EiC runs a short info call with the candidate and the nominating editor, after which we set them up and begin buddy‑supported onboarding.
+2. Incoming nominations go through a light review by the EiC team (the Editor-in-Chief and the Associate-Editors-in-Chief, aka, track editors) to maintain quality and diversity balance.
+3. If selected, an AEiC runs a short info call with the candidate and the nominating editor, after which we set them up and begin buddy‑supported onboarding.
 
 ### How to nominate
 
@@ -38,13 +38,13 @@ Use the Google form pinned in the #joss channel on Slack, which requires the fol
 
 ### What happens next
 
-- Acknowledgement: EiC confirms receipt.
+- Acknowledgement: AEiC confirms receipt.
 - Review: Brief portfolio‑aware review (quality + diversity).
-- Informational call (for suitable candidates): Short informational call with EiC, nominee, and editor → access/setup → buddy‑guided onboarding.
+- Informational call (for suitable candidates): Short informational call with AEiC, nominee, and editor → access/setup → buddy‑guided onboarding.
 
 ## Onboarding a new JOSS editor
 
-All new editors at JOSS have an onboarding call with an Editor-in-Chief. You can use the structure below to make sure you highlight the most important aspects of being an editor.
+All new editors at JOSS have an onboarding call with an Associate-Editor-in-Chief. You can use the structure below to make sure you highlight the most important aspects of being an editor.
 
 **Thing to check before the call**
 
@@ -59,7 +59,7 @@ All new editors at JOSS have an onboarding call with an Editor-in-Chief. You can
 - Welcome! Thank them for their application to join the team.
 - Point out that this isn't an interview. Rather, this is an informational call designed to give the candidate the information they need to make an informed decision about editing at JOSS.
 - 90-day trial period/try out. Editor or JOSS editorial board can decide to part ways after that period.
-- No strict term limits. Some editors have been with us for 7+ years, others do 1-2 years. Most important thing is to be proactive with your editing responsibilities and communicating any issues with the EiCs.
+- No strict term limits. Some editors have been with us for 7+ years, others do 1-2 years. Most important thing is to be proactive with your editing responsibilities and communicating any issues with the AEiCs.
 - Confirm with them their level of familiarity with JOSS/our review process.
 - Point out that they *do not* need to make a decision on the call today. They are welcome to have a think about joining and get back to us.
 
@@ -73,9 +73,9 @@ All new editors at JOSS have an onboarding call with an Editor-in-Chief. You can
 **The pre-review issue**
 
 - The 'meeting room for the paper'. Where author meets editor, and reviewers are identified.
-- Note that the EiC may have initiated a scope review. The editor should not start editing until this has completed. Also, editors are able to query the scope (as are reviewers) if they think the EiC should have (but didn't). 
+- Note that the AEiC may have initiated a scope review. The editor should not start editing until this has completed. Also, editors are able to query the scope (as are reviewers) if they think the AEiC should have (but didn't), and if they do so, they should communicate this with the AEiC. 
 - Walk them through what is happening in the pre-review issue...
-- Editor is invited (likely with GitHub mention but also via email invite (`@editorialbot invite @editor as editor`))
+- Editor is invited (likely with GitHub mention but also via email invite (`@editorialbot invite @editor as editor`)
 - Once editor accepts they start looking for reviewers.
 
 **Finding reviewers**
@@ -116,7 +116,7 @@ All new editors at JOSS have an onboarding call with an Editor-in-Chief. You can
 - Don't invite other editors as reviewers. We're all busy editing our own papers...
 - Please be willing to edit outside of your specialisms. This helps JOSS run smoothly – often we don't have the 'ideal' editor for a submission and someone has to take it.
 - Highlight that editors will have a buddy to work with for the first few months, and that it's very common for editors to ask questions in Slack (and people generally respond quickly).
-- Scope reviews only work if editors vote! Please respond and vote on the weekly scope review email if you can. The process is private (authors don't know what editors are saying). Detailed comments are really helpful for the EiCs.
+- Scope reviews only work if editors vote! Please respond and vote on the weekly scope review email if you can. The process is private (authors don't know what editors are saying). Detailed comments are really helpful for the AEiCs.
 
 **Wrapping up**
 

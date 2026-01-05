@@ -24,9 +24,16 @@ Your paper must include the following **required sections**:
 Your paper must also include:
 
 - A list of the authors of the software and their affiliations, using the correct format (see the example below).
+- A summary describing the high-level functionality and purpose of the software for a diverse, *non-specialist audience*.
+- A *Statement of need* section that clearly illustrates the research purpose of the software and places it in the context of related work.
+- A *Software design* section that describes the architecture, design principles, and implementation approach of the software.
+- A *Research impact statement* section that documents the software's adoption, usage metrics, citations in research, educational applications, and community engagement. This section helps demonstrate the software's value to the research community.
 - A list of key references, including to other software addressing related needs. Note that the references should include full names of venues, e.g., journals and conferences, not abbreviations only understood in the context of a specific discipline.
 - Mention (if applicable) a representative set of past or ongoing research projects using the software and recent scholarly publications enabled by it.
+- An *AI usage disclosure* section that clearly states whether generative AI tools were used in the development of the software, the writing of the manuscript, or the preparation of supporting materials.
 - Acknowledgement of any financial support.
+
+As this list shows, JOSS papers are expected to contain a limited set of metadata (see example below), and sections for Summary, Statement of need, Software design, Research impact statement, AI usage disclosure, Acknowledgements, and References. You can look at an [example accepted paper](example_paper). Given this format, a "full length" paper is not permitted, and software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation.
 
 Given this format, a "full length" paper is not permitted, and software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation. You can look at an [example accepted paper](example_paper).
 

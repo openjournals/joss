@@ -24,29 +24,38 @@ In addition, the software associated with your submission must:
 
 JOSS publishes articles about research software. This definition includes software that: solves complex modeling problems in a scientific context (physics, mathematics, biology, medicine, social science, neuroscience, engineering); supports the functioning of research instruments or the execution of research experiments; extracts knowledge from large data sets; offers a mathematical library, or similar. While useful for many areas of research, pre-trained machine learning models and notebooks are not in-scope for JOSS. 
 
-### Substantial scholarly effort
+### Scope and significance
 
-JOSS publishes articles about software that represent substantial scholarly effort on the part of the authors. Your software should be a significant contribution to the available open source software that either enables some new research challenges to be addressed or makes addressing research challenges significantly better (e.g., faster, easier, simpler).
+JOSS publishes articles about software that demonstrates clear research impact or credible scholarly significance. Your software should represent a meaningful contribution to the research community rather than being a one-off tool for a single analysis. Whether or not you use AI assistance in your development, submissions should demonstrate the irreplaceable human contributions: problem framing, key design decisions, thoughtful architectural choices, and practices that make software usable and sustainable for others.
 
-As a rule of thumb, JOSS' minimum allowable contribution should represent **not less than** three months of work for an individual. Some factors that may be considered by editors and reviewers when judging effort include:
+Some factors that may be considered by editors and reviewers when evaluating scope and significance include:
 
-- Age of software (is this a well-established software project) / length of commit history.
-- Number of commits.
-- Number of authors.
-- Total lines of code (LOC). Submissions under 1000 LOC will usually be flagged, those under 300 LOC will be desk rejected.
-- Whether the software has already been cited in academic papers.
-- Whether a potential user can easily install, understand, and test the software. (If your software is new, please be sure a colleague has tried it.) 
-- Whether the software is sufficiently useful that it is _likely to be cited_ by your peer group.
+- **Research impact:** Evidence of publications or analyses using the software, external adopters or integrations, or credible near-term significance demonstrated through comparative benchmarks and reproducible reference materials.
+- **Design thinking:** Meaningful architectural decisions and trade-offs considered. We particularly value work that builds upon or extends existing software ecosystems rather than reinventing solutions where quality alternatives already exist.
+- **Open development practices:** Sustained development over time with evidence of collaborative effort, public development history, comprehensive testing, clear documentation, and pathways for community contribution.
+- Whether a potential user can easily install, understand, and test the software. (If your software is new, please be sure a colleague has tried it.)
+- Whether the software is sufficiently useful that it is _likely to be cited_ by other researchers in your domain.
+
+Projects developed privately are not eligible until there is a public record of open development: at least six months of public history prior to submission, with evidence of releases, public issues and pull requests. A history of contributions and engagement from individuals beyond the original team, across organizations, is especially welcome, though not essential. We particularly value projects that show evidence of open development practices from early stages, rather than private development followed by public release.
 
 In addition, JOSS requires that software should be feature-complete (i.e., no half-baked solutions), packaged appropriately according to common community standards for the programming language being used (e.g., [Python](https://packaging.python.org), [R](https://r-pkgs.org/index.html)), and designed for maintainable extension (not one-off modifications of existing tools). "Minor utility" packages, including "thin" API clients, and single-function packages are not acceptable.
 
-#### Interim position on AI-enabled software 
+#### AI Usage Policy
 
-While JOSS develops comprehensive guidelines for AI-assisted software development, please note that **submissions that appear to be generated wholly or in large part through AI assistance may be determined to be out of scope, even if they appear substantial**. The ability to generate extensive codebases through AI prompts alone does not necessarily constitute the scholarly contribution that warrants publication in JOSS.
+**Author use:** The use of generative AI is permitted for most aspects of a JOSS submission (e.g., software creation and review, generating documentation, assisting with paper authoring), however all such use must be disclosed in an "AI usage disclosure" statement which includes:
 
-The Editors-in-Chief have always maintained discretion in determining whether submissions are appropriate for JOSS, considering factors beyond our published criteria when evaluating scholarly merit. This discretion is particularly important as we navigate the implications of AI-assisted development.
+- **Tool use:** The tools/models used (and versions) and where they were used (code, paper text, docs).
+- **The nature and scope of assistance:** e.g., code generation, refactoring, test scaffolding, copy-editing, drafting.
+- **Confirmation of review:** Authors must assert that human authors reviewed, edited, validated all AI-assisted outputs and made the core design decisions.
 
-This interim measure will remain in place while we work with our community to develop policies that appropriately determine meaningful scholarly contributions in an era of AI-assisted software development.
+AI is not allowed for conversational interactions between authors and editors or reviewers unless it is being used for translation purposes.
+
+Authors remain fully responsible for the accuracy, originality, licensing, and ethical/legal compliance of all submitted materials. Failure to provide a complete and accurate disclosure of AI usage may be considered an ethical breach. Consequences can include desk rejection, mandatory revisions, and post-publication correction or withdrawal. In cases of intentional misrepresentation or non-disclosure, JOSS reserves the right to notify the authors' institutions, funders, and/or relevant professional or scholarly societies in accordance with standard research-integrity practices.
+
+**Reviewer use:** Reviewers may use generative AI tools to assist with non-substantive tasks (e.g., grammar checks of their review text, contextualizing public materials and code snippets) and must disclose this briefly at the end of their review.
+
+- **Accountability:** The reviewer – not the AI – owns the evaluation. All judgements, recommendations, and technical claims must be the reviewer's and verified by them.
+- **Human-only judgements:** When reviewing JOSS submissions (code or papers), all evaluative decisions – scoring, accept/reject recommendations, and assessments of originality, novelty, correctness, significance, and policy/ethics compliance – must be made by the human reviewer. AI tools may assist with analysis, but they must not render or determine any verdicts.
 
 #### A note on web-based software
 

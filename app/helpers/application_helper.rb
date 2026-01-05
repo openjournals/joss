@@ -69,4 +69,10 @@ module ApplicationHelper
     links << link_to("Mastodon", setting(:mastodon_url), target: "_blank", rel: "me", title: "#{setting(:mastodon_url)}").html_safe if setting(:mastodon_url).present?
     links
   end
+
+  # Decide whether to show the scope update banner
+  def show_scope_update_banner?
+    # Don't show if user has dismissed it (cookie check)
+    cookies[:scope_banner_dismissed] != "true"
+  end
 end

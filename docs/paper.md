@@ -12,7 +12,16 @@ Begin your paper with a summary of the high-level functionality of your software
 
 JOSS welcomes submissions from broadly diverse research areas. For this reason, we require that authors include in the paper some sentences that explain the software functionality and domain of use to a non-specialist reader. We also require that authors explain the research applications of the software. The paper should be between 250-1000 words. Authors submitting papers significantly longer than 1000 words may be asked to reduce the length of their paper.
 
-Your paper should include:
+Your paper must include the following **required sections**:
+
+- **Summary**: A description of the high-level functionality and purpose of the software for a diverse, *non-specialist audience*.
+- **Statement of need**: A section that clearly illustrates the research purpose of the software and places it in the context of related work. This should clearly state what problems the software is designed to solve, who the target audience is, and its relation to other work.
+- **State of the field**: A description of how this software compares to other commonly-used packages in the research area. If related tools exist, provide a clear "build vs. contribute" justification explaining your unique scholarly contribution and why existing alternatives are insufficient.
+- **Software Design**: An explanation of the trade-offs you weighed, the design/architecture you chose, and why it matters for your research application. This should demonstrate meaningful design thinking beyond a superficial code structure description.
+- **Research Impact Statement**: Evidence of realized impact (publications, external use, integrations) or credible near-term significance (benchmarks, reproducible materials, community-readiness signals). The evidence should be compelling and specific, not aspirational.
+- **AI usage disclosure**: Transparent disclosure of any use of generative AI in the software creation, documentation, or paper authoring. If no AI tools were used, state this explicitly. If AI tools were used, describe how they were used and how the quality and correctness of AI-generated content was verified.
+
+Your paper must also include:
 
 - A list of the authors of the software and their affiliations, using the correct format (see the example below).
 - A summary describing the high-level functionality and purpose of the software for a diverse, *non-specialist audience*.
@@ -25,6 +34,8 @@ Your paper should include:
 - Acknowledgement of any financial support.
 
 As this list shows, JOSS papers are expected to contain a limited set of metadata (see example below), and sections for Summary, Statement of need, Software design, Research impact statement, AI usage disclosure, Acknowledgements, and References. You can look at an [example accepted paper](example_paper). Given this format, a "full length" paper is not permitted, and software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation.
+
+Given this format, a "full length" paper is not permitted, and software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation. You can look at an [example accepted paper](example_paper).
 
 ```{important}
 Your paper will be reviewed by two or more reviewers in a public GitHub issue. Take a look at the [review checklist](review_checklist) and  [review criteria](review_criteria) to better understand how your submission will be reviewed.

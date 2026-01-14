@@ -94,3 +94,15 @@ I can then move forward with recommending acceptance of the submission.
 
 One possible alternative to JOSS is to follow [GitHub's guide](https://guides.github.com/activities/citable-code/) on how to create a permanent archive and DOI for your software. This DOI can then be used by others to cite your work.
 ```
+## Rejection due to scope and significance test
+
+```
+:wave: @name - I'm sorry to say that this submission does not meet the current [scope and significance](https://joss.readthedocs.io/en/latest/submitting.html#scope-and-significance) requirements for review by JOSS.
+
+> Projects developed privately are not eligible until there is a public record of open development: at least six months of public history prior to submission, with evidence of releases, public issues and pull requests. A history of contributions and engagement from individuals beyond the original team, across organizations, is especially welcome, though not essential. We particularly value projects that show evidence of open development practices from early stages, rather than private development followed by public release.
+
+[Optional]
+
+Your paper also does not follow JOSS's current [content requirements](https://joss.readthedocs.io/en/latest/paper.html).
+Please see https://joss.readthedocs.io/en/latest/submitting.html#other-venues-for-reviewing-and-publishing-software-packages for other suggestions for how you might receive credit for your work.
+```

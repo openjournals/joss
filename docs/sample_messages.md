@@ -99,10 +99,14 @@ One possible alternative to JOSS is to follow [GitHub's guide](https://guides.gi
 ```
 :wave: @name - I'm sorry to say that this submission does not meet the current [scope and significance](https://joss.readthedocs.io/en/latest/submitting.html#scope-and-significance) requirements for review by JOSS.
 
-> Projects developed privately are not eligible until there is a public record of open development: at least six months of public history prior to submission, with evidence of releases, public issues and pull requests. A history of contributions and engagement from individuals beyond the original team, across organizations, is especially welcome, though not essential. We particularly value projects that show evidence of open development practices from early stages, rather than private development followed by public release.
+> Projects developed privately are not eligible until there is a public record of open development: at least six months of public history prior to submission, with evidence of releases, public issues and pull requests.
 
-[Optional]
+Your repository shows very limited public development over a period which falls significantly short of the six-month requirement.
 
-Your paper also does not follow JOSS's current [content requirements](https://joss.readthedocs.io/en/latest/paper.html).
+**Important:** Meeting the six-month development history requirement alone is not sufficient for JOSS publication. We will also be looking for clear evidence of demonstrated impact (such as publications using the software, external adoption beyond your research group, or documented research enabled by your tool). 
+
+Simply keeping a repository public for six months without evidence of use or community adoption will not make a submission eligible.
+
 Please see https://joss.readthedocs.io/en/latest/submitting.html#other-venues-for-reviewing-and-publishing-software-packages for other suggestions for how you might receive credit for your work.
+
 ```

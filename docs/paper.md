@@ -10,7 +10,7 @@ Submitted articles must use Markdown and must provide a metadata section at the 
 Begin your paper with a summary of the high-level functionality of your software for a non-specialist reader. Avoid jargon in this section.
 ```
 
-JOSS welcomes submissions from broadly diverse research areas. For this reason, we require that authors include in the paper some sentences that explain the software functionality and domain of use to a non-specialist reader. We also require that authors explain the research applications of the software. The paper should be between 250-1000 words. Authors submitting papers significantly longer than 1000 words may be asked to reduce the length of their paper.
+JOSS welcomes submissions from broadly diverse research areas. For this reason, we require that authors include in the paper some sentences that explain the software functionality and domain of use to a non-specialist reader. We also require that authors explain the research applications of the software. The paper should be between 750-1750 words. Authors submitting papers significantly longer than 1750 words may be asked to reduce the length of their paper.
 
 Your paper must include the following **required sections**:
 

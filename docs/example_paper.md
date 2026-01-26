@@ -79,6 +79,31 @@ design, and support for Astropy functionality in `Gala` will enable exciting
 scientific explorations of forthcoming data releases from the *Gaia* mission
 [@gaia] by students and experts alike.
 
+# State of the field                                                                                                                  
+
+Several tools exist for galactic dynamics computations:                                                     
+`galpy` [@Bovy:2015] is a Python package with similar goals,
+providing orbit integration and potential classes for galactic dynamics.                                                              
+`NEMO` [@Teuben:1995] is a well-established, comprehensive stellar dynamics                                                           
+toolbox written primarily in C, offering extensive functionality but with a                                                           
+steeper learning curve and less integration with modern Python workflows.                                                             
+Other tools like `GalPot` provide specific Milky Way potential models but lack                                                        
+the broader dynamical analysis capabilities.                                                                                          
+                                                                                                                                        
+`Gala` was built rather than contributing to existing projects for several                                                            
+reasons. First, `Gala` was designed from the ground up to integrate seamlessly                                                        
+with the Astropy ecosystem, using `astropy.units` and `astropy.coordinates`                                                           
+as core dependencies rather than optional features. This tight integration                                                            
+enables natural workflows for astronomers already using Astropy. Second,                                                              
+`Gala`'s object-oriented API with consistent interfaces across subpackages                                                            
+(potentials, integrators, dynamics) provides a more modular and extensible                                                            
+design than alternatives available at the time. Third, `Gala` fills a specific                                                        
+niche between simple demonstration codes and full N-body simulation packages                                                          
+like `Gadget` [@Springel:2005] – it focuses on the common tasks in galactic                                                             
+dynamics research (orbit integration, potential evaluation, coordinate                                                                
+transformations) while maintaining both performance through C implementations                                                         
+and usability through its Python interface.  
+
 # Software design
 
 `Gala`'s design philosophy is based on three core principles: (1) to provide a

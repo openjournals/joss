@@ -17,25 +17,18 @@ Your paper must include the following **required sections**:
 - **Summary**: A description of the high-level functionality and purpose of the software for a diverse, *non-specialist audience*.
 - **Statement of need**: A section that clearly illustrates the research purpose of the software and places it in the context of related work. This should clearly state what problems the software is designed to solve, who the target audience is, and its relation to other work.
 - **State of the field**: A description of how this software compares to other commonly-used packages in the research area. If related tools exist, provide a clear "build vs. contribute" justification explaining your unique scholarly contribution and why existing alternatives are insufficient.
-- **Software Design**: An explanation of the trade-offs you weighed, the design/architecture you chose, and why it matters for your research application. This should demonstrate meaningful design thinking beyond a superficial code structure description.
-- **Research Impact Statement**: Evidence of realized impact (publications, external use, integrations) or credible near-term significance (benchmarks, reproducible materials, community-readiness signals). The evidence should be compelling and specific, not aspirational.
+- **Software design**: An explanation of the trade-offs you weighed, the design/architecture you chose, and why it matters for your research application. This should demonstrate meaningful design thinking beyond a superficial code structure description.
+- **Research impact statement**: Evidence of realized impact (publications, external use, integrations) or credible near-term significance (benchmarks, reproducible materials, community-readiness signals). The evidence should be compelling and specific, not aspirational.
 - **AI usage disclosure**: Transparent disclosure of any use of generative AI in the software creation, documentation, or paper authoring. If no AI tools were used, state this explicitly. If AI tools were used, describe how they were used and how the quality and correctness of AI-generated content was verified.
 
 Your paper must also include:
 
 - A list of the authors of the software and their affiliations, using the correct format (see the example below).
-- A summary describing the high-level functionality and purpose of the software for a diverse, *non-specialist audience*.
-- A *Statement of need* section that clearly illustrates the research purpose of the software and places it in the context of related work.
-- A *Software design* section that describes the architecture, design principles, and implementation approach of the software.
-- A *Research impact statement* section that documents the software's adoption, usage metrics, citations in research, educational applications, and community engagement. This section helps demonstrate the software's value to the research community.
 - A list of key references, including to other software addressing related needs. Note that the references should include full names of venues, e.g., journals and conferences, not abbreviations only understood in the context of a specific discipline.
 - Mention (if applicable) a representative set of past or ongoing research projects using the software and recent scholarly publications enabled by it.
-- An *AI usage disclosure* section that clearly states whether generative AI tools were used in the development of the software, the writing of the manuscript, or the preparation of supporting materials.
 - Acknowledgement of any financial support.
 
-As this list shows, JOSS papers are expected to contain a limited set of metadata (see example below), and sections for Summary, Statement of need, Software design, Research impact statement, AI usage disclosure, Acknowledgements, and References. You can look at an [example accepted paper](example_paper). Given this format, a "full length" paper is not permitted, and software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation.
-
-Given this format, a "full length" paper is not permitted, and software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation. You can look at an [example accepted paper](example_paper).
+As this list shows, JOSS papers are expected to contain a limited set of metadata (see example below), and sections for Summary, Statement of need, State of the field, Software design, Research impact statement, AI usage disclosure, Acknowledgements, and References. You can look at an [example accepted paper](example_paper). Given this format, a "full length" paper is not permitted, and software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation.
 
 ```{important}
 Your paper will be reviewed by two or more reviewers in a public GitHub issue. Take a look at the [review checklist](review_checklist) and  [review criteria](review_criteria) to better understand how your submission will be reviewed.
@@ -208,7 +201,7 @@ Link syntax is `[link description](targetURL)`. E.g., this link to the [Journal 
 
 Open Journal publications are not limited by the constraints of print publications. We encourage authors to use hyperlinks for websites and other external resources. However, the standard scientific practice of citing the relevant publications should be followed regardless.
 
-### Grid Tables
+### Grid tables
 
 Grid tables are made up of special characters which form the rows and columns, and also change table and style variables.
 
@@ -246,7 +239,7 @@ Sample grid table:
     | Footer                                               |
     +===================+============+=====================+
 
-### Figures and Images
+### Figures and images
 
 To create a figure, a captioned image must appear by itself in a paragraph. The Markdown syntax for a figure is a link, preceded by an exclamation point (!) and a description.  
 Example:  
@@ -274,7 +267,7 @@ The full citation will display as
 > Block\"." *Journal of Applied Behavior Analysis* 7 (3): 497.
 > <https://doi.org/10.1901/jaba.1974.7-497a>.
 
-### Mathematical Formulæ
+### Mathematical formulæ
 
 Mark equations and other math content with dollar signs ($). Use a single dollar sign ($) for math that will appear directly within the text. Use two dollar signs ($$) when the formula is to be presented centered and on a separate line, in "display" style. The formula itself must be given using TeX syntax.
 

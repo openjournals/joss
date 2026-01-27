@@ -156,7 +156,7 @@ Authors are strongly encouraged to include an automated test suite covering the 
 
 The JOSS paper must include specific required sections beyond the basic summary and references. Reviewers should verify that all required sections are present and substantive.
 
-#### Statement of Need (required)
+#### Statement of need (required)
 
 The paper must have a clearly labeled "Statement of need" section that:
 
@@ -172,6 +172,8 @@ This section should make a compelling case for why the software is needed and wh
 
 #### State of the field (required)
 
+The paper must have a section that:
+
 Authors must describe how their software compares to other commonly-used packages in the research area. When related tools exist, authors must provide a clear "build vs. contribute" justification explaining:
 
 - Their unique scholarly contribution
@@ -182,7 +184,7 @@ Authors must describe how their software compares to other commonly-used package
 > **OK:** Identifies related work and explains key differences<br />
 > **Bad (not acceptable):** Ignores existing similar tools or fails to justify why contributing to existing projects wasn't appropriate
 
-#### Software Design (required)
+#### Software design (required)
 
 The paper must include a section explaining the architectural choices made:
 
@@ -196,7 +198,7 @@ The content should be compelling and demonstrate meaningful design thinking, not
 > **OK:** Clear explanation of architecture with some rationale<br />
 > **Bad (not acceptable):** Generic code structure description without explaining design reasoning
 
-#### Research Impact Statement (required)
+#### Research impact statement (required)
 
 The paper must provide evidence of either:
 

@@ -42,7 +42,7 @@ Please adhere to this code of conduct in any interactions you have in the JOSS c
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Added some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+5. Create a new pull request
 
 ## ⚙️ Development
 
@@ -70,7 +70,7 @@ objc[41226]: +[__NSCFConstantString initialize] may have been in progress in ano
 
 To resolve it, either in your shell file or in the shell itself add:
 
-```azure
+```bash
 export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 ```
 

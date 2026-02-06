@@ -57,7 +57,8 @@ The project should show evidence of sustained development over time (preferably 
 - Evolution of features and capabilities
 
 > **Good:** Commits distributed over 6+ months showing gradual feature development<br />
-> **Concerning:** All or most commits concentrated in the last few weeks before submission
+> **OK:** Shorter development period but clear evidence of iterative refinement and sustained effort<br />
+> **Not acceptable:** All or most commits concentrated in the last few weeks before submission
 
 #### Open development
 
@@ -69,7 +70,7 @@ The software should have been developed openly from early stages. For projects w
 
 > **Good:** Repository public from inception with documented releases and community interaction<br />
 > **OK:** Repository made public 6+ months ago with clear evidence of ongoing development<br />
-> **Concerning:** Repository made public immediately before submission with limited public development history
+> **Not acceptable:** Repository made public immediately before submission with limited public development history
 
 ```{note}
 Software previously developed privately may be acceptable if authors can demonstrate that the work represents substantial effort and the software has been publicly available with demonstrated use for at least six months.
@@ -84,7 +85,9 @@ The commit history should show contributions from multiple developers and eviden
 - Responses to issues and feature requests
 - Evidence of community-driven improvements
 
-Single-author projects may be acceptable if they show other evidence of community engagement (extensive issues/discussions, external feature requests, documented users).
+> **Good:** Multiple developers contributing to the codebase with evidence of iterative refinement through community feedback (issues, pull requests, code review)<br />
+> **OK:** Single author but shows other evidence of community engagement, either in the repository (issues, discussions, external feature requests) or evidenced in the paper (documented users, community influence on development)<br />
+> **Not acceptable:** Single author with no evidence of community engagement, external use, or collaborative input
 
 #### Good practices
 

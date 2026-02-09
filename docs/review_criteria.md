@@ -57,7 +57,7 @@ The project should show evidence of sustained development over time (preferably 
 - Evolution of features and capabilities
 
 > **Good:** Commits distributed over 6+ months showing gradual feature development<br />
-> **OK:** Shorter development period but clear evidence of iterative refinement and sustained effort<br />
+> **OK:** Development spanning 6+ months but with sporadic or bursty activity patterns (e.g., concentrated bursts, rather than steady continuous development)<br />
 > **Not acceptable:** All or most commits concentrated in the last few weeks before submission
 
 #### Open development

@@ -17,14 +17,14 @@ gem 'omniauth-rails_csrf_protection'
 gem 'octokit'
 gem 'pdf-reader', '~> 2.11.0'
 gem 'pg', '~> 1.4.6'
-gem 'pagy'
+gem 'pagy', '~> 9.4.0'
 gem 'rails', '7.2.2.2'
 gem "importmap-rails"
 gem "turbo-rails"
 gem "stimulus-rails"
 gem 'responders'
 gem 'sanitize', '~> 6.0.1'
-gem 'searchkick'
+gem 'searchkick', '<6'
 gem 'elasticsearch', '<7.14'
 gem 'uglifier', '4.2.0'
 gem 'jbuilder', '~> 2.11'

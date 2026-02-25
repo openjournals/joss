@@ -494,6 +494,7 @@ describe DispatchController, type: :controller do
       expect(paper.reload.accepted_at).to_not be_nil
       expect(paper.reload.state).to eql('accepted')
       expect(paper.metadata['paper']['reviewers']).to eql(["@jim", "@bob"])
+      expect(paper.reload.reviewers).to eql(["@jim", "@bob"])
     end
 
     it "should not update accepted_at on paper reacceptance" do

@@ -127,6 +127,8 @@ class DispatchController < ApplicationController
         metadata = nil
       end
 
+      metadata_reviewers = metadata&.dig('paper', 'reviewers').presence
+
       @paper.update(
         doi: params[:doi],
         archive_doi: params[:archive_doi],
@@ -134,7 +136,8 @@ class DispatchController < ApplicationController
         citation_string: params[:citation_string],
         authors: params[:authors],
         title: params[:title],
-        metadata: metadata
+        metadata: metadata,
+        reviewers: metadata_reviewers || @paper.reviewers
       )
 
       if @paper.accept!

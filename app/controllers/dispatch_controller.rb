@@ -54,6 +54,7 @@ class DispatchController < ApplicationController
   def api_assign_reviewers
     if params[:secret] == ENV['BOT_SECRET']
       paper = Paper.find_by_meta_review_issue_id(params[:id])
+      paper = Paper.find_by_review_issue_id(params[:id]) if paper.nil?
       return head :unprocessable_entity unless paper
       paper.set_reviewers(params[:reviewers])
     else

@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_10_08_130939) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_27_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
+  enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
 
   create_table "editors", id: :serial, force: :cascade do |t|
@@ -32,6 +33,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_08_130939) do
     t.string "availability_comment"
     t.integer "max_assignments", default: 4, null: false
     t.integer "buddy_id"
+    t.string "affiliation", default: ""
     t.index ["buddy_id"], name: "index_editors_on_buddy_id"
     t.index ["user_id"], name: "index_editors_on_user_id"
   end

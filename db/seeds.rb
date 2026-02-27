@@ -357,21 +357,34 @@ Editor.create(
 
 case Rails.env
 when "development"
-  aeic = Editor.create!(
+  aeic = Editor.find_or_initialize_by(login: "aeicfake")
+  aeic.update(
     kind: "board",
     first_name: "Editor In Chief",
     last_name: "Fakington",
-    login: "aeicfake",
     email: "aeicfake@example.com",
     categories: ["Astronomy"]
   )
-  track = Track.create!(
-    code: 0,
+  aeic.save
+
+  track = Track.find_or_initialize_by(code: 0)
+  track.update(
     name: "Railroad",
     short_name: "rail",
     aeics: [aeic]
   )
-  editor = Editor.create!(
+  track.save
+
+  subject = Subject.find_or_initialize_by(name: "Trains")
+  subject.update(
+    track: track,
+    created_at: 10.minutes.ago,
+    updated_at: Time.now
+  )
+  subject.save
+
+  editor = Editor.find_or_initialize_by(login: 'lordfake')
+  editor.update(
     kind: "topic",
     first_name: "Lord",
     last_name: "Fakington",
@@ -380,13 +393,26 @@ when "development"
     categories: ["Astronomy"],
     tracks: [track]
   )
-  user = User.create!(
+  editor.save
+
+  editor_user = User.find_or_initialize_by(uid: 12345)
+  editor_user.update(
+    name: 'Lord Fakington',
+    email: 'lordfake@example.com',
+    admin: true,
+    provider: 'orcid',
+    github_username: 'lordfake_namedoesnt_exist',
+    editor: editor
+  )
+  editor_user.save
+
+  user = User.create(
     name: "Sneakers T. Rat",
     email: "sneakers@example.com",
     github_username: "fakeuser_namedoesnt_exist"
   )
 
-  paper = Paper.create!(
+  paper = Paper.create(
     editor: editor,
     submitting_author: user,
     title: "On the mysteries of draperies and various such textiles",

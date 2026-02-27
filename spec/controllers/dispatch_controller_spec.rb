@@ -353,6 +353,18 @@ describe DispatchController, type: :controller do
       expect(paper.reload.reviewers).to eql(["@joey", "@dave"])
     end
 
+    it "with the correct API key using review_issue_id" do
+      paper = create(:under_review_paper, review_issue_id: 5678)
+
+      post :api_assign_reviewers, params: {secret: "testBOTsecret",
+                                          id: 5678,
+                                          reviewers: "joey, dave"
+                                          }
+
+      expect(response).to be_successful
+      expect(paper.reload.reviewers).to eql(["@joey", "@dave"])
+    end
+
     it "with the correct API key and invalid paper" do
       editor = create(:editor, login: "jimmy")
       paper = create(:review_pending_paper, state: "review_pending", meta_review_issue_id: 1234)
@@ -482,6 +494,7 @@ describe DispatchController, type: :controller do
       expect(paper.reload.accepted_at).to_not be_nil
       expect(paper.reload.state).to eql('accepted')
       expect(paper.metadata['paper']['reviewers']).to eql(["@jim", "@bob"])
+      expect(paper.reload.reviewers).to eql(["@jim", "@bob"])
     end
 
     it "should not update accepted_at on paper reacceptance" do

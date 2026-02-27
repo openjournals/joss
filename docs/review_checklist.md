@@ -27,7 +27,7 @@ Note this section of our documentation only describes the JOSS review checklist.
 
 - **Development timeline:** Does the project show evidence of sustained development over time (preferably months or years) rather than rapid, recent code generation?
 - **Open development:** Was the software developed openly from early stages? For projects with recent public repositories, is there at least six months of public development history with evidence of releases, public issues/pull requests, and ideally external engagement?
-- **Collaborative effort:** Does the commit history show contributions from multiple developers and evidence of iterative refinement through community feedback?
+- **Collaborative effort:** Does the project show evidence of community engagement such as contributions from multiple developers, issues/discussions from external users, or community influence on the development described in the paper?
 - **Good practices:** Does the project follow good open-source practices (license, documentation, tests and/or verification processes, releases, and clear contribution/support pathways)?
 
 ## Functionality

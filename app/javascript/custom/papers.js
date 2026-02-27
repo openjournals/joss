@@ -13,7 +13,7 @@ authorCheck = function() {
   }
 };
 
-// Set the height of the paper container when loaded and everytime window is resized
+// Set the height of the paper container when loaded and every time window is resized
 setPaperSize = function() {
   var height, paper, paper_container, width;
   if ($("#joss-paper").length > 0) {

@@ -46,6 +46,10 @@ The decision on scope and significance is ultimately one made by JOSS editors. R
 
 ### Development history and open-source practice
 
+```{note}
+The criteria in this section also serve as pre-review screening gates. If you find a clear failure here early in your review — for example, a repository made public days before submission, or a commit history concentrated into a short window — flag it to the handling editor immediately rather than proceeding with a full review. The editor can then close the review and issue a desk rejection.
+```
+
 Beyond the immediate research contribution, reviewers should evaluate whether the software represents a sustained, collaborative effort that follows good open-source practices:
 
 #### Development timeline
@@ -86,8 +90,13 @@ The commit history should show contributions from multiple developers and eviden
 - Evidence of community-driven improvements
 
 > **Good:** Multiple developers contributing to the codebase with evidence of iterative refinement through community feedback (issues, pull requests, code review)<br />
-> **OK:** Single author but shows other evidence of community engagement, either in the repository (issues, discussions, external feature requests) or evidenced in the paper (documented users, community influence on development)<br />
+> **OK:** Single author but shows other evidence of community engagement, either in the repository or evidenced in the paper<br />
 > **Not acceptable:** Single author with no evidence of community engagement, external use, or collaborative input
+
+For single-author projects, community engagement evidence in the paper is acceptable and may be the primary signal. Look for:
+
+- The paper explicitly describing community use and influence, e.g. *"The code has been used in publications X, Y, Z and has been modified and extended in response to those applications."* A well-established research impact (such as software that has been in active use in a research community for years) counts here even if the repository lacks external contributors.
+- The author list itself as evidence of collaborative context. A single developer working closely with a research group — where advisors, collaborators, or domain experts are co-authors — is meaningfully different from a solo project with no broader community. If the author list seems unexpectedly short given the scope of the work, it is appropriate to raise this.
 
 #### Good practices
 

@@ -40,6 +40,39 @@ Projects developed privately are not eligible until there is a public record of 
 
 In addition, JOSS requires that software should be feature-complete (i.e., no half-baked solutions), packaged appropriately according to common community standards for the programming language being used (e.g., [Python](https://packaging.python.org), [R](https://r-pkgs.org/index.html)), and designed for maintainable extension (not one-off modifications of existing tools). "Minor utility" packages, including "thin" API clients, and single-function packages are not acceptable.
 
+### Pre-review screening criteria
+
+Before entering review, all submissions are evaluated against the following gates. A submission that fails any one of these will receive a desk rejection, but can be resubmitted once the gaps are addressed.
+
+#### Must meet (all required)
+
+**1. Sufficient public development history**
+
+The repository must have been public for more than six months prior to submission, with active development spanning that period. A repository made public immediately before submission, or one showing development concentrated into a few days or weeks,
+will not be accepted. We run automated checks on commit distribution — a repo dump is not a history.
+
+**2. Demonstrated research impact**
+
+There must be evidence that the software is being used for research — at minimum by the developers themselves, and ideally by others. Acceptable signals include: references in published papers or preprints, DOIs linking to the software, documented adoption by other research groups, or clear integration into research workflows.
+
+Aspirational statements about future use are not sufficient.
+
+**3. Good open source practices**
+
+The repository must show active use of open-source workflows. For multi-author projects this means evidence of issues, pull requests, and public discussion. For single-author projects, this bar can be met more broadly — but *multiple* indicators must be present at submission time: a meaningful public commit history over time, tagged releases or a changelog, tests and CI, clear documentation, a CONTRIBUTING file, and stated support or governance expectations. A solo project that is otherwise clearly open and well-maintained will not be rejected solely for lacking a PR workflow. However, a single-author project with *none* of these signals is not ready.
+
+**4. Iterative development over time**
+
+The development history must show ongoing iteration, not a single burst of commits. We look for evidence that the software has been refined through use and feedback over time. A repository where all significant work was added in a concentrated window is a signal that the project was not developed iteratively.
+
+#### Strong positive signal (not a gate, but counts in your favour)
+
+**Community engagement beyond the authors:** non-author issues, pull requests, or discussions are a strong signal of a healthy open project. Submissions with this kind of engagement are well-positioned for review.
+
+#### If your submission doesn't meet these criteria yet
+
+A desk rejection on these grounds may be a "not yet," rather than a "never." If your submission is otherwise solid, we will attempt to write a rejection notice that tells you specifically what is missing. Fix the gaps, continue developing openly, and resubmit in six months or more.
+
 #### AI Usage Policy
 
 **Author use:** The use of generative AI is permitted for most aspects of a JOSS submission (e.g., software creation and review, generating documentation, assisting with paper authoring), however all such use must be disclosed in an "AI usage disclosure" statement which includes:

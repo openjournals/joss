@@ -8,6 +8,14 @@ class PapersController < ApplicationController
   before_action :require_aeic, only: %w(start_meta_review reject change_track)
   before_action :sanitize_page_param
 
+  rescue_from Elasticsearch::Transport::Transport::Errors::BadGateway do
+    flash.now[:error] = "Search is temporarily unavailable. Please try again in a moment."
+    @pagy, @papers = pagy(Paper.none)
+    @term = ""
+    @filtering = true
+    render template: 'papers/index'
+  end
+
   def recent
     @pagy, @papers = pagy(Paper.visible, items: 10)
 

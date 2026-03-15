@@ -431,6 +431,28 @@ describe PapersController, type: :controller do
     end
   end
 
+  describe "Elasticsearch BadGateway handling" do
+    let(:bad_gateway) { Elasticsearch::Transport::Transport::Errors::BadGateway.new("[502] Bad Gateway") }
+
+    it "renders gracefully when search action hits a BadGateway error" do
+      allow(Paper).to receive(:search).and_raise(bad_gateway)
+
+      get :search, params: { q: "ruby" }
+
+      expect(response).to be_successful
+      expect(flash.now[:error]).to match(/temporarily unavailable/)
+    end
+
+    it "renders gracefully when filter action hits a BadGateway error" do
+      allow(Paper).to receive(:search).and_raise(bad_gateway)
+
+      get :filter, params: { author: "someone" }
+
+      expect(response).to be_successful
+      expect(flash.now[:error]).to match(/temporarily unavailable/)
+    end
+  end
+
   describe "Paper/by/{author} route" do
     it "handles author names with periods" do
       assert_routing "/papers/by/Author%20T.%20Lastname", { controller: "papers", action: "filter", author: "Author T. Lastname" }

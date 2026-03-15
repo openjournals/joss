@@ -46,6 +46,10 @@ The decision on scope and significance is ultimately one made by JOSS editors. R
 
 ### Development history and open-source practice
 
+```{note}
+The criteria in this section also serve as pre-review screening gates. If you find a clear failure here early in your review — for example, a repository made public days before submission, or a commit history concentrated into a short window — flag it to the handling editor immediately rather than proceeding with a full review. The editor can then close the review and issue a desk rejection.
+```
+
 Beyond the immediate research contribution, reviewers should evaluate whether the software represents a sustained, collaborative effort that follows good open-source practices:
 
 #### Development timeline

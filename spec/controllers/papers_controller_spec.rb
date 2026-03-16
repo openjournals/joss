@@ -443,12 +443,13 @@ describe PapersController, type: :controller do
       expect(response.status).to eq(400)
     end
 
-    it "treats a non-string q param as an empty search" do
+    it "returns 400 for a non-string q param" do
       get :search, params: { q: { "$gt" => "1" } }
-      expect(response).to be_successful
+      expect(response.status).to eq(400)
     end
 
     it "handles an array page param without erroring" do
+      allow(Paper).to receive(:search).and_raise(Elasticsearch::Transport::Transport::Errors::BadGateway)
       get :search, params: { q: "ruby", page: ["99999999"] }
       expect(response).to be_successful
     end

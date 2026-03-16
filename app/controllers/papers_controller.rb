@@ -16,6 +16,8 @@ class PapersController < ApplicationController
     render template: 'papers/index'
   end
 
+  rescue_from Searchkick::InvalidQueryError, with: :bad_request
+
   def recent
     @pagy, @papers = pagy(Paper.visible, items: 10)
 
@@ -69,13 +71,14 @@ class PapersController < ApplicationController
   end
 
   def search
-    if params['q'].present?
-      @papers = Paper.search(params['q'], fields: [:authors, :title, :tags, :languages],
+    q = params['q'].is_a?(String) ? params['q'] : nil
+    if q.present?
+      @papers = Paper.search(q, fields: [:authors, :title, :tags, :languages],
                   page: params[:page],
                   per_page: 10)
       @pagy = Pagy.new_from_searchkick(@papers)
 
-      @term = "search results for '#{params['q']}'"
+      @term = "search results for '#{q}'"
     else
       @pagy, @papers = pagy(Paper.none)
       @term = "results for empty search"
@@ -338,8 +341,8 @@ class PapersController < ApplicationController
   private
 
   def sanitize_page_param
-    page = params[:page].to_i
-    params[:page] = page >= 1 ? page : 1
+    page = Array.wrap(params[:page]).first.to_i
+    params[:page] = page.clamp(1, 1000)
   end
 
   def paper_params

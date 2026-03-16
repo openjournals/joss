@@ -431,6 +431,30 @@ describe PapersController, type: :controller do
     end
   end
 
+  describe "Bot abuse / bad param handling" do
+    it "returns 400 for a null byte in the paper SHA" do
+      get :show, params: { id: "abc\x00def" }
+      expect(response.status).to eq(400)
+    end
+
+    it "returns 400 for Searchkick::InvalidQueryError" do
+      allow(Paper).to receive(:search).and_raise(Searchkick::InvalidQueryError)
+      get :search, params: { q: "ruby" }
+      expect(response.status).to eq(400)
+    end
+
+    it "returns 400 for a non-string q param" do
+      get :search, params: { q: { "$gt" => "1" } }
+      expect(response.status).to eq(400)
+    end
+
+    it "handles an array page param without erroring" do
+      allow(Paper).to receive(:search).and_raise(Elasticsearch::Transport::Transport::Errors::BadGateway)
+      get :search, params: { q: "ruby", page: ["99999999"] }
+      expect(response).to be_successful
+    end
+  end
+
   describe "Elasticsearch BadGateway handling" do
     let(:bad_gateway) { Elasticsearch::Transport::Transport::Errors::BadGateway.new("[502] Bad Gateway") }
 

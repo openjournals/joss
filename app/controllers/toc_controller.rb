@@ -2,6 +2,7 @@ class TocController < ApplicationController
   include SettingsHelper
 
   before_action :set_toc_data
+  before_action :sanitize_page_param
 
   def current_issue
     filter_papers(@issues.last, :issue)
@@ -49,6 +50,11 @@ class TocController < ApplicationController
       return volume if issues.include?(i)
     end
     return 0
+  end
+
+  def sanitize_page_param
+    page = Array.wrap(params[:page]).first.to_i
+    params[:page] = page.clamp(1, 200)
   end
 
   def filter_papers(param, field)

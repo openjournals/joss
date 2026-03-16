@@ -1,6 +1,8 @@
 class ApplicationController < ActionController::Base
   include Pagy::Backend
   rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
+  rescue_from ArgumentError, with: :bad_request
+  rescue_from ActionController::UnfilteredParameters, with: :bad_request
 
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
@@ -62,5 +64,9 @@ private
 
   def record_not_found
     render plain: "404 Not Found", status: 404
+  end
+
+  def bad_request
+    render plain: "400 Bad Request", status: 400
   end
 end

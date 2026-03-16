@@ -53,7 +53,7 @@ class TocController < ApplicationController
   end
 
   def sanitize_page_param
-    page = Array.wrap(params[:page]).first.to_i
+    page = Array.wrap(params[:page]).first.to_s.to_i
     params[:page] = page.clamp(1, 200)
   end
 

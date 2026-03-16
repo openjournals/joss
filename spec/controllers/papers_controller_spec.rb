@@ -453,6 +453,12 @@ describe PapersController, type: :controller do
       get :search, params: { q: "ruby", page: ["99999999"] }
       expect(response).to be_successful
     end
+
+    it "handles a hash page param (e.g. page[$testing]=1)" do
+      allow(Paper).to receive(:search).and_raise(Elasticsearch::Transport::Transport::Errors::BadGateway)
+      get :filter, params: { tag: "utilities", page: { "$testing" => "1" } }
+      expect(response).to be_successful
+    end
   end
 
   describe "Elasticsearch BadGateway handling" do

@@ -10,27 +10,52 @@ To learn more about `@editorialbot`'s functionalities, take a look at our [dedic
 
 ## Overview of editorial process
 
-**Step 1: An author submits a paper.**
+**Step 1: Author submits a paper**
+
+**Step 2: The track EiC screens the submission before proceeding to invite an editor to edit**
+
+Before searching for reviewers, check the submission against the pre-review screening gates. A submission failing any of these should receive a desk rejection rather than proceeding to review.
+
+**Hard gates (reject if not met):**
+
+- **Public development history ≥ 6 months:** Is the repository public for more than six months, with development activity distributed across that period? A recent repo dump or commits concentrated into a short window fails this gate.
+- **Demonstrated research impact:** Is there evidence the software is actually being used for research? Look for paper/preprint references, DOIs, cited use by others, or documented integration into research workflows. Potential future use is not sufficient.
+- **Open source practices:** Does the repository show the expected signals of an open project? For multi-author projects: issues, PRs, public discussion. For single-author projects: at least several of — tagged releases/changelog, tests/CI, clear documentation, CONTRIBUTING file, stated support expectations. Multiple indicators must be present. Single-author projects should not be rejected *solely* for lacking a PR workflow if other signals are strong.
+- **Iterative development:** Does the commit history show ongoing refinement, or does it look like a one-time code dump? Look at commit distribution over time, not just total commit count.
+
+**Strong positive signal (not a gate):**
+
+- Non-author issues, PRs, or discussions — a sign of genuine community adoption.
+
+**Borderline cases:**
+
+If a submission doesn’t clearly fail any single gate but falls short on several, it can still be desk-rejected. Summarise the specific gaps in your rejection notice and encourage resubmission in six months once those gaps are addressed.
+
+For guidance on rejection language, see the [sample messages](sample_messages).
+
+Also check:
 
 The author can choose to select an preferred editor based on the information available in our biographies. This can be changed later.
 
-**Step 2: If you are selected as an editor you get @-mentioned in the pre-review issue.**
+**Step 3: If you are selected as an editor you get @-mentioned in the pre-review issue**
 
 This doesn’t mean that you’re the editor, just that you’ve been suggested by the author.
 
-**Step 3: Once you are the editor, find the link to the code repository in the `pre-review` issue**
+**Step 4: Once you are the editor, find the link to the code repository in the `pre-review` issue**
 
 - If the paper is not in the default branch, add it to the issue with the command: `@editorialbot set branch-where-paper-is as branch`.
 
-**Step 4: The editor looks at the software submitted and checks to see if:**
+**Step 5: The editor looks at the software submitted and checks to see if:**
 
 - There’s a general description of the software
 - The software is within scope as research software
 - It has an OSI-approved license
 
-**Step 5: The editor responds to the author saying that things look in line (or not) and will search for reviewer**
+It's also worth re-checking the pre-review screening gates that the track EiC should have also checked (step 2 above).
 
-**Step 6: The editor finds >= 2 reviewers**
+**Step 6: The editor responds to the author saying that things look in line (or not) and will search for reviewer**
+
+**Step 7: The editor finds >= 2 reviewers**
 
 - Use the list of reviewers: type the command `@editorialbot list reviewers` or
   look at use the [Reviewers Management System](https://reviewers.joss.theoj.org)
@@ -38,31 +63,31 @@ This doesn’t mean that you’re the editor, just that you’ve been suggested 
 - Or solicit reviewers outside the list. Send an email to people describing what JOSS is and asking if they would be interested in reviewing.
 - If you ask the author to suggest potential reviewers, please be sure to tell the author not to @-tag their suggestions.
 
-**Step 7: Editor tells EditorialBot to assign the reviewers to the paper**
+**Step 8: Editor tells EditorialBot to assign the reviewers to the paper**
 
 - Use `@editorialbot add @reviewer as reviewer`
 - To add a second reviewer use `@editorialbot add @reviewer2 as reviewer`
 
-**Step 8: Create the actual review issue**
+**Step 9: Create the actual review issue**
 
 - Use `@editorialbot start review`
 - An issue is created with the review checklist, one per reviewer, e.g. https://github.com/openjournals/joss-reviews/issues/717
 
-**Step 9: Close the pre-review issue**
+**Step 10: Close the pre-review issue**
 
-**Step 10: The actual JOSS review**
+**Step 11: The actual JOSS review**
 
 - The reviewer reviews the paper and has a conversation with the author. The editor lurks on this conversation and comes in if needed for questions (or CoC issues).
 - The reviewer potentially asks for changes and the author makes changes. Everyone agrees it’s ready.
 
-**Step 11: The editor pings the EiC team to get the paper published**
+**Step 12: The editor pings the EiC team to get the paper published**
 
 - Editors can get a checklist of the final steps using the `@editorialbot create post-review checklist` command
 - Make a final check of the paper with `@editorialbot generate pdf` and that all references have DOIs (where appropriate) with `@editorialbot check references`.
 - If everything looks good, ask the author to make a new release (if possible) of the software being reviewed and deposit a new archive of the software with Zenodo or figshare. Ask them to share the new version number. Update the review thread with this archive DOI: `@editorialbot set 10.5281/zenodo.xxxxxx as archive`, and with this version: `@editorialbot set <version> as version`.
 - Finally, use `@editorialbot recommend-accept` on the review thread to ping the `@openjournals/joss-eics` team letting them know the paper is ready to be accepted.
 
-**Step 12: Celebrate publication! Tweet! Thank reviewers! Say thank you on issue.**
+**Step 13: Celebrate publication! Tweet! Thank reviewers! Say thank you on issue**
 
 ### Visualization of editorial flow
 

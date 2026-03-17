@@ -103,10 +103,29 @@ One possible alternative to JOSS is to follow [GitHub's guide](https://guides.gi
 
 Your repository shows very limited public development over a period which falls significantly short of the six-month requirement.
 
-**Important:** Meeting the six-month development history requirement alone is not sufficient for JOSS publication. We will also be looking for clear evidence of demonstrated impact (such as publications using the software, external adoption beyond your research group, or documented research enabled by your tool). 
+**Important:** Meeting the six-month development history requirement alone is not sufficient for JOSS publication. We will also be looking for clear evidence of demonstrated impact (such as publications using the software, external adoption beyond your research group, or documented research enabled by your tool).
 
 Simply keeping a repository public for six months without evidence of use or community adoption will not make a submission eligible.
 
 Please see https://joss.readthedocs.io/en/latest/submitting.html#other-venues-for-reviewing-and-publishing-software-packages for other suggestions for how you might receive credit for your work.
 
+```
+
+## Rejection: does not yet meet pre-review screening criteria
+
+Use this template when a submission fails one or more of the hard screening gates. Delete the lines that don't apply, and add a sentence of specific context where helpful.
+
+```
+:wave: @name — thanks for your submission to JOSS.
+
+After an initial screening we're not able to move this forward at this time. The
+submission doesn't yet meet one or more of our [pre-review screening criteria](https://joss.readthedocs.io/en/latest/submitting.html#pre-review-screening-criteria):
+
+<!-- delete inapplicable lines and add specific context where helpful -->
+- **Public development history:** The repository has not yet been public for six months with active development spanning that period.
+- **Demonstrated research impact:** We weren't able to find clear evidence that the software is being used for research beyond the submission itself.
+- **Open source practices:** The repository is missing several of the expected indicators of an open project (tagged releases, tests/CI, documentation, contribution guidelines, etc.).
+- **Iterative development:** The development history appears concentrated in a short window rather than developed iteratively over time.
+
+This is a "not yet" rather than a final rejection. We'd encourage you to address these gaps, continue developing openly, and resubmit in six months or more. When you do resubmit, please note in your submission what has changed and reference this issue.
 ```

@@ -127,5 +127,5 @@ submission doesn't yet meet one or more of our [pre-review screening criteria](h
 - **Open source practices:** The repository is missing several of the expected indicators of an open project (tagged releases, tests/CI, documentation, contribution guidelines, etc.).
 - **Iterative development:** The development history appears concentrated in a short window rather than developed iteratively over time.
 
-This is a "not yet" rather than a final rejection. We'd encourage you to address these gaps, continue developing openly, and resubmit in six months or more. When you do resubmit, please note in your submission what has changed.
+This is a "not yet" rather than a final rejection. We'd encourage you to address these gaps, continue developing openly, and resubmit in six months or more. When you do resubmit, please note in your submission what has changed and reference this issue.
 ```

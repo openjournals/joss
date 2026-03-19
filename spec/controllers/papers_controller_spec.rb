@@ -431,6 +431,124 @@ describe PapersController, type: :controller do
     end
   end
 
+  describe "GET #admin" do
+    let(:aeic_user) { create(:user, editor: create(:board_editor)) }
+    let(:paper) { create(:accepted_paper) }
+
+    it "redirects when not logged in" do
+      get :admin, params: { id: paper.sha }
+      expect(response).to be_redirect
+    end
+
+    it "is not accessible to a standard editor" do
+      allow(controller).to receive(:current_user).and_return(create(:user, editor: create(:editor)))
+      get :admin, params: { id: paper.sha }
+      expect(response).to be_redirect
+    end
+
+    it "is not accessible to a regular user" do
+      allow(controller).to receive(:current_user).and_return(create(:user))
+      get :admin, params: { id: paper.sha }
+      expect(response).to be_redirect
+    end
+
+    it "is accessible to an AEiC via SHA" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+      get :admin, params: { id: paper.sha }
+      expect(response).to be_successful
+    end
+
+    it "is accessible to an AEiC via DOI" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+      get :admin, params: { doi: paper.doi }
+      expect(response).to be_successful
+    end
+
+    it "returns 404 for an unknown SHA" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+      get :admin, params: { id: "nonexistentsha" }
+      expect(response.status).to eq(404)
+    end
+
+    it "returns 404 for an unknown DOI" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+      get :admin, params: { doi: "10.21105/joss.99999" }
+      expect(response.status).to eq(404)
+    end
+  end
+
+  describe "#update_metadata" do
+    let(:aeic_user) { create(:user, editor: create(:board_editor)) }
+    let(:paper) { create(:accepted_paper) }
+
+    it "redirects when not logged in" do
+      post :update_metadata, params: { id: paper.sha, title: "New title" }
+      expect(response).to be_redirect
+    end
+
+    it "is not accessible to a standard editor" do
+      editor = create(:user, editor: create(:editor))
+      allow(controller).to receive(:current_user).and_return(editor)
+
+      post :update_metadata, params: { id: paper.sha, title: "New title" }
+      expect(response).to be_redirect
+      expect(paper.reload.title).not_to eq("New title")
+    end
+
+    it "is not accessible to a regular user" do
+      allow(controller).to receive(:current_user).and_return(create(:user))
+
+      post :update_metadata, params: { id: paper.sha, title: "New title" }
+      expect(response).to be_redirect
+      expect(paper.reload.title).not_to eq("New title")
+    end
+
+    it "allows an AEiC to update the title" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+
+      post :update_metadata, params: { id: paper.sha, title: "A corrected title with & symbols" }
+      expect(response).to be_redirect
+      expect(flash[:notice]).to be_present
+      paper.reload
+      expect(paper.title).to eq("A corrected title with & symbols")
+      expect(paper.metadata['paper']['title']).to eq("A corrected title with & symbols")
+    end
+
+    it "allows an AEiC to update tags" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+
+      post :update_metadata, params: { id: paper.sha, tags: "Ruby, open source, data science" }
+      expect(response).to be_redirect
+      expect(flash[:notice]).to be_present
+      expect(paper.reload.metadata['paper']['tags']).to eq(["Ruby", "open source", "data science"])
+    end
+
+    it "allows updating both title and tags at once" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+
+      post :update_metadata, params: { id: paper.sha, title: "New title", tags: "foo, bar" }
+      paper.reload
+      expect(paper.metadata['paper']['title']).to eq("New title")
+      expect(paper.metadata['paper']['tags']).to eq(["foo", "bar"])
+    end
+
+    it "allows an AEiC to update the citation string" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+
+      post :update_metadata, params: { id: paper.sha, citation_string: "Smith et al., 2024, JOSS" }
+      expect(response).to be_redirect
+      expect(paper.reload.citation_string).to eq("Smith et al., 2024, JOSS")
+    end
+
+    it "does not update the title if the param is blank" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+      original_title = paper.metadata['paper']['title']
+
+      post :update_metadata, params: { id: paper.sha, title: "" }
+      expect(paper.reload.metadata['paper']['title']).to eq(original_title)
+    end
+  end
+
   describe "Bot abuse / bad param handling" do
     it "returns 400 for a null byte in the paper SHA" do
       get :show, params: { id: "abc\x00def" }

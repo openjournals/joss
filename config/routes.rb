@@ -14,6 +14,7 @@ Rails.application.routes.draw do
       post 'reject'
       post 'withdraw'
       post 'change_track'
+      post 'update_metadata'
       get 'lookup_track'
     end
 

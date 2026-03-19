@@ -5,7 +5,7 @@ class PapersController < ApplicationController
 
   before_action :require_user, only: %w(new create withdraw)
   before_action :require_complete_profile, only: %w(create)
-  before_action :require_aeic, only: %w(start_meta_review reject change_track)
+  before_action :require_aeic, only: %w(start_meta_review reject change_track update_metadata)
   before_action :sanitize_page_param
 
   rescue_from Elasticsearch::Transport::Transport::Errors::BadGateway do
@@ -184,6 +184,26 @@ class PapersController < ApplicationController
     @paper.move_to_track(track)
 
     flash[:notice] = "Track for the paper changed!"
+    redirect_to paper_path(@paper)
+  end
+
+  def update_metadata
+    @paper = Paper.find_by_sha(params[:id])
+
+    unless @paper.metadata.dig('paper')
+      flash[:error] = "Invalid metadata update."
+      redirect_to paper_path(@paper) and return
+    end
+
+    @paper.metadata['paper']['title'] = params[:title] if params[:title].present?
+    @paper.metadata['paper']['tags'] = params[:tags].split(',').map(&:strip).reject(&:blank?) if params[:tags].present?
+
+    if @paper.save
+      flash[:notice] = "Paper metadata updated."
+    else
+      flash[:error] = "Paper metadata could not be saved."
+    end
+
     redirect_to paper_path(@paper)
   end
 

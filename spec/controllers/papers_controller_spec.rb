@@ -431,6 +431,52 @@ describe PapersController, type: :controller do
     end
   end
 
+  describe "GET #admin" do
+    let(:aeic_user) { create(:user, editor: create(:board_editor)) }
+    let(:paper) { create(:accepted_paper) }
+
+    it "redirects when not logged in" do
+      get :admin, params: { id: paper.sha }
+      expect(response).to be_redirect
+    end
+
+    it "is not accessible to a standard editor" do
+      allow(controller).to receive(:current_user).and_return(create(:user, editor: create(:editor)))
+      get :admin, params: { id: paper.sha }
+      expect(response).to be_redirect
+    end
+
+    it "is not accessible to a regular user" do
+      allow(controller).to receive(:current_user).and_return(create(:user))
+      get :admin, params: { id: paper.sha }
+      expect(response).to be_redirect
+    end
+
+    it "is accessible to an AEiC via SHA" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+      get :admin, params: { id: paper.sha }
+      expect(response).to be_successful
+    end
+
+    it "is accessible to an AEiC via DOI" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+      get :admin, params: { doi: paper.doi }
+      expect(response).to be_successful
+    end
+
+    it "returns 404 for an unknown SHA" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+      get :admin, params: { id: "nonexistentsha" }
+      expect(response.status).to eq(404)
+    end
+
+    it "returns 404 for an unknown DOI" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+      get :admin, params: { doi: "10.21105/joss.99999" }
+      expect(response.status).to eq(404)
+    end
+  end
+
   describe "#update_metadata" do
     let(:aeic_user) { create(:user, editor: create(:board_editor)) }
     let(:paper) { create(:accepted_paper) }

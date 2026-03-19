@@ -16,6 +16,7 @@ Rails.application.routes.draw do
       post 'change_track'
       post 'update_metadata'
       get 'lookup_track'
+      get 'admin'
     end
 
     collection do
@@ -70,6 +71,7 @@ Rails.application.routes.draw do
   doi_prefix_name = Rails.application.settings[:abbreviation].downcase || "joss"
 
   get '/papers/:doi/status.svg', to: "papers#status", format: "svg", constraints: { doi: /10.21105\/#{doi_prefix_name}\.\d{5}R?/}
+  get '/papers/:doi/admin', to: "papers#admin", constraints: { doi: /10.21105\/#{doi_prefix_name}\.\d{5}R?/}
   get '/papers/:doi', to: "papers#show", constraints: { doi: /10.21105\/#{doi_prefix_name}\.\d{5}R?/}
   get '/papers/:doi.:format', to: "papers#show", constraints: { doi: /10.21105\/#{doi_prefix_name}\.\d{5}R?/}
 

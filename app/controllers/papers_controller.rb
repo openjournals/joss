@@ -5,7 +5,7 @@ class PapersController < ApplicationController
 
   before_action :require_user, only: %w(new create withdraw)
   before_action :require_complete_profile, only: %w(create)
-  before_action :require_aeic, only: %w(start_meta_review reject change_track update_metadata)
+  before_action :require_aeic, only: %w(start_meta_review reject change_track update_metadata admin)
   before_action :sanitize_page_param
 
   rescue_from Elasticsearch::Transport::Transport::Errors::BadGateway do
@@ -185,6 +185,14 @@ class PapersController < ApplicationController
 
     flash[:notice] = "Track for the paper changed!"
     redirect_to paper_path(@paper)
+  end
+
+  def admin
+    if params[:doi]
+      @paper = Paper.includes(:votes, :editor, notes: :editor, track: :aeics).find_by_doi!(params[:doi])
+    else
+      @paper = Paper.includes(:votes, :editor, notes: :editor, track: :aeics).find_by_sha!(params[:id])
+    end
   end
 
   def update_metadata

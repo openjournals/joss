@@ -203,8 +203,12 @@ class PapersController < ApplicationController
       redirect_to paper_path(@paper) and return
     end
 
-    @paper.metadata['paper']['title'] = params[:title] if params[:title].present?
+    if params[:title].present?
+      @paper.title = params[:title]
+      @paper.metadata['paper']['title'] = params[:title]
+    end
     @paper.metadata['paper']['tags'] = params[:tags].split(',').map(&:strip).reject(&:blank?) if params[:tags].present?
+    @paper.citation_string = params[:citation_string] if params[:citation_string].present?
 
     if @paper.save
       flash[:notice] = "Paper metadata updated."

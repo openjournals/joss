@@ -509,7 +509,9 @@ describe PapersController, type: :controller do
       post :update_metadata, params: { id: paper.sha, title: "A corrected title with & symbols" }
       expect(response).to be_redirect
       expect(flash[:notice]).to be_present
-      expect(paper.reload.metadata['paper']['title']).to eq("A corrected title with & symbols")
+      paper.reload
+      expect(paper.title).to eq("A corrected title with & symbols")
+      expect(paper.metadata['paper']['title']).to eq("A corrected title with & symbols")
     end
 
     it "allows an AEiC to update tags" do
@@ -528,6 +530,14 @@ describe PapersController, type: :controller do
       paper.reload
       expect(paper.metadata['paper']['title']).to eq("New title")
       expect(paper.metadata['paper']['tags']).to eq(["foo", "bar"])
+    end
+
+    it "allows an AEiC to update the citation string" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+
+      post :update_metadata, params: { id: paper.sha, citation_string: "Smith et al., 2024, JOSS" }
+      expect(response).to be_redirect
+      expect(paper.reload.citation_string).to eq("Smith et al., 2024, JOSS")
     end
 
     it "does not update the title if the param is blank" do

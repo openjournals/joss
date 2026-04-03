@@ -426,10 +426,9 @@ describe Paper do
       let(:editor) { "@joss_editor" }
 
       it "renders text" do
-        puts "DEBUG: reviewers_lookup_url = #{Rails.application.settings['reviewers_lookup_url']}"
         is_expected.to match /#{paper.submitting_author.github_username}/
         is_expected.to match /#{paper.submitting_author.name}/
-        is_expected.to match /#{Rails.application.settings['reviewers_lookup_url']}/
+        is_expected.to match /#{Regexp.escape(Rails.application.settings['reviewers_lookup_url'])}/
         is_expected.to match /Important Editor/
       end
 
@@ -440,10 +439,9 @@ describe Paper do
       let(:editor) { "" }
 
       it "renders text" do
-        puts "DEBUG: reviewers_lookup_url = #{Rails.application.settings['reviewers_lookup_url']}"
         is_expected.to match /#{paper.submitting_author.github_username}/
         is_expected.to match /#{paper.submitting_author.name}/
-        is_expected.to match /#{Rails.application.settings['reviewers_lookup_url']}/
+        is_expected.to match /#{Regexp.escape(Rails.application.settings['reviewers_lookup_url'])}/
       end
 
       it { is_expected.to match "Currently, there isn't a JCON editor assigned" }

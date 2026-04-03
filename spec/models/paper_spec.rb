@@ -426,6 +426,7 @@ describe Paper do
       let(:editor) { "@joss_editor" }
 
       it "renders text" do
+        puts "DEBUG: reviewers_lookup_url = #{Rails.application.settings['reviewers_lookup_url']}"
         is_expected.to match /#{paper.submitting_author.github_username}/
         is_expected.to match /#{paper.submitting_author.name}/
         is_expected.to match /#{Rails.application.settings['reviewers_lookup_url']}/
@@ -439,6 +440,7 @@ describe Paper do
       let(:editor) { "" }
 
       it "renders text" do
+        puts "DEBUG: reviewers_lookup_url = #{Rails.application.settings['reviewers_lookup_url']}"
         is_expected.to match /#{paper.submitting_author.github_username}/
         is_expected.to match /#{paper.submitting_author.name}/
         is_expected.to match /#{Rails.application.settings['reviewers_lookup_url']}/
@@ -468,7 +470,7 @@ describe Paper do
     it "should send an email if the track does change" do
       expect { @paper.move_to_track(@track_2) }.to change { ActionMailer::Base.deliveries.count }.by(1)
     end
-    
+
     it "should do nothing if track does not change" do
       expect(@paper).to_not receive(:set_track_id)
       expect_any_instance_of(Octokit::Client).to_not receive(:remove_label)

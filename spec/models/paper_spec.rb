@@ -247,7 +247,7 @@ describe Paper do
       expect(paper.is_a_retraction_notice?).to be true
     end
 
-    it "should return false oherwise" do
+    it "should return false otherwise" do
       paper = create(:paper)
 
       expect(paper.retraction_for_id).to be_nil

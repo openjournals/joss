@@ -133,3 +133,14 @@ myst_enable_extensions = [
     "linkify",
     "strikethrough"
 ]
+
+# -- Internationalization ----------------------------------------------------
+locale_dirs = ['locale/']
+gettext_uuid=True
+
+# All languages to generate .po files for
+languages = [
+    "es", # Spanish
+    "nb", # Norwegian
+    "pl", # Polish
+]

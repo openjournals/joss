@@ -286,6 +286,7 @@ class PapersController < ApplicationController
     respond_to do |format|
       format.html { render layout: false }
       format.pdf {
+        return head :not_found unless @paper.doi.present?
         data = URI.open(@paper.pdf_url)
         send_data data.read,
           :type => data.content_type,

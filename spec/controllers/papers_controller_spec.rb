@@ -355,6 +355,15 @@ describe PapersController, type: :controller do
     end
   end
 
+  describe "PDF requests" do
+    it "returns 404 for a PDF request for an unpublished paper" do
+      paper = create(:under_review_paper)
+
+      get :show, params: {id: paper.sha}, format: "pdf"
+      expect(response.status).to eq(404)
+    end
+  end
+
   describe "Status badges" do
     it "should return the correct status badge for a submitted paper" do
       submitted_paper = create(:paper, state: 'submitted')

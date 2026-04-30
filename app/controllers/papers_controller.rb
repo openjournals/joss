@@ -5,7 +5,7 @@ class PapersController < ApplicationController
 
   before_action :require_user, only: %w(new create withdraw)
   before_action :require_complete_profile, only: %w(create)
-  before_action :require_aeic, only: %w(start_meta_review reject change_track update_metadata admin)
+  before_action :require_aeic, only: %w(start_meta_review start_review reject change_track update_metadata admin)
   before_action :sanitize_page_param
 
   rescue_from Elasticsearch::Transport::Transport::Errors::BadGateway do

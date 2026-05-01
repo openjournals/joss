@@ -63,7 +63,7 @@ describe Paper do
 
     paper = Paper.create(params)
     expect(paper).to_not be_valid
-    expect(paper.errors.messages[:repository_url].first).to eq("Repository URL is missing the protocol segment (http/https)")
+    expect(paper.errors.messages[:repository_url].first).to eq("Repository URL must be a single http(s) URL with no whitespace")
 
     paper = Paper.create(params.merge(repository_url: 'http://github.com/arfon/fidgit'))
     expect(paper).to be_valid

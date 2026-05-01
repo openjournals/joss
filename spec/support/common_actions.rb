@@ -16,9 +16,9 @@ module CommonActions
     ok = OpenStruct.new(success?: true)
     no_ok = OpenStruct.new(success?: false)
     allow(Open3).to receive(:capture3).and_return(["", "", no_ok ])
-    allow(Open3).to receive(:capture3).with("git ls-remote http://github.com/arfon/fidgit").and_return(["", "", ok ])
-    allow(Open3).to receive(:capture3).with("git ls-remote https://github.com/openjournals/jose").and_return(["", "", ok ])
-    allow(Open3).to receive(:capture3).with("git ls-remote https://github.com/openjournals/jose-reviews").and_return(["", "", ok ])
+    allow(Open3).to receive(:capture3).with("git", "ls-remote", "--", "http://github.com/arfon/fidgit").and_return(["", "", ok ])
+    allow(Open3).to receive(:capture3).with("git", "ls-remote", "--", "https://github.com/openjournals/jose").and_return(["", "", ok ])
+    allow(Open3).to receive(:capture3).with("git", "ls-remote", "--", "https://github.com/openjournals/jose-reviews").and_return(["", "", ok ])
   end
 
   def disable_feature(feat, &block)

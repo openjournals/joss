@@ -11,6 +11,11 @@ describe Paper do
     expect { paper.save! }.to raise_error(ActiveRecord::RecordInvalid)
   end
 
+  it "passes repository_url as a literal argument to git, not via shell interpolation" do
+    expect(Open3).to receive(:capture3).with("git", "ls-remote", "--", anything)
+    build(:paper).save
+  end
+
   it "belongs to the submitting author" do
     association = Paper.reflect_on_association(:submitting_author)
     expect(association.macro).to eq(:belongs_to)

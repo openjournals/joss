@@ -145,7 +145,7 @@ class Paper < ApplicationRecord
   validates_presence_of :track_id, on: :create, message: "You must select a valid subject for the paper", if: Proc.new { JournalFeatures.tracks? }
   validates :kind, inclusion: { in: Rails.application.settings["paper_types"] }, allow_nil: true
   validates :submission_kind, inclusion: { in: SUBMISSION_KINDS, message: "You must select a submission type" }, allow_nil: false
-  validates_format_of :repository_url, with: /\Ahttps?:\/\//i, on: :create, message: "Repository URL is missing the protocol segment (http/https)"
+  validates_format_of :repository_url, with: /\Ahttps?:\/\/\S+\z/i, on: :create, message: "Repository URL must be a single http(s) URL with no whitespace"
   validate :check_repository_address, on: :create, unless: Proc.new {|paper| Rails.env.development? || paper.is_a_retraction_notice?}
 
   def notify_editors
@@ -521,7 +521,8 @@ class Paper < ApplicationRecord
 private
 
   def check_repository_address
-    stdout_str, stderr_str, status = Open3.capture3("git ls-remote #{repository_url}")
+    return false if errors[:repository_url].any?
+    stdout_str, stderr_str, status = Open3.capture3("git", "ls-remote", "--", repository_url)
 
     if !status.success?
       errors.add(:base, :invalid, message: "Invalid Git repository address. Check that the repository can be cloned using the value entered in the form, and that access doesn't require authentication.")

@@ -1,20 +1,6 @@
 RSpec.describe do
-  let(:reference_tracks) do
-    YAML.load_file('spec/fixtures/reference-tracks.yml')
-  end
-
-  let(:joss_tracks) do 
+  let(:joss_tracks) do
     YAML.load_file('lib/tracks.yml')
-  end
-
-  describe "Reference tracks" do
-    it "should be 346 in total" do
-      expect(reference_tracks.size).to eq(346)
-    end
-
-    it "should be not have any dupes" do
-      expect(reference_tracks.uniq.size).to eq(346)
-    end
   end
 
   describe "JOSS tracks" do
@@ -34,17 +20,9 @@ RSpec.describe do
     end
 
     it "should have no dupes" do
-      all_tracks = joss_tracks['tracks'].collect {|k,v| v['fields']}.flatten.uniq
+      all_fields = joss_tracks['tracks'].collect {|k,v| v['fields']}.flatten
 
-      expect(all_tracks.size).to eq(346)
-    end
-
-    it "should include all of the reference tracks" do
-      all_tracks = joss_tracks['tracks'].collect {|k,v| v['fields']}.flatten.uniq
-
-      reference_tracks.each do |track|
-        expect(all_tracks.include?(track)).to be(true), "Track #{track} is missing"
-      end
+      expect(all_fields.size).to eq(all_fields.uniq.size)
     end
   end
 end

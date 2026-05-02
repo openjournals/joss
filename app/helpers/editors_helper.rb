@@ -24,7 +24,7 @@ module EditorsHelper
     end
     
 
-    "<span class='#{availability_class}' title='#{comment}' %>#{display_count}</span>".html_safe
+    content_tag(:span, display_count, class: availability_class, title: comment)
   end
 
   def availability_remaining(editor)

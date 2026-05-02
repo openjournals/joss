@@ -11,6 +11,11 @@ describe Paper do
     expect { paper.save! }.to raise_error(ActiveRecord::RecordInvalid)
   end
 
+  it "passes repository_url as a literal argument to git, not via shell interpolation" do
+    expect(Open3).to receive(:capture3).with("git", "ls-remote", "--", anything)
+    build(:paper).save
+  end
+
   it "belongs to the submitting author" do
     association = Paper.reflect_on_association(:submitting_author)
     expect(association.macro).to eq(:belongs_to)
@@ -58,7 +63,7 @@ describe Paper do
 
     paper = Paper.create(params)
     expect(paper).to_not be_valid
-    expect(paper.errors.messages[:repository_url].first).to eq("Repository URL is missing the protocol segment (http/https)")
+    expect(paper.errors.messages[:repository_url].first).to eq("Repository URL must be a single http(s) URL with no whitespace")
 
     paper = Paper.create(params.merge(repository_url: 'http://github.com/arfon/fidgit'))
     expect(paper).to be_valid

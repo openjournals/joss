@@ -160,6 +160,42 @@ describe Paper do
     expect(paper.pretty_repository_name).to eq("openjournals / joss-reviews")
   end
 
+  describe "#prior_submissions" do
+    before { allow_any_instance_of(Paper).to receive(:check_repository_address).and_return(true) }
+
+    it "returns other papers that share the same repository_url" do
+      original = create(:paper, repository_url: "https://github.com/foo/bar", state: "rejected")
+      resubmission = create(:paper, repository_url: "https://github.com/foo/bar")
+
+      expect(resubmission.prior_submissions).to contain_exactly(original)
+    end
+
+    it "matches across case, trailing slash, and .git suffix variants" do
+      original = create(:paper, repository_url: "https://github.com/Foo/Bar.git")
+      resubmission = create(:paper, repository_url: "https://github.com/foo/bar/")
+
+      expect(resubmission.prior_submissions).to contain_exactly(original)
+    end
+
+    it "excludes the paper itself" do
+      paper = create(:paper, repository_url: "https://github.com/foo/bar")
+
+      expect(paper.prior_submissions).to be_empty
+    end
+
+    it "returns nothing when no other paper shares the repo" do
+      create(:paper, repository_url: "https://github.com/foo/other")
+      paper = create(:paper, repository_url: "https://github.com/foo/bar")
+
+      expect(paper.prior_submissions).to be_empty
+    end
+
+    it "returns nothing for blank repository_url" do
+      expect(Paper.prior_submissions_for("")).to be_empty
+      expect(Paper.prior_submissions_for(nil)).to be_empty
+    end
+  end
+
   it 'should know how to return the archive DOI with a full URL' do
     paper = create(:paper, archive_doi: '10.6084/m9.figshare.828487')
 

@@ -186,6 +186,23 @@ class Paper < ApplicationRecord
     recent
   end
 
+  def self.prior_submissions_for(repository_url, excluding_id: nil)
+    return none if repository_url.blank?
+
+    scope = where("lower(repository_url) IN (?)", repository_url_variants(repository_url))
+    scope = scope.where.not(id: excluding_id) if excluding_id
+    scope
+  end
+
+  def self.repository_url_variants(repository_url)
+    base = repository_url.to_s.downcase.strip.sub(/\/?(\.git\/?)?\z/, '')
+    [base, "#{base}/", "#{base}.git", "#{base}.git/"].uniq
+  end
+
+  def prior_submissions
+    self.class.prior_submissions_for(repository_url, excluding_id: id)
+  end
+
   def published?
     accepted? || retracted?
   end

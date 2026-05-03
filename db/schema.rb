@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_02_27_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_05_03_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
   enable_extension "pg_stat_statements"
@@ -115,6 +115,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_27_000001) do
     t.bigint "track_id"
     t.string "suggested_subject"
     t.bigint "retraction_for_id"
+    t.index "lower((repository_url)::text)", name: "index_papers_on_lower_repository_url"
     t.index ["editor_id"], name: "index_papers_on_editor_id"
     t.index ["eic_id"], name: "index_papers_on_eic_id"
     t.index ["labels"], name: "index_papers_on_labels", using: :gin

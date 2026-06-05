@@ -206,6 +206,11 @@ Archival releases **must:**
 Archival releases **may** optionally, at the Author's discretion:
 - Include any built artifacts like compiled binaries that would be necessary to use or understand the work.
 
+If minor changes are made to the paper after the archival release is deposited,
+e.g. due to editor requests in the period between when an editor recommends acceptance and EiC approves acceptance,
+authors do not need to deposit an additional archival release.
+Editors may request an updated archival release at their discretion for changes beyond minor formatting and typographical changes.
+
 [^archivetag]: e.g. The tag should be a version like `1.2.3` or `v1.2.3` rather than something like `joss-archive`.
 
 #### Automatic Archiving with Zenodo

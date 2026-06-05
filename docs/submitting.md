@@ -176,16 +176,16 @@ Further details about the review process are available in the [reviewer guidelin
 
 ## Post-Review
 
-Upon successful completion of the review:
+Upon successful completion of the review, the editor will ask the submitter to do the following:
 
-- Authors will make a tagged, archival release of the software in the GitHub[^otherforges] repository (see [below](#archiving-the-submission)).
-- Authors will deposit the archival release with a research data repository. The repository will accept the release and its associated metadata, and will provide a DOI for the deposit. 
-- The Author then updates the review issue thread with the version number of the release and the DOI from the data research data repository.
+- The submitter will make a tagged, archival release of the software in the GitHub or other[^otherforges] repository(ies) (see [below](#archiving-the-submission)).
+- The submitter will deposit the archival release in a research data repository. The repository will accept the release and its associated metadata, and will provide a DOI for the deposit. 
+- The submitter will then update the review issue thread to provide the version number of the release and the DOI from the data research data repository to the editor.
 - After we assign a DOI for your accepted JOSS paper, its metadata is deposited with CrossRef and listed on the JOSS website.
 - The review issue will be closed, and an automatic post from [@JOSS at Mastodon](https://fosstodon.org/@joss) will announce it!
 
 Optionally:
-- Authors may wish to add a `CITATION.cff` file referencing the JOSS publication. 
+- The submitter may wish to add a `CITATION.cff` file referencing the JOSS publication. 
   See the [`CITATION.cff` docs](https://citation-file-format.github.io/) or 
   [Zenodo's citation docs](https://help.zenodo.org/docs/github/describe-software/citation-file/).
 
@@ -193,17 +193,17 @@ Optionally:
 
 ### Archiving the Submission
 
-Submissions must be archived in a repository to ensure long-term availability of the work.
-Repositories are typically those listed in [re3data.org](https://re3data.org), 
+The software that was submitted and reviewed must be archived in a repository to ensure long-term availability of the work.
+Archival repositories are typically those listed in [re3data.org](https://re3data.org), 
 such as [Zenodo](https://zenodo.org/), 
 [figshare](https://figshare.com/), 
 or an institutional repository. 
 
 Archival releases **must:**
 - Correspond to a git tag with the current software version[^archivetag] in the submitted repository or repositories.
-- Include the complete contents of material considered during review. Typically this will be the contents of the repository, but in the case of monorepo submissions that include unreviewed material, the unreviewed material may be omitted.
+- Include the complete contents of material considered during review. Typically this will be the contents of the repository(ies), but in the case of monorepo submissions that include unreviewed material, the unreviewed material may be omitted.
 
-Archival releases **may** optionally, at the Author's discretion:
+Archival releases **may** optionally, at the submitter's discretion:
 - Include any built artifacts like compiled binaries that would be necessary to use or understand the work.
 
 If minor changes are made to the paper after the archival release is deposited,

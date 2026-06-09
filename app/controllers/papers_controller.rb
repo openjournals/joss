@@ -203,7 +203,8 @@ class PapersController < ApplicationController
   end
 
   def new
-    @paper = Paper.new
+    flash[:notice] = "#{Rails.application.settings['abbreviation']} is not accepting submissions while the board deliberates on eligibility changes."
+    redirect_to root_path and return
   end
 
   def show

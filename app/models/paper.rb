@@ -211,6 +211,10 @@ class Paper < ApplicationRecord
     retraction_for_id.present?
   end
 
+  def submitted_by?(user)
+    user.present? && user_id == user.id
+  end
+
   def invite_editor(editor_handle)
     return false unless editor = Editor.find_by_login(editor_handle)
     Notifications.editor_invite_email(self, editor).deliver_now

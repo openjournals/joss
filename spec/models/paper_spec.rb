@@ -52,6 +52,29 @@ describe Paper do
     expect(paper.submitting_author).to eq(user)
   end
 
+  describe "#submitted_by?" do
+    it "is true for the submitting author" do
+      user = create(:user)
+      paper = create(:paper, user_id: user.id)
+
+      expect(paper.submitted_by?(user)).to be true
+    end
+
+    it "is false for a different user" do
+      author = create(:user)
+      other_user = create(:user)
+      paper = create(:paper, user_id: author.id)
+
+      expect(paper.submitted_by?(other_user)).to be false
+    end
+
+    it "is false when no user is given" do
+      paper = create(:paper, user_id: create(:user).id)
+
+      expect(paper.submitted_by?(nil)).to be false
+    end
+  end
+
   it "should have a complete value for repository url" do
     params = { title: 'Test paper',
                body: 'A test paper description',

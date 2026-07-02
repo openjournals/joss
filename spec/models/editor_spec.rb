@@ -81,6 +81,38 @@ RSpec.describe Editor, type: :model do
     end
   end
 
+  describe "#board_title" do
+    it "is built from the managed track's name" do
+      board_editor = create(:board_editor)
+      create(:track, name: "Track One", aeics: [board_editor])
+
+      expect(board_editor.board_title).to eq("Associate Editor-in-Chief: Track One")
+    end
+
+    it "includes all managed tracks" do
+      board_editor = create(:board_editor)
+      create(:track, name: "Track One", aeics: [board_editor])
+      create(:track, name: "Track Two", aeics: [board_editor])
+
+      expect(board_editor.board_title).to eq("Associate Editor-in-Chief: Track One; Track Two")
+    end
+
+    it "falls back to the editor's title if there are no managed tracks" do
+      board_editor = create(:board_editor, title: "Editor-in-Chief")
+
+      expect(board_editor.board_title).to eq("Editor-in-Chief")
+    end
+
+    it "falls back to the editor's title if the tracks feature is disabled" do
+      board_editor = create(:board_editor, title: "Editor-in-Chief")
+      create(:track, aeics: [board_editor])
+
+      disable_feature(:tracks) do
+        expect(board_editor.board_title).to eq("Editor-in-Chief")
+      end
+    end
+  end
+
   describe "normalize login" do
     it "removes initial @'s" do
       editor = create(:editor, login: "@somebody")

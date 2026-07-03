@@ -93,6 +93,16 @@ class Editor < ApplicationRecord
     kind == "board"
   end
 
+  def board_title
+    return title unless JournalFeatures.tracks? && managed_tracks.any?
+
+    if board? && title.blank? && JournalFeatures.tracks? && managed_tracks.any?
+      "Associate Editor-in-Chief: #{managed_tracks.map(&:name).join('; ')}"
+    else
+      title
+    end
+  end
+
   def board_removed?
     kind_changed? && kind_was == "board"
   end

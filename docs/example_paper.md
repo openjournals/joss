@@ -40,7 +40,7 @@ date: 13 August 2017
 bibliography: paper.bib
 
 # Optional fields for papers that are part of a joint submission.
-# For example submitting to a AAS journal too, see this blog post:
+# For example, submitting to a AAS journal too, see this blog post:
 # https://blog.joss.theoj.org/2018/12/a-new-collaboration-with-aas-publishing
 #
 # If you are not making a joint submission you should remove these lines.

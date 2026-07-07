@@ -39,10 +39,16 @@ affiliations:
 date: 13 August 2017
 bibliography: paper.bib
 
-# Optional fields if submitting to a AAS journal too, see this blog post:
+# Optional fields for papers that are part of a joint submission.
+# For example submitting to a AAS journal too, see this blog post:
 # https://blog.joss.theoj.org/2018/12/a-new-collaboration-with-aas-publishing
+# or to RSECon26.
+#
+# If you are not making a joint submission you should remove these lines.
+#
 aas-doi: 10.3847/xxxxx <- update this with the DOI from AAS once you know it.
 aas-journal: Astrophysical Journal <- The name of the AAS journal.
+rsecon26: accepted
 ---
 
 # Summary

@@ -53,7 +53,7 @@ will not be accepted. We run automated checks on commit distribution — a repo 
 
 **2. Demonstrated research impact**
 
-There **must be evidence that the software is being used for research** — at minimum by the developers themselves, and ideally by others. Acceptable signals include: references in published papers or preprints, DOIs linking to the software, documented adoption by other research groups, or clear integration into research workflows. Adoption in currently proprietary workflows (e.g. before an experiment's first papers and/or data releases) is acceptable but must be demonstrated to the editorial team.
+There **must be evidence that the software is being used for research** — at minimum by the developers themselves, and ideally by others. Acceptable signals include: references in published papers or preprints, DOIs linking to the software, documented adoption by other research groups, or clear integration into research workflows. Adoption in currently private workflows (e.g., not shared publicly before an experiment's first papers and/or data releases) is acceptable but must be demonstrated to the editorial team.
 
 Aspirational statements about future use are not sufficient; JOSS will not publish papers that are meant to advertise software that is not yet being used in research.
 

@@ -26,11 +26,11 @@ JOSS publishes articles about research software. This definition includes softwa
 
 ### Scope and significance
 
-JOSS publishes articles about software that demonstrates clear research impact or credible scholarly significance. Your software should represent a meaningful contribution to the research community rather than being a one-off tool for a single analysis. Whether or not you use AI assistance in your development, submissions should demonstrate the irreplaceable human contributions: problem framing, key design decisions, thoughtful architectural choices, and practices that make software usable and sustainable for others.
+JOSS publishes articles about software that has demonstrated clear research impact. Your software should represent a meaningful contribution to the research community rather than being a one-off tool for a single analysis. Whether or not you use AI assistance in your development, submissions should demonstrate the irreplaceable human contributions: problem framing, key design decisions, thoughtful architectural choices, and practices that make software usable and sustainable for others.
 
 Some factors that may be considered by editors and reviewers when evaluating scope and significance include:
 
-- **Research impact:** Evidence of publications or analyses using the software, external adopters or integrations, or credible near-term significance demonstrated through comparative benchmarks and reproducible reference materials.
+- **Research impact:** Evidence of publications or analyses using the software, external adopters or integrations.
 - **Design thinking:** Meaningful architectural decisions and trade-offs considered. We particularly value work that builds upon or extends existing software ecosystems rather than reinventing solutions where quality alternatives already exist.
 - **Open development practices:** Sustained development over time with evidence of collaborative effort, public development history, comprehensive testing, clear documentation, and pathways for community contribution.
 - Whether a potential user can easily install, understand, and test the software. (If your software is new, please be sure a colleague has tried it.)
@@ -53,9 +53,9 @@ will not be accepted. We run automated checks on commit distribution — a repo 
 
 **2. Demonstrated research impact**
 
-There must be evidence that the software is being used for research — at minimum by the developers themselves, and ideally by others. Acceptable signals include: references in published papers or preprints, DOIs linking to the software, documented adoption by other research groups, or clear integration into research workflows.
+There **must be evidence that the software is being used for research** — at minimum by the developers themselves, and ideally by others. Acceptable signals include: references in published papers or preprints, documented adoption by other research groups, or clear integration into research workflows. Adoption in currently private workflows (e.g., not shared publicly before an experiment's first papers and/or data releases) is acceptable but must be demonstrated to the editorial team.
 
-Aspirational statements about future use are not sufficient.
+Aspirational statements about future use are not sufficient; JOSS will not publish papers that are meant to advertise software that is not yet being used in research.
 
 **3. Good open source practices**
 

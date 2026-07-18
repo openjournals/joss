@@ -39,6 +39,15 @@ module ScopeAssessmentsHelper
     content_tag(:span, "#{mark} #{text}", class: "scope-gate-status #{value}")
   end
 
+  # Compact dashboard cell: the recommendation badge linking to the paper's
+  # assessment card, or a muted dash when the paper hasn't been screened.
+  def scope_screening_cell(paper, assessment)
+    return content_tag(:span, "—", class: "scope-screening-none", title: "Not yet screened") if assessment.nil?
+
+    link_to scope_recommendation_badge(assessment), paper_url(paper),
+            title: "Automated scope screening: #{assessment.recommendation || assessment.status} — click for details"
+  end
+
   def scope_gate_summary(assessment)
     marks = assessment.gate_results.map do |_, status|
       value = status.to_s.sub(/\Amodel:/, "")

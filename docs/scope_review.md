@@ -82,13 +82,24 @@ app; used read-only here).
 ## Running
 
 ```
-rake scope_review:sweep                # assess unassessed incoming papers (LIMIT=10)
+rake scope_review:backlog              # one-off: screen the whole pre-editor backlog (run once at deploy)
+rake scope_review:backlog DRY_RUN=1    # preview the target set without assessing
+rake scope_review:sweep                # ongoing: assess unassessed incoming papers (LIMIT=10)
 rake scope_review:sweep STALE=1        # also re-assess papers whose repo HEAD moved
-rake scope_review:assess PAPER_ID=123  # force one paper
+rake scope_review:assess PAPER=123     # force one paper (id or sha)
 ```
 
-On Heroku: add a Scheduler job running `rake scope_review:sweep` every 10
-minutes. Each run is a one-off dyno; runs with no work exit in seconds.
+**At deploy, run the backlog pass once:** `heroku run rake scope_review:backlog`.
+It screens every pre-editor paper (submitted / review_pending, no editor)
+except those already labelled `waitlisted` (an editor cleared them) or
+`paused` (deliberately parked). It skips papers that already have an
+assessment, so it is resumable — re-run it if a dyno is interrupted. Unlike
+the sweep it is not gated on `scope_review.enabled`, since it is a deliberate
+operator action. Bound it with `LIMIT=N` to test on a handful first.
+
+Ongoing, on Heroku: add a Scheduler job running `rake scope_review:sweep`
+every 10 minutes. Each run is a one-off dyno; runs with no work exit in
+seconds.
 
 ## Rollout (shadow mode)
 

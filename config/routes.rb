@@ -102,7 +102,6 @@ Rails.application.routes.draw do
 
   get '/auth/:provider/callback', to: 'sessions#create'
   get "/signout" => "sessions#destroy", as: :signout
-  get "/dev_login/:user_id" => "sessions#dev_login" if Rails.env.development?
 
   get '/blog' => redirect("http://blog.joss.theoj.org"), as: :blog
 

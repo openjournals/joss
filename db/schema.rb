@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_05_03_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_17_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
   enable_extension "pg_stat_statements"
@@ -127,6 +127,30 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_03_000001) do
     t.index ["user_id"], name: "index_papers_on_user_id"
   end
 
+  create_table "scope_assessments", force: :cascade do |t|
+    t.bigint "paper_id", null: false
+    t.jsonb "computed_signals", default: {}, null: false
+    t.jsonb "gates", default: {}, null: false
+    t.string "recommendation"
+    t.string "tier_reached"
+    t.jsonb "evidence_trail", default: [], null: false
+    t.text "draft_note"
+    t.text "summary"
+    t.jsonb "model_versions", default: {}, null: false
+    t.string "status", default: "pending", null: false
+    t.string "repo_head_sha"
+    t.text "error_message"
+    t.bigint "decided_by_id"
+    t.datetime "decided_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["decided_by_id"], name: "index_scope_assessments_on_decided_by_id"
+    t.index ["paper_id", "created_at"], name: "index_scope_assessments_on_paper_id_and_created_at"
+    t.index ["paper_id"], name: "index_scope_assessments_on_paper_id"
+    t.index ["recommendation"], name: "index_scope_assessments_on_recommendation"
+    t.index ["status"], name: "index_scope_assessments_on_status"
+  end
+
   create_table "subjects", force: :cascade do |t|
     t.string "name"
     t.bigint "track_id"
@@ -186,4 +210,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_03_000001) do
   end
 
   add_foreign_key "papers", "papers", column: "retraction_for_id"
+  add_foreign_key "scope_assessments", "editors", column: "decided_by_id"
+  add_foreign_key "scope_assessments", "papers"
 end

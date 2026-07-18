@@ -40,6 +40,12 @@ class Paper < ApplicationRecord
            -> { out_of_scope },
            class_name: 'Vote'
 
+  has_many :scope_assessments, dependent: :destroy
+
+  def latest_scope_assessment
+    scope_assessments.latest_first.first
+  end
+
   include AASM
 
   aasm column: :state do

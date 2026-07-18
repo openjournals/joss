@@ -16,6 +16,11 @@ module Repository
     Rails.cache.fetch("repository.editors", expires_in: 3.hours) do
       GITHUB.team_members(config[nwo]["editor_team_id"]).collect { |e| "@#{e.login}" }.sort
     end
+  rescue Octokit::Error, Faraday::Error => e
+    # A GitHub hiccup (or a local environment without team access) shouldn't
+    # take down the whole admin page — degrade to an empty suggestion list.
+    Rails.logger.warn("Repository.editors unavailable: #{e.class}: #{e.message.to_s.lines.first&.strip}")
+    []
   end
 
   def self.invite_to_editors_team(editor_handle)

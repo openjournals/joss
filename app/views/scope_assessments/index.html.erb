@@ -1,0 +1,81 @@
+<div class="container">
+  <p id="notice"><%= notice %></p>
+  <div class="row dashboard">
+    <div class="col-9">
+      <div class="hero-small dashboard">
+        <div class="hero-title">
+          <%= image_tag "icon_papers.svg", height: "32px" %><h1>Scope Assessments</h1>
+        </div>
+      </div>
+      <p>
+        Automated scope screenings awaiting editorial review. These are <strong>drafts</strong> —
+        recording a decision here does not post to GitHub or email anyone.
+      </p>
+    </div>
+  </div>
+</div>
+
+<% if JournalFeatures.tracks? %>
+  <div class="container">
+    <div class="float-right">
+      <%= select_tag :track_id, options_from_collection_for_select(Track.all, "id", "name", params[:track_id].presence), include_blank: "All tracks", class: "form-control left", style: "max-width: 340px;font-size:81%", onchange: "top.location.href='?track_id=' + this.options[this.selectedIndex].value;" %>
+    </div>
+  </div>
+<% end %>
+
+<div class="container">
+  <div class="generic-content-item">
+    <h2>Awaiting review (<%= @assessments.size %>)<%= " — #{@track.name}" if @track %></h2>
+
+    <% if @assessments.any? %>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Paper</th>
+            <th>Track</th>
+            <th>Recommendation</th>
+            <th>Tier</th>
+            <th>Gates</th>
+            <th>Assessed</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @assessments.each do |assessment| %>
+            <tr>
+              <td>
+                <strong><%= link_to assessment.paper.title.presence || "Paper ##{assessment.paper_id}", paper_path(assessment.paper) %></strong><br/>
+                <small><%= link_to assessment.paper.repository_url, assessment.paper.repository_url, target: "_blank" %></small>
+              </td>
+              <td><%= assessment.paper.track&.short_name %></td>
+              <td><%= scope_recommendation_badge(assessment) %></td>
+              <td><%= assessment.tier_reached %></td>
+              <td><%= scope_gate_summary(assessment) %></td>
+              <td><%= time_ago_in_words(assessment.created_at) %> ago</td>
+              <td><%= link_to "Review →", paper_path(assessment.paper) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p>Nothing waiting — all incoming submissions have been screened and decided.</p>
+    <% end %>
+  </div>
+
+  <div class="generic-content-item">
+    <h2>Recently decided</h2>
+    <% if @decided.any? %>
+      <ul>
+        <% @decided.each do |assessment| %>
+          <li>
+            <%= link_to assessment.paper.title.presence || "Paper ##{assessment.paper_id}", paper_path(assessment.paper) %>
+            — <%= assessment.recommendation %> <strong><%= assessment.status %></strong>
+            by <%= assessment.decided_by&.full_name %> (<%= assessment.decided_at&.to_date %>)
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p>No decisions recorded yet.</p>
+    <% end %>
+  </div>
+</div>

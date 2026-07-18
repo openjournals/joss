@@ -5,7 +5,7 @@ class PapersController < ApplicationController
 
   before_action :require_user, only: %w(new create withdraw)
   before_action :require_complete_profile, only: %w(create)
-  before_action :require_aeic, only: %w(start_meta_review start_review reject change_track update_metadata admin)
+  before_action :require_aeic, only: %w(start_meta_review start_review reject desk_reject change_track update_metadata admin)
   before_action :sanitize_page_param
 
   rescue_from Elasticsearch::Transport::Transport::Errors::BadGateway do
@@ -230,6 +230,34 @@ class PapersController < ApplicationController
       flash[:error] = "Paper could not be rejected"
       redirect_to paper_path(@paper)
     end
+  end
+
+  # Desk rejection for submissions that never reach GitHub: rejects the paper
+  # and (optionally) emails the author an editor-reviewed note. The click is
+  # the human approval — the automated pipeline itself never sends anything.
+  def desk_reject
+    @paper = Paper.find_by_sha(params[:id])
+    message = params[:message].to_s.strip
+    send_email = params[:send_email] == "1"
+
+    if send_email && message.blank?
+      flash[:error] = "A message is required to email the author."
+      return redirect_to paper_path(@paper)
+    end
+
+    if @paper.reject!
+      Notifications.author_rejection_email(@paper, message).deliver_now if send_email && @paper.submitting_author.email?
+
+      if (assessment = @paper.latest_scope_assessment) && !assessment.decided?
+        assessment.update!(draft_note: message.presence || assessment.draft_note)
+        assessment.approve!(current_user.editor)
+      end
+
+      flash[:notice] = send_email ? "Paper rejected and author notified by email." : "Paper rejected (no email sent)."
+    else
+      flash[:error] = "Paper could not be rejected"
+    end
+    redirect_to paper_path(@paper)
   end
 
   def withdraw

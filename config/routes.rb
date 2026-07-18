@@ -12,6 +12,7 @@ Rails.application.routes.draw do
       post 'start_review'
       post 'start_meta_review'
       post 'reject'
+      post 'desk_reject'
       post 'withdraw'
       post 'change_track'
       post 'update_metadata'
@@ -56,6 +57,15 @@ Rails.application.routes.draw do
   get '/toc/issue/:issue', to: "toc#issue", as: :toc_issue
 
   get '/aeic/', to: "aeic_dashboard#index", as: "aeic_dashboard"
+
+  resources :scope_assessments, only: [:index, :show, :create, :update] do
+    member do
+      post :approve
+      post :override
+      post :rerun
+    end
+  end
+
   get '/editors/lookup/:login', to: "editors#lookup"
   get '/papers/lookup/:id', to: "papers#lookup"
   get '/papers/in/:language', to: "papers#filter", as: 'papers_by_language'
@@ -92,6 +102,7 @@ Rails.application.routes.draw do
 
   get '/auth/:provider/callback', to: 'sessions#create'
   get "/signout" => "sessions#destroy", as: :signout
+  get "/dev_login/:user_id" => "sessions#dev_login" if Rails.env.development?
 
   get '/blog' => redirect("http://blog.joss.theoj.org"), as: :blog
 

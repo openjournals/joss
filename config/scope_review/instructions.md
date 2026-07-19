@@ -166,7 +166,7 @@ When drafting a note to the author, be direct and professional. Do NOT open with
 - Never use internal gate numbering ("Gate 2", "Gate 3b") in author-facing text — name the criterion in plain language ("demonstrated research impact", "collaborative effort", "public development history", "automated tests").
 - State facts, not evaluations: "the repository has no automated test suite" not "the otherwise-excellent package unfortunately lacks tests".
 - Frame failing/borderline cases as "not yet" with a specific, actionable path back.
-- It is fine to note a neutral, factual strength when directly relevant to the decision (e.g. "the repository has 6+ months of active history, so Gate 1 is met") — the rule is against decorative praise, not against stating gate-relevant facts.
+- Say only what bears on the decision — the things the author needs to act on. Do not affirm or catalogue criteria that are already satisfied; the author does not need to be told what they got right, and listing the passing criteria dilutes the actionable message. In particular, mention **automated tests only when they are missing** — never write "well done, you have tests" or otherwise note that a repository *has* a test suite. Tests are important, but they are one requirement among several, not the headline. The one exception is a single, factual "this part is met" only where it is load-bearing for the decision itself (e.g. explaining that a borderline paper clears the history requirement so the concern rests elsewhere) — not as reassurance.
 
 For rejection notices:
 

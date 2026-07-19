@@ -15,7 +15,7 @@ the system architecture see [`scope_review.md`](scope_review.md).
 
 ## What it is for
 
-Since 2026 every new submission needs an editorial scope check before an editor
+Since 2026 new submissions needs additional editorial checks before an editor
 is assigned: does it show enough public development history, demonstrated
 research impact, open-source practice (including automated tests), community
 context, and iterative development? Doing this by hand for every submission is

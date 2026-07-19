@@ -1,5 +1,13 @@
 # Automated scope screening — a guide for editors
 
+> **This is an experiment we are running with the editorial team.** It is new,
+> switched on deliberately and gradually, and it is not a settled part of the
+> workflow. Nothing it produces is binding — editors make every decision, as
+> always. We are running it precisely to find out whether it is actually
+> helpful and trustworthy, and your feedback (and your agree/override clicks —
+> see below) is how we decide whether to keep it, change it, or drop it. Please
+> tell us what's wrong with its suggestions; that's the point of the exercise.
+
 This explains what the automated scope screening is for, what you see and do
 as an editor, and — for whoever maintains JOSS — how to change how it behaves
 later. It deliberately avoids the mechanical detail of each check; for that and

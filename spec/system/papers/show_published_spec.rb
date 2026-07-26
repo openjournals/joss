@@ -26,7 +26,7 @@ feature "Published paper's show page" do
 
     expect(page).to have_link("Software repository")
     expect(page).to have_link("Paper review")
-    expect(page).to have_link("Download paper")
+    expect(page).to have_link("Download paper", href: @accepted_paper.seo_pdf_url)
     expect(page).to have_link("Software archive")
 
     expect(page).to_not have_link("Retraction notice")

@@ -358,8 +358,8 @@ class Paper < ApplicationRecord
   end
 
   # Return the seo_url plus '.pdf'. This is for Google Scholar so that we can
-  # point to PDFs on the same domain on the JOSS site (although they are then
-  # 301 redirected to a pdf_url later).
+  # point to PDFs on the same domain as the paper landing page (the PDF bytes
+  # are proxied from pdf_url by PapersController#show, not redirected).
   def seo_pdf_url
     "#{seo_url}.pdf"
   end

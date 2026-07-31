@@ -610,6 +610,34 @@ describe PapersController, type: :controller do
     end
   end
 
+  describe "GET #filter by tag" do
+    # Stands in for a Searchkick::Results object: the controller passes it to
+    # Pagy.new_from_searchkick and the view iterates over it.
+    let(:empty_search_results) do
+      instance_double(Searchkick::Results,
+                      total_count: 0,
+                      options: { page: 1, per_page: 10 }).tap do |results|
+        allow(results).to receive(:each)
+        allow(results).to receive(:size).and_return(0)
+        allow(results).to receive(:to_ary).and_return([])
+      end
+    end
+
+    # Searchkick's default misspellings setting applies an edit distance of 1 to
+    # short terms, so a search for a tag like "CWL" also matched papers tagged
+    # "OWL", "CTL" or "CSL". See https://github.com/openjournals/joss/issues/1536
+    it "disables misspellings/fuzzy matching when filtering by tag" do
+      expect(Paper).to receive(:search).with(
+        "CWL",
+        hash_including(fields: [:tags, :title], misspellings: false)
+      ).and_return(empty_search_results)
+
+      get :filter, params: { tag: "CWL" }
+
+      expect(response).to be_successful
+    end
+  end
+
   describe "Paper/by/{author} route" do
     it "handles author names with periods" do
       assert_routing "/papers/by/Author%20T.%20Lastname", { controller: "papers", action: "filter", author: "Author T. Lastname" }

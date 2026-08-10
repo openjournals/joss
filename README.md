@@ -4,7 +4,7 @@
 [![Powered by NumFOCUS](https://img.shields.io/badge/powered%20by-NumFOCUS-orange.svg?style=flat&colorA=E1523D&colorB=007D8A)](http://numfocus.org)
 [![Donate to JOSS](https://img.shields.io/badge/Donate-to%20JOSS-brightgreen.svg)](https://numfocus.org/donate-to-open-journals)
 
-The [Journal of Open Source Software](https://joss.theoj.org) (JOSS) is a developer friendly journal for research software packages.
+The [Journal of Open Source Software](https://joss.theoj.org) (JOSS) is a developer friendly journal for research software packages. 
 
 ### What exactly do you mean by 'journal'
 

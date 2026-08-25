@@ -541,6 +541,23 @@ describe PapersController, type: :controller do
       expect(paper.metadata['paper']['tags']).to eq(["foo", "bar"])
     end
 
+    it "allows an AEiC to update languages" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+
+      post :update_metadata, params: { id: paper.sha, languages: "C++, Python, CMake" }
+      expect(response).to be_redirect
+      expect(flash[:notice]).to be_present
+      expect(paper.reload.metadata['paper']['languages']).to eq(["C++", "Python", "CMake"])
+    end
+
+    it "does not update languages if the param is blank" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+      original_languages = paper.metadata['paper']['languages']
+
+      post :update_metadata, params: { id: paper.sha, languages: "" }
+      expect(paper.reload.metadata['paper']['languages']).to eq(original_languages)
+    end
+
     it "allows an AEiC to update the citation string" do
       allow(controller).to receive(:current_user).and_return(aeic_user)
 

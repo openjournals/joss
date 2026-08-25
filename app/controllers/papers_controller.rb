@@ -209,6 +209,7 @@ class PapersController < ApplicationController
       @paper.metadata['paper']['title'] = params[:title]
     end
     @paper.metadata['paper']['tags'] = params[:tags].split(',').map(&:strip).reject(&:blank?) if params[:tags].present?
+    @paper.metadata['paper']['languages'] = params[:languages].split(',').map(&:strip).reject(&:blank?) if params[:languages].present?
     @paper.citation_string = params[:citation_string] if params[:citation_string].present?
 
     if @paper.save

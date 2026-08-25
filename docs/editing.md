@@ -218,6 +218,21 @@ If you believe a submission should be rejected, for example, because it is out o
 
 In the event that an author re-submits a paper to JOSS that was previously rejected, the TEiC will use their discretion to determine: 1) whether a full scope review by the entire editorial team is necessary, 2) if the previous reasons for rejection remain valid, or 3) if there have been enough updates to warrant sending the submission out for review.
 
+## Editing paper metadata (AEiCs only)
+
+Sometimes a paper's metadata needs correcting after acceptance — for example, encoding issues in the title, incorrect or missing tags or languages, or a malformed citation string. AEiCs can fix these directly from the paper's admin page (`https://joss.theoj.org/papers/<DOI>/admin`) using the **Edit paper metadata** panel.
+
+The form has four fields, all optional — any field left blank keeps its current value:
+
+- **Title**: The paper's title, as displayed on the site.
+- **Tags** (comma-separated): Note that tags duplicating a displayed language are automatically hidden from the Tags section on the paper page.
+- **Languages** (comma-separated): Note that some languages are never displayed on the paper page (e.g., Shell, TeX, Makefile, HTML, CSS, CMake, Dockerfile, Batchfile).
+- **Citation string**: The formatted citation shown for the paper.
+
+```{warning}
+Directly editing paper metadata bypasses the normal submission processes, and changes take effect immediately on the live site. Only use this to correct data errors. Note also that this only updates the metadata stored in the JOSS database (i.e., what is displayed on the JOSS site) — it does not recompile the paper PDF or update the Crossref deposit.
+```
+
 ## JOSS Collaborations
 
 ### AAS publishing

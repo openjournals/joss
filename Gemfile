@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 ruby '3.3.3'
 
 gem 'aasm', '~> 5.5.0'
+gem 'anthropic', '~> 1.0'
 gem 'chartkick'
 gem 'bootsnap'
 gem 'dotenv', '~> 2.8.1'

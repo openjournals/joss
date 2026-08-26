@@ -81,6 +81,8 @@ class HomeController < ApplicationController
     @editor = current_user.editor
     set_votes_by_paper_from_editor(@editor, @papers)
     load_pending_invitations_for_papers(@papers)
+    @show_screening = true
+    load_scope_assessments_for_papers(@papers)
 
     render template: "home/reviews"
   end
@@ -180,5 +182,15 @@ private
   def set_votes_by_paper_from_editor(editor, papers)
     in_scope_papers = papers.select {|p| p.labels.keys.include?("query-scope")}
     @votes_by_paper_from_editor = in_scope_papers.any? ? Vote.where(editor: editor).where(paper: in_scope_papers).index_by(&:paper_id) : {}
+  end
+
+  # Latest automated scope assessment per paper, in a single query (avoids an
+  # N+1 across the incoming queue). Newest-first order means the first row seen
+  # per paper is the current one.
+  def load_scope_assessments_for_papers(papers)
+    @latest_scope_assessment_by_paper = ScopeAssessment
+      .where(paper_id: papers.map(&:id))
+      .order(created_at: :desc)
+      .each_with_object({}) { |a, h| h[a.paper_id] ||= a }
   end
 end

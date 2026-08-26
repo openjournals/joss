@@ -1,0 +1,119 @@
+<% assessment = paper.latest_scope_assessment %>
+
+<div class="card scope-assessment-card" id="scope-assessment">
+  <div class="card-header">Automated scope assessment</div>
+  <div class="card-body">
+    <% if assessment.nil? %>
+      <p class="card-text">This paper has not been assessed yet.</p>
+      <%= button_to "Run scope assessment", scope_assessments_path(paper_id: paper.id), method: :post, class: "btn btn-secondary", data: { turbo_confirm: "Clone and analyze this repository now? This can take a minute or two." } %>
+    <% else %>
+      <p class="card-text scope-meta">
+        <%= scope_recommendation_badge(assessment) %>
+        tier <%= assessment.tier_reached %> · <%= assessment.status %> ·
+        assessed <%= time_ago_in_words(assessment.created_at) %> ago
+        <% if assessment.decided? %>
+          · decided by <%= assessment.decided_by&.full_name %> (<%= assessment.decided_at&.to_date %>)
+        <% end %>
+      </p>
+
+      <% if assessment.summary.present? %>
+        <p class="card-text scope-summary"><%= assessment.summary %></p>
+      <% end %>
+      <% if assessment.error_message.present? %>
+        <p class="card-text text-danger"><code><%= assessment.error_message %></code></p>
+      <% end %>
+
+      <table class="table table-sm scope-gates">
+        <tbody>
+          <% assessment.gate_results.each do |gate, status| %>
+            <tr title="<%= scope_gate_description(gate) %>">
+              <td class="scope-gate-name"><%= scope_gate_label(gate) %></td>
+              <td class="scope-gate-mark"><%= scope_gate_badge(status) %></td>
+              <td class="scope-gate-note"><%= assessment.gate_notes[gate.to_s] || assessment.gate_notes[gate] %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+      <p class="card-text scope-meta">
+        These checks implement the JOSS
+        <%= link_to "scope and significance criteria", "https://joss.readthedocs.io/en/latest/submitting.html#scope-and-significance", target: "_blank" %>;
+        hover a row for what it means. "?" means the automation couldn't decide — it never counts against a submission.
+      </p>
+
+      <% if assessment.triggers.any? %>
+        <ul class="scope-triggers">
+          <% assessment.triggers.each do |trigger| %>
+            <li><span class="scope-trigger-name"><%= trigger["name"].to_s.tr("_", " ") %></span> — <%= trigger["detail"] %></li>
+          <% end %>
+        </ul>
+      <% end %>
+
+      <% if assessment.evidence_trail.present? %>
+        <%= link_to "Investigation evidence trail &raquo;".html_safe, "#evidenceTrail", class: "scope-collapse-link", data: { toggle: 'collapse' } %>
+        <div class="collapse" id="evidenceTrail">
+          <ul class="scope-triggers">
+            <% Array(assessment.evidence_trail).each do |entry| %>
+              <li><code><%= entry["path"] %></code> — <%= entry["ok"] ? "✓" : "✗" %> <%= entry["note"] %></li>
+            <% end %>
+          </ul>
+        </div>
+        <br />
+      <% end %>
+
+      <%= link_to "Computed signals (JSON) &raquo;".html_safe, "#computedSignals", class: "scope-collapse-link", data: { toggle: 'collapse' } %>
+      <div class="collapse" id="computedSignals">
+        <pre class="scope-signals-json"><%= JSON.pretty_generate(assessment.computed_signals) %></pre>
+      </div>
+
+      <% if paper.scope_assessments.count > 1 %>
+        <p class="card-text">
+          <small>Earlier runs:
+            <% paper.scope_assessments.latest_first.drop(1).each do |other| %>
+              <%= other.created_at.to_date %> (<%= other.recommendation || other.status %>)
+            <% end %>
+          </small>
+        </p>
+      <% end %>
+
+      <% if !assessment.decided? %>
+        <hr />
+        <h5>Draft author-facing note</h5>
+
+        <% if paper.state != "rejected" && paper.review_issue_id.nil? %>
+          <%= form_tag(desk_reject_paper_url(paper)) do %>
+            <div class="form-group">
+              <%= text_area_tag :message, assessment.draft_note, rows: 12, class: "form-control scope-draft-note" %>
+            </div>
+            <div class="form-check" style="margin: 0.5em 0;">
+              <%= check_box_tag :send_email, "1", true, class: "form-check-input" %>
+              <%= label_tag :send_email, "Email this note to #{paper.submitting_author.email.presence || 'the author (no email on file!)'}", class: "form-check-label" %>
+            </div>
+            <%= submit_tag "Desk reject", class: "btn btn-danger",
+                data: { confirm: "Reject this paper#{' and email the author' if paper.submitting_author.email?}? This can't be undone." } %>
+          <% end %>
+          <p class="card-text"><small>Rejecting here records your decision on the assessment and, if the box is ticked, sends the note above to the author. Nothing is posted to GitHub.</small></p>
+        <% elsif assessment.draft_note.present? %>
+          <pre class="scope-note-preview"><%= assessment.draft_note %></pre>
+        <% end %>
+
+        <div class="row" style="margin-top: 0.5em;">
+          <div class="col-auto">
+            <%= button_to "Agree with recommendation (no action)", approve_scope_assessment_path(assessment), method: :post, class: "btn btn-primary btn-sm" %>
+          </div>
+          <div class="col-auto">
+            <%= button_to "Override (automation was wrong)", override_scope_assessment_path(assessment), method: :post, class: "btn btn-secondary btn-sm" %>
+          </div>
+          <div class="col-auto">
+            <%= button_to "Re-run", rerun_scope_assessment_path(assessment), method: :post, class: "btn btn-secondary btn-sm" %>
+          </div>
+        </div>
+        <p class="card-text"><small>"Agree"/"Override" record concurrence for calibration without touching the paper — use them when the outcome is handled elsewhere (e.g. on GitHub).</small></p>
+      <% elsif assessment.draft_note.present? %>
+        <hr />
+        <h5>Author-facing note (as decided)</h5>
+        <pre class="scope-note-preview"><%= assessment.draft_note %></pre>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+<br />

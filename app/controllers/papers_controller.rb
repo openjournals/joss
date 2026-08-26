@@ -117,7 +117,7 @@ class PapersController < ApplicationController
       @term = "reviewed by #{params['reviewer']}"
       @badge = {type: "reviewer", value: params['reviewer']}
     elsif params['tag']
-      @papers = Paper.search(params['tag'], fields: [:tags, :title], order: { accepted_at: :desc },
+      @papers = Paper.search(params['tag'], fields: [:tags, :title], misspellings: false, order: { accepted_at: :desc },
                   page: params[:page],
                   per_page: 10)
       @term = "#{params['tag']}"

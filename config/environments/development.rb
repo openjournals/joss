@@ -3,6 +3,8 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  config.log_level = :debug
+
   # In the development environment your application's code is reloaded any time
   # it changes. This slows down response time but is perfect for development
   # since you don't have to restart the web server when you make code changes.
@@ -78,4 +80,23 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Mock the OmniAuth provider for orcid in dev environment
+  # Rather than actually pinging orcid, auto-login as a
+  # test user that is an editor and admin (see db/seed.rb)
+  # the uid and provider need to match in order for
+  # a new account to not be created (and use the one in db/seed.rb)
+  OmniAuth.config.test_mode = true
+  OmniAuth.config.mock_auth[:orcid] = OmniAuth::AuthHash.new({
+    :provider => 'orcid',
+    :uid => '12345',
+    :info => {
+      :name => 'Lord Fakington',
+      :email => 'lordfake@example.com'
+    },
+    :credentials => {
+      :token => '56789',
+      :expires_at => 10.years.since
+    }
+  })
 end

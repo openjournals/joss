@@ -393,6 +393,18 @@ docker run --rm \
     openjournals/inara
 ```
 
+### Podman
+
+If you use [Podman](https://podman.io) instead of Docker, you can compile a draft of your paper locally with the same container image. Podman does not require root privileges and is available on many Linux distributions:
+
+```text
+podman run --rm \
+    --volume $PWD/paper:/data \
+    --userns=keep-id \
+    --env JOURNAL=joss \
+    docker.io/openjournals/inara
+```
+
 ### Locally
 
 The materials for the `inara` container image above are themselves open source and available in [its own repository](https://github.com/openjournals/inara). You can clone that repository and run the `inara` script locally with `make` after installing the necessary dependencies, which can be inferred from the [`Dockerfile`](https://github.com/openjournals/inara/blob/main/Dockerfile).

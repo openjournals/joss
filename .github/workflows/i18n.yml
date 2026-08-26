@@ -1,0 +1,42 @@
+name: Update i18n
+# Ensure that i18n files (for docs and website) are up to date
+# with any changes to the source docs
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-i18n-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        working-directory: docs
+        run: pip install -r requirements.txt
+
+      - name: Update .po files
+        working-directory: docs
+        run: make i18n
+
+      - name: Test for uncommitted changes
+        run: |
+          if [ -z "$(git status --porcelain)" ];
+          then
+            echo "No changes detected, translations are up to date!" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          else
+            echo "Changes to .po files detected, please run `make i18n` to reflect changes to source text" >> $GITHUB_STEP_SUMMARY
+            echo "$(git status)"
+            echo "$(git diff)"
+            exit 1
+          fi

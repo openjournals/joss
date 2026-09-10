@@ -123,6 +123,8 @@ describe 'papers/show.html.erb' do
       expect(rendered).to have_selector("form[action$='#{change_state_paper_path(paper)}']")
       expect(rendered).to have_selector("input[type=submit][value='Change paper state'][data-turbo-confirm]")
       expect(rendered).to have_selector("select[name=state] option[value=rejected]")
+      expect(rendered).to have_selector("select[name=state] option[value=review_pending]", text: "review_pending (pre-review)")
+      expect(rendered).to have_selector("select[name=state] option[value=under_review]", text: "under_review (review)")
       expect(rendered).to_not have_selector("select[name=state] option[value=submitted]")
       expect(rendered).to_not have_selector("select[name=state] option[value=accepted]")
       expect(rendered).to have_content(author.email)

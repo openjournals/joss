@@ -87,6 +87,25 @@ module PapersHelper
     return content_tag(:span, state, class: "badge #{badge_class}")
   end
 
+  # Human-readable label for a paper state, used in the AEiC "change paper
+  # state" UI. The state names don't make the pre-review/review distinction
+  # obvious, so spell it out.
+  def state_label(state)
+    case state.to_s
+    when "review_pending"
+      "review_pending (pre-review)"
+    when "under_review"
+      "under_review (review)"
+    else
+      state.to_s
+    end
+  end
+
+  # [label, value] pairs for a select, e.g. options_for_select(state_options(states))
+  def state_options(states)
+    states.map { |s| [state_label(s), s] }
+  end
+
   def time_words(paper)
     case paper.state
     when "accepted"

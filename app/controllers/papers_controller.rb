@@ -3,9 +3,9 @@ require 'open-uri'
 class PapersController < ApplicationController
   include SettingsHelper
 
-  before_action :require_user, only: %w(new create withdraw)
+  before_action :require_user, only: %w(new create)
   before_action :require_complete_profile, only: %w(create)
-  before_action :require_aeic, only: %w(start_meta_review start_review reject change_track change_state update_metadata admin)
+  before_action :require_aeic, only: %w(start_meta_review start_review change_state change_track update_metadata admin)
   before_action :sanitize_page_param
 
   rescue_from Elasticsearch::Transport::Transport::Errors::BadGateway do
@@ -232,34 +232,6 @@ class PapersController < ApplicationController
     end
 
     redirect_to paper_path(@paper)
-  end
-
-  def reject
-    @paper = Paper.find_by_sha(params[:id])
-
-    if @paper.reject!
-      flash[:notice] = "Paper rejected"
-      redirect_to paper_path(@paper)
-    else
-      flash[:error] = "Paper could not be rejected"
-      redirect_to paper_path(@paper)
-    end
-  end
-
-  def withdraw
-    @paper = Paper.find_by_sha(params[:id])
-
-    unless current_user.is_owner_of?(@paper) || current_user.aeic?
-      redirect_to paper_path(@paper) and return
-    end
-
-    if @paper.withdraw!
-      flash[:notice] = "Paper withdrawn"
-      redirect_to paper_path(@paper)
-    else
-      flash[:error] = "Paper could not be withdrawn"
-      redirect_to paper_path(@paper)
-    end
   end
 
   def new

@@ -43,80 +43,6 @@ describe PapersController, type: :controller do
     end
   end
 
-  describe "Paper rejection" do
-    it "should work for an AEiC" do
-      aeic_user = create(:user, editor: create(:board_editor))
-      allow(controller).to receive_message_chain(:current_user).and_return(aeic_user)
-      submitted_paper = create(:paper, state: 'submitted')
-
-      post :reject, params: {id: submitted_paper.sha}
-      expect(response).to be_redirect # as it's rejected the paper
-      expect(Paper.rejected.count).to eq(1)
-    end
-
-    it "should fail for a standard editor" do
-      editor = create(:user, editor: create(:editor))
-      allow(controller).to receive_message_chain(:current_user).and_return(editor)
-      submitted_paper = create(:paper, state: 'submitted')
-
-      post :reject, params: {id: submitted_paper.sha}
-      expect(response).to be_redirect # as it's rejected the paper
-      expect(Paper.rejected.count).to eq(0)
-    end
-
-    it "should fail for a standard user" do
-      user = create(:user)
-      allow(controller).to receive_message_chain(:current_user).and_return(user)
-      submitted_paper = create(:paper, state: 'submitted')
-
-      post :reject, params: {id: submitted_paper.sha}
-      expect(response).to be_redirect # as it's rejected the paper
-      expect(Paper.rejected.count).to eq(0)
-    end
-  end
-
-  describe "Paper withdrawing" do
-    it "should work for an AEiC" do
-      aeic_user = create(:user, editor: create(:board_editor))
-      allow(controller).to receive_message_chain(:current_user).and_return(aeic_user)
-      submitted_paper = create(:paper, state: 'submitted')
-
-      post :withdraw, params: {id: submitted_paper.sha}
-      expect(response).to be_redirect # as it's rejected the paper
-      expect(Paper.withdrawn.count).to eq(1)
-    end
-
-    it "should fail for a user who doesn't own the paper" do
-      user = create(:user)
-      allow(controller).to receive_message_chain(:current_user).and_return(user)
-      submitted_paper = create(:paper, state: 'submitted')
-
-      post :withdraw, params: {id: submitted_paper.sha}
-      expect(response).to be_redirect
-      expect(Paper.withdrawn.count).to eq(0)
-    end
-
-    it "should fail for editors" do
-      editor = create(:user, editor: create(:editor))
-      allow(controller).to receive_message_chain(:current_user).and_return(editor)
-      submitted_paper = create(:paper, state: 'submitted')
-
-      post :withdraw, params: {id: submitted_paper.sha}
-      expect(response).to be_redirect
-      expect(Paper.withdrawn.count).to eq(0)
-    end
-
-    it "should work for a user who owns the paper" do
-      user = create(:user)
-      allow(controller).to receive_message_chain(:current_user).and_return(user)
-      submitted_paper = create(:paper, state: 'submitted', submitting_author: user)
-
-      post :withdraw, params: {id: submitted_paper.sha}
-      expect(response).to be_redirect
-      expect(Paper.withdrawn.count).to eq(1)
-    end
-  end
-
   describe "POST #create" do
 
     it "LOGGED IN responds with success" do
@@ -532,6 +458,17 @@ describe PapersController, type: :controller do
       expect(rejected_paper.reload.state).to eq('under_review')
     end
 
+    it "allows an AEiC to mark a paper as rejected or withdrawn" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+      paper = create(:paper, state: 'review_pending', meta_review_issue_id: 1234)
+
+      post :change_state, params: { id: paper.sha, state: 'rejected' }
+      expect(paper.reload.state).to eq('rejected')
+
+      post :change_state, params: { id: paper.sha, state: 'withdrawn' }
+      expect(paper.reload.state).to eq('withdrawn')
+    end
+
     it "refuses to move a paper to review_pending when it has no pre-review issue" do
       allow(controller).to receive(:current_user).and_return(aeic_user)
       paper = create(:paper, state: 'rejected', meta_review_issue_id: nil)
@@ -552,7 +489,7 @@ describe PapersController, type: :controller do
       expect(paper.reload.state).to eq('rejected')
     end
 
-    it "refuses states that are not manually assignable" do
+    it "refuses publication states and unknown states" do
       allow(controller).to receive(:current_user).and_return(aeic_user)
 
       %w(accepted retracted superceded bogus).each do |bad_state|

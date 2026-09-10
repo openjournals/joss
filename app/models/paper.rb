@@ -78,9 +78,10 @@ class Paper < ApplicationRecord
     end
   end
 
-  # States an AEiC may set directly (bypassing the AASM events above), e.g. to
-  # "unreject" a paper. Publication states (accepted, retracted, superceded)
-  # are deliberately excluded as they have side effects beyond the state column.
+  # States an AEiC may set directly from the web UI to bring a paper back in
+  # sync with what happened on GitHub (e.g. a rejection that was reversed).
+  # Publication states (accepted, retracted, superceded) are excluded as they
+  # have side effects well beyond the state column.
   MANUALLY_ASSIGNABLE_STATES = [
     "submitted",
     "review_pending",
@@ -236,10 +237,11 @@ class Paper < ApplicationRecord
     Invitation.expire_all_for_paper(self)
   end
 
-  # Directly set the paper's state, bypassing the normal AASM transitions.
-  # Intended for manual corrections by an AEiC (e.g. moving a rejected paper
-  # back to review_pending). Returns false with an error on the record if the
-  # target state is not allowed or doesn't make sense for this paper.
+  # Directly set the paper's state, bypassing the AASM events. This is a repair
+  # tool for AEiCs when the JOSS record has drifted from GitHub (the normal
+  # reject/withdraw path is editorialbot). Returns false with an error on the
+  # record if the target state isn't allowed or doesn't make sense for this
+  # paper.
   def change_state_to(new_state)
     new_state = new_state.to_s
 

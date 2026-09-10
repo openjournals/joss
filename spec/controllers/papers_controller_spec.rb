@@ -486,6 +486,91 @@ describe PapersController, type: :controller do
     end
   end
 
+  describe "#change_state" do
+    let(:aeic_user) { create(:user, editor: create(:board_editor)) }
+    let(:rejected_paper) { create(:paper, state: 'rejected', meta_review_issue_id: 1234, review_issue_id: 5678) }
+
+    it "redirects when not logged in" do
+      post :change_state, params: { id: rejected_paper.sha, state: 'review_pending' }
+      expect(response).to be_redirect
+      expect(rejected_paper.reload.state).to eq('rejected')
+    end
+
+    it "is not accessible to a standard editor" do
+      editor = create(:user, editor: create(:editor))
+      allow(controller).to receive(:current_user).and_return(editor)
+
+      post :change_state, params: { id: rejected_paper.sha, state: 'review_pending' }
+      expect(response).to be_redirect
+      expect(rejected_paper.reload.state).to eq('rejected')
+    end
+
+    it "is not accessible to the submitting author" do
+      author = create(:user)
+      paper = create(:paper, state: 'rejected', user_id: author.id, meta_review_issue_id: 1234)
+      allow(controller).to receive(:current_user).and_return(author)
+
+      post :change_state, params: { id: paper.sha, state: 'review_pending' }
+      expect(response).to be_redirect
+      expect(paper.reload.state).to eq('rejected')
+    end
+
+    it "allows an AEiC to move a rejected paper back to review_pending" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+
+      post :change_state, params: { id: rejected_paper.sha, state: 'review_pending' }
+      expect(response).to be_redirect
+      expect(flash[:notice]).to eq("Paper state changed from 'rejected' to 'review_pending'.")
+      expect(rejected_paper.reload.state).to eq('review_pending')
+    end
+
+    it "allows an AEiC to move a rejected paper back to under_review" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+
+      post :change_state, params: { id: rejected_paper.sha, state: 'under_review' }
+      expect(response).to be_redirect
+      expect(rejected_paper.reload.state).to eq('under_review')
+    end
+
+    it "refuses to move a paper to review_pending when it has no pre-review issue" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+      paper = create(:paper, state: 'rejected', meta_review_issue_id: nil)
+
+      post :change_state, params: { id: paper.sha, state: 'review_pending' }
+      expect(response).to be_redirect
+      expect(flash[:error]).to match(/without a pre-review issue/)
+      expect(paper.reload.state).to eq('rejected')
+    end
+
+    it "refuses to move a paper to under_review when it has no review issue" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+      paper = create(:paper, state: 'rejected', meta_review_issue_id: 1234, review_issue_id: nil)
+
+      post :change_state, params: { id: paper.sha, state: 'under_review' }
+      expect(response).to be_redirect
+      expect(flash[:error]).to match(/without a review issue/)
+      expect(paper.reload.state).to eq('rejected')
+    end
+
+    it "refuses states that are not manually assignable" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+
+      %w(accepted retracted superceded bogus).each do |bad_state|
+        post :change_state, params: { id: rejected_paper.sha, state: bad_state }
+        expect(response).to be_redirect
+        expect(flash[:error]).to match(/cannot be manually set/)
+        expect(rejected_paper.reload.state).to eq('rejected')
+      end
+    end
+
+    it "refuses a no-op change to the current state" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+
+      post :change_state, params: { id: rejected_paper.sha, state: 'rejected' }
+      expect(flash[:error]).to match(/already 'rejected'/)
+    end
+  end
+
   describe "#update_metadata" do
     let(:aeic_user) { create(:user, editor: create(:board_editor)) }
     let(:paper) { create(:accepted_paper) }

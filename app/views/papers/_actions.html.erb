@@ -92,7 +92,7 @@
             <%= label_tag :citation_string, "Citation string" %>
             <%= text_field_tag :citation_string, paper.citation_string, class: "form-control", placeholder: "Leave blank to keep current value" %>
           </div>
-          <%= submit_tag "Update metadata", class: "btn btn-danger", style: "margin-top: 0.75em;", data: { confirm: "Are you sure you want to directly edit this paper's metadata?" } %>
+          <%= submit_tag "Update metadata", class: "btn btn-danger", style: "margin-top: 0.75em;", data: { turbo_confirm: "Are you sure you want to directly edit this paper's metadata?" } %>
         <% end %>
       </div>
     </div>
@@ -135,6 +135,25 @@
           </div>
         <% end %>
       </div>
+
+      <% if current_user.aeic? %>
+        <hr />
+        <p class="card-text">
+          Current state: <strong><%= paper.state %></strong>.
+          <%= link_to "Change paper state &raquo;".html_safe, "#changeState", title: "Manually change this paper's state", data: { toggle: 'collapse' } %>
+        </p>
+        <div class="row collapse" id="changeState">
+          <div class="col-md-9">
+            <div class="alert alert-danger">
+              <strong>&#9888; Warning:</strong> This directly sets the paper's state and bypasses the normal workflow. Use it only to correct mistakes (e.g. to unreject a paper). It does <em>not</em> reopen, close, or relabel anything on GitHub, so you'll need to update the review issue by hand.
+            </div>
+            <%= form_tag(change_state_paper_url(paper), class: "left") do %>
+              <%= select_tag :state, options_for_select(Paper::MANUALLY_ASSIGNABLE_STATES - [paper.state]), prompt: "Select new state", class: "form-control left", required: true %>
+              <%= submit_tag "Change paper state", class: "btn btn-danger left", data: { turbo_confirm: "This will manually change the paper's state and bypass the normal review workflow. Are you sure?" } %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
     </div>
   </div>
   <br />

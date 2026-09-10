@@ -78,6 +78,17 @@ class Paper < ApplicationRecord
     end
   end
 
+  # States an AEiC may set directly (bypassing the AASM events above), e.g. to
+  # "unreject" a paper. Publication states (accepted, retracted, superceded)
+  # are deliberately excluded as they have side effects beyond the state column.
+  MANUALLY_ASSIGNABLE_STATES = [
+    "submitted",
+    "review_pending",
+    "under_review",
+    "rejected",
+    "withdrawn"
+  ].freeze
+
   VISIBLE_STATES = [
     "accepted",
     "superceded",
@@ -223,6 +234,36 @@ class Paper < ApplicationRecord
 
   def expire_invitations
     Invitation.expire_all_for_paper(self)
+  end
+
+  # Directly set the paper's state, bypassing the normal AASM transitions.
+  # Intended for manual corrections by an AEiC (e.g. moving a rejected paper
+  # back to review_pending). Returns false with an error on the record if the
+  # target state is not allowed or doesn't make sense for this paper.
+  def change_state_to(new_state)
+    new_state = new_state.to_s
+
+    unless MANUALLY_ASSIGNABLE_STATES.include?(new_state)
+      errors.add(:state, "cannot be manually set to '#{new_state}'")
+      return false
+    end
+
+    if new_state == state
+      errors.add(:state, "is already '#{new_state}'")
+      return false
+    end
+
+    if new_state == "review_pending" && meta_review_issue_id.blank?
+      errors.add(:state, "cannot be set to 'review_pending' without a pre-review issue. Use 'Start pre review' instead.")
+      return false
+    end
+
+    if new_state == "under_review" && review_issue_id.blank?
+      errors.add(:state, "cannot be set to 'under_review' without a review issue.")
+      return false
+    end
+
+    update(state: new_state)
   end
 
   def scholar_title

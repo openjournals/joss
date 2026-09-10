@@ -53,6 +53,12 @@ Many thanks!
 :wave: @reviewer1, @reviewer2, @reviewer3, @reviewer4, would any of you be willing to review this submission for JOSS? We carry out our checklist-driven reviews here in GitHub issues and follow these guidelines: https://joss.readthedocs.io/en/latest/review_criteria.html. Please be so kind to let me know even if you're not interested, so that I can start looking for other reviewers.
 ```
 
+## Response to an unsolicited offer to review
+
+```
+Thanks so much for your interest in reviewing for JOSS! To keep our review process rigorous, reviewers are selected by the handling editor rather than self-nominated on submission threads. If you'd like to review for JOSS, please sign up at https://reviewers.joss.theoj.org — we're always looking for reviewers and would love to have you in the database.
+```
+
 ## Message to reviewers at the start of a review
 
 ```

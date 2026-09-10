@@ -78,7 +78,7 @@ describe 'papers/show.html.erb' do
   end
 
   context 'rendering admin partial' do
-    it "displays buttons when there's no GitHub issue" do
+    it "does not offer reject/withdraw buttons (those happen via editorialbot)" do
       user = create(:user)
       editor = create(:board_editor, user: user)
       author = create(:user)
@@ -90,10 +90,12 @@ describe 'papers/show.html.erb' do
 
       render template: "papers/show", formats: :html
 
-      expect(rendered).to have_selector("a[data-turbo-method=post]", text: "Reject paper")
+      expect(rendered).to_not have_selector("a[data-turbo-method=post]", text: "Reject paper")
+      expect(rendered).to_not have_selector("a[data-turbo-method=post]", text: "Withdraw paper")
+      expect(rendered).to have_content("done with editorialbot on GitHub")
     end
 
-    it "shows does not show the withdraw (or other actions) to paper owners" do
+    it "does not show the paper actions to paper owners" do
       user = create(:user)
       allow(view).to receive_message_chain(:current_user).and_return(user)
       allow(view).to receive_message_chain(:current_editor).and_return(user)
@@ -102,12 +104,11 @@ describe 'papers/show.html.erb' do
       assign(:paper, paper)
 
       render template: "papers/show", formats: :html
-      expect(rendered).to_not have_selector("a[data-turbo-method=post]", text: "Withdraw paper")
-      expect(rendered).to_not have_selector("a[data-turbo-method=post]", text: "Reject paper")
       expect(rendered).to_not have_selector("input[type=submit][value='Start pre review']")
+      expect(rendered).to_not have_selector("input[type=submit][value='Change paper state']")
     end
 
-    it "shows the withdraw/reject/start-meta-review buttons button to AEiC" do
+    it "shows the start-meta-review and change-state actions to AEiC" do
       user = create(:user)
       editor = create(:board_editor, user: user)
       author = create(:user)
@@ -118,10 +119,29 @@ describe 'papers/show.html.erb' do
       assign(:paper, paper)
 
       render template: "papers/show", formats: :html
-      expect(rendered).to have_selector("a[data-turbo-method=post]", text: "Withdraw paper")
-      expect(rendered).to have_selector("a[data-turbo-method=post]", text: "Reject paper")
       expect(rendered).to have_selector("input[type=submit][value='Start pre review']")
+      expect(rendered).to have_selector("form[action$='#{change_state_paper_path(paper)}']")
+      expect(rendered).to have_selector("input[type=submit][value='Change paper state'][data-turbo-confirm]")
+      expect(rendered).to have_selector("select[name=state] option[value=rejected]")
+      expect(rendered).to have_selector("select[name=state] option[value=review_pending]", text: "review_pending (pre-review)")
+      expect(rendered).to have_selector("select[name=state] option[value=under_review]", text: "under_review (review)")
+      expect(rendered).to_not have_selector("select[name=state] option[value=submitted]")
+      expect(rendered).to_not have_selector("select[name=state] option[value=accepted]")
       expect(rendered).to have_content(author.email)
+    end
+
+    it "only shows start-meta-review for submitted papers" do
+      user = create(:user)
+      editor = create(:board_editor, user: user)
+      allow(view).to receive_message_chain(:current_user).and_return(user)
+      allow(view).to receive_message_chain(:current_editor).and_return(user)
+
+      paper = create(:paper, state: "rejected", meta_review_issue_id: 123, submitting_author: create(:user))
+      assign(:paper, paper)
+
+      render template: "papers/show", formats: :html
+      expect(rendered).to_not have_selector("input[type=submit][value='Start pre review']")
+      expect(rendered).to have_selector("input[type=submit][value='Change paper state']")
     end
 
     it "doesn't shows admin actions button to non-admins" do
@@ -135,9 +155,8 @@ describe 'papers/show.html.erb' do
       assign(:paper, paper)
 
       render template: "papers/show", formats: :html
-      expect(rendered).to_not have_selector("button[type=submit]", text: "Withdraw paper")
-      expect(rendered).to_not have_selector("button[type=submit]", text: "Reject paper")
       expect(rendered).to_not have_selector("input[type=submit][value='Start pre review']")
+      expect(rendered).to_not have_selector("input[type=submit][value='Change paper state']")
     end
 
     it "doesn't displays buttons when there's a GitHub issue" do

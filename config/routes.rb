@@ -11,9 +11,8 @@ Rails.application.routes.draw do
     member do
       post 'start_review'
       post 'start_meta_review'
-      post 'reject'
-      post 'withdraw'
       post 'change_track'
+      post 'change_state'
       post 'update_metadata'
       get 'lookup_track'
       get 'admin'

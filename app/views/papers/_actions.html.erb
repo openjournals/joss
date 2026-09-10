@@ -92,7 +92,7 @@
             <%= label_tag :citation_string, "Citation string" %>
             <%= text_field_tag :citation_string, paper.citation_string, class: "form-control", placeholder: "Leave blank to keep current value" %>
           </div>
-          <%= submit_tag "Update metadata", class: "btn btn-danger", style: "margin-top: 0.75em;", data: { confirm: "Are you sure you want to directly edit this paper's metadata?" } %>
+          <%= submit_tag "Update metadata", class: "btn btn-danger", style: "margin-top: 0.75em;", data: { turbo_confirm: "Are you sure you want to directly edit this paper's metadata?" } %>
         <% end %>
       </div>
     </div>
@@ -101,37 +101,43 @@
 <br />
 <% end %>
 
-<% if current_user.aeic? || (current_user == paper.submitting_author) %>
-  <div class="card">
+<% if current_user.aeic? %>
+  <div class="card" id="paper-actions">
     <div class="card-header">
       Paper actions
     </div>
     <div class="card-body">
-      <p class="card-text">Available actions for you on this paper (note to editors that if you use these buttons, you'll still have to manually close the review issue on GitHub).</p>
+      <p class="card-text">
+        Current state: <strong><%= state_label(paper.state) %></strong>.
+        Rejecting or withdrawing a paper is done with editorialbot on GitHub, not from here.
+      </p>
 
-      <div class="row">
-        <% if current_user.aeic? %>
-          <% unless paper.meta_review_issue_id %>
-          <div class="col-md-5">
-            <%= form_tag(start_meta_review_paper_url(paper), class: "left") do %>
-              Editor: <%= select_tag :editor, options_for_select(Repository.editors, selected: nil), prompt: "Suggest editor (optional)", class: "form-control left" %>
-              <%= submit_tag "Start pre review", class: "btn btn-primary left start-review" %>
-            <% end %>
+      <% if paper.submitted? %>
+        <%= form_tag(start_meta_review_paper_url(paper)) do %>
+          <div class="input-group" style="max-width: 32em;">
+            <%= select_tag :editor, options_for_select(Repository.editors, selected: nil), prompt: "Suggest editor (optional)", class: "custom-select" %>
+            <div class="input-group-append">
+              <%= submit_tag "Start pre review", class: "btn btn-primary" %>
+            </div>
           </div>
-          <div class="col-md-1">
-          </div>
-          <% end %>
-
-          <% unless paper.review_issue_id %>
-          <div class="col-md-3">
-            <%= link_to "Reject paper", reject_paper_path(paper), data: { turbo_method: :post, turbo_confirm: "Rejecting. Are you sure?" }, form_class: "left", class: "btn btn-danger" %>
-          </div>
-          <% end %>
         <% end %>
+        <hr />
+      <% end %>
 
-        <% if current_user.aeic? %>
-          <div class="col-md-3">
-            <%= link_to "Withdraw paper", withdraw_paper_path(paper), data: { turbo_method: :post, turbo_confirm: "Withdrawing. Are you sure?" }, form_class: "left", class: "btn btn-danger" %>
+      <p class="card-text">
+        If the state above doesn't match what happened on GitHub (e.g. a rejection was reversed), you can
+        <%= link_to "fix the paper state &raquo;".html_safe, "#changeState", title: "Manually change this paper's state", data: { toggle: 'collapse' } %>
+      </p>
+      <div class="collapse" id="changeState">
+        <div class="alert alert-danger">
+          <strong>&#9888; Warning:</strong> This directly sets the paper's state and bypasses the normal workflow. Nothing changes on GitHub, so make sure the review issue already reflects the state you're setting here.
+        </div>
+        <%= form_tag(change_state_paper_url(paper)) do %>
+          <div class="input-group" style="max-width: 32em;">
+            <%= select_tag :state, options_for_select(state_options(Paper::MANUALLY_ASSIGNABLE_STATES - [paper.state])), prompt: "Select new state", class: "custom-select", required: true %>
+            <div class="input-group-append">
+              <%= submit_tag "Change paper state", class: "btn btn-danger", data: { turbo_confirm: "This will manually change the paper's state and bypass the normal review workflow. Are you sure?" } %>
+            </div>
           </div>
         <% end %>
       </div>

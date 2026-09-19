@@ -62,7 +62,7 @@ Specifically, you'll need:
 
 For the scheduler add-on, you'll need to designate which tasks it should run and when.
 These can be found in the `lib/tasks` folder, and involve things such as sending out weekly reminder emails to editors.
-Each task should be scheduled as a separate job; for example, `rake send_weekly_emails`.
+Each task should be scheduled as a separate job; for example, `rake editorials:send_weekly_emails`.
 
 ```{warning}
 The JOSS application needs to be able to run Git commands on run time, but since the Heroku-24 stack Git is only available at build time so the APT buildpack and an Aptfile is needed, see [this section in the Heroku docs](https://devcenter.heroku.com/articles/heroku-24-stack#changes-to-git) for more information.
@@ -172,15 +172,6 @@ For example, in `app/views/notifications` you can change the text for any emails
 Note that files which end in `.html.erb` are treated as HTML files, and typical HTML formatting applies.
 You can set the HTML styling by modifying the Sass files for your application,
 located in `app/assets/stylesheets`.
-
-There are currently a few hard-coded variables in the application which you will also need to update.
-Note that these are mostly under `lib/tasks`.
-For example, in `stats.rake`, the reviewer sheet ID is hard-coded on line 37.
-You should update this to point to your own spreadsheet where you maintain a list of eligible reviewers.
-
-In the same folder, `utils.rake` is currently hard-coded to alternate assignments of editor-in-chief based on weeks.
-You should modify this to either set a single editor-in-chief,
-or design your own scheme of alternating between members of your editorial board.
 
 ## Deploying your Buffy Application
 

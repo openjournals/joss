@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_05_03_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_19_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
   enable_extension "pg_stat_statements"
@@ -55,6 +55,21 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_03_000001) do
     t.index ["editor_id"], name: "index_invitations_on_editor_id"
     t.index ["paper_id"], name: "index_invitations_on_paper_id"
     t.index ["state"], name: "index_invitations_on_state"
+  end
+
+  create_table "issue_comments", force: :cascade do |t|
+    t.bigint "paper_id", null: false
+    t.string "login", null: false
+    t.integer "issue_id", null: false
+    t.string "kind", null: false
+    t.string "role", null: false
+    t.string "comment_url"
+    t.datetime "commented_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["commented_at"], name: "index_issue_comments_on_commented_at"
+    t.index ["login", "commented_at"], name: "index_issue_comments_on_login_and_commented_at"
+    t.index ["paper_id"], name: "index_issue_comments_on_paper_id"
   end
 
   create_table "notes", force: :cascade do |t|
@@ -185,5 +200,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_03_000001) do
     t.index ["paper_id"], name: "index_votes_on_paper_id"
   end
 
+  add_foreign_key "issue_comments", "papers"
   add_foreign_key "papers", "papers", column: "retraction_for_id"
 end

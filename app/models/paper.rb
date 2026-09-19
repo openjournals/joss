@@ -30,6 +30,7 @@ class Paper < ApplicationRecord
           inverse_of: :retracted_paper
 
   has_many :invitations
+  has_many :issue_comments, dependent: :delete_all
   has_many :notes
   has_many :votes
   has_many :in_scope_votes,

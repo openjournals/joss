@@ -72,6 +72,23 @@ describe DispatchController, type: :controller do
       expect(@paper.activities['issues']['last_comments']['editor']).to eq("2018-09-30T11:48:30Z")
       expect(@paper.activities['issues']['last_comments']['editorialbot']).to eq("2018-09-30T11:48:40Z")
     end
+
+    it "should record an IssueComment for each comment with the commenter's role" do
+      create(:editor, login: "editor")
+
+      post '/dispatch', params: editorialbot_pre_review_comment, headers: headers(:issue_comment, editorialbot_pre_review_comment)
+      post '/dispatch', params: editor_pre_review_comment, headers: headers(:issue_comment, editor_pre_review_comment)
+
+      comments = @paper.issue_comments.order(:commented_at)
+      expect(comments.size).to eq(2)
+
+      expect(comments.map(&:login)).to eq(["editor", "editorialbot"])
+      expect(comments.map(&:role)).to eq(["editor", "bot"])
+      expect(comments.map(&:kind).uniq).to eq(["pre-review"])
+      expect(comments.map(&:issue_id).uniq).to eq([78])
+      expect(comments.last.commented_at).to eq(Time.parse("2018-09-30T11:48:40Z"))
+      expect(comments.last.comment_url).to match(/issues\/78#issuecomment/)
+    end
   end
 
   describe "POST #github_receiver for REVIEW with labeling event", type: :request do
@@ -130,6 +147,19 @@ describe DispatchController, type: :controller do
     it "should update the last_activity field" do
       github_updated_at = JSON.parse(editorialbot_review_edit)['issue']['updated_at'].to_datetime.strftime("%Y-%m-%dT%l:%M:%S%z")
       expect(@paper.last_activity.strftime('%Y-%m-%dT%l:%M:%S%z')).to eql(github_updated_at)
+    end
+  end
+
+  describe "POST #github_receiver for REVIEW comments", type: :request do
+    it "records the comment against the review issue with kind review" do
+      paper = create(:paper, meta_review_issue_id: 78, review_issue_id: 79)
+      post '/dispatch', params: editor_review_comment, headers: headers(:issue_comment, editor_review_comment)
+
+      comment = paper.issue_comments.first
+      expect(comment.kind).to eq("review")
+      expect(comment.issue_id).to eq(79)
+      expect(comment.login).to eq("editor")
+      expect(comment.role).to eq("none")
     end
   end
 

@@ -84,5 +84,23 @@ module DispatchHelper
 
     @paper.last_activity = @context.comment_created_at
     @paper.save
+
+    record_issue_comment(kind)
+  end
+
+  # Keep a per-comment log so the AEiC dashboard can spot accounts commenting
+  # on many issues they have no role in.
+  def record_issue_comment(kind)
+    IssueComment.create!(
+      paper: @paper,
+      login: @context.sender,
+      issue_id: @context.issue_id,
+      kind: kind,
+      role: IssueComment.role_for(@context.sender, @paper),
+      comment_url: @context.comment_url,
+      commented_at: @context.comment_created_at
+    )
+  rescue ActiveRecord::ActiveRecordError => e
+    Rails.logger.error("Failed to record issue comment for issue #{@context.issue_id}: #{e.message}")
   end
 end

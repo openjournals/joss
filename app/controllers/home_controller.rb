@@ -1,7 +1,7 @@
 class HomeController < ApplicationController
   before_action :require_user, only: %w(profile update_profile)
-  before_action :require_editor, only: %w(dashboard reviews incoming all in_progress query_scoped)
-  before_action :set_track, only: %w(all incoming in_progress query_scoped)
+  before_action :require_editor, only: %w(dashboard reviews incoming all in_progress query_scoped activity)
+  before_action :set_track, only: %w(all incoming in_progress query_scoped activity)
   # layout "dashboard", only:  %w(dashboard reviews incoming stats all in_progress)
 
   def index
@@ -140,6 +140,22 @@ class HomeController < ApplicationController
     load_pending_invitations_for_papers(@papers)
 
     render template: "home/reviews"
+  end
+
+  # Leaderboard of non-editor accounts by number of distinct issues commented
+  # on in a time window. Useful to spot spammy "I can review" offers.
+  def activity
+    @days = IssueComment::WINDOWS.include?(params[:days].to_i) ? params[:days].to_i : IssueComment::DEFAULT_WINDOW
+    since = @days.days.ago
+
+    @leaderboard = IssueComment.leaderboard(since: since, track_id: @track&.id)
+
+    if params[:login].present?
+      @login = params[:login]
+      comments_scope = IssueComment.since(since).for_login(@login).includes(:paper)
+      comments_scope = comments_scope.by_track(@track.id) if @track.present?
+      @login_comments = comments_scope.order(commented_at: :desc)
+    end
   end
 
   def update_profile

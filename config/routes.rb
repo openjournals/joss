@@ -55,7 +55,6 @@ Rails.application.routes.draw do
   get '/toc/issue/:issue', to: "toc#issue", as: :toc_issue
 
   get '/aeic/', to: "aeic_dashboard#index", as: "aeic_dashboard"
-  get '/aeic/activity', to: "aeic_dashboard#activity", as: "aeic_activity"
   get '/editors/lookup/:login', to: "editors#lookup"
   get '/papers/lookup/:id', to: "papers#lookup"
   get '/papers/in/:language', to: "papers#filter", as: 'papers_by_language'
@@ -82,6 +81,7 @@ Rails.application.routes.draw do
   get '/dashboard/incoming', to: "home#incoming", as: "dashboard_incoming"
   get '/dashboard/in_progress', to: "home#in_progress", as: "dashboard_in_progress"
   get '/dashboard/query_scoped', to: "home#query_scoped", as: "dashboard_query_scoped"
+  get '/dashboard/activity', to: "home#activity", as: "dashboard_activity"
   get '/dashboard', to: "home#dashboard"
 
   get '/dashboard/*editor', to: "home#reviews"

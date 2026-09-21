@@ -114,3 +114,47 @@ describe BlocklistEntry, "email entries" do
     end
   end
 end
+
+describe BlocklistEntry, ".block_all_for" do
+  before { skip_paper_repo_url_check }
+
+  let(:aeic) { create(:board_editor) }
+  let(:author) { create(:user, uid: "0000-0000-0000-1234", email: "Spammer@Example.com") }
+  let(:paper) { create(:paper, submitting_author: author, repository_url: "http://github.com/arfon/fidgit") }
+
+  it "lists the ORCID, email and repository owner as candidates" do
+    expect(BlocklistEntry.candidates_for(paper)).to eq([
+      ["orcid", "0000-0000-0000-1234"],
+      ["email", "Spammer@Example.com"],
+      ["repository", "github.com/arfon"]
+    ])
+  end
+
+  it "creates one entry per candidate with the editor and reason" do
+    created, failed = BlocklistEntry.block_all_for(paper, editor: aeic, reason: "Spam")
+
+    expect(failed).to be_empty
+    expect(created.map(&:kind)).to eq(%w[orcid email repository])
+    expect(created.map(&:value)).to eq(["0000-0000-0000-1234", "spammer@example.com", "github.com/arfon"])
+    expect(created.map(&:editor).uniq).to eq([aeic])
+    expect(created.map(&:reason).uniq).to eq(["Spam"])
+  end
+
+  it "skips candidates that are already blocked" do
+    paper # create the paper before blocking its author
+    create(:blocked_orcid, value: "0000-0000-0000-1234")
+    create(:blocklist_entry, value: "github.com/arfon")
+
+    created, failed = BlocklistEntry.block_all_for(paper, editor: aeic, reason: "Spam")
+
+    expect(failed).to be_empty
+    expect(created.map(&:kind)).to eq(["email"])
+    expect(BlocklistEntry.count).to eq(3)
+  end
+
+  it "omits blank values" do
+    paper # create the paper while the author still has an email
+    author.update_column(:email, nil)
+    expect(BlocklistEntry.candidates_for(paper).map(&:first)).to eq(%w[orcid repository])
+  end
+end

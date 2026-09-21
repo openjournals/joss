@@ -434,9 +434,9 @@ describe PapersController, type: :controller do
       allow(controller).to receive(:current_user).and_return(aeic_user)
       get :admin, params: { id: paper.sha }
 
+      expect(response.body).to have_css('input[type=submit][value="Block all: 0000-0000-0000-1234, john@apple.com, and https://github.com/arfon"]')
       expect(response.body).to have_button("Block author's ORCID iD (#{paper.submitting_author.uid})")
       expect(response.body).to have_button("Block author's email (#{paper.submitting_author.email})")
-      expect(response.body).to_not have_button(/Block all emails/)
       expect(response.body).to have_button("Block this repository")
       expect(response.body).to have_button("Block all repositories under github.com/arfon")
     end

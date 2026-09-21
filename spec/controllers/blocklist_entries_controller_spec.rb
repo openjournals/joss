@@ -103,6 +103,50 @@ RSpec.describe BlocklistEntriesController, type: :controller do
     end
   end
 
+  describe "#block_paper" do
+    before { skip_paper_repo_url_check }
+
+    let(:author) { create(:user, uid: "0000-0000-0000-1234", email: "spammer@example.com") }
+    let(:paper) { create(:paper, submitting_author: author, repository_url: "http://github.com/arfon/fidgit") }
+
+    it "blocks the ORCID, email and repository owner and returns to the admin page" do
+      post :block_paper, params: { paper_sha: paper.sha, reason: "Spam submission" }
+
+      expect(response).to redirect_to "/papers/#{paper.sha}/admin"
+      expect(BlocklistEntry.pluck(:kind, :value)).to contain_exactly(
+        ["orcid", "0000-0000-0000-1234"],
+        ["email", "spammer@example.com"],
+        ["repository", "github.com/arfon"]
+      )
+      expect(BlocklistEntry.pluck(:reason).uniq).to eq(["Spam submission"])
+      expect(BlocklistEntry.pluck(:editor_id).uniq).to eq([current_user.editor.id])
+      expect(flash[:notice]).to match(/Blocked 0000-0000-0000-1234, spammer@example.com, and https:\/\/github.com\/arfon/)
+    end
+
+    it "requires a reason" do
+      post :block_paper, params: { paper_sha: paper.sha, reason: " " }
+
+      expect(flash[:error]).to match(/give a reason/)
+      expect(BlocklistEntry.count).to eq(0)
+    end
+
+    it "is idempotent" do
+      post :block_paper, params: { paper_sha: paper.sha, reason: "Spam" }
+      post :block_paper, params: { paper_sha: paper.sha, reason: "Spam" }
+
+      expect(BlocklistEntry.count).to eq(3)
+      expect(flash[:notice]).to match(/already blocked/)
+    end
+
+    it "is not available to non-AEiCs" do
+      allow(controller).to receive(:current_user).and_return(create(:user, editor: create(:editor)))
+      post :block_paper, params: { paper_sha: paper.sha, reason: "Spam" }
+
+      expect(response).to redirect_to root_path
+      expect(BlocklistEntry.count).to eq(0)
+    end
+  end
+
   describe "#destroy" do
     it "removes an entry" do
       entry = create(:blocklist_entry)

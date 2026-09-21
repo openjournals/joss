@@ -110,6 +110,13 @@
     email_blocked = BlocklistEntry.blocked_email?(author_email)
     repo_blocked = BlocklistEntry.blocked_repository?(paper.repository_url)
     block_reason = "Added from submission: #{paper.title.to_s.truncate(80)}"
+    unblocked = BlocklistEntry.candidates_for(paper).reject do |kind, value|
+      case kind
+      when "orcid" then orcid_blocked
+      when "email" then email_blocked
+      else repo_blocked
+      end
+    end
   %>
   <div class="card border-danger" id="blocklist-actions">
     <div class="card-header text-danger">&#9888; Block list</div>
@@ -122,6 +129,21 @@
           <%= link_to "Manage the block list &raquo;".html_safe, blocklist_entries_path %>
         <% end %>
       </p>
+
+      <% if unblocked.any? %>
+        <%= form_with(url: block_paper_path(paper.sha), local: true) do |f| %>
+          <div class="form-group">
+            <%= f.label :reason, "Reason for blocking" %>
+            <%= f.text_field :reason, class: "form-control", placeholder: "e.g. spam submission, AI-generated paper, unrelated repository", required: true %>
+          </div>
+          <%= f.submit "Block all: #{unblocked.map { |kind, value| kind == 'repository' ? "https://#{value}" : value }.to_sentence}",
+                class: "btn btn-danger",
+                data: { turbo_confirm: "Block this submitter's #{unblocked.map(&:first).map { |k| k == 'orcid' ? 'ORCID iD' : k }.to_sentence} from future submissions?" } %>
+        <% end %>
+        <hr />
+        <p class="card-text"><small>Or block individually:</small></p>
+      <% end %>
+
       <div class="d-flex flex-wrap" style="gap: 0.5em;">
         <% unless orcid_blocked || author_orcid.blank? %>
           <%= form_with(url: blocklist_entries_path, local: true) do |f| %>

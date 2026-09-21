@@ -75,6 +75,41 @@ class BlocklistEntry < ApplicationRecord
     blocked_repository?(repository_url)
   end
 
+  # Everything about a paper's submitter that can be blocked, as [kind, value]
+  # pairs: their ORCID iD, their email, and the repository owner (or the exact
+  # repository if the URL has no owner segment). Blank values are omitted.
+  def self.candidates_for(paper)
+    author = paper.submitting_author
+    repo = repository_owner(paper.repository_url) || normalize_repository(paper.repository_url)
+
+    [
+      ["orcid", author&.uid],
+      ["email", author&.email],
+      ["repository", repo]
+    ].reject { |_, value| value.blank? }
+  end
+
+  # Block every candidate for the paper that isn't already blocked.
+  # Returns [created_entries, failed_entries].
+  def self.block_all_for(paper, editor:, reason:)
+    created = []
+    failed = []
+
+    candidates_for(paper).each do |kind, value|
+      already = case kind
+                when "orcid" then blocked_orcid?(value)
+                when "email" then blocked_email?(value)
+                else blocked_repository?(value)
+                end
+      next if already
+
+      entry = new(kind: kind, value: value, reason: reason, editor: editor)
+      (entry.save ? created : failed) << entry
+    end
+
+    [created, failed]
+  end
+
   def orcid?
     kind == "orcid"
   end

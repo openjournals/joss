@@ -435,6 +435,8 @@ describe PapersController, type: :controller do
       get :admin, params: { id: paper.sha }
 
       expect(response.body).to have_button("Block author's ORCID iD (#{paper.submitting_author.uid})")
+      expect(response.body).to have_button("Block author's email (#{paper.submitting_author.email})")
+      expect(response.body).to have_button("Block all emails at @apple.com")
       expect(response.body).to have_button("Block this repository")
       expect(response.body).to have_button("Block all repositories under github.com/arfon")
     end

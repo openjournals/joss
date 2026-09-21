@@ -104,19 +104,23 @@
 <% if current_user.aeic? %>
   <%
     author_orcid = paper.submitting_author.uid
+    author_email = paper.submitting_author.email
+    email_domain = BlocklistEntry.email_domain(author_email)
     repo_owner = BlocklistEntry.repository_owner(paper.repository_url)
     orcid_blocked = BlocklistEntry.blocked_orcid?(author_orcid)
+    email_blocked = BlocklistEntry.blocked_email?(author_email)
     repo_blocked = BlocklistEntry.blocked_repository?(paper.repository_url)
+    domain_user_count = email_domain ? User.where("lower(email) LIKE ?", "%#{email_domain}").count : 0
     block_reason = "Added from submission: #{paper.title.to_s.truncate(80)}"
   %>
   <div class="card border-danger" id="blocklist-actions">
     <div class="card-header text-danger">&#9888; Block list</div>
     <div class="card-body">
       <p class="card-text">
-        Blocking prevents future submissions from this ORCID iD or repository. It does not change this paper.
-        <% if orcid_blocked || repo_blocked %>
+        Blocking prevents future submissions from this ORCID iD, email address or repository. It does not change this paper.
+        <% if orcid_blocked || email_blocked || repo_blocked %>
           <br /><strong>Already blocked:</strong>
-          <%= [("author's ORCID iD" if orcid_blocked), ("repository" if repo_blocked)].compact.to_sentence %>.
+          <%= [("author's ORCID iD" if orcid_blocked), ("author's email" if email_blocked), ("repository" if repo_blocked)].compact.to_sentence %>.
           <%= link_to "Manage the block list &raquo;".html_safe, blocklist_entries_path %>
         <% end %>
       </p>
@@ -127,6 +131,22 @@
             <%= f.hidden_field "blocklist_entry[value]", value: author_orcid %>
             <%= f.hidden_field "blocklist_entry[reason]", value: block_reason %>
             <%= f.submit "Block author's ORCID iD (#{author_orcid})", class: "btn btn-sm btn-outline-danger", data: { turbo_confirm: "Block ORCID iD #{author_orcid} from submitting to #{setting(:abbreviation)}?" } %>
+          <% end %>
+        <% end %>
+        <% unless email_blocked || author_email.blank? %>
+          <%= form_with(url: blocklist_entries_path, local: true) do |f| %>
+            <%= f.hidden_field "blocklist_entry[kind]", value: "email" %>
+            <%= f.hidden_field "blocklist_entry[value]", value: author_email %>
+            <%= f.hidden_field "blocklist_entry[reason]", value: block_reason %>
+            <%= f.submit "Block author's email (#{author_email})", class: "btn btn-sm btn-outline-danger", data: { turbo_confirm: "Block #{author_email} from submitting to #{setting(:abbreviation)}?" } %>
+          <% end %>
+          <% if email_domain %>
+            <%= form_with(url: blocklist_entries_path, local: true) do |f| %>
+              <%= f.hidden_field "blocklist_entry[kind]", value: "email" %>
+              <%= f.hidden_field "blocklist_entry[value]", value: email_domain %>
+              <%= f.hidden_field "blocklist_entry[reason]", value: block_reason %>
+              <%= f.submit "Block all emails at #{email_domain}", class: "btn btn-sm btn-outline-danger", data: { turbo_confirm: "Block every address at #{email_domain}? #{pluralize(domain_user_count, 'existing user')} at this domain would be unable to submit." } %>
+            <% end %>
           <% end %>
         <% end %>
         <% unless repo_blocked %>

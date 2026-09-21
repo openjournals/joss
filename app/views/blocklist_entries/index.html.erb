@@ -15,20 +15,24 @@
   <div class="generic-content-item">
     <h2>Add to the block list</h2>
     <p>
-      Blocked ORCID iDs and repositories cannot be used to submit new papers. Submitters see a generic
+      Blocked ORCID iDs, email addresses and repositories cannot be used to submit new papers. Submitters see a generic
       "unable to accept this submission" message and are not told why. Every entry records who added it and why.
-      A repository entry with only an owner (e.g. <code>github.com/username</code>) blocks every repository under that owner.
     </p>
+    <ul>
+      <li>A repository entry with only an owner (e.g. <code>github.com/username</code>) blocks every repository under that owner.</li>
+      <li>An email entry starting with <code>@</code> (e.g. <code>@example.com</code>) blocks every address at that domain. Be careful with large providers.</li>
+      <li>ORCID iDs are verified at login; the email on a profile is not, so treat email blocks as a backstop.</li>
+    </ul>
 
     <%= form_with(model: @new_entry, url: blocklist_entries_path, local: true) do |f| %>
       <div class="form-row">
         <div class="col-md-2 form-group">
           <%= f.label :kind, "Type" %>
-          <%= f.select :kind, options_for_select([["ORCID iD", "orcid"], ["Repository", "repository"]]), {}, class: "form-control" %>
+          <%= f.select :kind, options_for_select([["ORCID iD", "orcid"], ["Email", "email"], ["Repository", "repository"]]), {}, class: "form-control" %>
         </div>
         <div class="col-md-4 form-group">
-          <%= f.label :value, "ORCID iD or repository URL" %>
-          <%= f.text_field :value, class: "form-control", placeholder: "0000-0000-0000-0000 or https://github.com/owner/repo", required: true %>
+          <%= f.label :value, "ORCID iD, email address / @domain, or repository URL" %>
+          <%= f.text_field :value, class: "form-control", placeholder: "0000-0000-0000-0000, user@example.com, @example.com or https://github.com/owner/repo", required: true %>
         </div>
         <div class="col-md-4 form-group">
           <%= f.label :reason, "Reason" %>
@@ -58,12 +62,14 @@
       <tbody>
         <% @entries.each do |entry| %>
           <tr>
-            <td><%= entry.orcid? ? "ORCID iD" : "Repository" %></td>
+            <td><%= entry.kind_label %></td>
             <td>
               <% if entry.orcid? %>
                 <%= link_to entry.value, "https://orcid.org/#{entry.value}", target: "_blank" %>
-              <% else %>
+              <% elsif entry.repository? %>
                 <%= link_to entry.display_value, entry.display_value, target: "_blank" %>
+              <% else %>
+                <%= entry.value %>
               <% end %>
             </td>
             <td><%= entry.reason %></td>

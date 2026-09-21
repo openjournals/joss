@@ -49,3 +49,29 @@ describe Paper, "block list check" do
     expect(paper.save).to be true
   end
 end
+
+describe Paper, "block list check by email" do
+  before { skip_paper_repo_url_check }
+
+  it "refuses a submission from a blocked email address" do
+    create(:blocklist_entry, kind: "email", value: "spammer@example.com")
+    paper = build(:paper, submitting_author: create(:user, email: "Spammer@Example.com"))
+
+    expect(paper.save).to be false
+    expect(paper.errors[:base]).to eq([Paper::BLOCKED_SUBMISSION_MESSAGE])
+  end
+
+  it "refuses a submission from a blocked email domain" do
+    create(:blocklist_entry, kind: "email", value: "@mailinator.com")
+    paper = build(:paper, submitting_author: create(:user, email: "fresh@mailinator.com"))
+
+    expect(paper.save).to be false
+  end
+
+  it "allows other domains" do
+    create(:blocklist_entry, kind: "email", value: "@mailinator.com")
+    paper = build(:paper, submitting_author: create(:user, email: "someone@university.edu"))
+
+    expect(paper.save).to be true
+  end
+end

@@ -71,6 +71,15 @@ RSpec.describe BlocklistEntriesController, type: :controller do
       expect(BlocklistEntry.last.value).to eq("0000-0002-1825-009X")
     end
 
+    it "adds an email domain entry" do
+      post :create, params: { blocklist_entry: { kind: "email", value: "@Mailinator.com", reason: "Disposable addresses" } }
+
+      entry = BlocklistEntry.last
+      expect(entry.value).to eq("@mailinator.com")
+      expect(entry.kind_label).to eq("Email domain")
+      expect(flash[:notice]).to match(/Added @mailinator.com/)
+    end
+
     it "requires a reason" do
       post :create, params: { blocklist_entry: { kind: "repository", value: "https://github.com/spammer" } }
 

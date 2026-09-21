@@ -131,14 +131,30 @@
       </p>
 
       <% if unblocked.any? %>
+        <p class="card-text">
+          <strong>Block all</strong> adds these to the block list:
+        </p>
+        <ul class="card-text" style="word-break: break-all;">
+          <% unblocked.each do |kind, value| %>
+            <li>
+              <% if kind == "orcid" %>
+                ORCID iD <code><%= value %></code>
+              <% elsif kind == "email" %>
+                Email <code><%= value %></code>
+              <% else %>
+                All repositories under <code><%= value %></code>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
         <%= form_with(url: block_paper_path(paper.sha), local: true) do |f| %>
-          <div class="form-group">
-            <%= f.label :reason, "Reason for blocking" %>
-            <%= f.text_field :reason, class: "form-control", placeholder: "e.g. spam submission, AI-generated paper, unrelated repository", required: true %>
+          <div class="input-group" style="max-width: 40em;">
+            <%= f.text_field :reason, class: "form-control", placeholder: "Reason, e.g. spam submission", required: true, "aria-label": "Reason for blocking" %>
+            <div class="input-group-append">
+              <%= f.submit "Block all", class: "btn btn-danger",
+                    data: { turbo_confirm: "Block this submitter's #{unblocked.map(&:first).map { |k| k == 'orcid' ? 'ORCID iD' : k }.to_sentence} from future submissions?" } %>
+            </div>
           </div>
-          <%= f.submit "Block all: #{unblocked.map { |kind, value| kind == 'repository' ? "https://#{value}" : value }.to_sentence}",
-                class: "btn btn-danger",
-                data: { turbo_confirm: "Block this submitter's #{unblocked.map(&:first).map { |k| k == 'orcid' ? 'ORCID iD' : k }.to_sentence} from future submissions?" } %>
         <% end %>
         <hr />
         <p class="card-text"><small>Or block individually:</small></p>

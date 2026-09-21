@@ -456,6 +456,27 @@ class Paper < ApplicationRecord
     self.update_attribute(:reviewers, reviewers)
   end
 
+  # The GitHub issue whose header is the source of truth for reviewers: the
+  # review issue once it exists, otherwise the pre-review issue.
+  def reviewers_source_issue_id
+    review_issue_id.presence || meta_review_issue_id
+  end
+
+  # Bring the reviewers column in line with the reviewers-list header of the
+  # given issue body. editorialbot edits the issue body whenever a reviewer is
+  # added or removed but does not notify JOSS, so we read it back from the
+  # issue instead. Returns true if the column changed.
+  def sync_reviewers_from_issue_body(body)
+    parsed = IssueHeader.reviewers(body)
+    return false if parsed.nil?
+
+    current = reviewers.to_a.map(&:downcase).sort
+    return false if current == parsed.map(&:downcase).sort
+
+    update_column(:reviewers, parsed)
+    true
+  end
+
   # Updated the paper with the editor_id
   def set_editor(editor)
     self.update_attribute(:editor_id, editor.id)

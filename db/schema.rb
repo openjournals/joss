@@ -10,11 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_19_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_21_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "hstore"
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
+
+  create_table "blocklist_entries", force: :cascade do |t|
+    t.string "kind", null: false
+    t.string "value", null: false
+    t.text "reason"
+    t.bigint "editor_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["editor_id"], name: "index_blocklist_entries_on_editor_id"
+    t.index ["kind", "value"], name: "index_blocklist_entries_on_kind_and_value", unique: true
+  end
 
   create_table "editors", id: :serial, force: :cascade do |t|
     t.string "kind", default: "topic", null: false
@@ -200,6 +211,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_19_000001) do
     t.index ["paper_id"], name: "index_votes_on_paper_id"
   end
 
+  add_foreign_key "blocklist_entries", "editors"
   add_foreign_key "issue_comments", "papers"
   add_foreign_key "papers", "papers", column: "retraction_for_id"
 end

@@ -159,7 +159,12 @@ class Paper < ApplicationRecord
   validates :kind, inclusion: { in: Rails.application.settings["paper_types"] }, allow_nil: true
   validates :submission_kind, inclusion: { in: SUBMISSION_KINDS, message: "You must select a submission type" }, allow_nil: false
   validates_format_of :repository_url, with: /\Ahttps?:\/\/\S+\z/i, on: :create, message: "Repository URL must be a single http(s) URL with no whitespace"
+  validate :check_blocklist, on: :create, unless: :is_a_retraction_notice?
   validate :check_repository_address, on: :create, unless: Proc.new {|paper| Rails.env.development? || paper.is_a_retraction_notice?}
+
+  # Deliberately vague: we don't want to tell a spammer which of their details
+  # tripped the block.
+  BLOCKED_SUBMISSION_MESSAGE = "We're unable to accept this submission. If you believe this is an error, please contact the editorial team."
 
   def notify_editors
     Notifications.submission_email(self).deliver_now unless self.is_a_retraction_notice?
@@ -585,8 +590,15 @@ class Paper < ApplicationRecord
 
 private
 
+  def check_blocklist
+    if BlocklistEntry.blocks_submission?(user: submitting_author, repository_url: repository_url)
+      @blocked_submission = true
+      errors.add(:base, BLOCKED_SUBMISSION_MESSAGE)
+    end
+  end
+
   def check_repository_address
-    return false if errors[:repository_url].any?
+    return false if errors[:repository_url].any? || @blocked_submission
     stdout_str, stderr_str, status = Open3.capture3("git", "ls-remote", "--", repository_url)
 
     if !status.success?

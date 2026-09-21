@@ -81,6 +81,37 @@ describe PapersController, type: :controller do
       expect(Paper.count).to eq(paper_count)
     end
 
+    it "LOGGED IN from a blocked repository owner responds with a generic error" do
+      create(:blocklist_entry, value: "github.com/spammer")
+      user = create(:user)
+      allow(controller).to receive_message_chain(:current_user).and_return(user)
+      paper_count = Paper.count
+
+      paper_params = { title: "Totally legit", body: "something", repository_url: "https://github.com/spammer/thing",
+                       software_version: "v1.0.1", submission_kind: "new", track_id: create(:track).id }
+      post :create, params: {paper: paper_params}
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.body).to match /unable to accept this submission/
+      expect(response.body).to_not match /block/i
+      expect(Paper.count).to eq(paper_count)
+    end
+
+    it "LOGGED IN with a blocked ORCID responds with a generic error" do
+      create(:blocked_orcid, value: "0000-0000-0000-1234")
+      user = create(:user, uid: "0000-0000-0000-1234")
+      allow(controller).to receive_message_chain(:current_user).and_return(user)
+      paper_count = Paper.count
+
+      paper_params = { title: "Totally legit", body: "something", repository_url: "https://github.com/openjournals/joss",
+                       software_version: "v1.0.1", submission_kind: "new", track_id: create(:track).id }
+      post :create, params: {paper: paper_params}
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.body).to match /unable to accept this submission/
+      expect(Paper.count).to eq(paper_count)
+    end
+
     it "LOGGED IN without a email on the submitting author account" do
       user = create(:user, email: nil)
       allow(controller).to receive_message_chain(:current_user).and_return(user)
@@ -397,6 +428,41 @@ describe PapersController, type: :controller do
       allow(controller).to receive(:current_user).and_return(aeic_user)
       get :admin, params: { doi: paper.doi }
       expect(response).to be_successful
+    end
+
+    it "renders inside the application layout exactly once" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+      get :admin, params: { id: paper.sha }
+
+      expect(response.body.scan("<!DOCTYPE html>").size).to eq(1)
+      expect(response.body.scan("Log out").size).to eq(1)
+      expect(response.body).to include("<title>The Journal of Open Source Software: Admin – #{paper.title}</title>")
+    end
+
+    it "offers block list actions for the author's ORCID, the repository and its owner" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+      get :admin, params: { id: paper.sha }
+
+      expect(response.body).to have_button("Block all")
+      expect(response.body).to have_css("#blocklist-actions li", text: "ORCID iD 0000-0000-0000-1234")
+      expect(response.body).to have_css("#blocklist-actions li", text: "Email john@apple.com")
+      expect(response.body).to have_css("#blocklist-actions li", text: "All repositories under github.com/arfon")
+      expect(response.body).to have_button("Block author's ORCID iD (#{paper.submitting_author.uid})")
+      expect(response.body).to have_button("Block author's email (#{paper.submitting_author.email})")
+      expect(response.body).to have_button("Block this repository")
+      expect(response.body).to have_button("Block all repositories under github.com/arfon")
+    end
+
+    it "shows what is already blocked instead of the buttons" do
+      paper # create the paper before its owner is blocked
+      create(:blocklist_entry, value: "github.com/arfon")
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+      get :admin, params: { id: paper.sha }
+
+      expect(response.body).to have_content("Already blocked:")
+      expect(response.body).to have_css("#blocklist-actions", text: "repository.")
+      expect(response.body).to_not have_button("Block this repository")
+      expect(response.body).to have_button("Block author's ORCID iD (#{paper.submitting_author.uid})")
     end
 
     it "returns 404 for an unknown SHA" do

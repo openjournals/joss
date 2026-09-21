@@ -1,0 +1,83 @@
+<div class="container">
+  <p id="notice"><%= notice %></p>
+  <div class="col-7">
+    <div class="welcome">Editors in Chief Dashboard</div>
+    <div class="hero-small dashboard">
+      <div class="hero-title">
+        <%= image_tag "icon_papers.svg", height: "32px" %><h1>Block list</h1>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%= render partial: "aeic_dashboard/menu" %>
+<div class="container">
+  <div class="generic-content-item">
+    <h2>Add to the block list</h2>
+    <p>
+      Blocked ORCID iDs, email addresses and repositories cannot be used to submit new papers. Submitters see a generic
+      "unable to accept this submission" message and are not told why. Every entry records who added it and why.
+    </p>
+    <ul>
+      <li>A repository entry with only an owner (e.g. <code>github.com/username</code>) blocks every repository under that owner.</li>
+      <li>ORCID iDs are verified at login; the email on a profile is not, so treat email blocks as a backstop.</li>
+    </ul>
+
+    <%= form_with(model: @new_entry, url: blocklist_entries_path, local: true) do |f| %>
+      <div class="form-row">
+        <div class="col-md-2 form-group">
+          <%= f.label :kind, "Type" %>
+          <%= f.select :kind, options_for_select([["ORCID iD", "orcid"], ["Email", "email"], ["Repository", "repository"]]), {}, class: "form-control" %>
+        </div>
+        <div class="col-md-4 form-group">
+          <%= f.label :value, "ORCID iD, email address, or repository URL" %>
+          <%= f.text_field :value, class: "form-control", placeholder: "0000-0000-0000-0000, user@example.com or https://github.com/owner/repo", required: true %>
+        </div>
+        <div class="col-md-4 form-group">
+          <%= f.label :reason, "Reason" %>
+          <%= f.text_field :reason, class: "form-control", placeholder: "e.g. repeated spam submissions", required: true %>
+        </div>
+        <div class="col-md-2 form-group" style="display:flex; align-items:flex-end;">
+          <%= f.submit "Block", class: "btn btn-danger" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <% if @entries.empty? %>
+    <div class="generic-content-item">The block list is <b>empty</b>.</div>
+  <% else %>
+    <table class="dashboard-table sortable">
+      <thead>
+        <tr class="text-nowrap">
+          <th scope="col">Type</th>
+          <th scope="col">Value</th>
+          <th scope="col" class="sorttable_nosort">Reason</th>
+          <th scope="col">Added by</th>
+          <th scope="col">Added</th>
+          <th scope="col" class="sorttable_nosort">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @entries.each do |entry| %>
+          <tr>
+            <td><%= entry.kind_label %></td>
+            <td>
+              <% if entry.orcid? %>
+                <%= link_to entry.value, "https://orcid.org/#{entry.value}", target: "_blank" %>
+              <% elsif entry.repository? %>
+                <%= link_to entry.display_value, entry.display_value, target: "_blank" %>
+              <% else %>
+                <%= entry.value %>
+              <% end %>
+            </td>
+            <td><%= entry.reason %></td>
+            <td sorttable_customkey="<%= entry.editor&.full_name %>"><%= entry.editor&.full_name || "—" %></td>
+            <td sorttable_customkey="<%= entry.created_at.to_i %>"><%= time_ago_in_words(entry.created_at) %> ago</td>
+            <td><%= link_to "Remove", blocklist_entry_path(entry), data: { turbo_method: :delete, turbo_confirm: "Remove #{entry.display_value} from the block list?" } %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>

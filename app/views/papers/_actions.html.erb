@@ -102,6 +102,102 @@
 <% end %>
 
 <% if current_user.aeic? %>
+  <%
+    author_orcid = paper.submitting_author.uid
+    author_email = paper.submitting_author.email
+    repo_owner = BlocklistEntry.repository_owner(paper.repository_url)
+    orcid_blocked = BlocklistEntry.blocked_orcid?(author_orcid)
+    email_blocked = BlocklistEntry.blocked_email?(author_email)
+    repo_blocked = BlocklistEntry.blocked_repository?(paper.repository_url)
+    block_reason = "Added from submission: #{paper.title.to_s.truncate(80)}"
+    unblocked = BlocklistEntry.candidates_for(paper).reject do |kind, value|
+      case kind
+      when "orcid" then orcid_blocked
+      when "email" then email_blocked
+      else repo_blocked
+      end
+    end
+  %>
+  <div class="card border-danger" id="blocklist-actions">
+    <div class="card-header text-danger">&#9888; Block list</div>
+    <div class="card-body">
+      <p class="card-text">
+        Blocking prevents future submissions from this ORCID iD, email address or repository. It does not change this paper.
+        <% if orcid_blocked || email_blocked || repo_blocked %>
+          <br /><strong>Already blocked:</strong>
+          <%= [("author's ORCID iD" if orcid_blocked), ("author's email" if email_blocked), ("repository" if repo_blocked)].compact.to_sentence %>.
+          <%= link_to "Manage the block list &raquo;".html_safe, blocklist_entries_path %>
+        <% end %>
+      </p>
+
+      <% if unblocked.any? %>
+        <p class="card-text">
+          <strong>Block all</strong> adds these to the block list:
+        </p>
+        <ul class="card-text" style="word-break: break-all;">
+          <% unblocked.each do |kind, value| %>
+            <li>
+              <% if kind == "orcid" %>
+                ORCID iD <code><%= value %></code>
+              <% elsif kind == "email" %>
+                Email <code><%= value %></code>
+              <% else %>
+                All repositories under <code><%= value %></code>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+        <%= form_with(url: block_paper_path(paper.sha), local: true) do |f| %>
+          <div class="input-group" style="max-width: 40em;">
+            <%= f.text_field :reason, class: "form-control", placeholder: "Reason, e.g. spam submission", required: true, "aria-label": "Reason for blocking" %>
+            <div class="input-group-append">
+              <%= f.submit "Block all", class: "btn btn-danger",
+                    data: { turbo_confirm: "Block this submitter's #{unblocked.map(&:first).map { |k| k == 'orcid' ? 'ORCID iD' : k }.to_sentence} from future submissions?" } %>
+            </div>
+          </div>
+        <% end %>
+        <hr />
+        <p class="card-text"><small>Or block individually:</small></p>
+      <% end %>
+
+      <div class="d-flex flex-wrap" style="gap: 0.5em;">
+        <% unless orcid_blocked || author_orcid.blank? %>
+          <%= form_with(url: blocklist_entries_path, local: true) do |f| %>
+            <%= f.hidden_field "blocklist_entry[kind]", value: "orcid" %>
+            <%= f.hidden_field "blocklist_entry[value]", value: author_orcid %>
+            <%= f.hidden_field "blocklist_entry[reason]", value: block_reason %>
+            <%= f.submit "Block author's ORCID iD (#{author_orcid})", class: "btn btn-sm btn-outline-danger", data: { turbo_confirm: "Block ORCID iD #{author_orcid} from submitting to #{setting(:abbreviation)}?" } %>
+          <% end %>
+        <% end %>
+        <% unless email_blocked || author_email.blank? %>
+          <%= form_with(url: blocklist_entries_path, local: true) do |f| %>
+            <%= f.hidden_field "blocklist_entry[kind]", value: "email" %>
+            <%= f.hidden_field "blocklist_entry[value]", value: author_email %>
+            <%= f.hidden_field "blocklist_entry[reason]", value: block_reason %>
+            <%= f.submit "Block author's email (#{author_email})", class: "btn btn-sm btn-outline-danger", data: { turbo_confirm: "Block #{author_email} from submitting to #{setting(:abbreviation)}?" } %>
+          <% end %>
+        <% end %>
+        <% unless repo_blocked %>
+          <%= form_with(url: blocklist_entries_path, local: true) do |f| %>
+            <%= f.hidden_field "blocklist_entry[kind]", value: "repository" %>
+            <%= f.hidden_field "blocklist_entry[value]", value: paper.repository_url %>
+            <%= f.hidden_field "blocklist_entry[reason]", value: block_reason %>
+            <%= f.submit "Block this repository", class: "btn btn-sm btn-outline-danger", data: { turbo_confirm: "Block #{paper.repository_url} from being submitted again?" } %>
+          <% end %>
+          <% if repo_owner %>
+            <%= form_with(url: blocklist_entries_path, local: true) do |f| %>
+              <%= f.hidden_field "blocklist_entry[kind]", value: "repository" %>
+              <%= f.hidden_field "blocklist_entry[value]", value: repo_owner %>
+              <%= f.hidden_field "blocklist_entry[reason]", value: block_reason %>
+              <%= f.submit "Block all repositories under #{repo_owner}", class: "btn btn-sm btn-outline-danger", data: { turbo_confirm: "Block every repository under #{repo_owner}?" } %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <br />
+
   <div class="card" id="paper-actions">
     <div class="card-header">
       Paper actions

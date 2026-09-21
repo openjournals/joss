@@ -4,6 +4,8 @@ Rails.application.routes.draw do
   resources :invitations, only: [:index] do
     put 'expire', on: :member
   end
+  resources :blocklist_entries, only: [:index, :create, :destroy], path: 'blocklist'
+  post '/blocklist/papers/:paper_sha', to: 'blocklist_entries#block_paper', as: :block_paper
   resources :papers, except: [:edit, :update, :destroy] do
     resources :votes, only: [:create]
     resources :notes, only: [:create, :destroy]

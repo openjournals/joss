@@ -14,7 +14,9 @@ module IssueHeader
     match = REVIEWERS_MARKER.match(body.to_s)
     return nil unless match
 
-    match[1].split(",").map { |handle| normalize_handle(handle) }.compact.uniq
+    # GitHub logins are case-insensitive, so "@Alice" and "@alice" are the
+    # same reviewer; keep the first spelling seen.
+    match[1].split(",").map { |handle| normalize_handle(handle) }.compact.uniq(&:downcase)
   end
 
   # Returns the editor handle (with a leading @) or nil when absent/pending.

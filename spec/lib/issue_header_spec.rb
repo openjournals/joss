@@ -7,9 +7,9 @@ describe IssueHeader do
       expect(IssueHeader.reviewers(nil)).to be_nil
     end
 
-    it "parses handles, normalizing the leading @ and dropping duplicates" do
-      body = "**Reviewers:** <!--reviewers-list-->@alice, bob ,@Alice, @carol-1<!--end-reviewers-list-->"
-      expect(IssueHeader.reviewers(body)).to eq(["@alice", "@bob", "@Alice", "@carol-1"])
+    it "parses handles, normalizing the leading @ and dropping duplicates regardless of case" do
+      body = "**Reviewers:** <!--reviewers-list-->@alice, bob ,@Alice, @carol-1, @BOB<!--end-reviewers-list-->"
+      expect(IssueHeader.reviewers(body)).to eq(["@alice", "@bob", "@carol-1"])
     end
 
     it "returns an empty list for the Pending placeholder" do

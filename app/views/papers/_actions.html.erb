@@ -105,12 +105,10 @@
   <%
     author_orcid = paper.submitting_author.uid
     author_email = paper.submitting_author.email
-    email_domain = BlocklistEntry.email_domain(author_email)
     repo_owner = BlocklistEntry.repository_owner(paper.repository_url)
     orcid_blocked = BlocklistEntry.blocked_orcid?(author_orcid)
     email_blocked = BlocklistEntry.blocked_email?(author_email)
     repo_blocked = BlocklistEntry.blocked_repository?(paper.repository_url)
-    domain_user_count = email_domain ? User.where("lower(email) LIKE ?", "%#{email_domain}").count : 0
     block_reason = "Added from submission: #{paper.title.to_s.truncate(80)}"
   %>
   <div class="card border-danger" id="blocklist-actions">
@@ -139,14 +137,6 @@
             <%= f.hidden_field "blocklist_entry[value]", value: author_email %>
             <%= f.hidden_field "blocklist_entry[reason]", value: block_reason %>
             <%= f.submit "Block author's email (#{author_email})", class: "btn btn-sm btn-outline-danger", data: { turbo_confirm: "Block #{author_email} from submitting to #{setting(:abbreviation)}?" } %>
-          <% end %>
-          <% if email_domain %>
-            <%= form_with(url: blocklist_entries_path, local: true) do |f| %>
-              <%= f.hidden_field "blocklist_entry[kind]", value: "email" %>
-              <%= f.hidden_field "blocklist_entry[value]", value: email_domain %>
-              <%= f.hidden_field "blocklist_entry[reason]", value: block_reason %>
-              <%= f.submit "Block all emails at #{email_domain}", class: "btn btn-sm btn-outline-danger", data: { turbo_confirm: "Block every address at #{email_domain}? #{pluralize(domain_user_count, 'existing user')} at this domain would be unable to submit." } %>
-            <% end %>
           <% end %>
         <% end %>
         <% unless repo_blocked %>

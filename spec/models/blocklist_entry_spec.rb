@@ -82,28 +82,16 @@ describe BlocklistEntry do
 end
 
 describe BlocklistEntry, "email entries" do
-  it "normalizes addresses and domains to lowercase" do
+  it "normalizes addresses to lowercase" do
     expect(BlocklistEntry.create!(kind: "email", value: " Spammer@Example.COM ", reason: "Spam").value).to eq("spammer@example.com")
-    expect(BlocklistEntry.create!(kind: "email", value: "@Mailinator.com", reason: "Spam").value).to eq("@mailinator.com")
-  end
-
-  it "labels domain entries distinctly" do
-    expect(build(:blocklist_entry, kind: "email", value: "@example.com").kind_label).to eq("Email domain")
     expect(build(:blocklist_entry, kind: "email", value: "a@example.com").kind_label).to eq("Email")
   end
 
-  it "rejects values that are neither an address nor an @domain" do
+  it "only accepts full addresses, never bare domains" do
     expect(BlocklistEntry.new(kind: "email", value: "not-an-email", reason: "Spam")).to_not be_valid
     expect(BlocklistEntry.new(kind: "email", value: "example.com", reason: "Spam")).to_not be_valid
-    expect(BlocklistEntry.new(kind: "email", value: "@example.com", reason: "Spam")).to be_valid
-  end
-
-  describe ".email_domain" do
-    it "extracts the domain with a leading @" do
-      expect(BlocklistEntry.email_domain("Someone@Example.com")).to eq("@example.com")
-      expect(BlocklistEntry.email_domain("nope")).to be_nil
-      expect(BlocklistEntry.email_domain(nil)).to be_nil
-    end
+    expect(BlocklistEntry.new(kind: "email", value: "@gmail.com", reason: "Spam")).to_not be_valid
+    expect(BlocklistEntry.new(kind: "email", value: "spammer@gmail.com", reason: "Spam")).to be_valid
   end
 
   describe ".blocked_email?" do
@@ -113,15 +101,13 @@ describe BlocklistEntry, "email entries" do
       expect(BlocklistEntry.blocked_email?("other@example.com")).to be false
     end
 
-    it "matches every address at a blocked domain" do
-      create(:blocklist_entry, kind: "email", value: "@mailinator.com")
-      expect(BlocklistEntry.blocked_email?("anyone@mailinator.com")).to be true
-      expect(BlocklistEntry.blocked_email?("anyone@notmailinator.com")).to be false
-      expect(BlocklistEntry.blocked_email?("anyone@sub.mailinator.com")).to be false
+    it "never blocks other users at the same domain" do
+      create(:blocklist_entry, kind: "email", value: "spammer@gmail.com")
+      expect(BlocklistEntry.blocked_email?("innocent@gmail.com")).to be false
     end
 
     it "is false for blank or malformed emails" do
-      create(:blocklist_entry, kind: "email", value: "@example.com")
+      create(:blocklist_entry, kind: "email", value: "spammer@example.com")
       expect(BlocklistEntry.blocked_email?(nil)).to be false
       expect(BlocklistEntry.blocked_email?("")).to be false
       expect(BlocklistEntry.blocked_email?("@example.com")).to be false

@@ -1,16 +1,15 @@
-# A submitter ORCID, email address (or whole email domain), or a repository
-# address (or repository owner) that is not allowed to submit new papers.
-# Checked when a Paper is created.
+# A submitter ORCID, email address, or a repository address (or repository
+# owner) that is not allowed to submit new papers. Checked when a Paper is
+# created.
 #
 # Repository values are stored without scheme, e.g. "github.com/owner/repo".
 # An entry with only an owner, e.g. "github.com/owner", blocks every
-# repository under that owner. Email values are stored lowercased; a value
-# starting with "@", e.g. "@example.com", blocks every address at that domain.
+# repository under that owner. Email values are exact addresses, stored
+# lowercased; whole domains are deliberately not supported.
 class BlocklistEntry < ApplicationRecord
   KINDS = %w[orcid email repository].freeze
   ORCID_FORMAT = /\A\d{4}-\d{4}-\d{4}-\d{3}[\dX]\z/
   EMAIL_FORMAT = /\A[^@\s]+@[^@\s]+\.[^@\s]+\z/
-  DOMAIN_FORMAT = /\A@[^@\s]+\.[^@\s]+\z/
 
   belongs_to :editor, optional: true
 
@@ -31,13 +30,6 @@ class BlocklistEntry < ApplicationRecord
 
   def self.normalize_email(value)
     value.to_s.strip.downcase
-  end
-
-  # "user@example.com" => "@example.com"; nil if there is no domain part.
-  def self.email_domain(value)
-    normalized = normalize_email(value)
-    return nil unless normalized.include?("@")
-    "@#{normalized.split("@").last}"
   end
 
   def self.normalize_repository(value)
@@ -62,12 +54,11 @@ class BlocklistEntry < ApplicationRecord
     orcids.where(value: normalized).exists?
   end
 
-  # Matches an exact address or a domain-level entry.
   def self.blocked_email?(email)
     normalized = normalize_email(email)
     return false unless normalized.match?(EMAIL_FORMAT)
 
-    emails.where(value: [normalized, email_domain(normalized)]).exists?
+    emails.where(value: normalized).exists?
   end
 
   # Matches an exact repository entry or any owner-level entry above it.
@@ -96,10 +87,6 @@ class BlocklistEntry < ApplicationRecord
     kind == "repository"
   end
 
-  def email_domain_entry?
-    email? && value.to_s.start_with?("@")
-  end
-
   def display_value
     repository? ? "https://#{value}" : value
   end
@@ -107,7 +94,7 @@ class BlocklistEntry < ApplicationRecord
   def kind_label
     case kind
     when "orcid" then "ORCID iD"
-    when "email" then email_domain_entry? ? "Email domain" : "Email"
+    when "email" then "Email"
     else "Repository"
     end
   end
@@ -127,8 +114,8 @@ class BlocklistEntry < ApplicationRecord
 
     if orcid? && !value.match?(ORCID_FORMAT)
       errors.add(:value, "is not a valid ORCID iD (expected 0000-0000-0000-0000)")
-    elsif email? && !(value.match?(EMAIL_FORMAT) || value.match?(DOMAIN_FORMAT))
-      errors.add(:value, "must be an email address or a domain starting with @, e.g. @example.com")
+    elsif email? && !value.match?(EMAIL_FORMAT)
+      errors.add(:value, "must be a full email address")
     elsif repository? && value.split("/").size < 2
       errors.add(:value, "must include at least a host and an owner, e.g. github.com/username")
     end

@@ -430,6 +430,15 @@ describe PapersController, type: :controller do
       expect(response).to be_successful
     end
 
+    it "renders inside the application layout exactly once" do
+      allow(controller).to receive(:current_user).and_return(aeic_user)
+      get :admin, params: { id: paper.sha }
+
+      expect(response.body.scan("<!DOCTYPE html>").size).to eq(1)
+      expect(response.body.scan("Log out").size).to eq(1)
+      expect(response.body).to include("<title>The Journal of Open Source Software: Admin – #{paper.title}</title>")
+    end
+
     it "offers block list actions for the author's ORCID, the repository and its owner" do
       allow(controller).to receive(:current_user).and_return(aeic_user)
       get :admin, params: { id: paper.sha }

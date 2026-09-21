@@ -29,6 +29,7 @@ describe DispatchController, type: :controller do
   let(:editorialbot_review_comment) { json_fixture('editorialbot-review-comment.json') }
   let(:editor_review_comment) { json_fixture('editor-review-comment.json') }
   let(:editorialbot_review_edit) { json_fixture('editorialbot-review-edit.json') }
+  let(:editorialbot_review_edit_reviewers) { json_fixture('editorialbot-review-edit-reviewers.json') }
 
   let(:editorialbot_review_labeled) { json_fixture('editorialbot-review-labeled.json') }
 
@@ -147,6 +148,34 @@ describe DispatchController, type: :controller do
     it "should update the last_activity field" do
       github_updated_at = JSON.parse(editorialbot_review_edit)['issue']['updated_at'].to_datetime.strftime("%Y-%m-%dT%l:%M:%S%z")
       expect(@paper.last_activity.strftime('%Y-%m-%dT%l:%M:%S%z')).to eql(github_updated_at)
+    end
+  end
+
+  describe "POST #github_receiver for REVIEW edits with a reviewers-list header", type: :request do
+    it "syncs the reviewers column from the edited issue body" do
+      paper = create(:paper, meta_review_issue_id: 78, review_issue_id: 79, reviewers: ["@mschubert"])
+
+      post '/dispatch', params: editorialbot_review_edit_reviewers, headers: headers(:issues, editorialbot_review_edit_reviewers)
+
+      expect(response).to be_ok
+      expect(paper.reload.reviewers).to eq(["@mschubert", "@JohnCoene", "@newreviewer"])
+    end
+
+    it "ignores edits to the pre-review issue once the review issue exists" do
+      paper = create(:paper, meta_review_issue_id: 79, review_issue_id: 80, reviewers: ["@mschubert"])
+
+      post '/dispatch', params: editorialbot_review_edit_reviewers, headers: headers(:issues, editorialbot_review_edit_reviewers)
+
+      expect(response).to be_ok
+      expect(paper.reload.reviewers).to eq(["@mschubert"])
+    end
+
+    it "leaves reviewers alone for legacy bodies without markers" do
+      paper = create(:paper, meta_review_issue_id: 78, review_issue_id: 79, reviewers: ["@someone"])
+
+      post '/dispatch', params: editorialbot_review_edit, headers: headers(:issues, editorialbot_review_edit)
+
+      expect(paper.reload.reviewers).to eq(["@someone"])
     end
   end
 

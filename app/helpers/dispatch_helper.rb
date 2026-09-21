@@ -40,6 +40,17 @@ module DispatchHelper
 
     @paper.last_activity = updated_at
     @paper.save
+
+    sync_reviewers_from_issue
+  end
+
+  # editorialbot updates the reviewers-list header in the issue body when a
+  # reviewer is added or removed, but never calls back to JOSS. Every edit
+  # payload carries the full current body, so read the list back from there.
+  def sync_reviewers_from_issue
+    return unless @context.issue_id == @paper.reviewers_source_issue_id
+
+    @paper.sync_reviewers_from_issue_body(@context.issue_body)
   end
 
   # Parse the labels and update paper with the new labels.

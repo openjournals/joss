@@ -103,6 +103,13 @@ RSpec.describe Editor, type: :model do
       expect(board_editor.board_title).to eq("Editor-in-Chief")
     end
 
+    it "combines the editor's title with their managed tracks when they hold both roles" do
+      board_editor = create(:board_editor, title: "Editor-in-Chief")
+      create(:track, name: "Computer Science", aeics: [board_editor])
+
+      expect(board_editor.board_title).to eq("Editor-in-Chief; Associate Editor-in-Chief: Computer Science")
+    end
+
     it "falls back to the editor's title if the tracks feature is disabled" do
       board_editor = create(:board_editor, title: "Editor-in-Chief")
       create(:track, aeics: [board_editor])

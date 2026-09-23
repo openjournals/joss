@@ -93,14 +93,13 @@ class Editor < ApplicationRecord
     kind == "board"
   end
 
+  # A board member's role line: their stored title (e.g. "Editor-in-Chief"),
+  # the tracks they manage as AEiC, or both joined when they hold both roles.
   def board_title
-    return title unless JournalFeatures.tracks? && managed_tracks.any?
+    return title unless board? && JournalFeatures.tracks? && managed_tracks.any?
 
-    if board? && title.blank? && JournalFeatures.tracks? && managed_tracks.any?
-      "Associate Editor-in-Chief: #{managed_tracks.map(&:name).join('; ')}"
-    else
-      title
-    end
+    aeic_title = "Associate Editor-in-Chief: #{managed_tracks.map(&:name).join('; ')}"
+    title.blank? ? aeic_title : "#{title}; #{aeic_title}"
   end
 
   def board_removed?

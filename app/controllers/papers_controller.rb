@@ -330,7 +330,7 @@ class PapersController < ApplicationController
 
   def require_submissions_open
     return if JournalFeatures.submissions_open?
-    flash[:notice] = "Submissions to #{setting(:abbreviation)} are currently closed. See the author guide for when they reopen."
+    flash[:notice] = "Submissions to #{setting(:abbreviation)} are currently closed. We'll announce on the Julia Discourse (discourse.julialang.org) when they reopen."
     redirect_to root_path
   end
 

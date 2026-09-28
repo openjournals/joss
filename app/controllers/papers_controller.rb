@@ -3,6 +3,7 @@ require 'open-uri'
 class PapersController < ApplicationController
   include SettingsHelper
 
+  before_action :require_submissions_open, only: %w(new create)
   before_action :require_user, only: %w(new create withdraw)
   before_action :require_complete_profile, only: %w(create)
   before_action :require_aeic, only: %w(start_meta_review start_review reject change_track)
@@ -326,6 +327,12 @@ class PapersController < ApplicationController
   end
 
   private
+
+  def require_submissions_open
+    return if JournalFeatures.submissions_open?
+    flash[:notice] = "Submissions to #{setting(:abbreviation)} are currently closed. See the author guide for when they reopen."
+    redirect_to root_path
+  end
 
   def paper_params
     params.require(:paper).permit(:title, :repository_url, :git_branch, :software_version, :body, :kind, :submission_kind, :suggested_subject, :track_id)

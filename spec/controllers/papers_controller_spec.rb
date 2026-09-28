@@ -174,6 +174,35 @@ describe PapersController, type: :controller do
     end
   end
 
+  describe "Closed submissions" do
+    it "GET #new redirects home with a notice when NOT LOGGED IN" do
+      disable_feature(:submissions_open) do
+        get :new
+        expect(response).to redirect_to(root_path)
+        expect(flash[:notice]).to match(/currently closed/)
+      end
+    end
+
+    it "GET #new redirects home with a notice when LOGGED IN" do
+      allow(controller).to receive_message_chain(:current_user).and_return(create(:user))
+      disable_feature(:submissions_open) do
+        get :new
+        expect(response).to redirect_to(root_path)
+        expect(flash[:notice]).to match(/currently closed/)
+      end
+    end
+
+    it "POST #create does not create a paper" do
+      allow(controller).to receive_message_chain(:current_user).and_return(create(:user))
+      paper_count = Paper.count
+      disable_feature(:submissions_open) do
+        post :create, params: {paper: {title: "Yeah whateva", body: "something", repository_url: "https://github.com/openjournals/joss", software_version: "v1.0.1", submission_kind: "new"}}
+        expect(response).to redirect_to(root_path)
+      end
+      expect(Paper.count).to eq(paper_count)
+    end
+  end
+
   describe "Paper visibility" do
     it "should 404 when passed an invalid sha" do
       get :show, params: {id: SecureRandom.hex}, format: "html"

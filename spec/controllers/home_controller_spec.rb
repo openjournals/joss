@@ -9,6 +9,22 @@ describe HomeController, type: :controller do
       expect(response).to be_successful
       expect(response.body).to match /Proceedings of the JuliaCon Conferences/
     end
+
+    it "should show the submit links when submissions are open" do
+      enable_feature(:submissions_open) do
+        get :index, format: :html
+        expect(response.body).to match /Submit a paper to/
+        expect(response.body).to include('href="/papers/new"')
+      end
+    end
+
+    it "should hide the submit links when submissions are closed" do
+      disable_feature(:submissions_open) do
+        get :index, format: :html
+        expect(response.body).not_to match /Submit a paper to/
+        expect(response.body).not_to include('href="/papers/new"')
+      end
+    end
   end
 
   describe "LOGGED IN GET #index" do

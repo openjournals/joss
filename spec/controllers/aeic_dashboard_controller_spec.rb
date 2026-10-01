@@ -91,4 +91,52 @@ RSpec.describe AeicDashboardController, type: :controller do
       expect(response.body).to_not have_content "List of submissions pending editorial review at Github"
     end
   end
+
+  describe "#editor_emails" do
+    let!(:topic_editor) { create(:editor, first_name: "Topic", last_name: "Person", email: "topic@example.com") }
+    let!(:pending_editor) { create(:pending_editor, email: "pending@example.com") }
+    let!(:emeritus_editor) { create(:emeritus_editor, email: "emeritus@example.com") }
+
+    before { current_user.editor.update!(email: "aeic@example.com") }
+
+    it "shows download links for both groups" do
+      get :editor_emails
+
+      expect(response.body).to have_link("EiC & AEiC emails (#{Editor.board.count})", href: aeic_editor_emails_path(format: :csv, group: "board"))
+      expect(response.body).to have_link("Topic editor emails (#{Editor.topic.count})", href: aeic_editor_emails_path(format: :csv, group: "topic"))
+    end
+
+    it "downloads board editor emails" do
+      get :editor_emails, params: { group: "board" }, format: :csv
+
+      expect(response.media_type).to eq "text/csv"
+      expect(response.headers["Content-Disposition"]).to include "aeic-editor-emails"
+      rows = CSV.parse(response.body, headers: true)
+      emails = rows.map { |r| r["email"] }
+      expect(emails.size).to eq Editor.board.count
+      expect(emails).to include "aeic@example.com"
+      expect(emails).to_not include "topic@example.com", "pending@example.com", "emeritus@example.com"
+    end
+
+    it "downloads topic editor emails" do
+      get :editor_emails, params: { group: "topic" }, format: :csv
+
+      rows = CSV.parse(response.body, headers: true)
+      expect(rows.map { |r| r["email"] }).to eq ["topic@example.com"]
+      expect(rows.first["login"]).to eq topic_editor.login
+    end
+
+    it "returns not found for an unknown group" do
+      get :editor_emails, params: { group: "emeritus" }, format: :csv
+      expect(response).to have_http_status(:not_found)
+    end
+
+    context "when logged in as a non-aeic editor" do
+      let(:current_user) { create(:user, editor: create(:editor)) }
+      it "does not allow downloads" do
+        get :editor_emails, params: { group: "board" }, format: :csv
+        expect(response).to redirect_to root_path
+      end
+    end
+  end
 end

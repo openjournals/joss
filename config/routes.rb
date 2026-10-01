@@ -57,6 +57,7 @@ Rails.application.routes.draw do
   get '/toc/issue/:issue', to: "toc#issue", as: :toc_issue
 
   get '/aeic/', to: "aeic_dashboard#index", as: "aeic_dashboard"
+  get '/aeic/editor_emails', to: "aeic_dashboard#editor_emails", as: "aeic_editor_emails"
   get '/editors/lookup/:login', to: "editors#lookup"
   get '/papers/lookup/:id', to: "papers#lookup"
   get '/papers/in/:language', to: "papers#filter", as: 'papers_by_language'

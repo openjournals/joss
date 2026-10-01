@@ -3,6 +3,7 @@ ruby '3.3.3'
 
 gem 'aasm', '~> 5.5.0'
 gem 'chartkick'
+gem 'csv'
 gem 'bootsnap'
 gem 'dotenv', '~> 2.8.1'
 gem 'groupdate'

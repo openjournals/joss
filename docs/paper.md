@@ -36,6 +36,15 @@ Your paper will be reviewed by two or more reviewers in a public GitHub issue. T
 
 ## Article metadata
 
+### Title
+
+Use software names as plain text in the YAML `title` field. Do not surround them
+with backticks to apply inline-code formatting. For example, use
+`title: 'MyPackage: Tools for scientific analysis'` instead of
+``title: '`MyPackage`: Tools for scientific analysis'``. The title is reused in
+citation metadata, where PDF styling may not be retained. Inline-code formatting
+can still be used in the paper body.
+
 (author-names)=
 ### Names
 

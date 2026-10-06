@@ -6,6 +6,7 @@ For a complete description of available options to describe author names [see he
 
 ```markdown
 ---
+# Use plain text in the title; do not use backticks for code formatting.
 title: 'Gala: A Python package for galactic dynamics'
 tags:
   - Python

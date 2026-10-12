@@ -171,11 +171,82 @@ After submission:
 - **JOSS reviews are iterative and conversational in nature.** Reviewers are encouraged to post comments/questions/suggestions in the review thread as they arise, and authors are expected to respond in a timely fashion.
 - **Authors are expected to respond to reviewer feedback promptly.** We generally ask that authors respond to reviewer comments and questions within 2 weeks, and complete requested changes within 4-6 weeks, matching the commitment we ask of reviewers, unless otherwise negotiated with the editor. If you need more time (for example, if the changes requested are particularly substantial), please communicate this to the reviewers and editor on the review thread. Prolonged unresponsiveness may result in the paper being rejected due to lack of engagement.
 - Authors and reviewers are asked to be patient when waiting for a response from an editor. Please allow a week for an editor to respond to a question before prompting them for further action.
-- Upon successful completion of the review, authors will make a tagged release of the software, and deposit a copy of the repository with a data-archiving service such as [Zenodo](https://zenodo.org/) or [figshare](https://figshare.com/), get a DOI for the archive, and update the review issue thread with the version number and DOI.
+
+Further details about the review process are available in the [reviewer guidelines](reviewer_guidelines).
+
+## Post-Review
+
+Upon successful completion of the review, the editor will ask the submitter to do the following:
+
+- The submitter will make a tagged, archival release of the software in the GitHub or other[^otherforges] repository(ies) (see [below](#archiving-the-submission)).
+- The submitter will deposit the archival release in a research data repository. The repository will accept the release and its associated metadata, and will provide a DOI for the deposit. 
+- The submitter will then update the review issue thread to provide the version number of the release and the DOI from the data research data repository to the editor.
 - After we assign a DOI for your accepted JOSS paper, its metadata is deposited with CrossRef and listed on the JOSS website.
 - The review issue will be closed, and an automatic post from [@JOSS at Mastodon](https://fosstodon.org/@joss) will announce it!
 
-If you want to learn more details about the review process, take a look at the [reviewer guidelines](reviewer_guidelines).
+Optionally:
+- The submitter may wish to add a `CITATION.cff` file referencing the JOSS publication. 
+  See the [`CITATION.cff` docs](https://citation-file-format.github.io/) or 
+  [Zenodo's citation docs](https://help.zenodo.org/docs/github/describe-software/citation-file/).
+
+[^otherforges]: Repositories hosted on code forges other than GitHub should use an analogous "release" feature, if available.
+
+### Archiving the Submission
+
+The software that was submitted and reviewed must be archived in a repository to ensure long-term availability of the work.
+Archival repositories are typically those listed in [re3data.org](https://re3data.org), 
+such as [Zenodo](https://zenodo.org/), 
+[figshare](https://figshare.com/), 
+or an institutional repository. 
+
+Archival releases **must:**
+- Correspond to a git tag with the current software version[^archivetag] in the submitted repository or repositories.
+- Include the complete contents of material considered during review. Typically this will be the contents of the repository(ies), but in the case of monorepo submissions that include unreviewed material, the unreviewed material may be omitted.
+
+Archival releases **may** optionally, at the submitter's discretion:
+- Include any built artifacts like compiled binaries that would be necessary to use or understand the work.
+
+If minor changes are made to the paper after the archival release is deposited,
+e.g. due to editor requests in the period between when an editor recommends acceptance and EiC approves acceptance,
+authors do not need to deposit an additional archival release.
+Editors may request an updated archival release at their discretion for changes beyond minor formatting and typographical changes.
+
+[^archivetag]: e.g. The tag should be a version like `1.2.3` or `v1.2.3` rather than something like `joss-archive`.
+
+#### Automatic Archiving with Zenodo
+
+See: 
+[Enable a GitHub repository](https://help.zenodo.org/docs/github/enable-repository/), 
+[Archive a release from GitHub](https://help.zenodo.org/docs/github/archive-software/github-upload/)
+
+After creating the archival release:
+
+- Navigate to the [github settings page](https://zenodo.org/account/settings/github/),
+- Link your GitHub account, if it isn't already.
+- [Enable your repository](https://help.zenodo.org/docs/github/enable-repository/) by toggling the slider.
+  You may need to sync zenodo's list of repositories, 
+  or [grant the zenodo GitHub app permissions](https://docs.github.com/en/organizations/managing-oauth-access-to-your-organizations-data/approving-oauth-apps-for-your-organization) 
+  if the repository is owned by an organization that has not granted permissions.
+
+Zenodo will now automatically update its archived copy whenever a GitHub release is made.
+It is recommended to create a `CITATION.cff` file so the JOSS metadata is incorporated in future Zenodo deposits after the initial post-review deposit.
+
+#### Manual Archiving
+
+The release may be manually submitted to the chosen archival repository.
+The steps for repository submission vary by repository,
+but they typically include these steps:
+
+- Download the files from the GitHub release, or otherwise from the tagged commit.
+- Create and upload a zipped archive of the release contents.
+- Add metadata that allows the work to be identified and linked to the source repository and JOSS submission.
+- Publish the record and receive a DOI.
+
+```{tip}
+For manual archiving at Zenodo, see 
+[Upload software manually](https://help.zenodo.org/docs/github/archive-software/manual-upload/) and 
+[Create new upload](https://help.zenodo.org/docs/deposit/create-new-upload)
+```
 
 ## Confidential requests
 

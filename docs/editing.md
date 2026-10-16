@@ -132,6 +132,7 @@ To recruit reviewers, the handling editor can mention them in the `PRE-REVIEW` i
 
 - It is rare that all reviewers have the expertise to cover all aspects of a submission (e.g., knows the language really well and knows the scientific discipline well). As such, a good practice is to try and make sure that between the two or three reviewers, all aspects of the submission are covered.
 - Selection and assignment of reviewers should adhere to the [JOSS COI policy](https://joss.readthedocs.io/en/latest/reviewer_guidelines.html#joss-conflict-of-interest-policy).
+- Occasionally people volunteer to review directly in a `PRE-REVIEW` or `REVIEW` thread. Treat these offers with the same caution as author-suggested reviewers: because you didn't select them, you must independently verify their expertise and check for conflicts of interest (including the possibility that they were recruited by the authors) before considering accepting them. By default, you should point them to the [reviewer application](https://reviewers.joss.theoj.org), and select reviewers yourself, unless you are extremely confident that they are a good fit for this particular review. And if they have volunteered for multiple submissions at the same time, you should never accept them. 
 
 **Potential ways to find reviewers**
 

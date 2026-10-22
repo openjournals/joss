@@ -460,6 +460,14 @@ describe Paper do
     refute Paper.visible.include?(paper)
   end
 
+  it "should expire pending invitations when withdrawn" do
+    paper = create(:paper)
+    invitation = create(:invitation, :pending, paper: paper)
+
+    paper.withdraw!
+    expect(invitation.reload).to be_expired
+  end
+
   describe "#review_body" do
     let(:author) { create(:user) }
     let(:paper) do

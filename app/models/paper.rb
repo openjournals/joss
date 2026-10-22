@@ -71,7 +71,7 @@ class Paper < ApplicationRecord
     end
 
     event :withdraw do
-      transitions to: :withdrawn
+      transitions to: :withdrawn, after: :expire_invitations
     end
 
     event :retract do

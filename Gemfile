@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '3.3.3'
+ruby '3.4.12'
 
 gem 'aasm', '~> 5.5.0'
 gem 'chartkick'
@@ -29,6 +29,7 @@ gem 'elasticsearch', '<7.14'
 gem 'uglifier', '4.2.0'
 gem 'jbuilder', '~> 2.11'
 gem 'issue'
+gem 'ostruct'
 
 gem 'active_link_to'
 

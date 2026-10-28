@@ -41,6 +41,10 @@ gem "sassc-rails"
 # Use Puma as the app server
 gem 'puma'
 
+# Abort requests that are taking too long
+# https://devcenter.heroku.com/articles/h12-request-timeout-in-ruby-mri
+gem 'rack-timeout'
+
 # Use Redis for Action Cable
 gem "redis", "~> 5.0"
 

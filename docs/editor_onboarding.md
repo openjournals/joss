@@ -172,3 +172,18 @@ If you use Gmail:
 For papers that you are already assigned to edit, the dedicated JOSS dashboard aggregates notifications associated with each paper. The dashboard is available at: `https://joss.theoj.org/dashboard/<yourgithubusername>`
 
 Another tool you might want to try out is [Octobox](https://octobox.io/).
+
+## Off-boarding an editor
+
+When an editor steps down from the editorial team, the EiC (or an AEiC with admin access) should complete the following steps.
+
+**Before off-boarding**
+
+- Check whether they are still editing any submissions (their dashboard at `https://joss.theoj.org/dashboard/<theirgithubusername>` lists their current papers). Either wait for them to wrap these up, or agree with them which papers need to be reassigned to another editor.
+
+**Off-boarding steps**
+
+1. Mark the editor as "emeritus" on the JOSS site: visit `https://joss.theoj.org/editors/<editor-id>/edit` (find them via the [editors list](https://joss.theoj.org/editors)), change the **Kind** to `emeritus`, and save. Emeritus editors no longer appear in the list of active editors.
+2. Remove them from the [joss-editors GitHub team](https://github.com/orgs/openjournals/teams/joss-editors).
+3. Remove them from the `#joss` channel on Slack.
+4. Remove them from the editors Google Group.

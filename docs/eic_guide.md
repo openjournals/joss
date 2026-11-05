@@ -31,6 +31,7 @@ The following are not handled by the JOSS site and need to be done manually:
 - Invite them to the Open Journals Slack, and add them to the `#joss` channel.
 - Add them to the editors Google Group.
 - Assign their onboarding buddy: edit the editor (`https://joss.theoj.org/editors/<editor-id>/edit`) and select their buddy in the **Buddy** field.
+- Check their capacity: new editors get a **Max number of assignments** of 4 by default. During their trial period this should usually be lowered to 2 (on the same edit page), and raised once they are up to speed.
 
 ## Off-boarding an editor
 

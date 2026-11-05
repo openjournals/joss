@@ -2,6 +2,36 @@
 
 This section of the documentation is for the JOSS Editor-in-Chief (EiC) team, i.e., the Editor-in-Chief and the Associate Editors-in-Chief (AEiCs). It covers administrative tasks that require EiC/AEiC access to the JOSS site and to Open Journals' GitHub organization and Slack.
 
+## Onboarding a new editor
+
+Once a candidate has had their onboarding call (see [Editor Onboarding](editor_onboarding)) and has agreed to join the team, they are set up using the **Onboarding** tab of the AEiC dashboard (`https://joss.theoj.org/onboardings`).
+
+**1. Send an onboarding invitation**
+
+Enter the new editor's email address (and optionally their name) and click **Invite**. This emails them a link to a form where they complete their editor profile. Until they complete it, the invitation is listed under **Editor invitations**, where you can **Re-invite** (re-send the email) or **Delete** it.
+
+To use the link, the new editor must be logged in to the JOSS site with an account whose email matches the one the invitation was sent to. If their ORCID email is different (or private), they can change the email on their account under **My Profile** (`https://joss.theoj.org/profile`).
+
+**2. Wait for them to complete their profile**
+
+Once the new editor submits the form (name, email, GitHub username, tracks, etc.), they are added as a *pending* editor and appear in the **Pending editors** table with the status "Information registered. Ready to be invited to GitHub team".
+
+**3. Invite them to the GitHub editors team**
+
+Click **Send invitation to join GitHub team**. This sends them an invitation to join the Open Journals GitHub organization and the joss-editors team. The status changes to "Invitation to join organization sent. Pending acceptance." and then to "Joined GitHub organization and editors team!" once they accept. If needed, you can re-send the invitation from the same table.
+
+**4. Approve them**
+
+Click **Approve**. This makes them an active (topic) editor and removes their onboarding invitation.
+
+**5. Manual steps**
+
+The following are not handled by the JOSS site and need to be done manually:
+
+- Invite them to the Open Journals Slack, and add them to the `#joss` channel.
+- Add them to the editors Google Group.
+- Assign their onboarding buddy: edit the editor (`https://joss.theoj.org/editors/<editor-id>/edit`) and select their buddy in the **Buddy** field.
+
 ## Off-boarding an editor
 
 When an editor steps down from the editorial team, the EiC (or an AEiC with admin access) should complete the following steps.

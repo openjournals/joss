@@ -29,7 +29,6 @@ Click **Approve**. This makes them an active (topic) editor and removes their on
 The following are not handled by the JOSS site and need to be done manually:
 
 - Invite them to the Open Journals Slack, and add them to the `#joss` channel.
-- Add them to the editors Google Group.
 - Assign their onboarding buddy: edit the editor (`https://joss.theoj.org/editors/<editor-id>/edit`) and select their buddy in the **Buddy** field.
 - Check their capacity: new editors get a **Max number of assignments** of 4 by default. During their trial period this should usually be lowered to 2 (on the same edit page), and raised once they are up to speed.
 
@@ -46,7 +45,6 @@ When an editor steps down from the editorial team, the EiC (or an AEiC with admi
 1. Mark the editor as "emeritus" on the JOSS site: visit `https://joss.theoj.org/editors/<editor-id>/edit` (find them via the [editors list](https://joss.theoj.org/editors)), change the **Kind** to `emeritus`, and save. Emeritus editors no longer appear in the list of active editors.
 2. Remove them from the [joss-editors GitHub team](https://github.com/orgs/openjournals/teams/joss-editors).
 3. Remove them from the `#joss` channel on Slack.
-4. Remove them from the editors Google Group.
 
 ## Editing paper metadata
 

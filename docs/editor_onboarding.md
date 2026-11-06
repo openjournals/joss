@@ -123,7 +123,7 @@ All new editors at JOSS have an onboarding call with an Associate-Editor-in-Chie
 - Make sure you've highlighted everything in the ['top tips'](editor_tips) section of our docs.
 - Reinforce that this is a commitment, and thay regular attention to their submissions is absolutely critical (i.e., check in a couple of times per week).
 - Ask if they would like to move forward or would like time to consider the opportunity.
-- If they want to move forward, highlight they will receive a small number of invites: One to the JOSS editors GitHub team, a Slack invite, a Google Group invite, and an invite to the JOSS website to fill out their profile.
+- If they want to move forward, highlight they will receive a small number of invites: One to the JOSS editors GitHub team, a Slack invite, and an invite to the JOSS website to fill out their profile.
 - If they are joining the team, make sure they mark themselves as unavailable in the [JOSS reviewers database](https://reviewers.joss.theoj.org/) (so they don't get asked to review any longer).
 - Thank them again, and welcome them to the team.
 

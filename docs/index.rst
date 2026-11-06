@@ -59,6 +59,7 @@ JOSS is a proud affiliate of the `Open Source Initiative <https://opensource.org
   editor_onboarding
   editor_tips
   sample_messages
+  eic_guide
 
 .. toctree::
   :caption: The Editorial Bot

@@ -338,9 +338,6 @@ JOSS editors-in-chief can withdraw a submission with the following command:
 # Flag submission with questionable scope
 @editorialbot query scope
 
-# Get a link to the complete list of reviewers
-@editorialbot list reviewers
-
 # Open the review issue
 @editorialbot start review
 

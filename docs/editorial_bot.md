@@ -275,9 +275,6 @@ JOSS editors-in-chief can withdraw a submission with the following command:
 # Remove from this issue's reviewers list
 @editorialbot remove @username from reviewers
 
-# Get a list of all editors's GitHub handles
-@editorialbot list editors
-
 # Assign a user as the editor of this submission
 @editorialbot assign @username as editor
 

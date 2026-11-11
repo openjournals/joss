@@ -55,14 +55,6 @@ If you need a generic paper file suitable for preprint servers (arXiv-like) you 
 @editorialbot generate preprint
 ```
 
-### Finding reviewers
-
-Sometimes submitting authors suggest people the think might be appropriate to review their submission. If you want the link to the current list of JOSS reviewers, type the following in the review thread:
-
-```text
-@editorialbot list reviewers
-```
-
 ## Reviewers checklist command
 
 Once a user is assigned as reviewer and the review has started, the reviewer must type the following to get a review checklist:

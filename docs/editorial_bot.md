@@ -73,17 +73,9 @@ Editors can either assign themselves or other editors as the editor of a submiss
 
 ```text
 @editorialbot assign @editorname as editor
+or
+@editorialbot assign me as editor
 ```
-
-### Inviting an editor
-
-EditorialBot can be used by EiCs to send email invites to registered editors as follows:
-
-```text
-@editorialbot invite @editorname as editor
-```
-
-This will send an automated email to the editor with a link to the GitHub `pre-review` issue.
 
 ### Adding and removing reviewers
 
@@ -223,7 +215,17 @@ On issuing this command, EditorialBot will also check the references of the pape
 
 ## EiC-only commands
 
-Only the JOSS editors-in-chief can accept, reject or withdraw papers.
+Only the JOSS editors-in-chief can invite editors, and accept, reject or withdraw papers.
+
+### Inviting an editor
+
+EditorialBot can be used by EiCs to send email invites to registered editors as follows:
+
+```text
+@editorialbot invite @editorname as editor
+```
+
+This will send an automated email to the editor with a link to the GitHub `pre-review` issue.
 
 ### Accepting a paper
 

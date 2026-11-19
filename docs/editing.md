@@ -195,7 +195,7 @@ Note that a new release is only necessary if the software changed during the cou
 - Check the archive deposit has the correct metadata (title and author list)
   - In most situations, the two author lists should match. Authors and editors should review the two, and any differences need to be explained.
     - Other contributors can be present (and they should be marked as such, if possible).
-  - Check that the all authors of the paper are in the archive metadata.
+  - Check that all authors of the paper are in the archive metadata.
   - Eventually, ask for the reason why the two lists differ.
 - Run `@editorialbot set <doi> as archive`.
 - Run `@editorialbot set <v1.x.x> as version` if the version was updated.

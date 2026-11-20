@@ -135,3 +135,14 @@ submission doesn't yet meet one or more of our [pre-review screening criteria](h
 
 This is a "not yet" rather than a final rejection. We'd encourage you to address these gaps, continue developing openly, and resubmit in six months or more. When you do resubmit, please note in your submission what has changed and reference this issue.
 ```
+
+
+
+## Post-rejection: submitter asks JOSS to remove a (pre)review issue
+
+AEiCs should use this if a submitter requests that JOSS remove a pre-review and/or review issue of a submission that has been rejected.
+
+```
+JOSS’s policy is that reviews (and pre-reviews) are part of the record of JOSS’s interaction with projects and people, and these records can be important to preserve for future interactions, as well as for understanding the scholarly literature and its processes.
+```
+

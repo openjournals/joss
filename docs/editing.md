@@ -252,6 +252,7 @@ aas-journal: Astrophysical Journal <- The name of the AAS journal.
 
 If a paper has already been reviewed and accepted by rOpenSci or pyOpenSci, the streamlined JOSS review process is:
 
+- Check that the submission meets JOSS’s scope and significance requirements
 - Assign yourself as editor and reviewer
 - Add a comment in the pre-review issue pointing to the rOpenSci or pyOpenSci review
 - Add the rOpenSci/pyOpenSci label to the pre-review issue

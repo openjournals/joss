@@ -133,7 +133,7 @@ Most units of times are understood by EditorialBot e.g. `hour/hours/day/days/wee
 
 ### Setting the software archive
 
-When a submission is accepted, we ask that the authors to create an archive (on [Zenodo](https://zenodo.org/), [fig**share**](https://figshare.com/), or other) and post the archive DOI in the `REVIEW` issue. If on Zenodo, use the version DOI, not the concept DOI. The editor should ask `@editorialbot` to add the archive to the issue as follows:
+When a submission is accepted, we ask that the authors to create an archive (on [Zenodo](https://zenodo.org/), [fig**share**](https://figshare.com/), or other) and post the archive DOI in the `REVIEW` issue. If using a service such as Zenodo that provides a DOI for the concept, e.g. all versions, as well as a version for the specific version, use the DOI from the specific version that was reviewed. The editor should ask `@editorialbot` to add the archive to the issue as follows:
 
 ```text
 @editorialbot set 10.0000/zenodo.00000 as archive

@@ -84,7 +84,7 @@ It's also worth re-checking the pre-review screening gates that the track EiC sh
 
 - Editors can get a checklist of the final steps using the `@editorialbot create post-review checklist` command
 - Make a final check of the paper with `@editorialbot generate pdf` and that all references have DOIs (where appropriate) with `@editorialbot check references`.
-- If everything looks good, ask the author to make a new release (if possible) of the software being reviewed and deposit a new archive of the software with Zenodo or figshare. Ask them to share the new version number. If on Zenodo, use the DOI from that version, not the general DOI for the entire record. Update the review thread with this archive DOI: `@editorialbot set 10.5281/zenodo.xxxxxx as archive`, and with this version: `@editorialbot set <version> as version`.
+- If everything looks good, ask the author to make a new release (if possible) of the software being reviewed and deposit a new archive of the software with Zenodo or figshare. Ask them to share the new version number. (If using a service such as Zenodo that provides a DOI for the concept, e.g. all versions, as well as a version for the specific version, this should be the DOI from the specific version that was reviewed.) Update the review thread with this archive DOI: `@editorialbot set 10.xxx/yyy as archive`, and with this version: `@editorialbot set <version> as version`.
 - Finally, use `@editorialbot recommend-accept` on the review thread to ping the `@openjournals/joss-eics` team letting them know the paper is ready to be accepted.
 
 **Step 13: Celebrate publication! Tweet! Thank reviewers! Say thank you on issue**

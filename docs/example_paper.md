@@ -35,7 +35,6 @@ affiliations:
    index: 2
  - name: Independent Researcher, Country
    index: 3
-date: 13 August 2017
 bibliography: paper.bib
 
 # Optional fields for papers that are part of a joint submission.
